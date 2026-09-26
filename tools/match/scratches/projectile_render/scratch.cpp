@@ -99,6 +99,26 @@ static __inline float projectile_render_clamp(float value)
     return value;
 }
 
+struct projectile_render_alpha_t {
+    float value;
+    projectile_render_alpha_t() {}
+    projectile_render_alpha_t(float v) : value(v) {}
+};
+
+struct projectile_render_tint_t {
+    float r;
+    float g;
+    float b;
+    projectile_render_alpha_t a;
+
+    projectile_render_tint_t(
+        float red, float green, float blue, float alpha)
+        : r(red), g(green), b(blue)
+    {
+        a = projectile_render_alpha_t(alpha);
+    }
+};
+
 extern "C" void projectile_render(float transition_alpha)
 {
     float fade;
@@ -180,10 +200,11 @@ extern "C" void projectile_render(float transition_alpha)
         }
     }
 
+    projectile_render_tint_t trail_tint(0.5f, 0.5f, 0.5f, 0.0f);
     grim_interface_ptr->grim_set_color_slot(
-        0, 0.5f, 0.5f, 0.5f, 0.0f);
+        0, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);
     grim_interface_ptr->grim_set_color_slot(
-        1, 0.5f, 0.5f, 0.5f, 0.0f);
+        1, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);
     grim_interface_ptr->grim_set_config_var(0x13, 5u);
     grim_interface_ptr->grim_set_config_var(0x14, 2u);
 

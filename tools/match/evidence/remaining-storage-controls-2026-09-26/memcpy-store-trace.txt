@@ -1,0 +1,25 @@
+symbols: #272c4 (None, None, 4, '_source_zero'), #273c4 (None, None, 4, '_zero_alpha'), #274c4 (272, -408, 4, None), #275c4 (273, -8, 4, None)
+  [ 1] entry  pass@0x1070fcda                           mem-store=2 reg-def=0 mem-read=3 reg-read=0 addr=0
+    6c21d614 op=15b ln=81 Wk2#272:4004
+    6c21d84c op=15b ln=81 Wk2#275:2004 Rk2#274:2004
+    6c21d70c op=15a ln=83 Rk2#273:4004
+    6c21e010 op=15a ln=85 Rk2#273:4004
+       ... unchanged through [3] entry  pass_mark_register_candidates]
+  [ 4] return pass_mark_register_candidates             mem-store=1 reg-def=1 mem-read=2 reg-read=1 addr=0
+    6c21d614 op=15b ln=81 Wk2#272:4004
+    6c21d84c op=15b ln=81 Wk1#275:2004 Rk1#274:2004
+    6c21d70c op=15a ln=83 Rk2#273:4004
+    6c21e010 op=15a ln=85 Rk2#273:4004
+       ... unchanged through [9] entry  assign_candidate_indices]
+  [10] entry  sub_1072e5b9                              mem-store=0 reg-def=2 mem-read=0 reg-read=3 addr=0
+    6c21d614 op=63 ln=81 Wk1#272:4004
+    6c21d84c op=1 ln=81 Wk1#275:2004 Rk1#274:2004
+    6c21bdb8 op=1 ln=83 Rk1#275:1004
+    6c42def8 op=1 ln=85 Rk1#275:1004
+       ... unchanged through [11] entry  insert_upward_exposed_reloads]
+  [12] entry  compute_reaching_def_webs                 mem-store=1 reg-def=1 mem-read=1 reg-read=2 addr=0
+    6c21d614 op=63 ln=81 Wk2#272:4004
+    6c21d84c op=1 ln=81 Wk1#275:2004 Rk2#274:2004
+    6c21bdb8 op=1 ln=83 Rk1#275:1004
+    6c42def8 op=1 ln=85 Rk1#275:1004
+       ... unchanged through [412] entry  late@0x1073fbdd]

@@ -2,6 +2,18 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Shared sixteen-byte storage controls (2026-09-26)
+
+[Thirteen reproducible controls](../../evidence/remaining-storage-controls-2026-09-26/README.md#player_update-controls)
+test the shared vector/color slot, later spawn reuse, Fire Cough vector roles,
+block scope, and the pending `turn_angle` form against `b8753fa7725a`.
+A shared sixteen-byte object recovers native's frame-bottom `0x38` slot but
+moves neighboring vectors incorrectly; raw/label-masked scores fall to
+72.43%/81.01%. Extending it to spawn positions merges native call blocks.
+The best scoped role-rotation control reaches only 76.65%/85.34%.
+No source change is retained. These controls constrain the shared-object
+hypothesis without ruling it out; the current 78.30% and 861/0/0 remain.
+
 ## Residual map: native 4-byte frame (2026-09-26)
 
 crimson-88's residual map (`pu-residual-map.md`, `scripts/c2/frame_bottom_diff.py`)

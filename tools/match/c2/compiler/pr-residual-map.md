@@ -1,5 +1,12 @@
 # projectile_render: map of the residual after the frame work (C2.DLL 8966)
 
+Follow-up, 2026-09-26: [the K2 alpha-copy recovery](../../evidence/remaining-storage-controls-2026-09-26/README.md)
+supersedes K2's unknown status in this historical map. Reusing the overlay's
+four-byte alpha wrapper in a tint constructor gives 97.75% raw, 99.40% with
+labels masked, and 544/0/0 references. A preserving C2 trace and a 76-byte
+relocation-aware region check confirm the store/load mechanism; the full
+function remains non-exact.
+
 This note maps every mismatching region of `projectile_render` at 32b0ec7fa (81.79% raw, 541/0/0 refs) to
 a C2 mechanism, and records the source changes that remove most of them. It also answers why the
 weight-16 slots of best_p (from [pr-spill-order.md](pr-spill-order.md)) sort opposite to native.

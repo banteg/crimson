@@ -1,0 +1,177 @@
+{
+  "controls_sha256": "de188f075c90c104bd3c13c7a7c96d3166e3c88f601f4aa4ab6b9d1e42235327",
+  "verifier_sha256": "5657c4938c03387ad977816c1d03d3f32c1ee28a3eeed5d56c32e82ac7e4c9bf",
+  "verified": [
+    {
+      "target": "player_update",
+      "name": "baseline",
+      "source_sha256": "866e2d13737cc45cbd0ef4c8dafc42ca480a895f0294ba29f986f98cd8f411e7"
+    },
+    {
+      "target": "player_update",
+      "name": "turn",
+      "source_sha256": "78b02c9d052a09177abf701d04452f9529f61c70548d068a10c754978c7e2a34"
+    },
+    {
+      "target": "player_update",
+      "name": "wide_separate",
+      "source_sha256": "e545655ab7a7867d54b8942505fa3ce397462f6ddd0bdeefe367b8ad756ae439"
+    },
+    {
+      "target": "player_update",
+      "name": "wide_shared",
+      "source_sha256": "a1c8f258062005c908add633dd73651a58c3389c9b301eb5c0396d11a5c6cef3"
+    },
+    {
+      "target": "player_update",
+      "name": "union_shared",
+      "source_sha256": "426f1e45a3353bfe8a41bf14bd937a2f09507957320082ef410d18c0271001d8"
+    },
+    {
+      "target": "player_update",
+      "name": "wide_shared_turn",
+      "source_sha256": "29f2c4f5a5380f448cbab1550a7d3f7a19ba70a54929ec63577ef5abd423714f"
+    },
+    {
+      "target": "player_update",
+      "name": "union_shared_turn",
+      "source_sha256": "8c5212dd0d318716bc29a50234b854603a3651e8d484318dc2aae0e959b4dbf3"
+    },
+    {
+      "target": "player_update",
+      "name": "union_spawn",
+      "source_sha256": "24bf35785025f5e66ec4a640bbc6394cf759690f4dad8267f86aea661bdf2a04"
+    },
+    {
+      "target": "player_update",
+      "name": "union_cough_spawn",
+      "source_sha256": "c5ff06038a0508dbbf1aa03f37972569f13b2fcc458939d9a2b969e71596656d"
+    },
+    {
+      "target": "player_update",
+      "name": "union_scoped_cough_spawn",
+      "source_sha256": "8f0354d96c47968a7f44cd4ab8a76f3212b704d784739731017a9e817af3174d"
+    },
+    {
+      "target": "player_update",
+      "name": "union_scoped_cough_spawn_turn",
+      "source_sha256": "24634dc71ca3a062c0c3451388366a3e2983ec7cd1aef1931ac910f80b2e0c22"
+    },
+    {
+      "target": "player_update",
+      "name": "plain_scoped_cough_spawn",
+      "source_sha256": "b44136da56802df54fdc3c102dbd09ea7b5f4e6f6e8c62e372786847d2fad4e0"
+    },
+    {
+      "target": "player_update",
+      "name": "plain_scoped_cough_spawn_turn",
+      "source_sha256": "564bcfa3b690e3c913c9c7e49845a9d35537251ba4b7c4360747465a94a5d616"
+    },
+    {
+      "target": "projectile_render",
+      "name": "baseline",
+      "source_sha256": "579b4988ece17438b8d5159dccaa3d87c1716b822d133b22d0e11cc396d79cf0"
+    },
+    {
+      "target": "projectile_render",
+      "name": "const_reference",
+      "source_sha256": "97f45f19d500f689d0c50c0833794d1bcd4bec74a6eb6dc4d4e7b99149d14d10"
+    },
+    {
+      "target": "projectile_render",
+      "name": "aggregate",
+      "source_sha256": "5016c59c1c182178a61ef5227fd1f61e89afd37eca3a405a9350d3ec6061feef"
+    },
+    {
+      "target": "projectile_render",
+      "name": "memset_direct",
+      "source_sha256": "731315b1f8d04446ad1f809d4ea07c196d492ef2519ccdb2d932389216da9c73"
+    },
+    {
+      "target": "projectile_render",
+      "name": "memset_copy",
+      "source_sha256": "4a221d7ce44cff076d6cf05620e2a51d0cae7ac772764ab5bab4cde53d9c13d4"
+    },
+    {
+      "target": "projectile_render",
+      "name": "array_direct",
+      "source_sha256": "0c8cc41c7a5019b8b403efd87152b60481f3896ec3c0570fbf101c387f67a6c3"
+    },
+    {
+      "target": "projectile_render",
+      "name": "union_bits",
+      "source_sha256": "6cac3541e5456c0414bf8c9c1c0a4a5519f620472a91cf203bb904825ccde8a0"
+    },
+    {
+      "target": "projectile_render",
+      "name": "byte_loop",
+      "source_sha256": "d03fc9ec081108936a28d8a04d7bf9e49853511a340f845978d7c652637649d8"
+    },
+    {
+      "target": "projectile_render",
+      "name": "byte_pointer_loop",
+      "source_sha256": "c5513cbb54487cb24ab06bba338f905fda926d05aa03a43de23c28a8bc6acf7e"
+    },
+    {
+      "target": "projectile_render",
+      "name": "byte_fields",
+      "source_sha256": "8c128dc4d592b5ef5cc160317917a77562bd9245970709dd7a38f6fa2099bfd8"
+    },
+    {
+      "target": "projectile_render",
+      "name": "short_fields",
+      "source_sha256": "3c85c88f4b3aded3b25e3cd0c072c06c9b89ddd6552bf3167ef555a5a9025366"
+    },
+    {
+      "target": "projectile_render",
+      "name": "scalar_class",
+      "source_sha256": "57c2eded9ba9269d522dd0c556b00b2c761adb9e2ee3635375e084ff394aa4bf"
+    },
+    {
+      "target": "projectile_render",
+      "name": "scalar_destructor",
+      "source_sha256": "495959e9591797d02127ffa848a2b1eca7f7098ec275f651457c9d1e19921087"
+    },
+    {
+      "target": "projectile_render",
+      "name": "memcpy_float",
+      "source_sha256": "823853960d1ffa8cbfc5e80ff4da6128a50e7fe4ec77123bb907a2b949b3a6df"
+    },
+    {
+      "target": "projectile_render",
+      "name": "byte_copy_index",
+      "source_sha256": "042b1cd5717b4293397cd3b769079fb99f9bbcfc391b39df5b4a8f6c8c2b5f16"
+    },
+    {
+      "target": "projectile_render",
+      "name": "byte_copy_pointer",
+      "source_sha256": "d3c767104b7fecf304f1b33b4df6b153b98f0b050961221c2a21f47532c892df"
+    },
+    {
+      "target": "projectile_render",
+      "name": "aggregate_copy_init",
+      "source_sha256": "75a68a61305160fc58e7d6fca9e94490ce9efbeb68be6244ef094dd0a892990e"
+    },
+    {
+      "target": "projectile_render",
+      "name": "aggregate_copy_assign",
+      "source_sha256": "2e4516089d4488da8f3852fbeda4cc2977a5aceacf3356975ec3bb6c89fe644c"
+    },
+    {
+      "target": "projectile_render",
+      "name": "float_copy",
+      "source_sha256": "235b744f04fceaac2548c22f7fe71676ec27f37d5b15d0e1ebfa0a333d253815"
+    },
+    {
+      "target": "projectile_render",
+      "name": "tint_copy",
+      "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f"
+    },
+    {
+      "target": "projectile_render",
+      "name": "tint_by_value",
+      "source_sha256": "1849863b410eebac1d01caeac3e96859c44524f05ee082fdbc24f7ce6256e26f"
+    }
+  ],
+  "new_exact_matches": 0
+}

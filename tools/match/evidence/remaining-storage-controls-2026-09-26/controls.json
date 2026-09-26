@@ -1,0 +1,3368 @@
+{
+  "schema_version": 1,
+  "base_commit": "b8753fa7725ae247208445a48e0388e4667a256a",
+  "compiler": "msvc6.5",
+  "cflags": "/O2 /GB /W3 /GR-",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "targets": {
+    "player_update": {
+      "source_sha256": "866e2d13737cc45cbd0ef4c8dafc42ca480a895f0294ba29f986f98cd8f411e7",
+      "config_sha256": "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9",
+      "controls": [
+        {
+          "name": "baseline",
+          "source_sha256": "866e2d13737cc45cbd0ef4c8dafc42ca480a895f0294ba29f986f98cd8f411e7",
+          "edits": [],
+          "expected": {
+            "scores": {
+              "raw": 0.7829940119760479,
+              "labels": 0.8823952095808383,
+              "structural": 0.8902994011976048,
+              "stack": 0.9456287425149701
+            },
+            "instructions": 4144,
+            "prefix": 7,
+            "audit": {
+              "matched": 861,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "c80c15277cc43c837e508a0abf98369fc7d4ca58be4040aef9f7dd045b05ade1",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "732c7f238243ed473f405b92dab441c323cbe981245eb87bcdc6cda4e162ddc4"
+        },
+        {
+          "name": "turn",
+          "source_sha256": "78b02c9d052a09177abf701d04452f9529f61c70548d068a10c754978c7e2a34",
+          "edits": [
+            {
+              "start": 143,
+              "stop": 144,
+              "old": "    float rocket_step;\n",
+              "new": "    float turn_angle;\n"
+            },
+            {
+              "start": 646,
+              "stop": 647,
+              "old": "            movement_heading = -1.0f;\n",
+              "new": "            turn_angle = -1.0f;\n"
+            },
+            {
+              "start": 653,
+              "stop": 654,
+              "old": "                movement_heading = 4.712389f;\n",
+              "new": "                turn_angle = 4.712389f;\n"
+            },
+            {
+              "start": 660,
+              "stop": 661,
+              "old": "                movement_heading = 1.5707964f;\n",
+              "new": "                turn_angle = 1.5707964f;\n"
+            },
+            {
+              "start": 673,
+              "stop": 674,
+              "old": "                    movement_heading = 5.4977875f;\n",
+              "new": "                    turn_angle = 5.4977875f;\n"
+            },
+            {
+              "start": 679,
+              "stop": 680,
+              "old": "                    movement_heading = 0.7853982f;\n",
+              "new": "                    turn_angle = 0.7853982f;\n"
+            },
+            {
+              "start": 681,
+              "stop": 682,
+              "old": "                    movement_heading = 0.0f;\n",
+              "new": "                    turn_angle = 0.0f;\n"
+            },
+            {
+              "start": 695,
+              "stop": 696,
+              "old": "                    movement_heading = 3.926991f;\n",
+              "new": "                    turn_angle = 3.926991f;\n"
+            },
+            {
+              "start": 701,
+              "stop": 702,
+              "old": "                    movement_heading = 2.3561945f;\n",
+              "new": "                    turn_angle = 2.3561945f;\n"
+            },
+            {
+              "start": 703,
+              "stop": 704,
+              "old": "                    movement_heading = 3.1415927f;\n",
+              "new": "                    turn_angle = 3.1415927f;\n"
+            },
+            {
+              "start": 707,
+              "stop": 709,
+              "old": "            if (movement_heading != -1.0f) {\n                angle_step = player_heading_approach_target(movement_heading);\n",
+              "new": "            if (turn_angle != -1.0f) {\n                angle_step = player_heading_approach_target(turn_angle);\n"
+            },
+            {
+              "start": 1145,
+              "stop": 1147,
+              "old": "        angle_step = fire_heading - 1.5707964f;\n        scalar = angle_step - 0.150915f;\n",
+              "new": "        turn_angle = fire_heading - 1.5707964f;\n        scalar = turn_angle - 0.150915f;\n"
+            },
+            {
+              "start": 1505,
+              "stop": 1506,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1516,
+              "stop": 1517,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1530,
+              "stop": 1531,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1858,
+              "stop": 1859,
+              "old": "                rocket_step = player->ammo * 1.0471976f;\n",
+              "new": "                turn_angle = player->ammo * 1.0471976f;\n"
+            },
+            {
+              "start": 1860,
+              "stop": 1861,
+              "old": "                    - rocket_step * player->ammo * 0.5f;\n",
+              "new": "                    - turn_angle * player->ammo * 0.5f;\n"
+            },
+            {
+              "start": 1869,
+              "stop": 1870,
+              "old": "                        rocket_heading = rocket_heading + rocket_step;\n",
+              "new": "                        rocket_heading = rocket_heading + turn_angle;\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.7379640718562874,
+              "labels": 0.891497005988024,
+              "structural": 0.8994011976047904,
+              "stack": 0.9456287425149701
+            },
+            "instructions": 4144,
+            "prefix": 7,
+            "audit": {
+              "matched": 792,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "a696eeeee0c759ed63192eeb06fbeab12c331669c885addc351d1c11970fa6e2",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "07cc95eb56e10ebb49fc9e1d7e01b9dc23e3205a33359f33479e8962f39885f4"
+        },
+        {
+          "name": "wide_separate",
+          "source_sha256": "e545655ab7a7867d54b8942505fa3ce397462f6ddd0bdeefe367b8ad756ae439",
+          "edits": [
+            {
+              "start": 16,
+              "stop": 16,
+              "old": "",
+              "new": "struct player_update_scratch_t : player_update_vec2_t { float z, w; };\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    player_update_scratch_t move_delta;\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.7611976047904192,
+              "labels": 0.8514970059880239,
+              "structural": 0.8596407185628743,
+              "stack": 0.9449101796407186
+            },
+            "instructions": 4144,
+            "prefix": 1,
+            "audit": {
+              "matched": 864,
+              "unresolved": 0,
+              "mismatched": 1
+            },
+            "frame": 80,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "69e1627c3bc9e1e467e1d822f968dafca11391fa2a54a223d86efbe7a7140989",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "fc3a14551d6073f2edf78cf91ed1c79fac788aedd170928532f85038f0412572"
+        },
+        {
+          "name": "wide_shared",
+          "source_sha256": "a1c8f258062005c908add633dd73651a58c3389c9b301eb5c0396d11a5c6cef3",
+          "edits": [
+            {
+              "start": 16,
+              "stop": 16,
+              "old": "",
+              "new": "struct player_update_scratch_t : player_update_vec2_t { float z, w; };\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    player_update_scratch_t move_delta;\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = *(effect_color_t *)&move_delta;\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.724311377245509,
+              "labels": 0.8100598802395209,
+              "structural": 0.8083832335329342,
+              "stack": 0.9456287425149701
+            },
+            "instructions": 4144,
+            "prefix": 7,
+            "audit": {
+              "matched": 861,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e016b3084d81316f500926212bd8bbcffb76821ec10e5107402d01a41c539163",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "f48c50959cd5c76504998d13ac4025c27b15b472b81a23c6ef633916d4e068f3"
+        },
+        {
+          "name": "union_shared",
+          "source_sha256": "426f1e45a3353bfe8a41bf14bd937a2f09507957320082ef410d18c0271001d8",
+          "edits": [
+            {
+              "start": 91,
+              "stop": 92,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 100,
+              "stop": 101,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    union { vec2f_t vector; effect_color_t color; } scratch_storage;\n    vec2f_t &move_delta = scratch_storage.vector;\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = scratch_storage.color;\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.724311377245509,
+              "labels": 0.8100598802395209,
+              "structural": 0.8083832335329342,
+              "stack": 0.9456287425149701
+            },
+            "instructions": 4144,
+            "prefix": 7,
+            "audit": {
+              "matched": 861,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e016b3084d81316f500926212bd8bbcffb76821ec10e5107402d01a41c539163",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "f48c50959cd5c76504998d13ac4025c27b15b472b81a23c6ef633916d4e068f3"
+        },
+        {
+          "name": "wide_shared_turn",
+          "source_sha256": "29f2c4f5a5380f448cbab1550a7d3f7a19ba70a54929ec63577ef5abd423714f",
+          "edits": [
+            {
+              "start": 16,
+              "stop": 16,
+              "old": "",
+              "new": "struct player_update_scratch_t : player_update_vec2_t { float z, w; };\n"
+            },
+            {
+              "start": 143,
+              "stop": 144,
+              "old": "    float rocket_step;\n",
+              "new": "    float turn_angle;\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    player_update_scratch_t move_delta;\n"
+            },
+            {
+              "start": 646,
+              "stop": 647,
+              "old": "            movement_heading = -1.0f;\n",
+              "new": "            turn_angle = -1.0f;\n"
+            },
+            {
+              "start": 653,
+              "stop": 654,
+              "old": "                movement_heading = 4.712389f;\n",
+              "new": "                turn_angle = 4.712389f;\n"
+            },
+            {
+              "start": 660,
+              "stop": 661,
+              "old": "                movement_heading = 1.5707964f;\n",
+              "new": "                turn_angle = 1.5707964f;\n"
+            },
+            {
+              "start": 673,
+              "stop": 674,
+              "old": "                    movement_heading = 5.4977875f;\n",
+              "new": "                    turn_angle = 5.4977875f;\n"
+            },
+            {
+              "start": 679,
+              "stop": 680,
+              "old": "                    movement_heading = 0.7853982f;\n",
+              "new": "                    turn_angle = 0.7853982f;\n"
+            },
+            {
+              "start": 681,
+              "stop": 682,
+              "old": "                    movement_heading = 0.0f;\n",
+              "new": "                    turn_angle = 0.0f;\n"
+            },
+            {
+              "start": 695,
+              "stop": 696,
+              "old": "                    movement_heading = 3.926991f;\n",
+              "new": "                    turn_angle = 3.926991f;\n"
+            },
+            {
+              "start": 701,
+              "stop": 702,
+              "old": "                    movement_heading = 2.3561945f;\n",
+              "new": "                    turn_angle = 2.3561945f;\n"
+            },
+            {
+              "start": 703,
+              "stop": 704,
+              "old": "                    movement_heading = 3.1415927f;\n",
+              "new": "                    turn_angle = 3.1415927f;\n"
+            },
+            {
+              "start": 707,
+              "stop": 709,
+              "old": "            if (movement_heading != -1.0f) {\n                angle_step = player_heading_approach_target(movement_heading);\n",
+              "new": "            if (turn_angle != -1.0f) {\n                angle_step = player_heading_approach_target(turn_angle);\n"
+            },
+            {
+              "start": 1145,
+              "stop": 1147,
+              "old": "        angle_step = fire_heading - 1.5707964f;\n        scalar = angle_step - 0.150915f;\n",
+              "new": "        turn_angle = fire_heading - 1.5707964f;\n        scalar = turn_angle - 0.150915f;\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = *(effect_color_t *)&move_delta;\n"
+            },
+            {
+              "start": 1505,
+              "stop": 1506,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1516,
+              "stop": 1517,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1530,
+              "stop": 1531,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1858,
+              "stop": 1859,
+              "old": "                rocket_step = player->ammo * 1.0471976f;\n",
+              "new": "                turn_angle = player->ammo * 1.0471976f;\n"
+            },
+            {
+              "start": 1860,
+              "stop": 1861,
+              "old": "                    - rocket_step * player->ammo * 0.5f;\n",
+              "new": "                    - turn_angle * player->ammo * 0.5f;\n"
+            },
+            {
+              "start": 1869,
+              "stop": 1870,
+              "old": "                        rocket_heading = rocket_heading + rocket_step;\n",
+              "new": "                        rocket_heading = rocket_heading + turn_angle;\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.6797604790419162,
+              "labels": 0.8196407185628742,
+              "structural": 0.8179640718562874,
+              "stack": 0.9456287425149701
+            },
+            "instructions": 4144,
+            "prefix": 7,
+            "audit": {
+              "matched": 792,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e225183bf641aa5e655c83dd45e89fe83bb769bf6d8127ba3c3c74fbf9774d42",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "82786af559e7174059434a8d9fd9baa6618aed51826639448ecdccc02ef5588e"
+        },
+        {
+          "name": "union_shared_turn",
+          "source_sha256": "8c5212dd0d318716bc29a50234b854603a3651e8d484318dc2aae0e959b4dbf3",
+          "edits": [
+            {
+              "start": 91,
+              "stop": 92,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 100,
+              "stop": 101,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 143,
+              "stop": 144,
+              "old": "    float rocket_step;\n",
+              "new": "    float turn_angle;\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    union { vec2f_t vector; effect_color_t color; } scratch_storage;\n    vec2f_t &move_delta = scratch_storage.vector;\n"
+            },
+            {
+              "start": 646,
+              "stop": 647,
+              "old": "            movement_heading = -1.0f;\n",
+              "new": "            turn_angle = -1.0f;\n"
+            },
+            {
+              "start": 653,
+              "stop": 654,
+              "old": "                movement_heading = 4.712389f;\n",
+              "new": "                turn_angle = 4.712389f;\n"
+            },
+            {
+              "start": 660,
+              "stop": 661,
+              "old": "                movement_heading = 1.5707964f;\n",
+              "new": "                turn_angle = 1.5707964f;\n"
+            },
+            {
+              "start": 673,
+              "stop": 674,
+              "old": "                    movement_heading = 5.4977875f;\n",
+              "new": "                    turn_angle = 5.4977875f;\n"
+            },
+            {
+              "start": 679,
+              "stop": 680,
+              "old": "                    movement_heading = 0.7853982f;\n",
+              "new": "                    turn_angle = 0.7853982f;\n"
+            },
+            {
+              "start": 681,
+              "stop": 682,
+              "old": "                    movement_heading = 0.0f;\n",
+              "new": "                    turn_angle = 0.0f;\n"
+            },
+            {
+              "start": 695,
+              "stop": 696,
+              "old": "                    movement_heading = 3.926991f;\n",
+              "new": "                    turn_angle = 3.926991f;\n"
+            },
+            {
+              "start": 701,
+              "stop": 702,
+              "old": "                    movement_heading = 2.3561945f;\n",
+              "new": "                    turn_angle = 2.3561945f;\n"
+            },
+            {
+              "start": 703,
+              "stop": 704,
+              "old": "                    movement_heading = 3.1415927f;\n",
+              "new": "                    turn_angle = 3.1415927f;\n"
+            },
+            {
+              "start": 707,
+              "stop": 709,
+              "old": "            if (movement_heading != -1.0f) {\n                angle_step = player_heading_approach_target(movement_heading);\n",
+              "new": "            if (turn_angle != -1.0f) {\n                angle_step = player_heading_approach_target(turn_angle);\n"
+            },
+            {
+              "start": 1145,
+              "stop": 1147,
+              "old": "        angle_step = fire_heading - 1.5707964f;\n        scalar = angle_step - 0.150915f;\n",
+              "new": "        turn_angle = fire_heading - 1.5707964f;\n        scalar = turn_angle - 0.150915f;\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = scratch_storage.color;\n"
+            },
+            {
+              "start": 1505,
+              "stop": 1506,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1516,
+              "stop": 1517,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1530,
+              "stop": 1531,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1858,
+              "stop": 1859,
+              "old": "                rocket_step = player->ammo * 1.0471976f;\n",
+              "new": "                turn_angle = player->ammo * 1.0471976f;\n"
+            },
+            {
+              "start": 1860,
+              "stop": 1861,
+              "old": "                    - rocket_step * player->ammo * 0.5f;\n",
+              "new": "                    - turn_angle * player->ammo * 0.5f;\n"
+            },
+            {
+              "start": 1869,
+              "stop": 1870,
+              "old": "                        rocket_heading = rocket_heading + rocket_step;\n",
+              "new": "                        rocket_heading = rocket_heading + turn_angle;\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.6797604790419162,
+              "labels": 0.8196407185628742,
+              "structural": 0.8179640718562874,
+              "stack": 0.9456287425149701
+            },
+            "instructions": 4144,
+            "prefix": 7,
+            "audit": {
+              "matched": 792,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e225183bf641aa5e655c83dd45e89fe83bb769bf6d8127ba3c3c74fbf9774d42",
+          "body_bytes": 16125,
+          "normalized_coff_sha256": "82786af559e7174059434a8d9fd9baa6618aed51826639448ecdccc02ef5588e"
+        },
+        {
+          "name": "union_spawn",
+          "source_sha256": "24bf35785025f5e66ec4a640bbc6394cf759690f4dad8267f86aea661bdf2a04",
+          "edits": [
+            {
+              "start": 91,
+              "stop": 92,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 100,
+              "stop": 101,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    union { vec2f_t vector; effect_color_t color; } scratch_storage;\n    vec2f_t &move_delta = scratch_storage.vector;\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = scratch_storage.color;\n"
+            },
+            {
+              "start": 1282,
+              "stop": 1283,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1286,
+              "stop": 1287,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1374,
+              "stop": 1375,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1378,
+              "stop": 1379,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1563,
+              "stop": 1564,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1567,
+              "stop": 1568,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1573,
+              "stop": 1574,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1577,
+              "stop": 1578,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1629,
+              "stop": 1630,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1633,
+              "stop": 1634,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1639,
+              "stop": 1640,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1643,
+              "stop": 1644,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1649,
+              "stop": 1650,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1653,
+              "stop": 1654,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1659,
+              "stop": 1660,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1663,
+              "stop": 1664,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1669,
+              "stop": 1670,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1673,
+              "stop": 1674,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1679,
+              "stop": 1680,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1683,
+              "stop": 1684,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1689,
+              "stop": 1690,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1693,
+              "stop": 1694,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1717,
+              "stop": 1718,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1721,
+              "stop": 1722,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1794,
+              "stop": 1795,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1798,
+              "stop": 1799,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1828,
+              "stop": 1829,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1831,
+              "stop": 1832,
+              "old": "                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n",
+              "new": "                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n"
+            },
+            {
+              "start": 1923,
+              "stop": 1924,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1927,
+              "stop": 1928,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.7319076960251298,
+              "labels": 0.8188957351697475,
+              "structural": 0.8169626676332005,
+              "stack": 0.9365712214570496
+            },
+            "instructions": 4071,
+            "prefix": 7,
+            "audit": {
+              "matched": 859,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "882c480779600bc0840cc19aaa675aed1b9ec8c9fe35523a39b923ea227cfa8f",
+          "body_bytes": 15841,
+          "normalized_coff_sha256": "d1ffcf0590805353e8956d4cd0c7b360d2a1418987eb793771a27e578f534f9f"
+        },
+        {
+          "name": "union_cough_spawn",
+          "source_sha256": "c5ff06038a0508dbbf1aa03f37972569f13b2fcc458939d9a2b969e71596656d",
+          "edits": [
+            {
+              "start": 91,
+              "stop": 92,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 100,
+              "stop": 101,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    union { vec2f_t vector; effect_color_t color; } scratch_storage;\n    vec2f_t &move_delta = scratch_storage.vector;\n"
+            },
+            {
+              "start": 290,
+              "stop": 292,
+              "old": "            movement_input.x = cosf(muzzle_heading) * 16.0f;\n            movement_input.y = sinf(muzzle_heading) * 16.0f;\n",
+              "new": "            scratch_pos.x = cosf(muzzle_heading) * 16.0f;\n            scratch_pos.y = sinf(muzzle_heading) * 16.0f;\n"
+            },
+            {
+              "start": 295,
+              "stop": 298,
+              "old": "            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, random_offset.x - fire_player->position.x, random_offset.y - fire_player->position.y);\n",
+              "new": "            movement_input.x = fire_player->aim.x;\n            movement_input.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, movement_input.x - fire_player->position.x, movement_input.y - fire_player->position.y);\n"
+            },
+            {
+              "start": 304,
+              "stop": 308,
+              "old": "            random_offset.x = cosf(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = sinf(spread_angle) * spread_radius\n                + random_offset.y;\n",
+              "new": "            movement_input.x = cosf(spread_angle) * spread_radius\n                + movement_input.x;\n            movement_input.y = sinf(spread_angle) * spread_radius\n                + movement_input.y;\n"
+            },
+            {
+              "start": 310,
+              "stop": 314,
+              "old": "                &scratch_pos.x,\n                &random_offset.x);\n            scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, movement_input.x + player_position->x, movement_input.y + player_position->y);\n",
+              "new": "                &random_offset.x,\n                &movement_input.x);\n            random_offset.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n"
+            },
+            {
+              "start": 316,
+              "stop": 317,
+              "old": "                scratch_pos.x,\n",
+              "new": "                random_offset.x,\n"
+            },
+            {
+              "start": 322,
+              "stop": 324,
+              "old": "            player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);\n",
+              "new": "            player_update_vec2_set(&scratch_pos, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = scratch_storage.color;\n"
+            },
+            {
+              "start": 1282,
+              "stop": 1283,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1286,
+              "stop": 1287,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1374,
+              "stop": 1375,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1378,
+              "stop": 1379,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1563,
+              "stop": 1564,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1567,
+              "stop": 1568,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1573,
+              "stop": 1574,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1577,
+              "stop": 1578,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1629,
+              "stop": 1630,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1633,
+              "stop": 1634,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1639,
+              "stop": 1640,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1643,
+              "stop": 1644,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1649,
+              "stop": 1650,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1653,
+              "stop": 1654,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1659,
+              "stop": 1660,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1663,
+              "stop": 1664,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1669,
+              "stop": 1670,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1673,
+              "stop": 1674,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1679,
+              "stop": 1680,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1683,
+              "stop": 1684,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1689,
+              "stop": 1690,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1693,
+              "stop": 1694,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1717,
+              "stop": 1718,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1721,
+              "stop": 1722,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1794,
+              "stop": 1795,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1798,
+              "stop": 1799,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1828,
+              "stop": 1829,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1831,
+              "stop": 1832,
+              "old": "                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n",
+              "new": "                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n"
+            },
+            {
+              "start": 1923,
+              "stop": 1924,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1927,
+              "stop": 1928,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.7655872402126631,
+              "labels": 0.8525857902368293,
+              "structural": 0.8600773320444659,
+              "stack": 0.930401159980667
+            },
+            "instructions": 4070,
+            "prefix": 7,
+            "audit": {
+              "matched": 858,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "df4c991507e07d1854f1fa1d9d2110b501eabebf6a8463b57d358f2b0586dbd6",
+          "body_bytes": 15838,
+          "normalized_coff_sha256": "d304cb385e63e71130dae227462917ca017f258c23a4fb9b0ed5f57f63352467"
+        },
+        {
+          "name": "union_scoped_cough_spawn",
+          "source_sha256": "8f0354d96c47968a7f44cd4ab8a76f3212b704d784739731017a9e817af3174d",
+          "edits": [
+            {
+              "start": 91,
+              "stop": 92,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 100,
+              "stop": 101,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 150,
+              "stop": 151,
+              "old": "    player_update_vec2_t random_offset;\n",
+              "new": ""
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    union { vec2f_t vector; effect_color_t color; } scratch_storage;\n    vec2f_t &move_delta = scratch_storage.vector;\n"
+            },
+            {
+              "start": 288,
+              "stop": 288,
+              "old": "",
+              "new": "            player_update_vec2_t random_offset;\n"
+            },
+            {
+              "start": 290,
+              "stop": 292,
+              "old": "            movement_input.x = cosf(muzzle_heading) * 16.0f;\n            movement_input.y = sinf(muzzle_heading) * 16.0f;\n",
+              "new": "            scratch_pos.x = cosf(muzzle_heading) * 16.0f;\n            scratch_pos.y = sinf(muzzle_heading) * 16.0f;\n"
+            },
+            {
+              "start": 295,
+              "stop": 298,
+              "old": "            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, random_offset.x - fire_player->position.x, random_offset.y - fire_player->position.y);\n",
+              "new": "            movement_input.x = fire_player->aim.x;\n            movement_input.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, movement_input.x - fire_player->position.x, movement_input.y - fire_player->position.y);\n"
+            },
+            {
+              "start": 304,
+              "stop": 308,
+              "old": "            random_offset.x = cosf(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = sinf(spread_angle) * spread_radius\n                + random_offset.y;\n",
+              "new": "            movement_input.x = cosf(spread_angle) * spread_radius\n                + movement_input.x;\n            movement_input.y = sinf(spread_angle) * spread_radius\n                + movement_input.y;\n"
+            },
+            {
+              "start": 310,
+              "stop": 314,
+              "old": "                &scratch_pos.x,\n                &random_offset.x);\n            scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, movement_input.x + player_position->x, movement_input.y + player_position->y);\n",
+              "new": "                &random_offset.x,\n                &movement_input.x);\n            random_offset.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n"
+            },
+            {
+              "start": 316,
+              "stop": 317,
+              "old": "                scratch_pos.x,\n",
+              "new": "                random_offset.x,\n"
+            },
+            {
+              "start": 322,
+              "stop": 324,
+              "old": "            player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);\n",
+              "new": "            player_update_vec2_set(&scratch_pos, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = scratch_storage.color;\n"
+            },
+            {
+              "start": 1282,
+              "stop": 1283,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1286,
+              "stop": 1287,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1374,
+              "stop": 1375,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1378,
+              "stop": 1379,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1563,
+              "stop": 1564,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1567,
+              "stop": 1568,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1573,
+              "stop": 1574,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1577,
+              "stop": 1578,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1629,
+              "stop": 1630,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1633,
+              "stop": 1634,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1639,
+              "stop": 1640,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1643,
+              "stop": 1644,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1649,
+              "stop": 1650,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1653,
+              "stop": 1654,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1659,
+              "stop": 1660,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1663,
+              "stop": 1664,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1669,
+              "stop": 1670,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1673,
+              "stop": 1674,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1679,
+              "stop": 1680,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1683,
+              "stop": 1684,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1689,
+              "stop": 1690,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1693,
+              "stop": 1694,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1717,
+              "stop": 1718,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1721,
+              "stop": 1722,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1794,
+              "stop": 1795,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1798,
+              "stop": 1799,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1828,
+              "stop": 1829,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1831,
+              "stop": 1832,
+              "old": "                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n",
+              "new": "                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n"
+            },
+            {
+              "start": 1923,
+              "stop": 1924,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1927,
+              "stop": 1928,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.7664612782409086,
+              "labels": 0.8534493173855262,
+              "structural": 0.860939954089646,
+              "stack": 0.9365712214570496
+            },
+            "instructions": 4071,
+            "prefix": 7,
+            "audit": {
+              "matched": 859,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "bf8efd7902f76ce22220b25f92d82b7e48dd9942e1a92913ef2cb7f42bd92183",
+          "body_bytes": 15841,
+          "normalized_coff_sha256": "17efccf56f4976899725958538a56b64512425a981df9ec1676cbcb300a1d401"
+        },
+        {
+          "name": "union_scoped_cough_spawn_turn",
+          "source_sha256": "24634dc71ca3a062c0c3451388366a3e2983ec7cd1aef1931ac910f80b2e0c22",
+          "edits": [
+            {
+              "start": 91,
+              "stop": 92,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 100,
+              "stop": 101,
+              "old": "    player_update_vec2_t *v,\n",
+              "new": "    vec2f_t *v,\n"
+            },
+            {
+              "start": 143,
+              "stop": 144,
+              "old": "    float rocket_step;\n",
+              "new": "    float turn_angle;\n"
+            },
+            {
+              "start": 150,
+              "stop": 151,
+              "old": "    player_update_vec2_t random_offset;\n",
+              "new": ""
+            },
+            {
+              "start": 154,
+              "stop": 155,
+              "old": "    player_update_vec2_t move_delta;\n",
+              "new": "    union { vec2f_t vector; effect_color_t color; } scratch_storage;\n    vec2f_t &move_delta = scratch_storage.vector;\n"
+            },
+            {
+              "start": 288,
+              "stop": 288,
+              "old": "",
+              "new": "            player_update_vec2_t random_offset;\n"
+            },
+            {
+              "start": 290,
+              "stop": 292,
+              "old": "            movement_input.x = cosf(muzzle_heading) * 16.0f;\n            movement_input.y = sinf(muzzle_heading) * 16.0f;\n",
+              "new": "            scratch_pos.x = cosf(muzzle_heading) * 16.0f;\n            scratch_pos.y = sinf(muzzle_heading) * 16.0f;\n"
+            },
+            {
+              "start": 295,
+              "stop": 298,
+              "old": "            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, random_offset.x - fire_player->position.x, random_offset.y - fire_player->position.y);\n",
+              "new": "            movement_input.x = fire_player->aim.x;\n            movement_input.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, movement_input.x - fire_player->position.x, movement_input.y - fire_player->position.y);\n"
+            },
+            {
+              "start": 304,
+              "stop": 308,
+              "old": "            random_offset.x = cosf(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = sinf(spread_angle) * spread_radius\n                + random_offset.y;\n",
+              "new": "            movement_input.x = cosf(spread_angle) * spread_radius\n                + movement_input.x;\n            movement_input.y = sinf(spread_angle) * spread_radius\n                + movement_input.y;\n"
+            },
+            {
+              "start": 310,
+              "stop": 314,
+              "old": "                &scratch_pos.x,\n                &random_offset.x);\n            scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, movement_input.x + player_position->x, movement_input.y + player_position->y);\n",
+              "new": "                &random_offset.x,\n                &movement_input.x);\n            random_offset.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n"
+            },
+            {
+              "start": 316,
+              "stop": 317,
+              "old": "                scratch_pos.x,\n",
+              "new": "                random_offset.x,\n"
+            },
+            {
+              "start": 322,
+              "stop": 324,
+              "old": "            player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);\n",
+              "new": "            player_update_vec2_set(&scratch_pos, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);\n"
+            },
+            {
+              "start": 646,
+              "stop": 647,
+              "old": "            movement_heading = -1.0f;\n",
+              "new": "            turn_angle = -1.0f;\n"
+            },
+            {
+              "start": 653,
+              "stop": 654,
+              "old": "                movement_heading = 4.712389f;\n",
+              "new": "                turn_angle = 4.712389f;\n"
+            },
+            {
+              "start": 660,
+              "stop": 661,
+              "old": "                movement_heading = 1.5707964f;\n",
+              "new": "                turn_angle = 1.5707964f;\n"
+            },
+            {
+              "start": 673,
+              "stop": 674,
+              "old": "                    movement_heading = 5.4977875f;\n",
+              "new": "                    turn_angle = 5.4977875f;\n"
+            },
+            {
+              "start": 679,
+              "stop": 680,
+              "old": "                    movement_heading = 0.7853982f;\n",
+              "new": "                    turn_angle = 0.7853982f;\n"
+            },
+            {
+              "start": 681,
+              "stop": 682,
+              "old": "                    movement_heading = 0.0f;\n",
+              "new": "                    turn_angle = 0.0f;\n"
+            },
+            {
+              "start": 695,
+              "stop": 696,
+              "old": "                    movement_heading = 3.926991f;\n",
+              "new": "                    turn_angle = 3.926991f;\n"
+            },
+            {
+              "start": 701,
+              "stop": 702,
+              "old": "                    movement_heading = 2.3561945f;\n",
+              "new": "                    turn_angle = 2.3561945f;\n"
+            },
+            {
+              "start": 703,
+              "stop": 704,
+              "old": "                    movement_heading = 3.1415927f;\n",
+              "new": "                    turn_angle = 3.1415927f;\n"
+            },
+            {
+              "start": 707,
+              "stop": 709,
+              "old": "            if (movement_heading != -1.0f) {\n                angle_step = player_heading_approach_target(movement_heading);\n",
+              "new": "            if (turn_angle != -1.0f) {\n                angle_step = player_heading_approach_target(turn_angle);\n"
+            },
+            {
+              "start": 1145,
+              "stop": 1147,
+              "old": "        angle_step = fire_heading - 1.5707964f;\n        scalar = angle_step - 0.150915f;\n",
+              "new": "        turn_angle = fire_heading - 1.5707964f;\n        scalar = turn_angle - 0.150915f;\n"
+            },
+            {
+              "start": 1151,
+              "stop": 1152,
+              "old": "            effect_color_t smoke_color;\n",
+              "new": "            effect_color_t &smoke_color = scratch_storage.color;\n"
+            },
+            {
+              "start": 1282,
+              "stop": 1283,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1286,
+              "stop": 1287,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1374,
+              "stop": 1375,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1378,
+              "stop": 1379,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1505,
+              "stop": 1506,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1516,
+              "stop": 1517,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1530,
+              "stop": 1531,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1563,
+              "stop": 1564,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1567,
+              "stop": 1568,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1573,
+              "stop": 1574,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1577,
+              "stop": 1578,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1629,
+              "stop": 1630,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1633,
+              "stop": 1634,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1639,
+              "stop": 1640,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1643,
+              "stop": 1644,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1649,
+              "stop": 1650,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1653,
+              "stop": 1654,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1659,
+              "stop": 1660,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1663,
+              "stop": 1664,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1669,
+              "stop": 1670,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1673,
+              "stop": 1674,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1679,
+              "stop": 1680,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1683,
+              "stop": 1684,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1689,
+              "stop": 1690,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1693,
+              "stop": 1694,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1717,
+              "stop": 1718,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1721,
+              "stop": 1722,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1794,
+              "stop": 1795,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1798,
+              "stop": 1799,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1828,
+              "stop": 1829,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1831,
+              "stop": 1832,
+              "old": "                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n",
+              "new": "                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n"
+            },
+            {
+              "start": 1858,
+              "stop": 1859,
+              "old": "                rocket_step = player->ammo * 1.0471976f;\n",
+              "new": "                turn_angle = player->ammo * 1.0471976f;\n"
+            },
+            {
+              "start": 1860,
+              "stop": 1861,
+              "old": "                    - rocket_step * player->ammo * 0.5f;\n",
+              "new": "                    - turn_angle * player->ammo * 0.5f;\n"
+            },
+            {
+              "start": 1869,
+              "stop": 1870,
+              "old": "                        rocket_heading = rocket_heading + rocket_step;\n",
+              "new": "                        rocket_heading = rocket_heading + turn_angle;\n"
+            },
+            {
+              "start": 1923,
+              "stop": 1924,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1927,
+              "stop": 1928,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.7215174580161895,
+              "labels": 0.8631146550682615,
+              "structural": 0.8706052917723813,
+              "stack": 0.9365712214570496
+            },
+            "instructions": 4071,
+            "prefix": 7,
+            "audit": {
+              "matched": 790,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "b80358fc5c9edf3cd03417699eba15c019366efcaca871968c5c675626826e9f",
+          "body_bytes": 15841,
+          "normalized_coff_sha256": "7138d422a1ab193ae07243cba68882d91a5d0da47e9d8085f711f471ef31df48"
+        },
+        {
+          "name": "plain_scoped_cough_spawn",
+          "source_sha256": "b44136da56802df54fdc3c102dbd09ea7b5f4e6f6e8c62e372786847d2fad4e0",
+          "edits": [
+            {
+              "start": 150,
+              "stop": 151,
+              "old": "    player_update_vec2_t random_offset;\n",
+              "new": ""
+            },
+            {
+              "start": 288,
+              "stop": 288,
+              "old": "",
+              "new": "            player_update_vec2_t random_offset;\n"
+            },
+            {
+              "start": 290,
+              "stop": 292,
+              "old": "            movement_input.x = cosf(muzzle_heading) * 16.0f;\n            movement_input.y = sinf(muzzle_heading) * 16.0f;\n",
+              "new": "            scratch_pos.x = cosf(muzzle_heading) * 16.0f;\n            scratch_pos.y = sinf(muzzle_heading) * 16.0f;\n"
+            },
+            {
+              "start": 295,
+              "stop": 298,
+              "old": "            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, random_offset.x - fire_player->position.x, random_offset.y - fire_player->position.y);\n",
+              "new": "            movement_input.x = fire_player->aim.x;\n            movement_input.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, movement_input.x - fire_player->position.x, movement_input.y - fire_player->position.y);\n"
+            },
+            {
+              "start": 304,
+              "stop": 308,
+              "old": "            random_offset.x = cosf(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = sinf(spread_angle) * spread_radius\n                + random_offset.y;\n",
+              "new": "            movement_input.x = cosf(spread_angle) * spread_radius\n                + movement_input.x;\n            movement_input.y = sinf(spread_angle) * spread_radius\n                + movement_input.y;\n"
+            },
+            {
+              "start": 310,
+              "stop": 314,
+              "old": "                &scratch_pos.x,\n                &random_offset.x);\n            scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, movement_input.x + player_position->x, movement_input.y + player_position->y);\n",
+              "new": "                &random_offset.x,\n                &movement_input.x);\n            random_offset.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n"
+            },
+            {
+              "start": 316,
+              "stop": 317,
+              "old": "                scratch_pos.x,\n",
+              "new": "                random_offset.x,\n"
+            },
+            {
+              "start": 322,
+              "stop": 324,
+              "old": "            player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);\n",
+              "new": "            player_update_vec2_set(&scratch_pos, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);\n"
+            },
+            {
+              "start": 1282,
+              "stop": 1283,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1286,
+              "stop": 1287,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1374,
+              "stop": 1375,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1378,
+              "stop": 1379,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1563,
+              "stop": 1564,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1567,
+              "stop": 1568,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1573,
+              "stop": 1574,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1577,
+              "stop": 1578,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1629,
+              "stop": 1630,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1633,
+              "stop": 1634,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1639,
+              "stop": 1640,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1643,
+              "stop": 1644,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1649,
+              "stop": 1650,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1653,
+              "stop": 1654,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1659,
+              "stop": 1660,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1663,
+              "stop": 1664,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1669,
+              "stop": 1670,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1673,
+              "stop": 1674,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1679,
+              "stop": 1680,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1683,
+              "stop": 1684,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1689,
+              "stop": 1690,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1693,
+              "stop": 1694,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1717,
+              "stop": 1718,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1721,
+              "stop": 1722,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1794,
+              "stop": 1795,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1798,
+              "stop": 1799,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1828,
+              "stop": 1829,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1831,
+              "stop": 1832,
+              "old": "                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n",
+              "new": "                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n"
+            },
+            {
+              "start": 1923,
+              "stop": 1924,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1927,
+              "stop": 1928,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.6819719671338811,
+              "labels": 0.7771870468825519,
+              "structural": 0.7754954084098599,
+              "stack": 0.930401159980667
+            },
+            "instructions": 4070,
+            "prefix": 7,
+            "audit": {
+              "matched": 842,
+              "unresolved": 0,
+              "mismatched": 2
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "dc6db88ce8a5866fe39053d7222181ce1f7e55ac37fff1c2072e144dec2f6a3d",
+          "body_bytes": 15838,
+          "normalized_coff_sha256": "f6d8665803f1e3b5a2eb8a10cd2ad02abd25ef0a40733338a33bfe335be2354f"
+        },
+        {
+          "name": "plain_scoped_cough_spawn_turn",
+          "source_sha256": "564bcfa3b690e3c913c9c7e49845a9d35537251ba4b7c4360747465a94a5d616",
+          "edits": [
+            {
+              "start": 143,
+              "stop": 144,
+              "old": "    float rocket_step;\n",
+              "new": "    float turn_angle;\n"
+            },
+            {
+              "start": 150,
+              "stop": 151,
+              "old": "    player_update_vec2_t random_offset;\n",
+              "new": ""
+            },
+            {
+              "start": 288,
+              "stop": 288,
+              "old": "",
+              "new": "            player_update_vec2_t random_offset;\n"
+            },
+            {
+              "start": 290,
+              "stop": 292,
+              "old": "            movement_input.x = cosf(muzzle_heading) * 16.0f;\n            movement_input.y = sinf(muzzle_heading) * 16.0f;\n",
+              "new": "            scratch_pos.x = cosf(muzzle_heading) * 16.0f;\n            scratch_pos.y = sinf(muzzle_heading) * 16.0f;\n"
+            },
+            {
+              "start": 295,
+              "stop": 298,
+              "old": "            random_offset.x = fire_player->aim.x;\n            random_offset.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, random_offset.x - fire_player->position.x, random_offset.y - fire_player->position.y);\n",
+              "new": "            movement_input.x = fire_player->aim.x;\n            movement_input.y = fire_player->aim.y;\n            player_update_vec2_set(&move_delta, movement_input.x - fire_player->position.x, movement_input.y - fire_player->position.y);\n"
+            },
+            {
+              "start": 304,
+              "stop": 308,
+              "old": "            random_offset.x = cosf(spread_angle) * spread_radius\n                + random_offset.x;\n            random_offset.y = sinf(spread_angle) * spread_radius\n                + random_offset.y;\n",
+              "new": "            movement_input.x = cosf(spread_angle) * spread_radius\n                + movement_input.x;\n            movement_input.y = sinf(spread_angle) * spread_radius\n                + movement_input.y;\n"
+            },
+            {
+              "start": 310,
+              "stop": 314,
+              "old": "                &scratch_pos.x,\n                &random_offset.x);\n            scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, movement_input.x + player_position->x, movement_input.y + player_position->y);\n",
+              "new": "                &random_offset.x,\n                &movement_input.x);\n            random_offset.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;\n            player_update_vec2_set(&move_delta, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n"
+            },
+            {
+              "start": 316,
+              "stop": 317,
+              "old": "                scratch_pos.x,\n",
+              "new": "                random_offset.x,\n"
+            },
+            {
+              "start": 322,
+              "stop": 324,
+              "old": "            player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);\n",
+              "new": "            player_update_vec2_set(&scratch_pos, scratch_pos.x + player_position->x, scratch_pos.y + player_position->y);\n            int effect_index = fx_spawn_sprite(&scratch_pos, &move_delta, 1.0f);\n"
+            },
+            {
+              "start": 646,
+              "stop": 647,
+              "old": "            movement_heading = -1.0f;\n",
+              "new": "            turn_angle = -1.0f;\n"
+            },
+            {
+              "start": 653,
+              "stop": 654,
+              "old": "                movement_heading = 4.712389f;\n",
+              "new": "                turn_angle = 4.712389f;\n"
+            },
+            {
+              "start": 660,
+              "stop": 661,
+              "old": "                movement_heading = 1.5707964f;\n",
+              "new": "                turn_angle = 1.5707964f;\n"
+            },
+            {
+              "start": 673,
+              "stop": 674,
+              "old": "                    movement_heading = 5.4977875f;\n",
+              "new": "                    turn_angle = 5.4977875f;\n"
+            },
+            {
+              "start": 679,
+              "stop": 680,
+              "old": "                    movement_heading = 0.7853982f;\n",
+              "new": "                    turn_angle = 0.7853982f;\n"
+            },
+            {
+              "start": 681,
+              "stop": 682,
+              "old": "                    movement_heading = 0.0f;\n",
+              "new": "                    turn_angle = 0.0f;\n"
+            },
+            {
+              "start": 695,
+              "stop": 696,
+              "old": "                    movement_heading = 3.926991f;\n",
+              "new": "                    turn_angle = 3.926991f;\n"
+            },
+            {
+              "start": 701,
+              "stop": 702,
+              "old": "                    movement_heading = 2.3561945f;\n",
+              "new": "                    turn_angle = 2.3561945f;\n"
+            },
+            {
+              "start": 703,
+              "stop": 704,
+              "old": "                    movement_heading = 3.1415927f;\n",
+              "new": "                    turn_angle = 3.1415927f;\n"
+            },
+            {
+              "start": 707,
+              "stop": 709,
+              "old": "            if (movement_heading != -1.0f) {\n                angle_step = player_heading_approach_target(movement_heading);\n",
+              "new": "            if (turn_angle != -1.0f) {\n                angle_step = player_heading_approach_target(turn_angle);\n"
+            },
+            {
+              "start": 1145,
+              "stop": 1147,
+              "old": "        angle_step = fire_heading - 1.5707964f;\n        scalar = angle_step - 0.150915f;\n",
+              "new": "        turn_angle = fire_heading - 1.5707964f;\n        scalar = turn_angle - 0.150915f;\n"
+            },
+            {
+              "start": 1282,
+              "stop": 1283,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1286,
+              "stop": 1287,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1374,
+              "stop": 1375,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1378,
+              "stop": 1379,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1505,
+              "stop": 1506,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1516,
+              "stop": 1517,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1530,
+              "stop": 1531,
+              "old": "                    fire_heading - 1.5707964f,\n",
+              "new": "                    turn_angle,\n"
+            },
+            {
+              "start": 1563,
+              "stop": 1564,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1567,
+              "stop": 1568,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1573,
+              "stop": 1574,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1577,
+              "stop": 1578,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1629,
+              "stop": 1630,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1633,
+              "stop": 1634,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1639,
+              "stop": 1640,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1643,
+              "stop": 1644,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1649,
+              "stop": 1650,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1653,
+              "stop": 1654,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1659,
+              "stop": 1660,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1663,
+              "stop": 1664,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1669,
+              "stop": 1670,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1673,
+              "stop": 1674,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1679,
+              "stop": 1680,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1683,
+              "stop": 1684,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1689,
+              "stop": 1690,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1693,
+              "stop": 1694,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1717,
+              "stop": 1718,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1721,
+              "stop": 1722,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1794,
+              "stop": 1795,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1798,
+              "stop": 1799,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1828,
+              "stop": 1829,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1831,
+              "stop": 1832,
+              "old": "                fx_spawn_secondary_projectile(&random_offset, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n",
+              "new": "                fx_spawn_secondary_projectile(&move_delta, angle_step, SECONDARY_PROJECTILE_TYPE_ROCKET);\n"
+            },
+            {
+              "start": 1858,
+              "stop": 1859,
+              "old": "                rocket_step = player->ammo * 1.0471976f;\n",
+              "new": "                turn_angle = player->ammo * 1.0471976f;\n"
+            },
+            {
+              "start": 1860,
+              "stop": 1861,
+              "old": "                    - rocket_step * player->ammo * 0.5f;\n",
+              "new": "                    - turn_angle * player->ammo * 0.5f;\n"
+            },
+            {
+              "start": 1869,
+              "stop": 1870,
+              "old": "                        rocket_heading = rocket_heading + rocket_step;\n",
+              "new": "                        rocket_heading = rocket_heading + turn_angle;\n"
+            },
+            {
+              "start": 1923,
+              "stop": 1924,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            },
+            {
+              "start": 1927,
+              "stop": 1928,
+              "old": "                    &random_offset,\n",
+              "new": "                    &move_delta,\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.6872885451909135,
+              "labels": 0.7825036249395844,
+              "structural": 0.7808119864668922,
+              "stack": 0.930401159980667
+            },
+            "instructions": 4070,
+            "prefix": 7,
+            "audit": {
+              "matched": 842,
+              "unresolved": 0,
+              "mismatched": 2
+            },
+            "frame": 72,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "7a0fab7bbdc35df62a7b54f8e7e4b82960c43e6eb315ddb652b4fd0924535c59",
+          "body_bytes": 15838,
+          "normalized_coff_sha256": "46384c8afebd201a7133b7653dae5c14d2c4ffddc7cc3ceafb6f6201d66b13d7"
+        }
+      ]
+    },
+    "projectile_render": {
+      "source_sha256": "579b4988ece17438b8d5159dccaa3d87c1716b822d133b22d0e11cc396d79cf0",
+      "config_sha256": "7bf670e79b086f5c8fad928b08be7720639d131b14e6a006a5ac67ad3d09f660",
+      "controls": [
+        {
+          "name": "baseline",
+          "source_sha256": "579b4988ece17438b8d5159dccaa3d87c1716b822d133b22d0e11cc396d79cf0",
+          "edits": [],
+          "expected": {
+            "scores": {
+              "raw": 0.942326814716606,
+              "labels": 0.9920450778919456,
+              "structural": 0.9920450778919456,
+              "stack": 0.9956910838581372
+            },
+            "instructions": 3013,
+            "prefix": 195,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "5cd9bccd564b7af6fe7ad8b1989a2e809342919fc2706e5874da583556c727f7",
+          "body_bytes": 12529,
+          "normalized_coff_sha256": "9a569b1c715c8a66b081ce8e1624194994ecef56058f754559fd736efddc64df"
+        },
+        {
+          "name": "const_reference",
+          "source_sha256": "97f45f19d500f689d0c50c0833794d1bcd4bec74a6eb6dc4d4e7b99149d14d10",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    const float &zero_alpha = 0.0f;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9406695392774279,
+              "labels": 0.9903878024527677,
+              "structural": 0.9903878024527677,
+              "stack": 0.9940338084189593
+            },
+            "instructions": 3013,
+            "prefix": 195,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "eeafc97926f24cb62fae99e581c11d9fbadbcab4adfe237ed06e725c2ec3c96c",
+          "body_bytes": 12529,
+          "normalized_coff_sha256": "d5dc129a97c8ea107a9f68430acab59cdb7c62c6bbf6b6a4487c5cbacadd1989"
+        },
+        {
+          "name": "aggregate",
+          "source_sha256": "5016c59c1c182178a61ef5227fd1f61e89afd37eca3a405a9350d3ec6061feef",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    struct { float alpha; } zero = {0.0f};\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero.alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero.alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9406695392774279,
+              "labels": 0.9903878024527677,
+              "structural": 0.9903878024527677,
+              "stack": 0.9940338084189593
+            },
+            "instructions": 3013,
+            "prefix": 195,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "eeafc97926f24cb62fae99e581c11d9fbadbcab4adfe237ed06e725c2ec3c96c",
+          "body_bytes": 12529,
+          "normalized_coff_sha256": "d5dc129a97c8ea107a9f68430acab59cdb7c62c6bbf6b6a4487c5cbacadd1989"
+        },
+        {
+          "name": "memset_direct",
+          "source_sha256": "731315b1f8d04446ad1f809d4ea07c196d492ef2519ccdb2d932389216da9c73",
+          "edits": [
+            {
+              "start": 1,
+              "stop": 1,
+              "old": "",
+              "new": "#include <string.h>\n"
+            },
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float zero_alpha; memset(&zero_alpha, 0, sizeof(zero_alpha));\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9425020712510356,
+              "labels": 0.9922120961060481,
+              "structural": 0.9922120961060481,
+              "stack": 0.995857497928749
+            },
+            "instructions": 3014,
+            "prefix": 195,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "3b7a1c0a2edc7df7857617b4946dbf8281b2598c0c60acd9f483c7ca30cb4e4a",
+          "body_bytes": 12528,
+          "normalized_coff_sha256": "dd348527ae0deff22314a2c1ebe7a1041926d3a3e9e1b204b45a26472dec5073"
+        },
+        {
+          "name": "memset_copy",
+          "source_sha256": "4a221d7ce44cff076d6cf05620e2a51d0cae7ac772764ab5bab4cde53d9c13d4",
+          "edits": [
+            {
+              "start": 1,
+              "stop": 1,
+              "old": "",
+              "new": "#include <string.h>\n"
+            },
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float zero; memset(&zero, 0, sizeof(zero)); const float zero_alpha = zero;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9408450704225352,
+              "labels": 0.9905550952775476,
+              "structural": 0.9905550952775476,
+              "stack": 0.9942004971002486
+            },
+            "instructions": 3014,
+            "prefix": 195,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "c25757d30465c3d0b75d770139a9f8e06fb376446d1cdd339c548f744fe9bef6",
+          "body_bytes": 12528,
+          "normalized_coff_sha256": "b5c780d1f810db95927f95740a7b85bb678dd13a4e994b934c12e44a750964ba"
+        },
+        {
+          "name": "array_direct",
+          "source_sha256": "0c8cc41c7a5019b8b403efd87152b60481f3896ec3c0570fbf101c387f67a6c3",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float zero_alpha[1] = {0.0f};\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha[0]);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha[0]);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9406695392774279,
+              "labels": 0.9903878024527677,
+              "structural": 0.9903878024527677,
+              "stack": 0.9940338084189593
+            },
+            "instructions": 3013,
+            "prefix": 195,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "eeafc97926f24cb62fae99e581c11d9fbadbcab4adfe237ed06e725c2ec3c96c",
+          "body_bytes": 12529,
+          "normalized_coff_sha256": "d5dc129a97c8ea107a9f68430acab59cdb7c62c6bbf6b6a4487c5cbacadd1989"
+        },
+        {
+          "name": "union_bits",
+          "source_sha256": "6cac3541e5456c0414bf8c9c1c0a4a5519f620472a91cf203bb904825ccde8a0",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    union { int bits; float value; } zero; zero.bits = 0;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero.value);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero.value);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9408450704225352,
+              "labels": 0.9905550952775476,
+              "structural": 0.9905550952775476,
+              "stack": 0.9942004971002486
+            },
+            "instructions": 3014,
+            "prefix": 195,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "c25757d30465c3d0b75d770139a9f8e06fb376446d1cdd339c548f744fe9bef6",
+          "body_bytes": 12528,
+          "normalized_coff_sha256": "b5c780d1f810db95927f95740a7b85bb678dd13a4e994b934c12e44a750964ba"
+        },
+        {
+          "name": "byte_loop",
+          "source_sha256": "d03fc9ec081108936a28d8a04d7bf9e49853511a340f845978d7c652637649d8",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float zero_alpha; for (int byte_index = 0; byte_index < sizeof(zero_alpha); ++byte_index) ((unsigned char *)&zero_alpha)[byte_index] = 0;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9425020712510356,
+              "labels": 0.9922120961060481,
+              "structural": 0.9922120961060481,
+              "stack": 0.995857497928749
+            },
+            "instructions": 3014,
+            "prefix": 195,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "3b7a1c0a2edc7df7857617b4946dbf8281b2598c0c60acd9f483c7ca30cb4e4a",
+          "body_bytes": 12528,
+          "normalized_coff_sha256": "dd348527ae0deff22314a2c1ebe7a1041926d3a3e9e1b204b45a26472dec5073"
+        },
+        {
+          "name": "byte_pointer_loop",
+          "source_sha256": "c5513cbb54487cb24ab06bba338f905fda926d05aa03a43de23c28a8bc6acf7e",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float zero_alpha; for (unsigned char *byte = (unsigned char *)&zero_alpha; byte != (unsigned char *)(&zero_alpha + 1); ++byte) *byte = 0;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9173977818242013,
+              "labels": 0.9670584340341003,
+              "structural": 0.9670584340341003,
+              "stack": 0.9951994702863765
+            },
+            "instructions": 3020,
+            "prefix": 70,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "790831ce37e63409a60c630ab1915e7c8d9e254dd813be519831987d91e29c86",
+          "body_bytes": 12547,
+          "normalized_coff_sha256": "62a03acd85809999dbfb1e5fe2a2304e012627f62130d7894e11bd4b451dc71e"
+        },
+        {
+          "name": "byte_fields",
+          "source_sha256": "8c128dc4d592b5ef5cc160317917a77562bd9245970709dd7a38f6fa2099bfd8",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    union { float value; unsigned char bytes[4]; } zero; zero.bytes[0] = 0; zero.bytes[1] = 0; zero.bytes[2] = 0; zero.bytes[3] = 0;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero.value);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero.value);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9117403543633051,
+              "labels": 0.9448584202682563,
+              "structural": 0.9448584202682563,
+              "stack": 0.9958602417618811
+            },
+            "instructions": 3018,
+            "prefix": 16,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "2bf484bc0418a6d1a17469170bdccd8d077c4675e6ee183fce7e77168cc88579",
+          "body_bytes": 12551,
+          "normalized_coff_sha256": "f9b3aea0a1a404ef40430660ba29627ef90e45f72487c2577911167468b3bb79"
+        },
+        {
+          "name": "short_fields",
+          "source_sha256": "3c85c88f4b3aded3b25e3cd0c072c06c9b89ddd6552bf3167ef555a5a9025366",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    union { float value; unsigned short words[2]; } zero; zero.words[0] = 0; zero.words[1] = 0;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero.value);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero.value);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9115601192447831,
+              "labels": 0.9625703875455449,
+              "structural": 0.9625703875455449,
+              "stack": 0.9910566412719444
+            },
+            "instructions": 3017,
+            "prefix": 8,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "490c852c0e614079d11d087b96c579234b05fce300bbcbf067e6a2101c365a3d",
+          "body_bytes": 12529,
+          "normalized_coff_sha256": "0bdb81c9f40b8fdf0fc0a9eba6aa8386bfc19a92dba2e048d23ca651cf4ac312"
+        },
+        {
+          "name": "scalar_class",
+          "source_sha256": "57c2eded9ba9269d522dd0c556b00b2c761adb9e2ee3635375e084ff394aa4bf",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    struct scalar_t { float value; scalar_t(float x) : value(x) {} operator float() const { return value; } }; scalar_t zero_alpha(0.0f);\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.8949545078577337,
+              "labels": 0.9445822994210091,
+              "structural": 0.946236559139785,
+              "stack": 0.9922249793217535
+            },
+            "instructions": 3024,
+            "prefix": 0,
+            "audit": {
+              "matched": 541,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 416,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "ede992dbf6c41d57a67321abdffb663f4a53351b7edcac4f8fc8c8db70354325",
+          "body_bytes": 12583,
+          "normalized_coff_sha256": "7bedeee58a63f813e60c0ffe60e549e06326e7650c41d5af772883c26a6af6d8"
+        },
+        {
+          "name": "scalar_destructor",
+          "source_sha256": "495959e9591797d02127ffa848a2b1eca7f7098ec275f651457c9d1e19921087",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    struct scalar_t { float value; scalar_t(float x) : value(x) {} ~scalar_t() {} operator float() const { return value; } }; scalar_t zero_alpha(0.0f);\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.8715065321647097,
+              "labels": 0.9211179097072929,
+              "structural": 0.9227716222920457,
+              "stack": 0.9918968083347114
+            },
+            "instructions": 3026,
+            "prefix": 0,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 416,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "28e3881d4ff4f19b231d203ad63146d3bae8071be7a9c9fb86f485b0865f07ad",
+          "body_bytes": 12595,
+          "normalized_coff_sha256": "2d3298114e01f4c0af6827787df1bc5c26cb39c27e321b80855b47c0a8ce7caf"
+        },
+        {
+          "name": "memcpy_float",
+          "source_sha256": "823853960d1ffa8cbfc5e80ff4da6128a50e7fe4ec77123bb907a2b949b3a6df",
+          "edits": [
+            {
+              "start": 1,
+              "stop": 1,
+              "old": "",
+              "new": "#include <string.h>\n"
+            },
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float source_zero = 0.0f; float zero_alpha; memcpy(&zero_alpha, &source_zero, sizeof(zero_alpha));\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9768058316766071,
+              "labels": 0.9933730947647449,
+              "structural": 0.9933730947647449,
+              "stack": 0.9970178926441352
+            },
+            "instructions": 3015,
+            "prefix": 1322,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e6d19d51933b7d0ba59e70797d3fc8b82e2055b045aa1ba5c2cb895bb802ec8c",
+          "body_bytes": 12539,
+          "normalized_coff_sha256": "44a1587d36908b6e5e7ba83c6e7b78acdf008e31ac7db79a7364d0a09206692f"
+        },
+        {
+          "name": "byte_copy_index",
+          "source_sha256": "042b1cd5717b4293397cd3b769079fb99f9bbcfc391b39df5b4a8f6c8c2b5f16",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float source_zero = 0.0f; float zero_alpha; for (int byte_index = 0; byte_index < sizeof(zero_alpha); ++byte_index) ((unsigned char *)&zero_alpha)[byte_index] = ((unsigned char *)&source_zero)[byte_index];\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9751491053677932,
+              "labels": 0.991716368455931,
+              "structural": 0.991716368455931,
+              "stack": 0.9953611663353215
+            },
+            "instructions": 3015,
+            "prefix": 743,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "7ef861f7740df1fd92ee5804f48e97e14d461d6f9eef3cb87be1d4700edd7b1d",
+          "body_bytes": 12539,
+          "normalized_coff_sha256": "1fb7e904b4d1f075fb94f6cfc371cf5b6d3f29b607a5dadaeb7a132cb7cc0000"
+        },
+        {
+          "name": "byte_copy_pointer",
+          "source_sha256": "d3c767104b7fecf304f1b33b4df6b153b98f0b050961221c2a21f47532c892df",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float source_zero = 0.0f; float zero_alpha; unsigned char *source_byte = (unsigned char *)&source_zero; for (unsigned char *byte = (unsigned char *)&zero_alpha; byte != (unsigned char *)(&zero_alpha + 1); ++byte) *byte = *source_byte++;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.8905061197485941,
+              "labels": 0.9401257029440953,
+              "structural": 0.9431028779358254,
+              "stack": 0.9943764472378432
+            },
+            "instructions": 3025,
+            "prefix": 16,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e1bd1e6cdab555f4095fb8aaf482e011cd2c46a4c19e3044e013d62335d5fa4b",
+          "body_bytes": 12567,
+          "normalized_coff_sha256": "403afefdb36a9c6544cae27fa42be69b0decdd38ce91fc174c484afd859d5a04"
+        },
+        {
+          "name": "aggregate_copy_init",
+          "source_sha256": "75a68a61305160fc58e7d6fca9e94490ce9efbeb68be6244ef094dd0a892990e",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    struct scalar_t { float alpha; }; scalar_t source = {0.0f}; scalar_t zero = source;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero.alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero.alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9768058316766071,
+              "labels": 0.9933730947647449,
+              "structural": 0.9933730947647449,
+              "stack": 0.9970178926441352
+            },
+            "instructions": 3015,
+            "prefix": 1322,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e6d19d51933b7d0ba59e70797d3fc8b82e2055b045aa1ba5c2cb895bb802ec8c",
+          "body_bytes": 12539,
+          "normalized_coff_sha256": "44a1587d36908b6e5e7ba83c6e7b78acdf008e31ac7db79a7364d0a09206692f"
+        },
+        {
+          "name": "aggregate_copy_assign",
+          "source_sha256": "2e4516089d4488da8f3852fbeda4cc2977a5aceacf3356975ec3bb6c89fe644c",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    struct scalar_t { float alpha; }; scalar_t source = {0.0f}; scalar_t zero; zero = source;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero.alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero.alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9768058316766071,
+              "labels": 0.9933730947647449,
+              "structural": 0.9933730947647449,
+              "stack": 0.9970178926441352
+            },
+            "instructions": 3015,
+            "prefix": 1322,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "e6d19d51933b7d0ba59e70797d3fc8b82e2055b045aa1ba5c2cb895bb802ec8c",
+          "body_bytes": 12539,
+          "normalized_coff_sha256": "44a1587d36908b6e5e7ba83c6e7b78acdf008e31ac7db79a7364d0a09206692f"
+        },
+        {
+          "name": "float_copy",
+          "source_sha256": "235b744f04fceaac2548c22f7fe71676ec27f37d5b15d0e1ebfa0a333d253815",
+          "edits": [
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    float source_zero = 0.0f; float zero_alpha = source_zero;\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, 0.5f, 0.5f, 0.5f, zero_alpha);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9406695392774279,
+              "labels": 0.9903878024527677,
+              "structural": 0.9903878024527677,
+              "stack": 0.9940338084189593
+            },
+            "instructions": 3013,
+            "prefix": 195,
+            "audit": {
+              "matched": 539,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "eeafc97926f24cb62fae99e581c11d9fbadbcab4adfe237ed06e725c2ec3c96c",
+          "body_bytes": 12529,
+          "normalized_coff_sha256": "d5dc129a97c8ea107a9f68430acab59cdb7c62c6bbf6b6a4487c5cbacadd1989"
+        },
+        {
+          "name": "tint_copy",
+          "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+          "edits": [
+            {
+              "start": 101,
+              "stop": 101,
+              "old": "",
+              "new": "struct projectile_render_alpha_t {\n    float value;\n    projectile_render_alpha_t() {}\n    projectile_render_alpha_t(float v) : value(v) {}\n};\n\nstruct projectile_render_tint_t {\n    float r;\n    float g;\n    float b;\n    projectile_render_alpha_t a;\n\n    projectile_render_tint_t(\n        float red, float green, float blue, float alpha)\n        : r(red), g(green), b(blue)\n    {\n        a = projectile_render_alpha_t(alpha);\n    }\n};\n\n"
+            },
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    projectile_render_tint_t trail_tint(0.5f, 0.5f, 0.5f, 0.0f);\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9774685222001326,
+              "labels": 0.9940357852882704,
+              "structural": 0.9940357852882704,
+              "stack": 0.9970178926441352
+            },
+            "instructions": 3015,
+            "prefix": 1322,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+          "body_bytes": 12539,
+          "normalized_coff_sha256": "44b1904349c9adf60677df69f06a2d6f21dcf445e43935470f9e0dd93de22393"
+        },
+        {
+          "name": "tint_by_value",
+          "source_sha256": "1849863b410eebac1d01caeac3e96859c44524f05ee082fdbc24f7ce6256e26f",
+          "edits": [
+            {
+              "start": 101,
+              "stop": 101,
+              "old": "",
+              "new": "struct projectile_render_alpha_t {\n    float value;\n    projectile_render_alpha_t() {}\n    projectile_render_alpha_t(float v) : value(v) {}\n};\n\nstruct projectile_render_tint_t {\n    float r;\n    float g;\n    float b;\n    projectile_render_alpha_t a;\n\n    projectile_render_tint_t(\n        float red, float green, float blue, projectile_render_alpha_t alpha)\n        : r(red), g(green), b(blue), a(alpha)\n    {\n    }\n};\n\n"
+            },
+            {
+              "start": 182,
+              "stop": 182,
+              "old": "",
+              "new": "    projectile_render_tint_t trail_tint(0.5f, 0.5f, 0.5f, projectile_render_alpha_t(0.0f));\n"
+            },
+            {
+              "start": 183,
+              "stop": 184,
+              "old": "        0, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        0, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);\n"
+            },
+            {
+              "start": 185,
+              "stop": 186,
+              "old": "        1, 0.5f, 0.5f, 0.5f, 0.0f);\n",
+              "new": "        1, trail_tint.r, trail_tint.g, trail_tint.b, trail_tint.a.value);\n"
+            }
+          ],
+          "expected": {
+            "scores": {
+              "raw": 0.9774685222001326,
+              "labels": 0.9940357852882704,
+              "structural": 0.9940357852882704,
+              "stack": 0.9970178926441352
+            },
+            "instructions": 3015,
+            "prefix": 1322,
+            "audit": {
+              "matched": 544,
+              "unresolved": 0,
+              "mismatched": 0
+            },
+            "frame": 412,
+            "exact": false,
+            "body_byte_exact": false
+          },
+          "body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+          "body_bytes": 12539,
+          "normalized_coff_sha256": "44b1904349c9adf60677df69f06a2d6f21dcf445e43935470f9e0dd93de22393"
+        }
+      ]
+    }
+  }
+}

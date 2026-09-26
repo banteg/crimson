@@ -3,6 +3,26 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## K2 alpha object copy recovered (2026-09-26)
+
+The alpha wrapper/tint-constructor pattern from `player_render_overlays`
+recovers the native zero store and reload into `esi` before the first two
+color-slot calls. **94.23% to 97.75%**, labels masked **99.20% to 99.40%**,
+references unchanged at **544/0/0**, frame unchanged at **0x19c**. The matching
+prefix grows from 195 to 1322 instructions. Whole-function exactness remains
+false.
+
+The compiler trace confirms a float store plus a scalarized four-byte aggregate
+copy, whose overlapping typed views return to memory during live-range
+construction. The 76-byte K2 region matches with only its two verified DIR32
+fields masked. 13,046 native replay cases pass, including callback cases; a
+wrong-alpha control changes precisely the two affected calls.
+
+[Source controls, compiler traces, byte proof, and runtime receipts](../../evidence/remaining-storage-controls-2026-09-26/README.md)
+are pinned to the baseline and retained source. The older K2 "Unknown" entry
+below is superseded by this result. The x87-order and scheduler-window
+residuals remain.
+
 ## Residual map: shared plasma steps and the else-if arm chain (2026-09-26)
 
 crimson-88's residual map (`answer_pr-residual-map.md`, `pr-residual-map.md`,

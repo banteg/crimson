@@ -1,0 +1,138 @@
+{
+  "cases": 13034,
+  "callback_cases": 12,
+  "receipts": [
+    {
+      "suite": "historic",
+      "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+      "body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+      "object_sha256": "83b46f3ea801cea83faf851f94adfd919bd83f29a4a3b7978348bb2cba96e1ab",
+      "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "verifier_sha256": "d040de48ec90359a5fa6cef48d60a5b9310a27807c6c90d7b41c6ec925999395",
+      "unicorn_version": "2.1.4",
+      "details": {
+        "packages": [
+          {
+            "name": "plasma-head-alpha",
+            "receipt_sha256": "0a91cacaf22ce8a8c07e84e39a26914cc6d60f07ebdad54f2d2559d08f356972",
+            "cases": 200,
+            "ordered_trace_sha256": "3b4e25b092a2e13d4a8e216409a89ca875277a88ce0fb06e67ef238f994ea5db"
+          },
+          {
+            "name": "beam-direction",
+            "receipt_sha256": "d0c071e39d40cf5f012d83649a8f92eb76de40a99dda7095ab1e302616d795cd",
+            "cases": 480,
+            "ordered_trace_sha256": "c9f43642ffd77eb12182360e4e8ceb630e655b437b215daaf482bdac7013021f"
+          },
+          {
+            "name": "ion-chain-product",
+            "receipt_sha256": "7864de2bf82fa5191bae6e4ee3c96d5a132056feaee10aab8338ff7134538711",
+            "cases": 384,
+            "ordered_trace_sha256": "a402a781b224c39ebbc923a18c9f60c3fbc0c24094e9150a8e4f2106d368641b"
+          },
+          {
+            "name": "laser-owner-rounding",
+            "receipt_sha256": "ae9d7f0146e75e8437c0879705b6b7d710887f90049cc3d3db4c30a8fec77ce7",
+            "cases": 438,
+            "ordered_trace_sha256": "f199e864672a2b42269411f5b2b008302bdf0d60847b3e4cf76cbd0d462a397d"
+          },
+          {
+            "name": "secondary-body-rounding",
+            "receipt_sha256": "c065768a96975442ae61cc77c56b2a13bf083cf353e7a8bd217bb19066de8517",
+            "cases": 1194,
+            "ordered_trace_sha256": "9e1ece0c89ef23a844b4e899bb4e8714750735e532f43ff5e8aaca29ada6fcc9"
+          }
+        ],
+        "cases": 2696,
+        "negative_control": {
+          "kind": "alpha-is-quarter",
+          "source_sha256": "e3f303850f493bffdffc0a61bc15513d0769eb8107795fec632edd2f3a17edbe",
+          "changed_calls": [
+            6,
+            7
+          ],
+          "native": "397021e26e57ccffc47090ad8345fe957568a3d019fe623972d48190cb433c98",
+          "wrong": "e27a495338d0420e4f9851b49f4c211ba98e1411ae2f24661c595dd59d5c9b9a"
+        },
+        "harness_sha256": "fd8e3986eed00c1307be06e75a2351abc1fcdfa3bc833098a39b3a5194461ef9"
+      },
+      "scope": "Finite native caller traces and modeled external contracts; no GPU or arbitrary-input equivalence claim."
+    },
+    {
+      "suite": "positions",
+      "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+      "body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+      "object_sha256": "83b46f3ea801cea83faf851f94adfd919bd83f29a4a3b7978348bb2cba96e1ab",
+      "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "verifier_sha256": "d040de48ec90359a5fa6cef48d60a5b9310a27807c6c90d7b41c6ec925999395",
+      "unicorn_version": "2.1.4",
+      "details": {
+        "cases": 656,
+        "callback_cases": 12,
+        "ordered_trace_sha256": "24dd2d8912db9495f75593249653630ab541ba1f42194d488fc1655cfa267a62",
+        "callback_trace_sha256": "5a7506128c74401ef3daa2f89cae7332f85fd51cff3dd6bea7212a68f8df6dbe",
+        "fixtures_sha256": "6518201a7219c9ea8dee0a04b3c0373e5824b2961de991c9a45507450aa7c2e0",
+        "harness_sha256": "d6908bd102d8aa696e46a60e5be04e24e71e941fa11afa8ab3b8b9d41a627cff"
+      },
+      "scope": "Finite native caller traces and modeled external contracts; no GPU or arbitrary-input equivalence claim."
+    },
+    {
+      "suite": "ion",
+      "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+      "body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+      "object_sha256": "83b46f3ea801cea83faf851f94adfd919bd83f29a4a3b7978348bb2cba96e1ab",
+      "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "verifier_sha256": "d040de48ec90359a5fa6cef48d60a5b9310a27807c6c90d7b41c6ec925999395",
+      "unicorn_version": "2.1.4",
+      "details": {
+        "cases": 524,
+        "ordered_trace_sha256": "c5351bfa02362ad9d5aa8da3b256a598a3cb0dccd02aec4d228f38c1413bc904",
+        "fixtures_sha256": "791a637fb2522910ddd804617e649b7fb7e50671ea625fed1d97ad1bd7e7bad5",
+        "harness_sha256": "7f66d574c230d1d983ee0f01fe678681400c2fb954afe7d8e5dc9ad237b5371b"
+      },
+      "scope": "Finite native caller traces and modeled external contracts; no GPU or arbitrary-input equivalence claim."
+    },
+    {
+      "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+      "object_sha256": "02ff0679129b0857b1b10bf4d48786b88e770e6b8a89431e6cd97f0add2e3aa6",
+      "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+      "candidate_body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+      "verifier_sha256": "c3343ea700d09ba5ac2d8851803ec3344120e0d347d676ea89bbffb26166157f",
+      "unicorn_version": "2.1.4",
+      "suite": "conventional",
+      "packages": [
+        {
+          "package": "conventional-corner-rounding",
+          "receipt_sha256": "5b7d219c32e180084d17a0b9fbf39c7cc7ffabdb58d6c85765280806dd1cc060",
+          "fixtures_sha256": "7a9a9566873101ccf05d1ed8005b55ed19ad96cc5c09f69efed6bf3794829a35",
+          "cases": 4118,
+          "ordered_trace_sha256": "a877da7fdab4a42589be5a6ff5982fb48eb91a23442db248db5591f155d59e47"
+        }
+      ],
+      "negative_control": null,
+      "scope": "Recorded caller traces and pool/write state with unchanged modeled external contracts; no GPU or all-input equivalence claim"
+    },
+    {
+      "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+      "object_sha256": "0c12e006dc0c893bdcd99c70a596902ffb7ef20de3a80e0ae7b515881dbdf199",
+      "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+      "candidate_body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+      "verifier_sha256": "c3343ea700d09ba5ac2d8851803ec3344120e0d347d676ea89bbffb26166157f",
+      "unicorn_version": "2.1.4",
+      "suite": "laser",
+      "packages": [
+        {
+          "package": "laser-trig-rounding",
+          "receipt_sha256": "5806baff09ee9dc348f75cd37c3c0f10c2c3d2e483a3d2920ad0985ce63bdd10",
+          "fixtures_sha256": "0f096537c84782c1c6130a7e8b95e029a8f5e01c7f192ad4cd46911483560d19",
+          "cases": 5040,
+          "ordered_trace_sha256": "dd16bb60cf6af43a531f59b3731df639ac16cc85e854d9cc4eaddb2276e291ec"
+        }
+      ],
+      "negative_control": null,
+      "scope": "Recorded caller traces and pool/write state with unchanged modeled external contracts; no GPU or all-input equivalence claim"
+    }
+  ]
+}

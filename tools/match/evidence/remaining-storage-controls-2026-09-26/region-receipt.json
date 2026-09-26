@@ -1,0 +1,39 @@
+{
+  "source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+  "body_sha256": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "9809408fe1f0fbca574f40115720543b0a5cb309123c40b1e4de84f12732f411",
+  "native_extent": [
+    "0x422f95",
+    "0x422fe1"
+  ],
+  "candidate_extent": [
+    "0x325",
+    "0x371"
+  ],
+  "instructions": 18,
+  "bytes": 76,
+  "native_hex": "8b0d3c084800c7442414000000008b7424148b1156680000003f680000003f680000003f6a00ff92180100008b0d3c08480056680000003f680000003f8b01680000003f6a01ff9018010000",
+  "candidate_hex": "8b0d00000000c7442414000000008b7424148b1156680000003f680000003f680000003f6a00ff92180100008b0d0000000056680000003f680000003f8b01680000003f6a01ff9018010000",
+  "masked_fields": [
+    {
+      "offset": "0x327",
+      "width": 4,
+      "kind": "DIR32",
+      "symbol": "grim_interface_ptr"
+    },
+    {
+      "offset": "0x353",
+      "width": 4,
+      "kind": "DIR32",
+      "symbol": "grim_interface_ptr"
+    }
+  ],
+  "negative_controls_rejected": [
+    "nonzero-alpha",
+    "wrong-load-slot",
+    "wrong-reference"
+  ],
+  "full_function_exact": false,
+  "full_function_body_byte_exact": false
+}
