@@ -17,7 +17,8 @@ import random
 
 import pytest
 
-from crimson.creatures.runtime import experience_plus_reward, quick_learner_kill_xp
+from crimson.creatures.runtime import quick_learner_kill_xp
+from crimson.gameplay import experience_plus_reward
 from crimson.math_parity import f32
 
 from ._support import CREATURE_LAYOUT, Mismatch, mismatch_report

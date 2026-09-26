@@ -86,7 +86,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         # Native awards the reward exactly once (0x004070a6: exact `fild`, one
         # PC24 `fadd`, `__ftol`, no reward guard): the Jinxed kill branch has no
         # Double Experience handling, unlike creature_handle_death.
-        from ...creatures.runtime import experience_plus_reward
+        from ...gameplay import experience_plus_reward
 
         player = ctx.players[0]
         player.experience = experience_plus_reward(player.experience, creature.reward_value)

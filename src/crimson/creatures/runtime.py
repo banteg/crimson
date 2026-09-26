@@ -29,6 +29,7 @@ from ..gameplay import (
     _award_experience_once_from_reward,
     award_experience,
     award_experience_from_reward,
+    experience_plus_reward,
     survival_record_recent_death,
 )
 from ..math_parity import (
@@ -242,12 +243,6 @@ def quick_learner_kill_xp(reward_value: float) -> int:
     """`__ftol(reward * 1.3f)` at PC24 (creature_handle_death 0x0041eb45)."""
 
     return int(x87_pc24_mul(float(reward_value), _QUICK_LEARNER_REWARD_SCALE))
-
-
-def experience_plus_reward(experience: int, reward_value: float) -> int:
-    """`__ftol((float)experience + reward)`: exact `fild`, one PC24 `fadd` (0x0042704b)."""
-
-    return int(x87_pc24_add(float(experience), float(reward_value)))
 
 
 def _clamp_to_size_bounds(value: float, size: float, world_extent: float) -> float:

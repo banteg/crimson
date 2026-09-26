@@ -133,15 +133,20 @@ def award_experience(state: GameplayState, player: PlayerState, amount: int) -> 
     return xp
 
 
-def _award_experience_once_from_reward(player: PlayerState, reward_value: float) -> int:
-    """One native kill award: `experience = __ftol(fild experience + reward)`.
+def experience_plus_reward(experience: int, reward_value: float) -> int:
+    """Native kill XP sum `__ftol(fild experience + reward)`.
 
-    `creature_handle_death` (0x0041eb5b) loads the int XP exactly with `fild`;
-    only the PC24 `fadd` rounds, so past 2^24 the sum snaps to the f32 grid.
+    The int XP loads exactly with `fild`; only the PC24 `fadd` rounds, so past
+    2^24 the sum snaps to the f32 grid (creature_handle_death 0x0041eb5b,
+    Radioactive 0x0042704b, Jinxed 0x004070a6).
     """
 
+    return int(x87_pc24_add(float(experience), f32(reward_value)))
+
+
+def _award_experience_once_from_reward(player: PlayerState, reward_value: float) -> int:
     before = int(player.experience)
-    player.experience = int(x87_pc24_add(float(before), f32(reward_value)))
+    player.experience = experience_plus_reward(before, reward_value)
     return player.experience - before
 
 
