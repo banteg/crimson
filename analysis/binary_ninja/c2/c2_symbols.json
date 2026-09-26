@@ -92,7 +92,7 @@
   "0x107017eb": {
    "name": "symbol_alloc",
    "prototype": "c2_symbol* __fastcall symbol_alloc(uint8_t cls)",
-   "comment": "Allocate a 0x54-byte storage symbol from the per-class pool (free lists 0x1079bc60/bc84), id preserved. Ids come from 32-entry chunks allocated per class on demand; in every function locals take 1..31 and globals start at 32 (even when a global is referenced first), temps follow, and a 32nd local opens a later chunk (192 in a probe). Ids are per function and assigned at the reader's first reference. Trace-verified with IL dumps."
+   "comment": "Allocate a 0x54-byte storage symbol from the per-class pool (free lists 0x1079bc60/bc84), id preserved. Ids come from 32-entry chunks allocated per class on demand; in every function locals take 1..31 and globals start at 32 (even when a global is referenced first), temps follow, and a 32nd local opens a later chunk (192 in a probe). Ids are per function and assigned at the reader's first reference. Trace-verified with IL dumps. Pool B's free list is LIFO: an inline formal copy (e.g. the scale of v * (a - b)) reuses an id freed by an earlier expansion, so it can rank below part records created by earlier expansions (traverse_path_follow_golb: the scale copy is 0x1fd, created after the inline part 0x245)."
   },
   "0x10701961": {
    "name": "avail_gen_expression",
@@ -443,7 +443,7 @@
   },
   "0x10703ba0": {
    "name": "symbol_get_part",
-   "comment": "Find or create the sub-symbol of a storage symbol for (type, size, offset); registers via 0x1072386a."
+   "comment": "Find or create the sub-symbol of a storage symbol for (type, size, offset); registers via 0x1072386a. Part records (^parent+off) get their pool-B id when first needed, and that id decides commutative float operand order (x87-scheduling.md 5). Trace-verified creation points (scale-operand-rank.md): the reader at the first explicit member read in source order (a nonzero offset makes the ^p+off z(size-off) address part, then the z4 field, in lockstep); the inliner for an offset-0 member of an inlined this; canonicalization for the address part and value numbering (cse1) for the field of a nonzero member of an inlined this. The float field is not the ^p+0 z4 record C1 makes for &aggregate: an explicit .x read creates a separate record."
   },
   "0x10703ece": {
    "name": "tuple_append_dst",
@@ -1068,7 +1068,7 @@
   "0x1070d90c": {
    "name": "compute_tree_cost_and_sort",
    "prototype": "c2_tuple* __fastcall compute_tree_cost_and_sort(c2_tuple* t)",
-   "comment": "Recursive: leaf costs; subtrees reached through temp defs or memory base/index take their def tree's cost; stable descending sort of commutative operand lists; node cost = hash|pack."
+   "comment": "Recursive: leaf costs; subtrees reached through temp defs or memory base/index take their def tree's cost; stable descending sort of commutative operand lists; node cost = hash|pack. SIB consequence (sib-operand-order.md): the first operand of an address sum becomes the SIB base. A load whose address is still an expression temp (e.g. p+0x5c not CSE-available) takes the address tree's cost (need>=1) and always sorts first; a load through a symbol (CSE temp or local) is a leaf, hash (fold(disp)+7+(hash(base)<<8))&0xffff. Trace-verified in traverse_path_follow_golb and Hill/Valley."
   },
   "0x1070da9a": {
    "name": "pack_expression_cost",
@@ -1342,7 +1342,7 @@
   },
   "0x10711786": {
    "name": "propagation_def_use_eligible",
-   "comment": "same block: def precedes use; else def block dominates use block (+0x60 bitset by RPO) AND same innermost loop (+0x68)"
+   "comment": "same block: def precedes use; else def block dominates use block (+0x60 bitset by RPO) AND same innermost loop (+0x68) same block walks forward from the def and returns 0 if a block-boundary tuple (kind 0x19) comes before the use. These two tests are the whole function: no call, store, type or loop check. Called only at 0x10711f08. Canonical player_update Fire Cough heading (line 171 -> arg line 181) passes (pu-firecough-heading.md)."
   },
   "0x107117d0": {
    "name": "coalesce_temp_copies",
@@ -1351,7 +1351,7 @@
   "0x10711afa": {
    "name": "forward_propagate_definitions",
    "prototype": "void __fastcall forward_propagate_definitions(c2_function* fn)",
-   "comment": "Append: the 0x162 round inserted at 0x10712643 sits between a propagated load and its consumer, so the consumer gets a new value-number owner. An identical inline read elsewhere (`p->f + c`) is then not CSE'd with it and reads memory again (player_update b20: vn owners #4265 vs #4271; load-recompute.md)."
+   "comment": "Append: the 0x162 round inserted at 0x10712643 sits between a propagated load and its consumer, so the consumer gets a new value-number owner. An identical inline read elsewhere (`p->f + c`) is then not CSE'd with it and reads memory again (player_update b20: vn owners #4265 vs #4271; load-recompute.md). registration at a direct use requires exactly one pending def and first use of the parent (0x10711df3/0x10711dff, else all pending defs -> 0xb), same location/offset, no aggregate, float refused only under /Op, no widening, no volatile operand, then 0x10711786. Re-registering a def sets 0xa+1=0xb (0x10711f31). Call kill 0x10712149: unregistered defs -> 0xb; registered defs survive unless their first source is a temp/sym with a defining tuple. Commit needs status 0xa and use last-use flag +0x11&0x10 (0x107124e5)."
   },
   "0x107129c1": {
    "name": "mark_tree_materialize",
@@ -1728,6 +1728,10 @@
   "0x1071f578": {
    "name": "substitute_definition_into_uses",
    "comment": "Rewrites uses of a rematerialized definition and removes the definition node."
+  },
+  "0x1071fa00": {
+   "name": "lea_definition_base_operand",
+   "comment": "Returns the base operand of a definition's address operand (tuple src +0x18). For 0x14c: +0x28, with its +0xc (index) cleared. For 0x14f: +0x2c (the index, used as base), with +0xc cleared. Otherwise: +0x28, with the index +0x2c stored in +0xc. Used by forward_substitute_single_def_ranges for the base and index checks. Read."
   },
   "0x1071fa34": {
    "name": "classify_masked_shift_source",
@@ -2328,7 +2332,7 @@
   },
   "0x10730308": {
    "name": "coalesce_copy_live_ranges",
-   "comment": "Merges 'mov lrA, lrB' (single-operand, non-constant) when non-interfering; deletes the copy and frees one range. lr+0x24 = def count here, reset after."
+   "comment": "Collects the copies mov lrD, lrS (one src and one dst operand, both kind-1 live ranges, source not a constant; lr+0x24 counts definitions here). If lrD has one definition, lrD is merged into lrS unless has_intervening_base_definition(S symbol, copy, end of lrD) finds S redefined while lrD is live. Otherwise, if lrS has one definition and that definition is the tuple just before the copy, lrS is renamed to lrD. The copy is deleted. Verified: projectile_render's `projectile = t` (t = the IV-merge lea at the loop head) disappears between the dumps at 0x10730308 and 0x107306c1. Read and verified."
   },
   "0x107306c1": {
    "name": "forward_substitute_single_def_ranges",
@@ -2363,7 +2367,11 @@
   },
   "0x10731a50": {
    "name": "has_intervening_base_definition",
-   "comment": "Intervening-definition / base-conflict check called from fold_derived_pointers (ECX=definition, EDX=use node, 2nd stack arg=temp). Returns 0 when no conflict; forcing 1 blocks folding equivalently to"
+   "comment": "Walks backward from the range end (arg3) to the definition (arg2). A live flag starts at 1. At each block marker (kind 0x19) it is reloaded from the block bitset at +0x44 of [marker+0x14]+4, and a definition of the range itself clears it. Only tuples walked while the flag is set are checked. It returns 1 when a destination operand has the same parent symbol as the base (arg1->sym+8), with the same symbol or an overlapping offset, or an alias class that contains it (kinds 2/3). Verified effect: a lea range whose value is used after the loop is walked across the latch's IV increment and returns 1 (projectile_render ion pointer). Read, and traced through frame_predict --decisions."
+  },
+  "0x10731bbf": {
+   "name": "is_substitutable_address_use",
+   "comment": "forward_substitute_single_def_ranges phase 1, for an address use (operand flags10 0x20). Returns 1 at once when the definition's address operand is the base+disp form 0x14c. Otherwise it finds the use's memory operand (find_mem_operand_using). It accepts a 0x14c use, or any use when the definition is 0x14f and the use has no scale bits, and rejects when both the definition and the use carry an index. Read."
   },
   "0x10731cc5": {
    "name": "restrict_allowed_registers",
@@ -3383,7 +3391,7 @@
   },
   "0x10746a2f": {
    "name": "merge_parallel_induction_variables",
-   "comment": "Mode-4 merge: champion = first pop; challenger compared only if types_compatible, same step operand/update opcode/update block, not both live after the loop, and init difference sub_10754157(IL_SUB) folds via sub_10754542 (constant; variable bases do not). Incompatible or winning challengers go to the iv_retry list (a winner followed by the rest of the worklist); the retry list becomes the worklist again in push order. Unlinks the tag-9 preheader pseudo-inits on return (0x10746f7f)."
+   "comment": "Mode-4 merge: champion = first pop; challenger compared only if types_compatible, same step operand/update opcode/update block, not both live after the loop, and init difference sub_10754157(IL_SUB) is accepted by sub_10754542 (loop-invariant result; a two-invariant IL_SUB becomes a new preheader temp) and sub_107547a9 does not object. Incompatible or winning challengers go to the iv_retry list (a winner followed by the rest of the worklist); the retry list becomes the worklist again in push order. Unlinks the tag-9 preheader pseudo-inits on return (0x10746f7f)."
   },
   "0x10746f93": {
    "name": "reset_iv_worklists"
@@ -3802,6 +3810,10 @@
   },
   "0x10754381": {
    "name": "misc_10754381"
+  },
+  "0x10754542": {
+   "name": "accept_iv_init_difference",
+   "comment": "IV merge: accept init difference. IL_ASSIGN of a loop-invariant operand -> return it; IL_SUB of two loop-invariant operands -> rewrite as a preheader temp (IL_ADD with negated constant if the second is an ICONST), mark it in g_invariant_expr_syms/g_preheader_avail_exprs, return it; else 0."
   },
   "0x10754627": {
    "name": "rewrite_iv_uses_from_survivor",

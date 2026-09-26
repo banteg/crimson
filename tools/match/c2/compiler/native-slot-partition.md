@@ -136,6 +136,12 @@ The frame is still 8 bytes short:
 - native's 0x028 slot is created by the `projectile` spill (§3 item 4);
 - one more 4-byte slot is grown to 8 in native (0x054 or 0x094).
 
+Correction ([pr-spill-order.md](pr-spill-order.md)): native still has five 4-byte slots. The spill
+replaces our `step`/trail-temp/`segment_index` slot, and fading `along` plus the staging temps
+replaces `half_size` plus the staging temps. The missing 8 bytes are one 8-byte slot (native 0x11c).
+Loop-wide conflicts stop at the loop boundary only for block-scoped locals: a function-scope,
+address-taken aggregate such as `direction` conflicts with every earlier object.
+
 The full slot map is in the work directory as `slot_map.md`.
 
 ## 6. Open questions
@@ -143,10 +149,12 @@ The full slot map is in the work directory as `slot_map.md`.
 - Why loop-wide liveness does not extend before the loop. A never-killed local should also be live on
   the loop's entry edge. A hook on the liveness walk (0x1074ac4c / 0x1074b107) would show where the
   bit is cleared.
-- Which source keeps the ion-loop `projectile` pointer as a spilled range. Rewriting the first read as
+- Answered in [pr-spill-order.md](pr-spill-order.md): a use of the pointer after the loop.
+  Which source keeps the ion-loop `projectile` pointer as a spilled range. Rewriting the first read as
   `projectile_pool[projectile_index].active` and making the pointer function-scope both left the
   object byte-identical.
 - In native, the conventional-trail staging temps (weight 8) join `along`'s slot, not the shared
   `half_size` slot (weight 10). With the candidate's weights the packer places `half_size` first. So
   either native `half_size` weighs at most 8 at layout time, or the staging temps weigh more before a
-  later peephole.
+  later peephole. Answered in [pr-spill-order.md](pr-spill-order.md): native's pulse arm also writes
+  `half_size`, so it weighs 12, and at 12 or more the staging temps join `along`.

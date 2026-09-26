@@ -218,6 +218,11 @@ The range dump confirms which pointers reach 0x306c1 as named ranges:
 
 Why that temporary escapes forward substitution is still open (see Open questions).
 
+A second way a pointer keeps a home ([pr-spill-order.md](pr-spill-order.md)): a single-definition
+loop pointer that is also used after its loop. Phase 2's `has_intervening_base_definition` then
+walks across the latch's IV increment and returns 1, so the range survives, and it is later split
+and spilled (projectile_render's ion-loop `projectile`).
+
 ## 6. Acceptance (a): `creature_update_all` pointer homes
 
 **Native frame, decoded.** Offsets are `esp` after the four pushes. Members come from esp-tracked
