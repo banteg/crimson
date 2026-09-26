@@ -1536,7 +1536,7 @@
   },
   "0x107190b8": {
    "name": "count_tuples_and_scan_calls",
-   "comment": "Counts real tuples; > 0x2710 turns /Oa off and forces the coarse alias fallback."
+   "comment": "Counts real tuples; > 0x2710 turns /Oa off and forces the coarse alias fallback. Counts real tuples (> 0x2710 turns /Oa off and forces the coarse alias fallback) and returns 1 + the number of scope-marker tuples (type 0x16, opcode 0x1b4, payload +0x14 != 0; inc at 0x107191a1). One marker per lexical scope (block or inlined body) that still holds a symbol; the function scope has none. compute_alias_classes seeds g_alias_class_count with this + 3, so every such scope costs one alias class. Verified: player_update base 150 markers -> first symbol class 154; +10 for ten blocks with a local or ten inline bodies with a surviving local, +0 for function-scope locals or symbol-free inline bodies, +20 for ten block+constructor pairs."
   },
   "0x1071921c": {
    "name": "assign_symbol_alias_classes",

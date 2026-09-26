@@ -153,7 +153,10 @@ across blocks, with no value use, no loop increment and no block copy. The only 
 **Our build** (b7033a699, `fsub_trace.py`): `_auto_aim`, `_weapon_id` and `_muzzle_flash_alpha` are
 phase-2 candidates and are substituted. Every `player+K` value-numbered temporary is substituted too,
 including `shot_cooldown`'s and `reload_timer`'s after the coalescer merges the named copies. The
-function has 0x22a classes: 513 symbol classes, then 24 pointer roots, and none collapses.
+function has 0x22a classes: 513 symbol classes, then 24 pointer roots, and none collapses. (The 513
+split as 150 scope markers + 361 symbols + 4 on 52ef72f3d, first pointer class 515;
+[pu-alias-budget-sources.md](pu-alias-budget-sources.md). Under collapse, native's weapon-id and
+reload-timer `lea`s come from a swap helper's reference parameters, not named pointers.)
 
 **Code-free budget push.** N calls of `static __inline int f(int v) { int t = v; return t; }` add
 exactly 2N classes and no instructions (N = 100: 74.07%, byte-identical, 0x2f2 classes).

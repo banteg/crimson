@@ -50,6 +50,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [cse-slot-count.md](cse-slot-count.md) | Where CSE temp ids come from, why a first `this->f = v` takes two slots, and a phantom-slot tool that tests which id shift a SIB order needs |
 | [pr-spill-order.md](pr-spill-order.md) | Why a loop pointer used after its loop survives forward substitution and gets a stack home, how reference weights decide 4-byte slot grouping, and a packer what-if tool |
 | [unfolded-field-pointers.md](unfolded-field-pointers.md) | Where `&p->field` pointers fold into [base+disp], why a function over the 0x400 alias-class budget keeps them in registers, and a struct-copy spelling that keeps an index CSE across two stores |
+| [pu-alias-budget-sources.md](pu-alias-budget-sources.md) | How the alias-class count is formed (scope markers + root symbols), the per-construct class cost of locals, inline formals, vector temporaries and float overloads, and how far natural source gets toward the 0x400 budget |
 | [frame-model.md](frame-model.md) | The symbol flags and reference counts behind local offsets, retained field-pointer homes, and the frame predictor |
 | [iv-anchor-examples.md](iv-anchor-examples.md) | Worked IV merge chains (projectile_render's plasma loop) and a replay tool that predicts the surviving anchor |
 | [x87-scheduling.md](x87-scheduling.md) | Why the scheduler never reorders x87 code, how commutative fadd/fmul operands are ordered (symbol ids mod 8), where FROUND markers come from, and how the 81-node windows split |
