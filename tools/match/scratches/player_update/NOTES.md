@@ -2,6 +2,63 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Residual map: native 4-byte frame (2026-09-26)
+
+crimson-88's residual map (`pu-residual-map.md`, `scripts/c2/frame_bottom_diff.py`)
+found the frame was the largest residual: 412 of 708 residual lines. The frame
+*size* matched native, but only 13 of 38 objects sat at native offsets. Below
+0x80 local bytes, the packer walks objects by size and then weight. Each joins
+the newest slot it doesn't conflict with, and a light 8-byte object can grow a
+4-byte slot. Five predictions confirmed this, including two negative controls.
+
+These respellings rebuild most of native's 4-byte frame. Every one loses
+labels-masked lines when left out.
+
+**Split variables:**
+- the fire aim heading (`fire_heading`);
+- the weapon-arm direction (`dir_x`/`dir_y` instead of `random_offset`);
+- the movement speed factor (`speed_scale`), separate from the later `scalar`;
+- the Swarmer fan step (`rocket_step`).
+
+**Changed homes:**
+- the Fire Bullets pellet angle and position;
+- the smoke direction and position;
+- the spread target;
+- the spread radius and distance.
+
+**Order:**
+- the Sharpshooter test is written positively;
+- the smoke template store order;
+- mode 1 sets its heading later;
+- the blood offset uses a single-use `heading`/`dx` pair.
+
+74.40% to **78.30%**; labels masked 83.76 to 88.24%; stack-masked structural
+94.11 to 94.56%; references 863/0/0 to **861/0/0**. Objects at native offsets
+go from 13/38 to 23/43.
+
+Pending better shape: one `turn_angle` float shared by the mode-2 key heading,
+the muzzle angle and the Swarmer step (Q, native frame 0x8) also fixes the
+mode-2 heading slot. It gives labels masked 89.15%, +40/−2 lines against this
+build. Raw is only 73.80% and matched references 792/0/0, because difflib then
+pairs native's mode-1 decelerate block with our identical mode-2 block and
+misaligns about 200 lines. It lands once that pairing stops.
+
+The remaining 484 lines:
+
+| Share | Lines | What |
+|---|---|---|
+| Needs the alias budget | 145 | Muzzle pointer home at native 0x14 (57 operands), `shot_cooldown`/aim pointers, the swap, the tail `add edi,0x18`, Fire Cough return loads, pellet copies, merged weapon-arm call tails |
+| Compiler state | 76 | eax/ecx/edx rotation, square order, mode-1 cross-jump merges, spread re-selected player |
+| Header only | 8 | `grim_is_key_down` declared with an unsigned key |
+| Unknown | ~255 | Native's 16-byte 0x38 slot shared by velocities, spawn positions and smoke colour (68 operands); the stored turn with a dead y lane; demo arms; Fire Cough vector roles; held cosine; mode-4 target copy |
+
+Leads that only help under the alias budget, measured against the inflated
+reference:
+- the `pu_swap` helper: +0.72 raw, +0.58 labels;
+- the block auto-aim vector;
+- per-arm spawn vectors: +0.71 stack-masked, 4194 of native's 4206
+  instructions, because the call tails stop merging.
+
 ## SDK-style vector type and float math (2026-09-26)
 
 `player_update_vec2_t` is now `struct vec2_t : vec2f_t`, with default and
@@ -1572,7 +1629,8 @@ Advice for the next agent: start from a genuinely unmatched native block and
 look for an independently observed branch owner, callback reload, or source
 value lifetime. Do not reopen the old edge conflict or add, widen, or hoist
 locals: the frame already matches, and such edits can only reshuffle a correct
-allocation. Preserve the existing exact prefix and `805/0/2` reference audit as
+allocation. (Superseded 2026-09-26: the frame *size* matched, but only 13 of 38
+objects sat at native offsets. See "Residual map: native 4-byte frame".) Preserve the existing exact prefix and `805/0/2` reference audit as
 hard guardrails.
 
 ## Plasma Shotgun pellet-position lifetime
