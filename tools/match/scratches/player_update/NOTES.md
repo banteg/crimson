@@ -2,6 +2,33 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Move-speed factor order (2026-09-26)
+
+In the cos/sin movement lanes, native multiplies `player->move_speed` right
+after `cos`/`sin`. crimson-88 traced the sort (`answer_pu-factor-order.md`).
+After globopt, `player+0x68` gets its own value-number owner, and the operand
+key depends only on that owner id mod 4: `move_speed` sorts first exactly when
+`owner % 4 != 0`. So anything that adds or removes an expression id earlier in
+the function can flip every one of these lanes together.
+
+The Fire Cough sprite position is now
+`player_update_vec2_set(&movement_input, movement_input.x + player_position->x, ...)`
+instead of a hand-ordered `{ float y = ...; }` block. That moves the owner off
+0 mod 4, and 19 lanes now take native's order. The two `move_delta` blocks
+next to it stay scalar: converting all three puts the owner back in the
+failing class. The auto-target loop also names its deltas
+(`float dy`, `float dx`), like the target distance above it. That keeps the
+square order fixed whatever the id count.
+
+73.98% to **74.07%**; references 858/0/0 to **859/0/0**. Label-masked and
+raw: +4 lines, −0.
+- x87: 95.30 to 96.49%;
+- stack-masked structural: 93.18 to 93.79%.
+
+A robust alternative is parenthesizing `((float)cos(x) * player->move_speed)`
+at every lane. The paren round splits the chain and pins the order. It is not
+used, because it exists only to fix the hash.
+
 ## Move-target deltas and turn-pair setters (2026-09-26)
 
 - **Mode-4 move-target test** names its deltas: `float dy = ...; float dx = ...;`

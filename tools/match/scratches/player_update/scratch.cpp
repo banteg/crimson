@@ -323,11 +323,7 @@ extern "C" void player_update(void)
 
             move_delta.x = (float)cos(aim_heading) * 25.0f;
             move_delta.y = (float)sin(aim_heading) * 25.0f;
-            {
-                float y = movement_input.y + player_position->y;
-                movement_input.x = movement_input.x + player_position->x;
-                movement_input.y = y;
-            }
+            player_update_vec2_set(&movement_input, movement_input.x + player_position->x, movement_input.y + player_position->y);
             int effect_index = fx_spawn_sprite(&movement_input, &move_delta, 1.0f);
             effect_color_t &effect_color =
                 sprite_effect_pool[effect_index].color;
@@ -427,11 +423,9 @@ extern "C" void player_update(void)
                 && creature_pool[creature_index].health > 0.0f) {
                 const vec2f_t *position =
                     &creature_pool[creature_index].position;
-                float distance = (float)sqrt(
-                    (player_position->y - position->y)
-                            * (player_position->y - position->y)
-                        + (player_position->x - position->x)
-                            * (player_position->x - position->x));
+                float dy = player_position->y - position->y;
+                float dx = player_position->x - position->x;
+                float distance = (float)sqrt(dy * dy + dx * dx);
                 if (distance < nearest_distance - 64.0f) {
                     player->auto_target = creature_index;
                     nearest_distance = distance;
