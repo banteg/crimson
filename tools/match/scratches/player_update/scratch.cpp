@@ -1019,16 +1019,17 @@ extern "C" void player_update(void)
         }
     } else {
         vec2f_t *auto_aim = &player->aim;
+        const vec2f_t *target_position =
+            &creature_pool[player->auto_target].position;
         player_update_vec2_set(
             &movement_input,
-            creature_pool[player->auto_target].position.x - auto_aim->x,
-            creature_pool[player->auto_target].position.y - auto_aim->y);
+            target_position->x - auto_aim->x,
+            target_position->y - auto_aim->y);
         scalar = (float)sqrt(
             movement_input.y * movement_input.y
             + movement_input.x * movement_input.x);
         if (!(scalar >= 4.0f)) {
-            auto_aim->x = creature_pool[player->auto_target].position.x;
-            auto_aim->y = creature_pool[player->auto_target].position.y;
+            *auto_aim = creature_pool[player->auto_target].position;
         } else {
             D3DXVec2Normalize(&movement_input, &movement_input);
             angle_step = (scalar * 6.0f) * frame_dt;

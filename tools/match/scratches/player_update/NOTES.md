@@ -2,6 +2,45 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Auto-aim target copy and the alias-class budget (2026-09-26)
+
+In the auto-aim block, the target is named once:
+`const vec2f_t *target_position = &creature_pool[player->auto_target].position;`.
+The close-target arm is a whole-vector copy,
+`*auto_aim = creature_pool[player->auto_target].position;`. That gives native's
+single index computation followed by load x / store x / load y / store y. Two
+scalar stores make C2 reload the index. A global-array-plus-index definition is
+never foldable, so native's dead `lea eax,[eax*8+pos.x]` comes from the named
+pointer. The block is now line-identical to native.
+
+74.00% to **74.36%**; references 857/0/0 to **863/0/0**; labels masked 83.57 to
+83.74%. Nothing dips.
+
+crimson-88 traced why native keeps its other field pointers unfolded
+(`unfolded-field-pointers.md`, `scripts/c2/alias_budget_probe.py`). Those are
+`lea ebp,[edi+0x2d4]`, the weapon-id and reload-timer pointers in the
+Alternate Weapon swap, and `auto_aim` in `ebp`.
+
+- The only fold is `forward_substitute_single_def_ranges` (0x107306c1). It keeps
+  a pointer only when a store or call between the pointer's definition and its
+  use has an alias class that contains `player`.
+- Every pointer root collapses into class 1, the class that contains
+  everything, once the function reaches 0x400 alias classes. Ours has 0x22a:
+  513 symbols and 24 roots.
+- Inflating the class count with a code-free diagnostic helper (not source)
+  reproduces several residuals at once:
+  - the entry order (`previous_pos` before the health compare);
+  - `xor ebx,ebx`;
+  - the muzzle lea and the 0x3f4ccccd clamp;
+  - `lea ebp,[edi+0x2d4]`;
+  - strictly sequential swaps;
+  - the late `add edi,0x18`.
+
+So native's source had roughly 510 more symbols than ours: locals, inline
+parameters and locals, and temporaries, most likely from inline helpers or
+vector operators. That budget is the lead for these residuals. No local
+spelling fixes them.
+
 ## Fire Cough heading in the subtraction vector (2026-09-26)
 
 The Fire Cough shot heading is stored back into the vector that `vec2_sub`
