@@ -167,6 +167,8 @@ In slot order, with native's shift Δ = native id − ours at each site:
 
 ### 3.2 Pool B: steps
 
+Correction ([pu-residual-map.md](pu-residual-map.md)): the −56 slot belongs to the later `scalar`; the −60 "scalar" is the movement speed factor, a separate variable.
+
 | Step | Where native had something we lack | Evidence | What it must be |
 |---|---|---|---|
 | B1 | each of the four movement arms, between `scalar`'s first reference (384) and the lanes (463, 521, 713, 777) | 8 lane nodes, data flow +1 each | the turn factor (π − `angle_step`) in a record created after `scalar`. The target stores it (`fstp [esp+0x20]`, frame −56) and reloads it twice as a memory operand. `scalar` is at frame −60 |

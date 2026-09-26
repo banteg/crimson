@@ -43,6 +43,8 @@ See also [frame-model.md](frame-model.md) (reference counts, list order, packing
 
 ## 2. Weight arithmetic for `player_update`
 
+Correction ([pu-residual-map.md](pu-residual-map.md)): native has no separate 8-byte slot at 0x40; 0x38 is one 16-byte slot.
+
 Baseline 5436cf105: 8-byte list `movement_input` 185, `scratch_pos` 161, `move_delta` 159,
 `random_offset` 139. In an FPO frame without a density sort the 8-byte slots take list order from the
 lowest address: b0x28, b0x30, b0x38, b0x40 (native uses the same four addresses).

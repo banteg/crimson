@@ -113,6 +113,8 @@ Micro re-runs of [x87-held-lanes.md](x87-held-lanes.md) gave the same results. L
 
 ## 5. Native facts about b0x38 that the model cannot yet combine
 
+Follow-up ([pu-residual-map.md](pu-residual-map.md)): native's 0x38 slot also holds every spawn position and the smoke colour, and native splits `random_offset`'s roles over four slots.
+
 These come from `native_slots.py` with the corrected candidate tracker (§7). With that fix the
 partition maps `movement_input` → 0x28, `scratch_pos` → 0x30, `previous_pos` → 0x20, and
 `move_delta` + `smoke_color` → the 16-byte native object at 0x38. It shows one bracketed conflict,
