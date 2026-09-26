@@ -1,5 +1,34 @@
 # quest_spawn_timeline_update
 
+## Dead pointer store mechanism (2026-09-26)
+
+crimson-88 proved how each instruction of native's triplet arises
+(`qst-dead-store.md`, `scripts/c2/dead_def_intervene.py`, `demotion_scan.py`):
+
+- **`mov [esp+0x10],edi`** is a dead local definition `X = p`, where `p` is the
+  `entry + 12` temp. At block end, `insert_upward_exposed_reloads` (0x1072eb81)
+  passes it to `demote_unused_candidate_def` (0x107318e5), which rewrites it as
+  a memory store. Nothing after globopt deletes dead memory stores.
+- **`lea edi,[esi+0xc]`**: that store is a value use of `p`, so the pointer fold
+  (0x306c1) excludes `p` and it stays in `edi`.
+- **`mov [esp+0x10],ebx`** is `spread = 0`. `X` has only a store, so the packer
+  shares `spread`'s slot.
+
+The requirement is therefore **a local definition that is dead at
+`build_live_ranges` but survives the final DCE** (0x10713683). The rule below
+("needs a lowered memory intrinsic") overstates it. The 0x190 intrinsic, or
+`volatile`, is only the known way to survive: CSE forwards every plain copy,
+address-of and same-size union view first. Alias-class collapse does not help
+here, since the function has 0x38 classes and forcing 0x406 changes nothing. A
+scan of all 1,244 scratches found no other named scalar local with a demoted,
+never-read definition.
+
+An intervention at `build_live_ranges` entry reproduces native at 115/115
+instructions. It points `template_id` reads at the temp and bases `y` on
+`entry`. The zero register still differs: native keeps 0 in `ebx`, ours gives
+`ebx` to `spawn_index`. No stock source is known, so the canonical source stays
+at 91.23% (labels masked 97.37%, references 13/0/0).
+
 ## Decompiled C2 rules for the dead pointer store (2026-09-25)
 
 Binary Ninja decompilation of the pinned C2, cross-checked with preserving traces,
