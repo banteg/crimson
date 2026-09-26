@@ -86,7 +86,7 @@ def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuV
 
 
 def _click_reset(view: ControlsMenuView, mocker: MockerFixture) -> None:
-    panel_scale, _ = view._menu_item_scale(0)
+    panel_scale = view._panel_scale()
     pos, width = view._reset_button_layout(
         left_top_left=view._left_panel_top_left(panel_scale),
         panel_scale=panel_scale,

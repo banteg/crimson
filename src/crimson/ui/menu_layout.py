@@ -71,6 +71,35 @@ def menu_slot_end_ms(slot: int) -> int:
     return (slot + 2) * 100
 
 
+def main_menu_item_scale(width: int, slot: int) -> tuple[float, float]:
+    """Return (scale, rise) for main menu item `slot` (`ui_element_table[slot + 2]`)."""
+    # ui_menu_layout_init: items 1..7 shrink to 0.9 and rise (i - 2) * 11 at <= 640.
+    if width <= MENU_SCALE_SMALL_THRESHOLD:
+        return 0.9, float(slot) * 11.0
+    return 1.0, 0.0
+
+
+def pause_menu_item_scale(width: int, slot: int) -> tuple[float, float]:
+    """Return (scale, rise) for pause menu item `slot` (`ui_element_table[slot + 23]`)."""
+    # ui_menu_layout_init: items 22..25 shrink to 0.8 and rise (i - 23) * 11 at <= 640,
+    # or shrink to 0.9 and rise (i - 23) * 5 at <= 800.
+    if width <= MENU_SCALE_SMALL_THRESHOLD:
+        return 0.8, float(slot) * 11.0
+    if width < MENU_SCALE_LARGE_MIN:
+        return 0.9, float(slot) * 5.0
+    return 1.0, 0.0
+
+
+def back_button_scale(width: int) -> tuple[float, float]:
+    """Return (scale, rise) for the panel back buttons (`ui_menu_layout_a/b/c`)."""
+    # ui_menu_layout_init: shrink to 0.8 and rise 11 at <= 640, or 0.9 and rise 3 at <= 800.
+    if width <= MENU_SCALE_SMALL_THRESHOLD:
+        return 0.8, 11.0
+    if width < MENU_SCALE_LARGE_MIN:
+        return 0.9, 3.0
+    return 1.0, 0.0
+
+
 def sign_layout_scale(width: int) -> tuple[float, float]:
     if width <= MENU_SCALE_SMALL_THRESHOLD:
         return MENU_SCALE_SMALL, MENU_SCALE_SHIFT

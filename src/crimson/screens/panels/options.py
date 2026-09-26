@@ -187,7 +187,7 @@ class OptionsMenuView(PanelMenuView):
         )
 
     def _content_layout(self) -> _OptionsContentLayout:
-        panel_scale, _local_shift = self._menu_item_scale(0)
+        panel_scale = self._panel_scale()
         panel_w = MENU_PANEL_WIDTH * panel_scale
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,

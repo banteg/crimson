@@ -22,12 +22,12 @@ from crimson.ui.menu_layout import (
     MENU_LABEL_ROW_QUIT,
     MENU_LABEL_STEP,
     MENU_LABEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
     MenuEntry,
     label_alpha,
     menu_slot_end_ms,
     menu_slot_pos_x,
     menu_slot_start_ms,
+    pause_menu_item_scale,
 )
 from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
@@ -214,16 +214,11 @@ class PauseMenuView:
             return
         self._transition.begin(action)
 
-    def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        if self._menu_screen_width < (MENU_SCALE_SMALL_THRESHOLD + 1):
-            return 0.9, float(slot) * 11.0
-        return 1.0, 0.0
-
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
         item_w = float(item.width)
         item_h = float(item.height)
-        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        item_scale, local_y_shift = pause_menu_item_scale(self._menu_screen_width, entry.slot)
         offset_min = Vec2(
             MENU_ITEM_OFFSET_X * item_scale,
             MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,
@@ -288,7 +283,7 @@ class PauseMenuView:
                 width=item_w,
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
-            item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+            item_scale, local_y_shift = pause_menu_item_scale(self._menu_screen_width, entry.slot)
             offset_x = MENU_ITEM_OFFSET_X * item_scale
             offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
             dst = rl.Rectangle(

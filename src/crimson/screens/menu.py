@@ -27,6 +27,7 @@ from crimson.ui.menu_layout import (
     MENU_LABEL_WIDTH,
     MenuEntry,
     label_alpha,
+    main_menu_item_scale,
     menu_slot_end_ms,
     menu_slot_pos_x,
     menu_slot_start_ms,
@@ -322,7 +323,7 @@ class MenuView:
                 width=item_w,
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
-            item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+            item_scale, local_y_shift = main_menu_item_scale(self._menu_screen_width, entry.slot)
             offset_x = MENU_ITEM_OFFSET_X * item_scale
             offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
             dst = rl.Rectangle(
@@ -433,17 +434,12 @@ class MenuView:
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
         return self._transition.timeline_ms >= menu_slot_start_ms(entry.slot)
 
-    def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        if self._menu_screen_width < 641:
-            return 0.9, float(slot) * 11.0
-        return 1.0, 0.0
-
     def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
         # ui_element_layout_calc: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
         item = resources.texture(TextureId.UI_MENU_ITEM)
         item_w = float(item.width)
         item_h = float(item.height)
-        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        item_scale, local_y_shift = main_menu_item_scale(self._menu_screen_width, entry.slot)
         offset_min = Vec2(
             MENU_ITEM_OFFSET_X * item_scale,
             MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,

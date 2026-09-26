@@ -19,7 +19,9 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
+    MENU_SCALE_SMALL_THRESHOLD,
     MenuEntry,
+    back_button_scale,
     label_alpha,
 )
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
@@ -211,9 +213,9 @@ class PanelMenuView:
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=MENU_PANEL_WIDTH * self._menu_item_scale(0)[0],
+            width=MENU_PANEL_WIDTH * self._panel_scale(),
         )
-        item_scale, _local_y_shift = self._menu_item_scale(0)
+        item_scale = self._panel_scale()
         panel_w = MENU_PANEL_WIDTH * item_scale
         panel_h = float(self._panel_height) * item_scale
         panel_top_left = (
@@ -238,10 +240,10 @@ class PanelMenuView:
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=item_w * self._menu_item_scale(entry.slot)[0],
+            width=item_w * back_button_scale(self._menu_screen_width)[0],
         )
         pos = Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
-        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        item_scale, local_y_shift = back_button_scale(self._menu_screen_width)
         offset_x = MENU_ITEM_OFFSET_X * item_scale
         offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
         dst = rl.Rectangle(
@@ -313,16 +315,16 @@ class PanelMenuView:
         mouse_pos = Vec2.from_xy(mouse)
         return self._menu_item_bounds(entry).contains(mouse_pos)
 
-    def _menu_item_scale(self, slot: int) -> tuple[float, float]:
-        if self._menu_screen_width < 641:
-            return 0.9, float(slot) * 11.0
-        return 1.0, 0.0
+    def _panel_scale(self) -> float:
+        # Not native: ui_menu_layout_init never scales panels. Panel contents are
+        # laid out against this scale until they move to native coordinates.
+        return 0.9 if self._menu_screen_width <= MENU_SCALE_SMALL_THRESHOLD else 1.0
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
         item_w = float(item.width)
         item_h = float(item.height)
-        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        item_scale, local_y_shift = back_button_scale(self._menu_screen_width)
         offset_min = Vec2(
             MENU_ITEM_OFFSET_X * item_scale,
             MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,

@@ -219,7 +219,7 @@ class ControlsMenuView(PanelMenuView):
         entry = self._entry
         if entry is None or not self._entry_enabled(entry):
             return
-        panel_scale, _local_y_shift = self._menu_item_scale(0)
+        panel_scale = self._panel_scale()
         left_top_left = self._left_panel_top_left(panel_scale)
         right_top_left = self._right_panel_top_left(panel_scale)
         resources = require_runtime_resources(self.state)
@@ -709,7 +709,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _draw_panel(self) -> None:
         shadows_enabled = self.state.config.display.shadows_enabled
-        panel_scale, _local_y_shift = self._menu_item_scale(0)
+        panel_scale = self._panel_scale()
         panel_w = MENU_PANEL_WIDTH * panel_scale
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
 
@@ -737,7 +737,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _draw_contents(self) -> None:
         # Positions are expressed relative to the panel top-left corners and scaled with the panel scale.
-        panel_scale, _local_y_shift = self._menu_item_scale(0)
+        panel_scale = self._panel_scale()
 
         left_top_left = self._left_panel_top_left(panel_scale)
         right_top_left = self._right_panel_top_left(panel_scale)
