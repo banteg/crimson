@@ -192,7 +192,9 @@ load-leaf/T & 3 case:
 | Turnover | +0x28b | `temp 0x531` n113 (0x4c40) vs local 0x15 (0x2a0) | `113:719` fixes it but flips +0x272 (endpoint temporary n111) |
 | LoopBow | +0x327 | `temp 0x5fd` n125 (0x7f40) vs iv 0x94b (0x52c0) | `125:515` fixes it, flips +0x311 |
 | LoopTheLoop | +0x316 | `temp 0x576` n118 (0x5d80) vs iv 0x890 (0x2400) | `118:650` fixes it, flips +0x300 |
-| LoopOut | +0x2e7 (load) | three `load+0x90` sums: iv 0x7d8/0x864/0x92a vs `[temp 0x560]` (leaf, hash 7) | residue shifts of 0x560 or the iv give 94–96%; not resolved |
+| LoopOut | +0x2e7 (load) | three `load+0x90` sums: iv 0x7d8/0x864/0x92a vs `[temp 0x560]` (leaf, hash 7) | residue shifts of 0x560 or the iv give 94–96%; pushing every temp (slot 0) is exact at 581–589 ([cse-id-push.md](cse-id-push.md)) |
+
+The second-site flips above come from pushing a single slot. Pushing every temp together (phantom at slot 0) fixes Turnover, LoopBow, LoopTheLoop and LoopOut without flips; see [cse-id-push.md](cse-id-push.md) for the windows and why no natural edit reaches them.
 
 In those five, the bank at the swap site is the loaded pointer value as a CSE temporary, a symbol leaf with
 hash `(id << 6) & 0xffff`. A symbol leaf needs `id mod 1024` inside a small window. That takes hundreds of

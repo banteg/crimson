@@ -828,7 +828,7 @@
   },
   "0x107079c3": {
    "name": "symbol_chunk_new",
-   "comment": "New chunk of 32 symbols (0xa8c bytes), assigns global ids, indexes it in 0x1079bc58."
+   "comment": "New chunk of 32 symbols (0xa8c bytes), assigns global ids, indexes it in 0x1079bc58. Numbers 32 records from g_next_symbol_id. Callers: 0x1070184b pool A, 0x107018b6 pool B, 0x107018ed pool C, 0x1070191a pool E, 0x107868c9 pool D. In TurnoverDouble 37 chunks precede C0 = 0x4a0: 29 opened while reading IL (reader_binary_op temps, calls, parts), 6 by tree simplification (cse-id-push.md)."
   },
   "0x10707a48": {
    "name": "tuple_new_compare",
@@ -1592,6 +1592,10 @@
   "0x1071b95b": {
    "name": "function_reset_state",
    "comment": "Reset per-function globals before reading the next function."
+  },
+  "0x1071b9b0": {
+   "name": "symbol_pools_reset",
+   "comment": "Ids therefore start at 0 per function: B 0-31, C 32-63, A 64-95, D 96-127. C0 (first CSE id) = 32 x chunks opened before value numbering (cse-id-push.md)."
   },
   "0x1071ba73": {
    "name": "read_function_il",
@@ -5192,9 +5196,25 @@
    "type": "void**",
    "comment": "chunk pointer per id>>5"
   },
+  "0x1079bc5c": {
+   "name": "g_pool_a_symbol_chunk",
+   "type": "void*"
+  },
   "0x1079bc60": {
    "name": "g_temp_symbol_free",
    "type": "c2_symbol*"
+  },
+  "0x1079bc64": {
+   "name": "g_pool_d_symbol_chunk",
+   "type": "void*"
+  },
+  "0x1079bc68": {
+   "name": "g_pool_c_symbol_chunk",
+   "type": "void*"
+  },
+  "0x1079bc70": {
+   "name": "g_pool_b_symbol_chunk",
+   "type": "void*"
   },
   "0x1079bc74": {
    "name": "g_pool_e_symbol_chunk",
@@ -6569,6 +6589,7 @@
   "0x10706252": "Class-3 records, including CSE expression symbols after 0x10707ebc marks them cls 3, go to g_temp_symbol_free; pool A pops them LIFO (Hill/Valley: 900 of 3003 post-entry class-3 allocations reuse pool-E ids).",
   "0x10707165": "dead assignment deletion: status bytes 1/2 (fact tuples) are skipped",
   "0x107072b5": "side-effecting src with dead dst: kind 0xc gets a fresh temp dst instead of deletion",
+  "0x107079ef": "Ids come from the single counter g_next_symbol_id shared by all pools, so the first CSE id C0 moves in whole 32-id blocks with the whole function's IL size (cse-id-push.md).",
   "0x10707bdb": "expression hash = (op + type&0xfff) mod 101",
   "0x10707dba": "commutative ops also match swapped operands",
   "0x10707ec1": "Pool E allocation: every CSE expression symbol id. Ids C0+n, consecutive, never recycled into pool E (cse-slot-count.md).",
