@@ -124,6 +124,7 @@ def build_typo_session(
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
+    finalize_post_render_lifecycle: bool,
     dictionary_words: tuple[str, ...] = (),
     highscore_names: tuple[str, ...] = (),
 ) -> DeterministicSession:
@@ -142,6 +143,7 @@ def build_typo_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
+        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         mode_runtime=TypoSessionRuntime(world=world),
     )
     return session
@@ -155,6 +157,7 @@ def build_tutorial_session(
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
+    finalize_post_render_lifecycle: bool,
     demo_mode_active: bool,
 ) -> DeterministicSession:
     weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
@@ -172,6 +175,7 @@ def build_tutorial_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
+        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         demo_mode_active=demo_mode_active,
         mode_runtime=TutorialSessionRuntime(world=world),
     )

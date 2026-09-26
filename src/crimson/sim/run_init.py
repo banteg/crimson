@@ -114,13 +114,13 @@ def initialize_run(
             session = build_typo_session(
                 world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled, game_tune_started=False,
-                dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
+                finalize_post_render_lifecycle=True, dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
             )
         case GameMode.TUTORIAL:
             session = build_tutorial_session(
                 world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled, game_tune_started=False,
-                demo_mode_active=spec.demo,
+                finalize_post_render_lifecycle=True, demo_mode_active=spec.demo,
             )
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")
