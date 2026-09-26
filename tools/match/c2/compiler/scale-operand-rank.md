@@ -124,7 +124,8 @@ native also constrains:
   is a byte-level difference only; the normalized listing is equal. Adding two records instead keeps
   C0 at 0x300, and the copy lands at 0x228. With two dead-stored ints as a proof, the result is
   100.00% with only the three SIB swaps base already has (+0x254/+0x28a/+0x2c0). No authored +2 was
-  found.
+  found. Those three swaps are not fixed residue: deleting the redundant second
+  `current_template = template_record;` removes them ([sib-operand-order.md](sib-operand-order.md)).
 
 ## 4. update_track_attachment_follow_state (snail-mail)
 
