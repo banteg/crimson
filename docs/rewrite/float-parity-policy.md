@@ -139,6 +139,12 @@ Deterministic gameplay math follows three rules:
   - `f32` uses the native helper path,
   - `f64`/`comptime_float` remain available for non-domain/boundary use.
 
+### Checking against native code
+
+The [native execution oracle](../verification/differential-testing/native-oracle.md)
+runs original functions under emulation at PC24. Use it to check a ported
+expression bit for bit before relying on capture runs.
+
 ## Allowed normalization
 
 Literal simplification is acceptable when all of the following are true:

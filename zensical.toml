@@ -185,7 +185,10 @@ nav = [
   ]},
   { "Verification" = [
     { "Overview" = "verification/index.md" },
-    { "Differential testing" = "verification/differential-testing/index.md" },
+    { "Differential testing" = [
+      { "Overview" = "verification/differential-testing/index.md" },
+      { "Native execution oracle" = "verification/differential-testing/native-oracle.md" },
+    ]},
     { "Evidence ledger" = "verification/evidence-ledger/index.md" },
     { "Parity matrix" = "verification/parity-matrix/index.md" },
   ]},

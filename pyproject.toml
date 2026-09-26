@@ -53,6 +53,7 @@ dev = [
     "ruff>=0.16.0",
     "syrupy>=5.0.0",
     "ty>=0.0.63",
+    "unicorn>=2.1.4",
     "zensical>=0.0.22",
 ]
 match-explain = [
@@ -109,6 +110,12 @@ exclude_lines = [
 [tool.importlinter]
 root_packages = ["crimson", "grim"]
 include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "game runtime must not import the native oracle (dev-only Unicorn harness)"
+type = "forbidden"
+source_modules = ["crimson.game", "crimson.sim", "crimson.creatures", "crimson.projectiles", "crimson.weapon_runtime", "crimson.typo", "grim"]
+forbidden_modules = ["unicorn", "crimson.dbg.native_oracle"]
 
 [[tool.importlinter.contracts]]
 name = "perk implementations must stay out of selection and availability"

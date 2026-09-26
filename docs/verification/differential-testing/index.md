@@ -9,6 +9,7 @@ tags:
 Capture and replay workflows used to isolate behavior drift between original and rewrite.
 
 - [Differential playbook](../../frida/differential-playbook.md)
+- [Native execution oracle](native-oracle.md)
 - [Evidence records](../evidence-ledger/index.md)
 - [Gameplay differential capture](../../frida/gameplay-diff-capture.md)
 - [Gameplay/state capture](../../frida/gameplay-state-capture.md)
