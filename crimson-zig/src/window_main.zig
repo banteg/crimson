@@ -700,8 +700,8 @@ const App = struct {
     }
 
     fn applyGamepadProfiles(self: *App) void {
-        const activity: input_codes.RaylibPadActivity = .{};
-        const applied = cz.gamepad_profile.autoApplyPadProfiles(&self.runtime.config, activity);
+        const pads: input_codes.RaylibPads = .{};
+        const applied = cz.gamepad_profile.autoApplyPadProfiles(&self.runtime.config, pads);
         if (!cz.gamepad_profile.anyApplied(applied)) return;
         for (applied, 0..) |upgrades, player_index| {
             if (!upgrades.any()) continue;
@@ -1412,6 +1412,17 @@ const App = struct {
         self.audio.ensureMenuThemeForDemo(self.demo_enabled);
         const controls_update = window_options.updateControls(&self.controls, frame_dt, &self.runtime.config, if (self.runtime_assets) |*assets| assets else null);
         if (controls_update.config_dirty) self.runtime.config_dirty = true;
+        if (controls_update.reset) |reset| {
+            if (reset.pad_connected) {
+                const gamepad: i32 = @intCast(cz.gamepad_profile.playerGamepadIndex(reset.player_index));
+                std.log.info("controls: player {d} reset to gamepad defaults (pad {d}: {s})", .{ reset.player_index + 1, gamepad, rl.getGamepadName(gamepad) });
+            } else {
+                std.log.info("controls: player {d} reset to defaults", .{reset.player_index + 1});
+            }
+            self.runtime.saveConfigIfDirty() catch |err| {
+                std.log.err("saveConfigIfDirty failed after controls reset: {s}", .{@errorName(err)});
+            };
+        }
         if (controls_update.play_panel_click and !self.controls.panel_open_sfx_played) {
             self.audio.playUiPanelClick();
             self.controls.panel_open_sfx_played = true;

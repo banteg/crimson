@@ -275,17 +275,19 @@ so the original game treats them as unbound.
 | `0x213` | Triangle / Y (top) | `0x21b` | Start |
 | `0x21c`–`0x21f` | D-pad up, down, left, right | | |
 
-Stick axes use +X right and +Y down. The port writes these codes when a player
-first uses a controller, replacing only values that are still stock:
+Stick axes use +X right and +Y down. The port writes these codes when a player's
+controller is connected, replacing only values that are still stock:
 
-- A fully stock player also switches aim and movement to Dual Action Pad.
+- A fully stock player also switches aim and movement to Dual Action Pad, once
+  the controller is used.
 - Stock axis pairs become move axes `(0x201, 0x200)` and aim axes `(0x203, 0x202)`.
 - With Dual Action Pad aim, a stock Fire becomes `0x217`.
 - For player 1 on any Dual Action Pad method, stock Reload and Level Up become
   `0x212` and `0x213`.
 
 Methods and changed bindings are left alone. Legacy `Joys*`/`JoyAxis*` codes keep
-working.
+working. The Controls screen's Reset button restores the selected player's stock
+bindings, or this full controller profile when their controller is connected.
 
 ## Notes
 

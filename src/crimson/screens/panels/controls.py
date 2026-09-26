@@ -18,10 +18,18 @@ from grim.raylib_api import rl
 
 from ...aim_schemes import AimScheme
 from ...game.types import GameState
-from ...input_codes import INPUT_CODE_UNBOUND, capture_first_pressed_input_code, input_code_name
+from ...gamepad_profile import reset_player_controls
+from ...input_codes import (
+    INPUT_CODE_UNBOUND,
+    capture_first_pressed_input_code,
+    gamepad_is_connected,
+    input_code_name,
+    player_gamepad_index,
+)
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
@@ -42,6 +50,8 @@ CONTROLS_RIGHT_PANEL_POS_Y = 110.0
 CONTROLS_RIGHT_PANEL_HEIGHT = 378.0
 CONTROLS_BACK_POS_X = -155.0
 CONTROLS_BACK_POS_Y = 420.0
+# Port-only "Reset" button, beside the direction-arrow checkbox on the left panel.
+CONTROLS_RESET_BUTTON_OFFSET = Vec2(388.0, 166.0)
 
 # `ui_menu_item_update`: idle rebind value tint (rgb 70,180,240 @ alpha 0.6).
 CONTROLS_REBIND_VALUE_COLOR = rl.Color(70, 180, 240, 153)
@@ -193,6 +203,7 @@ class ControlsMenuView(PanelMenuView):
         self._dropdown: ControlsDropdown | None = None
         self._dirty = False
         self._capture: RebindCapture | None = None
+        self._reset_button = UiButtonState("Reset")
 
     def open(self) -> None:
         super().open()
@@ -200,6 +211,7 @@ class ControlsMenuView(PanelMenuView):
         self._dropdown = None
         self._dirty = False
         self._capture = None
+        self._reset_button = UiButtonState("Reset")
 
     def update(self, dt: float) -> None:
         if not self._update_panel(dt):
@@ -241,6 +253,8 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         ):
             self._dirty = True
+            click_consumed = True
+        if self._update_reset_button(dt, left_top_left=left_top_left, panel_scale=panel_scale, enabled=not click_consumed):
             click_consumed = True
         self._update_back_button(dt, enabled=not click_consumed and self._capture is None)
 
@@ -363,6 +377,46 @@ class ControlsMenuView(PanelMenuView):
             self._set_direction_arrow_enabled(not self._direction_arrow_enabled())
             return True
         return False
+
+    def _reset_button_layout(self, *, left_top_left: Vec2, panel_scale: float) -> tuple[Vec2, float]:
+        resources = require_runtime_resources(self.state)
+        button = self._reset_button
+        width = button_width(resources, button.label, scale=panel_scale, force_wide=button.force_wide)
+        return left_top_left + CONTROLS_RESET_BUTTON_OFFSET * panel_scale, width
+
+    def _update_reset_button(self, dt: float, *, left_top_left: Vec2, panel_scale: float, enabled: bool) -> bool:
+        button = self._reset_button
+        button.enabled = enabled and self._checkbox_enabled() and self._dropdown is None
+        pos, width = self._reset_button_layout(left_top_left=left_top_left, panel_scale=panel_scale)
+        if not button_update(
+            button,
+            pos=pos,
+            width=width,
+            dt_ms=min(dt, 0.1) * 1000.0,
+            mouse=rl.get_mouse_position(),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
+            return False
+        self._reset_current_player()
+        return True
+
+    def _reset_current_player(self) -> None:
+        player_idx = self._current_player_index()
+        gamepad = player_gamepad_index(player_idx)
+        pad_connected = gamepad_is_connected(gamepad)
+        reset_player_controls(self.state.config.controls, player_idx, pad_connected=pad_connected)
+        log = self.state.console.log
+        if pad_connected:
+            log.log(f"controls: player {player_idx + 1} reset to gamepad defaults (pad {gamepad}: {rl.get_gamepad_name(gamepad)})")
+        else:
+            log.log(f"controls: player {player_idx + 1} reset to defaults")
+        try:
+            self.state.config.save()
+        except (OSError, ValueError) as exc:
+            log.log(f"config: save failed: {exc}")
+            self._dirty = True
+        else:
+            self._dirty = False
 
     def _rebind_sections(
         self,
@@ -800,6 +854,9 @@ class ControlsMenuView(PanelMenuView):
             Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale),
             rl.Color(255, 255, 255, checkbox_alpha),
         )
+
+        reset_pos, reset_width = self._reset_button_layout(left_top_left=left_top_left, panel_scale=panel_scale)
+        button_draw(resources, self._reset_button, pos=reset_pos, width=reset_width, scale=panel_scale)
 
         dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (

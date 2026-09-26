@@ -25,7 +25,8 @@ tags:
   - Code: `src/crimson/input_codes.py`
 - Gamepads:
   - player N reads controller N; standard controller codes (`0x200+`) name sticks, triggers and face buttons by position.
-  - when a player's controller is first used, bindings still at their stock values move to the standard codes (a fully stock player also switches to Dual Action Pad aim and move), and the config is saved.
+  - when a player's controller is connected, bindings still at their stock values move to the standard codes (a fully stock player also switches to Dual Action Pad aim and move once the controller is used), and the config is saved.
+  - the Controls Reset button restores stock bindings, or the full controller profile when that player's controller is connected.
   - Code: `src/crimson/gamepad_profile.py`, `src/crimson/input_codes.py`
 - Control-scheme interpretation:
   - per-player conversion from controls profile + bind block to `PlayerInput`.

@@ -576,8 +576,12 @@ pub fn padNavPressed(pad: PadCode) bool {
     return false;
 }
 
-pub const RaylibPadActivity = struct {
-    pub fn isActive(_: RaylibPadActivity, gamepad_index: usize) bool {
+pub const RaylibPads = struct {
+    pub fn isConnected(_: RaylibPads, gamepad_index: usize) bool {
+        return rl.isGamepadAvailable(@intCast(gamepad_index));
+    }
+
+    pub fn isActive(_: RaylibPads, gamepad_index: usize) bool {
         return gamepadHasActivity(@intCast(gamepad_index));
     }
 };

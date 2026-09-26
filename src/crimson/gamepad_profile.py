@@ -2,12 +2,12 @@
 
 The stock `crimson.cfg` bindings are the original's DirectInput-era defaults
 (swapped `JoyAxis*` aim axes, `JoyAxisZ`/`JoyRotX` movement), which put a modern
-controller's movement on the wrong stick.  When a player touches their pad, every
+controller's movement on the wrong stick.  When a player's pad is connected, every
 binding that still holds its stock value and matters for pad play moves to the
 standard controller codes, and the config is saved:
 
 - a fully stock player also switches aim and movement to Dual Action Pad, so they
-  get the whole twin-stick profile;
+  get the whole twin-stick profile (this waits until the pad is actually used);
 - stock axis pairs become the sticks (only pad methods read them);
 - with pad aim, a stock Fire becomes R2;
 - for player 1 on any pad method, stock Reload and Level Up become pad buttons.
@@ -31,7 +31,7 @@ from grim.config import (
 )
 
 from .aim_schemes import AimScheme
-from .input_codes import PadCode, gamepad_has_activity, player_gamepad_index
+from .input_codes import PadCode, gamepad_has_activity, gamepad_is_connected, player_gamepad_index
 from .movement_controls import MovementControlType
 
 PAD_PROFILE_MOVE_AXIS_CODES = (int(PadCode.LEFT_STICK_Y), int(PadCode.LEFT_STICK_X))
@@ -132,11 +132,16 @@ def auto_apply_pad_profiles(
     controls: CrimsonControlsConfig,
     *,
     player_count: int,
+    pad_connected: Callable[[int], bool] = gamepad_is_connected,
     pad_active: Callable[[int], bool] = gamepad_has_activity,
 ) -> tuple[PlayerPadUpgrade, ...]:
-    """Apply pending upgrades for each active player whose pad is in use.
+    """Apply pending upgrades for each active player whose pad is connected.
 
-    Returns what changed per player; the caller logs it and persists the config.
+    Stale stock bindings only matter to pad play, so they upgrade as soon as the
+    player's pad is connected.  Switching a fully stock player's methods waits
+    until the pad is actually used, so a mouse player with an idle pad plugged in
+    keeps the mouse.  Returns what changed per player; the caller logs it and
+    persists the config.
     """
 
     applied: list[PlayerPadUpgrade] = []
@@ -144,8 +149,31 @@ def auto_apply_pad_profiles(
         upgrades = pending_pad_upgrades(controls, player_index)
         if not upgrades:
             continue
-        if not pad_active(player_gamepad_index(player_index)):
+        gamepad = player_gamepad_index(player_index)
+        if not pad_connected(gamepad):
+            continue
+        if PadUpgrade.METHODS in upgrades and not pad_active(gamepad):
             continue
         apply_pad_upgrades(controls, player_index, upgrades)
         applied.append(PlayerPadUpgrade(player_index=player_index, upgrades=upgrades))
     return tuple(applied)
+
+
+def reset_player_controls(controls: CrimsonControlsConfig, player_index: int, *, pad_connected: bool) -> None:
+    """Controls "Reset" button: stock bindings, or the full pad profile when a pad is connected.
+
+    Reload and Level Up are global codes owned by player 1, so only player 1's
+    reset touches them.  The direction-arrow toggle is a HUD preference and stays.
+    """
+
+    idx = int(player_index)
+    player = controls.player(idx)
+    stock = default_player_controls(idx)
+    for field in msgspec.structs.fields(stock):
+        if field.name != "show_direction_arrow":
+            setattr(player, field.name, getattr(stock, field.name))
+    if idx == 0:
+        controls.reload_code = DEFAULT_RELOAD_CODE
+        controls.pick_perk_code = DEFAULT_PICK_PERK_CODE
+    if pad_connected:
+        apply_pad_profile(controls, idx)

@@ -299,9 +299,20 @@ def test_pad_profile_fire_and_reload_read_the_pad(pads: FakePads) -> None:
 # --- auto profile ---------------------------------------------------------------------
 
 
-def _auto(config: CrimsonConfig, *, player_count: int = 1, pads: set[int] | None = None) -> dict[int, PadUpgrade]:
+def _auto(
+    config: CrimsonConfig,
+    *,
+    player_count: int = 1,
+    pads: set[int] | None = None,
+    connected: set[int] | None = None,
+) -> dict[int, PadUpgrade]:
     active = {0} if pads is None else pads
-    applied = auto_apply_pad_profiles(config.controls, player_count=player_count, pad_active=lambda pad: pad in active)
+    applied = auto_apply_pad_profiles(
+        config.controls,
+        player_count=player_count,
+        pad_connected=lambda pad: pad in (active if connected is None else connected),
+        pad_active=lambda pad: pad in active,
+    )
     return {entry.player_index: entry.upgrades for entry in applied}
 
 
@@ -360,6 +371,30 @@ def test_hand_picked_pad_methods_with_stock_legacy_bindings_upgrade() -> None:
     assert config.controls.pick_perk_code == PAD_PROFILE_PICK_PERK_CODE
     assert config.controls.reload_code == 0x13
     assert _auto(config) == {}
+
+
+def test_connected_idle_pad_upgrades_stale_bindings_but_not_methods() -> None:
+    # Waking a DualSense with the PS button connects it without any button the
+    # game reads; stale pad bindings must still upgrade.
+    config = default_crimson_cfg(Path("<memory>"))
+    player = config.controls.player(0)
+    player.aim_scheme = AimScheme.DUAL_ACTION_PAD
+    player.movement = MovementControlType.DUAL_ACTION_PAD
+    assert _auto(config, pads=set(), connected={0}) == {
+        0: PadUpgrade.MOVE_AXES | PadUpgrade.AIM_AXES | PadUpgrade.FIRE | PadUpgrade.RELOAD | PadUpgrade.LEVEL_UP,
+    }
+
+    # A fully stock mouse player keeps the mouse until the pad is used.
+    stock = default_crimson_cfg(Path("<memory>"))
+    assert _auto(stock, pads=set(), connected={0}) == {}
+    assert stock.controls == default_crimson_cfg(Path("<memory>")).controls
+    assert _auto(stock, pads={0}) == {0: ALL_UPGRADES}
+
+
+def test_disconnected_pad_upgrades_nothing() -> None:
+    config = default_crimson_cfg(Path("<memory>"))
+    config.controls.player(0).aim_scheme = AimScheme.DUAL_ACTION_PAD
+    assert _auto(config, pads=set(), connected=set()) == {}
 
 
 def test_mouse_keyboard_player_only_gets_the_axis_upgrade() -> None:

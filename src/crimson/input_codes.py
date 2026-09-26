@@ -482,6 +482,10 @@ def input_code_is_pressed(key_code: int, *, player_index: int = 0) -> bool:
     return _PRESSED_STATE.is_pressed(player_index=player_idx, key_code=code, is_down=down)
 
 
+def gamepad_is_connected(gamepad_index: int) -> bool:
+    return bool(rl.is_gamepad_available(int(gamepad_index)))
+
+
 def gamepad_has_activity(gamepad_index: int) -> bool:
     """True while a standard button is held or a stick is pushed past half travel."""
 

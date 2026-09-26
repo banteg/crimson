@@ -102,7 +102,7 @@ pub fn drawButton(
     rl.drawText(button.label, label_x, label_y, 24, rl.Color.init(245, 236, 225, 255));
 }
 
-fn buttonHitRect(button: UiButton) rl.Rectangle {
+pub fn buttonHitRect(button: UiButton) rl.Rectangle {
     return rl.Rectangle.init(button.rect.x, button.rect.y + 2.0, button.rect.width, 28.0);
 }
 

@@ -180,6 +180,7 @@ class GameLoopView:
             config.save()
         except (OSError, ValueError) as exc:
             log.log(f"config: save failed: {exc}")
+        log.flush()
 
     def _tick_statistics_playtime(self, dt: float) -> None:
         # Native `_play_time_ms` advances on gameplay frames only (state 9)

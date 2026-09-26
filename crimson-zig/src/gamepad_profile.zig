@@ -3,9 +3,10 @@
 //!
 //! The stock `crimson.cfg` bindings are the original's DirectInput-era defaults
 //! (swapped `JoyAxis*` aim axes, `JoyAxisZ`/`JoyRotX` movement). When a player
-//! touches their pad, every binding that still holds its stock value and matters
+//! connects their pad, every binding that still holds its stock value and matters
 //! for pad play moves to the standard controller codes:
-//! - a fully stock player also switches aim and movement to Dual Action Pad;
+//! - a fully stock player also switches aim and movement to Dual Action Pad, once
+//!   the pad is actually used;
 //! - stock axis pairs become the sticks (only pad methods read them);
 //! - with pad aim, a stock Fire becomes R2;
 //! - for player 1 on any pad method, stock Reload and Level Up become pad buttons.
@@ -160,20 +161,40 @@ pub fn applyPadProfile(cfg: *crimson_cfg.CrimsonCfg, player_index: usize) void {
 
 pub const AppliedUpgrades = [crimson_cfg.port_player_slot_count]PadUpgrades;
 
-/// Apply pending upgrades for each active player whose pad is in use.
-/// `pad_active` provides `isActive(gamepad_index: usize) bool`. Returns what
-/// changed per player; the caller logs it and persists the config.
-pub fn autoApplyPadProfiles(cfg: *crimson_cfg.CrimsonCfg, pad_active: anytype) AppliedUpgrades {
+/// Apply pending upgrades for each active player whose pad is connected.
+/// Stale stock bindings only matter to pad play, so they upgrade as soon as the
+/// pad is connected; switching a fully stock player's methods waits until the pad
+/// is used. `pads` provides `isConnected(gamepad_index: usize) bool` and
+/// `isActive(gamepad_index: usize) bool`. Returns what changed per player; the
+/// caller logs it and persists the config.
+pub fn autoApplyPadProfiles(cfg: *crimson_cfg.CrimsonCfg, pads: anytype) AppliedUpgrades {
     var applied = [_]PadUpgrades{.{}} ** crimson_cfg.port_player_slot_count;
     const player_count = std.math.clamp(cfg.player_count, 1, crimson_cfg.port_player_slot_count);
     for (0..player_count) |player_index| {
         const upgrades = pendingPadUpgrades(cfg, player_index);
         if (!upgrades.any()) continue;
-        if (!pad_active.isActive(playerGamepadIndex(player_index))) continue;
+        const gamepad = playerGamepadIndex(player_index);
+        if (!pads.isConnected(gamepad)) continue;
+        if (upgrades.methods and !pads.isActive(gamepad)) continue;
         applyPadUpgrades(cfg, player_index, upgrades);
         applied[player_index] = upgrades;
     }
     return applied;
+}
+
+/// Controls "Reset" button: stock bindings, or the full pad profile when a pad is
+/// connected. Reload and Level Up are global codes owned by player 1, so only
+/// player 1's reset touches them. The direction-arrow toggle is a HUD preference
+/// and stays.
+pub fn resetPlayerControls(cfg: *crimson_cfg.CrimsonCfg, player_index: usize, pad_connected: bool) void {
+    crimson_cfg.setPlayerMovement(cfg, player_index, movement_static);
+    crimson_cfg.setPlayerAimScheme(cfg, player_index, aim_mouse);
+    crimson_cfg.setPlayerBindBlock(cfg, player_index, crimson_cfg.defaultPlayerBindBlock(player_index));
+    if (player_index == 0) {
+        cfg.keybind_reload = default_reload_code;
+        cfg.keybind_pick_perk = default_pick_perk_code;
+    }
+    if (pad_connected) applyPadProfile(cfg, player_index);
 }
 
 pub fn anyApplied(applied: AppliedUpgrades) bool {
@@ -185,9 +206,15 @@ pub fn anyApplied(applied: AppliedUpgrades) bool {
 
 const FakePads = struct {
     active: []const usize,
+    /// Defaults to the active pads.
+    connected: ?[]const usize = null,
 
     fn isActive(self: FakePads, gamepad_index: usize) bool {
         return std.mem.indexOfScalar(usize, self.active, gamepad_index) != null;
+    }
+
+    fn isConnected(self: FakePads, gamepad_index: usize) bool {
+        return std.mem.indexOfScalar(usize, self.connected orelse self.active, gamepad_index) != null;
     }
 };
 
@@ -246,6 +273,26 @@ test "hand-picked pad methods with stock legacy bindings upgrade" {
     try std.testing.expect(!anyApplied(autoApplyPadProfiles(&cfg, pad0)));
 }
 
+test "connected idle pad upgrades stale bindings but not methods" {
+    var cfg = crimson_cfg.defaultConfig();
+    crimson_cfg.setPlayerAimScheme(&cfg, 0, aim_dual_action_pad);
+    crimson_cfg.setPlayerMovement(&cfg, 0, movement_dual_action_pad);
+    const idle: FakePads = .{ .active = &.{}, .connected = &.{0} };
+    const expected: PadUpgrades = .{ .move_axes = true, .aim_axes = true, .fire = true, .reload = true, .level_up = true };
+    try std.testing.expectEqual(expected, autoApplyPadProfiles(&cfg, idle)[0]);
+
+    var stock = crimson_cfg.defaultConfig();
+    try std.testing.expect(!anyApplied(autoApplyPadProfiles(&stock, idle)));
+    try std.testing.expectEqual(aim_mouse, crimson_cfg.playerAimScheme(&stock, 0));
+    const pad0: FakePads = .{ .active = &.{0} };
+    try std.testing.expectEqual(all_upgrades, autoApplyPadProfiles(&stock, pad0)[0]);
+
+    var unplugged = crimson_cfg.defaultConfig();
+    crimson_cfg.setPlayerAimScheme(&unplugged, 0, aim_dual_action_pad);
+    const none: FakePads = .{ .active = &.{} };
+    try std.testing.expect(!anyApplied(autoApplyPadProfiles(&unplugged, none)));
+}
+
 test "mouse and keyboard player only gets the axis upgrade" {
     var cfg = crimson_cfg.defaultConfig();
     var binds = crimson_cfg.playerBindBlock(&cfg, 0);
@@ -297,6 +344,53 @@ test "other players' pads leave player 1 and its global codes alone" {
     try std.testing.expectEqual(aim_mouse, crimson_cfg.playerAimScheme(&cfg, 0));
     try std.testing.expectEqual(default_reload_code, cfg.keybind_reload);
     try std.testing.expectEqual(default_pick_perk_code, cfg.keybind_pick_perk);
+}
+
+fn customizeAll(cfg: *crimson_cfg.CrimsonCfg) void {
+    for (0..crimson_cfg.port_player_slot_count) |idx| {
+        crimson_cfg.setPlayerMovement(cfg, idx, 1);
+        crimson_cfg.setPlayerAimScheme(cfg, idx, 1);
+        crimson_cfg.setPlayerShowDirectionArrow(cfg, idx, false);
+        var binds = crimson_cfg.playerBindBlock(cfg, idx);
+        binds.fire = 0x39;
+        binds.axis_move_y = 0x140;
+        crimson_cfg.setPlayerBindBlock(cfg, idx, binds);
+    }
+    cfg.keybind_reload = 0x13;
+    cfg.keybind_pick_perk = 0x2A;
+}
+
+test "reset without a pad restores stock bindings" {
+    var cfg = crimson_cfg.defaultConfig();
+    customizeAll(&cfg);
+    resetPlayerControls(&cfg, 0, false);
+    try std.testing.expect(playerBindingsAreStock(&cfg, 0));
+    try std.testing.expect(!crimson_cfg.playerShowDirectionArrow(&cfg, 0));
+    try std.testing.expectEqual(default_reload_code, cfg.keybind_reload);
+    try std.testing.expectEqual(default_pick_perk_code, cfg.keybind_pick_perk);
+}
+
+test "reset with a pad applies the full pad profile" {
+    var cfg = crimson_cfg.defaultConfig();
+    customizeAll(&cfg);
+    resetPlayerControls(&cfg, 0, true);
+    try std.testing.expectEqual(movement_dual_action_pad, crimson_cfg.playerMovement(&cfg, 0));
+    try std.testing.expectEqual(aim_dual_action_pad, crimson_cfg.playerAimScheme(&cfg, 0));
+    const binds = crimson_cfg.playerBindBlock(&cfg, 0);
+    try std.testing.expectEqual(PadCode.r2.code(), binds.fire);
+    try std.testing.expectEqual(PadCode.left_stick_y.code(), binds.axis_move_y);
+    try std.testing.expectEqual(@as(u32, 0x212), cfg.keybind_reload);
+    try std.testing.expectEqual(@as(u32, 0x213), cfg.keybind_pick_perk);
+}
+
+test "resetting another player keeps player 1's global codes" {
+    var cfg = crimson_cfg.defaultConfig();
+    customizeAll(&cfg);
+    resetPlayerControls(&cfg, 1, true);
+    try std.testing.expectEqual(@as(u32, 0x13), cfg.keybind_reload);
+    try std.testing.expectEqual(@as(u32, 0x2A), cfg.keybind_pick_perk);
+    try std.testing.expectEqual(@as(i32, 0x39), crimson_cfg.playerBindBlock(&cfg, 0).fire);
+    try std.testing.expectEqual(PadCode.r2.code(), crimson_cfg.playerBindBlock(&cfg, 1).fire);
 }
 
 test "pad profile survives a crimson.cfg round trip" {

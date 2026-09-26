@@ -132,9 +132,16 @@ pub const OptionsUpdate = struct {
     play_button_click: bool = false,
 };
 
+pub const ControlsReset = struct {
+    player_index: usize,
+    pad_connected: bool,
+};
+
 pub const ControlsUpdate = struct {
     action: ControlsAction = .none,
     config_dirty: bool = false,
+    /// Set when the Reset button reset a player; the caller logs it and saves.
+    reset: ?ControlsReset = null,
     play_panel_click: bool = false,
     play_button_click: bool = false,
 };
@@ -680,6 +687,13 @@ pub fn updateControls(state: *ControlsState, frame_dt: f32, config: *formats.cri
             formats.crimson_cfg.setPlayerShowDirectionArrow(config, currentPlayerIndex(state), !formats.crimson_cfg.playerShowDirectionArrow(config, currentPlayerIndex(state)));
             result.config_dirty = true;
         },
+        4 => {
+            const player_index = currentPlayerIndex(state);
+            const pad_connected = rl.isGamepadAvailable(@intCast(cz.gamepad_profile.playerGamepadIndex(player_index)));
+            cz.gamepad_profile.resetPlayerControls(config, player_index, pad_connected);
+            result.config_dirty = true;
+            result.reset = .{ .player_index = player_index, .pad_connected = pad_connected };
+        },
         else => {},
     }
     return result;
@@ -823,6 +837,9 @@ fn drawControlsPanels(state: *const ControlsState, runtime_assets: *const window
     const direction_checked: window_assets.TextureId = if (formats.crimson_cfg.playerShowDirectionArrow(&config, player_idx)) .ui_check_on else .ui_check_off;
     window_ui.drawTextureFit(runtime_assets.texture(direction_checked), rl.Rectangle.init(left_rect.x + 213.0, left_rect.y + 174.0, 16.0, 16.0), rl.Color.white);
     window_ui.drawSmallText(runtime_assets, "Show direction arrow", left_rect.x + 235.0, left_rect.y + 175.0, if (state.left_selection == 3 and !state.focus_right) text_color else muted_text);
+    const reset_button = controlsResetButton(left_rect);
+    const reset_hovered = rl.checkCollisionPointRec(rl.getMousePosition(), window_ui.buttonHitRect(reset_button));
+    window_ui.drawButton(reset_button, state.left_selection == 4 and !state.focus_right, reset_hovered, runtime_assets);
     window_menu.drawPanelBackEntry(runtime_assets, state.timeline_ms, state.back_hover_amount);
 
     const rows = controlsRebindRows(&config, player_idx);
@@ -1050,7 +1067,15 @@ fn drawDropdown(
 }
 
 fn leftControlButtonCount() usize {
-    return 4;
+    return 5;
+}
+
+/// Port-only "Reset" button, beside the direction-arrow checkbox.
+fn controlsResetButton(left_rect: rl.Rectangle) window_ui.UiButton {
+    return .{
+        .label = "Reset",
+        .rect = rl.Rectangle.init(left_rect.x + 388.0, left_rect.y + 166.0, window_ui.buttonWidth("Reset", false), window_ui.button_plate_height),
+    };
 }
 
 fn rebindRect(right_rect: rl.Rectangle, y: f32) rl.Rectangle {
@@ -1063,7 +1088,8 @@ fn updateControlsFocusFromPointer(state: *ControlsState, rows: []const RebindRow
         controlsDropdownRect(left_rect, 340.0, 56.0, dropdownWidth(player_items[0..], null)),
         controlsDropdownRect(left_rect, 214.0, 102.0, dropdownWidth(aim_items_with_computer[0..], null)),
         controlsDropdownRect(left_rect, 214.0, 144.0, dropdownWidth(movement_items[0..], null)),
-        rl.Rectangle.init(left_rect.x + 213.0, left_rect.y + 174.0, 220.0, 20.0),
+        rl.Rectangle.init(left_rect.x + 213.0, left_rect.y + 174.0, 170.0, 20.0),
+        window_ui.buttonHitRect(controlsResetButton(left_rect)),
     };
     for (left_rects, 0..) |rect, idx| {
         if (rl.checkCollisionPointRec(mouse, rect)) {
