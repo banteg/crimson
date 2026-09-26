@@ -3,14 +3,38 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
-## Double orbit phase (2026-09-26)
+## Native frame layout (2026-09-26)
 
-In the plague orbit block, `phase` is a `double`: `double phase =
-(float)projectile_index + plague_phase;`. It only feeds `cos`/`sin` and the
-+120°/+240° offsets. A sweep of all 30 float locals to `double`, one at a time,
-found it the only gain: 72.88% to **73.35%**, with references at `532/0/0`. A
-second `double` on top of it changes nothing. The frame stays 0x184 against
-native's 0x19c.
+crimson-88 mapped every native stack slot (`answer_pr-native-frame.md`,
+`slot_map.md`, `scripts/c2/native_slots.py`). Native's frame is 5 four-byte
+slots, one 16-byte aggregate and 47 eight-byte slots. This pass moves ours
+from 0x184 to **0x194** against native's 0x19c, with 10 of 52 slots at native
+offsets. **73.35% to 74.17%**; references 532/0/0 to **537/0/0**; stack-masked
+structural 96.49% to 97.56%.
+
+- **Conventional-trail fade** lives in `effect_color_t trail_color`. Only
+  `.a` is referenced, but slot density only fits a 16-byte aggregate at that
+  native offset.
+- **Assault-rifle head.** `trail_head` is gone. `point2` and `point3` are
+  each a direct `(camera_offset + position) +/- velocity` expression.
+- **Ion loop.** It uses one variable per role, declared at the top of the
+  loop body:
+  - `scale` for pulse scale, splitter/blade size and both effect scales;
+  - `direction` for both directions and the arc;
+  - `base`, `distance` and `half_size` (the arc loop reuses `half_size`).
+  A float local defined only by integer-typed stores is never killed, so it
+  stays live across its whole loop. Two such objects in one loop can never
+  share a slot, so native must have had a single variable where it shares one.
+- **Ion fading trail** computes `alpha` inside each colour branch.
+- **Plague `phase`** is a `float` again. The earlier `double` (73.35%) was a
+  layout coincidence; native uses `fst`/`fld dword`.
+
+Open:
+- The last 8 bytes are native's spill of the ion-loop `projectile` pointer:
+  `lea edi,[ebx-0x14]; mov [esp+0x38],edi`, reloaded three times.
+- The 4-byte slot order.
+- One `int segment_index` for all five plasma loops gives 97.83%
+  stack-masked, but only 72.60% raw with 2 reference mismatches.
 
 ## Round-3 laser corners (2026-09-26)
 
