@@ -4211,7 +4211,7 @@
   "0x10761bf0": {
    "name": "sort_stack_slots_by_density",
    "prototype": "void __fastcall sort_stack_slots_by_density(int32_t lo, int32_t hi)",
-   "comment": "Unstable quicksort, middle pivot swapped to lo, strict > on count*1000/size (signed div). Only index range [params..n-1]."
+   "comment": "Unstable quicksort, middle pivot swapped to lo, strict > on count*1000/size (signed div). Only index range [params..n-1]. K&R quicksort of the local slots by weight*1000/size, descending (middle pivot swapped to lo, strict >). Unstable: equal-density slots get no tie-break key (not symbol id, first reference or size); their final order depends on every slot's density and position in the pre-sort array. Verified on projectile_render: the four weight-16 slots keep pre-sort positions 3/20/21/22 in two builds and still come out in different orders once other slots' densities change (tools/match/c2/compiler/pr-residual-map.md section 4.2)."
   },
   "0x10761cc2": {
    "name": "swap_stack_slots",

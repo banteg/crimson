@@ -146,6 +146,11 @@ test 2.4 below.
 
 ## 5. Frame size: `direction` at function scope, and `point0..3` shared with the arc strips
 
+Follow-up ([pr-residual-map.md](pr-residual-map.md)): the plasma `step_x`/`step_y` are one
+function-scope pair, and that change also fixes the weight-16 order, so `half_size` can take the
+pulse arm's store without mismatches. With `point0 = point1 = start_result` kept, no separate arc
+product temp is needed.
+
 After §3 and §4 the frame was still 0x194.
 
 - **`direction`.** Native bottom 0x44 holds `direction` alone (23 references).

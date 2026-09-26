@@ -170,6 +170,9 @@ Observed combinations:
   confirm it.
 - Local bytes above 0x80 trigger the density sort: `weight*1000/size`, signed division,
   K&R quicksort with the middle pivot swapped to lo and a strict `>`. It covers local slots only.
+  The sort is unstable and has no tie-break key: equal-density slots are ordered by the whole
+  pre-sort array, so a change anywhere in the slot list can flip a tie
+  ([pr-residual-map.md](pr-residual-map.md)).
 - FPO frames allocate slots from the last one to the first, so slot 0 is at `[esp+pushes]`.
   Ebp frames allocate slot 0 first, closest to ebp.
 
