@@ -458,15 +458,10 @@ extern "C" void player_update(void)
 
             bool moving_to_target = false;
             if (player->move_target.x != -1.0f) {
-                scratch_pos.y = player_position->y - player->move_target.y;
-                scratch_pos.x = player_position->x - player->move_target.x;
-                if ((float)sqrt(
-                        scratch_pos.y * scratch_pos.y
-                        + scratch_pos.x * scratch_pos.x)
-                    > 20.0f) {
-                    movement_heading =
-                        (float)atan2(scratch_pos.y, scratch_pos.x)
-                        - 1.5707964f;
+                float dy = player_position->y - player->move_target.y;
+                float dx = player_position->x - player->move_target.x;
+                if ((float)sqrt(dy * dy + dx * dx) > 20.0f) {
+                    movement_heading = (float)atan2(dy, dx) - 1.5707964f;
                     while (movement_heading < 0.0f) {
                         movement_heading = movement_heading + 6.2831855f;
                     }
@@ -476,8 +471,10 @@ extern "C" void player_update(void)
                         player_accelerate_move_speed(player);
                         player_apply_move_speed_cap(player);
 
-                        movement_input.y = player->heading - 1.5707964f;
-                        movement_input.x = 3.1415927f - angle_step;
+                        player_update_vec2_set(
+                            &movement_input,
+                            3.1415927f - angle_step,
+                            player->heading - 1.5707964f);
                         player->move_dx = (float)cos(movement_input.y) * player->move_speed * movement_input.x
                             * scalar * 7.957747f;
                         player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed
@@ -724,8 +721,10 @@ extern "C" void player_update(void)
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
 
-                scratch_pos.y = player->heading - 1.5707964f;
-                scratch_pos.x = 3.1415927f - angle_step;
+                player_update_vec2_set(
+                    &scratch_pos,
+                    3.1415927f - angle_step,
+                    player->heading - 1.5707964f);
                 player->move_dx = (float)cos(scratch_pos.y) * player->move_speed * scratch_pos.x
                     * scalar * 7.957747f;
                 player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed
@@ -786,8 +785,10 @@ extern "C" void player_update(void)
             player_accelerate_move_speed(player);
             player_apply_move_speed_cap(player);
 
-            scratch_pos.y = player->heading - 1.5707964f;
-            scratch_pos.x = 3.1415927f - angle_step;
+            player_update_vec2_set(
+                &scratch_pos,
+                3.1415927f - angle_step,
+                player->heading - 1.5707964f);
             player->move_dx = (float)cos(scratch_pos.y) * player->move_speed * scratch_pos.x
                 * scalar * 7.957747f;
             player->move_dy = (float)sin(player->heading - 1.5707964f) * player->move_speed

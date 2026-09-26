@@ -2,6 +2,32 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Move-target deltas and turn-pair setters (2026-09-26)
+
+- **Mode-4 move-target test** names its deltas: `float dy = ...; float dx = ...;`
+  then `sqrt(dy * dy + dx * dx) > 20.0f` and `atan2(dy, dx)`. Native keeps both
+  deltas on the x87 stack through the sqrt compare and hands them straight to
+  `fpatan`. The old `scratch_pos` staging stored and reloaded them.
+- **Accelerate turn pairs** in the mode-4 arm and in two of the three
+  `scratch_pos` arms are written as the setter:
+  `player_update_vec2_set(&v, 3.1415927f - angle_step, player->heading - 1.5707964f)`.
+  Right-to-left arguments give native's order, the heading first and then
+  `pi - angle_step`. The remaining arm's setter adds a reference mismatch, so it
+  stays scalar for now.
+
+References: 857/0/0 to **858/0/0**. Label-insensitive views all improve:
+- labels masked: 82.91 to 83.27%;
+- stack-masked structural: 92.79 to 93.18%;
+- x87: 94.48 to 95.30%.
+
+Raw drops from 74.66% to **73.98%**. `scripts/c2/label_drift.py` shows all 47
+lost lines are branch labels. Label-masked, the change gains 13 lines and loses
+none.
+
+Open: native drops the dead `y` lane store of the turn pair and stores `x` in
+`movement_heading`'s 4-byte slot. A block-local `turn` vector over-promotes
+instead: `x` is held and the heading is computed after it.
+
 ## Zeroed movement copy and target distance locals (2026-09-26)
 
 The prologue now writes `player->movement = scratch_pos;` after zeroing
