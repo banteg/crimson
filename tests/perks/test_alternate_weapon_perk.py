@@ -5,7 +5,7 @@ import pytest
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.gameplay import player_update
-from crimson.math_parity import f32
+from crimson.math_parity import f32, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.replay.driver.setup import reset_players
 from crimson.sim.gameplay_state import GameplayState
@@ -72,8 +72,9 @@ def test_alternate_weapon_slows_movement() -> None:
     player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
     player_update(perk, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
 
-    assert_float_close(base.pos.x, 100.0)
-    assert_float_close(perk.pos.x, 80.0)
+    # player_apply_move_with_spawn_avoidance scales the delta by 0.8f at PC24.
+    assert base.pos.x == pytest.approx(100.0, abs=1e-4)
+    assert perk.pos.x == x87_pc24_mul(base.pos.x, f32(0.8))
 
 
 def test_alternate_weapon_starts_with_preloaded_pistol_alt_slot() -> None:

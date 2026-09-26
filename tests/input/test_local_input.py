@@ -376,9 +376,8 @@ def test_local_input_mouse_point_click_marks_move_to_cursor_press(
     assert out.reload_pressed is True
     assert out.move_to_cursor_pressed is True
     assert interpreter._states[0].move_target == mouse_world
-    expected, _distance = (mouse_world - player.pos).normalized_with_length()
-    assert_float_close(float(out.move.x), float(expected.x))
-    assert_float_close(float(out.move.y), float(expected.y))
+    # The raw delta lets player_update see native `pos - move_target` exactly.
+    assert out.move == Vec2(60.0, 40.0)
 
 
 def test_local_input_computer_move_mode_near_center_heads_toward_target(
@@ -402,8 +401,7 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
         creatures=creatures,
     )
 
-    assert_float_close(float(out.move.x), 1.0)
-    assert_float_close(float(out.move.y), 0.0)
+    assert out.move == Vec2(60.0, 0.0)
 
 
 def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
@@ -427,9 +425,7 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
         creatures=creatures,
     )
 
-    expected, _distance = (Vec2(512.0, 512.0) - player.pos).normalized_with_length()
-    assert_float_close(float(out.move.x), float(expected.x))
-    assert_float_close(float(out.move.y), float(expected.y))
+    assert out.move == Vec2(-388.0, -388.0)
 
 
 def test_local_input_computer_move_mode_without_target_orbits_center(
@@ -452,8 +448,7 @@ def test_local_input_computer_move_mode_without_target_orbits_center(
         creatures=[],
     )
 
-    assert_float_close(float(out.move.x), 0.0)
-    assert_float_close(float(out.move.y), 1.0)
+    assert out.move == Vec2(0.0, 100.0)
 
 
 def test_local_input_computer_aim_scheme_preserves_configured_movement(

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import player_frame_dt_after_roundtrip
@@ -40,7 +42,8 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         perk_progression_enabled=False,
     )
 
-    assert_float_close(player.pos.x, 90.0)  # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0)
+    # 100.0 * 0.9 (speed_multiplier=2.0, move_speed=2.0), up to the PC24 velocity chain.
+    assert player.pos.x == pytest.approx(90.0, abs=1e-4)
 
 
 def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:

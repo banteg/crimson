@@ -88,10 +88,10 @@ pub fn reflexBoostTimeScaleFactor(
 }
 
 pub fn survivalLevelThreshold(level_in: i32) i32 {
+    // gameplay_update_and_render (0x0040afae): `1000 - __ftol(__CIpow(level, (double)1.8f) * -1000.0f)`.
     const level = @max(1, level_in);
-    const level_f32: f32 = @floatFromInt(level);
-    const value = 1000.0 + std.math.pow(f32, level_f32, 1.8) * 1000.0;
-    return @intFromFloat(value);
+    const power = native_math.crtPowPc24(@floatFromInt(level), @as(f32, 1.8));
+    return 1000 - @as(i32, @intFromFloat(native_math.pc24Mul(power, @as(f32, -1000.0))));
 }
 
 pub fn survivalCheckLevelUp(
@@ -276,6 +276,17 @@ test "survival level threshold smoke values" {
     try std.testing.expectEqual(@as(i32, 2000), survivalLevelThreshold(1));
     try std.testing.expectEqual(@as(i32, 4482), survivalLevelThreshold(2));
     try std.testing.expectEqual(@as(i32, 64095), survivalLevelThreshold(10));
+}
+
+test "survival level threshold follows native crt pow rounding" {
+    // Native __CIpow at PC24 lands one XP below the wide pow at level 32 and 42.
+    try std.testing.expectEqual(@as(i32, 512999), survivalLevelThreshold(32));
+    try std.testing.expectEqual(@as(i32, 836311), survivalLevelThreshold(42));
+    // Sum over levels 1..2000 matches the Python port and the native oracle.
+    var total: i64 = 0;
+    var level: i32 = 1;
+    while (level <= 2000) : (level += 1) total += survivalLevelThreshold(level);
+    try std.testing.expectEqual(@as(i64, 625217521964), total);
 }
 
 test "survival handout time gate assigns shrinkifier" {

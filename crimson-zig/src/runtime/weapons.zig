@@ -112,6 +112,8 @@ pub const TickInputFlags = struct {
     move_mode: i32 = 0,
     single_player_mode: bool = true,
     preprocessed_player_tick: bool = false,
+    /// Integer frame milliseconds for the Alternate Weapon swap cooldown; defaults to `dt`'s.
+    frame_dt_ms: ?i32 = null,
 };
 
 const FireGate = struct {
@@ -188,6 +190,17 @@ pub fn preprocessPlayerForPerkTicksWithEffects(
     }
 
     player.muzzle_flash_alpha = @max(0.0, narrowF32(player.muzzle_flash_alpha - dt * 2.0));
+
+    // Native cools the shot before perk timers and movement (0x004137xx), with
+    // the unscaled frame_dt.
+    const cooldown_scale: f32 = if (state.bonuses.weapon_power_up > 0.0) 1.5 else 1.0;
+    const cooldown_decay = narrowF32(
+        @as(f64, @floatCast(dt)) * @as(f64, @floatCast(cooldown_scale)),
+    );
+    const next_shot_cooldown = narrowF32(
+        @as(f64, @floatCast(player.weapon.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
+    );
+    player.weapon.shot_cooldown = @max(0.0, next_shot_cooldown);
 
     return true;
 }
@@ -373,15 +386,6 @@ pub fn stepPlayerForTickWithEffects(
 
     const perk_player = playerUpdatePerkSource(state, player, all_players);
 
-    const cooldown_scale: f32 = if (state.bonuses.weapon_power_up > 0.0) 1.5 else 1.0;
-    const cooldown_decay = narrowF32(
-        @as(f64, @floatCast(dt)) * @as(f64, @floatCast(cooldown_scale)),
-    );
-    const next_shot_cooldown = narrowF32(
-        @as(f64, @floatCast(player.weapon.shot_cooldown)) - @as(f64, @floatCast(cooldown_decay)),
-    );
-    player.weapon.shot_cooldown = @max(0.0, next_shot_cooldown);
-
     const reload_scale: f32 = if (player.reload_stationary_latch and perks.perkActive(perk_player, PerkId.stationary_reloader))
         3.0
     else
@@ -471,7 +475,8 @@ pub fn stepPlayerForTickWithEffects(
     const reload_key_released = !input_flags.reload_active_any;
     if (has_alt_weapon_perk) {
         var cooldown_ms = state.player_alt_weapon_swap_cooldown_ms;
-        const dt_ms: i32 = if (dt > 0.0) timing.ftolMsI32(dt) else 0;
+        // Native subtracts the frame's integer `frame_dt_ms`, not the Reflex-scaled frame_dt.
+        const dt_ms: i32 = input_flags.frame_dt_ms orelse timing.ftolMsI32(dt);
         if (cooldown_ms < 1) {
             cooldown_ms = 0;
         } else {

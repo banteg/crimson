@@ -14,6 +14,7 @@ from grim.raylib_api import rd, rl
 from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
 from .game_modes import GameMode
+from .math_parity import f32
 from .quests import quest_by_level
 from .quests.level import QuestLevel
 from .rng_caller_static import RngCallerStatic
@@ -702,17 +703,6 @@ class DemoView:
 
         dt = float(dt)
 
-        def _turn_towards_heading(cur: float, target: float) -> tuple[float, float]:
-            cur = cur % math.tau
-            target = target % math.tau
-            delta = (target - cur + math.pi) % math.tau - math.pi
-            diff = abs(delta)
-            if diff <= 1e-9:
-                return cur, 0.0
-            step = dt * diff * 5.0
-            cur = (cur + step) % math.tau if delta > 0.0 else (cur - step) % math.tau
-            return cur, diff
-
         inputs: list[PlayerInput] = []
         for idx, player in enumerate(players):
             target_idx = self._select_demo_target(idx, player, creatures)
@@ -753,14 +743,9 @@ class DemoView:
                 else:
                     move_delta = center - player.pos
 
-            desired_dir, desired_mag = move_delta.normalized_with_length()
-            if desired_mag <= 1e-6:
-                move = Vec2()
-            else:
-                desired_heading = desired_dir.to_heading()
-                smoothed_heading, angle_diff = _turn_towards_heading(float(player.heading), desired_heading)
-                move_mag = max(0.001, (math.pi - angle_diff) / math.pi)
-                move = Vec2.from_heading(smoothed_heading) * move_mag
+            # player_update eases the heading toward this vector and scales the
+            # speed by the remaining turn, as native computer movement does.
+            move = Vec2(f32(move_delta.x), f32(move_delta.y))
 
             inputs.append(
                 PlayerInput(

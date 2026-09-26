@@ -29,6 +29,7 @@ __all__ = [
     "x87_fpatan",
     "x87_pc24_add",
     "x87_pc24_cos_mul",
+    "x87_pc24_crt_pow",
     "x87_pc24_div",
     "x87_pc24_hypot",
     "x87_pc24_mul",
@@ -101,6 +102,20 @@ def x87_pc24_sqrt(value: float) -> float:
     """Square-root using the game's x87 24-bit significand precision."""
 
     return f32(math.sqrt(float(value)))
+
+
+def x87_pc24_crt_pow(base: float, exponent: float) -> float:
+    """Model the CRT ``__CIpow`` (0x00461140) x87 sequence for a positive finite base.
+
+    ``fyl2x`` and ``f2xm1`` stay wide; ``crt_load_cw`` keeps the caller's
+    precision control, so the fraction ``fsub`` and the ``fadd 1.0`` round at
+    PC24 before the exact ``fscale`` (``crt_two_to_tos`` 0x00465130).
+    """
+
+    scaled_log = float(exponent) * math.log2(float(base))
+    whole = round(scaled_log)  # frndint, round-to-nearest-even
+    fraction = x87_pc24_sub(scaled_log, whole)
+    return math.ldexp(x87_pc24_add(2.0**fraction - 1.0, 1.0), whole)
 
 
 def x87_pc24_hypot(x: float, y: float) -> float:

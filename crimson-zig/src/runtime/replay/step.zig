@@ -357,13 +357,18 @@ pub fn stepTick(
         tutorial_runtime.beforeStep(&context.state, &context.creatures);
     }
     var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
+    // Each live player's update round-trips the global frame_dt under Reflex
+    // Boost; the next player (and the rest of the frame) reads the result.
+    var player_frame_dt = [_]f32{0.0} ** state_mod.max_players;
+    var frame_dt = narrowF32(frame.dt_sim);
     for (players, 0..) |*player, player_idx| {
+        player_frame_dt[player_idx] = frame_dt;
         const should_tick_perks = weapons_runtime.preprocessPlayerForPerkTicksWithEffects(
             &context.state,
             player,
             &context.effects,
             context.detail_preset,
-            frame.dt_sim,
+            frame_dt,
         );
         player_preprocessed_alive[player_idx] = should_tick_perks;
         if (!should_tick_perks) continue;
@@ -373,9 +378,15 @@ pub fn stepTick(
             players,
             &context.projectiles,
             &context.sprite_effects,
-            frame.dt_sim,
+            frame_dt,
+        );
+        frame_dt = movement.playerFrameDtAfterRoundtrip(
+            frame_dt,
+            context.state.time_scale_active,
+            context.state.bonuses.reflex_boost,
         );
     }
+    const dt_after_player = frame_dt;
     for (inputs, players[0..inputs.len], 0..) |input, *player, player_idx| {
         if (!player_preprocessed_alive[player_idx]) {
             continue;
@@ -383,13 +394,14 @@ pub fn stepTick(
         const flags = input.flags;
         const move_mode_for_tick = movement.resolveMoveModeForUpdate(flags);
 
+        const player_dt = player_frame_dt[player_idx];
         movement.updatePlayerFromGameInputWithPlayers(
             player,
             input,
             &context.state,
             players,
             &context.creatures,
-            frame.dt_sim,
+            player_dt,
         );
         var player_damage_context: NativePlayerDamageContext = .{
             .state = &context.state,
@@ -426,8 +438,14 @@ pub fn stepTick(
                 .move_mode = move_mode_for_tick,
                 .single_player_mode = players.len == 1,
                 .preprocessed_player_tick = true,
+                .frame_dt_ms = timing.ftolMsI32(player_dt),
             },
-            frame.dt_sim,
+            // Spread, reload and firing read the frame_dt restored after movement.
+            movement.playerFrameDtAfterRoundtrip(
+                player_dt,
+                context.state.time_scale_active,
+                context.state.bonuses.reflex_boost,
+            ),
         );
         movement.finalizePlayerPostUpdate(player, context.world_size);
     }
@@ -557,11 +575,6 @@ pub fn stepTick(
     context.state.highscore_score_xp = if (players.len > 0) players[0].experience else 0;
 
     callPhaseHook(options.hooks, context, .pre_bonus_effects, &frame);
-    const dt_after_player = movement.playerFrameDtAfterRoundtrip(
-        narrowF32(frame.dt_sim),
-        context.state.time_scale_active,
-        context.state.bonuses.reflex_boost,
-    );
     cameraShakeUpdate(&context.state, dt_after_player);
     if (context.perk_progression_enabled) {
         _ = survival_progression.survivalProgressionUpdate(&context.state, players);

@@ -30,6 +30,7 @@ const movement_control_dual_action_pad: i32 = 3;
 const movement_control_mouse_point_click: i32 = 4;
 const movement_control_computer: i32 = 5;
 const aim_scheme_mouse: i32 = 0;
+const dual_action_pad_deadzone: f32 = 0.2;
 
 pub fn updatePlayerFromGameInput(
     player: *state_mod.PlayerState,
@@ -55,190 +56,128 @@ pub fn updatePlayerFromGameInputWithPlayers(
         player;
     const prev_pos = player.pos;
     var movement_dt = dt;
-    if (state.time_scale_active and movement_dt > 0.0) {
-        const time_scale_factor = survival_progression.reflexBoostTimeScaleFactor(
-            state.bonuses.reflex_boost,
-            true,
-        );
-        if (time_scale_factor > 0.0) {
-            movement_dt = native_math.pc24Mul(
-                native_math.pc24Div(@as(f32, 0.6), time_scale_factor),
-                movement_dt,
-            );
-        }
+    if (state.time_scale_active) {
+        movement_dt = reflexMovementDt(dt, reflexTimeScaleFactor(state));
     }
 
     const flags = input.flags;
     const move_mode = resolveMoveModeForUpdate(flags);
 
-    var raw_move: state_mod.Vec2 = .{
+    const raw_move: state_mod.Vec2 = .{
         .x = narrowF32(input.move_x),
         .y = narrowF32(input.move_y),
     };
-    const raw_mag = raw_move.length();
-    var move_ext = directionFromHeadingNativeExt(player.heading);
 
     var speed_multiplier = player.speed_multiplier;
     if (player.speed_bonus_timer > 0.0) {
         speed_multiplier += 1.0;
     }
 
-    var speed: f32 = 0.0;
     var phase_sign: f32 = 1.0;
-    var move_delta_override: ?state_mod.Vec2 = null;
+    var delta: state_mod.Vec2 = undefined;
     const player_controlled_movement = !state.demo_mode_active and move_mode != movement_control_computer;
 
-    if (player_controlled_movement) {
-        if (move_mode == movement_control_relative) {
-            const turning_left = flags.turn_left_pressed orelse false;
-            const turning_right = flags.turn_right_pressed orelse false;
-            const moving_forward = flags.move_forward_pressed orelse false;
-            const moving_backward = flags.move_backward_pressed orelse false;
-            var turned = false;
+    if (player_controlled_movement and move_mode == movement_control_relative) {
+        const turning_left = flags.turn_left_pressed orelse false;
+        const turning_right = flags.turn_right_pressed orelse false;
+        const moving_forward = flags.move_forward_pressed orelse false;
+        const moving_backward = flags.move_backward_pressed orelse false;
+        var turned = false;
 
-            if (player.turn_speed < 1.0) player.turn_speed = 1.0;
-            if (player.turn_speed > 7.0) player.turn_speed = 7.0;
+        if (player.turn_speed < 1.0) player.turn_speed = 1.0;
+        if (player.turn_speed > 7.0) player.turn_speed = 7.0;
 
-            if (turning_left) {
-                player.turn_speed = narrowF32(player.turn_speed + movement_dt * 10.0);
-                const turn_step = narrowF32(player.turn_speed * movement_dt * 0.5);
-                player.heading = narrowF32(player.heading - turn_step);
-                player.aim_heading = narrowF32(player.aim_heading - turn_step);
-                turned = true;
-            } else if (turning_right) {
-                player.turn_speed = narrowF32(player.turn_speed + movement_dt * 10.0);
-                const turn_step = narrowF32(player.turn_speed * movement_dt * 0.5);
-                player.heading = narrowF32(player.heading + turn_step);
-                player.aim_heading = narrowF32(player.aim_heading + turn_step);
-                turned = true;
-            }
-
-            if (moving_forward) {
-                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
-                playerApplyMoveSpeedCaps(player);
-                move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, 25.0);
-            } else if (moving_backward) {
-                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
-                phase_sign = -1.0;
-                move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, -25.0);
-            } else {
-                if (!turned) {
-                    player.turn_speed = 1.0;
-                }
-                playerDecelerateMoveSpeed(player, movement_dt);
-                move_delta_override = playerMoveDeltaFromHeading(player, movement_dt, 25.0);
-            }
-        } else if (move_mode == movement_control_static) {
-            const moving_forward = flags.move_forward_pressed orelse (raw_move.y < -0.5);
-            const moving_backward = flags.move_backward_pressed orelse (raw_move.y > 0.5);
-            const turning_left = flags.turn_left_pressed orelse (raw_move.x < -0.5);
-            const turning_right = flags.turn_right_pressed orelse (raw_move.x > 0.5);
-
-            var target_heading = relative_move_heading_none;
-            if (turning_left) target_heading = relative_move_heading_left;
-            if (turning_right) target_heading = relative_move_heading_right;
-
-            if (moving_forward) {
-                if (turning_left) {
-                    target_heading = relative_move_heading_forward_left;
-                } else if (turning_right) {
-                    target_heading = relative_move_heading_forward_right;
-                } else {
-                    target_heading = relative_move_heading_forward;
-                }
-            }
-            if (moving_backward) {
-                if (turning_left) {
-                    target_heading = relative_move_heading_backward_left;
-                } else if (turning_right) {
-                    target_heading = relative_move_heading_backward_right;
-                } else {
-                    target_heading = relative_move_heading_backward;
-                }
-            }
-
-            if (!moving_backward and target_heading == relative_move_heading_none) {
-                playerDecelerateMoveSpeed(player, movement_dt);
-                move_ext = directionFromHeadingNativeExt(player.heading);
-                const speed_scale_wide =
-                    @as(f64, @floatCast(player.move_speed)) *
-                    @as(f64, @floatCast(speed_multiplier)) *
-                    @as(f64, @floatCast(@as(f32, 25.0)));
-                const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
-                const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
-                move_delta_override = movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
-            } else {
-                const heading_result = playerHeadingApproachTargetWithDelta(
-                    player,
-                    target_heading,
-                    movement_dt,
-                );
-                player.aim_heading = narrowF32(player.aim_heading + heading_result.turn_delta);
-                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
-                playerApplyMoveSpeedCaps(player);
-                move_ext = directionFromHeadingNativeExt(player.heading);
-                const velocity = playerTurnAlignedVelocityNative(
-                    move_ext,
-                    player.move_speed,
-                    heading_result.diff,
-                    speed_multiplier,
-                );
-                move_delta_override = movementDeltaFromVelocityNative(movement_dt, velocity.x, velocity.y);
-            }
-        } else {
-            const move_input_threshold: f32 = if (move_mode == movement_control_mouse_point_click) 0.0 else 0.2;
-            const moving_input = raw_mag > move_input_threshold;
-            var turn_alignment_scale: f32 = 1.0;
-            if (moving_input) {
-                raw_move = normalizeVec2SafeNative(raw_move);
-                const target_heading = normalizeHeading(raw_move.toHeading());
-                const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
-                move_ext = directionFromHeadingNativeExt(player.heading);
-                turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
-                playerAccelerateMoveSpeed(player, perk_player, movement_dt);
-            } else {
-                playerDecelerateMoveSpeed(player, movement_dt);
-                move_ext = directionFromHeadingNativeExt(player.heading);
-            }
-
-            playerApplyMoveSpeedCaps(player);
-            speed = player.move_speed * speed_multiplier * 25.0;
-            if (moving_input) {
-                speed *= @min(1.0, raw_mag);
-                speed *= turn_alignment_scale;
-            }
+        if (turning_left or turning_right) {
+            // 0x004144dc: f32 operands round every op, as PC24 does.
+            player.turn_speed = player.turn_speed + movement_dt * 10.0;
+            var turn_step = player.turn_speed * movement_dt * 0.5;
+            if (turning_left) turn_step = -turn_step;
+            player.heading = player.heading + turn_step;
+            player.aim_heading = player.aim_heading + turn_step;
+            turned = true;
         }
-    } else {
-        const move_input_threshold: f32 = if (state.demo_mode_active) 0.0 else 0.2;
-        const moving_input = raw_mag > move_input_threshold;
-        var turn_alignment_scale: f32 = 1.0;
-        if (moving_input) {
-            raw_move = normalizeVec2SafeNative(raw_move);
-            const target_heading = normalizeHeading(raw_move.toHeading());
-            const angle_diff = playerHeadingApproachTarget(player, target_heading, movement_dt);
-            move_ext = directionFromHeadingNativeExt(player.heading);
-            turn_alignment_scale = @max(0.0, (native_pi - angle_diff) / native_pi);
+
+        var speed_scale: f32 = 25.0;
+        if (moving_forward) {
             playerAccelerateMoveSpeed(player, perk_player, movement_dt);
+            playerApplyMoveSpeedCaps(player);
+        } else if (moving_backward) {
+            playerAccelerateMoveSpeed(player, perk_player, movement_dt);
+            phase_sign = -1.0;
+            speed_scale = -25.0;
         } else {
+            if (!turned) {
+                player.turn_speed = 1.0;
+            }
             playerDecelerateMoveSpeed(player, movement_dt);
-            move_ext = directionFromHeadingNativeExt(player.heading);
+        }
+        const velocity = playerHeadingVelocity(player, speed_multiplier, speed_scale);
+        delta = movementDeltaFromVelocityNative(movement_dt, velocity.x, velocity.y);
+    } else if (player_controlled_movement and move_mode == movement_control_static) {
+        const moving_forward = flags.move_forward_pressed orelse (raw_move.y < -0.5);
+        const moving_backward = flags.move_backward_pressed orelse (raw_move.y > 0.5);
+        const turning_left = flags.turn_left_pressed orelse (raw_move.x < -0.5);
+        const turning_right = flags.turn_right_pressed orelse (raw_move.x > 0.5);
+
+        var target_heading = relative_move_heading_none;
+        if (turning_left) target_heading = relative_move_heading_left;
+        if (turning_right) target_heading = relative_move_heading_right;
+
+        if (moving_forward) {
+            if (turning_left) {
+                target_heading = relative_move_heading_forward_left;
+            } else if (turning_right) {
+                target_heading = relative_move_heading_forward_right;
+            } else {
+                target_heading = relative_move_heading_forward;
+            }
+        }
+        if (moving_backward) {
+            if (turning_left) {
+                target_heading = relative_move_heading_backward_left;
+            } else if (turning_right) {
+                target_heading = relative_move_heading_backward_right;
+            } else {
+                target_heading = relative_move_heading_backward;
+            }
         }
 
-        playerApplyMoveSpeedCaps(player);
-        speed = player.move_speed * speed_multiplier * 25.0;
-        if (moving_input) {
-            speed *= @min(1.0, raw_mag);
-            speed *= turn_alignment_scale;
+        var velocity: state_mod.Vec2 = undefined;
+        if (!moving_backward and target_heading == relative_move_heading_none) {
+            playerDecelerateMoveSpeed(player, movement_dt);
+            velocity = playerHeadingVelocity(player, speed_multiplier, 25.0);
+        } else {
+            const heading_result = playerHeadingApproachTargetWithDelta(
+                player,
+                target_heading,
+                movement_dt,
+            );
+            player.aim_heading = narrowF32(player.aim_heading + heading_result.turn_delta);
+            playerAccelerateMoveSpeed(player, perk_player, movement_dt);
+            playerApplyMoveSpeedCaps(player);
+            velocity = playerTurnAlignedVelocityNative(
+                directionFromHeadingNativeExt(player.heading),
+                player.move_speed,
+                heading_result.diff,
+                speed_multiplier,
+            );
         }
+        delta = movementDeltaFromVelocityNative(movement_dt, velocity.x, velocity.y);
+    } else {
+        // Point click, dual action pad and computer control steer toward the
+        // input vector; native never scales speed by the stick magnitude.
+        const has_move = raw_move.x != 0.0 or raw_move.y != 0.0;
+        var target_heading: ?f32 = null;
+        if (!player_controlled_movement) {
+            if (has_move) target_heading = nativeMoveTargetHeading(raw_move, false, false);
+        } else if (move_mode == movement_control_mouse_point_click) {
+            if (has_move) target_heading = nativeMoveTargetHeading(raw_move, false, true);
+        } else if (native_math.pc24Hypot(raw_move.x, raw_move.y) > dual_action_pad_deadzone) {
+            target_heading = nativeMoveTargetHeading(raw_move, true, true);
+        }
+        delta = playerMoveTowardHeading(player, perk_player, target_heading, movement_dt, speed_multiplier);
     }
 
-    const delta = if (move_delta_override) |override|
-        override
-    else
-        state_mod.Vec2{
-            .x = headingMulNarrow(move_ext.x, narrowF32(speed * movement_dt)),
-            .y = headingMulNarrow(move_ext.y, narrowF32(speed * movement_dt)),
-        };
     playerApplyMoveWithSpawnAvoidance(player, perk_player, delta, creatures);
 
     const move_delta = state_mod.Vec2.sub(player.pos, prev_pos);
@@ -258,8 +197,53 @@ pub fn updatePlayerFromGameInputWithPlayers(
     const aim_dir = normalizeVec2SafeNative(state_mod.Vec2.sub(player.aim, player.pos));
     if (aim_dir.lengthSq() > 0.0) {
         player.aim_dir = aim_dir;
-        player.aim_heading = aimHeadingFromAimPointNative(player.pos, player.aim);
     }
+    // 0x0041572e: native recomputes the heading unconditionally; an aim point on
+    // the player gives `fpatan(+0, +0) - 1.5707964f`.
+    player.aim_heading = aimHeadingFromAimPointNative(player.pos, player.aim);
+}
+
+/// Heading toward `move`, computed as native does from `movement_input = -move`:
+/// `atan2f(y, x) - 1.5707964f` (0x00413fd7, 0x00414235, 0x00414d4a). Point click and
+/// the pad lift it into [0, 2pi) with `+= 6.2831855f`; the computer path does not.
+fn nativeMoveTargetHeading(move: state_mod.Vec2, normalize: bool, wrap: bool) f32 {
+    // `0 - v` keeps a +0 component positive, like native `pos - target`.
+    var away: state_mod.Vec2 = .{
+        .x = native_math.pc24Sub(@as(f32, 0.0), move.x),
+        .y = native_math.pc24Sub(@as(f32, 0.0), move.y),
+    };
+    if (normalize) away = normalizeVec2SafeNative(away); // D3DXVec2Normalize
+    var heading = native_math.pc24Sub(native_math.fpatan(away.y, away.x), native_half_pi);
+    if (wrap) {
+        while (heading < 0.0) heading = native_math.pc24Add(heading, native_tau);
+    }
+    return heading;
+}
+
+/// Shared native tail of the point-click, dual-pad and computer movement branches.
+fn playerMoveTowardHeading(
+    player: *state_mod.PlayerState,
+    perk_player: *const state_mod.PlayerState,
+    target_heading: ?f32,
+    movement_dt: f32,
+    speed_multiplier: f32,
+) state_mod.Vec2 {
+    var velocity: state_mod.Vec2 = undefined;
+    if (target_heading != null and target_heading.? != relative_move_heading_none) {
+        const angle_diff = playerHeadingApproachTarget(player, target_heading.?, movement_dt);
+        playerAccelerateMoveSpeed(player, perk_player, movement_dt);
+        playerApplyMoveSpeedCaps(player);
+        velocity = playerTurnAlignedVelocityNative(
+            directionFromHeadingNativeExt(player.heading),
+            player.move_speed,
+            angle_diff,
+            speed_multiplier,
+        );
+    } else {
+        playerDecelerateMoveSpeed(player, movement_dt);
+        velocity = playerHeadingVelocity(player, speed_multiplier, 25.0);
+    }
+    return movementDeltaFromVelocityNative(movement_dt, velocity.x, velocity.y);
 }
 
 pub fn finalizePlayerPostUpdate(
@@ -310,34 +294,24 @@ pub fn resolveAimSchemeForUpdate(
     return aim_scheme_mouse;
 }
 
-fn playerMoveDeltaFromHeading(
+/// `move_d{x,y} = fcos/fsin(heading - 1.5707964f) * move_speed * scalar * +-25.0f`
+/// (e.g. 0x00414152): the trig result stays wide, every fmul rounds at PC24.
+fn playerHeadingVelocity(
     player: *const state_mod.PlayerState,
-    movement_dt: f32,
+    speed_multiplier: f32,
     speed_scale: f32,
 ) state_mod.Vec2 {
-    const move_ext = directionFromHeadingNativeExt(player.heading);
-    const speed_scale_wide =
-        @as(f64, @floatCast(player.move_speed)) *
-        @as(f64, @floatCast(speed_scale));
-    const move_dx = headingMulWideNarrow(move_ext.x, speed_scale_wide);
-    const move_dy = headingMulWideNarrow(move_ext.y, speed_scale_wide);
-    return movementDeltaFromVelocityNative(movement_dt, move_dx, move_dy);
+    const direction = directionFromHeadingNativeExt(player.heading);
+    return .{
+        .x = native_math.pc24Mul(native_math.pc24Mul(native_math.pc24Mul(direction.x, player.move_speed), speed_multiplier), speed_scale),
+        .y = native_math.pc24Mul(native_math.pc24Mul(native_math.pc24Mul(direction.y, player.move_speed), speed_multiplier), speed_scale),
+    };
 }
 
 const HeadingDirectionExt = struct {
     x: f64,
     y: f64,
 };
-
-fn headingMulNarrow(component: f64, scalar: f32) f32 {
-    return headingMulWideNarrow(component, @as(f64, @floatCast(scalar)));
-}
-
-fn headingMulWideNarrow(component: f64, scale_wide: f64) f32 {
-    // `player_update` (0x004136b0) computes fcos/fsin movement products in x87
-    // and spills once to float move_dx/move_dy.
-    return narrowF32(component * scale_wide);
-}
 
 fn playerTurnAlignedVelocityNative(
     direction: HeadingDirectionExt,
@@ -574,6 +548,22 @@ pub fn applyPerkWorldDtSteps(
     return narrowF32(dt * 0.9);
 }
 
+pub fn reflexTimeScaleFactor(state: *const state_mod.GameplayState) f32 {
+    return survival_progression.reflexBoostTimeScaleFactor(state.bonuses.reflex_boost, state.time_scale_active);
+}
+
+/// 0x00413e01: `frame_dt = (0.6f / time_scale_factor) * frame_dt` before movement.
+pub fn reflexMovementDt(dt: f32, time_scale_factor: f32) f32 {
+    return native_math.pc24Mul(native_math.pc24Div(@as(f32, 0.6), time_scale_factor), dt);
+}
+
+/// 0x00414f4d: `frame_dt = time_scale_factor * frame_dt * 1.6666666f` right after movement.
+pub fn reflexRestoredDt(movement_dt: f32, time_scale_factor: f32) f32 {
+    return native_math.pc24Mul(native_math.pc24Mul(time_scale_factor, movement_dt), @as(f32, 1.6666666));
+}
+
+/// The frame_dt a live player's `player_update` leaves for spread, reload,
+/// firing and the rest of the frame under Reflex Boost.
 pub fn playerFrameDtAfterRoundtrip(
     dt: f32,
     time_scale_active: bool,
@@ -582,23 +572,8 @@ pub fn playerFrameDtAfterRoundtrip(
     if (!time_scale_active or dt <= 0.0) {
         return dt;
     }
-
-    const time_scale_factor = survival_progression.reflexBoostTimeScaleFactor(
-        reflex_boost_timer,
-        true,
-    );
-    if (time_scale_factor <= 0.0) {
-        return dt;
-    }
-
-    const movement_dt = native_math.pc24Mul(
-        native_math.pc24Div(@as(f32, 0.6), time_scale_factor),
-        dt,
-    );
-    return native_math.pc24Mul(
-        native_math.pc24Mul(time_scale_factor, movement_dt),
-        @as(f32, 1.6666666),
-    );
+    const time_scale_factor = survival_progression.reflexBoostTimeScaleFactor(reflex_boost_timer, true);
+    return reflexRestoredDt(reflexMovementDt(dt, time_scale_factor), time_scale_factor);
 }
 
 test "long distance runner ramps speed above base cap and coasts on release" {
@@ -706,8 +681,9 @@ test "alternate weapon slows movement by 20 percent" {
     updatePlayerFromGameInput(&perk_player, input, &state, null, 1.0);
     finalizePlayerPostUpdate(&perk_player, 1024.0);
 
-    try std.testing.expectApproxEqAbs(@as(f32, 100.0), base_player.pos.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 80.0), perk_player.pos.x, 1e-6);
+    // player_apply_move_with_spawn_avoidance scales the delta by 0.8f at PC24.
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), base_player.pos.x, 1e-4);
+    try std.testing.expectEqual(native_math.pc24Mul(base_player.pos.x, @as(f32, 0.8)), perk_player.pos.x);
 }
 
 test "reflex boosted perk scales world dt by 0.9" {
@@ -757,4 +733,39 @@ test "static movement narrows x87 direction and alignment operations" {
         @as(f32, 299.4222106933594),
         narrowF32(@as(f64, 302.53350830078125) + @as(f64, @floatCast(native_math.pc24Mul(0.04400000348687172, velocity.x)))),
     );
+}
+
+test "dual pad steers from the negated normalized stick like native" {
+    var state = state_mod.GameplayState.init(1);
+    var player: state_mod.PlayerState = .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } };
+    const input: GameInput = .{
+        .move_x = 0.19850380718708038,
+        .move_y = -0.9801002740859985,
+        .aim_x = 513.0,
+        .aim_y = 512.0,
+        .flags = .{
+            .fire_down = false,
+            .fire_pressed = false,
+            .reload_pressed = false,
+            .move_mode = movement_control_dual_action_pad,
+        },
+    };
+    updatePlayerFromGameInput(&player, input, &state, null, 0.1);
+    // `atan2f(-n) - 1.5707964f + 6.2831855f`, then one approach step; matches the Python port.
+    try std.testing.expectEqual(@as(f32, 0.0999155193567276), player.heading);
+}
+
+test "aim point on the player still recomputes the aim heading" {
+    var state = state_mod.GameplayState.init(1);
+    var player: state_mod.PlayerState = .{ .index = 0, .pos = .{ .x = 300.0, .y = 200.0 }, .aim_heading = 1.0 };
+    const input: GameInput = .{
+        .move_x = 0.0,
+        .move_y = 0.0,
+        .aim_x = 300.0,
+        .aim_y = 200.0,
+        .flags = .{ .fire_down = false, .fire_pressed = false, .reload_pressed = false },
+    };
+    updatePlayerFromGameInput(&player, input, &state, null, 0.016);
+    // 0x0041572e: `fpatan(+0, +0) - 1.5707964f`.
+    try std.testing.expectEqual(-native_half_pi, player.aim_heading);
 }

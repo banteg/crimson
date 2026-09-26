@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
-from ..math_parity import f32
+from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
 from ..owner_ref import OwnerRef
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import PlayerState
@@ -165,15 +164,17 @@ def spawn_projectile_ring(
 ) -> None:
     if count <= 0:
         return
-    # Native multiplies the loop index by an f32 step literal (e.g. 0.3926991f
-    # for the 16-ring); keep the f32 rounding so the ring angles match.
-    step = float(f32(math.tau / float(count)))
+    # Native ring loops push `(float)i * step + offset` at PC24 with
+    # `step = 6.2831855f / (float)count` (Angry Reloader 0x00415188; Fireblast
+    # bakes 0.3926991f for its 16-ring).
+    step = x87_pc24_div(NATIVE_TAU, float(count))
+    offset = f32(angle_offset)
     for idx in range(count):
         projectile_spawn(
             state,
             players=players,
             pos=origin_pos,
-            angle=float(f32(float(idx) * step)) + float(angle_offset),
+            angle=x87_pc24_add(x87_pc24_mul(float(idx), step), offset),
             type_id=type_id,
             owner=owner,
             owner_player_index=owner_player_index,

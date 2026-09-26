@@ -1070,15 +1070,18 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
 
     player_update(player, input_state, 0.1, state)
 
-    # Native turn target here is diagonal right; heading settles at f32(pi/4).
-    expected_heading = f32(math.pi / 4.0)
-    radians = float(expected_heading) - 1.5707964
-    move_x = math.cos(radians)
-    move_y = math.sin(radians)
-    move_dx = f32(move_x * 2.0 * 25.0)
-    move_dy = f32(move_y * 2.0 * 25.0)
-    expected_x = f32(100.0 + float(f32(0.1 * float(move_dx))))
-    expected_y = f32(100.0 + float(f32(0.1 * float(move_dy))))
+    # Native steers toward `atan2f(-move) - 1.5707964f`, one ulp below pi/2 here
+    # (fpatan's pi stays wide), and eases halfway there in one 0.1 s tick.
+    target_heading = x87_pc24_sub(math.pi, NATIVE_HALF_PI)
+    angle_diff = x87_pc24_sub(target_heading, 0.0)
+    expected_heading = x87_pc24_mul(x87_pc24_mul(0.1, angle_diff), 5.0)
+    radians = x87_pc24_sub(expected_heading, NATIVE_HALF_PI)
+    alignment = x87_pc24_sub(NATIVE_PI, angle_diff)
+    # `cos * move_speed * (pi - diff) * scalar * 7.957747f`, rounded per fmul.
+    move_dx = x87_pc24_mul_chain(math.cos(radians), 2.0, alignment, 2.0, f32(7.957747))
+    move_dy = x87_pc24_mul_chain(math.sin(radians), 2.0, alignment, 2.0, f32(7.957747))
+    expected_x = x87_pc24_add(100.0, x87_pc24_mul(f32(0.1), move_dx))
+    expected_y = x87_pc24_add(100.0, x87_pc24_mul(f32(0.1), move_dy))
 
     assert_float_close(player.pos.x, expected_x)
     assert_float_close(player.pos.y, expected_y)
@@ -1354,7 +1357,8 @@ def test_player_update_normalizes_analog_move_with_native_safe_helper() -> None:
         state,
     )
 
-    assert player.heading == 0.0999155342578888
+    # Native normalizes the negated stick and takes `atan2f - 1.5707964f + 6.2831855f`.
+    assert player.heading == 0.0999155193567276
 
 
 def test_player_direction_heading_subtraction_uses_native_f32_store() -> None:

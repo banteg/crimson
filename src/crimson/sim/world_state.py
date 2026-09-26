@@ -22,7 +22,6 @@ from ..game_modes import GameMode
 from ..gameplay import (
     gameplay_accumulate_weapon_usage_time,
     gameplay_enforce_weapon_guards,
-    player_frame_dt_after_roundtrip,
     player_update,
     survival_progression_update,
 )
@@ -390,7 +389,7 @@ class WorldState(msgspec.Struct):
         player_dt = float(dt)
         for idx, player in enumerate(self.players):
             input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player_update(
+            player_dt = player_update(
                 player,
                 input_state,
                 player_dt,
@@ -403,11 +402,6 @@ class WorldState(msgspec.Struct):
                 spawn_slots=self.creatures.spawn_slots,
                 player_death_runtime=step_runtime,
                 reload_active_any=bool(reload_active_any),
-            )
-            player_dt = player_frame_dt_after_roundtrip(
-                dt=player_dt,
-                time_scale_active=bool(self.state.time_scale_active),
-                reflex_boost_timer=float(self.state.bonuses.reflex_boost),
             )
         dt = float(player_dt)
         if dt > 0.0:

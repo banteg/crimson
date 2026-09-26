@@ -18,6 +18,7 @@ from .math_parity import (
     native_aim_point_from_heading,
     x87_fpatan,
     x87_pc24_add,
+    x87_pc24_crt_pow,
     x87_pc24_div,
     x87_pc24_hypot,
     x87_pc24_mul,
@@ -88,36 +89,36 @@ _RELATIVE_MOVE_HEADING_LEFT = float(f32(4.712389))
 _RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
 _RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
 _AIM_POINT_RADIUS = 60.0
+_DUAL_ACTION_PAD_DEADZONE = f32(0.2)
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
+_REFLEX_MOVEMENT_DT_SCALE = f32(0.6)
+_REFLEX_RESTORE_DT_SCALE = f32(1.6666666)
+
+
+def _player_reflex_movement_dt(dt: float, time_scale_factor: float) -> float:
+    # 0x00413e01: `frame_dt = (0.6f / time_scale_factor) * frame_dt` before movement.
+    return x87_pc24_mul(x87_pc24_div(_REFLEX_MOVEMENT_DT_SCALE, time_scale_factor), dt)
+
+
+def _player_reflex_restored_dt(movement_dt: float, time_scale_factor: float) -> float:
+    # 0x00414f4d: `frame_dt = time_scale_factor * frame_dt * 1.6666666f` right after movement.
+    return x87_pc24_mul(x87_pc24_mul(time_scale_factor, movement_dt), _REFLEX_RESTORE_DT_SCALE)
+
+
 def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, reflex_boost_timer: float) -> float:
-    """Mirror `player_update` frame_dt round-trip under Reflex Boost.
+    """Mirror the `player_update` frame_dt round-trip under Reflex Boost.
 
     Native scales frame_dt for movement (`* 0.6 / _time_scale_factor`) and then
-    restores it with `* _time_scale_factor * 1.6666666` before returning.
+    restores it with `* _time_scale_factor * 1.6666666` for the rest of the update.
     """
 
-    dt_f32 = float(f32(float(dt)))
+    dt_f32 = f32(dt)
     if not time_scale_active or dt_f32 <= 0.0:
-        return float(dt_f32)
-
-    time_scale_factor = reflex_boost_time_scale_factor(
-        reflex_boost_timer=reflex_boost_timer,
-        time_scale_active=True,
-    )
-    if time_scale_factor <= 0.0:
-        return float(dt_f32)
-
-    movement_dt = x87_pc24_mul(
-        x87_pc24_div(f32(0.6), time_scale_factor),
-        dt_f32,
-    )
-    roundtrip_dt = x87_pc24_mul(
-        x87_pc24_mul(time_scale_factor, movement_dt),
-        f32(1.6666666),
-    )
-    return float(roundtrip_dt)
+        return dt_f32
+    time_scale_factor = reflex_boost_time_scale_factor(reflex_boost_timer=reflex_boost_timer, time_scale_active=True)
+    return _player_reflex_restored_dt(_player_reflex_movement_dt(dt_f32, time_scale_factor), time_scale_factor)
 
 
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
@@ -157,11 +158,17 @@ def award_experience_from_reward(state: GameplayState, player: PlayerState, rewa
     return int(gained)
 
 
+_SURVIVAL_LEVEL_EXPONENT = f32(1.8)
+_SURVIVAL_LEVEL_XP_SCALE = f32(-1000.0)
+
+
 def survival_level_threshold(level: int) -> int:
     """Return the XP threshold for advancing past the given level."""
 
+    # gameplay_update_and_render (0x0040afae): `1000 - __ftol(__CIpow(level, (double)1.8f) * -1000.0f)`.
     level = max(1, int(level))
-    return int(1000.0 + (math.pow(float(level), 1.8) * 1000.0))
+    power = x87_pc24_crt_pow(float(level), _SURVIVAL_LEVEL_EXPONENT)
+    return 1000 - int(x87_pc24_mul(power, _SURVIVAL_LEVEL_XP_SCALE))
 
 
 def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState) -> int:
@@ -310,6 +317,10 @@ def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:
     return f32(math.sqrt(float(dist_sq)))
 
 
+_ALT_WEAPON_MOVE_SCALE = f32(0.8)
+_SPAWN_AVOIDANCE_RADIUS_SCALE = f32(0.33333334)
+
+
 def _player_apply_move_with_spawn_avoidance(
     player: PlayerState,
     *,
@@ -323,8 +334,8 @@ def _player_apply_move_with_spawn_avoidance(
     dx = float(delta.x)
     dy = float(delta.y)
     if perk_active(perk_player, PerkId.ALTERNATE_WEAPON):
-        dx = float(f32(float(dx) * 0.8))
-        dy = float(f32(float(dy) * 0.8))
+        dx = x87_pc24_mul(dx, _ALT_WEAPON_MOVE_SCALE)
+        dy = x87_pc24_mul(dy, _ALT_WEAPON_MOVE_SCALE)
 
     pos_x = float(f32(float(player.pos.x) + float(dx)))
     pos_y = float(f32(float(player.pos.y) + float(dy)))
@@ -337,8 +348,9 @@ def _player_apply_move_with_spawn_avoidance(
             owner = creatures[owner_index]
             owner_pos = owner.pos
 
-            radius = float(
-                f32((float(owner.size) + float(player.size)) * 0.33333334),
+            radius = x87_pc24_mul(
+                x87_pc24_add(float(owner.size), float(player.size)),
+                _SPAWN_AVOIDANCE_RADIUS_SCALE,
             )
             if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) > float(radius):
                 continue
@@ -434,6 +446,22 @@ def _player_apply_move_speed_caps(player: PlayerState) -> None:
         player.move_speed = f32(0.8)
 
 
+def _player_heading_velocity(player: PlayerState, *, speed_multiplier: float, speed_scale: float) -> Vec2:
+    # `move_d{x,y} = fcos/fsin(heading - 1.5707964f) * move_speed * scalar * +-25.0f`
+    # (e.g. 0x00414152): the trig result stays wide, every fmul rounds at PC24.
+    direction = _direction_from_heading_native(float(player.heading))
+
+    def component(value: float) -> float:
+        return x87_pc24_mul_chain(value, float(player.move_speed), float(speed_multiplier), float(speed_scale))
+
+    return Vec2(component(direction.x), component(direction.y))
+
+
+def _player_move_delta_from_velocity(movement_dt: float, velocity: Vec2) -> Vec2:
+    # `move_delta = frame_dt * move_d{x,y}` after the float move_dx/move_dy stores.
+    return Vec2(x87_pc24_mul(movement_dt, velocity.x), x87_pc24_mul(movement_dt, velocity.y))
+
+
 def _player_move_delta_from_heading(
     *,
     player: PlayerState,
@@ -441,21 +469,8 @@ def _player_move_delta_from_heading(
     speed_multiplier: float,
     speed_scale: float,
 ) -> Vec2:
-    move = _direction_from_heading_native(float(player.heading))
-    move_dx = float(
-        f32(
-            float(move.x) * float(player.move_speed) * float(speed_multiplier) * float(speed_scale),
-        ),
-    )
-    move_dy = float(
-        f32(
-            float(move.y) * float(player.move_speed) * float(speed_multiplier) * float(speed_scale),
-        ),
-    )
-    return Vec2(
-        f32(float(movement_dt) * float(move_dx)),
-        f32(float(movement_dt) * float(move_dy)),
-    )
+    velocity = _player_heading_velocity(player, speed_multiplier=speed_multiplier, speed_scale=speed_scale)
+    return _player_move_delta_from_velocity(movement_dt, velocity)
 
 
 def _player_turn_aligned_velocity_native(
@@ -534,7 +549,9 @@ def _player_update_aim_by_scheme(
     aim_dir = (player.aim - player.pos).normalized()
     if aim_dir.length_sq() > 0.0:
         player.aim_dir = aim_dir
-        player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
+    # 0x0041572e: native recomputes the heading unconditionally; an aim point on
+    # the player gives `fpatan(+0, +0) - 1.5707964f`.
+    player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
 
 
 def _player_tick_low_health(
@@ -583,6 +600,53 @@ def _player_tick_low_health(
 
 
 
+def _native_move_target_heading(move: Vec2, *, normalize: bool, wrap: bool) -> float:
+    """Heading toward `move`, computed as native does from `movement_input = -move`.
+
+    Native builds `movement_input` as `pos - move_target` (point click,
+    computer) or the negated stick (dual action pad), then evaluates
+    `atan2f(y, x) - 1.5707964f` (0x00413fd7, 0x00414235, 0x00414d4a).  Point
+    click and the pad lift the result into [0, 2pi) with `+= 6.2831855f`; the
+    computer path passes it through unwrapped.
+    """
+
+    # `0 - v` keeps a +0 component positive, like native `pos - target`.
+    away = Vec2(x87_pc24_sub(0.0, move.x), x87_pc24_sub(0.0, move.y))
+    if normalize:
+        away = away.normalized()  # D3DXVec2Normalize
+    heading = x87_pc24_sub(x87_fpatan(away.y, away.x), NATIVE_HALF_PI)
+    if wrap:
+        while heading < 0.0:
+            heading = x87_pc24_add(heading, NATIVE_TAU)
+    return heading
+
+
+def _player_move_toward_heading(
+    player: PlayerState,
+    perk_player: PlayerState,
+    *,
+    target_heading: float | None,
+    movement_dt: float,
+    speed_multiplier: float,
+) -> Vec2:
+    """Shared native tail of the point-click, dual-pad and computer movement branches."""
+
+    if target_heading is not None and target_heading != _RELATIVE_MOVE_HEADING_NONE:
+        angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
+        _player_accelerate_move_speed(player, perk_player, movement_dt)
+        _player_apply_move_speed_caps(player)
+        velocity = _player_turn_aligned_velocity_native(
+            direction=_direction_from_heading_native(float(player.heading)),
+            move_speed=float(player.move_speed),
+            angle_diff=float(angle_diff),
+            speed_multiplier=float(speed_multiplier),
+        )
+    else:
+        _player_decelerate_move_speed(player, movement_dt)
+        velocity = _player_heading_velocity(player, speed_multiplier=speed_multiplier, speed_scale=25.0)
+    return _player_move_delta_from_velocity(movement_dt, velocity)
+
+
 def _player_move(
     player: PlayerState, perk_player: PlayerState, input_state: PlayerInput,
     state: GameplayState, movement_dt: float, move_mode: MovementControlType,
@@ -591,192 +655,132 @@ def _player_move(
 ) -> None:
     # Movement.
     raw_move = input_state.move
-    raw_mag = raw_move.length()
     phase_sign = 1.0
-    move = _direction_from_heading_native(float(player.heading))
-    speed = 0.0
-    move_delta_override: Vec2 | None = None
     player_controlled_movement = (not state.demo_mode_active) and move_mode != MovementControlType.COMPUTER
-    if player_controlled_movement:
-        if move_mode == MovementControlType.RELATIVE:
-            turning_left = bool(input_state.turn_left_pressed)
-            turning_right = bool(input_state.turn_right_pressed)
-            moving_forward = bool(input_state.move_forward_pressed)
-            moving_backward = bool(input_state.move_backward_pressed)
-            turned = False
+    if player_controlled_movement and move_mode == MovementControlType.RELATIVE:
+        turning_left = bool(input_state.turn_left_pressed)
+        turning_right = bool(input_state.turn_right_pressed)
+        moving_forward = bool(input_state.move_forward_pressed)
+        moving_backward = bool(input_state.move_backward_pressed)
+        turned = False
 
-            if player.turn_speed < 1.0:
-                player.turn_speed = 1.0
-            if player.turn_speed > 7.0:
-                player.turn_speed = 7.0
+        if player.turn_speed < 1.0:
+            player.turn_speed = 1.0
+        if player.turn_speed > 7.0:
+            player.turn_speed = 7.0
 
+        if turning_left or turning_right:
+            # 0x004144dc: `turn_speed += frame_dt * 10.0f`, then
+            # `heading/aim_heading -+= turn_speed * frame_dt * 0.5f`, all at PC24.
+            player.turn_speed = x87_pc24_add(x87_pc24_mul(movement_dt, 10.0), player.turn_speed)
+            turn_step = x87_pc24_mul(x87_pc24_mul(player.turn_speed, movement_dt), 0.5)
             if turning_left:
-                player.turn_speed = float(f32(float(player.turn_speed) + float(movement_dt) * 10.0))
-                turn_step = float(f32(float(player.turn_speed) * float(movement_dt) * 0.5))
-                player.heading = float(f32(float(player.heading) - float(turn_step)))
-                player.aim_heading = float(f32(float(player.aim_heading) - float(turn_step)))
-                turned = True
-            elif turning_right:
-                player.turn_speed = float(f32(float(player.turn_speed) + float(movement_dt) * 10.0))
-                turn_step = float(f32(float(player.turn_speed) * float(movement_dt) * 0.5))
-                player.heading = float(f32(float(player.heading) + float(turn_step)))
-                player.aim_heading = float(f32(float(player.aim_heading) + float(turn_step)))
-                turned = True
+                turn_step = -turn_step
+            player.heading = x87_pc24_add(player.heading, turn_step)
+            player.aim_heading = x87_pc24_add(player.aim_heading, turn_step)
+            turned = True
 
-            if moving_forward:
-                _player_accelerate_move_speed(player, perk_player, movement_dt)
-                _player_apply_move_speed_caps(player)
-                move_delta_override = _player_move_delta_from_heading(
-                    player=player,
-                    movement_dt=movement_dt,
-                    speed_multiplier=speed_multiplier,
-                    speed_scale=25.0,
-                )
-            elif moving_backward:
-                _player_accelerate_move_speed(player, perk_player, movement_dt)
-                phase_sign = -1.0
-                move_delta_override = _player_move_delta_from_heading(
-                    player=player,
-                    movement_dt=movement_dt,
-                    speed_multiplier=speed_multiplier,
-                    speed_scale=-25.0,
-                )
-            else:
-                if not turned:
-                    player.turn_speed = 1.0
-                _player_decelerate_move_speed(player, movement_dt)
-                move_delta_override = _player_move_delta_from_heading(
-                    player=player,
-                    movement_dt=movement_dt,
-                    speed_multiplier=speed_multiplier,
-                    speed_scale=25.0,
-                )
-        elif move_mode == MovementControlType.STATIC:
-            moving_forward = (
-                bool(input_state.move_forward_pressed)
-                if input_state.move_forward_pressed is not None
-                else bool(raw_move.y < -0.5)
-            )
-            moving_backward = (
-                bool(input_state.move_backward_pressed)
-                if input_state.move_backward_pressed is not None
-                else bool(raw_move.y > 0.5)
-            )
-            turning_left = (
-                bool(input_state.turn_left_pressed)
-                if input_state.turn_left_pressed is not None
-                else bool(raw_move.x < -0.5)
-            )
-            turning_right = (
-                bool(input_state.turn_right_pressed)
-                if input_state.turn_right_pressed is not None
-                else bool(raw_move.x > 0.5)
-            )
-
-            target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
-            if turning_left:
-                target_heading = float(_RELATIVE_MOVE_HEADING_LEFT)
-            if turning_right:
-                target_heading = float(_RELATIVE_MOVE_HEADING_RIGHT)
-
-            if moving_forward:
-                if turning_left:
-                    target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_LEFT)
-                elif turning_right:
-                    target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_RIGHT)
-                else:
-                    target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD)
-            if moving_backward:
-                if turning_left:
-                    target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_LEFT)
-                elif turning_right:
-                    target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT)
-                else:
-                    target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD)
-
-            if (not moving_backward) and target_heading == float(_RELATIVE_MOVE_HEADING_NONE):
-                _player_decelerate_move_speed(player, movement_dt)
-                move = _direction_from_heading_native(float(player.heading))
-                move_dx = float(f32(float(move.x) * float(player.move_speed) * float(speed_multiplier) * 25.0))
-                move_dy = float(f32(float(move.y) * float(player.move_speed) * float(speed_multiplier) * 25.0))
-            else:
-                angle_diff, turn_delta = _player_heading_approach_target_with_delta(
-                    player,
-                    float(target_heading),
-                    float(movement_dt),
-                )
-                player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
-                _player_accelerate_move_speed(player, perk_player, movement_dt)
-                _player_apply_move_speed_caps(player)
-                move = _direction_from_heading_native(float(player.heading))
-                turn_aligned_velocity = _player_turn_aligned_velocity_native(
-                    direction=move,
-                    move_speed=float(player.move_speed),
-                    angle_diff=float(angle_diff),
-                    speed_multiplier=float(speed_multiplier),
-                )
-                move_dx = float(turn_aligned_velocity.x)
-                move_dy = float(turn_aligned_velocity.y)
-
-            move_delta_override = Vec2(
-                f32(float(movement_dt) * float(move_dx)),
-                f32(float(movement_dt) * float(move_dy)),
-            )
-        else:
-            moving_input = raw_mag > (0.0 if move_mode == MovementControlType.MOUSE_POINT_CLICK else 0.2)
-            turn_alignment_scale = 1.0
-            if moving_input:
-                move = raw_move.normalized()
-                target_heading = _normalize_heading_angle(move.to_heading())
-                angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
-                move = _direction_from_heading_native(float(player.heading))
-                turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
-                _player_accelerate_move_speed(player, perk_player, movement_dt)
-            else:
-                _player_decelerate_move_speed(player, movement_dt)
-                move = _direction_from_heading_native(float(player.heading))
-
-            _player_apply_move_speed_caps(player)
-            speed = float(player.move_speed) * float(speed_multiplier) * 25.0
-            if moving_input:
-                speed *= min(1.0, raw_mag)
-                speed *= turn_alignment_scale
-    else:
-        # Demo/autoplay uses very small analog magnitudes to represent turn-in-place and
-        # heading alignment slowdown; don't apply a deadzone there.
-        moving_input = raw_mag > (0.0 if state.demo_mode_active else 0.2)
-
-        turn_alignment_scale = 1.0
-        if moving_input:
-            move = raw_move.normalized()
-            # Native normalizes this heading into [0, 2pi] before calling
-            # `player_heading_approach_target` (see ghidra @ 0x00413fxx).
-            target_heading = _normalize_heading_angle(move.to_heading())
-            angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
-            move = _direction_from_heading_native(float(player.heading))
-            turn_alignment_scale = max(0.0, (math.pi - angle_diff) / math.pi)
+        if moving_forward:
             _player_accelerate_move_speed(player, perk_player, movement_dt)
+            _player_apply_move_speed_caps(player)
+            speed_scale = 25.0
+        elif moving_backward:
+            _player_accelerate_move_speed(player, perk_player, movement_dt)
+            phase_sign = -1.0
+            speed_scale = -25.0
         else:
+            if not turned:
+                player.turn_speed = 1.0
             _player_decelerate_move_speed(player, movement_dt)
-            move = _direction_from_heading_native(float(player.heading))
-
-        _player_apply_move_speed_caps(player)
-
-        speed = float(player.move_speed) * float(speed_multiplier) * 25.0
-        if moving_input:
-            speed *= min(1.0, raw_mag)
-            speed *= turn_alignment_scale
-
-    if move_delta_override is None:
-        # Native movement stores through float32 velocity/delta slots before writing
-        # player position; mirror those store boundaries for replay parity.
-        move_step = f32(float(speed) * float(movement_dt))
-        move_delta = Vec2(
-            f32(float(move.x) * float(move_step)),
-            f32(float(move.y) * float(move_step)),
+            speed_scale = 25.0
+        move_delta = _player_move_delta_from_heading(
+            player=player,
+            movement_dt=movement_dt,
+            speed_multiplier=speed_multiplier,
+            speed_scale=speed_scale,
         )
+    elif player_controlled_movement and move_mode == MovementControlType.STATIC:
+        moving_forward = (
+            bool(input_state.move_forward_pressed)
+            if input_state.move_forward_pressed is not None
+            else bool(raw_move.y < -0.5)
+        )
+        moving_backward = (
+            bool(input_state.move_backward_pressed)
+            if input_state.move_backward_pressed is not None
+            else bool(raw_move.y > 0.5)
+        )
+        turning_left = (
+            bool(input_state.turn_left_pressed)
+            if input_state.turn_left_pressed is not None
+            else bool(raw_move.x < -0.5)
+        )
+        turning_right = (
+            bool(input_state.turn_right_pressed)
+            if input_state.turn_right_pressed is not None
+            else bool(raw_move.x > 0.5)
+        )
+
+        target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
+        if turning_left:
+            target_heading = float(_RELATIVE_MOVE_HEADING_LEFT)
+        if turning_right:
+            target_heading = float(_RELATIVE_MOVE_HEADING_RIGHT)
+
+        if moving_forward:
+            if turning_left:
+                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_LEFT)
+            elif turning_right:
+                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD_RIGHT)
+            else:
+                target_heading = float(_RELATIVE_MOVE_HEADING_FORWARD)
+        if moving_backward:
+            if turning_left:
+                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_LEFT)
+            elif turning_right:
+                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT)
+            else:
+                target_heading = float(_RELATIVE_MOVE_HEADING_BACKWARD)
+
+        if (not moving_backward) and target_heading == float(_RELATIVE_MOVE_HEADING_NONE):
+            _player_decelerate_move_speed(player, movement_dt)
+            velocity = _player_heading_velocity(player, speed_multiplier=speed_multiplier, speed_scale=25.0)
+        else:
+            angle_diff, turn_delta = _player_heading_approach_target_with_delta(
+                player,
+                float(target_heading),
+                float(movement_dt),
+            )
+            player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
+            _player_accelerate_move_speed(player, perk_player, movement_dt)
+            _player_apply_move_speed_caps(player)
+            velocity = _player_turn_aligned_velocity_native(
+                direction=_direction_from_heading_native(float(player.heading)),
+                move_speed=float(player.move_speed),
+                angle_diff=float(angle_diff),
+                speed_multiplier=float(speed_multiplier),
+            )
+        move_delta = _player_move_delta_from_velocity(movement_dt, velocity)
     else:
-        move_delta = move_delta_override
+        # Point click, dual action pad and computer control steer toward the
+        # input vector; native never scales speed by the stick magnitude.
+        target_heading: float | None = None
+        if not player_controlled_movement:
+            if raw_move.x != 0.0 or raw_move.y != 0.0:
+                target_heading = _native_move_target_heading(raw_move, normalize=False, wrap=False)
+        elif move_mode == MovementControlType.MOUSE_POINT_CLICK:
+            if raw_move.x != 0.0 or raw_move.y != 0.0:
+                target_heading = _native_move_target_heading(raw_move, normalize=False, wrap=True)
+        elif x87_pc24_hypot(raw_move.x, raw_move.y) > _DUAL_ACTION_PAD_DEADZONE:
+            target_heading = _native_move_target_heading(raw_move, normalize=True, wrap=True)
+        move_delta = _player_move_toward_heading(
+            player,
+            perk_player,
+            target_heading=target_heading,
+            movement_dt=movement_dt,
+            speed_multiplier=speed_multiplier,
+        )
+
     _player_apply_move_with_spawn_avoidance(
         player,
         perk_player=perk_player,
@@ -902,12 +906,16 @@ def player_update(
     spawn_slots: Sequence[SpawnSlotInit] | None = None,
     player_death_runtime: PlayerDeathRuntime | None = None,
     reload_active_any: bool | None = None,
-) -> None:
-    """Port of `player_update` (0x004136b0) for the rewrite runtime."""
+) -> float:
+    """Port of `player_update` (0x004136b0) for the rewrite runtime.
+
+    Returns the global frame_dt as native leaves it for the rest of the frame:
+    Reflex Boost's movement scaling round-trips it for live players.
+    """
 
     dt = float(f32(float(dt)))
     if dt <= 0.0:
-        return
+        return dt
 
     prev_pos = player.pos
 
@@ -916,7 +924,7 @@ def player_update(
             player.death_timer,
             x87_pc24_mul(dt, f32(20.0)),
         )
-        return
+        return dt
 
     # Native's player_update perk queries all read the global slot-zero table,
     # even while the overlay-selected player's fields are being updated.
@@ -958,19 +966,13 @@ def player_update(
     if speed_bonus_active:
         speed_multiplier += 1.0
 
-    movement_dt = float(dt)
-    if state.time_scale_active and movement_dt > 0.0:
-        time_scale_factor = reflex_boost_time_scale_factor(
-            reflex_boost_timer=state.bonuses.reflex_boost,
-            time_scale_active=True,
-        )
-        if time_scale_factor > 0.0:
-            # Native computes `frame_dt = (0.6 / _time_scale_factor) * frame_dt`
-            # and stores back to float before movement/heading logic.
-            movement_dt = x87_pc24_mul(
-                x87_pc24_div(f32(0.6), time_scale_factor),
-                movement_dt,
-            )
+    time_scale_factor = reflex_boost_time_scale_factor(
+        reflex_boost_timer=state.bonuses.reflex_boost,
+        time_scale_active=bool(state.time_scale_active),
+    )
+    movement_dt = dt
+    if state.time_scale_active:
+        movement_dt = _player_reflex_movement_dt(dt, time_scale_factor)
 
     apply_player_perk_ticks(
         player=player,
@@ -988,14 +990,19 @@ def player_update(
         speed_multiplier, spawn_slots, creatures,
     )
 
+    # Spread cooling, reload, aim and firing read the restored frame_dt.
+    frame_dt = dt
+    if state.time_scale_active:
+        frame_dt = _player_reflex_restored_dt(movement_dt, time_scale_factor)
+
     has_alt_weapon_perk = _player_tick_reload(
-        player, perk_player, input_state, state, dt, prev_pos, move_mode, players,
+        player, perk_player, input_state, state, frame_dt, prev_pos, move_mode, players,
     )
 
     _player_update_aim_by_scheme(
         player=player,
         input_state=input_state,
-        dt=dt,
+        dt=frame_dt,
         movement_mode=move_mode,
         aim_scheme=aim_scheme,
         demo_mode_active=bool(state.demo_mode_active),
@@ -1009,7 +1016,7 @@ def player_update(
     else:
         player.spread_heat = max(
             f32(0.01),
-            x87_pc24_sub(player.spread_heat, x87_pc24_mul(dt, f32(0.4))),
+            x87_pc24_sub(player.spread_heat, x87_pc24_mul(frame_dt, f32(0.4))),
         )
 
     # Native latches both normal and perk readiness before exchanging weapon
@@ -1048,7 +1055,7 @@ def player_update(
         _WeaponFireCtx(
             player=player,
             input_state=input_state,
-            dt=float(dt),
+            dt=frame_dt,
             state=state,
             detail_preset=int(detail_preset),
             creatures=creatures,
@@ -1073,6 +1080,7 @@ def player_update(
     player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
     if player.muzzle_flash_alpha > 0.8:
         player.muzzle_flash_alpha = 0.8
+    return frame_dt
 
 
 def _player_heading_approach_target_with_delta(
@@ -1096,7 +1104,8 @@ def _player_heading_approach_target_with_delta(
     low = heading
     if target < low:
         low = target
-    wrapped = float(f32(abs(float(f32(float(NATIVE_TAU) - float(high) + float(low))))))
+    # 0x00413602: `fld 6.2831855f; fsub high; fadd low` rounds each op at PC24.
+    wrapped = abs(x87_pc24_add(x87_pc24_sub(NATIVE_TAU, high), low))
     diff = wrapped if direct >= wrapped else direct
 
     dt_f32 = float(f32(float(dt)))

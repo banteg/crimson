@@ -17,7 +17,14 @@ from .input_codes import (
     input_code_is_down,
     input_code_is_pressed,
 )
-from .math_parity import f32, native_aim_point_from_heading, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
+from .math_parity import (
+    f32,
+    native_aim_point_from_heading,
+    x87_pc24_add,
+    x87_pc24_hypot,
+    x87_pc24_mul,
+    x87_pc24_sub,
+)
 from .movement_controls import MovementControlType
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
@@ -52,6 +59,10 @@ class _ComputerAimCreature(Protocol):
     active: bool
     hp: float
     pos: Vec2
+
+
+def _pc24_delta(target: Vec2, origin: Vec2) -> Vec2:
+    return Vec2(x87_pc24_sub(target.x, origin.x), x87_pc24_sub(target.y, origin.y))
 
 
 def _is_finite(v: float) -> bool:
@@ -281,8 +292,10 @@ class LocalInputInterpreter:
                     player=player,
                     creatures=creatures,
                 )
-            center_delta = _COMPUTER_ARENA_CENTER - player.pos
-            center_dist = center_delta.length()
+            # The sim steers toward the raw f32 delta, so its heading sees
+            # native `pos - target` exactly (player_update 0x00414cab).
+            center_delta = _pc24_delta(_COMPUTER_ARENA_CENTER, player.pos)
+            center_dist = x87_pc24_hypot(center_delta.x, center_delta.y)
             has_live_target = (
                 creatures is not None
                 and computer_target_index is not None
@@ -291,20 +304,13 @@ class LocalInputInterpreter:
             if has_live_target and float(center_dist) <= _COMPUTER_MOVE_TARGET_RADIUS:
                 assert creatures is not None
                 assert computer_target_index is not None
-                move_delta = Vec2(
-                    float(creatures[int(computer_target_index)].pos.x),
-                    float(creatures[int(computer_target_index)].pos.y),
-                ) - player.pos
+                move_vec = _pc24_delta(creatures[int(computer_target_index)].pos, player.pos)
             elif has_live_target:
-                move_delta = center_delta
+                move_vec = center_delta
             else:
-                move_delta = (player.pos - _COMPUTER_ARENA_CENTER).perp_left()
-                if move_delta.length_sq() <= 1e-12:
-                    move_delta = Vec2(0.0, 1.0)
-
-            move_dir, move_dist = move_delta.normalized_with_length()
-            if float(move_dist) > 1e-6:
-                move_vec = move_dir
+                move_vec = (player.pos - _COMPUTER_ARENA_CENTER).perp_left()
+                if move_vec.length_sq() <= 1e-12:
+                    move_vec = Vec2(0.0, 1.0)
         elif move_mode_type is MovementControlType.RELATIVE:
             move_forward_pressed = _key_down_with_single_player_alt(
                 move_forward_key,
@@ -343,10 +349,10 @@ class LocalInputInterpreter:
             if move_to_cursor_pressed:
                 state.move_target = mouse_world
             if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
-                delta = state.move_target - player.pos
-                _dir, dist = delta.normalized_with_length()
-                if float(dist) > _POINT_CLICK_STOP_RADIUS:
-                    move_vec = _dir
+                # Raw f32 delta: the sim's heading then sees native `pos - move_target`.
+                delta = _pc24_delta(state.move_target, player.pos)
+                if x87_pc24_hypot(delta.x, delta.y) > _POINT_CLICK_STOP_RADIUS:
+                    move_vec = delta
         elif move_mode_type is MovementControlType.STATIC:
             move_up_pressed = _key_down_with_single_player_alt(
                 move_forward_key,

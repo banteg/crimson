@@ -53,8 +53,8 @@ Historical IDA whole-view scan:
 | ID | Expression family | Class | Native pattern (decompile) | Required model | Example anchor |
 |---|---|---|---|---|---|
 | `E01` | Heading from delta (`atan2` path) | `X87_INTERMEDIATE_THEN_F32` | `(float10)fpatan((float10)dy,(float10)dx)` then `(float)` store | Widen for `atan2`, spill to `f32` immediately when writing heading | `player_update` @ `0x004136b0` |
-| `E02` | Direction from heading (`cos`) | `X87_INTERMEDIATE_THEN_F32` | `(float10)fcos((float10)heading - (float10)1.5707964)` | Widen for trig op, then `f32` spill into velocity/move components | `player_update` @ `0x004136b0` |
-| `E03` | Direction from heading (`sin`) | `X87_INTERMEDIATE_THEN_F32` | `(float10)fsin((float10)heading - (float10)1.5707964)` | Same as `E02` | `player_update` @ `0x004136b0` |
+| `E02` | Direction from heading (`cos`) | `X87_INTERMEDIATE_THEN_F32` | `(float10)fcos((float10)heading - (float10)1.5707964)` | Round the half-pi subtraction at PC24, keep `fcos` wide, then round every following `fmul` (`move_speed`, scalar or `3.1415927f - diff`, `25.0f`/`7.957747f`) before the `move_dx` store; `frame_dt * move_dx` rounds again | `player_update` @ `0x00414152` |
+| `E03` | Direction from heading (`sin`) | `X87_INTERMEDIATE_THEN_F32` | `(float10)fsin((float10)heading - (float10)1.5707964)` | Same as `E02` | `player_update` @ `0x00414173` |
 | `E04` | Creature steering trig+spill | `X87_INTERMEDIATE_THEN_F32` | `fpatan` target heading; `fcos/fsin` heading-to-vel; `(float)` assignments | Keep transcendental intermediates widened; persist `heading/vel_*` as `f32` | `creature_update_all` @ `0x00426220` |
 | `E05` | Projectile angle step trig | `X87_INTERMEDIATE_THEN_F32` | `(float10)angle - half_pi`; `fcos/fsin` in per-substep motion | Widen trig/intermediate multiply chain; spill to `f32` locals/state at native stores | `projectile_update` @ `0x00420b90` |
 | `E06` | Length / distance compare | `X87_INTERMEDIATE_THEN_F32` (branch-sensitive) | `SQRT(dx*dx + dy*dy) < threshold` | Preserve op order and compare boundary behavior; treat as branch-sensitive | `creature_update_all` @ `0x00426220` |
@@ -68,6 +68,7 @@ Historical IDA whole-view scan:
 | `E14` | Heading-derived 60-unit aim point | `X87_INTERMEDIATE_THEN_F32` | Native keeps cosine wide through scaling but stores sine first | Subtract native half-pi at PC24; multiply wide cosine and stored sine at PC24; round each position add | `player_update` @ `0x004136b0` |
 | `E15` | Conventional projectile trail corners | `F32_STORE` at PC24 | `(camera + origin/position) +/- velocity * width_factor` | Round input fields, width product, camera sums, and corner additions/subtractions before viewport scaling | `projectile_render` @ `0x004230e5..0x00423663` |
 | `E16` | Sharpshooter laser corners | `X87_INTERMEDIATE_THEN_F32` | Offset near heading by `0.150915f`, scale trig products by 15/512/1.1, then form camera-relative corners | Preserve wide trig through multiplication except the stored far-end sine; round PC24 arithmetic and complete corners before per-axis viewport scaling | `projectile_render` laser geometry starting at `0x00422d63` |
+| `E17` | CRT `pow` (`__CIpow`) | `X87_INTERMEDIATE_THEN_F32` | `fyl2x`, `frndint`, `fsub`, `f2xm1`, `fadd 1.0`, `fscale` under the caller's control word | Keep `fyl2x`/`f2xm1` wide; round the fraction `fsub` and the `+ 1.0` at PC24 (`x87_pc24_crt_pow`) | level threshold in `gameplay_update_and_render` @ `0x0040afae` |
 
 `E14` is an exception to treating both direction components as stored floats.
 The original-image witnesses in

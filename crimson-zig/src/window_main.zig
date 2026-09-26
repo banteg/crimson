@@ -6366,19 +6366,14 @@ fn weaponIndicatorTextureId(weapon_id: game_ids.WeaponId) window_assets.TextureI
 
 fn xpProgressRatio(xp: i32, level: i32) f32 {
     const safe_level = @max(level, 1);
-    const prev_threshold = if (safe_level <= 1) 0 else survivalLevelThreshold(safe_level - 1);
-    const next_threshold = survivalLevelThreshold(safe_level);
+    const prev_threshold = if (safe_level <= 1) 0 else cz.survival_progression.survivalLevelThreshold(safe_level - 1);
+    const next_threshold = cz.survival_progression.survivalLevelThreshold(safe_level);
     if (next_threshold <= prev_threshold) return 0.0;
     return std.math.clamp(
         @as(f32, @floatFromInt(xp - prev_threshold)) / @as(f32, @floatFromInt(next_threshold - prev_threshold)),
         @as(f32, 0.0),
         @as(f32, 1.0),
     );
-}
-
-fn survivalLevelThreshold(level: i32) i32 {
-    const safe_level = @max(level, 1);
-    return @intFromFloat(1000.0 + std.math.pow(f32, @floatFromInt(safe_level), 1.8) * 1000.0);
 }
 
 fn drawSmallText(

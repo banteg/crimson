@@ -40,6 +40,25 @@ pub inline fn pc24Hypot(x: anytype, y: anytype) f32 {
     return pc24Sqrt(pc24Add(pc24Mul(x, x), pc24Mul(y, y)));
 }
 
+/// CRT `__CIpow` (0x00461140) for a positive finite base. `fyl2x` and `f2xm1`
+/// stay wide; `crt_load_cw` keeps the caller's PC24, so the fraction `fsub`
+/// and the `fadd 1.0` round before the exact `fscale` (0x00465130).
+pub fn crtPowPc24(base: f64, exponent: f64) f32 {
+    const scaled_log = exponent * std.math.log2(base);
+    const whole = roundHalfEven(scaled_log); // frndint
+    const fraction = pc24Sub(scaled_log, whole);
+    const mantissa = pc24Add(std.math.pow(f64, 2.0, @as(f64, fraction)) - 1.0, 1.0);
+    return std.math.ldexp(mantissa, @as(i32, @intFromFloat(whole)));
+}
+
+fn roundHalfEven(value: f64) f64 {
+    const rounded = @round(value);
+    if (@abs(value - @trunc(value)) == 0.5 and @mod(rounded, 2.0) != 0.0) {
+        return rounded - std.math.sign(value);
+    }
+    return rounded;
+}
+
 pub inline fn floatNearEqual(lhs: f32, rhs: f32) bool {
     const difference = pc24Sub(lhs, rhs);
     return difference >= -native_float_epsilon and difference <= native_float_epsilon;
