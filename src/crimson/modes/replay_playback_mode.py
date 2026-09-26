@@ -46,7 +46,6 @@ from ..ui.hud import (
     HudState,
     draw_hud_overlay,
     hud_flags_for_game_mode,
-    hud_ui_scale,
 )
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
@@ -186,35 +185,33 @@ class ReplayPlaybackMode:
             entity_alpha=entity_alpha,
         )
 
-    def _replay_widget_metrics(self) -> tuple[float, float, float, float, float, float]:
+    def _replay_widget_metrics(self) -> tuple[float, float, float, float, float]:
         screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = hud_ui_scale(screen_w, screen_h)
 
-        panel_w = _REPLAY_WIDGET_PANEL_SIZE.x * scale
-        panel_h = _REPLAY_WIDGET_PANEL_SIZE.y * scale
-        panel_x = screen_w - panel_w - float(_REPLAY_WIDGET_X_SHIFT) * scale
-        line1_y = float(_REPLAY_WIDGET_TEXT_LINE1_Y) * scale
-        panel_y = max(2.0 * scale, line1_y + _REPLAY_WIDGET_PANEL_TO_LINE1_Y * scale)
-        return scale, panel_x, panel_y, panel_w, panel_h, line1_y
+        panel_w = _REPLAY_WIDGET_PANEL_SIZE.x
+        panel_h = _REPLAY_WIDGET_PANEL_SIZE.y
+        panel_x = screen_w - panel_w - float(_REPLAY_WIDGET_X_SHIFT)
+        line1_y = float(_REPLAY_WIDGET_TEXT_LINE1_Y)
+        panel_y = max(2.0, line1_y + _REPLAY_WIDGET_PANEL_TO_LINE1_Y)
+        return panel_x, panel_y, panel_w, panel_h, line1_y
 
     def _draw_replay_widget(self) -> None:
         replay = self._replay
         if replay is None:
             return
 
-        scale, panel_x, panel_y, panel_w, _panel_h, line1_y = self._replay_widget_metrics()
-        panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X) * scale
-        panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y) * scale
+        panel_x, panel_y, panel_w, _panel_h, line1_y = self._replay_widget_metrics()
+        panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X)
+        panel_y += float(_REPLAY_WIDGET_PANEL_OFFSET_Y)
 
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before replay draw"
         resources = runtime.render_resources.resources
 
-        icon_w = _REPLAY_WIDGET_ICON_SIZE.x * scale
-        icon_h = _REPLAY_WIDGET_ICON_SIZE.y * scale
-        icon_x = panel_x + 2.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_X) * scale
-        icon_y = panel_y + 8.0 * scale + float(_REPLAY_WIDGET_CLOCK_OFFSET_Y) * scale
+        icon_w = _REPLAY_WIDGET_ICON_SIZE.x
+        icon_h = _REPLAY_WIDGET_ICON_SIZE.y
+        icon_x = panel_x + 2.0 + float(_REPLAY_WIDGET_CLOCK_OFFSET_X)
+        icon_y = panel_y + 8.0 + float(_REPLAY_WIDGET_CLOCK_OFFSET_Y)
 
         clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
         src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
@@ -243,8 +240,8 @@ class ReplayPlaybackMode:
         total_seconds = float(total_ticks) / float(self._tick_rate)
         progress_ratio = self._replay_progress_ratio()
 
-        text_x = icon_x + icon_w + 6.0 * scale + float(_REPLAY_WIDGET_TEXT_OFFSET_X) * scale
-        line1_y = line1_y + float(_REPLAY_WIDGET_TEXT_OFFSET_Y) * scale
+        text_x = icon_x + icon_w + 6.0 + float(_REPLAY_WIDGET_TEXT_OFFSET_X)
+        line1_y = line1_y + float(_REPLAY_WIDGET_TEXT_OFFSET_Y)
         text_scale = 1.0
         status = "PAUSE" if self._paused else "REPLAY"
         status_color = rl.Color(245, 210, 120, 230) if self._paused else rl.Color(230, 230, 230, 220)
@@ -259,15 +256,15 @@ class ReplayPlaybackMode:
         total_text = self._format_time_text(total_seconds)
         elapsed_w = self._measure_ui_text_width(elapsed_text, scale=text_scale)
         total_w = self._measure_ui_text_width(total_text, scale=text_scale)
-        line2_y = line1_y + 18.0 * scale
+        line2_y = line1_y + 18.0
 
-        right_limit = panel_x + panel_w - 4.0 * scale + float(_REPLAY_WIDGET_TEXT_OFFSET_X) * scale
+        right_limit = panel_x + panel_w - 4.0 + float(_REPLAY_WIDGET_TEXT_OFFSET_X)
         total_x = right_limit - total_w
-        bar_x_base = text_x + elapsed_w + 6.0 * scale
-        bar_w = max(8.0 * scale, total_x - 6.0 * scale - bar_x_base)
-        bar_x = bar_x_base + float(_REPLAY_WIDGET_BAR_OFFSET_X) * scale
-        bar_y = line2_y + 5.0 * scale + float(_REPLAY_WIDGET_BAR_OFFSET_Y) * scale
-        bar_h = _REPLAY_WIDGET_BAR_HEIGHT * scale
+        bar_x_base = text_x + elapsed_w + 6.0
+        bar_w = max(8.0, total_x - 6.0 - bar_x_base)
+        bar_x = bar_x_base + float(_REPLAY_WIDGET_BAR_OFFSET_X)
+        bar_y = line2_y + 5.0 + float(_REPLAY_WIDGET_BAR_OFFSET_Y)
+        bar_h = _REPLAY_WIDGET_BAR_HEIGHT
         rl.draw_rectangle(int(bar_x), int(bar_y), int(bar_w), int(bar_h), rl.Color(46, 67, 96, 150))
         fill_w = bar_w * progress_ratio
         if fill_w > 0.0:
@@ -610,7 +607,7 @@ class ReplayPlaybackMode:
             draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
             measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
             measure_line_height=lambda scale: int(
-                self._small.cell_size * scale if self._small is not None else 20 * scale,
+                self._small.cell_size if self._small is not None else 20,
             ),
         )
 

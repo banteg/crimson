@@ -275,7 +275,7 @@ class BaseGameplayMode:
             width = screen_right.x - screen_left.x
             if width <= 1e-3:
                 continue
-            draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha, scale=width / 64.0)
+            draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha)
 
     def _bind_world(self) -> None:
         self.state: GameplayState = self.sim_world.state
