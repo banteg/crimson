@@ -83,6 +83,7 @@ stores a wider double where native stores a float32.
 | `test_creature_anim` | Animation phase step in `creature_update_all` `0x00426e22..0x00426f35` | `creature_anim_advance_phase` |
 | `test_camera_shake` | `camera_update` `0x00409500` over whole Nuke shakes | `camera_shake_update` |
 | `test_sprite_effects` | Sprite loop of `projectile_update` `0x0042246a..0x004224e8` | `SpriteEffectPool.update` |
+| `test_experience_award` | Kill XP award in `creature_handle_death` `0x0041eb34..0x0041ebb5`, with Double Experience | `award_experience_from_reward` |
 | `test_player_update` | `player_update` movement, steering-heading, turn, Angry Reloader, Reflex Boost restore/spread/reload and aim fragments; `player_heading_approach_target` `0x00413540`; `player_apply_move_with_spawn_avoidance` `0x0041e290`; the level threshold at `0x0040afae` | `crimson.gameplay` movement helpers, `player_update`, `survival_level_threshold` |
 
 ## Limitations

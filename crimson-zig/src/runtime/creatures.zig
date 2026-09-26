@@ -4025,8 +4025,8 @@ fn awardExperienceFromReward(
         return awardExperience(state, player, scaled_reward);
     }
 
+    // Double Experience repeats the award (0x0041eba2).
     var gained = awardExperienceOnceFromReward(player, reward_value);
-    if (gained <= 0) return 0;
     if (state.bonuses.double_experience > 0.0) {
         gained += awardExperienceOnceFromReward(player, reward_value);
     }
@@ -4421,19 +4421,16 @@ test "death slide rounds each x87 velocity operation" {
     try std.testing.expectEqual(@as(f32, -1.6262983083724976), velocity.y);
 }
 
+/// `creature_handle_death` (0x0041eb5b): `__ftol(fild experience + reward)`; the
+/// int XP loads exactly and only the PC24 `fadd` rounds.
 fn awardExperienceOnceFromReward(
     player: *state_mod.PlayerState,
     reward_value: f32,
 ) i32 {
-    const reward_f32 = reward_value;
-    if (!(reward_f32 > 0.0)) return 0;
-
     const before = player.experience;
-    const before_f32: f32 = @floatFromInt(before);
-    const total_f32 = before_f32 + reward_f32;
-    const after: i32 = @intFromFloat(total_f32);
-    player.experience = after;
-    return after - before;
+    const experience: f64 = @floatFromInt(before);
+    player.experience = @intFromFloat(native_math.pc24Add(experience, reward_value));
+    return player.experience - before;
 }
 
 /// `__ftol((float)experience + reward)`: exact `fild`, one PC24 `fadd` (0x0042704b).
@@ -9033,4 +9030,14 @@ test "long strip spawner clamps only before moving" {
 
     try std.testing.expect(pool.entries[0].vel.x > 0.0);
     try std.testing.expectEqual(native_math.pc24Add(@as(f32, 960.0), pool.entries[0].vel.x), pool.entries[0].pos.x);
+}
+
+test "kill experience rounds the exact int plus reward once" {
+    var state = state_mod.GameplayState.init(1);
+    state.bonuses.double_experience = 5.0;
+    var player: state_mod.PlayerState = .{ .index = 0, .pos = .{}, .experience = (1 << 24) + 1 };
+    // `fild` keeps 2^24 + 1 exact; the PC24 `fadd` rounds 2^24 + 1.5 up to
+    // 2^24 + 2, and the Double Experience repeat lands there again.
+    try std.testing.expectEqual(@as(i32, 1), awardExperienceFromReward(&state, &player, 0.5));
+    try std.testing.expectEqual(@as(i32, (1 << 24) + 2), player.experience);
 }

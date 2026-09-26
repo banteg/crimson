@@ -134,28 +134,24 @@ def award_experience(state: GameplayState, player: PlayerState, amount: int) -> 
 
 
 def _award_experience_once_from_reward(player: PlayerState, reward_value: float) -> int:
-    """Mirror native `__ftol(player_xp + reward_value)` accumulation for one award."""
+    """One native kill award: `experience = __ftol(fild experience + reward)`.
 
-    reward_f32 = f32(float(reward_value))
-    if float(reward_f32) <= 0.0:
-        return 0
+    `creature_handle_death` (0x0041eb5b) loads the int XP exactly with `fild`;
+    only the PC24 `fadd` rounds, so past 2^24 the sum snaps to the f32 grid.
+    """
 
     before = int(player.experience)
-    total_f32 = f32(f32(float(before)) + float(reward_f32))
-    after = int(float(total_f32))
-    player.experience = int(after)
-    return int(after - before)
+    player.experience = int(x87_pc24_add(float(before), f32(reward_value)))
+    return player.experience - before
 
 
 def award_experience_from_reward(state: GameplayState, player: PlayerState, reward_value: float) -> int:
-    """Grant kill XP from floating reward values with native float32 store semantics."""
+    """Grant kill XP from floating reward values; Double Experience repeats the award (0x0041eba2)."""
 
-    gained = _award_experience_once_from_reward(player, float(reward_value))
-    if gained <= 0:
-        return 0
+    gained = _award_experience_once_from_reward(player, reward_value)
     if state.bonuses.double_experience > 0.0:
-        gained += _award_experience_once_from_reward(player, float(reward_value))
-    return int(gained)
+        gained += _award_experience_once_from_reward(player, reward_value)
+    return gained
 
 
 _SURVIVAL_LEVEL_EXPONENT = f32(1.8)
