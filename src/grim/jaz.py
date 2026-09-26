@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 JAZ texture format (Crimsonland).
 
@@ -18,6 +16,8 @@ Notes from assets:
   - alpha runs expand to width*height for most files; one file is short by 1 pixel.
     We pad any remaining pixels with 0 (transparent).
 """
+
+from __future__ import annotations
 
 import io
 import zlib

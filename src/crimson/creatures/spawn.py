@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """Creature spawning helpers.
 
 This module combines:
@@ -13,6 +11,8 @@ and debug UIs.
 
 See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 """
+
+from __future__ import annotations
 
 import math
 from collections.abc import Callable

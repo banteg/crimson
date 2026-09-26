@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Perk ids and runtime metadata extracted from `perks_init_database`."""
+
+from __future__ import annotations
 
 from enum import IntEnum, IntFlag, unique
 

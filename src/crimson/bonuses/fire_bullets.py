@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Fire Bullets feature hooks for deterministic presentation output."""
+
+from __future__ import annotations
 
 import msgspec
 

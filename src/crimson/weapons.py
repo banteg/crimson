@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Weapon definitions for the rewrite runtime.
 
@@ -16,6 +14,8 @@ Reference material:
 - `docs/re/static/reference/weapon-table.md`
 - `docs/re/static/reference/weapon-id-map.md`
 """
+
+from __future__ import annotations
 
 from enum import IntEnum
 

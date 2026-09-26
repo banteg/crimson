@@ -102,7 +102,10 @@ def bonus_update(
     detail_preset: int = 5,
     creature_damage_runtime: CreatureDamageRuntime,
 ) -> list[BonusPickupEvent]:
-    """Advance world bonuses and global timers (subset of `bonus_update`)."""
+    """Advance world bonuses and global timers (`bonus_update`).
+
+    Telekinetic pickups run first; native applies them in `bonus_render`.
+    """
 
     pickups = bonus_telekinetic_update(
         state,

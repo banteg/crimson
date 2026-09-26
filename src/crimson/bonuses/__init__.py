@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Bonus ids, metadata, and runtime systems."""
+
+from __future__ import annotations
 
 from .ids import (
     BONUS_BY_ID,

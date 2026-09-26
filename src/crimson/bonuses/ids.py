@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Bonus ids extracted from bonus_metadata_init (bonus_meta_label)."""
+
+from __future__ import annotations
 
 from enum import IntEnum, unique
 

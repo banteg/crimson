@@ -1,3 +1,3 @@
-from __future__ import annotations
+"""Perk apply, per-player ticks and per-frame perk effects."""
 
-"""Perk runtime dispatch and hook contracts."""
+from __future__ import annotations

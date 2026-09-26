@@ -1,14 +1,14 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
-import msgspec
-
 """Camera helpers recovered from the original crimsonland.exe.
 
 This module currently models the `camera_update` screen shake logic, which is
 global state in the original game.
 """
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import msgspec
 
 from grim.geom import Vec2
 

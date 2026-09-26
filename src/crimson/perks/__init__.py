@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Perk metadata and deterministic perk runtime modules."""
+
+from __future__ import annotations
 
 from .ids import (
     PERK_BY_ID,

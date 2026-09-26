@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 Atlas slicing used by the Crimsonland renderer.
 
@@ -16,6 +14,8 @@ Findings from native code:
 This module replicates the atlas cutting: given a grid size and frame index,
 compute UVs or crop subimages.
 """
+
+from __future__ import annotations
 
 from collections.abc import Iterable
 

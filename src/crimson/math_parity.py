@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Float/trig helpers for native gameplay math parity."""
+
+from __future__ import annotations
 
 import math
 import struct

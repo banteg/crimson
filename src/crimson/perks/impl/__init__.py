@@ -1,3 +1,3 @@
-from __future__ import annotations
+"""Per-perk apply and effect behavior."""
 
-"""Perk-specific runtime hook owners."""
+from __future__ import annotations

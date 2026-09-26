@@ -1,18 +1,14 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 """Creature realtime simulation glue.
 
 This module materializes pure spawn plans (`creatures.spawn`) into a fixed-size
-runtime pool and advances creatures each frame using the AI helpers.
-
-It is intentionally minimal: the goal is to unblock a playable Survival loop,
-not to perfectly match every edge case in `creature_update_all`.
+runtime pool and advances creatures each frame (`creature_update_all`).
 See: `docs/creatures/update.md`.
 """
 
+from __future__ import annotations
+
 from collections.abc import Callable, Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -1108,9 +1104,7 @@ class CreaturePool:
     ) -> CreatureUpdateResult:
         """Advance the creature runtime pool by `dt` seconds.
 
-        Notes:
-        - Death side effects should be initiated by damage call sites.
-        - This is not a full port of `creature_update_all`; it targets the Survival subset.
+        Death side effects are initiated by damage call sites.
         """
         dt = float(f32(float(dt)))
         state = options.state

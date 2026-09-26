@@ -259,9 +259,7 @@ def creature_apply_damage(
     rng: CrandLike,
     preserve_bugs: bool = False,
 ) -> bool:
-    """Apply damage to a creature, returning True if the hit killed it.
-
-    This is a partial port of `creature_apply_damage`.
+    """Apply damage to a creature (`creature_apply_damage`), returning True if the hit killed it.
 
     Notes:
     - Death side-effects (handle_death, doubled lethal impulse, then shock burst /

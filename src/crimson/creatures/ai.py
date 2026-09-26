@@ -1,9 +1,9 @@
-from __future__ import annotations
-
 """Creature AI helpers.
 
 Ported from `creature_update_all`.
 """
+
+from __future__ import annotations
 
 import math
 from collections.abc import Sequence

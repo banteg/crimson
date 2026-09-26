@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 """
 PAQ archive format (Crimsonland).
 
@@ -10,6 +8,8 @@ File layout:
       - size: u32 little-endian payload size
       - payload: raw file bytes of length `size`
 """
+
+from __future__ import annotations
 
 from collections.abc import Iterable, Iterator
 from io import BytesIO

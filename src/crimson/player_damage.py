@@ -1,14 +1,13 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 """Player damage intake helpers.
 
 This is a minimal, rewrite-focused port of `player_take_damage` (0x00425e50).
 See: `docs/crimsonland-exe/player-damage.md`.
 """
 
+from __future__ import annotations
+
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
