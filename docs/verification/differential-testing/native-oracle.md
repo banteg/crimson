@@ -77,6 +77,11 @@ stores a wider double where native stores a float32.
 | `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `player_fire_weapon` `0x00444980` | `ProjectilePool.spawn`, `fire_weapon` |
 | `test_typo_spawn` | Typ-o spawn block `0x00445a62..0x00445c85` with `creature_spawn_tinted` | `typo_mid_step` |
 | `test_quest_builders` | All 50 `quest_build_*` functions (`0x00434480..0x004390d0`) across seeds, terrain sizes, player counts and hardcore | `QuestDefinition.builder` spawn tables |
+| `test_mode_spawns` | `rush_mode_update` `0x004072b0` with `creature_spawn`; `survival_spawn_creature` `0x00407510`, including elapsed times and experience past 2^24 | `tick_rush_mode_spawns`, `build_survival_spawn_creature` |
+| `test_creature_xp` | Quick Learner and plain kill XP in `creature_handle_death` `0x0041eb34..0x0041eb6e`; Radioactive kill XP `0x0042704b..0x00427062` | `quick_learner_kill_xp`, `experience_plus_reward` |
+| `test_creature_anim` | Animation phase step in `creature_update_all` `0x00426e22..0x00426f35` | `creature_anim_advance_phase` |
+| `test_camera_shake` | `camera_update` `0x00409500` over whole Nuke shakes | `camera_shake_update` |
+| `test_sprite_effects` | Sprite loop of `projectile_update` `0x0042246a..0x004224e8` | `SpriteEffectPool.update` |
 
 ## Limitations
 

@@ -54,6 +54,8 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
         "target_offset_x": None if offset is None else offset.x,
         "target_offset_y": None if offset is None else offset.y,
         "orbit_angle": creature.orbit_angle,
+        # Float/int union: the projectile-type arm compares as its f32 bits.
+        "orbit_radius": creature.orbit_radius,
         "flags": int(creature.flags),
         "ai_mode": int(creature.ai_mode),
     }
