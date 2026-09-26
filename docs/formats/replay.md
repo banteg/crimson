@@ -154,6 +154,10 @@ replay's `game_version`; a service that ranks runs must verify each one with
 the build that version names. Verification does not establish who produced the
 inputs or in what real time.
 
+The live game simulates exactly the inputs it records: it rounds each tick's
+inputs to the stored form (f32 axes, packed flags) before stepping, so no
+precision the file cannot hold reaches the simulation.
+
 The live game records only runs that stay within these rules: it stops
 recording when a debug cheat changes the run outside recorded ticks, and the
 perk prompt stays closed while a pick is waiting for the next tick.

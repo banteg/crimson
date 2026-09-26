@@ -40,6 +40,7 @@ from ..replay.checkpoints import (
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
+from ..replay.input_codec import canonical_player_input
 from ..screens.results.game_over import GameOverUi
 from ..sim.batch_apply import (
     PresentationTickOutput,
@@ -85,7 +86,10 @@ class _ModeLocalInputRuntime(LocalInputRuntime):
     mode: BaseGameplayMode
 
     def capture_frame_inputs(self, frame_ctx: FrameContext) -> list[PlayerInput]:
-        return self.mode._build_local_inputs(dt=float(frame_ctx.dt_seconds))
+        # The live sim must consume exactly what the replay records. Stick and
+        # mouse aim arrive as f64; one sub-f32 bit in aim moves the muzzle and
+        # splits live play from verification.
+        return [canonical_player_input(inp) for inp in self.mode._build_local_inputs(dt=float(frame_ctx.dt_seconds))]
 
 
 class _ModePerkMenuRuntime(PerkMenuRuntime):

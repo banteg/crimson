@@ -68,6 +68,12 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
     )
 
 
+def canonical_player_input(inp: PlayerInput) -> PlayerInput:
+    """The input exactly as a replay stores it: f32 axes and only the recorded flags."""
+
+    return unpack_player_input(pack_player_input(inp))
+
+
 def unpack_tick_inputs(packed_tick: PackedTickInputs) -> list[PlayerInput]:
     return [unpack_player_input(packed) for packed in packed_tick]
 

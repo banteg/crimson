@@ -13,6 +13,7 @@ from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.replay import load_replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson.replay.input_codec import unpack_player_input
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_providers import PerkPickCommand
@@ -192,3 +193,27 @@ def test_perk_prompt_stays_closed_while_a_pick_is_queued(mocker, make_mode_confi
     # With the pick applied, the prompt follows the pending count again.
     selection.pending_count = 1
     assert mode._ui_pending_perk_count() == 1
+
+
+def test_live_sim_consumes_the_inputs_the_replay_records(mocker, make_mode_config, assets_dir) -> None:
+    mode = _open_mode(SurvivalMode, GameMode.SURVIVAL, mocker=mocker, make_mode_config=make_mode_config, assets_dir=assets_dir)
+    # Stick and mouse aim math produces f64 points that f32 cannot represent.
+    live = PlayerInput(aim=Vec2(600.1, 512.3), move=Vec2(0.3, -0.7), fire_down=True)
+    mocker.patch.object(mode, "_build_local_inputs", return_value=[live])
+    session, recorder = mode._sim_session, mode._replay_recorder
+    assert session is not None and recorder is not None
+    consumed: list[PlayerInput] = []
+    session_type = type(session)
+    step = session_type.step_tick
+
+    def spy_step(session, **kwargs):
+        consumed.append(kwargs["inputs"][0])
+        return step(session, **kwargs)
+
+    mocker.patch.object(session_type, "step_tick", spy_step)
+
+    _run_ticks(mode, ticks=3)
+
+    recorded = recorder._ticks
+    assert [unpack_player_input(tick.inputs[0]) for tick in recorded] == consumed
+    assert consumed[0].aim != live.aim
