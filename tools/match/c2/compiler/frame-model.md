@@ -333,7 +333,7 @@ the variants.
   - Slot weights range from 39 (a 4-byte slot of `step`, 5×`segment_index`, `pulse_scale` and
     three temps, density 9750) down to seven 8-byte `$T` slots of weight 2 (density 250) at the
     top of the frame.
-- **Native frame, 0x19c, decoded** from esp-tracked references with no depth conflicts:
+- **Native frame, 0x19c, decoded** from esp-tracked references with no depth conflicts (refined in [native-slot-partition.md](native-slot-partition.md): 5×4 + one 16-byte + 47×8 slots, the 16-byte one being the conventional trail colour):
   - five 4-byte slots and 49 8-byte slots (412 bytes);
   - the candidate has seven 4-byte slots and 45 8-byte slots (388 bytes);
   - the native order is density-descending when final-code reference counts stand in for weights:
