@@ -21,6 +21,7 @@ pub const max_replay_payload_bytes: usize = 64 * 1024 * 1024;
 pub const max_replay_file_bytes: usize = 65 * 1024 * 1024;
 /// Largest decompression window a replay's zstd frame may declare.
 pub const max_zstd_window_bytes: u64 = std.compress.zstd.default_window_len;
+const zstd_window_buffer_len = std.compress.zstd.default_window_len + std.compress.zstd.block_size_max;
 /// Typ-o name sources are plain ASCII with capped counts and lengths, so every
 /// port agrees on them and can use fixed storage.
 pub const max_typo_dictionary_words: usize = 2048;
@@ -375,8 +376,10 @@ pub fn inflateZstdPayload(
     max_output_bytes: usize,
 ) InflateError![]u8 {
     var input: std.Io.Reader = .fixed(compressed);
-    var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
-    var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
+    // Heap-allocated: the window is larger than a WASM stack.
+    const window = try allocator.alloc(u8, zstd_window_buffer_len);
+    defer allocator.free(window);
+    var decompress: std.compress.zstd.Decompress = .init(&input, window, .{ .verify_checksum = false });
 
     var out: std.ArrayList(u8) = .empty;
     defer out.deinit(allocator);
@@ -403,8 +406,10 @@ fn inflateSingleZstdFramePayload(
     max_output_bytes: usize,
 ) InflateError![]u8 {
     var input: std.Io.Reader = .fixed(compressed);
-    var window: [std.compress.zstd.default_window_len + std.compress.zstd.block_size_max]u8 = undefined;
-    var decompress: std.compress.zstd.Decompress = .init(&input, &window, .{ .verify_checksum = false });
+    // Heap-allocated: the window is larger than a WASM stack.
+    const window = try allocator.alloc(u8, zstd_window_buffer_len);
+    defer allocator.free(window);
+    var decompress: std.compress.zstd.Decompress = .init(&input, window, .{ .verify_checksum = false });
     var output: std.ArrayList(u8) = .empty;
     defer output.deinit(allocator);
 
@@ -535,9 +540,9 @@ pub fn wrapZstdFilePayload(
 
 const replay_keys = [_][]const u8{ "format_version", "game_version", "run", "result", "ticks" };
 const run_keys = [_][]const u8{
-    "game_mode_id",  "seed",                   "quest_level",           "player_count",
-    "hardcore",      "preserve_bugs",          "demo",                  "quest_fail_retry_count",
-    "detail_preset", "violence_disabled",      "status",                "typo_dictionary_words",
+    "game_mode_id",         "seed",              "quest_level", "player_count",
+    "hardcore",             "preserve_bugs",     "demo",        "quest_fail_retry_count",
+    "detail_preset",        "violence_disabled", "status",      "typo_dictionary_words",
     "typo_highscore_names",
 };
 const quest_level_keys = [_][]const u8{ "major", "minor" };

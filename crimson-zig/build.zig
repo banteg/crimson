@@ -264,6 +264,7 @@ pub fn build(b: *std.Build) void {
     wasm_exe.entry = .disabled;
     wasm_exe.rdynamic = true;
     wasm_exe.export_memory = true;
+    wasm_exe.stack_size = 16 * 1024 * 1024;
 
     const install_wasm = b.addInstallArtifact(wasm_exe, .{});
     const wasm_step = b.step("wasm", "Build wasm32-freestanding runtime ABI module");
