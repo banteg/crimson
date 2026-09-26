@@ -2,6 +2,36 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Fire Cough heading in the subtraction vector (2026-09-26)
+
+The Fire Cough shot heading is stored back into the vector that `vec2_sub`
+writes: `scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;`.
+The same `scratch_pos.x` is then passed to `projectile_spawn`. As in native, C2
+now computes the heading right after `vec2_sub`, stores it to that slot, and
+pushes it with `mov eax,[slot]; push eax`.
+
+crimson-88 traced the propagation refusals (`pu-firecough-heading.md`). The
+eligibility helper 0x10711786 checks only dominance and same-innermost-loop.
+The refusals live in 0x10711afa: registration rules, alias class, sibling
+stores, call kills, and the conflict checks at commit. This supersedes
+"Fire Cough propagation and alias interference (2026-09-22)" below: the early
+heading is reachable from stock source.
+
+The two remaining hand-ordered `{ float y = ...; }` position blocks next to it
+are now setters too, so all three Fire Cough position builds share one
+spelling. That keeps the `move_speed` owner id out of the failing mod-4 class.
+The heading store alone flips all 19 lanes back.
+
+Raw 74.07% to **74.00%**; references 859/0/0 to **857/0/0**, no mismatches.
+Label-masked: +11 lines, −2. x87 96.49 to 96.68%; stack-masked structural
+93.79 to 93.93%. The Fire Cough window drops from 20 changed instructions to 11.
+
+Open:
+- Native's `fld [eax]; fld [eax+4]; fxch` needs X held and Y propagated. No
+  stock spelling is known to hold only X.
+- The 81-node scheduling window ends exactly at `fpatan`. Native's `fsub`
+  placement needs that cut to move.
+
 ## Move-speed factor order (2026-09-26)
 
 In the cos/sin movement lanes, native multiplies `player->move_speed` right

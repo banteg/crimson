@@ -290,11 +290,7 @@ extern "C" void player_update(void)
                 &player_state_table[render_overlay_player_index];
             random_offset.x = fire_player->aim.x;
             random_offset.y = fire_player->aim.y;
-            {
-                float y = random_offset.y - fire_player->position.y;
-                move_delta.x = random_offset.x - fire_player->position.x;
-                move_delta.y = y;
-            }
+            player_update_vec2_set(&move_delta, random_offset.x - fire_player->position.x, random_offset.y - fire_player->position.y);
             float spread_radius = vec2_length(&move_delta) * 0.5f;
             float spread_angle =
                 (float)(crt_rand() & 0x1ff) * 0.012271847f;
@@ -309,15 +305,11 @@ extern "C" void player_update(void)
             float *shot_delta = ((vec2_t *)&fire_player->position)->vec2_sub(
                 &scratch_pos.x,
                 &random_offset.x);
-            float shot_heading = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;
-            {
-                float y = movement_input.y + player_position->y;
-                move_delta.x = movement_input.x + player_position->x;
-                move_delta.y = y;
-            }
+            scratch_pos.x = atan2f(shot_delta[1], shot_delta[0]) - 1.5707964f;
+            player_update_vec2_set(&move_delta, movement_input.x + player_position->x, movement_input.y + player_position->y);
             projectile_spawn(
                 &move_delta,
-                shot_heading,
+                scratch_pos.x,
                 PROJECTILE_TYPE_FIRE_BULLETS,
                 owner_id);
 
