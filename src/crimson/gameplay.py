@@ -107,20 +107,6 @@ def _player_reflex_restored_dt(movement_dt: float, time_scale_factor: float) -> 
     return x87_pc24_mul(x87_pc24_mul(time_scale_factor, movement_dt), _REFLEX_RESTORE_DT_SCALE)
 
 
-def player_frame_dt_after_roundtrip(*, dt: float, time_scale_active: bool, reflex_boost_timer: float) -> float:
-    """Mirror the `player_update` frame_dt round-trip under Reflex Boost.
-
-    Native scales frame_dt for movement (`* 0.6 / _time_scale_factor`) and then
-    restores it with `* _time_scale_factor * 1.6666666` for the rest of the update.
-    """
-
-    dt_f32 = f32(dt)
-    if not time_scale_active or dt_f32 <= 0.0:
-        return dt_f32
-    time_scale_factor = reflex_boost_time_scale_factor(reflex_boost_timer=reflex_boost_timer, time_scale_active=True)
-    return _player_reflex_restored_dt(_player_reflex_movement_dt(dt_f32, time_scale_factor), time_scale_factor)
-
-
 def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
     """Grant XP while honoring active bonus multipliers."""
 

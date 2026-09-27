@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 
 from crimson.persistence.save_status import (
@@ -9,8 +8,6 @@ from crimson.persistence.save_status import (
     WEAPON_USAGE_COUNT,
     GameStatus,
     GameStatusData,
-    build_status_blob,
-    hash_status_data,
 )
 
 
@@ -36,19 +33,6 @@ def test_status_roundtrip_uses_full_typed_payload() -> None:
     assert status.as_data() == data
 
 
-
-
-def test_hash_status_data_hashes_full_blob() -> None:
-    quest_counts = [0] * int(QUEST_PLAY_COUNT)
-    quest_counts[5] = 123
-    data = GameStatusData(
-        quest_unlock_index=1,
-        quest_unlock_index_full=2,
-        quest_play_counts=tuple(quest_counts),
-        reserved_seed_words=bytes(range(int(RESERVED_SEED_WORDS_BYTE_SIZE))),
-    )
-
-    assert hash_status_data(data) == hashlib.sha256(build_status_blob(data)).hexdigest()
 
 
 def test_counter_overflow_remains_serializable(tmp_path: Path) -> None:

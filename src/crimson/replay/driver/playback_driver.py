@@ -11,7 +11,7 @@ from grim.sfx_map import SfxId
 from ...game_modes import GameMode
 from ...quests import quest_by_level
 from ...quests.types import QuestDefinition, SpawnEntry
-from ...replay import REPLAY_TICK_DT, Replay, ReplayRecorder, warn_on_game_version_mismatch
+from ...replay import REPLAY_TICK_DT, Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.ticks import step_replay_tick
@@ -369,25 +369,3 @@ def build_runtime_playback_driver(
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )
-
-
-def replay_with_simulated_result(replay: Replay) -> Replay:
-    """Return `replay` carrying the result its ticks simulate to (for tools and tests that synthesize inputs)."""
-
-    result = build_verify_playback_driver(replay, warn_on_version_mismatch=False).run()
-    return msgspec.structs.replace(replay, result=result)
-
-
-def finish_with_simulated_result(recorder: ReplayRecorder) -> Replay:
-    """Finish a synthesized recording with the result its ticks simulate to."""
-
-    unverified = RunResult(
-        outcome=RunOutcome.INCOMPLETE,
-        elapsed_ms=0,
-        kills=0,
-        rng_state=0,
-        pending_perks=0,
-        quest_final_ms=None,
-        players=(),
-    )
-    return replay_with_simulated_result(recorder.finish(unverified))

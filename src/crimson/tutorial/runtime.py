@@ -16,7 +16,6 @@ from .timeline import TutorialFrameActions, tick_tutorial_timeline
 
 def tutorial_before_step(world: WorldState) -> None:
     tutorial = world.state.tutorial
-    tutorial.preserve_bugs = bool(world.state.preserve_bugs)
     hint_ref = tutorial.hint_bonus_creature_ref
     tutorial.hint_bonus_alive_before_tick = False
     if hint_ref is None or not (0 <= int(hint_ref) < len(world.creatures.entries)):

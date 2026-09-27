@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from crimson.render.pipeline import RaylibDrawScope, RenderDrawScope, RenderPipeline
-from crimson.render.sink import NullSink, VideoSink, VideoTransport, WindowSink
+from crimson.render.sink import VideoSink, VideoTransport, WindowSink
 
 
 def test_render_pipeline_lifecycle_and_resize_behavior() -> None:
@@ -201,10 +201,3 @@ def test_video_sink_transport_and_fail_fast_behavior(tmp_path: Path) -> None:
         sink.present()
     sink.close()
 
-
-def test_null_sink_is_noop() -> None:
-    sink = NullSink()
-    sink.open()
-    sink.present()
-    sink.flush()
-    sink.close()

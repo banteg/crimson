@@ -1,11 +1,8 @@
 from __future__ import annotations
 
 from crimson.ui.hud import HUD_QUEST_LEFT_Y_SHIFT, HudState, hud_layout
-
-
-class _FontStub:
-    def __init__(self, cell_size: int) -> None:
-        self.cell_size = int(cell_size)
+from grim.fonts.small import SmallFontData
+from grim.raylib_api import rl
 
 
 def test_hud_state_smooth_xp_resets_on_non_positive_target() -> None:
@@ -38,7 +35,7 @@ def test_hud_layout_draws_in_fixed_pixels() -> None:
 
 
 def test_hud_layout_uses_font_cell_size() -> None:
-    layout = hud_layout(font=_FontStub(12), show_quest_hud=False)
+    layout = hud_layout(font=SmallFontData(widths=[], texture=rl.Texture(), cell_size=12), show_quest_hud=False)
     assert layout.line_h == 12.0
 
 

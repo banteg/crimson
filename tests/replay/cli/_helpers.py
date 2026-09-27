@@ -22,14 +22,13 @@ from crimson.replay.checkpoints import (
     default_checkpoints_path,
     dump_checkpoints_file,
 )
-from crimson.replay.driver.playback_driver import replay_with_simulated_result
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
-from tests.support.replay_runner_helpers import _run_verify_playback, finish_replay
+from tests.support.replay_runner_helpers import _run_verify_playback, finish_replay, replay_with_simulated_result
 
 
 def build_replay(

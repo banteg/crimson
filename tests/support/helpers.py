@@ -6,6 +6,7 @@ from typing import Any, Protocol
 
 import pytest
 
+from crimson.owner_ref import LOCAL_PLAYER_OWNER_ID, OwnerRef
 from grim.rand import CallerStatic, RngDrawRecord
 
 
@@ -159,3 +160,13 @@ def assert_rng_progression(
         assert after_state == int(expected_after_state)
     elif draws == 0:
         assert after_state == int(before_state)
+
+
+def owner_ref_from_native(owner_id: int) -> OwnerRef:
+    """Decode a native projectile owner id recorded in capture fixtures."""
+
+    if owner_id == LOCAL_PLAYER_OWNER_ID:
+        return OwnerRef.from_local_player(0)
+    if owner_id < 0:
+        return OwnerRef.from_player(-1 - owner_id)
+    return OwnerRef.from_creature(owner_id)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from typing import Protocol
 
 import msgspec
 
@@ -62,10 +61,6 @@ HUD_BONUS_PANEL_OFFSET_Y = -11.0
 HUD_XP_BAR_RGBA = RGBA(0.1, 0.3, 0.6, 1.0)
 HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
-
-class SmallFontLike(Protocol):
-    @property
-    def cell_size(self) -> int: ...
 
 
 class HudRenderFlags(msgspec.Struct, frozen=True):
@@ -172,7 +167,7 @@ def hud_flags_for_game_mode(game_mode_id: GameMode) -> HudRenderFlags:
             )
 
 
-def hud_layout(*, font: SmallFontLike | None, show_quest_hud: bool) -> HudLayout:
+def hud_layout(*, font: SmallFontData | None, show_quest_hud: bool) -> HudLayout:
     # ui_render_hud draws in fixed backbuffer pixels at every supported resolution.
     line_h = float(font.cell_size) if font is not None else 18.0
     hud_y_shift = HUD_QUEST_LEFT_Y_SHIFT if show_quest_hud else 0.0

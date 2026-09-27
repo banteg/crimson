@@ -12,7 +12,6 @@ class TutorialState(msgspec.Struct):
     hint_fade_in: bool = False
     repeat_spawn_count: int = 0
     hint_bonus_creature_ref: int | None = None
-    preserve_bugs: bool = False
     move_active_this_tick: bool = False
     fire_active_this_tick: bool = False
     hint_bonus_alive_before_tick: bool = False
@@ -28,8 +27,6 @@ class TutorialOverlayState(msgspec.Struct):
 def reset_tutorial_state(
     tutorial: TutorialState,
     overlay: TutorialOverlayState,
-    *,
-    preserve_bugs: bool,
 ) -> None:
     tutorial.stage_index = -1
     tutorial.stage_timer_ms = 0
@@ -39,7 +36,6 @@ def reset_tutorial_state(
     tutorial.hint_fade_in = False
     tutorial.repeat_spawn_count = 0
     tutorial.hint_bonus_creature_ref = None
-    tutorial.preserve_bugs = bool(preserve_bugs)
     tutorial.move_active_this_tick = False
     tutorial.fire_active_this_tick = False
     tutorial.hint_bonus_alive_before_tick = False

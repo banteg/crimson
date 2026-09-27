@@ -8,7 +8,6 @@ from crimson.math_parity import (
     f32,
     heading_add_pi_f32,
     heading_from_delta_f32,
-    heading_to_direction_f32,
     native_fire_muzzle_pos,
     native_shot_angle_from_jitter_draws,
     x87_fpatan,
@@ -59,21 +58,6 @@ def test_heading_add_pi_is_float32_and_does_not_wrap() -> None:
     assert_float_close(heading, f32(NATIVE_PI + NATIVE_PI))
     assert heading > math.pi
     assert heading == f32(heading)
-
-
-def test_heading_to_direction_matches_native_heading_basis() -> None:
-    direction = heading_to_direction_f32(NATIVE_HALF_PI)
-    assert_float_close(direction.x, 1.0)
-    assert_float_close(direction.y, 0.0)
-    assert direction.x == f32(direction.x)
-    assert direction.y == f32(direction.y)
-
-
-def test_heading_to_direction_rounds_angle_subtraction_before_trig() -> None:
-    direction = heading_to_direction_f32(6.330781936645508)
-
-    assert direction.x == 0.04757849872112274
-    assert direction.y == -0.9988675117492676
 
 
 def test_x87_pc24_helpers_preserve_operation_order() -> None:

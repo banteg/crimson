@@ -31,7 +31,6 @@ from ..gameplay import (
 )
 from ..math_parity import (
     NATIVE_HALF_PI,
-    NATIVE_PI,
     NATIVE_TAU,
     NATIVE_TURN_RATE_SCALE,
     f32,
@@ -126,10 +125,6 @@ _CREATURE_CONTACT_SFX: dict[CreatureTypeId, tuple[SfxId, SfxId]] = {
     CreatureTypeId.SPIDER_SP1: (SfxId.SPIDER_ATTACK_01, SfxId.SPIDER_ATTACK_02),
     CreatureTypeId.SPIDER_SP2: (SfxId.SPIDER_ATTACK_01, SfxId.SPIDER_ATTACK_02),
 }
-
-
-def _wrap_angle(angle: float) -> float:
-    return f32((f32(angle) + NATIVE_PI) % NATIVE_TAU - NATIVE_PI)
 
 
 def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:

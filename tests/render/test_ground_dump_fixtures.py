@@ -148,10 +148,8 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
         # Compare at the capture's pixel dimensions even on a Retina display.
         renderer.texture_scale = renderer._render_pixel_ratio()
         renderer.schedule_generate(seed=case.seed)
-        for _ in range(6):
-            renderer.process_pending()
-            if not renderer.generation_pending():
-                break
+        renderer.process_pending()
+        assert renderer.render_target_ready()
         assert renderer.render_target is not None
 
         case_dir = out_root / Path(case.fixture).stem

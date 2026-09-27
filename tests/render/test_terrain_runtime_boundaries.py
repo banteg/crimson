@@ -34,8 +34,7 @@ def test_apply_terrain_setup_keeps_sim_rng_state(assets_dir: Path, monkeypatch) 
 
     assert int(runtime.world.state.rng.state) == before_rng_state
     assert runtime.render_resources.ground is not None
-    assert bool(runtime.render_resources.ground.generation_pending())
-    assert int(runtime.render_resources.ground._scheduled_seed or -1) == 1337
+    assert runtime.render_resources.ground._scheduled_seed == 1337
 
 
 def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
@@ -61,8 +60,7 @@ def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(asset
 
     assert int(runtime.world.state.rng.state) == before_rng_state
     assert runtime.render_resources.ground is not None
-    assert bool(runtime.render_resources.ground.generation_pending())
-    assert int(runtime.render_resources.ground._scheduled_seed or -1) == before_rng_state
+    assert runtime.render_resources.ground._scheduled_seed == before_rng_state
     assert runtime.render_resources.ground.texture is base
     assert runtime.render_resources.ground.overlay is overlay
     assert runtime.render_resources.ground.overlay_detail is detail
@@ -77,8 +75,7 @@ def test_reset_schedules_terrain_from_sim_seed_without_advancing_rng(assets_dir:
 
     assert int(runtime.world.state.rng.state) == 4242
     assert runtime.render_resources.ground is not None
-    assert bool(runtime.render_resources.ground.generation_pending())
-    assert int(runtime.render_resources.ground._scheduled_seed or -1) == 4242
+    assert runtime.render_resources.ground._scheduled_seed == 4242
 
 
 def test_process_ground_pending_does_not_live_sync_texture_scale_from_config(assets_dir: Path) -> None:

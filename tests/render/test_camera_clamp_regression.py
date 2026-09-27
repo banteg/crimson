@@ -373,7 +373,7 @@ def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker
         autospec=True,
         return_value=(1024, 1024),
     )
-    mocker.patch.object(
+    load_render_target = mocker.patch.object(
         terrain_render.GroundRenderer,
         "_load_render_target",
         autospec=True,
@@ -382,9 +382,10 @@ def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker
 
     ground.schedule_generate(seed=1337)
     ground.process_pending()
+    ground.process_pending()
 
     assert ground.texture_failed is True
-    assert ground.generation_pending() is False
+    load_render_target.assert_called_once()
 
 
 def test_ground_renderer_requires_all_three_textures() -> None:
@@ -517,7 +518,6 @@ def test_generation_failure_unbinds_target_and_retains_pending_seed(mocker) -> N
         ground.process_pending()
     end_target.assert_called_once()
     assert not ground.render_target_ready()
-    assert ground.generation_pending()
     assert ground._scheduled_seed == 123
 
 

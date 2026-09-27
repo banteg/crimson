@@ -13,6 +13,7 @@ from crimson.weapon_runtime import (
     prepare_weapon_availability,
     weapon_pick_random_available,
 )
+from crimson.weapon_usage import weapon_usage_slot_for_weapon_id
 from crimson.weapons import WeaponId
 from tests.support.helpers import ScriptedCrand
 
@@ -47,6 +48,12 @@ def _status_default() -> save_status.GameStatus:
         data=save_status.default_status_data(),
         dirty=False,
     )
+
+
+def _mark_weapon_used(status: save_status.GameStatus, weapon_id: WeaponId) -> None:
+    slot = weapon_usage_slot_for_weapon_id(weapon_id)
+    assert slot is not None
+    status.increment_weapon_usage_slot(slot)
 
 
 def test_prepare_weapon_availability_includes_survival_defaults() -> None:
@@ -121,7 +128,7 @@ def test_weapon_pick_random_available_has_no_synthetic_retry_cap() -> None:
 
 def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
     status = _status_default()
-    status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL)
+    _mark_weapon_used(status, WeaponId.PISTOL)
 
     state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
     state.status = status
@@ -133,7 +140,7 @@ def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
 
 def test_weapon_pick_random_available_tags_exact_native_callers_on_reroll() -> None:
     status = _status_default()
-    status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL)
+    _mark_weapon_used(status, WeaponId.PISTOL)
 
     rng = ScriptedCrand([0, 0, 1])
     state = GameplayState(rng=rng)

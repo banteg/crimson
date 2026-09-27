@@ -20,7 +20,6 @@ __all__ = [
     "f32_vec2",
     "heading_add_pi_f32",
     "heading_from_delta_f32",
-    "heading_to_direction_f32",
     "native_aim_point_from_heading",
     "native_chain_angle_from_delta",
     "native_fire_muzzle_pos",
@@ -207,11 +206,6 @@ def native_chain_angle_from_delta(*, dx: float, dy: float) -> float:
     """
 
     return x87_pc24_sub(x87_pc24_sub(x87_fpatan(dy, dx), NATIVE_HALF_PI), NATIVE_PI)
-
-
-def heading_to_direction_f32(heading: float) -> Vec2:
-    radians = f32(float(f32(heading)) - NATIVE_HALF_PI)
-    return Vec2(cos_f32(radians), sin_f32(radians))
 
 
 def native_aim_point_from_heading(player_pos: Vec2, aim_heading: float, *, radius: float = 60.0) -> Vec2:

@@ -83,8 +83,8 @@ def test_stage5_bonus_carrier_config() -> None:
         ),
     ],
 )
-def test_hint_text_preserves_original_in_all_modes(hint_index: int, original_text: str) -> None:
-    base = TutorialState(
+def test_hint_text_preserves_original(hint_index: int, original_text: str) -> None:
+    state = TutorialState(
         stage_index=0,
         stage_timer_ms=0,
         stage_transition_timer_ms=-1,
@@ -92,8 +92,8 @@ def test_hint_text_preserves_original_in_all_modes(hint_index: int, original_tex
         hint_alpha=1000,
         hint_fade_in=True,
     )
-    _fixed_state, fixed_actions = tick_tutorial_timeline(
-        base,
+    _state, actions = tick_tutorial_timeline(
+        state,
         frame_dt_ms=0.0,
         any_move_active=False,
         any_fire_active=False,
@@ -101,26 +101,7 @@ def test_hint_text_preserves_original_in_all_modes(hint_index: int, original_tex
         bonus_pool_empty=True,
         perk_pending_count=0,
     )
-    bugged = TutorialState(
-        stage_index=0,
-        stage_timer_ms=0,
-        stage_transition_timer_ms=-1,
-        hint_index=hint_index,
-        hint_alpha=1000,
-        hint_fade_in=True,
-        preserve_bugs=True,
-    )
-    _bug_state, bug_actions = tick_tutorial_timeline(
-        bugged,
-        frame_dt_ms=0.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=True,
-        bonus_pool_empty=True,
-        perk_pending_count=0,
-    )
-    assert fixed_actions.hint_text == original_text
-    assert bug_actions.hint_text == original_text
+    assert actions.hint_text == original_text
 
 
 @pytest.mark.parametrize("repeat", [1, 2, 5])

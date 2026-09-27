@@ -4,23 +4,7 @@ from pathlib import Path
 
 from grim.render_pipeline import RenderPresent, RenderSink, WindowSink
 
-__all__ = ["NullSink", "RenderPresent", "RenderSink", "VideoSink", "VideoTransport", "WindowSink"]
-
-
-class NullSink:
-    """Headless sink used for determinism-only verification paths."""
-
-    def open(self) -> None:
-        pass
-
-    def present(self) -> None:
-        pass
-
-    def flush(self) -> None:
-        pass
-
-    def close(self) -> None:
-        pass
+__all__ = ["RenderPresent", "RenderSink", "VideoSink", "VideoTransport", "WindowSink"]
 
 
 class VideoTransport:

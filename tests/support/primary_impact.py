@@ -6,7 +6,6 @@ from unittest.mock import patch
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
@@ -14,6 +13,7 @@ from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
+from tests.support.helpers import owner_ref_from_native
 
 
 def bits(x):
@@ -41,7 +41,7 @@ def observe(case):
     projectile.damage_pool = item["damage"]
     projectile.hit_radius = item["radius"]
     projectile.travel_budget = item["travel"]
-    projectile.owner = OwnerRef.from_legacy(item["owner"])
+    projectile.owner = owner_ref_from_native(item["owner"])
     target = case["creatures"][0]
     creature = world.creatures.entries[target["index"]]
     creature.active = True

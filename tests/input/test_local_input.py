@@ -8,19 +8,13 @@ from pytest_mock import MockerFixture
 
 from crimson import local_input
 from crimson.aim_schemes import AimScheme
+from crimson.creatures.runtime import CreatureState
 from crimson.game_modes import GameMode
 from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
 from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
 from tests.support.helpers import assert_float_close
-
-
-class _DummyCreature:
-    def __init__(self, *, pos: Vec2, active: bool = True, hp: float = 10.0) -> None:
-        self.pos = pos
-        self.active = active
-        self.hp = hp
 
 
 def _test_config(**updates: object) -> CrimsonConfig:
@@ -110,7 +104,7 @@ def test_local_input_computer_aim_auto_fires_without_fire_pressed(mocker: Mocker
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), aim=Vec2(560.0, 512.0))
-    creatures = [_DummyCreature(pos=Vec2(612.0, 512.0), active=True, hp=20.0)]
+    creatures = [CreatureState(pos=Vec2(612.0, 512.0), active=True, hp=20.0)]
     config = _set_player_modes(_test_config(), aim_scheme=AimScheme.COMPUTER)
 
     out = interpreter.build_player_input(
@@ -164,8 +158,8 @@ def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
     player1 = PlayerState(index=1, pos=Vec2(128.0, 0.0), aim=Vec2(128.0, 0.0))
     config = _set_player_modes(_test_config(), aim_scheme=AimScheme.COMPUTER)
     creatures = [
-        _DummyCreature(pos=Vec2(100.0, 0.0), active=True, hp=20.0),  # nearest to player0
-        _DummyCreature(pos=Vec2(130.0, 0.0), active=True, hp=20.0),  # nearest to player1
+        CreatureState(pos=Vec2(100.0, 0.0), active=True, hp=20.0),  # nearest to player0
+        CreatureState(pos=Vec2(130.0, 0.0), active=True, hp=20.0),  # nearest to player1
     ]
 
     # Simulate a subset call where player1 is fed through slot 0 first.
@@ -386,7 +380,7 @@ def test_local_input_computer_move_mode_near_center_heads_toward_target(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(500.0, 500.0), aim=Vec2(560.0, 500.0))
-    creatures = [_DummyCreature(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
+    creatures = [CreatureState(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
     config = _set_player_modes(_test_config(), move_mode=MovementControlType.COMPUTER)
 
     out = interpreter.build_player_input(
@@ -410,7 +404,7 @@ def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(900.0, 900.0), aim=Vec2(960.0, 900.0))
-    creatures = [_DummyCreature(pos=Vec2(960.0, 900.0), active=True, hp=20.0)]
+    creatures = [CreatureState(pos=Vec2(960.0, 900.0), active=True, hp=20.0)]
     config = _set_player_modes(_test_config(), move_mode=MovementControlType.COMPUTER)
 
     out = interpreter.build_player_input(
@@ -457,7 +451,7 @@ def test_local_input_computer_aim_scheme_preserves_configured_movement(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(500.0, 500.0), aim=Vec2(560.0, 500.0))
-    creatures = [_DummyCreature(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
+    creatures = [CreatureState(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
     config = _set_player_modes(
         _test_config(),
         aim_scheme=AimScheme.COMPUTER,

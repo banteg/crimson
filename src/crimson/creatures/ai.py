@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
-from typing import Protocol
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -25,6 +25,9 @@ from ..math_parity import (
 from ..rng_caller_static import RngCallerStatic
 from .spawn import CreatureAiMode, CreatureFlags
 
+if TYPE_CHECKING:
+    from .runtime import CreatureState
+
 __all__ = [
     "CreatureAIUpdate",
     "creature_ai7_tick_link_timer",
@@ -34,22 +37,6 @@ __all__ = [
 _FLAG_AI7_LINK_TIMER = int(CreatureFlags.AI7_LINK_TIMER)
 
 
-class CreatureAIStateLike(Protocol):
-    pos: Vec2
-    hp: float
-    flags: CreatureFlags
-    ai_mode: CreatureAiMode
-    link_index: int
-    target_offset: Vec2 | None
-    phase_seed: int
-    orbit_angle: float
-    orbit_radius: float
-    heading: float
-
-    target: Vec2
-    target_heading: float
-    force_target: int
-
 
 class CreatureAIUpdate(msgspec.Struct, frozen=True):
     move_scale: float
@@ -57,7 +44,7 @@ class CreatureAIUpdate(msgspec.Struct, frozen=True):
 
 
 def creature_ai7_tick_link_timer(
-    creature: CreatureAIStateLike,
+    creature: CreatureState,
     *,
     dt_ms: int,
     rng: CrandLike,
@@ -89,7 +76,7 @@ def creature_ai7_tick_link_timer(
         )
 
 
-def resolve_live_link(creatures: Sequence[CreatureAIStateLike], link_index: int) -> CreatureAIStateLike | None:
+def resolve_live_link(creatures: Sequence[CreatureState], link_index: int) -> CreatureState | None:
     if 0 <= link_index < len(creatures) and creatures[link_index].hp > 0.0:
         return creatures[link_index]
     return None
@@ -130,11 +117,11 @@ def _link_target_f32(*, link_pos: Vec2, offset: Vec2) -> Vec2:
 
 
 def creature_ai_update_target(
-    creature: CreatureAIStateLike,
+    creature: CreatureState,
     *,
     player_pos: Vec2,
     distance_player_pos: Vec2,
-    creatures: Sequence[CreatureAIStateLike],
+    creatures: Sequence[CreatureState],
     dt: float,
 ) -> CreatureAIUpdate:
     """Compute the target position + heading for one creature.

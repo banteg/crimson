@@ -127,7 +127,6 @@ def build_tutorial_session(
     reset_tutorial_state(
         world.state.tutorial,
         world.state.tutorial_overlay,
-        preserve_bugs=world.state.preserve_bugs,
     )
     return DeterministicSession(
         world=world,

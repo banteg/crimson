@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import msgspec
+
 from crimson.game_modes import GameMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
@@ -14,7 +16,6 @@ from crimson.replay.driver.playback_driver import (
     PlaybackWalkObserver,
     RngTraceDraw,
     build_verify_playback_driver,
-    finish_with_simulated_result,
 )
 from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_info
 from crimson.replay.input_codec import pack_tick
@@ -59,10 +60,17 @@ def idle_replay(tick_count: int, *, run: RunSpec | None = None) -> Replay:
     )
 
 
+def replay_with_simulated_result(replay: Replay) -> Replay:
+    """Stamp a replay with the result its ticks simulate to."""
+
+    result = build_verify_playback_driver(replay, warn_on_version_mismatch=False).run()
+    return msgspec.structs.replace(replay, result=result)
+
+
 def finish_replay(rec: ReplayRecorder) -> Replay:
     """Finish a synthesized recording, stamping the result its ticks simulate to."""
 
-    return finish_with_simulated_result(rec)
+    return replay_with_simulated_result(unverified_replay(rec))
 
 
 def _blank_replay(run: RunSpec, *, ticks: int, game_version: str | None = None) -> ReplayRecorder:

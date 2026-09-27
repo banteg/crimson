@@ -4,7 +4,6 @@ import pytest
 
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import player_frame_dt_after_roundtrip
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
@@ -12,7 +11,23 @@ from crimson.sim.session_builders import build_survival_session
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.factories import step_player
 from tests.support.helpers import assert_float_close
+
+
+def _player_roundtrip_dt(dt: float, *, reflex_boost: float) -> float:
+    """frame_dt as `player_update` leaves it for the rest of the frame under Reflex Boost."""
+
+    world = WorldState.build(
+        demo_mode_active=True,
+        hardcore=False,
+        quest_fail_retry_count=0,
+    )
+    player = PlayerState(index=0, pos=Vec2())
+    world.players.append(player)
+    world.state.time_scale_active = True
+    world.state.bonuses.reflex_boost = reflex_boost
+    return step_player(world, player, PlayerInput(), dt)
 
 
 def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
@@ -85,11 +100,7 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
     world.state.bonuses.reflex_boost = 0.05
 
     dt = 0.0109
-    expected_post_player_dt = player_frame_dt_after_roundtrip(
-        dt=dt,
-        time_scale_active=True,
-        reflex_boost_timer=float(world.state.bonuses.reflex_boost),
-    )
+    expected_post_player_dt = _player_roundtrip_dt(dt, reflex_boost=world.state.bonuses.reflex_boost)
     expected_reflex = float(f32(float(world.state.bonuses.reflex_boost) - float(expected_post_player_dt)))
 
     world.step(
@@ -111,14 +122,7 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
 def test_player_time_scale_roundtrip_restores_scaled_dt() -> None:
     dt_sim = f32(f32(0.09) * f32(0.3))
 
-    assert (
-        player_frame_dt_after_roundtrip(
-            dt=dt_sim,
-            time_scale_active=True,
-            reflex_boost_timer=f32(3.0),
-        )
-        == dt_sim
-    )
+    assert _player_roundtrip_dt(dt_sim, reflex_boost=f32(3.0)) == dt_sim
 
 
 def test_session_does_not_apply_player_time_scale_twice() -> None:
@@ -137,11 +141,7 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
     )
 
     dt_sim = f32(f32(0.09) * f32(0.3))
-    post_player_dt = player_frame_dt_after_roundtrip(
-        dt=dt_sim,
-        time_scale_active=True,
-        reflex_boost_timer=world.state.bonuses.reflex_boost,
-    )
+    post_player_dt = _player_roundtrip_dt(dt_sim, reflex_boost=world.state.bonuses.reflex_boost)
     expected_reflex = f32(f32(3.0) - post_player_dt)
 
     session.step_tick(dt=0.09, inputs=[PlayerInput()])

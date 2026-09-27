@@ -188,6 +188,3 @@ class RecordingCrand:
     def records_since(self, start_call: int = 0) -> list[RngDrawRecord]:
         start = max(0, int(start_call))
         return list(self._shared.records[start:])
-
-    def values_since(self, start_call: int = 0) -> list[int]:
-        return [record.value for record in self.records_since(start_call)]

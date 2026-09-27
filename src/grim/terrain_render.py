@@ -137,10 +137,6 @@ class GroundRenderer(msgspec.Struct):
         self._render_target_ready = False
         self._scheduled_seed = None
 
-    def generation_pending(self) -> bool:
-        """True while a scheduled terrain generate is still pending."""
-        return self._scheduled_seed is not None
-
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
         return self.render_target is not None and self._render_target_ready

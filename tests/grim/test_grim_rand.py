@@ -50,7 +50,7 @@ def test_recording_crand_records_history() -> None:
     second = rng.rand()
 
     assert rng.calls == 2
-    assert rng.values_since() == [first, second]
+    assert [record.value for record in rng.records_since()] == [first, second]
     assert [record.caller for record in rng.records_since()] == [caller, None]
     assert rng.records_since(1)[0].value == second
 

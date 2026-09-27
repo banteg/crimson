@@ -6,6 +6,7 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.persistence import save_status
+from crimson.weapon_usage import weapon_usage_slot_for_weapon_id
 from crimson.weapons import WeaponId
 
 
@@ -52,14 +53,15 @@ def test_game_status_edit_persists(tmp_path: Path) -> None:
     assert reloaded.quest_play_count(7) == 2
 
 
-def test_game_status_weapon_usage_for_weapon_id_handles_untracked_ids() -> None:
+def test_game_status_weapon_usage_slots_skip_untracked_ids() -> None:
     status = save_status.GameStatus.from_data(
         path=Path("game.cfg"),
         data=save_status.default_status_data(),
         dirty=False,
     )
+    pistol_slot = weapon_usage_slot_for_weapon_id(WeaponId.PISTOL)
+    assert pistol_slot is not None
 
-    assert status.increment_weapon_usage_for_weapon_id(WeaponId.PISTOL) == 1
-    assert status.weapon_usage_count_for_weapon_id(WeaponId.PISTOL) == 1
-    assert status.increment_weapon_usage_for_weapon_id(WeaponId.NUKE_LAUNCHER) is None
-    assert status.weapon_usage_count_for_weapon_id(WeaponId.NUKE_LAUNCHER) == 0
+    assert status.increment_weapon_usage_slot(pistol_slot) == 1
+    assert status.weapon_usage_count_slot(pistol_slot) == 1
+    assert weapon_usage_slot_for_weapon_id(WeaponId.NUKE_LAUNCHER) is None

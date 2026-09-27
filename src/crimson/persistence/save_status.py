@@ -14,7 +14,6 @@ from ..weapon_usage import (
     WEAPON_USAGE_SLOT_COUNT,
     ZERO_WEAPON_USAGE_COUNTS,
     WeaponUsageCounts,
-    weapon_usage_slot_for_weapon_id,
 )
 
 GAME_CFG_NAME = "game.cfg"
@@ -147,18 +146,6 @@ class GameStatus(GameStatusData, kw_only=True):
         counts[slot_idx] = (counts[slot_idx] + int(delta)) & 0xFFFFFFFF
         self.weapon_usage_counts = tuple(counts)
         return counts[slot_idx]
-
-    def weapon_usage_count_for_weapon_id(self, weapon_id: int) -> int:
-        slot = weapon_usage_slot_for_weapon_id(weapon_id)
-        if slot is None:
-            return 0
-        return self.weapon_usage_count_slot(slot)
-
-    def increment_weapon_usage_for_weapon_id(self, weapon_id: int, delta: int = 1) -> int | None:
-        slot = weapon_usage_slot_for_weapon_id(weapon_id)
-        if slot is None:
-            return None
-        return self.increment_weapon_usage_slot(slot, delta=delta)
 
     def quest_play_count(self, index: int) -> int:
         quest_idx = _require_index(index, size=QUEST_PLAY_COUNT, field="quest_play_count")
@@ -318,12 +305,6 @@ def ensure_game_status(base_dir: Path) -> GameStatus:
     return status
 
 
-def hash_status_data(status: GameStatusData) -> str:
-    import hashlib
-
-    return hashlib.sha256(build_status_blob(status)).hexdigest()
-
-
 __all__ = [
     "BLOB_SIZE",
     "FILE_SIZE",
@@ -342,7 +323,6 @@ __all__ = [
     "default_status_data",
     "encode_blob",
     "ensure_game_status",
-    "hash_status_data",
     "load_status",
     "parse_status_blob",
     "save_status",
