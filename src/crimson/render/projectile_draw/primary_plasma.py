@@ -11,7 +11,7 @@ from grim.raylib_api import rl
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...sim.world_defs import PLASMA_PARTICLE_TYPES
 from ..projectile_render_registry import plasma_projectile_render_config
-from .common import RAD_TO_DEG
+from ..world.context import draw_late_bullet_pass_sprite, late_bullet_pass_size
 from .types import ProjectileDrawCtx
 
 _PLASMA_BULLET_CORE_TYPES = frozenset(
@@ -23,11 +23,7 @@ _PLASMA_BULLET_CORE_TYPES = frozenset(
 )
 
 
-def plasma_uses_bullet_core(type_id: int, *, preserve_bugs: bool) -> bool:
-    # Original bug #28: native's late bullet pass skips the player plasma types
-    # but misses Spider Plasma, which reuses the Plasma Minigun look.
-    if int(type_id) == 0x1A and not preserve_bugs:
-        return False
+def plasma_uses_bullet_core(type_id: int) -> bool:
     return int(type_id) in _PLASMA_BULLET_CORE_TYPES
 
 
@@ -136,21 +132,15 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, aura_tint)
 
         rl.end_blend_mode()
-        if plasma_uses_bullet_core(type_id, preserve_bugs=renderer.frame.state.preserve_bugs):
+        if plasma_uses_bullet_core(type_id):
             bullet_texture = resources.texture(TextureId.BULLET_I)
             if bullet_texture is not None:
-                size = 4.0 * ctx.scale
-                bullet_src = rl.Rectangle(0.0, 0.0, float(bullet_texture.width), float(bullet_texture.height))
-                bullet_dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, size, size)
-                bullet_origin = rl.Vector2(size * 0.5, size * 0.5)
-                bullet_tint = RGBA(0.8, 0.8, 0.8, alpha * 0.9).to_rl()
-                rl.draw_texture_pro(
+                draw_late_bullet_pass_sprite(
                     bullet_texture,
-                    bullet_src,
-                    bullet_dst,
-                    bullet_origin,
-                    ctx.angle * RAD_TO_DEG,
-                    bullet_tint,
+                    screen_pos=ctx.screen_pos,
+                    size=late_bullet_pass_size(type_id, scale=ctx.scale),
+                    angle=ctx.angle,
+                    alpha=alpha,
                 )
         return True
 

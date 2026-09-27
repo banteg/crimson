@@ -661,20 +661,25 @@ Rewrite behavior:
 Evidence: `tools/match/scratches/projectile_update/scratch.cpp` (player hit
 branch) and `tools/match/scratches/player_take_damage/scratch.cpp`.
 
-## 28) Spider Plasma draws a bullet sprite inside the plasma
+## 28) Bullet heads and plasma cores are never visible
 
 Native behavior:
 
-- `projectile_render` ends with a pass that draws the small bullet sprite at the
-  head of every in-flight projectile, skipping only Plasma Rifle, Plasma Minigun
-  and Pulse Gun.
-- Spider Plasma reuses the Plasma Minigun look but is not in that list, so the
-  green enemy shots carry a bullet sprite in their centre.
+- `projectile_render` ends with a pass meant to draw a small `bullet_i` sprite at
+  the head of every in-flight projectile (6 px for the pistol, 8 px for type 4,
+  4 px otherwise), skipping Plasma Rifle, Plasma Minigun and Pulse Gun.
+- The pass before it, the Fire Bullets glow, selects particle frame 13 with
+  `effect_select_texture(13)`. The bullet pass binds `bullet_i` without resetting
+  the UVs, so every quad samples the top-right quarter of the 16x16 texture,
+  which is fully transparent.
+- In game, bullets show only their trails, and plasma shots only their glow.
+  At most a filtered edge texel can flicker near a spawning shot.
 
 Rewrite behavior:
 
-- Default: Spider Plasma is drawn without the bullet core. Shrinkifier and
-  Plasma Cannon keep theirs.
-- `--preserve-bugs`: the core is drawn as in the original.
+- Documented and preserved in both modes: the pass samples the same texels, so
+  heads and cores stay invisible as in the original.
 
-Evidence: `tools/match/scratches/projectile_render/scratch.cpp` (late bullet pass).
+Evidence: `tools/match/scratches/projectile_render/scratch.cpp` (Fire Bullets
+glow and late bullet pass), `effect_select_texture`, and captures of the
+original with Plasma Shooter spiders.

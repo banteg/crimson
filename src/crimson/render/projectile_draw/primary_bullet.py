@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from grim.assets import TextureId
 from grim.math import clamp
-from grim.raylib_api import rl
 
 from ...projectiles.types import ProjectileTemplateId
-from ..world.context import bullet_sprite_size, draw_bullet_trail_quad, is_bullet_trail_type
-from .common import RAD_TO_DEG, proj_origin
+from ..world.context import (
+    draw_bullet_trail_quad,
+    draw_late_bullet_pass_sprite,
+    is_bullet_trail_type,
+    late_bullet_pass_size,
+)
+from .common import proj_origin
 from .types import ProjectileDrawCtx
 
 
@@ -17,8 +21,6 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
     if not is_bullet_trail_type(type_id):
         return False
 
-    life_alpha = int(clamp(float(ctx.life), 0.0, 1.0) * 255.0)
-    alpha_byte = int(clamp(float(life_alpha) * float(ctx.alpha), 0.0, 255.0) + 0.5)
     drawn = False
 
     bullet_trail = resources.texture(TextureId.BULLET_TRAIL)
@@ -39,12 +41,13 @@ def draw_bullet_trail(ctx: ProjectileDrawCtx) -> bool:
 
     bullet = resources.texture(TextureId.BULLET_I)
     if bullet is not None and float(ctx.life) >= 0.39:
-        size = bullet_sprite_size(type_id, scale=ctx.scale)
-        src = rl.Rectangle(0.0, 0.0, float(bullet.width), float(bullet.height))
-        dst = rl.Rectangle(ctx.screen_pos.x, ctx.screen_pos.y, float(size), float(size))
-        origin = rl.Vector2(float(size) * 0.5, float(size) * 0.5)
-        tint = rl.Color(220, 220, 220, int(alpha_byte))
-        rl.draw_texture_pro(bullet, src, dst, origin, ctx.angle * RAD_TO_DEG, tint)
+        draw_late_bullet_pass_sprite(
+            bullet,
+            screen_pos=ctx.screen_pos,
+            size=late_bullet_pass_size(type_id, scale=ctx.scale),
+            angle=ctx.angle,
+            alpha=ctx.alpha,
+        )
         drawn = True
 
     return bool(drawn)

@@ -6,8 +6,10 @@ import msgspec
 
 from grim.assets import TextureId
 from grim.geom import Vec2
+from grim.math import clamp
 from grim.raylib_api import rd, rl
 
+from ...effects_atlas import effect_src_rect
 from ...math_parity import f32, f32_vec2
 from ...projectiles.types import ProjectileTemplateId
 from . import viewport
@@ -56,13 +58,41 @@ def is_bullet_trail_type(type_id: int) -> bool:
     return 0 <= type_id < 8 or type_id == ProjectileTemplateId.SPLITTER_GUN
 
 
-def bullet_sprite_size(type_id: int, *, scale: float) -> float:
+# `projectile_render`'s late pass binds `bullet_i` without resetting the UVs left
+# by the Fire Bullets glow's `effect_select_texture(13)`. It therefore samples the
+# texture's transparent top-right quarter, so bullet heads and plasma cores never
+# show in the original even though their quads are drawn.
+_LATE_BULLET_PASS_EFFECT_ID = 13
+
+
+def late_bullet_pass_size(type_id: int, *, scale: float) -> float:
     base = 4.0
-    if type_id == ProjectileTemplateId.ASSAULT_RIFLE:
+    if type_id == ProjectileTemplateId.PISTOL:
         base = 6.0
-    elif type_id == ProjectileTemplateId.SUBMACHINE_GUN:
+    elif type_id == 4:
         base = 8.0
-    return max(2.0, base * scale)
+    return base * scale
+
+
+def draw_late_bullet_pass_sprite(
+    texture: rl.Texture,
+    *,
+    screen_pos: Vec2,
+    size: float,
+    angle: float,
+    alpha: float,
+) -> None:
+    src_rect = effect_src_rect(
+        _LATE_BULLET_PASS_EFFECT_ID,
+        texture_width=float(texture.width),
+        texture_height=float(texture.height),
+    )
+    assert src_rect is not None
+    src = rl.Rectangle(*src_rect)
+    dst = rl.Rectangle(screen_pos.x, screen_pos.y, size, size)
+    origin = rl.Vector2(size * 0.5, size * 0.5)
+    tint = rl.Color(204, 204, 204, int(clamp(alpha * 0.9, 0.0, 1.0) * 255.0))
+    rl.draw_texture_pro(texture, src, dst, origin, angle * _RAD_TO_DEG, tint)
 
 
 def bullet_trail_corners(
