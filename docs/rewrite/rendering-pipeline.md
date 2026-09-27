@@ -98,7 +98,7 @@ most decal-like work has already been folded into the ground texture.
 
 `RenderResources.build_render_frame()` assembles the draw snapshot from:
 
-- world geometry: `world_size`, `camera`, `ground`
+- world geometry: `camera`, `ground` (the arena is always `TERRAIN_SIZE`)
 - gameplay state: `state`, `players`, `creatures`
 - resources: concrete `RuntimeResources`
 - presentation toggles: elapsed time and bonus animation phase
@@ -236,7 +236,7 @@ Viewport math now lives in `src/crimson/render/world/viewport.py`.
 
 ```mermaid
 flowchart LR
-    A["world_size + config + camera + framebuffer size"] --> B["camera_screen_size()"]
+    A["TERRAIN_SIZE + config + camera + framebuffer size"] --> B["camera_screen_size()"]
     B --> C["clamp_camera()"]
     C --> D["view_transform()"]
     D --> E["ViewTransform"]
