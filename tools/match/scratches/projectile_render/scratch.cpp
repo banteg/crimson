@@ -971,54 +971,54 @@ extern "C" void projectile_render(float transition_alpha)
             grim_interface_ptr->grim_set_color(
                 1.0f, 1.0f, 1.0f, transition_alpha);
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x - 30.0f,
-                camera_offset_y + projectile->pos.pos_y - 30.0f,
+                (camera_offset_x + projectile->pos_x - 30.0f),
+                (camera_offset_y + projectile->pos.pos_y - 30.0f),
                 60.0f,
                 60.0f);
 
             float heading = projectile->angle + 1.5707964f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
+                (camera_offset_x + projectile->pos_x
                     - 30.0f
-                    + (float)cos(heading) * 15.0f,
-                camera_offset_y + projectile->pos.pos_y
+                    + (float)cos(heading) * 15.0f),
+                (camera_offset_y + projectile->pos.pos_y
                     - 30.0f
-                    + (float)sin(heading) * 15.0f,
+                    + (float)sin(heading) * 15.0f),
                 60.0f,
                 60.0f);
 
             float phase = (float)projectile_index + plague_phase;
-            float phase_cos = (float)cos(phase);
+            float phase_cos = ((float)cos(phase));
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
+                (camera_offset_x + projectile->pos_x
                     - 31.0f
-                    + phase_cos * phase_cos,
-                camera_offset_y + projectile->pos.pos_y
+                    + phase_cos * phase_cos),
+                (camera_offset_y + projectile->pos.pos_y
                     - 31.0f
-                    + (float)sin(phase) * 11.0f,
+                    + (float)sin(phase) * 11.0f),
                 52.0f,
                 52.0f);
 
             float phase_120 = phase + 2.0943952f;
-            float phase_120_sin = (float)sin(phase_120);
+            float phase_120_sin = ((float)sin(phase_120));
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
+                (camera_offset_x + projectile->pos_x
                     - 31.0f
-                    + (float)cos(phase_120) * 10.0f,
-                camera_offset_y + projectile->pos.pos_y
+                    + (float)cos(phase_120) * 10.0f),
+                (camera_offset_y + projectile->pos.pos_y
                     - 31.0f
-                    + phase_120_sin * 10.0f,
+                    + phase_120_sin * 10.0f),
                 62.0f,
                 62.0f);
 
             float phase_240 = phase + 4.1887903f;
             grim_interface_ptr->grim_draw_quad(
-                camera_offset_x + projectile->pos_x
+                (camera_offset_x + projectile->pos_x
                     - 31.0f
-                    + (float)cos(phase_240) * 10.0f,
-                camera_offset_y + projectile->pos.pos_y
+                    + (float)cos(phase_240) * 10.0f),
+                (camera_offset_y + projectile->pos.pos_y
                     - 31.0f
-                    + (float)sin(phase_240) * phase_120_sin,
+                    + (float)sin(phase_240) * phase_120_sin),
                 62.0f,
                 62.0f);
         } else {

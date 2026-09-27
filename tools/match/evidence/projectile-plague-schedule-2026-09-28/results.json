@@ -1,0 +1,74 @@
+{
+  "source_sha256": "00644e8cb56fea99ea14846a7be552ff16ec86547843b136a6593498b84a2cbd",
+  "before_source_sha256": "1d23261d83fbe1b29a7109f6b6495ff108141c43c395cbe1dad02b4305e9638f",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "485bff49b55930cfd9e57c4b02271890bf0c2c0c2b4963f4d06d474d3ec95731",
+  "executor_sha256": "929478efa3db26233c39cdd158186831e482263ee1c16a8df0d4ec56ba4aa0f4",
+  "engine_sha256": "f562a0e40b6024b13bfe12ebb2fd15f39d24b3e61824866d03c0aa872e9ee546",
+  "body_sha256": {
+    "before": "8cb2bfaadcd9b96ebe7727b4dce42107927e807c615ea3444ad6cfb885f71bf1",
+    "after": "7c0efa620db19740c6261bb68570d7644b4616a9d3b2588cc94612e59fcce25a"
+  },
+  "metrics": {
+    "before": {
+      "exact": false,
+      "body_byte_exact": false,
+      "match_ratio": 0.9774685222001326,
+      "prefix_instructions": 1322,
+      "target_instructions": 3021,
+      "candidate_instructions": 3015,
+      "references": {
+        "ok": 544,
+        "unresolved": 0,
+        "mismatch": 0
+      },
+      "stack_frame": {
+        "target_prologue_allocation_bytes": 412,
+        "candidate_prologue_allocation_bytes": 412,
+        "target_minus_candidate_bytes": 0,
+        "classification": "same-prologue-allocation",
+        "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+      }
+    },
+    "after": {
+      "exact": false,
+      "body_byte_exact": false,
+      "match_ratio": 0.9784625579854208,
+      "prefix_instructions": 1322,
+      "target_instructions": 3021,
+      "candidate_instructions": 3015,
+      "references": {
+        "ok": 544,
+        "unresolved": 0,
+        "mismatch": 0
+      },
+      "stack_frame": {
+        "target_prologue_allocation_bytes": 412,
+        "candidate_prologue_allocation_bytes": 412,
+        "target_minus_candidate_bytes": 0,
+        "classification": "same-prologue-allocation",
+        "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+      }
+    }
+  },
+  "changed_candidate_extent": [
+    "0x2510",
+    "0x2528"
+  ],
+  "native_extent": [
+    "0x42518c",
+    "0x4251a4"
+  ],
+  "outside_bytes_and_relocations_identical": true,
+  "region_byte_exact": true,
+  "negative_controls_rejected": [
+    "old-schedule",
+    "wrong-stack-depth",
+    "wrong-relocation"
+  ],
+  "fixtures": 192,
+  "fixtures_sha256": "ff721147ca8bb796bfe926d52627e84489c42b2ac651166a78221ebbcd2b123d",
+  "ordered_trace_sha256": "5ac3dde5fec966e5da4d9547d8d9709010bf8776ceea05af66e2646e933a8572",
+  "unicorn_version": "2.1.4",
+  "scope": "Finite native caller traces with recording external contracts; no GPU or arbitrary-input equivalence claim."
+}

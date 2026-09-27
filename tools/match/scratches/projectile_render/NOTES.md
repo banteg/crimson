@@ -1,5 +1,17 @@
 # `projectile_render`
 
+## Independent plague scheduling correction (2026-09-28)
+
+[The isolated K9 correction](../../evidence/projectile-plague-schedule-2026-09-28/README.md)
+works without the diagnostic ID pad. Parenthesized draw coordinates and stored
+trig expressions move the scheduling boundary and restore native argument pushes.
+The canonical score is **97.846256%**, 3,015/3,021 instructions, prefix 1,322,
+544/0/0 references, with exact and body-byte-exact both false. Only a 24-byte
+interval changes; it is relocation-aware byte-exact against native, and all
+outside bytes/references are unchanged. All 192 bounded native/before/after
+execution cases agree. K6/K7/K8 remain; no padding or compiler intervention is
+retained.
+
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
