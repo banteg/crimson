@@ -34,6 +34,7 @@ from crimson.ui.menu_layout import (
 )
 from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.geom import Rect, Vec2
@@ -87,7 +88,7 @@ class MenuView:
         self._transition.reset()
         self._idle_ms = 0
         self._cursor_pulse_time = 0.0
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         self._last_mouse_pos = Vec2.from_xy(mouse)
         self._panel_open_sfx_played = False
         self._transition.duration_ms = self._menu_max_timeline_ms(
@@ -127,7 +128,7 @@ class MenuView:
             return
 
         if dt_ms > 0:
-            mouse = rl.get_mouse_position()
+            mouse = canvas.mouse_position()
             mouse_pos = Vec2.from_xy(mouse)
             mouse_moved = mouse_pos != self._last_mouse_pos
             if mouse_moved:
@@ -406,7 +407,7 @@ class MenuView:
     def _hovered_entry_index(self, resources: RuntimeResources) -> int | None:
         if not self._menu_entries:
             return None
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         mouse_pos = Vec2.from_xy(mouse)
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):

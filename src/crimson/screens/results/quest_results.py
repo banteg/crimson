@@ -8,6 +8,7 @@ import msgspec
 
 from crimson.screens.actions import ResultAction
 from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -358,7 +359,7 @@ class QuestResultsUi(msgspec.Struct):
         dt_ms = dt_s * 1000.0
         self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
-            mouse = rl.get_mouse_position()
+            mouse = canvas.mouse_position()
 
         if self.record is None or self.breakdown is None:
             return None
@@ -436,7 +437,7 @@ class QuestResultsUi(msgspec.Struct):
                 play_sfx=play_sfx,
             )
 
-            screen_w = float(rl.get_screen_width())
+            screen_w = float(canvas.width())
             panel_layout = self._panel_layout(screen_w=screen_w)
             content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
             input_pos = content_pos.offset(dy=150.0)
@@ -490,7 +491,7 @@ class QuestResultsUi(msgspec.Struct):
                 self._begin_close_transition(ResultAction.HIGH_SCORES)
                 return None
 
-            screen_w = float(rl.get_screen_width())
+            screen_w = float(canvas.width())
             panel_layout = self._panel_layout(screen_w=screen_w)
             qualifies = int(self.rank) < TABLE_MAX
             content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
@@ -588,9 +589,9 @@ class QuestResultsUi(msgspec.Struct):
         if self.record is None or self.breakdown is None:
             return
         if mouse is None:
-            mouse = rl.get_mouse_position()
+            mouse = canvas.mouse_position()
 
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
 
         resources = runtime_resources_for(self.assets_root)
         font = resources.small_font

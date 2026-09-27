@@ -3,6 +3,7 @@ from __future__ import annotations
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -115,7 +116,7 @@ def _draw_dropdown(
     full_h = float(item_count) * 16.0 + 24.0
     rows_y0 = widget_pos.y + 17.0
 
-    mouse = rl.get_mouse_position()
+    mouse = canvas.mouse_position()
     hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
         mouse,
         pos=widget_pos,

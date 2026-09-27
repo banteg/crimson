@@ -1,0 +1,14 @@
+id: no-window-screen-reads
+language: python
+severity: error
+message: Read the screen size and mouse position via grim.canvas; raylib reports the window, not the letterboxed game canvas.
+files:
+  - src/**/*.py
+ignores:
+  - src/grim/canvas.py
+rule:
+  any:
+    - pattern: rl.get_screen_width()
+    - pattern: rl.get_screen_height()
+    - pattern: rl.get_mouse_position()
+    - pattern: rl.get_mouse_delta()

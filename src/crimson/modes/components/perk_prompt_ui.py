@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig
 from grim.geom import Rect, Vec2
@@ -49,7 +50,7 @@ class PerkPromptUi:
     @staticmethod
     def hinge(*, screen_w: float | None = None) -> Vec2:
         if screen_w is None:
-            screen_w = float(rl.get_screen_width())
+            screen_w = float(canvas.width())
         hinge_x = float(screen_w) + PERK_PROMPT_OUTSET_X
         hinge_y = 80.0 if int(screen_w) == 640 else 40.0
         return Vec2(hinge_x, hinge_y)
@@ -93,7 +94,7 @@ class PerkPromptUi:
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
         text_w = float(ui_text_width(label))
-        x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
+        x = float(canvas.width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(int(text_color.r), int(text_color.g), int(text_color.b), int(255 * alpha))
         draw_ui_text(resources, label, Vec2(x, y), color=color)

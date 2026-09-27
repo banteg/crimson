@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim import canvas
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -66,4 +67,4 @@ def _draw_screen_fade(state: GameState) -> None:
     if alpha <= 0.0:
         return
     shade = int(max(0.0, min(1.0, alpha)) * 255.0)
-    rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, shade))
+    rl.draw_rectangle(0, 0, int(canvas.width()), int(canvas.height()), rl.Color(0, 0, 0, shade))

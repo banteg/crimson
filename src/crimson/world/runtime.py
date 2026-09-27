@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from grim import canvas
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.rand import CrandLike
-from grim.raylib_api import rl
 
 from ..camera import CameraUpdate, camera_update_for_players
 from ..render.frame import RenderFrame
@@ -147,8 +147,8 @@ class WorldRuntime:
 
         screen_size = viewport.camera_screen_size(
             config=self.config,
-            runtime_w=float(rl.get_screen_width()),
-            runtime_h=float(rl.get_screen_height()),
+            runtime_w=float(canvas.width()),
+            runtime_h=float(canvas.height()),
         )
         camera = self.camera if update.focus is None else screen_size * 0.5 - update.focus
         camera = camera + update.shake
@@ -173,7 +173,7 @@ class WorldRuntime:
     def view_transform(self) -> viewport.ViewTransform:
         return viewport.view_transform(
             config=self.config, camera=self.camera,
-            out_size=Vec2(float(rl.get_screen_width()), float(rl.get_screen_height())),
+            out_size=Vec2(float(canvas.width()), float(canvas.height())),
         )
 
     def world_to_screen(self, pos: Vec2) -> Vec2:

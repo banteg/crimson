@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim import canvas
 from grim.app import RunViewHooks
 from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
@@ -254,7 +255,7 @@ class ArsenalDebugView:
             float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
         )
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         aim = self.screen_to_world(Vec2.from_xy(mouse))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -409,7 +410,7 @@ class ArsenalDebugView:
         draw_ui_text(self._small, "P screenshot", Vec2(x, y), color=UI_HINT)
 
         resources = self._runtime.render_resources.resources
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
 
 

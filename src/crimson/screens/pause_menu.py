@@ -31,6 +31,7 @@ from crimson.ui.menu_layout import (
 )
 from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
@@ -229,7 +230,7 @@ class PauseMenuView:
     def _hovered_entry_index(self) -> int | None:
         if not self._menu_entries:
             return None
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         mouse_pos = Vec2.from_xy(mouse)
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):

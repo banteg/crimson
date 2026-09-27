@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim import canvas
 from grim.app import RunViewHooks
 from grim.assets import TextureId
 from grim.audio import AudioState, shutdown_audio, update_audio
@@ -1820,7 +1821,7 @@ class LightingDebugView:
 
     @staticmethod
     def _mouse_screen() -> Vec2:
-        return Vec2.from_xy(rl.get_mouse_position())
+        return Vec2.from_xy(canvas.mouse_position())
 
     def _mouse_world(self) -> Vec2:
         return self.screen_to_world(self._mouse_screen())
@@ -2088,7 +2089,7 @@ class LightingDebugView:
             float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
             float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
         )
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         aim = self.screen_to_world(Vec2.from_xy(mouse))
         return PlayerInput(
             move=move,
@@ -2567,8 +2568,8 @@ class LightingDebugView:
         return True
 
     def _ensure_shadow_rt(self) -> bool:
-        screen_w = max(1, int(rl.get_screen_width()))
-        screen_h = max(1, int(rl.get_screen_height()))
+        screen_w = max(1, int(canvas.width()))
+        screen_h = max(1, int(canvas.height()))
         rt_scale = _clampf(self._shadow_rt_scale, RT_SCALE_MIN, RT_SCALE_MAX)
         rt_w = max(1, int(float(screen_w) * rt_scale))
         rt_h = max(1, int(float(screen_h) * rt_scale))
@@ -2648,8 +2649,8 @@ class LightingDebugView:
         view = self._runtime.view_transform()
         camera, view_scale = view.camera, view.view_scale
         rt_w, rt_h = self._shadow_rt_size
-        screen_w = max(1.0, float(rl.get_screen_width()))
-        screen_h = max(1.0, float(rl.get_screen_height()))
+        screen_w = max(1.0, float(canvas.width()))
+        screen_h = max(1.0, float(canvas.height()))
         self._last_shadow_camera = Vec2(float(camera.x), float(camera.y))
         self._last_shadow_view_scale = Vec2(float(view_scale.x), float(view_scale.y))
         self._last_shadow_resolution = Vec2(float(screen_w), float(screen_h))
@@ -2905,7 +2906,7 @@ class LightingDebugView:
             self._last_shadow_draw_ms = (time.perf_counter() - start_time) * 1000.0
             return
         src = rl.Rectangle(0.0, 0.0, float(rt_w), -float(rt_h))
-        dst = rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
+        dst = rl.Rectangle(0.0, 0.0, float(canvas.width()), float(canvas.height()))
         rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
         rl.draw_texture_pro(output_rt.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         rl.end_blend_mode()
@@ -3048,7 +3049,7 @@ class LightingDebugView:
         if rt_w <= 0 or rt_h <= 0:
             return
 
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
         pad = 6.0
         margin = 12.0
         title_h = 12.0 if self._small is not None else 0.0
@@ -3088,8 +3089,8 @@ class LightingDebugView:
 
         line = float(ui_line_height(self._small))
         pad = 6.0
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        screen_w = float(canvas.width())
+        screen_h = float(canvas.height())
         panel_w = 338.0
         panel_h = (len(_TUNE_PARAMS) + 2) * line + pad * 2.0
         x = screen_w - panel_w - 12.0
@@ -3250,7 +3251,7 @@ class LightingDebugView:
                 draw_ui_text(self._small, "autotune pending", Vec2(x, y), color=UI_HINT)
 
         warn_x = 16.0
-        warn_y = float(rl.get_screen_height()) - line * 3.0
+        warn_y = float(canvas.height()) - line * 3.0
         if self._shadow_warning is not None and self._shadow_enabled:
             draw_ui_text(self._small, f"shadow warning: {self._shadow_warning}", Vec2(warn_x, warn_y), color=UI_WARNING)
 
@@ -3258,7 +3259,7 @@ class LightingDebugView:
             self._draw_tuning_panel()
             return
 
-        y = float(rl.get_screen_height()) - line * 5.0
+        y = float(canvas.height()) - line * 5.0
         draw_ui_text(
             self._small,
             (
@@ -3317,7 +3318,7 @@ class LightingDebugView:
             )
 
         resources = self._runtime.render_resources.resources
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
 
 

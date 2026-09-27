@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Callable, Sequence
 
+from grim import canvas
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -71,7 +72,7 @@ def draw_typing_box(
     draw_text: DrawUiText,
     measure_text_width: MeasureUiTextWidth,
 ) -> None:
-    screen_h = float(rl.get_screen_height())
+    screen_h = float(canvas.height())
     panel_x = -1.0
     panel_y = screen_h - 144.0
     text_y = screen_h - 127.0

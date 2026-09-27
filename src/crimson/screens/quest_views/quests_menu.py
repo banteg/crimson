@@ -12,6 +12,7 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
 )
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
@@ -181,7 +182,7 @@ class QuestsMenuView:
         dt_ms = min(float(dt), 0.1) * 1000.0
         resources = require_runtime_resources(self.state)
         back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
             self._back_button,
@@ -267,7 +268,7 @@ class QuestsMenuView:
     def _hovered_stage(self, layout: _QuestMenuLayout) -> int | None:
         title_y = layout.title_pos.y
         x0 = layout.icons_start_pos.x
-        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        mouse_pos = Vec2.from_xy(canvas.mouse_position())
         for stage in range(1, 6):
             x = x0 + float(stage - 1) * QUEST_STAGE_ICON_STEP
             # Hover bounds are fixed 32x32, anchored at (x, title_y) (not icons_y).
@@ -293,7 +294,7 @@ class QuestsMenuView:
         rect_w = float(check_on.width) + 6.0 + label_w
         rect_h = max(float(check_on.height), font.cell_size)
 
-        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        mouse_pos = Vec2.from_xy(canvas.mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             config.gameplay.hardcore = not hardcore
@@ -333,7 +334,7 @@ class QuestsMenuView:
     def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
         list_x = layout.list_pos.x
         y0 = self._rows_y0(layout)
-        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        mouse_pos = Vec2.from_xy(canvas.mouse_position())
         for row in range(10):
             y = y0 + float(row) * QUEST_LIST_ROW_STEP
             left = list_x - QUEST_LIST_HOVER_LEFT_PAD

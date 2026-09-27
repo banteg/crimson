@@ -15,6 +15,7 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
 )
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import draw_small_text
@@ -196,7 +197,7 @@ class StatisticsMenuView:
         panel_top_left = self._panel_top_left().offset(dx=float(slide_x))
         resources = require_runtime_resources(self.state)
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 

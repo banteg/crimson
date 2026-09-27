@@ -7,6 +7,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.screens.actions import ResultAction
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -210,7 +211,7 @@ class GameOverUi(msgspec.Struct):
         dt_ms = self._dt * 1000.0
         self._cursor_pulse_time += self._dt * 1.1
         if mouse is None:
-            mouse = rl.get_mouse_position()
+            mouse = canvas.mouse_position()
 
         resources = runtime_resources_for(self.assets_root)
 
@@ -280,7 +281,7 @@ class GameOverUi(msgspec.Struct):
                 play_sfx=play_sfx,
             )
 
-            screen_w = float(rl.get_screen_width())
+            screen_w = float(canvas.width())
             panel_layout = self._panel_layout(screen_w=screen_w)
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             form_pos = banner_pos + Vec2(8.0, 84.0)
@@ -314,7 +315,7 @@ class GameOverUi(msgspec.Struct):
         else:
             # Buttons phase: let the caller handle navigation; we just report actions.
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            screen_w = float(rl.get_screen_width())
+            screen_w = float(canvas.width())
             panel_layout = self._panel_layout(screen_w=screen_w)
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             button_pos = banner_pos + Vec2(52.0, (210.0 if self.rank < TABLE_MAX else 208.0))
@@ -599,10 +600,10 @@ class GameOverUi(msgspec.Struct):
         mouse: rl.Vector2 | None = None,
     ) -> None:
         if mouse is None:
-            mouse = rl.get_mouse_position()
+            mouse = canvas.mouse_position()
         font = resources.small_font
 
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
 
         panel_layout = self._panel_layout(screen_w=screen_w)
         panel = panel_layout.panel

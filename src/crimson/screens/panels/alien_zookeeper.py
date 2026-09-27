@@ -13,6 +13,7 @@ from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
     MENU_PANEL_WIDTH,
 )
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
@@ -316,7 +317,7 @@ class AlienZooKeeperView:
             return
 
         layout = self._layout()
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)

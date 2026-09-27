@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import webbrowser
 
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import update_audio
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
@@ -267,7 +268,7 @@ class DemoView:
         button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         button_w = button_width(
             resources,
@@ -408,7 +409,7 @@ class DemoView:
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
         particles = resources.texture(TextureId.PARTICLES)
         cursor_tex = resources.texture(TextureId.UI_CURSOR)
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         pulse_time = float(self._upsell_pulse_ms) * 0.001
         draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=pulse_time)
 

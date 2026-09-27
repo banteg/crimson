@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import ScoreQuery
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -131,7 +132,7 @@ def draw_main_panel(
     selected_rank = (
         int(request.highlight_rank) if (request.highlight_rank is not None) else None
     )
-    mouse = Vec2.from_xy(rl.get_mouse_position())
+    mouse = Vec2.from_xy(canvas.mouse_position())
     frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X
     frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y
     frame_w = HS_SCORE_FRAME_W

@@ -48,7 +48,7 @@ def test_game_loop_draw_applies_gamma_after_the_complete_dpi_sized_frame(mocker,
     mocker.patch.object(loop_view.rl, "get_render_height", return_value=1536)
     ordered = mocker.Mock()
     for name in ("begin_texture_mode", "end_texture_mode", "begin_shader_mode", "end_shader_mode",
-                 "clear_background", "rl_push_matrix", "rl_pop_matrix", "rl_scalef", "draw_texture_pro"):
+                 "clear_background", "rl_scalef", "draw_texture_pro"):
         ordered.attach_mock(mocker.patch.object(loop_view.rl, name), name)
     ordered.attach_mock(mocker.patch.object(view, "_draw_scene_layers"), "scene")
     ordered.attach_mock(mocker.patch.object(loop_view, "_set_gamma_ramp_gain"), "gain")
@@ -57,7 +57,7 @@ def test_game_loop_draw_applies_gamma_after_the_complete_dpi_sized_frame(mocker,
 
     ensure.assert_called_once_with(2048, 1536)
     assert [entry[0] for entry in ordered.mock_calls] == [
-        "begin_texture_mode", "clear_background", "rl_push_matrix", "rl_scalef", "scene", "rl_pop_matrix",
+        "begin_texture_mode", "rl_scalef", "clear_background", "scene",
         "end_texture_mode", "gain", "begin_shader_mode", "draw_texture_pro", "end_shader_mode",
     ]
     ordered.rl_scalef.assert_called_once_with(2.0, 2.0, 1.0)

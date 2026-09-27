@@ -3,6 +3,7 @@ from __future__ import annotations
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
 from crimson.ui.layout import menu_widescreen_y_shift
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text
@@ -106,7 +107,7 @@ class EndNoteView:
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET, END_NOTE_BUTTON_Y_OFFSET)
 
         resources = require_runtime_resources(self.state)
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         survival_w = button_width(
@@ -265,7 +266,7 @@ class EndNoteView:
         slide_x = results_panel_slide_x(self._timeline_ms, width=END_NOTE_PANEL_W)
         return Vec2(
             END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X + slide_x,
-            END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + menu_widescreen_y_shift(float(rl.get_screen_width())),
+            END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + menu_widescreen_y_shift(float(canvas.width())),
         )
 
     def _world_entity_alpha(self) -> float:

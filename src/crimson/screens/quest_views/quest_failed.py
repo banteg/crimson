@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
 from crimson.ui.layout import menu_widescreen_y_shift
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -125,7 +126,7 @@ class QuestFailedView:
         if outcome is None:
             return
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
@@ -260,7 +261,7 @@ class QuestFailedView:
         return action
 
     def _panel_origin(self) -> Vec2:
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
         return Vec2(
             QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X,

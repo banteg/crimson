@@ -6,6 +6,7 @@ from crimson.screens.actions import Route, ScreenAction
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
 from crimson.ui.menu_layout import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS, MENU_PANEL_WIDTH
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
@@ -121,7 +122,7 @@ class OptionsMenuView(PanelMenuView):
         # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0)
         dt_ms = min(float(dt), 0.1) * 1000.0
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         resources = require_runtime_resources(self.state)
         width = button_width(
@@ -213,7 +214,7 @@ class OptionsMenuView(PanelMenuView):
         if rect_w <= 0.0 or rect_h <= 0.0:
             return False
         bar_w = rect_w * float(slider.max_value)
-        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        mouse_pos = Vec2.from_xy(canvas.mouse_position())
         hovered = mouse_inside_rect_with_padding(
             mouse_pos,
             pos=pos,
@@ -257,7 +258,7 @@ class OptionsMenuView(PanelMenuView):
         label_w = measure_small_text_width(font, label)
         rect_w = float(check_on.width) + 6.0 + label_w
         rect_h = max(float(check_on.height), font.cell_size)
-        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        mouse_pos = Vec2.from_xy(canvas.mouse_position())
         hovered = Rect.from_top_left(pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._ui_info_texts = not self._ui_info_texts

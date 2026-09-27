@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 import msgspec
 
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
@@ -194,7 +195,7 @@ class PerkMenuController:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_UP) or pad_nav_pressed(PadCode.DPAD_UP):
             self._selected_index = (self._selected_index - 1) % len(choices)
 
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
         slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -262,7 +263,7 @@ class PerkMenuController:
         if self._selected_index >= len(choices):
             self._selected_index = 0
 
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
         slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         master_owned = PerkId.PERK_MASTER in ctx.perks

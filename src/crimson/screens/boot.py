@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, stop_music, update_audio
 from grim.raylib_api import rl
@@ -172,8 +173,8 @@ class BootView:
         tex = resources.texture(texture_id)
         tex_w = float(tex.width)
         tex_h = float(tex.height)
-        x = (rl.get_screen_width() - tex_w) * 0.5
-        y = (rl.get_screen_height() - tex_h) * 0.5
+        x = (canvas.width() - tex_w) * 0.5
+        y = (canvas.height() - tex_h) * 0.5
         tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
         rl.draw_texture_v(tex, rl.Vector2(x, y), tint)
 
@@ -189,8 +190,8 @@ class BootView:
         return value
 
     def _draw_splash(self, resources: RuntimeResources, alpha: float) -> None:
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        screen_w = float(canvas.width())
+        screen_h = float(canvas.height())
         if alpha <= 0.0:
             return
 

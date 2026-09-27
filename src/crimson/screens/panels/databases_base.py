@@ -11,6 +11,7 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
 )
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData
@@ -111,7 +112,7 @@ class _DatabaseBaseView:
         left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y))
         resources = require_runtime_resources(self.state)
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         self._update_content_interaction(left_top_left=left_top_left, mouse=mouse)
 

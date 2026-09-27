@@ -1,0 +1,30 @@
+id: no-window-screen-reads
+snapshots:
+  ? |
+    rl.get_mouse_delta()
+  : labels:
+    - source: rl.get_mouse_delta()
+      style: primary
+      start: 0
+      end: 20
+  ? |
+    rl.get_mouse_position()
+  : labels:
+    - source: rl.get_mouse_position()
+      style: primary
+      start: 0
+      end: 23
+  ? |
+    rl.get_screen_height()
+  : labels:
+    - source: rl.get_screen_height()
+      style: primary
+      start: 0
+      end: 22
+  ? |
+    rl.get_screen_width()
+  : labels:
+    - source: rl.get_screen_width()
+      style: primary
+      start: 0
+      end: 21

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim import canvas
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -81,8 +82,8 @@ def layout_quest_title_overlay(
 def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str, *, alpha: float = 1.0) -> None:
     alpha = max(0.0, min(1.0, float(alpha)))
     layout = layout_quest_title_overlay(
-        screen_width=rl.get_screen_width(),
-        screen_height=rl.get_screen_height(),
+        screen_width=canvas.width(),
+        screen_height=canvas.height(),
         title=title,
         number=number,
         font_advance=font.advance,

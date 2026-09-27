@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -209,7 +210,7 @@ class TutorialMode(BaseGameplayMode):
 
         if self._skip_button.enabled:
             resources = self.render_resources.resources
-            y = float(rl.get_screen_height()) - 50.0
+            y = float(canvas.height()) - 50.0
             w = button_width(resources, self._skip_button.label, force_wide=True)
             if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 self._finish_tutorial_run(restart=False)
@@ -350,7 +351,7 @@ class TutorialMode(BaseGameplayMode):
             return
 
         if self._skip_button.alpha > 1e-3:
-            y = float(rl.get_screen_height()) - 50.0
+            y = float(canvas.height()) - 50.0
             w = button_width(resources, self._skip_button.label, force_wide=True)
             button_draw(resources, self._skip_button, pos=Vec2(10.0, y), width=w)
 
