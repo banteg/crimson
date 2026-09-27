@@ -49,7 +49,6 @@ class StandaloneTickHarness:
             detail_preset=runtime.detail_preset,
             violence_disabled=runtime.violence_disabled,
             game_tune_started=bool(runtime.game_tune_started),
-            demo_mode_active=bool(runtime.demo_mode_active),
             perk_progression_enabled=False,
             apply_world_dt_steps=True,
         )
@@ -61,10 +60,7 @@ class StandaloneTickHarness:
     def advance_frame(self, runtime: WorldRuntime, dt: float) -> int:
         """Run the ticks this frame's time covers; returns how many ran."""
 
-        if not runtime.world.players:
-            return 0
         session = self._ensure_session(runtime)
-        session.demo_mode_active = bool(runtime.demo_mode_active)
         self.ticks.poll(self.frame_inputs(float(dt)))
         plans = []
         for _ in range(self.clock.advance(float(dt))):

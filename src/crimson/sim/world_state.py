@@ -13,7 +13,6 @@ from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
 from ..creatures.runtime import CreatureDeath, CreaturePool
-from ..creatures.spawn import SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
 from ..gameplay import (
@@ -242,7 +241,6 @@ class WorldStepRuntime(msgspec.Struct):
 
 
 class WorldState(msgspec.Struct):
-    spawn_env: SpawnEnv
     state: GameplayState
     players: list[PlayerState]
     creatures: CreaturePool
@@ -256,19 +254,14 @@ class WorldState(msgspec.Struct):
         quest_fail_retry_count: int,
         preserve_bugs: bool = False,
     ) -> WorldState:
-        spawn_env = SpawnEnv(
-            demo_mode_active=demo_mode_active,
-            hardcore=hardcore,
-            quest_fail_retry_count=int(quest_fail_retry_count),
-        )
         state = GameplayState()
         state.demo_mode_active = demo_mode_active
         state.hardcore = hardcore
+        state.quest_fail_retry_count = int(quest_fail_retry_count)
         state.preserve_bugs = preserve_bugs
         players: list[PlayerState] = []
-        creatures = CreaturePool(env=spawn_env, effects=state.effects)
+        creatures = CreaturePool()
         return cls(
-            spawn_env=spawn_env,
             state=state,
             players=players,
             creatures=creatures,

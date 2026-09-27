@@ -58,7 +58,7 @@ def initialize_run(
             raise ValueError(f"unknown quest_level={spec.quest_level.text!r}")
 
     world = WorldState.build(
-        demo_mode_active=spec.demo, hardcore=spec.hardcore,
+        demo_mode_active=False, hardcore=spec.hardcore,
         quest_fail_retry_count=spec.quest_fail_retry_count, preserve_bugs=spec.preserve_bugs,
     )
     world.state.rng.srand(spec.seed)
@@ -98,7 +98,7 @@ def initialize_run(
             session, _ = build_quest_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
                 apply_world_dt_steps=apply_world_dt_steps,
-                demo_mode_active=spec.demo, quest_level=quest.level,
+                quest_level=quest.level,
                 start_weapon_id=quest.start_weapon_id if start_weapon_id is None else start_weapon_id,
                 spawn_entries=generated_entries if spawn_entries is None else spawn_entries,
             )
@@ -113,7 +113,6 @@ def initialize_run(
         case GameMode.TUTORIAL:
             session = build_tutorial_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-                demo_mode_active=spec.demo,
             )
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")

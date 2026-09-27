@@ -45,7 +45,6 @@ class RushMode(BaseGameplayMode):
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.RUSH,
-            demo_mode_active=False,
             quest_fail_retry_count=0,
             hardcore=False,
             config=config,

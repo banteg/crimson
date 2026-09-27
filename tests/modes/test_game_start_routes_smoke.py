@@ -14,12 +14,11 @@ from crimson.screens.actions import StartRun
 
 
 @pytest.mark.parametrize("mode_id", [GameMode.QUESTS, GameMode.TUTORIAL])
-def test_lazy_demo_modes_construct_the_world_with_demo_settings(make_game_state, mode_id) -> None:
+def test_lazy_demo_modes_construct_shareware_runs_outside_attract_mode(make_game_state, mode_id) -> None:
     state = make_game_state(demo_enabled=True)
     mode = GameLoopView(state).navigation._mode(mode_id)
-    assert mode.demo_mode_active
-    assert mode.world.spawn_env.demo_mode_active
-    assert mode.state.demo_mode_active
+    assert mode.shareware_demo
+    assert not mode.state.demo_mode_active
 
 
 @pytest.mark.parametrize(
@@ -59,6 +58,6 @@ def test_quest_retry_counter_flows_through_persistent_mode(make_game_state, mock
     loop.navigation.navigate(StartRun.from_config(state.config, GameMode.QUESTS, quest_level=QuestLevel(1, 1)))
     assert mode.quest_fail_retry_count == 3
     start_run.assert_called_once_with(QuestLevel(1, 1), status=state.status)
-    mode.world.spawn_env.quest_fail_retry_count = 0
+    mode.world.state.quest_fail_retry_count = 0
     assert loop._resolve_gameplay_action(mode, None) is None
     assert state.quest_fail_retry_count == 0

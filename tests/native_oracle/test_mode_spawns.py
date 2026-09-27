@@ -14,7 +14,7 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import SpawnEnv, build_survival_spawn_creature, tick_rush_mode_spawns
+from crimson.creatures.spawn import build_survival_spawn_creature, tick_rush_mode_spawns
 from crimson.math_parity import f32
 from crimson.sim.state_types import TERRAIN_SIZE
 from grim.geom import Vec2
@@ -48,13 +48,6 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
     }
 
 
-def _pool() -> CreaturePool:
-    env = SpawnEnv(
-        demo_mode_active=True,
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    return CreaturePool(env=env)
 
 
 def _compare_pool(oracle, case: str, pool: CreaturePool) -> tuple[list[Mismatch], int]:
@@ -103,7 +96,7 @@ def test_rush_mode_spawns_match_native(oracle) -> None:
             player_count=player_count,
             survival_elapsed_ms=elapsed_ms,
         )
-        pool = _pool()
+        pool = CreaturePool()
         pool.spawn_inits(inits)
 
         case = f"rush elapsed_ms={elapsed_ms} dt_ms={dt_ms} players={player_count} seed=0x{seed:08x}"
@@ -141,7 +134,7 @@ def test_survival_spawn_creature_matches_native(oracle) -> None:
             oracle.call("survival_spawn_creature", pos_arg)
 
             crt = CrtRand(seed)
-            pool = _pool()
+            pool = CreaturePool()
             pool.spawn_inits([build_survival_spawn_creature(pos, crt, player_experience=experience)])
 
             case = f"survival experience={experience} seed=0x{seed:08x}"

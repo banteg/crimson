@@ -55,6 +55,8 @@ class GameplayState(msgspec.Struct):
     game_mode: GameMode = GameMode.SURVIVAL
     demo_mode_active: bool = False
     hardcore: bool = False
+    # The global quest retry counter; hardcore creature spawns clear it.
+    quest_fail_retry_count: int = 0
     preserve_bugs: bool = False
     status: GameStatus | None = None
     quest_level: QuestLevel | None = None

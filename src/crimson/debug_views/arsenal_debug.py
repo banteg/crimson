@@ -184,7 +184,7 @@ class ArsenalDebugView:
                 spawn_id,
                 spawn_pos,
                 heading,
-                self._runtime.world.state.rng,
+                state=self._runtime.world.state,
                 detail_preset=self._runtime.detail_preset,
             )
 

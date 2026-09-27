@@ -23,7 +23,7 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         SpawnId.ZOMBIE_SMALL_WHITE_42,
         target,
         3.14,
-        runtime.world.state.rng,
+        state=runtime.world.state,
         detail_preset=5,
     )
     session = DeterministicSession(
@@ -32,7 +32,6 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=bool(runtime.game_tune_started),
-        demo_mode_active=False,
         perk_progression_enabled=False,
         apply_world_dt_steps=True,
     )

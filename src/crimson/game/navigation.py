@@ -138,11 +138,11 @@ class ScreenNavigator:
             replay_checkpoints=self.state.replay_checkpoints,
         )
         mode_type = {
-            GameMode.QUESTS: partial(QuestMode, demo_mode_active=self.state.demo_enabled),
+            GameMode.QUESTS: partial(QuestMode, shareware_demo=self.state.demo_enabled),
             GameMode.SURVIVAL: SurvivalMode,
             GameMode.RUSH: RushMode,
             GameMode.TYPO: TypoShooterMode,
-            GameMode.TUTORIAL: partial(TutorialMode, demo_mode_active=self.state.demo_enabled),
+            GameMode.TUTORIAL: partial(TutorialMode, shareware_demo=self.state.demo_enabled),
         }[mode_id]
         mode = mode_type(
             ctx,

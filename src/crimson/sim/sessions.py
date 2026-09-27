@@ -131,7 +131,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             call.template_id,
             call.pos,
             float(call.heading),
-            state.rng,
+            state=state,
             detail_preset=ctx.detail_preset,
         )
 
@@ -191,7 +191,7 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
             call.template_id,
             call.pos,
             float(call.heading),
-            state.rng,
+            state=state,
             detail_preset=ctx.detail_preset,
         )
 
@@ -384,7 +384,6 @@ class DeterministicSession(msgspec.Struct):
     detail_preset: int = 5
     violence_disabled: int = 0
     game_tune_started: bool = False
-    demo_mode_active: bool = False
     apply_world_dt_steps: bool = True
     elapsed_uses_raw_dt: bool = False
     # Reject perk commands the live UI cannot issue (they would otherwise no-op
@@ -401,7 +400,6 @@ class DeterministicSession(msgspec.Struct):
     def __post_init__(self) -> None:
         state = self.world.state
         state.game_mode = self.game_mode
-        state.demo_mode_active = self.demo_mode_active
         prepare_weapon_availability(state)
         prepare_perk_availability(state)
 
@@ -527,8 +525,6 @@ class DeterministicSession(msgspec.Struct):
         else:
             presentation_rng = state.rng
 
-        state.game_mode = self.game_mode
-        state.demo_mode_active = self.demo_mode_active
 
         prev_audio = [
             (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players
@@ -559,7 +555,7 @@ class DeterministicSession(msgspec.Struct):
             prev_audio=prev_audio,
             prev_perk_pending=prev_perk_pending,
             game_mode=self.game_mode,
-            demo_mode_active=self.demo_mode_active,
+            demo_mode_active=state.demo_mode_active,
             perk_progression_enabled=self.perk_progression_enabled,
             rng=presentation_rng,
             detail_preset=self.detail_preset,

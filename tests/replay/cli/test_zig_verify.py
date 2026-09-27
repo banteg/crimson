@@ -182,10 +182,8 @@ def test_zig_replay_verify_ends_runs_like_python_in_every_mode(tmp_path: Path, z
         assert payload["result"] == _json_result(replay.result), mode
 
 
+# Shareware (`demo=True`) runs are no longer attract mode in Python; the Zig port follows later.
 _RUN_VARIANTS = {
-    "survival-demo": RunSpec(game_mode_id=GameMode.SURVIVAL, seed=19, demo=True),
-    "quest-demo": RunSpec(game_mode_id=GameMode.QUESTS, seed=19, quest_level=QuestLevel(1, 3), demo=True),
-    "tutorial-demo": RunSpec(game_mode_id=GameMode.TUTORIAL, seed=19, demo=True),
     "survival-hardcore-low-detail": RunSpec(
         game_mode_id=GameMode.SURVIVAL,
         seed=19,

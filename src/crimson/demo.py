@@ -457,12 +457,11 @@ class DemoView:
         self._demo_targets = [None] * len(self._runtime.world.players)
 
     def _spawn(self, spawn_id: SpawnId, pos: Vec2, *, heading: float = 0.0) -> None:
-        rng = self._runtime.world.state.rng
         self._runtime.world.creatures.spawn_template(
             spawn_id,
             pos,
             float(heading),
-            rng,
+            state=self._runtime.world.state,
             detail_preset=self._runtime.detail_preset,
         )
 

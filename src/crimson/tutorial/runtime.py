@@ -101,7 +101,7 @@ def tutorial_post_step(ctx) -> None:
             call.template_id,
             call.pos,
             float(call.heading),
-            state.rng,
+            state=state,
             detail_preset=int(ctx.detail_preset),
         )
         _ = mapping

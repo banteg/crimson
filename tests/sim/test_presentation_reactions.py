@@ -78,7 +78,6 @@ def test_quest_audio_requests_survive_render_partitions(
         world=make_world(),
         detail_preset=5,
         violence_disabled=0,
-        demo_mode_active=False,
         apply_world_dt_steps=True,
         spawn_entries=(),
         quest_level=None,

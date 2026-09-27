@@ -559,16 +559,9 @@ _CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
 
 
 class CreaturePool:
-    def __init__(
-        self,
-        *,
-        env: SpawnEnv | None = None,
-        effects: EffectPool | None = None,
-    ) -> None:
+    def __init__(self) -> None:
         self._entries: list[CreatureState] = [CreatureState() for _ in range(CREATURE_POOL_SIZE)]
         self.spawn_slots: list[SpawnSlotInit] = []
-        self.env = env
-        self.effects = effects
         self.kill_count = 0
         self.spawned_count = 0
         self._update_tick = 0
@@ -792,7 +785,7 @@ class CreaturePool:
         self,
         plan: SpawnPlan,
         *,
-        rng: CrandLike,
+        state: GameplayState,
         detail_preset: int,
     ) -> tuple[list[int], int | None]:
         """Materialize a pure `SpawnPlan` into the runtime pool.
@@ -870,14 +863,13 @@ class CreaturePool:
         if 0 <= int(plan.primary) < len(mapping):
             primary_pool = mapping[int(plan.primary)]
 
-        if self.effects is not None:
-            for fx in plan.effects:
-                self.effects.spawn_burst(
-                    pos=fx.pos,
-                    count=int(fx.count),
-                    rng=rng,
-                    detail_preset=int(detail_preset),
-                )
+        for fx in plan.effects:
+            state.effects.spawn_burst(
+                pos=fx.pos,
+                count=int(fx.count),
+                rng=state.rng,
+                detail_preset=int(detail_preset),
+            )
         return mapping, primary_pool
 
     def spawn_template(
@@ -885,28 +877,25 @@ class CreaturePool:
         template_id: SpawnId,
         pos: Vec2,
         heading: float,
-        rng: CrandLike,
         *,
-        env: SpawnEnv | None = None,
+        state: GameplayState,
         detail_preset: int,
     ) -> tuple[list[int], int | None]:
-        """Build a spawn plan and materialize it into the pool."""
+        """Port of `creature_spawn_template`: build a spawn plan and materialize it into the pool."""
 
-        spawn_env = env or self.env
-        if spawn_env is None:
-            raise ValueError("CreaturePool.spawn_template requires SpawnEnv (set CreaturePool.env or pass env=...)")
-        plan = build_spawn_plan(template_id, pos, heading, rng, spawn_env)
+        spawn_env = SpawnEnv(
+            demo_mode_active=state.demo_mode_active,
+            hardcore=state.hardcore,
+            quest_fail_retry_count=state.quest_fail_retry_count,
+        )
+        plan = build_spawn_plan(template_id, pos, heading, state.rng, spawn_env)
         # `creature_spawn_template` stores zero to the shared retry counter at
         # 0x004311a1 on every hardcore spawn, before applying the global stat
         # buffs. Keep the pure plan builder side-effect free, but preserve that
         # store at the runtime materialization boundary.
-        if spawn_env.hardcore:
-            spawn_env.quest_fail_retry_count = 0
-        return self.spawn_plan(
-            plan,
-            rng=rng,
-            detail_preset=int(detail_preset),
-        )
+        if state.hardcore:
+            state.quest_fail_retry_count = 0
+        return self.spawn_plan(plan, state=state, detail_preset=int(detail_preset))
 
     def _apply_self_damage_tick(
         self,
@@ -1002,6 +991,7 @@ class CreaturePool:
                 dt=dt,
                 fx_queue_rotated=fx_queue_rotated,
                 rng=rng,
+                effects=state.effects,
                 detail_preset=int(detail_preset),
                 violence_disabled=int(violence_disabled),
             )
@@ -1018,7 +1008,6 @@ class CreaturePool:
         rng = state.rng
         detail_preset = int(step_runtime.detail_preset)
         violence_disabled = int(step_runtime.violence_disabled)
-        spawn_env = world.spawn_env
         fx_queue = step_runtime.fx_queue
         fx_queue_rotated = step_runtime.fx_queue_rotated
         deaths = step_runtime.deaths
@@ -1155,6 +1144,7 @@ class CreaturePool:
                         dt=dt,
                         fx_queue_rotated=fx_queue_rotated,
                         rng=rng,
+                        effects=state.effects,
                         detail_preset=int(detail_preset),
                         violence_disabled=int(violence_disabled),
                     )
@@ -1290,12 +1280,11 @@ class CreaturePool:
                         if int(slot.owner_creature) == int(idx):
                             child_template_id = tick_spawn_slot(slot, dt)
                             if child_template_id is not None:
-                                _mapping, _ = self.spawn_template(
+                                self.spawn_template(
                                     child_template_id,
                                     creature.pos,
                                     float(RANDOM_HEADING_SENTINEL),
-                                    rng,
-                                    env=spawn_env,
+                                    state=state,
                                     detail_preset=int(detail_preset),
                                 )
 
@@ -1644,6 +1633,7 @@ class CreaturePool:
         dt: float,
         fx_queue_rotated: FxQueueRotated,
         rng: CrandLike,
+        effects: EffectPool,
         detail_preset: int,
         violence_disabled: int,
     ) -> None:
@@ -1730,7 +1720,6 @@ class CreaturePool:
         if (
             int(violence_disabled) == 0
             and (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0
-            and self.effects is not None
         ):
             for count, age, angle_caller in (
                 (8, 0.0, RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_8_ANGLE),
@@ -1739,7 +1728,7 @@ class CreaturePool:
             ):
                 for _ in range(int(count)):
                     angle = x87_pc24_mul(float(int(rng.rand_tagged(angle_caller)) % 612), f32(0.01))
-                    self.effects.spawn_blood_splatter(
+                    effects.spawn_blood_splatter(
                         pos=creature.pos,
                         angle=float(angle),
                         age=float(age),

@@ -37,7 +37,7 @@ class TutorialMode(BaseGameplayMode):
         self,
         ctx: ViewContext,
         *,
-        demo_mode_active: bool = False,
+        shareware_demo: bool = False,
         config: CrimsonConfig,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -46,7 +46,7 @@ class TutorialMode(BaseGameplayMode):
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.TUTORIAL,
-            demo_mode_active=bool(demo_mode_active),
+            shareware_demo=bool(shareware_demo),
             quest_fail_retry_count=0,
             hardcore=False,
             config=config,

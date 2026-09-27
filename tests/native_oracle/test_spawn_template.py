@@ -11,8 +11,9 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import SpawnEnv, SpawnId, UnsupportedSpawnTemplateError
+from crimson.creatures.spawn import SpawnId, UnsupportedSpawnTemplateError
 from crimson.math_parity import f32
+from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
@@ -100,15 +101,11 @@ def test_spawn_template_stats_match_native(oracle) -> None:
         oracle.rand_state = seed
         oracle.call("creature_spawn_template", int(template_id), pos_arg, heading)
 
-        env = SpawnEnv(
-            demo_mode_active=True,
-            hardcore=hardcore,
-            quest_fail_retry_count=retries,
-        )
-        pool = CreaturePool(env=env)
         rng = CrtRand(seed)
+        state = GameplayState(rng=rng, demo_mode_active=True, hardcore=hardcore, quest_fail_retry_count=retries)
+        pool = CreaturePool()
         try:
-            pool.spawn_template(template_id, pos, heading, rng, env=env, detail_preset=5)
+            pool.spawn_template(template_id, pos, heading, state=state, detail_preset=5)
         except UnsupportedSpawnTemplateError:
             unsupported.add(int(template_id))
             continue
@@ -135,9 +132,9 @@ def test_spawn_template_stats_match_native(oracle) -> None:
             mismatches += compare_fields(f"{case} spawn_slot[{index}]", native, python_slot, address=address)
         if oracle.rand_state != rng.state:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, rng.state, 0))
-        if hardcore and oracle.read_i32("quest_fail_retry_count") != env.quest_fail_retry_count:
+        if hardcore and oracle.read_i32("quest_fail_retry_count") != state.quest_fail_retry_count:
             mismatches.append(
-                Mismatch(case, "quest_fail_retry_count", oracle.read_i32("quest_fail_retry_count"), env.quest_fail_retry_count, 0),
+                Mismatch(case, "quest_fail_retry_count", oracle.read_i32("quest_fail_retry_count"), state.quest_fail_retry_count, 0),
             )
 
     report = mismatch_report(mismatches, total_cases=len(cases))

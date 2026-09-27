@@ -251,7 +251,7 @@ class GameLoopView:
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: ScreenAction | None) -> ScreenAction | None:
         if isinstance(gameplay, QuestMode):
-            self.state.quest_fail_retry_count = int(gameplay.world.spawn_env.quest_fail_retry_count)
+            self.state.quest_fail_retry_count = int(gameplay.world.state.quest_fail_retry_count)
         if action is not None:
             if action is Route.MENU:
                 gameplay.close_requested = False

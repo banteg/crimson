@@ -86,7 +86,7 @@ class BaseGameplayMode:
         ctx: ViewContext,
         *,
         default_game_mode_id: GameMode,
-        demo_mode_active: bool = False,
+        shareware_demo: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         config: CrimsonConfig,
@@ -117,19 +117,16 @@ class BaseGameplayMode:
         )
 
         self.assets_dir = ctx.assets_dir
-        self.demo_mode_active = bool(demo_mode_active)
-        self.quest_fail_retry_count = int(quest_fail_retry_count)
-        self.hardcore = bool(hardcore)
-        self.preserve_bugs = bool(ctx.preserve_bugs)
+        # Shareware build (`game_is_full_version() == 0`); runs are never attract mode.
+        self.shareware_demo = bool(shareware_demo)
         self.audio = audio
         self.audio_rng = audio_rng
         self.rtx_mode = RtxRenderMode.CLASSIC
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
-            demo_mode_active=bool(self.demo_mode_active),
-            quest_fail_retry_count=int(self.quest_fail_retry_count),
-            hardcore=bool(self.hardcore),
-            preserve_bugs=bool(self.preserve_bugs),
+            quest_fail_retry_count=int(quest_fail_retry_count),
+            hardcore=bool(hardcore),
+            preserve_bugs=bool(ctx.preserve_bugs),
             config=self.config,
             audio=self.audio,
             audio_rng=self.audio_rng,
@@ -181,12 +178,29 @@ class BaseGameplayMode:
     def camera(self, value: Vec2) -> None:
         self._world_runtime.camera = value
 
+    # Run flags live on the world runtime, which applies them at every reset.
+    @property
+    def quest_fail_retry_count(self) -> int:
+        return self._world_runtime.quest_fail_retry_count
+
+    @quest_fail_retry_count.setter
+    def quest_fail_retry_count(self, value: int) -> None:
+        self._world_runtime.quest_fail_retry_count = int(value)
+
+    @property
+    def hardcore(self) -> bool:
+        return self._world_runtime.hardcore
+
+    @hardcore.setter
+    def hardcore(self, value: bool) -> None:
+        self._world_runtime.hardcore = bool(value)
+
+    @property
+    def preserve_bugs(self) -> bool:
+        return self._world_runtime.preserve_bugs
+
     def _sync_world_runtime_config(self) -> None:
         runtime = self._world_runtime
-        runtime.demo_mode_active = bool(self.demo_mode_active)
-        runtime.quest_fail_retry_count = int(self.quest_fail_retry_count)
-        runtime.hardcore = bool(self.hardcore)
-        runtime.preserve_bugs = bool(self.preserve_bugs)
         runtime.config = self.config
         runtime.audio = self.audio
         runtime.audio_rng = self.audio_rng
@@ -595,7 +609,7 @@ class BaseGameplayMode:
             player_count=self._runtime_player_count(),
             hardcore=self.hardcore,
             preserve_bugs=self.state.preserve_bugs,
-            demo=self.demo_mode_active,
+            demo=self.shareware_demo,
             quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,

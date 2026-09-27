@@ -65,7 +65,6 @@ def build_quest_session(
     world: WorldState,
     detail_preset: int,
     violence_disabled: int,
-    demo_mode_active: bool,
     apply_world_dt_steps: bool,
     spawn_entries: tuple[SpawnEntry, ...],
     quest_level: QuestLevel | None,
@@ -85,7 +84,6 @@ def build_quest_session(
         perk_progression_enabled=True,
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
-        demo_mode_active=demo_mode_active,
         apply_world_dt_steps=apply_world_dt_steps,
         mode_runtime=mode_runtime,
     )
@@ -121,7 +119,6 @@ def build_tutorial_session(
     world: WorldState,
     detail_preset: int,
     violence_disabled: int,
-    demo_mode_active: bool,
 ) -> DeterministicSession:
     weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
     reset_tutorial_state(
@@ -134,6 +131,5 @@ def build_tutorial_session(
         perk_progression_enabled=True,
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
-        demo_mode_active=demo_mode_active,
         mode_runtime=TutorialSessionRuntime(world=world),
     )
