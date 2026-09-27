@@ -13,6 +13,7 @@ Parity status and known behavior deltas.
 - [Original bugs and rewrite policy](../original-bugs.md)
 - [Typ-o-Shooter text input parity](typo-mode-text-input.md)
 - [Delta-time parity reference](delta-time.md)
+- [Settings that steer the RNG](environment-rng.md) - audio, detail and violence gates, and the ranked policy
 
 ## Known primary-input helper differences
 

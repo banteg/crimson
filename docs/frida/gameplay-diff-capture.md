@@ -169,6 +169,11 @@ both bonus spawners are required hooks. Sentinel allocation failures do not
 advance generations. Session-global tick indices remain contiguous across run
 boundaries; the finalizer rejects both gaps and overlaps.
 
+A run is rejected at start with `audio_rng_gate_closed:<reason>` when audio
+failed to initialize, sound or music is disabled, the playlist is empty, a plugin
+runtime is active, or the game tune latch is set. Each changes the RNG stream; see
+[settings that steer the RNG](../rewrite/parity/environment-rng.md).
+
 ## RNG evidence
 
 The capture reads the real CRT RNG state from per-thread data instead of relying

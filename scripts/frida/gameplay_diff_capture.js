@@ -409,6 +409,12 @@ const DATA = {
   config_hardcore: 0x00480790,
   config_violence_disabled: 0x004807b4,
   config_detail_preset: 0x004807b8,
+  config_sound_disabled: 0x00480348,
+  config_music_disabled: 0x00480349,
+  plugin_runtime_active_latch: 0x004824d1,
+  music_playlist_entry_count: 0x004cc8d0,
+  music_playlist_randomized_latch: 0x004cc8d4,
+  sfx_unmuted_flag: 0x004cc8d6,
   perk_choice_ids: 0x004807e8,
   perk_selection_index: 0x0048089c,
   frame_dt: 0x00480840,
@@ -548,6 +554,12 @@ const REQUIRED_REPLAY_DATA_NAMES = [
   "config_hardcore",
   "config_violence_disabled",
   "config_detail_preset",
+  "config_sound_disabled",
+  "config_music_disabled",
+  "plugin_runtime_active_latch",
+  "music_playlist_entry_count",
+  "music_playlist_randomized_latch",
+  "sfx_unmuted_flag",
   "perk_choice_ids",
   "perk_selection_index",
   "game_state_prev",
@@ -1365,6 +1377,20 @@ function runSettingsFromTick(tickObj) {
   };
 }
 
+// The first eligible hit of a run calls sfx_play_exclusive(music_track_extra_0),
+// which draws the playlist rand and sets the latch only when audio is up; with the
+// gate closed every hit skips its hit-sound rand instead. The port assumes the
+// gate open and the latch clear at run start, so other captures cannot match it.
+function closedAudioRngGate() {
+  if (readDataU8("sfx_unmuted_flag") === 0) return "audio_not_initialized";
+  if (readDataU8("config_sound_disabled") !== 0) return "sound_disabled";
+  if (readDataU8("config_music_disabled") !== 0) return "music_disabled";
+  if (readDataI32("music_playlist_entry_count") <= 0) return "empty_music_playlist";
+  if (readDataU8("plugin_runtime_active_latch") !== 0) return "plugin_runtime_active";
+  if (readDataU8("music_playlist_randomized_latch") !== 0) return "game_tune_latch_set";
+  return null;
+}
+
 function startRunForTick(tickObj, reason) {
   try {
     const startReason = reason || "run_start";
@@ -1376,6 +1402,11 @@ function startRunForTick(tickObj, reason) {
       (modeId !== GAME_MODE_SURVIVAL && modeId !== GAME_MODE_RUSH && modeId !== GAME_MODE_QUESTS)
     ) {
       emitCaptureContractError("unsupported_replay_mode:" + String(modeId), tickObj);
+      return false;
+    }
+    const audioGate = closedAudioRngGate();
+    if (audioGate) {
+      emitCaptureContractError("audio_rng_gate_closed:" + audioGate, tickObj);
       return false;
     }
     const questMajor = tickQuestMajor(tickObj);
