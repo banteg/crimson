@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "name": "msvc6.5-c2-d50100ac-il-stage-priority",
+  "c2_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+  "invoke_rva": 357444,
+  "hooks": [
+    {
+      "site": 360942,
+      "target": 78027,
+      "return": false,
+      "mode": 3,
+      "name": "glob"
+    },
+    {
+      "site": 360956,
+      "target": 64730,
+      "return": false,
+      "mode": 3,
+      "name": "purge"
+    },
+    {
+      "site": 361033,
+      "target": 164301,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x107281cd"
+    },
+    {
+      "site": 361185,
+      "target": 168719,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x1072930f"
+    },
+    {
+      "site": 361232,
+      "target": 169233,
+      "return": false,
+      "mode": 3,
+      "name": "lower"
+    },
+    {
+      "site": 361246,
+      "target": 169694,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x107296de"
+    },
+    {
+      "site": 361356,
+      "target": 159093,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x10726d75"
+    },
+    {
+      "site": 361375,
+      "target": 194812,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x1072f8fc"
+    },
+    {
+      "site": 195504,
+      "target": 197384,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x10730308"
+    },
+    {
+      "site": 195517,
+      "target": 198337,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x107306c1"
+    },
+    {
+      "site": 195524,
+      "target": 199232,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x10730a40"
+    },
+    {
+      "site": 361413,
+      "target": 210676,
+      "return": false,
+      "mode": 0,
+      "name": "pass@0x107336f4"
+    },
+    {
+      "site": 195632,
+      "target": 150309,
+      "return": true,
+      "mode": 5,
+      "name": "score0"
+    },
+    {
+      "site": 195938,
+      "target": 150309,
+      "return": true,
+      "mode": 5,
+      "name": "rescore"
+    },
+    {
+      "site": 196191,
+      "target": 208764,
+      "return": true,
+      "mode": 6,
+      "name": "choose"
+    },
+    {
+      "site": 195901,
+      "target": 132310,
+      "return": false,
+      "mode": 0,
+      "name": "split"
+    },
+    {
+      "site": 196039,
+      "target": 204801,
+      "return": true,
+      "mode": 6,
+      "name": "unprof"
+    },
+    {
+      "site": 150386,
+      "target": 152702,
+      "return": false,
+      "mode": 7,
+      "name": "block"
+    }
+  ]
+}

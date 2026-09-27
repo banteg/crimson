@@ -1,0 +1,329 @@
+{
+  "chooser": [
+    {
+      "head": "12 fn=6c15e75c eax=0 ecx=6c9c2bfc edx=0 ebx=6c15e75c esi=6c9c2bfc edi=0 alias_base=1201 alias_classes=1200 args=6ca493d8,0,1000,6c15e75c,1,0,",
+      "body": [
+        "LR id=573 p=6c9c2bfc sym=5840 cls=3 prio=42 ben=14 refs=7 tie=667 reg=0 fb=6c833c88 lb=6c833d80 allowed=2,3,4,6,",
+        "PREF",
+        "NEIGH LR id=540 p=6c9c4728 sym=0 cls=13 val=0 prio=-430 ben=11 refs=38 tie=0 reg=0 fb=6c831538 lb=6c8482b4 allowed=4,",
+        "PREF 4=1",
+        "NEIGH LR id=555 p=6c9c4b24 sym=13 cls=4 prio=-498 ben=6 refs=8 tie=144 reg=0 fb=6c831994 lb=6c84d330 allowed=4,",
+        "PREF 8=1",
+        "NEIGH LR id=557 p=6c9c4bac sym=0 cls=13 val=1 prio=-454 ben=12 refs=19 tie=0 reg=0 fb=6c8317a4 lb=6c8480c4 allowed=4,",
+        "PREF",
+        "NEIGH LR id=578 p=6c9c2d50 sym=0 cls=13 val=7 prio=-274 ben=4 refs=6 tie=0 reg=0 fb=6c83359c lb=6c8453ec allowed=4,6,",
+        "PREF 6=1",
+        "NEIGH LR id=604 p=6c9c3438 sym=0 cls=13 val=1073741824 prio=-133 ben=5 refs=6 tie=0 reg=0 fb=6c83359c lb=6c83a180 allowed=4,6,",
+        "PREF",
+        "NEIGH LR id=605 p=6c9c347c sym=0 cls=13 val=1061997773 prio=-402 ben=1 refs=6 tie=0 reg=0 fb=6c83359c lb=6c84d330 allowed=4,",
+        "PREF"
+      ]
+    },
+    {
+      "head": "112 fn=6c15e75c eax=0 ecx=6ca3ce28 edx=0 ebx=6c15e75c esi=6c9c2bfc edi=0 alias_base=1201 alias_classes=1200 args=0,1000,6c15e75c,1,0,6ca57bf4,",
+      "body": [
+        "RESULT LR id=573 p=6c9c2bfc sym=5840 cls=3 prio=42 ben=14 refs=7 tie=667 reg=ac7d8 fb=6c833c88 lb=6c833d80 allowed=",
+        "PREF",
+        "COST 0=0 1=0 2=0 3=0 4=3001 5=0 6=1 7=0 8=0"
+      ]
+    },
+    {
+      "head": "12 fn=6c15e75c eax=0 ecx=6c9ce480 edx=0 ebx=6c15e75c esi=6c9ce480 edi=0 alias_base=1201 alias_classes=1200 args=6c9d2f6c,0,1000,6c15e75c,1,0,",
+      "body": [
+        "LR id=110 p=6c9ce480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=0 fb=6c833c88 lb=6c833c88 allowed=1,2,3,4,6,",
+        "PREF 2=1 8=4",
+        "NEIGH LR id=382 p=6c9c6510 sym=0 cls=13 val=1061997773 prio=-174 ben=4 refs=5 tie=0 reg=0 fb=6c83359c lb=6c83a2f4 allowed=4,6,",
+        "PREF",
+        "NEIGH LR id=422 p=6c9c6fb0 sym=0 cls=13 val=1065353216 prio=-153 ben=1 refs=6 tie=0 reg=0 fb=6c8317a4 lb=6c8369dc allowed=4,",
+        "PREF",
+        "NEIGH LR id=533 p=6c9c454c sym=0 cls=13 val=1 prio=-382 ben=10 refs=17 tie=0 reg=0 fb=6c8317a4 lb=6c846770 allowed=4,",
+        "PREF",
+        "NEIGH LR id=578 p=6c9c2d50 sym=0 cls=13 val=7 prio=-274 ben=4 refs=6 tie=0 reg=0 fb=6c83359c lb=6c8453ec allowed=4,6,",
+        "PREF 6=1",
+        "NEIGH LR id=602 p=6c9c33b0 sym=0 cls=13 val=0 prio=-392 ben=9 refs=33 tie=0 reg=0 fb=6c831538 lb=6c847218 allowed=4,",
+        "PREF 4=1",
+        "NEIGH LR id=604 p=6c9c3438 sym=0 cls=13 val=1073741824 prio=-133 ben=5 refs=6 tie=0 reg=0 fb=6c83359c lb=6c83a180 allowed=4,6,",
+        "PREF"
+      ]
+    },
+    {
+      "head": "112 fn=6c15e75c eax=0 ecx=6ca3ce28 edx=0 ebx=6c15e75c esi=6c9ce480 edi=0 alias_base=1201 alias_classes=1200 args=0,1000,6c15e75c,1,0,6ca57bf4,",
+      "body": [
+        "RESULT LR id=110 p=6c9ce480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c833c88 lb=6c833c88 allowed=",
+        "PREF 2=1 8=4",
+        "COST 0=0 1=0 2=-1 3=0 4=2001 5=0 6=1 7=0 8=-4"
+      ]
+    }
+  ],
+  "preference_calls": [
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6ca68e44 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e1664,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=0 fb=6c853c88 lb=6c853c88 allowed=1,2,3,4,6,",
+        "PREF",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6c9f4480 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e0264,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=0 fb=6c853c88 lb=6c853c88 allowed=1,2,3,4,6,",
+        "PREF 8=1",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6c9f5d3c esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e3218,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=0 fb=6c853c88 lb=6c853c88 allowed=1,2,3,4,6,",
+        "PREF 8=2",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6ca63728 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e0908,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=0 fb=6c853c88 lb=6c853c88 allowed=1,2,3,4,6,",
+        "PREF 8=3",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "16 fn=6c17e75c eax=6c9ee480 ecx=6c9ee480 edx=107ac7d8 ebx=6ca63704 esi=12 edi=2 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e0908,6c983374,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=0 fb=6c853c88 lb=6c853c88 allowed=1,2,3,4,6,",
+        "PREF 8=4",
+        "REG 2"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6ca1ac58 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6caeaaf4,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "16 fn=6c17e75c eax=6c9ee480 ecx=6c9ee480 edx=107ac7d8 ebx=6ca1ac58 esi=12 edi=2 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6caeaaf4,6c983374,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 2"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6ca92160 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9de590,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "16 fn=6c17e75c eax=6c9ee480 ecx=6c9ee480 edx=107ac7d8 ebx=6ca92160 esi=12 edi=2 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9de590,6c983374,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 2"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6ca61d34 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9ddfb8,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "16 fn=6c17e75c eax=6c9ee480 ecx=6c9ee480 edx=107ac7d8 ebx=6ca61d34 esi=12 edi=2 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9ddfb8,6c983374,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 2"
+      ]
+    },
+    {
+      "head": "14 fn=6c17e75c eax=6c237014 ecx=6c9ee480 edx=107ac9d0 ebx=6ca1d068 esi=1 edi=107ac9d0 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e1664,6c23799c,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 8"
+      ]
+    },
+    {
+      "head": "16 fn=6c17e75c eax=6c9ee480 ecx=6c9ee480 edx=107ac7d8 ebx=6ca1d068 esi=12 edi=2 alias_base=1201 alias_classes=1200 args=0,0,fffffffc,6c17e75c,6c9e1664,6c983374,",
+      "body": [
+        "TO LR id=110 p=6c9ee480 sym=333 cls=4 prio=32 ben=8 refs=4 tie=672 reg=ac7d8 fb=6c853c88 lb=6c853c88 allowed=",
+        "PREF 2=1 8=4",
+        "REG 2"
+      ]
+    }
+  ],
+  "flag_pressure": [
+    {
+      "head": "12 fn=6c16e75c eax=6c9e510c ecx=6c16e75c edx=6c9d2038 ebx=6c16e75c esi=6c9d2038 edi=0 alias_base=1201 alias_classes=1200 args=0,6c9e510c,6ca8aebc,6ca67bf4,7,0,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c29466c edx=6ca13fe8 ebx=6ca8a364 esi=0 edi=6c29466c alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca8a364,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c29466c op=e line=843 dst=[149:1:1004 f10.10 #1772c3z4/1.0 @#1c1z32/0.0] [159:11:6000 f10.0 w14=1 w18=6c2948f4] [158:10:0 f10.0 w14=6c89e570 w18=0] [149:1:8000 f10.0 #66c1z4/0.0]  src=[153:4:1004 f10.0 w14=6c164a5c w18=0] [159:11:6000 f10.0 w14=1 w18=6ca9e9fc] [149:1:1004 f10.0 #5c1z32/0.0] ",
+        "LIVE 66,137,156,157,158,232,534,540,555,557,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c294874 edx=6ca13fe8 ebx=6ca52328 esi=0 edi=6c294874 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca52328,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c294874 op=e line=843 dst=[149:1:1004 f10.10 #1775c3z4/1.0 @#1c1z32/0.0] [159:11:6000 f10.0 w14=1 w18=6c294bc4] [158:10:0 f10.0 w14=6c89e57c w18=6cc94a8c] [149:1:8000 f10.0 #66c1z4/0.0]  src=[153:4:1004 f10.0 w14=6c164a5c w18=0] [159:11:6000 f10.0 w14=1 w18=6cc94aa4] [149:1:1004 f10.0 #5c1z32/0.0] ",
+        "LIVE 66,137,156,157,158,232,534,540,555,557,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c294b44 edx=6ca13fe8 ebx=6ca8afc4 esi=0 edi=6c294b44 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca8afc4,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c294b44 op=e line=847 dst=[149:1:1004 f10.10 #1778c3z4/1.0 @#1c1z32/0.0] [159:11:6000 f10.0 w14=1 w18=6c59cb24] [158:10:0 f10.0 w14=6c89e588 w18=6c2cc3a8] [149:1:8000 f10.0 #66c1z4/0.0]  src=[153:4:1004 f10.0 w14=6c164a5c w18=0] [159:11:6000 f10.0 w14=1 w18=6c6a8d60] [149:1:1004 f10.0 #5c1z32/0.0] ",
+        "LIVE 66,137,156,157,158,232,534,540,555,557,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c2955c8 edx=6ca13fe8 ebx=6ca52358 esi=0 edi=6c2955c8 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca52358,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c2955c8 op=e line=852 dst=[149:1:2001 f10.10 #1787c3z1/1.0 @#17c1^1+0z8/0.0] [159:11:6000 f10.0 w14=1 w18=6c2998e0] [149:1:1004 f10.0 #5c1z32/0.0] [158:10:0 f10.0 w14=6c89e5c4 w18=6c3de90c] [149:1:8000 f10.0 #66c1z4/0.0]  src=[14c:6:1004 f10.0 w14=0 w18=0 w1c=2 disp=0 w24=80 sc=0 base=[149:1:1004 f30.10 #8950c3z4/1.0]] [149:1:1004 f10.10 #1786c3z4/1.0 @#2c1z32/0.0] [159:11:6000 f10.0 w14=1 w18=6c2956dc] [149:1:1004 f30.10 #8950c3z4/1.0] [149:1:1004 f10.0 #5c1z32/0.0] ",
+        "LIVE 66,137,156,157,158,232,534,540,555,557,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c538f18 edx=6ca13fe8 ebx=6ca5234c esi=0 edi=6c538f18 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca5234c,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c538f18 op=1 line=857 dst=[14c:6:1004 f10.0 w14=0 w18=6c94a820 w1c=1 disp=0 w24=2ec sc=0 base=[149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85]]  src=[149:1:1004 f10.10 #7940c3z4/1.0] [149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85] ",
+        "LIVE 66,137,156,157,158,232,376,534,540,555,557,592,596,605,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c938414 edx=6ca13fe8 ebx=6ca88038 esi=0 edi=6c938414 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca88038,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c938414 op=1 line=857 dst=[149:1:1004 f10.10 #7940c3z4/1.0]  src=[14c:6:1004 f10.0 w14=0 w18=6c94a8c8 w1c=1 disp=0 w24=0 sc=0 base=[149:1:1004 f30.0 #4428c4z4/8.ab @#376c2z0/4.85]] [149:1:1004 f30.0 #4428c4z4/8.ab @#376c2z0/4.85] ",
+        "LIVE 66,137,156,157,158,232,376,534,540,555,557,592,596,605,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c533f18 edx=6ca13fe8 ebx=6ca14024 esi=0 edi=6c533f18 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca14024,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=4,6,",
+        "AT T 6c533f18 op=1 line=855 dst=[14c:6:2001 f10.0 w14=0 w18=6c94a4d8 w1c=1 disp=0 w24=2e4 sc=0 base=[149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85]]  src=[149:1:2001 f10.10 #7945c3z1/81.0] [149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85] ",
+        "LIVE 66,137,156,157,158,232,372,534,540,555,557,592,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c955bd4 edx=6ca13fe8 ebx=6ca4dd00 esi=0 edi=6c955bd4 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca4dd00,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=6,",
+        "AT T 6c955bd4 op=1 line=855 dst=[149:1:2001 f10.10 #7945c3z1/81.0]  src=[14c:6:2001 f10.0 w14=0 w18=6c94a580 w1c=1 disp=0 w24=2c8 sc=0 base=[149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85]] [149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85] ",
+        "LIVE 66,137,156,157,158,232,372,534,540,555,557,592,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c293784 edx=6ca13fe8 ebx=6ca881ac esi=0 edi=6c293784 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca881ac,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=6,",
+        "AT T 6c293784 op=1 line=853 dst=[14c:6:1004 f10.0 w14=0 w18=6c94a190 w1c=1 disp=0 w24=2dc sc=0 base=[149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85]]  src=[149:1:1004 f10.10 #7949c3z4/1.0] [149:1:1004 f30.0 #3c4z4/8.ad'_player @#66c2z0/c.85] ",
+        "LIVE 66,137,156,157,158,232,362,366,534,540,555,557,592,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "14 fn=6c16e75c eax=6ca67bf4 ecx=6c976fd4 edx=6ca13fe8 ebx=6ca1403c esi=0 edi=6c976fd4 alias_base=1201 alias_classes=1200 args=6ca67bf4,6ca1403c,0,6c9d2038,fffffffc,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=6,",
+        "AT T 6c976fd4 op=1 line=853 dst=[149:1:1004 f10.10 #7949c3z4/1.0]  src=[14c:6:1004 f10.0 w14=0 w18=6c94a238 w1c=1 disp=0 w24=0 sc=0 base=[149:1:1004 f30.0 #4379c4z4/8.ab @#362c2z0/4.85]] [149:1:1004 f30.0 #4379c4z4/8.ab @#362c2z0/4.85] ",
+        "LIVE 66,137,156,157,158,232,362,366,534,540,555,557,592,596,605,630,664,687,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "112 fn=6c16e75c eax=6ca52160 ecx=6c9cbb00 edx=6c9cb9f0 ebx=6c16e75c esi=6c9d2038 edi=0 alias_base=1201 alias_classes=1200 args=0,1000,6c16e75c,1,0,6ca67bf4,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=0 fb=6c857028 lb=6c857a78 allowed=6,",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "13 fn=6c16e75c eax=6ca8aebc ecx=6c16e75c edx=0 ebx=6c16e75c esi=6c9d2038 edi=0 alias_base=1201 alias_classes=1200 args=6c9d2038,6ca8aebc,6ca52160,0,1000,6c16e75c,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=ac928 fb=6c857028 lb=6c857a78 allowed=",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28c02"
+      ]
+    },
+    {
+      "head": "113 fn=6c16e75c eax=6ca52160 ecx=0 edx=0 ebx=6c16e75c esi=6c9d2038 edi=0 alias_base=1201 alias_classes=1200 args=0,1000,6c16e75c,1,6ca52160,6ca67bf4,",
+      "body": [
+        "CURRENT LR id=664 p=6c9d2038 sym=5640 cls=3 prio=39 ben=6 refs=3 tie=161 reg=ac928 fb=6c857028 lb=6c857a78 allowed=",
+        "WATCH LR id=157 p=6c9dcd0c sym=1708 cls=4 prio=-5 ben=8 refs=4 tie=2996 reg=0 fb=6c857028 lb=6c857ddc allowed=4,",
+        "FLAGS 28e02"
+      ]
+    }
+  ],
+  "interventions": {
+    "observe": [],
+    "index": [
+      "INTERVENE clear index ECX preference"
+    ],
+    "split": [
+      "INTERVENE remove normal flag from pending split set"
+    ],
+    "clone": [
+      "INTERVENE forbid demo fpatan clone"
+    ],
+    "all": [
+      "INTERVENE remove normal flag from pending split set",
+      "INTERVENE clear index ECX preference",
+      "INTERVENE forbid demo fpatan clone"
+    ]
+  },
+  "angle_estimates": {
+    "observe": [
+      "ANGLE_ESTIMATE 2 T 6c463e40 op=86 line=587 dst=[149:1:4004 f10.0 #8280c3z4/0.aa @#32c1z80/0.0] [149:1:4004 f10.0 #31c1z80/0.0]  src=[149:1:4008 f10.0 #8283c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #8281c3z8/1.0 @#31c1z80/0.0] ",
+      "ANGLE_ESTIMATE 2 T 6c498e40 op=86 line=730 dst=[149:1:4008 f10.0 #1593c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #31c1z80/0.0]  src=[149:1:4008 f10.0 #8118c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #8116c3z8/1.0 @#31c1z80/0.0] "
+    ],
+    "clone": [
+      "ANGLE_ESTIMATE 2 T 6c473e40 op=86 line=587 dst=[149:1:4004 f10.0 #8280c3z4/0.ab @#32c1z80/0.0] [149:1:4004 f10.0 #31c1z80/0.0]  src=[149:1:4008 f10.0 #8283c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #8281c3z8/1.0 @#31c1z80/0.0] ",
+      "ANGLE_ESTIMATE 2 T 6c4a8e40 op=86 line=730 dst=[149:1:4008 f10.0 #1593c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #31c1z80/0.0]  src=[149:1:4008 f10.0 #8118c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #8116c3z8/1.0 @#31c1z80/0.0] "
+    ],
+    "all": [
+      "ANGLE_ESTIMATE 2 T 6c473e40 op=86 line=587 dst=[149:1:4004 f10.0 #8280c3z4/0.ab @#32c1z80/0.0] [149:1:4004 f10.0 #31c1z80/0.0]  src=[149:1:4008 f10.0 #8283c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #8281c3z8/1.0 @#31c1z80/0.0] ",
+      "ANGLE_ESTIMATE 2 T 6c4a8e40 op=86 line=730 dst=[149:1:4008 f10.0 #1593c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #31c1z80/0.0]  src=[149:1:4008 f10.0 #8118c3z8/1.0 @#32c1z80/0.0] [149:1:4008 f10.0 #8116c3z8/1.0 @#31c1z80/0.0] "
+    ]
+  }
+}

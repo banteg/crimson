@@ -1,0 +1,102 @@
+[
+  {
+    "kind": "preserving-c2-observation",
+    "mode": "observe",
+    "matching_credit": false,
+    "source_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+    "compiler_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "compiler_decisions_modified": false,
+    "normalized_coff_sha256": "aa3eb3105fc90bc3927741dfac9ffc8ec83dad90981c406e25cb72ebe64accd3",
+    "probe_sha256": "53d81398650665f0f9a71cf236211c9be54ef190da23a54a0a537ca4d35aa38a",
+    "diagnostic_metrics": {
+      "ratio": 0.948318878460259,
+      "target_instructions": 4206,
+      "candidate_instructions": 4211,
+      "prefix_instructions": 7,
+      "references_ok": 918,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "kind": "diagnostic-c2-intervention",
+    "mode": "index",
+    "matching_credit": false,
+    "source_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+    "compiler_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "compiler_decisions_modified": true,
+    "normalized_coff_sha256": "3d7f7f88384c3e4a6768380dea108fe361c98c40a108e754a8e6b4a64188c373",
+    "probe_sha256": "53d81398650665f0f9a71cf236211c9be54ef190da23a54a0a537ca4d35aa38a",
+    "diagnostic_metrics": {
+      "ratio": 0.9490317215159796,
+      "target_instructions": 4206,
+      "candidate_instructions": 4211,
+      "prefix_instructions": 7,
+      "references_ok": 918,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "kind": "diagnostic-c2-intervention",
+    "mode": "split",
+    "matching_credit": false,
+    "source_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+    "compiler_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "compiler_decisions_modified": true,
+    "normalized_coff_sha256": "cccb27f85a54ed5a835fb029e24886725bf16b1e2198b8e19513b2df3a894e89",
+    "probe_sha256": "53d81398650665f0f9a71cf236211c9be54ef190da23a54a0a537ca4d35aa38a",
+    "diagnostic_metrics": {
+      "ratio": 0.9491444866920152,
+      "target_instructions": 4206,
+      "candidate_instructions": 4210,
+      "prefix_instructions": 7,
+      "references_ok": 918,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "kind": "diagnostic-c2-intervention",
+    "mode": "clone",
+    "matching_credit": false,
+    "source_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+    "compiler_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "compiler_decisions_modified": true,
+    "normalized_coff_sha256": "b51689f04428dba07a8e891beef867eb93a414f6c2f1c23292a009a514aae0ab",
+    "probe_sha256": "53d81398650665f0f9a71cf236211c9be54ef190da23a54a0a537ca4d35aa38a",
+    "diagnostic_metrics": {
+      "ratio": 0.9677879472245334,
+      "target_instructions": 4206,
+      "candidate_instructions": 4207,
+      "prefix_instructions": 7,
+      "references_ok": 918,
+      "reference_problems": 0,
+      "exact": false,
+      "body_byte_exact": false
+    }
+  },
+  {
+    "kind": "diagnostic-c2-intervention",
+    "mode": "all",
+    "matching_credit": false,
+    "source_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+    "compiler_sha256": "d50100ac2380d58f3f6f756961fb1319d35f5248e5fa6cafb866ca657e5dda4a",
+    "compiler_decisions_modified": true,
+    "normalized_coff_sha256": "f7556257fb94f62148b030e2e2527f00cf165562f9e549d2d12e80ae68dd05ad",
+    "probe_sha256": "53d81398650665f0f9a71cf236211c9be54ef190da23a54a0a537ca4d35aa38a",
+    "diagnostic_metrics": {
+      "ratio": 1.0,
+      "target_instructions": 4206,
+      "candidate_instructions": 4206,
+      "prefix_instructions": 4206,
+      "references_ok": 918,
+      "reference_problems": 0,
+      "exact": true,
+      "body_byte_exact": true
+    }
+  }
+]

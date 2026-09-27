@@ -74,6 +74,11 @@ whole-game equivalence or exhaustive coverage of floating-point inputs.
 
 ## Unresolved regions and rejected hypotheses
 
+The subsequent [residual investigation](../player-update-residuals-2026-09-27/README.md)
+isolates the three compiler decisions with preserving probes and explicit
+interventions. In particular, it refines the flag-priority observation below
+to the exact pressure-split trigger. The retained source remains unchanged.
+
 - `0x413e5b..0x413e64`: the target index is loaded into ECX, while native
   uses EAX before the same scale-19 address computation. Integer types,
   field/reference forms, earlier declarations and clamping did not recover

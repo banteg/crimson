@@ -1,0 +1,473 @@
+{"metrics": {"ratio": 0.948318878460259, "target_instructions": 4206, "candidate_instructions": 4211, "prefix_instructions": 7, "references_ok": 918, "reference_problems": 0, "exact": false, "body_byte_exact": false}}
+colouring order:
+  -- score0
+  #1   lr 528 sym #5574 c3     prio   1703 tie   15 blocks 2..480    allowed ebx,ebp,esi,edi          -> esi
+  #2   lr  66 sym #3 c4        prio    992 tie   16 blocks 2..481    allowed ebx,ebp,edi              -> edi
+  #3   lr 169 sym #1988 c4     prio    319 tie 3354 blocks 353..454  allowed ebx,ebp                  -> ebp
+  #4   lr 553 sym #5703 c3     prio    224 tie  467 blocks 39..39    allowed ebx,ebp                  -> ebp
+  #5   lr 555 sym #5783 c3     prio    224 tie  339 blocks 39..39    allowed eax,ecx,edx,ebx,ebp      -> eax
+  #6   lr 684 sym #7559 c3     prio    168 tie 4858 blocks 426..426  allowed eax,ecx,edx,ebx          -> eax
+  #7   lr 686 sym #7576 c3     prio    168 tie 4824 blocks 426..426  allowed eax,ecx,edx,ebx          -> eax
+  #8   lr 660 sym #7179 c3     prio    168 tie 3968 blocks 374..374  allowed eax,ecx,edx,ebx          -> eax
+  #9   lr 661 sym #7196 c3     prio    168 tie 3934 blocks 374..374  allowed eax,ecx,edx,ebx          -> eax
+  #10  lr 698 sym #7702 c3     prio    154 tie 5205 blocks 435..435  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #11  lr 699 sym #7719 c3     prio    154 tie 5171 blocks 435..435  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #12  lr 667 sym #7279 c3     prio    154 tie 4192 blocks 384..384  allowed eax,ecx,edx,ebx          -> eax
+  #13  lr 670 sym #7296 c3     prio    154 tie 4158 blocks 384..384  allowed eax,ecx,edx,ebx          -> eax
+  #14  lr 649 sym #6816 c3     prio    154 tie 3605 blocks 367..367  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #15  lr 588 sym #5983 c3     prio    150 tie 3593 blocks 367..455  allowed eax,ecx,edx,ebx          -> eax
+  #16  lr 237 sym #3465 c4     prio    144 tie 5483 blocks 449..449  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #17  lr 221 sym #3073 c4     prio    144 tie 4917 blocks 428..428  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #18  lr 218 sym #2831 c4     prio    144 tie 4763 blocks 421..421  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #19  lr 688 sym #7616 c3     prio    140 tie 5007 blocks 431..431  allowed eax,ecx,edx,ebx          -> eax
+  #20  lr 691 sym #7633 c3     prio    140 tie 4973 blocks 431..431  allowed eax,ecx,edx,ebx          -> eax
+  #21  lr 676 sym #7367 c3     prio    140 tie 4423 blocks 399..399  allowed eax,ecx,edx,ebx          -> eax
+  #22  lr 677 sym #7384 c3     prio    140 tie 4389 blocks 399..399  allowed eax,ecx,edx,ebx          -> eax
+  #23  lr 658 sym #7136 c3     prio    140 tie 3884 blocks 372..372  allowed eax,ecx,edx,ebx          -> eax
+  #24  lr 659 sym #7153 c3     prio    140 tie 3850 blocks 372..372  allowed eax,ecx,edx,ebx          -> eax
+  #25  lr 656 sym #7101 c3     prio    140 tie 3766 blocks 370..370  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #26  lr 657 sym #7118 c3     prio    140 tie 3732 blocks 370..370  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #27  lr 654 sym #7055 c3     prio    140 tie 3666 blocks 368..368  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #28  lr 655 sym #7075 c3     prio    140 tie 3632 blocks 368..368  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #29  lr 215 sym #2605 c4     prio    128 tie 4249 blocks 386..386  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #30  lr 212 sym #2428 c4     prio    128 tie 4119 blocks 381..381  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #31  lr 210 sym #2421 c4     prio    128 tie 4025 blocks 376..376  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #32  lr 554 sym #5707 c3     prio    128 tie  462 blocks 39..39    allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #33  lr 106 sym #326 c4      prio    128 tie  344 blocks 39..39    allowed eax,ecx,edx,ebx,ebp      -> eax
+  #34  lr 708 sym #7782 c3     prio    126 tie 5397 blocks 443..443  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #35  lr 709 sym #7799 c3     prio    126 tie 5363 blocks 443..443  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #36  lr 693 sym #7659 c3     prio    126 tie 5106 blocks 433..433  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #37  lr 695 sym #7676 c3     prio    126 tie 5072 blocks 433..433  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #38  lr 663 sym #7239 c3     prio    126 tie 4064 blocks 379..379  allowed eax,ecx,edx,ebx          -> eax
+  #39  lr 810 sym #9258 c3     prio    108 tie 3505 blocks 364..364  allowed eax,ecx,edx,ebx          -> eax
+  #40  lr 586 sym #5981 c3     prio    108 tie 3111 blocks 330..330  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #41  lr 365 sym #4382 c4     prio    108 tie 3110 blocks 330..330  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #42  lr 373 sym #4425 c4     prio    108 tie 3079 blocks 330..330  allowed ecx,edx,ebx,ebp          -> ecx
+  #43  lr 376 sym #4428 c4     prio    108 tie 3070 blocks 330..330  allowed ecx,edx,ebx,ebp          -> ecx
+  #44  lr 819 sym #9319 c3     prio    108 tie 3051 blocks 330..330  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #45  lr 650 sym #6908 c3     prio    100 tie 3437 blocks 355..355  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #46  lr 219 sym #2839 c4     prio     96 tie 4863 blocks 426..426  allowed eax,ecx,edx,ebx          -> eax
+  #47  lr 220 sym #2846 c4     prio     96 tie 4829 blocks 426..426  allowed eax,ecx,edx,ebx          -> eax
+  #48  lr 208 sym #2411 c4     prio     96 tie 3973 blocks 374..374  allowed eax,ecx,edx,ebx          -> eax
+  #49  lr 209 sym #2418 c4     prio     96 tie 3939 blocks 374..374  allowed eax,ecx,edx,ebx          -> eax
+  #50  lr  39 sym #21 c4       prio     96 tie  473 blocks 39..39    allowed eax,ecx,edx,ebx,ebp      -> eax
+  #51  lr 826 sym #9422 c3     prio     96 tie  470 blocks 39..39    allowed eax,ecx,edx,ebx,ebp      -> ebp
+  #52  lr 243 sym #3478 c4     prio     96 tie  405 blocks 39..39    allowed eax,ecx,edx,ebx,ebp      -> eax
+  #53  lr 156 sym #1707 c4     prio     91 tie 2968 blocks 318..330  allowed ebx,ebp                  -> ebp
+  #54  lr 226 sym #3270 c4     prio     88 tie 5210 blocks 435..435  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #55  lr 227 sym #3277 c4     prio     88 tie 5176 blocks 435..435  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #56  lr 213 sym #2595 c4     prio     88 tie 4197 blocks 384..384  allowed eax,ecx,edx,ebx          -> eax
+  #57  lr 214 sym #2602 c4     prio     88 tie 4163 blocks 384..384  allowed eax,ecx,edx,ebx          -> eax
+  #58  lr 705 sym #7756 c3     prio     84 tie 5300 blocks 441..441  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #59  lr 653 sym #7016 c3     prio     84 tie 3546 blocks 365..365  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #60  lr 648 sym #6816 c3     prio     82 tie 3452 blocks 358..360  allowed eax,ecx,edx,ebx          -> eax
+  #61  lr 222 sym #3080 c4     prio     80 tie 5012 blocks 431..431  allowed eax,ecx,edx,ebx          -> eax
+  #62  lr 223 sym #3087 c4     prio     80 tie 4978 blocks 431..431  allowed eax,ecx,edx,ebx          -> eax
+  #63  lr 216 sym #2615 c4     prio     80 tie 4428 blocks 399..399  allowed eax,ecx,edx,ebx          -> eax
+  #64  lr 217 sym #2622 c4     prio     80 tie 4394 blocks 399..399  allowed eax,ecx,edx,ebx          -> eax
+  #65  lr 206 sym #2268 c4     prio     80 tie 3889 blocks 372..372  allowed eax,ecx,edx,ebx          -> eax
+  #66  lr 207 sym #2403 c4     prio     80 tie 3855 blocks 372..372  allowed eax,ecx,edx,ebx          -> eax
+  #67  lr 204 sym #2254 c4     prio     80 tie 3771 blocks 370..370  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #68  lr 205 sym #2261 c4     prio     80 tie 3737 blocks 370..370  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #69  lr 202 sym #2015 c4     prio     80 tie 3671 blocks 368..368  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #70  lr 203 sym #2246 c4     prio     80 tie 3637 blocks 368..368  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #71  lr 178 sym #2000 c4     prio     76 tie 3506 blocks 361..364  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #72  lr 232 sym #3293 c4     prio     72 tie 5402 blocks 443..443  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #73  lr 236 sym #3460 c4     prio     72 tie 5368 blocks 443..443  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #74  lr 224 sym #3095 c4     prio     72 tie 5111 blocks 433..433  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #75  lr 225 sym #3102 c4     prio     72 tie 5077 blocks 433..433  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #76  lr 636 sym #4727 c4     prio     72 tie 4744 blocks 421..421  allowed eax,ecx,edx,ebx          -> eax
+  #77  lr 211 sym #2425 c4     prio     72 tie 4069 blocks 379..379  allowed eax,ecx,edx,ebx          -> eax
+  #78  lr 534 sym #4451 c4     prio     72 tie 3496 blocks 364..364  allowed eax,ecx,edx              -> eax
+  #79  lr 369 sym #4421 c4     prio     72 tie 3107 blocks 330..330  allowed ecx,edx,ebx              -> ecx
+  #80  lr 372 sym #4424 c4     prio     72 tie 3091 blocks 330..330  allowed ecx,edx,ebx              -> ecx
+  #81  lr 808 sym #9241 c3     prio     66 tie 3626 blocks 367..367  allowed eax,ecx,edx,ebx          -> eax
+  #82  lr 807 sym #9234 c3     prio     66 tie 3619 blocks 367..367  allowed eax,ecx,edx,ebx          -> eax
+  #83  lr 806 sym #9227 c3     prio     66 tie 3611 blocks 367..367  allowed eax,ecx,edx              -> eax
+  #84  lr  65 const 1056964608 prio     66 tie    0 blocks 39..39    allowed ecx,edx,ebx,ebp          -> ecx
+  #85  lr 589 sym #4874 c4     prio     60 tie 5464 blocks 449..449  allowed eax,ecx,edx,ebx          -> eax
+  #86  lr 592 sym #4775 c4     prio     60 tie 4819 blocks 428..428  allowed eax,ecx,edx,ebx          -> eax
+  #87  lr 563 sym #4615 c4     prio     60 tie 4153 blocks 386..386  allowed eax,ecx,edx,ebx          -> eax
+  #88  lr 635 sym #4608 c4     prio     60 tie 4059 blocks 381..381  allowed eax,ecx,edx,ebx          -> eax
+  #89  lr 671 sym #4560 c4     prio     60 tie 3929 blocks 376..376  allowed eax,ecx,edx,ebx          -> eax
+  #90  lr 134 sym #792 c4      prio     60 tie 2406 blocks 268..271  allowed ebx,ebp                  -> ebp
+  #91  lr 760 const 1056964608 prio     60 tie    0 blocks 426..426  allowed ebx                      -> ebx
+  #92  lr 647 sym #6816 c3     prio     56 tie 3149 blocks 339..341  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #93  lr 830 sym #9507 c3     prio     54 tie  750 blocks 70..76    allowed ecx,edx,ebx,ebp          -> ecx
+  #94  lr 768 const 1056964608 prio     54 tie    0 blocks 374..374  allowed ebx                      -> ebx
+  #95  lr 766 const 1056964608 prio     54 tie    0 blocks 384..384  allowed ebx                      -> ebx
+  #96  lr 135 sym #793 c4      prio     50 tie 2417 blocks 268..271  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #97  lr  71 sym #1 c4        prio     50 tie   27 blocks 2..2      allowed eax,ecx,edx,ebx,ebp,esi,edi -> eax
+  #98  lr 231 sym #3285 c4     prio     48 tie 5305 blocks 441..441  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #99  lr 179 sym #2005 c4     prio     48 tie 3551 blocks 365..365  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #100 lr 771 const 1056964608 prio     48 tie    0 blocks 368..368  allowed ebx,ebp                  -> ebx
+  #101 lr 770 const 1056964608 prio     48 tie    0 blocks 370..370  allowed ebx,ebp                  -> ebx
+  #102 lr 769 const 1056964608 prio     48 tie    0 blocks 372..372  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #103 lr 762 const 1056964608 prio     48 tie    0 blocks 399..399  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #104 lr 759 const 1056964608 prio     48 tie    0 blocks 431..431  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #105 lr 757 const 1056964608 prio     48 tie    0 blocks 435..435  allowed ebx,ebp                  -> ebx
+  -- split
+  -- rescore
+  #106 lr 637 sym #6507 c3     prio     46 tie 2914 blocks 312..314  allowed ebx,ebp                  -> ebp
+  #107 lr 567 sym #5840 c3     prio     42 tie  667 blocks 66..68    allowed ecx,edx,ebx,ebp          -> ecx
+  #108 lr 526 sym #5386 c4     prio     42 tie   98 blocks 9..9      allowed ebx,ebp                  -> ebp
+  #109 lr 758 const 1056964608 prio     42 tie    0 blocks 433..433  allowed ebx,ebp                  -> ebx
+  -- split
+  -- rescore
+  #110 lr 755 const 1056964608 prio     42 tie    0 blocks 443..443  allowed ebx,ebp                  -> ebx
+  -- split
+  -- rescore
+  #111 lr 822 sym #9349 c3     prio     40 tie 2911 blocks 312..312  allowed eax,ecx,edx,ebx          -> eax
+  #112 lr 772 sym #13 c4       prio     40 tie  144 blocks 367..367  allowed eax,ecx,edx,ebx          -> eax
+  #113 lr 551 sym #5640 c3     prio     39 tie  161 blocks 318..330  allowed ebp                      -> ebp
+  -- split
+  -- rescore
+  #114 lr 501 sym #6449 c3     prio     56 tie 2327 blocks 330..330  allowed ecx,edx,ebx              -> ecx
+  #115 lr 230 sym #3281 c4     prio     38 tie 5253 blocks 435..438  allowed ebx,ebp                  -> ebx
+  #116 lr  64 sym #14 c4       prio     37 tie  204 blocks 20..27    allowed ebx,ebp                  -> ebp
+  #117 lr 813 sym #9279 c3     prio     36 tie 3458 blocks 358..358  allowed ecx,edx,ebx              -> ecx
+  #118 lr 816 sym #9298 c3     prio     36 tie 3209 blocks 348..348  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #119 lr 823 sym #9371 c3     prio     32 tie 2044 blocks 221..221  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #120 lr 110 sym #333 c4      prio     32 tie  672 blocks 66..66    allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #121 lr 812 sym #9272 c3     prio     30 tie 3484 blocks 360..360  allowed eax,ecx,edx,ebx          -> eax
+  #122 lr 814 sym #9286 c3     prio     30 tie 3440 blocks 355..355  allowed eax,ecx,edx,ebx          -> eax
+  #123 lr 358 sym #4369 c4     prio     30 tie 2907 blocks 312..312  allowed eax,ecx,edx,ebx          -> eax
+  #124 lr 112 sym #336 c4      prio     30 tie  751 blocks 70..76    allowed edx,ebx,ebp              -> edx
+  #125 lr 107 sym #328 c4      prio     30 tie  538 blocks 44..51    allowed ebx,ebp                  -> ebp
+  #126 lr 828 sym #9434 c3     prio     30 tie   20 blocks 2..2      allowed eax,ecx,edx,ebx,ebp,esi,edi -> edi
+  #127 lr 168 sym #1988 c4     prio     28 tie 4337 blocks 395..396  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #128 lr 167 sym #1988 c4     prio     28 tie 4306 blocks 391..392  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #129 lr 562 sym #5834 c3     prio     28 tie 2498 blocks 285..299  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #130 lr 561 sym #5830 c3     prio     28 tie  756 blocks 78..168   allowed eax,ecx,edx,ebx,ebp      -> eax
+  -- unprof lr624 sym #4851 c3
+  #131 lr 811 sym #9265 c3     prio     24 tie 3493 blocks 361..361  allowed eax,ecx,edx              -> eax
+  #132 lr  68 sym #33 c7       prio     24 tie 3342 blocks 352..355  allowed eax,ecx,edx,ebx          -> eax
+  #133 lr 818 sym #9312 c3     prio     24 tie 3155 blocks 339..339  allowed ecx,edx,ebx,ebp          -> ecx
+  #134 lr 821 sym #9339 c3     prio     24 tie 2922 blocks 313..313  allowed eax,ecx,edx,ebx          -> eax
+  #135 lr  36 sym #33 c7       prio     24 tie 2491 blocks 279..300  allowed ecx,edx,ebx,ebp          -> ecx
+  #136 lr 317 sym #4116 c4     prio     24 tie 2040 blocks 221..221  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #137 lr 767 const 1056964608 prio     21 tie    0 blocks 379..379  allowed ecx,edx,ebx              -> ecx
+  -- unprof lr565 sym #958 c3
+  -- unprof lr618 sym #3347 c3
+  -- unprof lr496 sym #3379 c3
+  -- unprof lr600 sym #3389 c3
+  -- unprof lr632 sym #5463 c3
+  #138 lr 105 sym #61 c7       prio     20 tie 3361 blocks 355..355  allowed eax,ecx,edx,ebx          -> ecx
+  #139 lr 359 sym #4370 c4     prio     20 tie 2930 blocks 314..314  allowed eax,ecx,edx,ebx,ebp      -> ebp
+  #140 lr  14 sym #13 c4       prio     20 tie  144 blocks 360..360  allowed eax,ecx,edx,ebx          -> eax
+  #141 lr 777 sym #8952 c3     prio     18 tie 5591 blocks 458..458  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #142 lr 817 sym #9305 c3     prio     18 tie 3184 blocks 343..343  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #143 lr 566 sym #5838 c3     prio     18 tie 1979 blocks 217..218  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #144 lr 126 sym #756 c7      prio     16 tie 3029 blocks 327..328  allowed eax,ecx,edx,ebx          -> eax
+  #145 lr 820 sym #9329 c3     prio     16 tie 2959 blocks 316..316  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #146 lr 152 sym #1496 c4     prio     16 tie 2753 blocks 300..301  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #147 lr 764 sym #5820 c3     prio     16 tie  620 blocks 391..391  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #148 lr 763 sym #5820 c3     prio     16 tie  620 blocks 395..395  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #149 lr 108 sym #329 c4      prio     16 tie  563 blocks 46..51    allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #150 lr 633 sym #13 c4       prio     16 tie  144 blocks 10..11    allowed ecx,edx,ebx,ebp          -> ecx
+  #151 lr   7 const 1056964608 prio     15 tie    0 blocks 365..365  allowed ecx,edx,ebx,ebp          -> ecx
+  #152 lr 756 const 1056964608 prio     15 tie    0 blocks 441..441  allowed ecx,edx,ebx,ebp          -> ecx
+  #153 lr 631 sym #6465 c3     prio     14 tie 5690 blocks 481..484  allowed ecx,edx,ebx,ebp,esi,edi  -> edi
+  #154 lr 104 sym #61 c7       prio     12 tie 3133 blocks 335..335  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #155 lr  98 sym #61 c7       prio     12 tie 2573 blocks 289..289  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #156 lr  99 sym #61 c7       prio     12 tie 2566 blocks 289..289  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #157 lr 388 sym #1581 c3     prio     12 tie 2402 blocks 266..266  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #158 lr  83 sym #61 c7       prio     12 tie 1658 blocks 173..173  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #159 lr  81 sym #61 c7       prio     12 tie 1634 blocks 169..169  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #160 lr  54 sym #61 c7       prio     12 tie 1043 blocks 104..104  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #161 lr  38 sym #61 c7       prio     12 tie 1035 blocks 104..104  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #162 lr 765 sym #5820 c3     prio     12 tie  620 blocks 389..389  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #163 lr 754 sym #5820 c3     prio     12 tie  620 blocks 456..456  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #164 lr 468 sym #4605 c3     prio     12 tie  323 blocks 37..37    allowed eax,ecx,edx,ebx,ebp      -> eax
+  #165 lr  77 sym #13 c4       prio     12 tie  144 blocks 359..359  allowed eax,ecx,edx,ebx          -> eax
+  #166 lr  47 sym #15 c4       prio     11 tie  250 blocks 22..27    allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  -- unprof lr33 sym #57 c7
+  #167 lr 101 sym #61 c7       prio      8 tie 2776 blocks 304..304  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #168 lr 100 sym #61 c7       prio      8 tie 2763 blocks 302..302  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #169 lr  95 sym #61 c7       prio      8 tie 1777 blocks 195..195  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #170 lr  93 sym #61 c7       prio      8 tie 1759 blocks 192..192  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #171 lr  91 sym #61 c7       prio      8 tie 1741 blocks 189..189  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #172 lr  89 sym #61 c7       prio      8 tie 1715 blocks 183..183  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #173 lr  87 sym #61 c7       prio      8 tie 1697 blocks 180..180  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #174 lr  85 sym #61 c7       prio      8 tie 1679 blocks 177..177  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #175 lr  79 sym #61 c7       prio      8 tie 1366 blocks 140..140  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #176 lr  30 sym #61 c7       prio      8 tie 1346 blocks 137..137  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #177 lr 125 sym #351 c4      prio      8 tie 1320 blocks 125..143  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #178 lr  12 sym #61 c7       prio      8 tie 1289 blocks 132..132  allowed eax,ecx,edx,ebp          -> ecx
+  #179 lr  63 sym #61 c7       prio      8 tie 1271 blocks 129..129  allowed eax,ecx,edx,ebp          -> ecx
+  #180 lr  48 sym #33 c7       prio      8 tie  783 blocks 81..81    allowed eax,ecx,edx,ebx,ebp      -> eax
+  #181 lr 662 sym #13 c4       prio      6 tie  144 blocks 350..351  allowed ecx,edx,ebx,ebp          -> ecx
+  -- unprof lr752 const 0
+  #182 lr 103 sym #61 c7       prio      4 tie 3119 blocks 331..331  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #183 lr 102 sym #61 c7       prio      4 tie 3037 blocks 329..329  allowed eax,ecx,edx,ebx          -> ecx
+  #184 lr  70 sym #33 c7       prio      4 tie 2726 blocks 298..298  allowed eax,ecx,edx,ebx,ebp      -> eax
+  #185 lr  97 sym #61 c7       prio      4 tie 2470 blocks 280..280  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #186 lr  96 sym #61 c7       prio      4 tie 1787 blocks 197..197  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #187 lr  94 sym #61 c7       prio      4 tie 1769 blocks 194..194  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #188 lr  92 sym #61 c7       prio      4 tie 1751 blocks 191..191  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #189 lr  90 sym #61 c7       prio      4 tie 1725 blocks 185..185  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #190 lr  88 sym #61 c7       prio      4 tie 1707 blocks 182..182  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #191 lr  86 sym #61 c7       prio      4 tie 1689 blocks 179..179  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #192 lr  84 sym #61 c7       prio      4 tie 1669 blocks 175..175  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #193 lr  82 sym #61 c7       prio      4 tie 1648 blocks 171..171  allowed eax,ecx,edx,ebx,ebp      -> ecx
+  #194 lr  80 sym #61 c7       prio      4 tie 1376 blocks 142..142  allowed eax,ecx,edx,ebp          -> ecx
+  #195 lr  43 sym #61 c7       prio      4 tie 1358 blocks 139..139  allowed eax,ecx,edx,ebp          -> ecx
+  #196 lr  24 sym #61 c7       prio      4 tie 1299 blocks 134..134  allowed eax,ecx,edx,ebp          -> ecx
+  #197 lr   3 sym #61 c7       prio      4 tie 1281 blocks 131..131  allowed eax,ecx,edx,ebp          -> ecx
+  #198 lr  34 sym #61 c7       prio      4 tie  767 blocks 80..80    allowed eax,ecx,edx,ebx,ebp      -> ecx
+  -- unprof lr531 const 1065353216
+  #199 lr 773 sym #1708 c4     prio      2 tie 2996 blocks 333..337  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  -- unprof lr664 const 0
+  -- unprof lr617 const 0
+  -- unprof lr652 const 1065353216
+  -- unprof lr13 const 0
+  -- unprof lr233 const 1065353216
+  -- unprof lr595 const 11
+  -- unprof lr761 const 11
+  -- unprof lr556 const 21
+  -- unprof lr76 const 43
+  -- unprof lr75 const 41
+  -- unprof lr72 const 14
+  -- unprof lr59 const 28
+  -- unprof lr58 const 23
+  -- unprof lr57 const 29
+  -- unprof lr56 const 25
+  -- unprof lr55 const 19
+  -- unprof lr45 const 24
+  -- unprof lr37 const 63
+  -- unprof lr570 const 9
+  -- unprof lr529 const 0
+  -- unprof lr682 const 22
+  -- unprof lr74 const 1065353216
+  #200 lr 753 const 0          prio    -11 tie    0 blocks 1..29     allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  -- unprof lr596 const 1065353216
+  -- unprof lr133 sym #13 c4
+  -- unprof lr49 sym #57 c7
+  -- unprof lr16 const 1065353216
+  -- unprof lr62 sym #33 c7
+  -- unprof lr569 const 8
+  -- unprof lr597 const 4
+  -- unprof lr625 const 1
+  -- unprof lr51 sym #55 c7
+  #201 lr 598 const 1073741824 prio   -133 tie    0 blocks 61..231   allowed ebp                      -> ebp
+  -- split
+  -- rescore
+  #202 lr 547 const 1          prio    -87 tie    0 blocks 102..300  allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  -- unprof lr774 const 4
+  -- unprof lr571 const 0
+  #203 lr 619 const 5          prio    -33 tie    0 blocks 61..78    allowed ebx                      -> ebx
+  -- split
+  -- rescore
+  #204 lr 621 sym #33 c7       prio     13 tie  744 blocks 61..78    allowed eax,ecx,edx              -> eax
+  -- unprof lr712 const 0
+  -- unprof lr601 const 0
+  -- unprof lr33 sym #57 c7
+  -- split
+  -- rescore
+  #205 lr 573 sym #13 c4       prio      4 tie  144 blocks 485..486  allowed ecx,edx,ebx,ebp,esi,edi  -> ecx
+  -- unprof lr632 sym #5463 c3
+  -- unprof lr600 sym #3389 c3
+  -- unprof lr496 sym #3379 c3
+  -- unprof lr618 sym #3347 c3
+  -- unprof lr565 sym #958 c3
+  -- unprof lr624 sym #4851 c3
+  -- unprof lr752 const 0
+  -- split
+  -- rescore
+  #206 lr 632 const 0          prio      4 tie    0 blocks 260..260  allowed eax,ecx,edx,ebp          -> eax
+  -- unprof lr618 const 0
+  -- unprof lr496 const 22
+  -- unprof lr565 const 0
+  -- unprof lr624 const 0
+  -- unprof lr664 const 0
+  -- unprof lr652 const 1065353216
+  -- unprof lr13 const 0
+  -- unprof lr233 const 1065353216
+  -- unprof lr595 const 11
+  -- unprof lr761 const 11
+  -- unprof lr556 const 21
+  -- unprof lr76 const 43
+  -- unprof lr75 const 41
+  -- unprof lr72 const 14
+  -- unprof lr59 const 28
+  -- unprof lr58 const 23
+  -- unprof lr57 const 29
+  -- unprof lr56 const 25
+  -- unprof lr55 const 19
+  -- unprof lr45 const 24
+  -- unprof lr37 const 63
+  -- unprof lr570 const 9
+  -- unprof lr529 const 0
+  -- unprof lr596 const 1065353216
+  -- unprof lr569 const 8
+  -- unprof lr597 const 4
+  -- unprof lr625 const 1
+  -- unprof lr712 const 0
+  -- unprof lr618 const 0
+  -- unprof lr496 const 22
+  -- unprof lr565 const 0
+  -- unprof lr624 const 0
+  -- split
+  -- rescore
+  -- score0
+  #207 lr   2 sym #2 c5        prio     12 tie    6 blocks 1..1      allowed eax,ecx,edx,ebx,ebp,esi,edi -> eax
+  #208 lr   3 sym #3 c4        prio     12 tie    5 blocks 1..1      allowed ecx,edx,ebx,ebp,esi,edi  -> ecx
+  #209 lr   1 sym #1 c5        prio     12 tie    4 blocks 1..1      allowed edx,ebx,ebp,esi,edi      -> edx
+  -- score0
+  #210 lr   2 sym #2 c5        prio     12 tie    6 blocks 1..1      allowed eax,ecx,edx,ebx,ebp,esi,edi -> eax
+  #211 lr   3 sym #3 c4        prio     12 tie    5 blocks 1..1      allowed ecx,edx,ebx              -> ecx
+  #212 lr   1 sym #1 c5        prio     12 tie    4 blocks 1..1      allowed ebp,esi,edi              -> esi
+  -- score0
+  #213 lr   2 sym #2 c5        prio      8 tie    8 blocks 1..1      allowed eax,ecx,edx,ebx,ebp,esi,edi -> eax
+  #214 lr   1 sym #1 c5        prio      8 tie    5 blocks 1..1      allowed ecx,edx,ebx,ebp,esi,edi  -> ecx
+
+run 0 (score0): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+      block  318 depth 0: prio +16  benefit +2
+      block  319 depth 0: prio -1  benefit +0
+      block  320 depth 0: prio +8  benefit +2
+      block  321 depth 0: prio -1  benefit +0
+      block  322 depth 0: prio -2  benefit +0
+      block  325 depth 0: prio -2  benefit +0
+      block  326 depth 0: prio -1  benefit +0
+      block  327 depth 0: prio -2  benefit +0
+      block  328 depth 0: prio -2  benefit +0
+      block  329 depth 0: prio -1  benefit +0
+      block  330 depth 0: prio -18  benefit +0
+      block  331 depth 0: prio -1  benefit +0
+      block  332 depth 0: prio -1  benefit +0
+      block  333 depth 0: prio +4  benefit +2
+      block  334 depth 0: prio -2  benefit +0
+      block  335 depth 0: prio -3  benefit +0
+      block  336 depth 0: prio -2  benefit +0
+      block  337 depth 0: prio +6  benefit +2
+
+run 1 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 2 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 3 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 4 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 5 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 6 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 7 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 8 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 9 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 10 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 11 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 12 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 13 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 14 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 15 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 16 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 17 (rescore): per-block contributions
+  lr157 sym #1708 c4 blocks 318..337: prio -5 benefit 8
+
+run 18 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+      block  333 depth 0: prio +2  benefit +0
+      block  335 depth 0: prio -2  benefit +0
+      block  337 depth 0: prio +2  benefit +2
+
+run 19 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 20 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 21 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 22 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 23 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 24 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 25 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 26 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 27 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 28 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2
+
+run 29 (rescore): per-block contributions
+  lr773 sym #1708 c4 blocks 333..337: prio 2 benefit 2

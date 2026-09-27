@@ -1,0 +1,78 @@
+{
+  "kind": "diagnostic-c2-intervention",
+  "matching_credit": false,
+  "source_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+  "description": "Add the bonus once to +0x0c of every live range for symbol 1708 at a score_live_ranges return; existing priority_trace bump logic with class-4 symbol filtering instead of constant filtering. No source or compiler-file changes.",
+  "runs": [
+    {
+      "bonus": 8,
+      "metrics": {
+        "ratio": 0.948318878460259,
+        "target_instructions": 4206,
+        "candidate_instructions": 4211,
+        "prefix_instructions": 7,
+        "references_ok": 918,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "normalized_coff_sha256": "aa3eb3105fc90bc3927741dfac9ffc8ec83dad90981c406e25cb72ebe64accd3"
+    },
+    {
+      "bonus": 16,
+      "metrics": {
+        "ratio": 0.948318878460259,
+        "target_instructions": 4206,
+        "candidate_instructions": 4211,
+        "prefix_instructions": 7,
+        "references_ok": 918,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "normalized_coff_sha256": "aa3eb3105fc90bc3927741dfac9ffc8ec83dad90981c406e25cb72ebe64accd3"
+    },
+    {
+      "bonus": 24,
+      "metrics": {
+        "ratio": 0.948318878460259,
+        "target_instructions": 4206,
+        "candidate_instructions": 4211,
+        "prefix_instructions": 7,
+        "references_ok": 918,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "normalized_coff_sha256": "aa3eb3105fc90bc3927741dfac9ffc8ec83dad90981c406e25cb72ebe64accd3"
+    },
+    {
+      "bonus": 32,
+      "metrics": {
+        "ratio": 0.948318878460259,
+        "target_instructions": 4206,
+        "candidate_instructions": 4211,
+        "prefix_instructions": 7,
+        "references_ok": 918,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "normalized_coff_sha256": "aa3eb3105fc90bc3927741dfac9ffc8ec83dad90981c406e25cb72ebe64accd3"
+    },
+    {
+      "bonus": 64,
+      "metrics": {
+        "ratio": 0.9472433460076045,
+        "target_instructions": 4206,
+        "candidate_instructions": 4210,
+        "prefix_instructions": 7,
+        "references_ok": 918,
+        "reference_problems": 0,
+        "exact": false,
+        "body_byte_exact": false
+      },
+      "normalized_coff_sha256": "cc11041ae02adee17afcd280bcf674c6215eaa66ba162686ad365d724f80b51a"
+    }
+  ]
+}

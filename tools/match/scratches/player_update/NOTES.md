@@ -2,6 +2,21 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Remaining compiler decisions (2026-09-27)
+
+A further 78 source variants and four compiler-option controls did not produce
+a retained improvement. Preserving C2 probes identify the index's ECX
+preference, the firing flag's pressure split while coloring a duplicate
+cooldown-address range, and the 19-byte demo-tail clone. Overriding all three
+decisions produces a diagnostic `exact=true`, `body_byte_exact=true` object
+with 4206/4206 instructions and 918/0/0 references. That intervention has no
+source-matching credit; the canonical source remains **94.8319%**, non-exact.
+
+The flag's negative priority alone does not explain its spill. The pressure
+probe records the precise split trigger; source controls which avoid it lose
+native pointer copies. See the reproducible probes, control ledger and limits
+in [the residual investigation](../../evidence/player-update-residuals-2026-09-27/README.md).
+
 ## Arithmetic grouping, turn lifetime and smoke storage (2026-09-27)
 
 Raw match is now **94.8319%** (from 92.7918%); labels masked **99.7980%**,

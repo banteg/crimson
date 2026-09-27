@@ -1,0 +1,135 @@
+[
+  {
+    "name": "swap-pointer",
+    "scores": {
+      "raw": 0.948318878460259,
+      "labels": 0.9979802780087917,
+      "structural": 0.9986931210645122,
+      "stack": 0.9986931210645122
+    },
+    "instructions": [
+      4206,
+      4211
+    ],
+    "refs": [
+      918,
+      0,
+      0
+    ],
+    "exact": false
+  },
+  {
+    "name": "swap-named-pointers-false",
+    "scores": {
+      "raw": 0.9465177085809365,
+      "labels": 0.9961968148324222,
+      "structural": 0.996909912051343,
+      "stack": 0.996909912051343
+    },
+    "instructions": [
+      4206,
+      4208
+    ],
+    "refs": [
+      918,
+      0,
+      0
+    ],
+    "exact": false
+  },
+  {
+    "name": "swap-pointer-shot_cooldown",
+    "scores": {
+      "raw": 0.9440285204991087,
+      "labels": 0.9951277480689246,
+      "structural": 0.9982174688057041,
+      "stack": 0.9982174688057041
+    },
+    "instructions": [
+      4206,
+      4209
+    ],
+    "refs": [
+      914,
+      0,
+      0
+    ],
+    "exact": false
+  },
+  {
+    "name": "normal-inline-predicate",
+    "scores": {
+      "raw": 0.9489189831313851,
+      "labels": 0.9985744832501782,
+      "structural": 0.9985744832501782,
+      "stack": 0.9985744832501782
+    },
+    "instructions": [
+      4206,
+      4212
+    ],
+    "refs": [
+      918,
+      0,
+      0
+    ],
+    "exact": false
+  },
+  {
+    "name": "weapon-owner-all",
+    "scores": {
+      "raw": 0.9477186311787072,
+      "labels": 0.9973859315589354,
+      "structural": 0.9980988593155894,
+      "stack": 0.9980988593155894
+    },
+    "instructions": [
+      4206,
+      4210
+    ],
+    "refs": [
+      918,
+      0,
+      0
+    ],
+    "exact": false
+  },
+  {
+    "name": "compiler-GX",
+    "scores": {
+      "raw": 0.948318878460259,
+      "labels": 0.9979802780087917,
+      "structural": 0.9986931210645122,
+      "stack": 0.9986931210645122
+    },
+    "instructions": [
+      4206,
+      4211
+    ],
+    "refs": [
+      918,
+      0,
+      0
+    ],
+    "exact": false
+  },
+  {
+    "name": "compiler-Op",
+    "scores": {
+      "raw": 0.3977796397151236,
+      "labels": 0.5134059488898198,
+      "structural": 0.5806451612903226,
+      "stack": 0.67804775869292
+    },
+    "instructions": [
+      4206,
+      5342
+    ],
+    "refs": [
+      610,
+      4,
+      24
+    ],
+    "exact": false
+  }
+]

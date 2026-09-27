@@ -1,0 +1,3718 @@
+{
+  "baseline_sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+  "line_indexing": "zero-based, end-exclusive; apply in reverse order",
+  "source_control_count": 78,
+  "compiler_control_count": 4,
+  "controls": [
+    {
+      "name": "swap-pointer",
+      "sha256": "65d1c5ff3959b895b22d2ca1544ea0321ba2a82a0f7f7fd7145c01974d5b2359",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline void pu_swap(T *a, T *b)\n"
+          ]
+        },
+        {
+          "start": 125,
+          "end": 128,
+          "replacement": [
+            "    T t = *a;\n",
+            "    *a = *b;\n",
+            "    *b = t;\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap(&player->alt_weapon_id, &player->weapon_id);\n",
+            "            pu_swap(&player->alt_clip_size, &player->clip_size);\n",
+            "            pu_swap(&player->alt_reload_active, &player->reload_active);\n",
+            "            pu_swap(&player->alt_ammo, &player->ammo);\n",
+            "            pu_swap(&player->alt_reload_timer, &player->reload_timer);\n",
+            "            pu_swap(&player->alt_shot_cooldown, &player->shot_cooldown);\n",
+            "            pu_swap(&player->alt_reload_timer_max, &player->reload_timer_max);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-exchange",
+      "sha256": "7365c350ded2c300e59f9eed4f003eb988fc3bbd22d4f565afa5a91d09cabafd",
+      "scores": {
+        "raw": 0.9368471035137702,
+        "labels": 0.9878917378917379,
+        "structural": 0.9912155745489079,
+        "stack": 0.9912155745489079
+      },
+      "instructions": [
+        4206,
+        4218
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 129,
+          "replacement": [
+            "template <class T> inline T pu_exchange(T &a, T b) { T t = a; a = b; return t; }\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            player->weapon_id = pu_exchange(player->alt_weapon_id, player->weapon_id);\n",
+            "            player->clip_size = pu_exchange(player->alt_clip_size, player->clip_size);\n",
+            "            player->reload_active = pu_exchange(player->alt_reload_active, player->reload_active);\n",
+            "            player->ammo = pu_exchange(player->alt_ammo, player->ammo);\n",
+            "            player->reload_timer = pu_exchange(player->alt_reload_timer, player->reload_timer);\n",
+            "            player->shot_cooldown = pu_exchange(player->alt_shot_cooldown, player->shot_cooldown);\n",
+            "            player->reload_timer_max = pu_exchange(player->alt_reload_timer_max, player->reload_timer_max);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-exchange-reverse",
+      "sha256": "6bc07bc10a4c6aae6a9c95e3ac7e09f734a73e8594967b77790386db3a4bd182",
+      "scores": {
+        "raw": 0.938034188034188,
+        "labels": 0.9890788224121557,
+        "structural": 0.9928774928774928,
+        "stack": 0.9928774928774928
+      },
+      "instructions": [
+        4206,
+        4218
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 129,
+          "replacement": [
+            "template <class T> inline T pu_exchange(T a, T &b) { T t = b; b = a; return t; }\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            player->alt_weapon_id = pu_exchange(player->alt_weapon_id, player->weapon_id);\n",
+            "            player->alt_clip_size = pu_exchange(player->alt_clip_size, player->clip_size);\n",
+            "            player->alt_reload_active = pu_exchange(player->alt_reload_active, player->reload_active);\n",
+            "            player->alt_ammo = pu_exchange(player->alt_ammo, player->ammo);\n",
+            "            player->alt_reload_timer = pu_exchange(player->alt_reload_timer, player->reload_timer);\n",
+            "            player->alt_shot_cooldown = pu_exchange(player->alt_shot_cooldown, player->shot_cooldown);\n",
+            "            player->alt_reload_timer_max = pu_exchange(player->alt_reload_timer_max, player->reload_timer_max);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-member",
+      "sha256": "0b8104e35e61d34957988b25686daa6596f211942eca980a96cc1cd2b66282a7",
+      "scores": {
+        "raw": 0.9389113382457809,
+        "labels": 0.9900166389351082,
+        "structural": 0.9952460185405277,
+        "stack": 0.9952460185405277
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 129,
+          "replacement": [
+            "template <class T> inline void pu_swap(player_state_t *p, T player_state_t::*a, T player_state_t::*b) { T t = p->*a; p->*a = p->*b; p->*b = t; }\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap(player, &player_state_t::alt_weapon_id, &player_state_t::weapon_id);\n",
+            "            pu_swap(player, &player_state_t::alt_clip_size, &player_state_t::clip_size);\n",
+            "            pu_swap(player, &player_state_t::alt_reload_active, &player_state_t::reload_active);\n",
+            "            pu_swap(player, &player_state_t::alt_ammo, &player_state_t::ammo);\n",
+            "            pu_swap(player, &player_state_t::alt_reload_timer, &player_state_t::reload_timer);\n",
+            "            pu_swap(player, &player_state_t::alt_shot_cooldown, &player_state_t::shot_cooldown);\n",
+            "            pu_swap(player, &player_state_t::alt_reload_timer_max, &player_state_t::reload_timer_max);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-whole-helper",
+      "sha256": "9c5799235e4ad3ba8fc6fad9fa8b5cf976ffcc9a859f9601f49e2d999d1e4244",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "}\n",
+            "static __inline void pu_swap_weapons(player_state_t *player) {\n",
+            "            pu_swap(player->alt_weapon_id, player->weapon_id);\n",
+            "            pu_swap(player->alt_clip_size, player->clip_size);\n",
+            "            pu_swap(player->alt_reload_active, player->reload_active);\n",
+            "            pu_swap(player->alt_ammo, player->ammo);\n",
+            "            pu_swap(player->alt_reload_timer, player->reload_timer);\n",
+            "            pu_swap(player->alt_shot_cooldown, player->shot_cooldown);\n",
+            "            pu_swap(player->alt_reload_timer_max, player->reload_timer_max);\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap_weapons(player);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "angle-byvalue",
+      "sha256": "98ef66b2507fa3ca30607a533c1983f7bd262f50601c3a36c7a849ac809f59bd",
+      "scores": {
+        "raw": 0.827790973871734,
+        "labels": 0.9083135391923991,
+        "structural": 0.9099762470308789,
+        "stack": 0.9959619952494062
+      },
+      "instructions": [
+        4206,
+        4214
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 39,
+          "end": 40,
+          "replacement": [
+            "inline float VEC2_Angle (vec2_t v)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vec-copy-ctor",
+      "sha256": "8d0604c27e29ef6fcf2f3ad3aa2418a551a1559af9714b0801fcc7b9e0e70bea",
+      "scores": {
+        "raw": 0.9468931923488179,
+        "labels": 0.9965545918973506,
+        "structural": 0.9975050493049781,
+        "stack": 0.9975050493049781
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 10,
+          "end": 10,
+          "replacement": [
+            "    vec2_t(const vec2_t &v) { x=v.x; y=v.y; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vec-assignment",
+      "sha256": "21838ada727d5efcc07dffd61f445b2364725b0d0a63d832f0fd9dcfd8bbe66d",
+      "scores": {
+        "raw": 0.866904761904762,
+        "labels": 0.9735714285714285,
+        "structural": 0.9842857142857143,
+        "stack": 0.9897619047619047
+      },
+      "instructions": [
+        4206,
+        4194
+      ],
+      "refs": [
+        863,
+        0,
+        2
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 10,
+          "end": 10,
+          "replacement": [
+            "    vec2_t &operator=(const vec2_t &v) { x=v.x; y=v.y; return *this; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vec-copy-and-assignment",
+      "sha256": "f974ab1d70347a4e29c3cc5cc29069157a8f576e372e6978cd1a4258fcd4e74f",
+      "scores": {
+        "raw": 0.8654761904761905,
+        "labels": 0.9721428571428572,
+        "structural": 0.9830952380952381,
+        "stack": 0.9885714285714285
+      },
+      "instructions": [
+        4206,
+        4194
+      ],
+      "refs": [
+        860,
+        0,
+        2
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 10,
+          "end": 10,
+          "replacement": [
+            "    vec2_t &operator=(const vec2_t &v) { x=v.x; y=v.y; return *this; }\n",
+            "    vec2_t(const vec2_t &v) { x=v.x; y=v.y; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "angle-byvalue-copy",
+      "sha256": "b638e330047f9c70f69441cce116fcbd314a4d445efc2c1de859c22ba694d615",
+      "scores": {
+        "raw": 0.6476506095395905,
+        "labels": 0.6845780565747426,
+        "structural": 0.8524085690614274,
+        "stack": 0.9823647768966741
+      },
+      "instructions": [
+        4206,
+        4243
+      ],
+      "refs": [
+        744,
+        0,
+        6
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 10,
+          "end": 10,
+          "replacement": [
+            "    vec2_t(const vec2_t &v) { x=v.x; y=v.y; }\n"
+          ]
+        },
+        {
+          "start": 39,
+          "end": 40,
+          "replacement": [
+            "inline float VEC2_Angle (vec2_t v)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "angle-byvalue-assignment",
+      "sha256": "905c26e8cc5bfc3c7d9928a430a4e40d640bafb15b34561e0b46a907fe979126",
+      "scores": {
+        "raw": 0.8099488277995954,
+        "labels": 0.891348327978103,
+        "structural": 0.9025348089967868,
+        "stack": 0.9870284422230156
+      },
+      "instructions": [
+        4206,
+        4197
+      ],
+      "refs": [
+        898,
+        0,
+        2
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 10,
+          "end": 10,
+          "replacement": [
+            "    vec2_t &operator=(const vec2_t &v) { x=v.x; y=v.y; return *this; }\n"
+          ]
+        },
+        {
+          "start": 39,
+          "end": 40,
+          "replacement": [
+            "inline float VEC2_Angle (vec2_t v)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-return-value",
+      "sha256": "3648561b2c43d52c5f7060bd5cad8502903ae1e81ab43cca189d5fa635e97f98",
+      "scores": {
+        "raw": 0.9433603046168492,
+        "labels": 0.9930985245121371,
+        "structural": 0.9940504521656354,
+        "stack": 0.995478343645883
+      },
+      "instructions": [
+        4206,
+        4198
+      ],
+      "refs": [
+        913,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 166,
+          "end": 166,
+          "replacement": [
+            "}\n",
+            "\n",
+            "\n",
+            "static __inline vec2_t pu_demo_direction(player_state_t *player, const vec2_t &center) {\n",
+            "    if (VEC2_Length(*(vec2_t *)&player->position - center) > 300.0f) return *(vec2_t *)&player->position - center;\n",
+            "    return *(vec2_t *)&player->position - *(vec2_t *)&creature_pool[player->auto_target].position;\n"
+          ]
+        },
+        {
+          "start": 748,
+          "end": 755,
+          "replacement": [
+            "            vec2_t direction = pu_demo_direction(player, center);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-1",
+      "sha256": "a08ef038b638116e2f267715d38a5e80e46dfb8f721233c8a926c12f692c2ea8",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1022,
+          "end": 1023,
+          "replacement": [
+            "            { float t = player->alt_clip_size; player->alt_clip_size = player->clip_size; player->clip_size = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-3",
+      "sha256": "ba9b6bfef568a66bab51746b28ae154275d5e40a10d0fd985b026e626e81aa29",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1024,
+          "end": 1025,
+          "replacement": [
+            "            { float t = player->alt_ammo; player->alt_ammo = player->ammo; player->ammo = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-6",
+      "sha256": "b8b6e1c5d257ee1567b389f51593f480331e3f75d193c3f1e0c357361aa45bdb",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1027,
+          "end": 1028,
+          "replacement": [
+            "            { float t = player->alt_reload_timer_max; player->alt_reload_timer_max = player->reload_timer_max; player->reload_timer_max = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-13",
+      "sha256": "4f3588f5eca9225f1ed67e2ea46b330ce25f36d7fbc4ae2163e1d2280021f7cf",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1022,
+          "end": 1023,
+          "replacement": [
+            "            { float t = player->alt_clip_size; player->alt_clip_size = player->clip_size; player->clip_size = t; }\n"
+          ]
+        },
+        {
+          "start": 1024,
+          "end": 1025,
+          "replacement": [
+            "            { float t = player->alt_ammo; player->alt_ammo = player->ammo; player->ammo = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-16",
+      "sha256": "450761f33d05567c52e516e023bd098b64de2a6e903e12f5463581e532b6e573",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1022,
+          "end": 1023,
+          "replacement": [
+            "            { float t = player->alt_clip_size; player->alt_clip_size = player->clip_size; player->clip_size = t; }\n"
+          ]
+        },
+        {
+          "start": 1027,
+          "end": 1028,
+          "replacement": [
+            "            { float t = player->alt_reload_timer_max; player->alt_reload_timer_max = player->reload_timer_max; player->reload_timer_max = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-36",
+      "sha256": "2157f15100fd024d3667d8bd92b2d9b977b56c6a40191ad7c90bf37cebefbf7a",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1024,
+          "end": 1025,
+          "replacement": [
+            "            { float t = player->alt_ammo; player->alt_ammo = player->ammo; player->ammo = t; }\n"
+          ]
+        },
+        {
+          "start": 1027,
+          "end": 1028,
+          "replacement": [
+            "            { float t = player->alt_reload_timer_max; player->alt_reload_timer_max = player->reload_timer_max; player->reload_timer_max = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-136",
+      "sha256": "72e1821c79148556689f2b8bb800ffd98e0f242f921ebae4208857a900ae174f",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1022,
+          "end": 1023,
+          "replacement": [
+            "            { float t = player->alt_clip_size; player->alt_clip_size = player->clip_size; player->clip_size = t; }\n"
+          ]
+        },
+        {
+          "start": 1024,
+          "end": 1025,
+          "replacement": [
+            "            { float t = player->alt_ammo; player->alt_ammo = player->ammo; player->ammo = t; }\n"
+          ]
+        },
+        {
+          "start": 1027,
+          "end": 1028,
+          "replacement": [
+            "            { float t = player->alt_reload_timer_max; player->alt_reload_timer_max = player->reload_timer_max; player->reload_timer_max = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-named-pointers-false",
+      "sha256": "11d02a3597795078273438d0a6abc79619bc76475fb1f982ff5d5e0046108b3b",
+      "scores": {
+        "raw": 0.9465177085809365,
+        "labels": 0.9961968148324222,
+        "structural": 0.996909912051343,
+        "stack": 0.996909912051343
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            int *current_weapon = &player->weapon_id;\n",
+            "            float *current_reload = &player->reload_timer;\n",
+            "            { int t = player->alt_weapon_id; player->alt_weapon_id = *current_weapon; *current_weapon = t; }\n",
+            "            { float t = player->alt_clip_size; player->alt_clip_size = player->clip_size; player->clip_size = t; }\n",
+            "            { unsigned char t = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = t; }\n",
+            "            { float t = player->alt_ammo; player->alt_ammo = player->ammo; player->ammo = t; }\n",
+            "            { float t = player->alt_reload_timer; player->alt_reload_timer = *current_reload; *current_reload = t; }\n",
+            "            { float t = player->alt_shot_cooldown; player->alt_shot_cooldown = *shot_cooldown; *shot_cooldown = t; }\n",
+            "            { float t = player->alt_reload_timer_max; player->alt_reload_timer_max = player->reload_timer_max; player->reload_timer_max = t; }\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[*current_weapon].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-named-pointers-true",
+      "sha256": "915b1679dfbe49e42b89811724fcde88c6a2b39554d2ca65a762bd4c101368a2",
+      "scores": {
+        "raw": 0.9465177085809365,
+        "labels": 0.9961968148324222,
+        "structural": 0.996909912051343,
+        "stack": 0.996909912051343
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            int *current_weapon = &player->weapon_id;\n",
+            "            float *current_reload = &player->reload_timer;\n",
+            "            float tmp_float;\n",
+            "            int tmp_int;\n",
+            "            unsigned char tmp_byte;\n",
+            "            tmp_int = player->alt_weapon_id; player->alt_weapon_id = *current_weapon; *current_weapon = tmp_int;\n",
+            "            tmp_float = player->alt_clip_size; player->alt_clip_size = player->clip_size; player->clip_size = tmp_float;\n",
+            "            tmp_byte = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = tmp_byte;\n",
+            "            tmp_float = player->alt_ammo; player->alt_ammo = player->ammo; player->ammo = tmp_float;\n",
+            "            tmp_float = player->alt_reload_timer; player->alt_reload_timer = *current_reload; *current_reload = tmp_float;\n",
+            "            tmp_float = player->alt_shot_cooldown; player->alt_shot_cooldown = *shot_cooldown; *shot_cooldown = tmp_float;\n",
+            "            tmp_float = player->alt_reload_timer_max; player->alt_reload_timer_max = player->reload_timer_max; player->reload_timer_max = tmp_float;\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[*current_weapon].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target-pointer-9",
+      "sha256": "da49d9f99212b2406ebec7290a104979cf766c088e3f7f7a4cad10b024a1287d",
+      "scores": {
+        "raw": 0.8139783668132652,
+        "labels": 0.8605729228574824,
+        "structural": 0.9925115892071794,
+        "stack": 0.9960774991085225
+      },
+      "instructions": [
+        4206,
+        4207
+      ],
+      "refs": [
+        763,
+        0,
+        3
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        creature_t *target = &creature_pool[player->auto_target];\n"
+          ]
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!target->active\n",
+            "            || target->health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&target->position);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target-pointer-10",
+      "sha256": "eea10a4886cb4850a2fd6f2ea61a764b67e54276b52a013657ce557b4034cf9d",
+      "scores": {
+        "raw": 0.8139783668132652,
+        "labels": 0.8605729228574824,
+        "structural": 0.9925115892071794,
+        "stack": 0.9960774991085225
+      },
+      "instructions": [
+        4206,
+        4207
+      ],
+      "refs": [
+        763,
+        0,
+        3
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        creature_t *target = creature_pool + player->auto_target;\n"
+          ]
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!target->active\n",
+            "            || target->health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&target->position);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-member-angle",
+      "sha256": "66ac940b0009dc5f9740c64c310596fdb6c88f809b5a33b00cebca34513fb8d4",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 9,
+          "end": 9,
+          "replacement": [
+            "    inline float angle() const { return atan2f(y, x); }\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            movement_heading = direction.angle() - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-compound-angle",
+      "sha256": "7209d91b334b37597c2c4a4b92c9fee3369b1b7e67fa279a6f1e5bce507fc395",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            movement_heading = VEC2_Angle(direction);\n",
+            "            movement_heading -= 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-assign-address",
+      "sha256": "fba28be96fa94d4953b109a921ede0a585fb5a8cbed75981109bf3938f90043a",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 749,
+          "end": 749,
+          "replacement": [
+            "            vec2_t *direction_ptr = &direction;\n"
+          ]
+        },
+        {
+          "start": 750,
+          "end": 751,
+          "replacement": [
+            "                *direction_ptr = *(vec2_t *)&player->position - center;\n"
+          ]
+        },
+        {
+          "start": 752,
+          "end": 753,
+          "replacement": [
+            "                *direction_ptr = *(vec2_t *)&player->position\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            movement_heading = VEC2_Angle(*direction_ptr) - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-0",
+      "sha256": "2765eb4b3822685f41e4e8747aa77c82f7e97608dabaaefc76fdef8d5c0cfa19",
+      "scores": {
+        "raw": 0.938212927756654,
+        "labels": 0.9893060836501901,
+        "structural": 0.9961977186311787,
+        "stack": 0.9961977186311787
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1021,
+          "end": 1022,
+          "replacement": [
+            "            { int t = player->alt_weapon_id; player->alt_weapon_id = player->weapon_id; player->weapon_id = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-2",
+      "sha256": "43273a5496cbfbb8efde3079b73ff73058789856338c2d5f3a0f26a2b71caa28",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1023,
+          "end": 1024,
+          "replacement": [
+            "            { unsigned char t = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-4",
+      "sha256": "1d7bc5d3b422807b6740c523950da4267cf476167ec8ccb058cb54f39027860a",
+      "scores": {
+        "raw": 0.9472433460076045,
+        "labels": 0.9969106463878327,
+        "structural": 0.9976235741444867,
+        "stack": 0.9976235741444867
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1025,
+          "end": 1026,
+          "replacement": [
+            "            { float t = player->alt_reload_timer; player->alt_reload_timer = player->reload_timer; player->reload_timer = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-5",
+      "sha256": "9f4a86c0e5fe71340d8f6162eaade3ae65304eddc828bb9485ade36e9a00cc64",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            { float t = player->alt_shot_cooldown; player->alt_shot_cooldown = *shot_cooldown; *shot_cooldown = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-02",
+      "sha256": "0bd2a72b06e51c66dc5f69ce58cd658e37f0878d3a020f36904b423cfcf3bcae",
+      "scores": {
+        "raw": 0.938212927756654,
+        "labels": 0.9893060836501901,
+        "structural": 0.9961977186311787,
+        "stack": 0.9961977186311787
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1021,
+          "end": 1022,
+          "replacement": [
+            "            { int t = player->alt_weapon_id; player->alt_weapon_id = player->weapon_id; player->weapon_id = t; }\n"
+          ]
+        },
+        {
+          "start": 1023,
+          "end": 1024,
+          "replacement": [
+            "            { unsigned char t = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-24",
+      "sha256": "959063d7c6abfdb836ed1b42ccf2fdb672817041b7f96fe79a5ab510887435c7",
+      "scores": {
+        "raw": 0.9472433460076045,
+        "labels": 0.9969106463878327,
+        "structural": 0.9976235741444867,
+        "stack": 0.9976235741444867
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1023,
+          "end": 1024,
+          "replacement": [
+            "            { unsigned char t = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = t; }\n"
+          ]
+        },
+        {
+          "start": 1025,
+          "end": 1026,
+          "replacement": [
+            "            { float t = player->alt_reload_timer; player->alt_reload_timer = player->reload_timer; player->reload_timer = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-25",
+      "sha256": "c42ad5b7598784877152403f715ee0f2e910f7b251177225c7279ad071e178a5",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1023,
+          "end": 1024,
+          "replacement": [
+            "            { unsigned char t = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = t; }\n"
+          ]
+        },
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            { float t = player->alt_shot_cooldown; player->alt_shot_cooldown = *shot_cooldown; *shot_cooldown = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-45",
+      "sha256": "2f6d51c125a01a39a47ad4832f799bb1807262e472899a5c788f597ea1fd0d25",
+      "scores": {
+        "raw": 0.9431899215593059,
+        "labels": 0.9942952222486332,
+        "structural": 0.9973853101972903,
+        "stack": 0.9973853101972903
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1025,
+          "end": 1027,
+          "replacement": [
+            "            { float t = player->alt_reload_timer; player->alt_reload_timer = player->reload_timer; player->reload_timer = t; }\n",
+            "            { float t = player->alt_shot_cooldown; player->alt_shot_cooldown = *shot_cooldown; *shot_cooldown = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-direct-245",
+      "sha256": "3fdc552523c6e40b2ac40c9be4c13cefea61e911549eb6edb8702907159bdb96",
+      "scores": {
+        "raw": 0.9431899215593059,
+        "labels": 0.9942952222486332,
+        "structural": 0.9973853101972903,
+        "stack": 0.9973853101972903
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1023,
+          "end": 1024,
+          "replacement": [
+            "            { unsigned char t = player->alt_reload_active; player->alt_reload_active = player->reload_active; player->reload_active = t; }\n"
+          ]
+        },
+        {
+          "start": 1025,
+          "end": 1027,
+          "replacement": [
+            "            { float t = player->alt_reload_timer; player->alt_reload_timer = player->reload_timer; player->reload_timer = t; }\n",
+            "            { float t = player->alt_shot_cooldown; player->alt_shot_cooldown = *shot_cooldown; *shot_cooldown = t; }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-pointer-weapon_id",
+      "sha256": "94f6a78a7e2b1b66530946ee7bd6ebad7f797b63deaf950dc9656d2cf04c02a6",
+      "scores": {
+        "raw": 0.938212927756654,
+        "labels": 0.9893060836501901,
+        "structural": 0.9961977186311787,
+        "stack": 0.9961977186311787
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1021,
+          "end": 1022,
+          "replacement": [
+            "            int *current_field = &player->weapon_id;\n",
+            "            pu_swap(player->alt_weapon_id, *current_field);\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[*current_field].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-pointer-reload_timer",
+      "sha256": "94404e649f217414ba307b99eb142b8c2ff5d3fab890ef08ccc8eea9f24e71ef",
+      "scores": {
+        "raw": 0.9435799976244209,
+        "labels": 0.9932295997149305,
+        "structural": 0.997030526190759,
+        "stack": 0.997030526190759
+      },
+      "instructions": [
+        4206,
+        4213
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1021,
+          "end": 1021,
+          "replacement": [
+            "            float *current_field = &player->reload_timer;\n"
+          ]
+        },
+        {
+          "start": 1025,
+          "end": 1026,
+          "replacement": [
+            "            pu_swap(player->alt_reload_timer, *current_field);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-pointer-shot_cooldown",
+      "sha256": "13c80c0e857254873b551921dff41f882fe5b16670f592927d17591a273a6ed3",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            pu_swap(player->alt_shot_cooldown, *shot_cooldown);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-direction-outer",
+      "sha256": "e7d18b90a5e9c54d9e2da899f38159c0701e46d79bfe628bc40e0f7398607df8",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 743,
+          "end": 743,
+          "replacement": [
+            "        vec2_t direction;\n"
+          ]
+        },
+        {
+          "start": 748,
+          "end": 749,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "demo-heading-double",
+      "sha256": "4fa9fbebc823a9c447c65a138d6d52eb635bca44047da2a942db18de64dc1b5b",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 742,
+          "end": 742,
+          "replacement": [
+            "        double demo_heading;\n"
+          ]
+        },
+        {
+          "start": 745,
+          "end": 746,
+          "replacement": [
+            "            demo_heading =\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            demo_heading = VEC2_Angle(direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 757,
+          "end": 757,
+          "replacement": [
+            "\n",
+            "        movement_heading = (float)demo_heading;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-arm-angle",
+      "sha256": "c3087b1c06ff101223454bf75914531bc89033bf9781acfff91ae70e354c225a",
+      "scores": {
+        "raw": 0.9456017140816569,
+        "labels": 0.995357695512439,
+        "structural": 0.997262230686823,
+        "stack": 0.997262230686823
+      },
+      "instructions": [
+        4206,
+        4195
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 751,
+          "end": 751,
+          "replacement": [
+            "                movement_heading = VEC2_Angle(direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 754,
+          "end": 754,
+          "replacement": [
+            "                movement_heading = VEC2_Angle(direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-arm-local-angle",
+      "sha256": "90ab013da682a17ef63991ea3753a8f74e572558c3eb2a2cd9af9b5b32c7e20a",
+      "scores": {
+        "raw": 0.9451255802880609,
+        "labels": 0.994881561718843,
+        "structural": 0.996786096893227,
+        "stack": 0.997262230686823
+      },
+      "instructions": [
+        4206,
+        4195
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 748,
+          "end": 749,
+          "replacement": []
+        },
+        {
+          "start": 750,
+          "end": 751,
+          "replacement": [
+            "                vec2_t direction = *(vec2_t *)&player->position - center;\n",
+            "                movement_heading = VEC2_Angle(direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 752,
+          "end": 753,
+          "replacement": [
+            "                vec2_t direction = *(vec2_t *)&player->position\n"
+          ]
+        },
+        {
+          "start": 754,
+          "end": 754,
+          "replacement": [
+            "                movement_heading = VEC2_Angle(direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-arm-expression-angle",
+      "sha256": "15d2cc4579bf649703a0dc479259080aa15ad1e633fc76439a22df9a0ea86b70",
+      "scores": {
+        "raw": 0.9451255802880609,
+        "labels": 0.994881561718843,
+        "structural": 0.996786096893227,
+        "stack": 0.997262230686823
+      },
+      "instructions": [
+        4206,
+        4195
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 748,
+          "end": 749,
+          "replacement": []
+        },
+        {
+          "start": 750,
+          "end": 751,
+          "replacement": [
+            "                movement_heading = VEC2_Angle(*(vec2_t *)&player->position - center) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 752,
+          "end": 754,
+          "replacement": [
+            "                movement_heading = VEC2_Angle(*(vec2_t *)&player->position - *(vec2_t *)&creature_pool[player->auto_target].position) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "demo-selected-offset",
+      "sha256": "f235e6ea4499f6940a9f88641e3b5f35034f6ab85aa5935750e323b439fe84db",
+      "scores": {
+        "raw": 0.8857991681521094,
+        "labels": 0.9670825906120024,
+        "structural": 0.9884729649435532,
+        "stack": 0.9956030897207367
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        876,
+        0,
+        4
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 743,
+          "end": 747,
+          "replacement": [
+            "        vec2_t direction;\n",
+            "        float heading_offset;\n",
+            "        if (player->auto_target < 0 || creature_pool[player->auto_target].health <= 0.0f) {\n",
+            "            direction = *(vec2_t *)&player->position - center;\n",
+            "            heading_offset = -3.1415927f;\n"
+          ]
+        },
+        {
+          "start": 748,
+          "end": 749,
+          "replacement": []
+        },
+        {
+          "start": 752,
+          "end": 754,
+          "replacement": [
+            "                direction = *(vec2_t *)&player->position - *(vec2_t *)&creature_pool[player->auto_target].position;\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            heading_offset = 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 757,
+          "end": 757,
+          "replacement": [
+            "        movement_heading = VEC2_Angle(direction) - heading_offset;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-selected-offset-double",
+      "sha256": "514af0c76641ea224d50c73c4c0092579cb64024ba27be9d8a52ff9eee0e5ca8",
+      "scores": {
+        "raw": 0.8857991681521094,
+        "labels": 0.9670825906120024,
+        "structural": 0.9884729649435532,
+        "stack": 0.9956030897207367
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        876,
+        0,
+        4
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 743,
+          "end": 747,
+          "replacement": [
+            "        vec2_t direction;\n",
+            "        double heading_offset;\n",
+            "        if (player->auto_target < 0 || creature_pool[player->auto_target].health <= 0.0f) {\n",
+            "            direction = *(vec2_t *)&player->position - center;\n",
+            "            heading_offset = -3.1415927f;\n"
+          ]
+        },
+        {
+          "start": 748,
+          "end": 749,
+          "replacement": []
+        },
+        {
+          "start": 752,
+          "end": 754,
+          "replacement": [
+            "                direction = *(vec2_t *)&player->position - *(vec2_t *)&creature_pool[player->auto_target].position;\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            heading_offset = 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 757,
+          "end": 757,
+          "replacement": [
+            "        movement_heading = VEC2_Angle(direction) - heading_offset;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normal-inline-predicate",
+      "sha256": "a78e5e165c393cecf5988371a36e8c170b2966ee164f7fe364ac687f198e394d",
+      "scores": {
+        "raw": 0.9489189831313851,
+        "labels": 0.9985744832501782,
+        "structural": 0.9985744832501782,
+        "stack": 0.9985744832501782
+      },
+      "instructions": [
+        4206,
+        4212
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 166,
+          "end": 166,
+          "replacement": [
+            "}\n",
+            "\n",
+            "static __inline bool pu_normal_fire_ready(player_state_t *p, const float *cooldown) {\n",
+            "    if (*cooldown <= 0.0f && p->reload_timer == 0.0f) {\n",
+            "        p->reload_active = 0;\n",
+            "        return true;\n",
+            "    }\n",
+            "    return false;\n"
+          ]
+        },
+        {
+          "start": 1002,
+          "end": 1003,
+          "replacement": [
+            "    normal_fire_ready = pu_normal_fire_ready(player, shot_cooldown);\n"
+          ]
+        },
+        {
+          "start": 1004,
+          "end": 1008,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "normal-inline-result",
+      "sha256": "9b4a5094357d859bbe95fd27b8fc2ae93524c2975c34094a0a459b58d3430737",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 166,
+          "end": 166,
+          "replacement": [
+            "}\n",
+            "\n",
+            "static __inline bool pu_normal_fire_ready(player_state_t *p, const float *cooldown) {\n",
+            "    bool result = false;\n",
+            "    if (*cooldown <= 0.0f && p->reload_timer == 0.0f) {\n",
+            "        p->reload_active = 0;\n",
+            "        result = true;\n",
+            "    }\n",
+            "    return result;\n"
+          ]
+        },
+        {
+          "start": 1002,
+          "end": 1003,
+          "replacement": [
+            "    normal_fire_ready = pu_normal_fire_ready(player, shot_cooldown);\n"
+          ]
+        },
+        {
+          "start": 1004,
+          "end": 1008,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "target-reuse-loop-index",
+      "sha256": "77ba39ee18f997d31316818d6e2e4d91c9508e31ba8b9b96d7707914a6608b37",
+      "scores": {
+        "raw": 0.9336977186311787,
+        "labels": 0.9933460076045627,
+        "structural": 0.9940589353612167,
+        "stack": 0.9945342205323194
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        917,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        int creature_index = player->auto_target;\n"
+          ]
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!creature_pool[creature_index].active\n",
+            "            || creature_pool[creature_index].health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&creature_pool[creature_index].position);\n"
+          ]
+        },
+        {
+          "start": 438,
+          "end": 439,
+          "replacement": [
+            "        creature_index = 0;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target-reuse-loop-index-outer",
+      "sha256": "4b32207b69ba3f45519cdfc58003ce34d0798ae070d4d213afc47e5530c679c4",
+      "scores": {
+        "raw": 0.9336977186311787,
+        "labels": 0.9933460076045627,
+        "structural": 0.9940589353612167,
+        "stack": 0.9945342205323194
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        917,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 170,
+          "end": 170,
+          "replacement": [
+            "    int creature_index;\n"
+          ]
+        },
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        creature_index = player->auto_target;\n"
+          ]
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!creature_pool[creature_index].active\n",
+            "            || creature_pool[creature_index].health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&creature_pool[creature_index].position);\n"
+          ]
+        },
+        {
+          "start": 438,
+          "end": 439,
+          "replacement": [
+            "        creature_index = 0;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target-accessor",
+      "sha256": "bbf9302ad1bdf2533c6b67c4c2e0006e8e1b90f2a51b66047638f2c0a1d102d1",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "static __inline creature_t &pu_creature(int index) { return creature_pool[index]; }\n"
+          ]
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!pu_creature(target_index).active\n",
+            "            || pu_creature(target_index).health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&pu_creature(target_index).position);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flags-chain-normal_fire_ready",
+      "sha256": "e8ea1eccfd41aec72bfdc9e16079825d501711a0f212b561824ec996837238d7",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1002,
+          "end": 1004,
+          "replacement": [
+            "    normal_fire_ready = perk_fire_ready = false;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flags-chain-perk_fire_ready",
+      "sha256": "f9f32178a50ac94beb6f5a59dbf9614c8aee86769616d3c5f151c6249eb8ded9",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1002,
+          "end": 1004,
+          "replacement": [
+            "    perk_fire_ready = normal_fire_ready = false;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cooldown-reference-all",
+      "sha256": "46679ac0c70f8c991d5ee5a77cb67e12c7e360c26a979d30f1400079f6139c80",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": [
+            "    float &shot_cooldown = player->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1004,
+          "end": 1005,
+          "replacement": [
+            "    if (shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1008,
+          "end": 1009,
+          "replacement": [
+            "    if (shot_cooldown <= 0.0f\n"
+          ]
+        },
+        {
+          "start": 1033,
+          "end": 1034,
+          "replacement": [
+            "            shot_cooldown = shot_cooldown + 0.1f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "cooldown-before-aim-controller",
+      "sha256": "a7bbae0c49d3fc3d19779812d318f46982663db0aa29877b9bf2d6e81e001a83",
+      "scores": {
+        "raw": 0.8924795057621481,
+        "labels": 0.9756445289295473,
+        "structural": 0.9756445289295473,
+        "stack": 0.9758821432814542
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        901,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 884,
+          "end": 884,
+          "replacement": [
+            "    float *shot_cooldown = &player->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "cooldown-before-aim-angle",
+      "sha256": "6a23fa9479fd8f3f4fa68561f37e66813fe016b5a282242691e0a181e59c50a9",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 996,
+          "end": 996,
+          "replacement": [
+            "    float *shot_cooldown = &player->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "cooldown-before-player",
+      "sha256": "fc1de324ab8217c61002a480d89bc0de15846ae5b3033d4792677e57f8514706",
+      "scores": {
+        "raw": 0.7435775451950524,
+        "labels": 0.8353948620361561,
+        "structural": 0.8370599429115129,
+        "stack": 0.9733587059942912
+      },
+      "instructions": [
+        4206,
+        4202
+      ],
+      "refs": [
+        883,
+        0,
+        4
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 193,
+          "end": 193,
+          "replacement": [
+            "    float *shot_cooldown = &player->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "swap-const-temp",
+      "sha256": "935b575aa4907ccdd21efe7ff9cd9e6171fbc89546babe6423ef0f8ee82e7c68",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 125,
+          "end": 126,
+          "replacement": [
+            "    const T t = a;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-overload-1",
+      "sha256": "792243754b52013f775c06f158a0da04319b29882c0f0c462ce820febf09a1e6",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 126,
+          "end": 126,
+          "replacement": [
+            "    a = b;\n",
+            "    b = t;\n",
+            "}\n",
+            "inline void pu_swap(float &a, float &b)\n",
+            "{\n",
+            "    float t = a;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-overload-3",
+      "sha256": "219148d68f021a1a2d66caae0fdae5cd2e79df85a53a30edce7b01c98ef2715b",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 126,
+          "end": 126,
+          "replacement": [
+            "    a = b;\n",
+            "    b = t;\n",
+            "}\n",
+            "inline void pu_swap(int &a, int &b)\n",
+            "{\n",
+            "    int t = a;\n",
+            "    a = b;\n",
+            "    b = t;\n",
+            "}\n",
+            "inline void pu_swap(unsigned char &a, unsigned char &b)\n",
+            "{\n",
+            "    unsigned char t = a;\n",
+            "    a = b;\n",
+            "    b = t;\n",
+            "}\n",
+            "inline void pu_swap(float &a, float &b)\n",
+            "{\n",
+            "    float t = a;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-angle-out-pointer",
+      "sha256": "82954bfd2e8a2e1d80cd9f017153b183c202d64cde28d3759eebbdb848e5b655",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "inline void pu_angle(const vec2_t &v, float *angle) { *angle = atan2f(v.y, v.x); }\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            pu_angle(direction, &movement_heading);\n",
+            "            movement_heading -= 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo-angle-out-reference",
+      "sha256": "17ea83c44138bbc7fa2f8d166743e271e4f5f2a844a29694b4321bc7cfc2b4a3",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "inline void pu_angle(const vec2_t &v, float &angle) { angle = atan2f(v.y, v.x); }\n"
+          ]
+        },
+        {
+          "start": 755,
+          "end": 756,
+          "replacement": [
+            "            pu_angle(direction, movement_heading);\n",
+            "            movement_heading -= 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-return-a-field",
+      "sha256": "7322e46db84bd4e5ca8f0c3a0774e684554cafc18c05e00c270ec092644c802a",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline T & pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "    return a;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-return-a-pointer",
+      "sha256": "ae1ed336ffcc6c1f791be2fc85c7067cb38893a016a2f17abd1bff44c7a4cbad",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline T & pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "    return a;\n"
+          ]
+        },
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            pu_swap(player->alt_shot_cooldown, *shot_cooldown);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-return-b-field",
+      "sha256": "85cd521dd300463e8580f12640aeb16c7af74c02d0330589dca0b66eab365a08",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline T & pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "    return b;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-return-b-pointer",
+      "sha256": "a049f420b0d20e53f9428535292d30a942ed8568af154adb55b7e32bf8fbd3de",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline T & pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "    return b;\n"
+          ]
+        },
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            pu_swap(player->alt_shot_cooldown, *shot_cooldown);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-return-t-field",
+      "sha256": "c1b3fd5c30b50b04b919a607b7dbeda638c6537707890b98fd72a3edcb01b9a3",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline T pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "    return t;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-return-t-pointer",
+      "sha256": "bafc8818ef076e78e22516b9a2eea9e55494b4dbfd8de645d93b189b57635803",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline T pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 128,
+          "end": 128,
+          "replacement": [
+            "    return t;\n"
+          ]
+        },
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            pu_swap(player->alt_shot_cooldown, *shot_cooldown);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-fastcall-field",
+      "sha256": "04e2cedc40f013363c4cfda16995b8f068c9d3a7198dcd768fc630ad26c71ab3",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline void __fastcall pu_swap(T &a, T &b)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-fastcall-pointer",
+      "sha256": "10d0acf3797a24fcdd1f2ca60348a6943a49683bd98609f067111893447d8cf4",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline void __fastcall pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            pu_swap(player->alt_shot_cooldown, *shot_cooldown);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-stdcall-field",
+      "sha256": "9e423c6733b8155259a5bd9c175f9ba7152a65cb187b02a24bbdafca5846acca",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline void __stdcall pu_swap(T &a, T &b)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap-stdcall-pointer",
+      "sha256": "2cefd238456b8c4aae4123b3179d51f833a879ec58a435bf3fb31775085a0d94",
+      "scores": {
+        "raw": 0.9440285204991087,
+        "labels": 0.9951277480689246,
+        "structural": 0.9982174688057041,
+        "stack": 0.9982174688057041
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 123,
+          "end": 124,
+          "replacement": [
+            "template <class T> inline void __stdcall pu_swap(T &a, T &b)\n"
+          ]
+        },
+        {
+          "start": 1026,
+          "end": 1027,
+          "replacement": [
+            "            pu_swap(player->alt_shot_cooldown, *shot_cooldown);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weapon-owner-all",
+      "sha256": "ae94762cdde4e9b68f6f8093a40a9779e97163a68fa8ff972d5c78bd848bfe5d",
+      "scores": {
+        "raw": 0.9477186311787072,
+        "labels": 0.9973859315589354,
+        "structural": 0.9980988593155894,
+        "stack": 0.9980988593155894
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 168,
+          "end": 168,
+          "replacement": [
+            "struct pu_weapon_state {\n",
+            "    int weapon_id;\n",
+            "    float clip_size;\n",
+            "    unsigned char reload_active;\n",
+            "    float ammo;\n",
+            "    float reload_timer;\n",
+            "    float shot_cooldown;\n",
+            "    float reload_timer_max;\n",
+            "};\n",
+            "typedef char pu_weapon_state_size[(sizeof(pu_weapon_state) == 28) ? 1 : -1];\n",
+            "\n"
+          ]
+        },
+        {
+          "start": 233,
+          "end": 234,
+          "replacement": [
+            "        ((pu_weapon_state *)&player->weapon_id)->shot_cooldown = ((pu_weapon_state *)&player->weapon_id)->shot_cooldown - frame_dt * 1.5f;\n"
+          ]
+        },
+        {
+          "start": 235,
+          "end": 236,
+          "replacement": [
+            "        ((pu_weapon_state *)&player->weapon_id)->shot_cooldown = ((pu_weapon_state *)&player->weapon_id)->shot_cooldown - frame_dt;\n"
+          ]
+        },
+        {
+          "start": 237,
+          "end": 239,
+          "replacement": [
+            "    if (((pu_weapon_state *)&player->weapon_id)->shot_cooldown < 0.0f) {\n",
+            "        ((pu_weapon_state *)&player->weapon_id)->shot_cooldown = 0.0f;\n"
+          ]
+        },
+        {
+          "start": 810,
+          "end": 814,
+          "replacement": [
+            "        && ((pu_weapon_state *)&player->weapon_id)->reload_timer > 0.0f) {\n",
+            "        ((pu_weapon_state *)&player->weapon_id)->reload_timer = ((pu_weapon_state *)&player->weapon_id)->reload_timer - 0.05f;\n",
+            "        if (((pu_weapon_state *)&player->weapon_id)->reload_timer <= 0.0f) {\n",
+            "            ((pu_weapon_state *)&player->weapon_id)->reload_timer = frame_dt * 0.8f;\n"
+          ]
+        },
+        {
+          "start": 817,
+          "end": 820,
+          "replacement": [
+            "    if (((pu_weapon_state *)&player->weapon_id)->reload_timer - frame_dt < 0.0f\n",
+            "        && ((pu_weapon_state *)&player->weapon_id)->reload_timer > 0.0f) {\n",
+            "        ((pu_weapon_state *)&player->weapon_id)->ammo = ((pu_weapon_state *)&player->weapon_id)->clip_size;\n"
+          ]
+        },
+        {
+          "start": 834,
+          "end": 839,
+          "replacement": [
+            "        && ((pu_weapon_state *)&player->weapon_id)->reload_timer_max > 0.5f) {\n",
+            "        float half_reload = ((pu_weapon_state *)&player->weapon_id)->reload_timer_max * 0.5f;\n",
+            "        if (half_reload < ((pu_weapon_state *)&player->weapon_id)->reload_timer) {\n",
+            "            ((pu_weapon_state *)&player->weapon_id)->reload_timer = ((pu_weapon_state *)&player->weapon_id)->reload_timer - reload_scale * frame_dt;\n",
+            "            if (((pu_weapon_state *)&player->weapon_id)->reload_timer <= half_reload) {\n"
+          ]
+        },
+        {
+          "start": 848,
+          "end": 849,
+          "replacement": [
+            "                        7 - (int)(((pu_weapon_state *)&player->weapon_id)->reload_timer_max * -4.0f);\n"
+          ]
+        },
+        {
+          "start": 865,
+          "end": 866,
+          "replacement": [
+            "            ((pu_weapon_state *)&player->weapon_id)->reload_timer = ((pu_weapon_state *)&player->weapon_id)->reload_timer - reload_scale * frame_dt;\n"
+          ]
+        },
+        {
+          "start": 868,
+          "end": 869,
+          "replacement": [
+            "        ((pu_weapon_state *)&player->weapon_id)->reload_timer = ((pu_weapon_state *)&player->weapon_id)->reload_timer - reload_scale * frame_dt;\n"
+          ]
+        },
+        {
+          "start": 871,
+          "end": 873,
+          "replacement": [
+            "    if (((pu_weapon_state *)&player->weapon_id)->reload_timer < 0.0f) {\n",
+            "        ((pu_weapon_state *)&player->weapon_id)->reload_timer = 0.0f;\n"
+          ]
+        },
+        {
+          "start": 879,
+          "end": 880,
+          "replacement": [
+            "        && ((pu_weapon_state *)&player->weapon_id)->reload_timer == 0.0f\n"
+          ]
+        },
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": [
+            "    float *shot_cooldown = &((pu_weapon_state *)&player->weapon_id)->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1004,
+          "end": 1005,
+          "replacement": [
+            "    if (*shot_cooldown <= 0.0f && ((pu_weapon_state *)&player->weapon_id)->reload_timer == 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1006,
+          "end": 1007,
+          "replacement": [
+            "        ((pu_weapon_state *)&player->weapon_id)->reload_active = 0;\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->weapon_id, ((pu_weapon_state *)&player->weapon_id)->weapon_id);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->clip_size, ((pu_weapon_state *)&player->weapon_id)->clip_size);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_active, ((pu_weapon_state *)&player->weapon_id)->reload_active);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->ammo, ((pu_weapon_state *)&player->weapon_id)->ammo);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_timer, ((pu_weapon_state *)&player->weapon_id)->reload_timer);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->shot_cooldown, ((pu_weapon_state *)&player->weapon_id)->shot_cooldown);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_timer_max, ((pu_weapon_state *)&player->weapon_id)->reload_timer_max);\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].reload_sfx_id,\n"
+          ]
+        },
+        {
+          "start": 1049,
+          "end": 1050,
+          "replacement": [
+            "                if (weapon_ammo_class[((pu_weapon_state *)&player->weapon_id)->weapon_id].ammo_class == 1) {\n"
+          ]
+        },
+        {
+          "start": 1051,
+          "end": 1052,
+          "replacement": [
+            "                        - weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].reload_time * 4.0f;\n"
+          ]
+        },
+        {
+          "start": 1054,
+          "end": 1055,
+          "replacement": [
+            "                        - weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].reload_time * 200.0f;\n"
+          ]
+        },
+        {
+          "start": 1057,
+          "end": 1058,
+          "replacement": [
+            "                if (weapon_ammo_class[((pu_weapon_state *)&player->weapon_id)->weapon_id].ammo_class == 1) {\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "        if ((weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].flags & 1) != 0) {\n"
+          ]
+        },
+        {
+          "start": 1142,
+          "end": 1144,
+          "replacement": [
+            "            if (weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].pellet_count == 1) {\n",
+            "                ((pu_weapon_state *)&player->weapon_id)->shot_cooldown =\n"
+          ]
+        },
+        {
+          "start": 1148,
+          "end": 1150,
+          "replacement": [
+            "                ((pu_weapon_state *)&player->weapon_id)->shot_cooldown =\n",
+            "                    weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1151,
+          "end": 1152,
+          "replacement": [
+            "                    + weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].spread_heat;\n"
+          ]
+        },
+        {
+          "start": 1155,
+          "end": 1156,
+          "replacement": [
+            "                 pellet_index < weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].pellet_count;\n"
+          ]
+        },
+        {
+          "start": 1180,
+          "end": 1182,
+          "replacement": [
+            "            ((pu_weapon_state *)&player->weapon_id)->shot_cooldown =\n",
+            "                weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1183,
+          "end": 1184,
+          "replacement": [
+            "                + weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].spread_heat;\n"
+          ]
+        },
+        {
+          "start": 1186,
+          "end": 1188,
+          "replacement": [
+            "                        % weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].shot_sfx_variant_count\n",
+            "                    + weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].shot_sfx_base_id,\n"
+          ]
+        },
+        {
+          "start": 1191,
+          "end": 1192,
+          "replacement": [
+            "            if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_SHRINKIFIER_5K) {\n"
+          ]
+        },
+        {
+          "start": 1221,
+          "end": 1222,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PISTOL) {\n"
+          ]
+        },
+        {
+          "start": 1251,
+          "end": 1252,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ASSAULT_RIFLE) {\n"
+          ]
+        },
+        {
+          "start": 1281,
+          "end": 1282,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_SHOTGUN) {\n"
+          ]
+        },
+        {
+          "start": 1318,
+          "end": 1319,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_JACKHAMMER) {\n"
+          ]
+        },
+        {
+          "start": 1341,
+          "end": 1342,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_SAWED_OFF_SHOTGUN) {\n"
+          ]
+        },
+        {
+          "start": 1378,
+          "end": 1379,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_FLAMETHROWER) {\n"
+          ]
+        },
+        {
+          "start": 1387,
+          "end": 1388,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_HR_FLAMER) {\n"
+          ]
+        },
+        {
+          "start": 1399,
+          "end": 1400,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_BLOW_TORCH) {\n"
+          ]
+        },
+        {
+          "start": 1411,
+          "end": 1412,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_SUBMACHINE_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1441,
+          "end": 1442,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PLASMA_RIFLE) {\n"
+          ]
+        },
+        {
+          "start": 1449,
+          "end": 1450,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_MULTI_PLASMA) {\n"
+          ]
+        },
+        {
+          "start": 1485,
+          "end": 1486,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PULSE_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1493,
+          "end": 1494,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_BLADE_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1501,
+          "end": 1502,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_SPLITTER_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1509,
+          "end": 1510,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ION_RIFLE) {\n"
+          ]
+        },
+        {
+          "start": 1517,
+          "end": 1518,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ION_MINIGUN) {\n"
+          ]
+        },
+        {
+          "start": 1525,
+          "end": 1526,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ION_CANNON) {\n"
+          ]
+        },
+        {
+          "start": 1533,
+          "end": 1534,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PLASMA_CANNON) {\n"
+          ]
+        },
+        {
+          "start": 1541,
+          "end": 1542,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ION_SHOTGUN) {\n"
+          ]
+        },
+        {
+          "start": 1555,
+          "end": 1556,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PLASMA_MINIGUN) {\n"
+          ]
+        },
+        {
+          "start": 1563,
+          "end": 1564,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_GAUSS_SHOTGUN) {\n"
+          ]
+        },
+        {
+          "start": 1600,
+          "end": 1601,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_GAUSS_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1630,
+          "end": 1631,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ROCKET_LAUNCHER) {\n"
+          ]
+        },
+        {
+          "start": 1656,
+          "end": 1657,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_MINI_ROCKET_SWARMERS) {\n"
+          ]
+        },
+        {
+          "start": 1680,
+          "end": 1681,
+          "replacement": [
+            "                rocket_step = ((pu_weapon_state *)&player->weapon_id)->ammo * 1.0471976f;\n"
+          ]
+        },
+        {
+          "start": 1682,
+          "end": 1683,
+          "replacement": [
+            "                    - rocket_step * ((pu_weapon_state *)&player->weapon_id)->ammo * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 1684,
+          "end": 1685,
+          "replacement": [
+            "                if (0.0f < ((pu_weapon_state *)&player->weapon_id)->ammo) {\n"
+          ]
+        },
+        {
+          "start": 1689,
+          "end": 1690,
+          "replacement": [
+            "                    } while ((float)rocket_count < ((pu_weapon_state *)&player->weapon_id)->ammo);\n"
+          ]
+        },
+        {
+          "start": 1691,
+          "end": 1693,
+          "replacement": [
+            "                scalar = ((pu_weapon_state *)&player->weapon_id)->ammo;\n",
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_ROCKET_MINIGUN) {\n"
+          ]
+        },
+        {
+          "start": 1704,
+          "end": 1705,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_SEEKER_ROCKETS) {\n"
+          ]
+        },
+        {
+          "start": 1730,
+          "end": 1731,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_MEAN_MINIGUN) {\n"
+          ]
+        },
+        {
+          "start": 1738,
+          "end": 1739,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PLASMA_SHOTGUN) {\n"
+          ]
+        },
+        {
+          "start": 1752,
+          "end": 1753,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_PLAGUE_SPREADER_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1760,
+          "end": 1761,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_RAINBOW_GUN) {\n"
+          ]
+        },
+        {
+          "start": 1768,
+          "end": 1769,
+          "replacement": [
+            "            } else if (((pu_weapon_state *)&player->weapon_id)->weapon_id == WEAPON_ID_BUBBLEGUN) {\n"
+          ]
+        },
+        {
+          "start": 1780,
+          "end": 1781,
+          "replacement": [
+            "                    + weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].spread_heat * 1.3f;\n"
+          ]
+        },
+        {
+          "start": 1783,
+          "end": 1784,
+          "replacement": [
+            "                ((pu_weapon_state *)&player->weapon_id)->ammo = ((pu_weapon_state *)&player->weapon_id)->ammo - scalar;\n"
+          ]
+        },
+        {
+          "start": 1791,
+          "end": 1792,
+          "replacement": [
+            "            ((pu_weapon_state *)&player->weapon_id)->shot_cooldown = ((pu_weapon_state *)&player->weapon_id)->shot_cooldown * 0.88f;\n"
+          ]
+        },
+        {
+          "start": 1794,
+          "end": 1795,
+          "replacement": [
+            "            ((pu_weapon_state *)&player->weapon_id)->shot_cooldown = ((pu_weapon_state *)&player->weapon_id)->shot_cooldown * 1.05f;\n"
+          ]
+        },
+        {
+          "start": 1796,
+          "end": 1797,
+          "replacement": [
+            "        if (((pu_weapon_state *)&player->weapon_id)->ammo <= 0.0f) {\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weapon-owner-firing",
+      "sha256": "7754bca4f7ca708de9d273bddf2bc41ad560b1ceb8132d45ce5e2fca4298c6cb",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "struct pu_weapon_state {\n",
+            "    int weapon_id;\n",
+            "    float clip_size;\n",
+            "    unsigned char reload_active;\n",
+            "    float ammo;\n",
+            "    float reload_timer;\n",
+            "    float shot_cooldown;\n",
+            "    float reload_timer_max;\n",
+            "};\n",
+            "typedef char pu_weapon_state_size[(sizeof(pu_weapon_state) == 28) ? 1 : -1];\n"
+          ]
+        },
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": [
+            "    float *shot_cooldown = &((pu_weapon_state *)&player->weapon_id)->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1004,
+          "end": 1005,
+          "replacement": [
+            "    if (*shot_cooldown <= 0.0f && ((pu_weapon_state *)&player->weapon_id)->reload_timer == 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1006,
+          "end": 1007,
+          "replacement": [
+            "        ((pu_weapon_state *)&player->weapon_id)->reload_active = 0;\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->weapon_id, ((pu_weapon_state *)&player->weapon_id)->weapon_id);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->clip_size, ((pu_weapon_state *)&player->weapon_id)->clip_size);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_active, ((pu_weapon_state *)&player->weapon_id)->reload_active);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->ammo, ((pu_weapon_state *)&player->weapon_id)->ammo);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_timer, ((pu_weapon_state *)&player->weapon_id)->reload_timer);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->shot_cooldown, ((pu_weapon_state *)&player->weapon_id)->shot_cooldown);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_timer_max, ((pu_weapon_state *)&player->weapon_id)->reload_timer_max);\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weapon-owner-swap",
+      "sha256": "d83bb1147368d06ad344192e18d86f80b8dc6c01b7aaf7c376c528082373d543",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "struct pu_weapon_state {\n",
+            "    int weapon_id;\n",
+            "    float clip_size;\n",
+            "    unsigned char reload_active;\n",
+            "    float ammo;\n",
+            "    float reload_timer;\n",
+            "    float shot_cooldown;\n",
+            "    float reload_timer_max;\n",
+            "};\n",
+            "typedef char pu_weapon_state_size[(sizeof(pu_weapon_state) == 28) ? 1 : -1];\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->weapon_id, ((pu_weapon_state *)&player->weapon_id)->weapon_id);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->clip_size, ((pu_weapon_state *)&player->weapon_id)->clip_size);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_active, ((pu_weapon_state *)&player->weapon_id)->reload_active);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->ammo, ((pu_weapon_state *)&player->weapon_id)->ammo);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_timer, ((pu_weapon_state *)&player->weapon_id)->reload_timer);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->shot_cooldown, ((pu_weapon_state *)&player->weapon_id)->shot_cooldown);\n",
+            "            pu_swap(((pu_weapon_state *)&player->alt_weapon_id)->reload_timer_max, ((pu_weapon_state *)&player->weapon_id)->reload_timer_max);\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[((pu_weapon_state *)&player->weapon_id)->weapon_id].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weapon-owner-named-firing",
+      "sha256": "6458b68eb23c3047fa88003eaa87e96a08b3bc8f7f4176cad92dd0b8ac608b3d",
+      "scores": {
+        "raw": 0.8136882129277566,
+        "labels": 0.8685836501901141,
+        "structural": 0.8697718631178707,
+        "stack": 0.8697718631178707
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        885,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "struct pu_weapon_state {\n",
+            "    int weapon_id;\n",
+            "    float clip_size;\n",
+            "    unsigned char reload_active;\n",
+            "    float ammo;\n",
+            "    float reload_timer;\n",
+            "    float shot_cooldown;\n",
+            "    float reload_timer_max;\n",
+            "};\n",
+            "typedef char pu_weapon_state_size[(sizeof(pu_weapon_state) == 28) ? 1 : -1];\n"
+          ]
+        },
+        {
+          "start": 1001,
+          "end": 1002,
+          "replacement": [
+            "    pu_weapon_state *current = (pu_weapon_state *)&player->weapon_id;\n",
+            "    pu_weapon_state *alternate = (pu_weapon_state *)&player->alt_weapon_id;\n",
+            "    float *shot_cooldown = &current->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1004,
+          "end": 1005,
+          "replacement": [
+            "    if (*shot_cooldown <= 0.0f && current->reload_timer == 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1006,
+          "end": 1007,
+          "replacement": [
+            "        current->reload_active = 0;\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "            pu_swap(alternate->weapon_id, current->weapon_id);\n",
+            "            pu_swap(alternate->clip_size, current->clip_size);\n",
+            "            pu_swap(alternate->reload_active, current->reload_active);\n",
+            "            pu_swap(alternate->ammo, current->ammo);\n",
+            "            pu_swap(alternate->reload_timer, current->reload_timer);\n",
+            "            pu_swap(alternate->shot_cooldown, current->shot_cooldown);\n",
+            "            pu_swap(alternate->reload_timer_max, current->reload_timer_max);\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[current->weapon_id].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weapon-owner-named-swap",
+      "sha256": "2234fd1a78b44270f5a84d5907ce5a87339069ee8db6f99bb7563d0a86d40010",
+      "scores": {
+        "raw": 0.9395415132438532,
+        "labels": 0.9906164627627985,
+        "structural": 0.9948925050481054,
+        "stack": 0.9948925050481054
+      },
+      "instructions": [
+        4206,
+        4213
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 167,
+          "end": 167,
+          "replacement": [
+            "\n",
+            "struct pu_weapon_state {\n",
+            "    int weapon_id;\n",
+            "    float clip_size;\n",
+            "    unsigned char reload_active;\n",
+            "    float ammo;\n",
+            "    float reload_timer;\n",
+            "    float shot_cooldown;\n",
+            "    float reload_timer_max;\n",
+            "};\n",
+            "typedef char pu_weapon_state_size[(sizeof(pu_weapon_state) == 28) ? 1 : -1];\n"
+          ]
+        },
+        {
+          "start": 1021,
+          "end": 1028,
+          "replacement": [
+            "    pu_weapon_state *current = (pu_weapon_state *)&player->weapon_id;\n",
+            "    pu_weapon_state *alternate = (pu_weapon_state *)&player->alt_weapon_id;\n",
+            "            pu_swap(alternate->weapon_id, current->weapon_id);\n",
+            "            pu_swap(alternate->clip_size, current->clip_size);\n",
+            "            pu_swap(alternate->reload_active, current->reload_active);\n",
+            "            pu_swap(alternate->ammo, current->ammo);\n",
+            "            pu_swap(alternate->reload_timer, current->reload_timer);\n",
+            "            pu_swap(alternate->shot_cooldown, current->shot_cooldown);\n",
+            "            pu_swap(alternate->reload_timer_max, current->reload_timer_max);\n"
+          ]
+        },
+        {
+          "start": 1030,
+          "end": 1031,
+          "replacement": [
+            "                weapon_table[current->weapon_id].reload_sfx_id,\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vec-sub-byvalue",
+      "sha256": "431d1e3f64dfce2a34e83ffe0786106906d9493b3bd49161447e12e608506e68",
+      "scores": {
+        "raw": 0.7160435399905348,
+        "labels": 0.7927117841930904,
+        "structural": 0.8549455750118315,
+        "stack": 0.9829626123994321
+      },
+      "instructions": [
+        4206,
+        4246
+      ],
+      "refs": [
+        830,
+        0,
+        10
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 12,
+          "end": 13,
+          "replacement": [
+            "    inline vec2_t operator - (vec2_t v)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "vec-sub-const-method",
+      "sha256": "89bd2e1373a8da1b8a2652b051a75d3e1181e805340521d6af48b14e13c53cc8",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 12,
+          "end": 13,
+          "replacement": [
+            "    inline vec2_t operator - (const vec2_t &v) const\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "compiler-GX",
+      "sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+      "edits": [],
+      "cflags": "/O2 /GB /W3 /GR- /GX",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false
+    },
+    {
+      "name": "compiler-Ob1",
+      "sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+      "edits": [],
+      "cflags": "/O2 /GB /W3 /GR- /Ob1",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false
+    },
+    {
+      "name": "compiler-Op",
+      "sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+      "edits": [],
+      "cflags": "/O2 /GB /W3 /GR- /Op",
+      "scores": {
+        "raw": 0.3977796397151236,
+        "labels": 0.5134059488898198,
+        "structural": 0.5806451612903226,
+        "stack": 0.67804775869292
+      },
+      "instructions": [
+        4206,
+        5342
+      ],
+      "refs": [
+        610,
+        4,
+        24
+      ],
+      "exact": false
+    },
+    {
+      "name": "compiler-Oa",
+      "sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+      "edits": [],
+      "cflags": "/O2 /GB /W3 /GR- /Oa",
+      "scores": {
+        "raw": 0.613084559263246,
+        "labels": 0.6240880277478771,
+        "structural": 0.7537375911972252,
+        "stack": 0.8489415141729458
+      },
+      "instructions": [
+        4206,
+        4155
+      ],
+      "refs": [
+        767,
+        0,
+        11
+      ],
+      "exact": false
+    }
+  ]
+}
