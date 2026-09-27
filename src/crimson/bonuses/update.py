@@ -97,28 +97,15 @@ def bonus_update(
     detail_preset: int = 5,
     step_runtime: WorldStepRuntime,
 ) -> list[BonusPickupEvent]:
-    """Advance world bonuses and global timers (`bonus_update`).
+    """Advance world bonuses and global timers (`bonus_update`)."""
 
-    Telekinetic pickups run first; native applies them in `bonus_render`.
-    """
-
-    pickups = bonus_telekinetic_update(
-        state,
-        players,
+    pickups = state.bonus_pool.update(
         dt,
+        state=state,
+        players=players,
         creatures=creatures,
         detail_preset=int(detail_preset),
         step_runtime=step_runtime,
-    )
-    pickups.extend(
-        state.bonus_pool.update(
-            dt,
-            state=state,
-            players=players,
-            creatures=creatures,
-            detail_preset=int(detail_preset),
-            step_runtime=step_runtime,
-        ),
     )
 
     if dt > 0.0:

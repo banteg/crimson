@@ -9,7 +9,7 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
+from ..bonuses.update import bonus_telekinetic_update, bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
 from ..creatures.runtime import CreatureDeath, CreaturePool
@@ -319,22 +319,28 @@ class WorldState(msgspec.Struct):
         if mode_update is not None:
             # The mode's native update (survival/rush/quest/typo) runs here.
             mode_update()
+        # The rest follows `gameplay_update_and_render` after the mode update:
+        # bonus timers, camera, world render (Telekinetic pickups happen in
+        # `bonus_render`), level-up, then `bonus_update`.
         self.state.highscore_score_xp = int(self.players[0].experience)
-        camera_shake_update(self.state, dt)
-        # Native level-up/perk-pending check runs before `bonus_update` in
-        # gameplay_update_and_render. Keep the same ordering so XP awarded from
-        # bonus-side kill paths (e.g. freeze cleanup) levels on the next tick.
-        if perk_progression_enabled:
-            survival_progression_update(
-                self.state,
-                self.players,
-            )
         # Native latches `time_scale_active` late (post mode update, pre bonus decrement); next-frame dt uses it.
         self.state.time_scale_active = float(self.state.bonuses.reflex_boost) > 0.0
         bonus_update_pre_pickup_timers(self.state, dt)
         gameplay_accumulate_weapon_usage_time(self.state, self.players, frame_dt_ms)
         gameplay_enforce_weapon_guards(self.state, self.players)
-        pickups = bonus_update(
+        camera_shake_update(self.state, dt)
+        pickups = bonus_telekinetic_update(
+            self.state,
+            self.players,
+            dt,
+            creatures=self.creatures.entries,
+            detail_preset=int(detail_preset),
+            step_runtime=step_runtime,
+        )
+        # XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
+        if perk_progression_enabled:
+            survival_progression_update(self.state, self.players)
+        pickups += bonus_update(
             self.state,
             self.players,
             dt,
