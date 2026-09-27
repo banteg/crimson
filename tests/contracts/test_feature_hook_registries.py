@@ -72,7 +72,6 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         prev_audio=[],
         prev_perk_pending=0,
         game_mode=GameMode.SURVIVAL,
-        demo_mode_active=False,
         perk_progression_enabled=True,
         rng=world.state.rng,
         detail_preset=5,

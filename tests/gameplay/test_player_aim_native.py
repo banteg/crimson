@@ -51,7 +51,6 @@ def test_aim_point_and_gameplay_dispatch_match_native_witnesses() -> None:
                 dt=0.0,
                 movement_mode=MovementControlType.STATIC,
                 aim_scheme=scheme,
-                demo_mode_active=False,
             )
             assert _bits(player.aim) == expected, (i, scheme)
 
@@ -112,7 +111,6 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
             dt=row.dt,
             movement_mode=MovementControlType.STATIC,
             aim_scheme=scheme,
-            demo_mode_active=False,
         )
         assert _bits(player.aim) == expected, (i, "gameplay")
         config.controls.player(0).aim_scheme = scheme

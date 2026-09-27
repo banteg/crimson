@@ -167,13 +167,11 @@ class RenderResources(msgspec.Struct):
         players: list[PlayerState],
         creatures: CreaturePool,
         camera: Vec2,
-        demo_mode_active: bool,
         elapsed_ms: float,
         bonus_anim_phase: float,
         rtx_mode: RtxRenderMode,
     ) -> RenderFrame:
         return RenderFrame(
-            demo_mode_active=bool(demo_mode_active),
             config=self.config,
             camera=camera,
             ground=self.ground,

@@ -186,7 +186,6 @@ def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
 
 def _build_session_world(*, seed: int = 0x1234) -> WorldState:
     world = WorldState.build(
-        demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )

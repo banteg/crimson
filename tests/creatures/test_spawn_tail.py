@@ -8,20 +8,11 @@ from grim.geom import Vec2
 from grim.rand import Crand
 
 
-def test_spawn_plan_tail_burst_effect_is_gated_by_demo_and_bounds() -> None:
-    env_demo = SpawnEnv(
-        demo_mode_active=True,
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
+def test_spawn_plan_tail_burst_effect_is_gated_by_bounds() -> None:
     env_live = SpawnEnv(
-        demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )
-
-    plan_demo = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, Crand(0), env_demo)
-    assert plan_demo.effects == ()
 
     plan_live = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, Crand(0), env_live)
     assert plan_live.effects == (BurstEffect(pos=Vec2(100.0, 200.0), count=8),)
@@ -50,7 +41,6 @@ def test_spawn_plan_tail_applies_retry_count_scaling(
     health_scale: float,
 ) -> None:
     env = SpawnEnv(
-        demo_mode_active=True,  # avoid effect noise
         hardcore=False,
         quest_fail_retry_count=retry_count,
     )
@@ -67,7 +57,6 @@ def test_spawn_plan_tail_applies_retry_count_scaling(
 
 def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_retry_count() -> None:
     env = SpawnEnv(
-        demo_mode_active=True,  # avoid effect noise
         hardcore=True,
         quest_fail_retry_count=4,
     )
@@ -90,7 +79,6 @@ def test_spawn_plan_tail_applies_hardcore_scaling_and_ignores_retry_count() -> N
 )
 def test_spawn_plan_tail_spawn_slot_interval_scales_with_retry_count(retry_count: int, expected_extra: float) -> None:
     env = SpawnEnv(
-        demo_mode_active=True,  # avoid effect noise
         hardcore=False,
         quest_fail_retry_count=retry_count,
     )
@@ -103,7 +91,6 @@ def test_spawn_plan_tail_spawn_slot_interval_scales_with_retry_count(retry_count
 
 def test_spawn_plan_tail_spawn_slot_interval_hardcore_decrease() -> None:
     env = SpawnEnv(
-        demo_mode_active=True,  # avoid effect noise
         hardcore=True,
         quest_fail_retry_count=9,
     )

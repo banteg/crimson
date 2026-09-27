@@ -154,7 +154,6 @@ def cmd_quests(
     plan_cache: dict[SpawnId, tuple[int, int]] = {}
     if show_plan:
         env = SpawnEnv(
-            demo_mode_active=True,
             hardcore=False,
             quest_fail_retry_count=0,
         )
@@ -367,7 +366,6 @@ def cmd_spawn_plan(
     seed: str = typer.Option("0xBEEF", help="MSVCRT rand() seed (e.g. 0xBEEF)"),
     pos: str = typer.Option("512,512", help="spawn position as 'x,y'"),
     heading: float = typer.Option(0.0, help="heading (radians)"),
-    demo_mode_active: bool = typer.Option(True, help="when true, burst effect is skipped"),
     hardcore: bool = typer.Option(False, help="hardcore mode"),
     quest_fail_retry_count: int = typer.Option(0, help="quest fail retry count"),
     as_json: bool = typer.Option(False, "--json", help="print JSON"),
@@ -381,7 +379,6 @@ def cmd_spawn_plan(
     rng = Crand(_parse_int_auto(seed))
     spawn_pos = _parse_vec2(pos)
     env = SpawnEnv(
-        demo_mode_active=demo_mode_active,
         hardcore=hardcore,
         quest_fail_retry_count=quest_fail_retry_count,
     )
@@ -396,7 +393,6 @@ def cmd_spawn_plan(
             "heading": heading,
             "seed": _parse_int_auto(seed),
             "env": {
-                "demo_mode_active": demo_mode_active,
                 "hardcore": hardcore,
                 "quest_fail_retry_count": quest_fail_retry_count,
             },
@@ -416,7 +412,6 @@ def cmd_spawn_plan(
     )
     typer.echo(
         "env="
-        f"demo_mode_active={demo_mode_active} "
         f"hardcore={hardcore} "
         f"quest_fail_retry_count={quest_fail_retry_count}",
     )

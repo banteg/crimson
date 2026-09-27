@@ -25,7 +25,6 @@ class WorldRuntimeHost(WorldRuntime):
         self,
         *,
         assets_dir: Path,
-        demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
@@ -37,7 +36,6 @@ class WorldRuntimeHost(WorldRuntime):
         resolved_audio_rng = audio_rng if audio_rng is not None else Crand(0xBEEF)
         super().__init__(
             assets_dir=assets_dir,
-            demo_mode_active=demo_mode_active,
             quest_fail_retry_count=quest_fail_retry_count,
             hardcore=hardcore,
             preserve_bugs=preserve_bugs,

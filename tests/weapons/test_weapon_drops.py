@@ -84,10 +84,10 @@ def test_prepare_weapon_availability_unlocks_quest_weapon_ids() -> None:
     assert not state.weapon_available[WeaponId.SHOTGUN]
 
 
-def test_prepare_weapon_availability_keeps_full_version_unlocks_in_demo_mode() -> None:
+def test_prepare_weapon_availability_unlocks_splitter_gun_from_full_version_index() -> None:
     status = _status_default()
     status.quest_unlock_index_full = 0x28
-    state = GameplayState(status=status, demo_mode_active=True)
+    state = GameplayState(status=status)
 
     prepare_weapon_availability(state)
 

@@ -53,7 +53,6 @@ class GameplayState(msgspec.Struct):
     perk_selection: PerkSelectionState = msgspec.field(default_factory=PerkSelectionState)
     sfx_queue: list[SfxRequest] = msgspec.field(default_factory=list)
     game_mode: GameMode = GameMode.SURVIVAL
-    demo_mode_active: bool = False
     hardcore: bool = False
     # The global quest retry counter; hardcore creature spawns clear it.
     quest_fail_retry_count: int = 0

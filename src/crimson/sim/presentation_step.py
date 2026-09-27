@@ -54,7 +54,6 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     post_apply_sfx: tuple[SfxRequest, ...] = ()
     play_quest_completion_music: bool = False
     reflex_boost_timer: float = 0.0
-    demo_mode_active: bool = False
     sfx_dt: float = 0.0
     camera: CameraUpdate | None = None
 
@@ -103,7 +102,6 @@ def plan_hit_sfx(
     hits: list[ProjectileHit],
     *,
     game_mode: GameMode,
-    demo_mode_active: bool,
     game_tune_started: bool,
     rng: CrandLike,
 ) -> tuple[bool, list[SfxRequest]]:
@@ -116,7 +114,7 @@ def plan_hit_sfx(
     # uncapped; the per-hit world-step path already matches this.
     sfx: list[SfxRequest] = []
     for idx in range(len(hits)):
-        if (not demo_mode_active) and game_mode != GameMode.RUSH and (not local_game_tune_started):
+        if game_mode != GameMode.RUSH and (not local_game_tune_started):
             # Mirrors `projectile_update`: first eligible hit calls
             # `sfx_play_exclusive(music_track_extra_0)` and skips the panned
             # bullet/shock hit sound for that same hit. Native
@@ -345,7 +343,6 @@ def plan_world_presentation_step(
     prev_audio: Sequence[tuple[int, bool, float]],
     prev_perk_pending: int,
     game_mode: GameMode,
-    demo_mode_active: bool,
     perk_progression_enabled: bool,
     rng: CrandLike,
     detail_preset: int,
@@ -370,13 +367,12 @@ def plan_world_presentation_step(
                 violence_disabled=int(violence_disabled),
             )
             if float(state.bonuses.freeze) > 0.0:
-                if (not bool(demo_mode_active)) and game_mode != GameMode.RUSH and (not bool(game_tune_started)):
+                if game_mode != GameMode.RUSH and (not bool(game_tune_started)):
                     play_game_tune = True
             else:
                 play_game_tune, planned_hit_sfx = plan_hit_sfx(
                     hits,
                     game_mode=game_mode,
-                    demo_mode_active=bool(demo_mode_active),
                     game_tune_started=bool(game_tune_started),
                     rng=rng,
                 )
@@ -405,5 +401,4 @@ def plan_world_presentation_step(
         trigger_game_tune=play_game_tune,
         sfx=tuple(sfx),
         reflex_boost_timer=float(state.bonuses.reflex_boost),
-        demo_mode_active=demo_mode_active,
     )

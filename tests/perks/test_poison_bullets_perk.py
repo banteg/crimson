@@ -17,7 +17,6 @@ from tests.support.helpers import ScriptedCrand
 
 def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -64,7 +63,6 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
 
 def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -111,7 +109,6 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
 
 def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -147,7 +144,6 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
 
 def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet_hit() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -191,7 +187,6 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
 
 def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

@@ -97,7 +97,7 @@ def test_creature_corpse_frame_ping_pong_fallback_uses_native_special_entry() ->
 def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick() -> None:
     # Native advances anim_phase inside `creature_update_all`, which runs before
     # `projectile_update`; a creature shot dead later in the tick keeps that step.
-    world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     creature = world.creatures.entries[0]
     creature.active = True

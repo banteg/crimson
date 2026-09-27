@@ -30,7 +30,6 @@ class Route(Enum):
     MODS = auto()
     OTHER_GAMES = auto()
     END_NOTE = auto()
-    DEMO = auto()
     QUIT = auto()
 
 

@@ -40,7 +40,6 @@ def test_plan_hit_sfx_skips_first_hit_when_tune_not_started() -> None:
     trigger_game_tune, keys = plan_hit_sfx(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
-        demo_mode_active=False,
         game_tune_started=False,
         rng=rng,
     )
@@ -59,7 +58,6 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
     trigger_game_tune, keys = plan_hit_sfx(
         _hits(2),
         game_mode=GameMode.SURVIVAL,
-        demo_mode_active=False,
         game_tune_started=True,
         rng=rng,
     )
@@ -110,7 +108,6 @@ def test_plan_world_presentation_step_orders_sfx(mocker) -> None:
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
         game_mode=GameMode.SURVIVAL,
-        demo_mode_active=False,
         perk_progression_enabled=True,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
@@ -490,7 +487,6 @@ def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
         game_mode=GameMode.SURVIVAL,
-        demo_mode_active=False,
         perk_progression_enabled=True,
         rng=rng,
         detail_preset=5,

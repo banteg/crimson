@@ -15,7 +15,7 @@ from grim.rand import Crand
 def test_runtime_reset_replaces_a_loaded_world_without_touching_it(tmp_path: Path) -> None:
     runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1))
     first = runtime.world
-    replacement = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    replacement = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     replacement.players.append(PlayerState(index=0, pos=Vec2(10.0, 20.0), health=17.0))
     runtime.load_world_state(replacement)
     assert runtime.world is replacement
@@ -31,7 +31,6 @@ def test_runtime_reset_replaces_a_loaded_world_without_touching_it(tmp_path: Pat
 
 def test_reset_world_players_uses_native_alternating_layout() -> None:
     world = WorldState.build(
-        demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -60,7 +59,6 @@ def test_world_reset_round_robins_native_creature_targets(tmp_path: Path) -> Non
 
 def test_reset_world_players_preserves_native_unwritten_residue() -> None:
     world = WorldState.build(
-        demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )

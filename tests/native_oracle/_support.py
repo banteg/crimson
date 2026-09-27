@@ -8,6 +8,8 @@ from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from crimson.game_modes import GameMode
+
 # `creature_t` (0x98 bytes), third_party/headers/crimsonland_types.h.
 CREATURE_STRIDE = 0x98
 CREATURE_POOL_SLOTS = 0x180
@@ -121,15 +123,24 @@ def prepare_gameplay(oracle, *, world_size: int = 1024) -> None:
     """Seed the startup state that `projectile_update` and the fire paths need.
 
     The D3DX normalize dispatcher probes the CPU and registry on first use; bind it
-    to the x87 implementation that native captures resolve to. Demo mode keeps
-    kills from rolling bonus drops, matching the port's demo world.
+    to the x87 implementation that native captures resolve to. Attract mode stays
+    off, matching the port's full-version play: a Survival run with its weapon
+    availability refreshed (kills roll bonus drops) and the game tune already
+    started (hits play their own sfx, like the port's `hit_audio_game_tune_started`).
     """
 
     oracle.call("weapon_table_init")
     oracle.call("effect_defaults_reset")
     oracle.stub("sfx_play_panned", 0)
     oracle.write_u32("vec2_normalize_impl", oracle.resolve("d3dx_c_vec2_normalize"))
-    oracle.write_u8("demo_mode_active", 1)
+    oracle.write_u8("demo_mode_active", 0)
+    oracle.write_u8("music_playlist_randomized_latch", 1)
+    oracle.write_u32("config_game_mode", int(GameMode.SURVIVAL))
+    oracle.call("weapon_refresh_available")
+    # Bonus amounts feed the kill-drop rejection; descriptions need font metrics.
+    oracle.stub("wrap_text_to_width_alloc", 0)
+    oracle.call("bonus_metadata_init")
+    oracle.call("bonus_reset_availability")
     oracle.write_u32("terrain_texture_width", world_size)
     oracle.write_u32("terrain_texture_height", world_size)
     oracle.write_u32("config_player_count", 1)

@@ -21,11 +21,14 @@ from crimson.projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
+from crimson.weapon_runtime import prepare_weapon_availability
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 from ._support import (
     CREATURE_LAYOUT,
     CREATURE_STRIDE,
+    PLAYER_OFFSETS,
     PROJECTILE_LAYOUT,
     PROJECTILE_STRIDE,
     SECONDARY_PROJECTILE_LAYOUT,
@@ -37,15 +40,24 @@ from ._support import (
 from .test_projectiles import _python_projectile
 
 _LOCAL_PLAYER_OWNER_ID = -100
+_PLAYER_POS = Vec2(900.0, 900.0)
 
 
 def _python_world(seed: int) -> WorldState:
-    world = WorldState.build(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     # Native `creature_find_nearest` falls back to slot 0 (shock chain retargets).
     world.state.preserve_bugs = True
     world.state.rng.srand(seed)
-    world.players.append(PlayerState(index=0, pos=Vec2(900.0, 900.0)))
+    world.players.append(PlayerState(index=0, pos=_PLAYER_POS))
+    prepare_weapon_availability(world.state)
     return world
+
+
+def _seed_native_player(oracle) -> None:
+    player = oracle.resolve("player_state_table")
+    oracle.write_f32(player + PLAYER_OFFSETS["pos_x"], _PLAYER_POS.x)
+    oracle.write_f32(player + PLAYER_OFFSETS["pos_y"], _PLAYER_POS.y)
+    oracle.write_u32(player + PLAYER_OFFSETS["weapon_id"], int(WeaponId.PISTOL))
 
 
 def _step_runtime(world: WorldState, dt: float) -> WorldStepRuntime:
@@ -186,6 +198,7 @@ def test_secondary_rockets_match_native(oracle) -> None:
     """Rocket, seeker and rocket-minigun flight: speed caps, acceleration, homing and trail timers."""
 
     prepare_gameplay(oracle)
+    _seed_native_player(oracle)
     pristine = oracle.snapshot()
     secondary = oracle.resolve("secondary_projectile_pool")
     rng = random.Random(0x422000)
@@ -242,6 +255,7 @@ def test_secondary_detonation_matches_native(oracle) -> None:
     """
 
     prepare_gameplay(oracle)
+    _seed_native_player(oracle)
     pristine = oracle.snapshot()
     secondary = oracle.resolve("secondary_projectile_pool")
     rng = random.Random(0x420F00)
@@ -307,6 +321,7 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
     """Shrinkifier size/death, Splitter children, Plasma Cannon ring and Ion Rifle chain links."""
 
     prepare_gameplay(oracle)
+    _seed_native_player(oracle)
     pristine = oracle.snapshot()
     pool_base = oracle.resolve("projectile_pool")
     pos_arg = oracle.alloc(8)
@@ -396,6 +411,7 @@ def test_shock_chain_bonus_matches_native(oracle) -> None:
     from crimson.bonuses.apply import bonus_apply
 
     prepare_gameplay(oracle)
+    _seed_native_player(oracle)
     oracle.stub("sfx_play", 0)
     pristine = oracle.snapshot()
     pool_base = oracle.resolve("projectile_pool")

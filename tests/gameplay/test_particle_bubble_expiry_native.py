@@ -20,7 +20,7 @@ FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testda
 def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     case = witness["input"]
     assert case["fpcw"] == 0x7F
-    world = WorldState.build(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     world.players.append(PlayerState(index=0, pos=Vec2()))
     state = world.state
     rng = RecordingCrand(Crand(case["rng_seed"]))

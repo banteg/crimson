@@ -38,7 +38,6 @@ class _WorldStub:
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
-            demo_mode_active=False,
             config=None,
             camera=Vec2(),
             ground=None,

@@ -227,7 +227,6 @@ def test_hit_cooldown_suppresses_playback_without_skipping_random_draws(mocker) 
     _, requests = plan_hit_sfx(
         hits,
         game_mode=GameMode.SURVIVAL,
-        demo_mode_active=False,
         game_tune_started=True,
         rng=rng,
     )
@@ -241,8 +240,7 @@ def test_hit_cooldown_suppresses_playback_without_skipping_random_draws(mocker) 
     assert 0.03 < audio.sfx.cooldowns[SfxId.BULLET_HIT_01] < 0.04
 
 
-@pytest.mark.parametrize("demo, expected_gain", [(False, 0.8), (True, 0.56)])
-def test_sound_requests_apply_position_and_demo_gain(mocker, demo, expected_gain) -> None:
+def test_sound_requests_apply_position_and_gain(mocker) -> None:
     from grim.audio_math import native_sound_gain, raylib_pan
     from grim.geom import Vec2
     from tests.support.audio import make_sfx_state, stub_sfx_backend
@@ -255,13 +253,12 @@ def test_sound_requests_apply_position_and_demo_gain(mocker, demo, expected_gain
     )
     plan = DeterministicPresentationPlan(
         sfx=(SfxRequest(SfxId.PISTOL_FIRE, Vec2(640, 512), gain=0.8),),
-        demo_mode_active=demo,
     )
     bridge = AudioBridge(audio=audio, audio_rng=Crand(1))
     bridge.apply_plan(plan=plan, camera=Vec2(-256, 0), screen_width=512)
     expected_pan, compensation = raylib_pan(425)
     assert backend.set_sound_pan.call_args.args[1] == expected_pan
-    assert backend.set_sound_volume.call_args.args[1] == pytest.approx(native_sound_gain(expected_gain) * compensation)
+    assert backend.set_sound_volume.call_args.args[1] == pytest.approx(native_sound_gain(0.8) * compensation)
 
 
 def test_sound_cooldowns_use_frame_time_before_reflex_slow_motion() -> None:

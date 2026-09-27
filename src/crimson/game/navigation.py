@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from crimson.screens.chrome import ensure_menu_ground
 from grim.audio import stop_music
 from grim.view import ViewContext
 
-from ..demo import DemoView
 from ..game_modes import GameMode
 from ..modes.base_gameplay_mode import BaseGameplayMode
 from ..modes.quest_mode import QuestMode
@@ -61,8 +59,6 @@ class ScreenNavigator:
                 self._main_menu()
             case Route.QUIT:
                 self.state.quit_requested = True
-            case Route.DEMO:
-                screens.reset(ScreenEntry(DemoView(self.state)))
             case Route.PAUSE:
                 assert screens.active_gameplay is not None
                 screens.push(self._panel(action))
@@ -119,11 +115,8 @@ class ScreenNavigator:
 
     def _main_menu(self) -> None:
         screens = self.state.screens
-        from_demo = isinstance(screens.active, DemoView)
         self.capture_ground()
         screens.close()
-        if from_demo:
-            ensure_menu_ground(self.state, regenerate=True)
         screens.push(self._panel(Route.MENU))
 
     def _mode(self, mode_id: GameMode) -> BaseGameplayMode:

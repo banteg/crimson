@@ -884,7 +884,6 @@ class CreaturePool:
         """Port of `creature_spawn_template`: build a spawn plan and materialize it into the pool."""
 
         spawn_env = SpawnEnv(
-            demo_mode_active=state.demo_mode_active,
             hardcore=state.hardcore,
             quest_fail_retry_count=state.quest_fail_retry_count,
         )

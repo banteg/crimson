@@ -193,7 +193,6 @@ def build_reset_world(
     *,
     seed: int,
     player_count: int,
-    demo_mode_active: bool = False,
     hardcore: bool = False,
     quest_fail_retry_count: int = 0,
     preserve_bugs: bool = False,
@@ -202,7 +201,6 @@ def build_reset_world(
     from .world_state import WorldState
 
     world = WorldState.build(
-        demo_mode_active=bool(demo_mode_active),
         hardcore=bool(hardcore),
         quest_fail_retry_count=int(quest_fail_retry_count),
         preserve_bugs=bool(preserve_bugs),

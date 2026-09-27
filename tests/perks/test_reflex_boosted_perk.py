@@ -19,7 +19,6 @@ def _player_roundtrip_dt(dt: float, *, reflex_boost: float) -> float:
     """frame_dt as `player_update` leaves it for the rest of the frame under Reflex Boost."""
 
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -32,7 +31,6 @@ def _player_roundtrip_dt(dt: float, *, reflex_boost: float) -> float:
 
 def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -63,7 +61,6 @@ def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
 
 def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -89,7 +86,6 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
 
 def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -127,7 +123,6 @@ def test_player_time_scale_roundtrip_restores_scaled_dt() -> None:
 
 def test_session_does_not_apply_player_time_scale_twice() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

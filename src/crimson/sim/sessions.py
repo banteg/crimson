@@ -182,7 +182,7 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
     spawn.no_creatures_timer_ms = float(no_creatures_timer_ms)
     spawn_table_empty_now = quest_spawn_table_empty(spawn.spawn_entries)
 
-    if not bool(state.demo_mode_active) and creatures_none_active and spawn_table_empty_now:
+    if creatures_none_active and spawn_table_empty_now:
         state.bonuses.reflex_boost = 0.0
         state.time_scale_active = False
 
@@ -555,7 +555,6 @@ class DeterministicSession(msgspec.Struct):
             prev_audio=prev_audio,
             prev_perk_pending=prev_perk_pending,
             game_mode=self.game_mode,
-            demo_mode_active=state.demo_mode_active,
             perk_progression_enabled=self.perk_progression_enabled,
             rng=presentation_rng,
             detail_preset=self.detail_preset,

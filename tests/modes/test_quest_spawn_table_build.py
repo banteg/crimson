@@ -84,20 +84,14 @@ def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
             quest,
             ctx,
             rng=Crand(0),
-            )
-        demo = build_quest_spawn_table(
-            quest,
-            ctx,
-            rng=Crand(0),
-            )
+        )
         hardcore = build_quest_spawn_table(
             quest,
             hardcore_ctx,
             rng=Crand(0),
-            )
+        )
 
         assert len(normal) == normal_count
-        assert len(demo) == normal_count
         assert len(hardcore) == hardcore_count
 
 

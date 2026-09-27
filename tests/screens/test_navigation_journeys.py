@@ -3,7 +3,6 @@ from __future__ import annotations
 import pytest
 
 from crimson.game import loop_view as loop_module
-from crimson.game import navigation as navigation_module
 from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
@@ -37,7 +36,7 @@ from tests.support.screens import ScreenStub
 @pytest.fixture
 def loop(make_game_state, screen_resources, screen_io, mocker) -> GameLoopView:
     state = make_game_state(resources=screen_resources)
-    for module in (menu, navigation_module, scores_module, stats, credits, alien_zookeeper):
+    for module in (menu, scores_module, stats, credits, alien_zookeeper):
         mocker.patch.object(module, "ensure_menu_ground", return_value=None)
     mocker.patch.object(type(state.console), "handle_hotkey")
     mocker.patch.object(type(state.console), "update")

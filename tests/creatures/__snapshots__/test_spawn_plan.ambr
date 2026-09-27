@@ -37,6 +37,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -93,6 +98,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -141,6 +151,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -189,6 +204,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -237,6 +257,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -285,6 +310,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -333,6 +363,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -389,6 +424,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -445,6 +485,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -501,6 +546,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -557,6 +607,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -613,6 +668,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -669,6 +729,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -1589,6 +1654,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 24,
@@ -1645,6 +1715,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -1693,6 +1768,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -2229,6 +2309,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 8,
@@ -2607,6 +2692,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 296.1073,
+        'y': 364.553711,
+      }),
     ]),
     'heading': 0.0,
     'primary': 10,
@@ -7935,6 +8025,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 133.991882,
+        'y': 95.383789,
+      }),
     ]),
     'heading': 0.0,
     'primary': 5,
@@ -7983,6 +8078,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8031,6 +8131,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8079,6 +8184,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8127,6 +8237,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8175,6 +8290,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8223,6 +8343,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8271,6 +8396,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8319,6 +8449,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8367,6 +8502,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8415,6 +8555,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8463,6 +8608,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8511,6 +8661,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8559,6 +8714,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8607,6 +8767,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8655,6 +8820,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8703,6 +8873,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8751,6 +8926,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8799,6 +8979,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8847,6 +9032,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8895,6 +9085,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8943,6 +9138,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -8991,6 +9191,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9039,6 +9244,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9087,6 +9297,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9135,6 +9350,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9183,6 +9403,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9231,6 +9456,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9279,6 +9509,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9327,6 +9562,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9375,6 +9615,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9423,6 +9668,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9471,6 +9721,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9519,6 +9774,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9567,6 +9827,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9615,6 +9880,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9663,6 +9933,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9711,6 +9986,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9759,6 +10039,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9807,6 +10092,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9855,6 +10145,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9903,6 +10198,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9951,6 +10251,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -9999,6 +10304,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': -100.0,
     'primary': 0,
@@ -10047,6 +10357,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': -100.0,
     'primary': 0,
@@ -10095,6 +10410,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': -100.0,
     'primary': 0,
@@ -10103,173 +10423,6 @@
     'spawn_slots': list([
     ]),
     'template_id': 5,
-  })
-# ---
-# name: test_spawn_plan_variant_snapshot[demo_disabled_template_00][demo_disabled_template_00]
-  dict({
-    'creatures': list([
-      dict({
-        'ai_link_parent': None,
-        'ai_mode': 0,
-        'ai_timer': None,
-        'bonus_duration_override': None,
-        'bonus_id': None,
-        'contact_damage': 50.0,
-        'flags': 68,
-        'heading': 0.0,
-        'health': 8500.0,
-        'max_health': 8500.0,
-        'move_speed': 1.3,
-        'orbit_angle': None,
-        'orbit_radius': None,
-        'origin_template_id': 0,
-        'phase_seed': 296,
-        'pos': list([
-          100.0,
-          200.0,
-        ]),
-        'ranged_projectile_type': None,
-        'reward_value': 6600.0,
-        'size': 64.0,
-        'spawn_slot': 0,
-        'target_offset': None,
-        'tint': list([
-          0.6,
-          0.6,
-          1.0,
-          0.8,
-        ]),
-        'type_id': 0,
-      }),
-    ]),
-    'effects': list([
-      dict({
-        'count': 8,
-        'x': 100.0,
-        'y': 200.0,
-      }),
-    ]),
-    'heading': 0.0,
-    'primary': 0,
-    'rng_state': 637754593,
-    'seed': 48879,
-    'spawn_slots': list([
-      dict({
-        'child_template_id': 65,
-        'count': 0,
-        'interval': 0.9,
-        'limit': 812,
-        'owner_creature': 0,
-        'timer': 1.0,
-      }),
-    ]),
-    'template_id': 0,
-  })
-# ---
-# name: test_spawn_plan_variant_snapshot[demo_disabled_template_03][demo_disabled_template_03]
-  dict({
-    'creatures': list([
-      dict({
-        'ai_link_parent': None,
-        'ai_mode': 0,
-        'ai_timer': 0,
-        'bonus_duration_override': None,
-        'bonus_id': None,
-        'contact_damage': 4.0,
-        'flags': 128,
-        'heading': 0.0,
-        'health': 76.0,
-        'max_health': 76.0,
-        'move_speed': 3.36,
-        'orbit_angle': None,
-        'orbit_radius': None,
-        'origin_template_id': 3,
-        'phase_seed': 296,
-        'pos': list([
-          100.0,
-          200.0,
-        ]),
-        'ranged_projectile_type': None,
-        'reward_value': 148.0,
-        'size': 49.0,
-        'spawn_slot': None,
-        'target_offset': None,
-        'tint': list([
-          0.6,
-          0.6,
-          0.95,
-          1.0,
-        ]),
-        'type_id': 3,
-      }),
-    ]),
-    'effects': list([
-      dict({
-        'count': 8,
-        'x': 100.0,
-        'y': 200.0,
-      }),
-    ]),
-    'heading': 0.0,
-    'primary': 0,
-    'rng_state': 3736785909,
-    'seed': 48879,
-    'spawn_slots': list([
-    ]),
-    'template_id': 3,
-  })
-# ---
-# name: test_spawn_plan_variant_snapshot[demo_disabled_template_1f][demo_disabled_template_1f]
-  dict({
-    'creatures': list([
-      dict({
-        'ai_link_parent': None,
-        'ai_mode': 0,
-        'ai_timer': None,
-        'bonus_duration_override': None,
-        'bonus_id': None,
-        'contact_damage': 20.0,
-        'flags': 0,
-        'heading': 0.0,
-        'health': 238.0,
-        'max_health': 238.0,
-        'move_speed': 3.0,
-        'orbit_angle': None,
-        'orbit_radius': None,
-        'origin_template_id': 31,
-        'phase_seed': 296,
-        'pos': list([
-          100.0,
-          200.0,
-        ]),
-        'ranged_projectile_type': None,
-        'reward_value': 170.0,
-        'size': 56.0,
-        'spawn_slot': None,
-        'target_offset': None,
-        'tint': list([
-          0.5,
-          0.634,
-          0.604,
-          1.0,
-        ]),
-        'type_id': 2,
-      }),
-    ]),
-    'effects': list([
-      dict({
-        'count': 8,
-        'x': 100.0,
-        'y': 200.0,
-      }),
-    ]),
-    'heading': 0.0,
-    'primary': 0,
-    'rng_state': 303570046,
-    'seed': 48879,
-    'spawn_slots': list([
-    ]),
-    'template_id': 31,
   })
 # ---
 # name: test_spawn_plan_variant_snapshot[hardcore_template_00][hardcore_template_00]
@@ -10310,6 +10463,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,
@@ -11386,6 +11544,11 @@
       }),
     ]),
     'effects': list([
+      dict({
+        'count': 8,
+        'x': 100.0,
+        'y': 200.0,
+      }),
     ]),
     'heading': 0.0,
     'primary': 0,

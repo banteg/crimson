@@ -45,7 +45,6 @@ from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_
 def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
     rng = Crand(0xBEEF)
     env = SpawnEnv(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -72,7 +71,6 @@ def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
 def test_spawn_plan_remaps_spawn_slot_indices() -> None:
     rng = Crand(0)
     env = SpawnEnv(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -109,7 +107,6 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
 def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaustion() -> None:
     rng = Crand(0)
     env = SpawnEnv(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -155,7 +152,6 @@ def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaust
 def test_spawn_plan_materialization_spawns_burst_fx() -> None:
     rng = Crand(0)
     env = SpawnEnv(
-        demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -172,7 +168,6 @@ def test_spawn_plan_materialization_spawns_burst_fx() -> None:
 
 def test_hardcore_runtime_spawn_clears_shared_quest_retry_count() -> None:
     world = make_world()
-    world.state.demo_mode_active = True
     world.state.hardcore = True
     world.state.quest_fail_retry_count = 4
 
@@ -220,7 +215,6 @@ def test_creature_movement_heading_subtraction_uses_native_f32_store() -> None:
 
 def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     world = make_world()
-    world.state.demo_mode_active = True
     pool = world.creatures
 
     owner = pool.entries[0]
@@ -263,13 +257,12 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
     assert child_template_id == int(SpawnId.ALIEN_RANDOM_1D)
     assert_float_close(heading, RANDOM_HEADING_SENTINEL)
-    assert env_arg == SpawnEnv(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    assert env_arg == SpawnEnv(hardcore=False, quest_fail_retry_count=0)
     spawn_plan.assert_called_once()
 
 
 def test_spawn_slot_update_requires_spawner_flag() -> None:
     world = make_world()
-    world.state.demo_mode_active = True
     pool = world.creatures
     player = world.players[0]
     player.pos = Vec2(512.0, 512.0)
@@ -306,7 +299,6 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
 
 def test_spawn_slot_child_can_update_in_same_tick() -> None:
     world = make_world()
-    world.state.demo_mode_active = True
     pool = world.creatures
     player = world.players[0]
     player.pos = Vec2(640.0, 700.0)
@@ -1680,7 +1672,6 @@ def test_spawn_init_preserves_stale_force_target_from_recycled_slot() -> None:
 
 def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
     world = make_world()
-    world.state.demo_mode_active = True
     pool = world.creatures
     pool.entries[0].orbit_angle = 0.4
     pool.entries[0].orbit_radius = float(ProjectileTemplateId.SPIDER_PLASMA)
@@ -2059,7 +2050,6 @@ def test_spawn_init_returns_none_when_pool_is_full() -> None:
 def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
     rng = Crand(0)
     env = SpawnEnv(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

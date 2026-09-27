@@ -301,7 +301,6 @@ def make_world_state() -> Callable[..., WorldState]:
 
     def _make(
         *,
-        demo_mode_active: bool = False,
         hardcore: bool = False,
         quest_fail_retry_count: int = 0,
         preserve_bugs: bool = False,
@@ -310,7 +309,6 @@ def make_world_state() -> Callable[..., WorldState]:
         player_pos: Vec2 | None = None,
     ) -> WorldState:
         world = WorldState.build(
-            demo_mode_active=bool(demo_mode_active),
             hardcore=bool(hardcore),
             quest_fail_retry_count=int(quest_fail_retry_count),
             preserve_bugs=bool(preserve_bugs),
@@ -333,7 +331,6 @@ def default_spawn_env():
     from crimson.creatures.spawn import SpawnEnv
 
     return SpawnEnv(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

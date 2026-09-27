@@ -47,7 +47,7 @@ resource consumers.
 there is no second renderer-owned copy of the camera or world dimensions.
 
 All five gameplay modes and replay initialize through `initialize_run`.
-Demo/attract and debug views use `src/crimson/world/standalone_tick_harness.py`
+Debug views use `src/crimson/world/standalone_tick_harness.py`
 for their separately configured sessions. See the [session contract](deterministic-step-pipeline.md)
 and [startup contract](replay-run-start.md) for ordering requirements.
 

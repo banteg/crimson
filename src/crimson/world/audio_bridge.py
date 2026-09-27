@@ -55,7 +55,7 @@ class AudioBridge:
         self.play_sfx(
             request.sfx_id,
             reflex_boost_timer=plan.reflex_boost_timer,
-            gain=request.gain * (0.7 if plan.demo_mode_active else 1.0),
+            gain=request.gain,
             pan=native_sound_pan(request.position, camera=camera, screen_width=screen_width),
         )
 

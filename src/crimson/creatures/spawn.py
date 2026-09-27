@@ -682,7 +682,6 @@ def spawn_id_label(spawn_id: SpawnId) -> str:
 
 
 class SpawnEnv(msgspec.Struct, kw_only=True):
-    demo_mode_active: bool
     hardcore: bool
     quest_fail_retry_count: int
 
@@ -1820,8 +1819,8 @@ def apply_tail(
 ) -> None:
     c = plan_creatures[primary_idx]
 
-    # Demo-burst effect (skipped when demo_mode_active != 0).
-    if not env.demo_mode_active and 0.0 < c.pos.x < TERRAIN_SIZE and 0.0 < c.pos.y < TERRAIN_SIZE:
+    # Spawn burst for creatures placed inside the arena.
+    if 0.0 < c.pos.x < TERRAIN_SIZE and 0.0 < c.pos.y < TERRAIN_SIZE:
         plan_effects.append(BurstEffect(pos=c.pos, count=8))
 
     if c.health is not None:

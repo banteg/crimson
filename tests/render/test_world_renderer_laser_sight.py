@@ -98,7 +98,6 @@ def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _Native
             ),
         )
     frame = RenderFrame(
-        demo_mode_active=False,
         config=None,
         camera=Vec2(),
         ground=None,

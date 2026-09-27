@@ -160,7 +160,6 @@ class WorldStepRuntime(msgspec.Struct):
         hit_trigger, keys = plan_hit_sfx(
             [hit],
             game_mode=self.game_mode,
-            demo_mode_active=self.world.state.demo_mode_active,
             game_tune_started=self.hit_audio_game_tune_started,
             rng=self.world.state.rng,
         )
@@ -173,12 +172,8 @@ class WorldStepRuntime(msgspec.Struct):
     def play_secondary_rocket_hit_audio(self, position: Vec2) -> None:
         # Native secondary-rocket hits run the same first-hit game-tune branch
         # as bullet hits: sfx_play_exclusive(music_track_extra_0) plus one
-        # playlist rand outside demo/rush, else the panned explosion sound.
-        if (
-            (not self.world.state.demo_mode_active)
-            and self.game_mode != GameMode.RUSH
-            and not self.hit_audio_game_tune_started
-        ):
+        # playlist rand outside rush, else the panned explosion sound.
+        if self.game_mode != GameMode.RUSH and not self.hit_audio_game_tune_started:
             self.trigger_game_tune = True
             self.hit_audio_game_tune_started = True
             _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
@@ -249,13 +244,11 @@ class WorldState(msgspec.Struct):
     def build(
         cls,
         *,
-        demo_mode_active: bool,
         hardcore: bool,
         quest_fail_retry_count: int,
         preserve_bugs: bool = False,
     ) -> WorldState:
         state = GameplayState()
-        state.demo_mode_active = demo_mode_active
         state.hardcore = hardcore
         state.quest_fail_retry_count = int(quest_fail_retry_count)
         state.preserve_bugs = preserve_bugs

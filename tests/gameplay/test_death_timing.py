@@ -18,7 +18,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
-from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapon_runtime import prepare_weapon_availability, weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
@@ -27,9 +27,15 @@ from tests.support.audio import sfx_ids
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
+def _build_world(**kwargs: Any) -> WorldState:
+    # Run init prepares weapon availability; kills can roll weapon drops.
+    world = WorldState.build(**kwargs)
+    prepare_weapon_availability(world.state)
+    return world
+
+
 def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -77,8 +83,7 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
 
 
 def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -129,8 +134,7 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
 
 
 def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -178,8 +182,7 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
 
 
 def test_projectile_kill_awards_xp_same_step() -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -232,8 +235,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     preserve_bugs: bool,
     expected_sfx: SfxId,
 ) -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
         preserve_bugs=preserve_bugs,
@@ -287,14 +289,14 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=2,
+        # Heading jitter, the kill's bonus-drop rolls (3), then the death sfx pick.
+        expected_draws=5,
         expected_after_state=3,
     )
 
 
 def test_world_step_invalid_creature_type_id_fails_fast() -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -327,8 +329,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
 
 
 def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -381,8 +382,7 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
 
 
 def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -430,8 +430,7 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
 
 
 def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -493,8 +492,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
 
 def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -544,8 +542,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
 
 
 def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -600,15 +597,15 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=21,
+        # Heading jitter, the kill's forced weapon drop (5), then 4 draws per shock burst particle.
+        expected_draws=26,
         expected_after_state=0,
     )
-    assert rng.values_since(before_calls) == [0] * 21
+    assert rng.values_since(before_calls) == [0] * 26
 
 
 def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
-    world = WorldState.build(
-        demo_mode_active=True,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -670,8 +667,7 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
 
 
 def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
-    world = WorldState.build(
-        demo_mode_active=False,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -732,8 +728,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
 
 
 def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
-    world = WorldState.build(
-        demo_mode_active=False,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -780,8 +775,7 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
     from crimson.projectiles.runtime import SecondarySpawnSpec
     from crimson.projectiles.types import SecondaryProjectileTypeId
 
-    world = WorldState.build(
-        demo_mode_active=False,
+    world = _build_world(
         hardcore=False,
         quest_fail_retry_count=0,
     )

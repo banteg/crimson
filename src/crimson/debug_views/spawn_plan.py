@@ -71,7 +71,6 @@ class SpawnPlanView:
         self._world_scale = 1.0
         self._hardcore = False
         self._quest_fail_retry_count = 0
-        self._demo_mode_active = True
 
         self._plan = None
         self._plan_summary = None
@@ -102,7 +101,6 @@ class SpawnPlanView:
         spawn_id = self._template_ids[self._index]
         rng = Crand(self._seed)
         env = SpawnEnv(
-            demo_mode_active=self._demo_mode_active,
             hardcore=self._hardcore,
             quest_fail_retry_count=self._quest_fail_retry_count,
         )
@@ -158,10 +156,6 @@ class SpawnPlanView:
         self._hardcore = not self._hardcore
         self._rebuild_plan()
 
-    def _toggle_demo_mode(self) -> None:
-        self._demo_mode_active = not self._demo_mode_active
-        self._rebuild_plan()
-
     def _adjust_quest_fail_retry_count(self, delta: int) -> None:
         self._quest_fail_retry_count = max(0, min(5, self._quest_fail_retry_count + delta))
         self._rebuild_plan()
@@ -187,8 +181,6 @@ class SpawnPlanView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
             self._toggle_hardcore()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_D):
-            self._toggle_demo_mode()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_COMMA):
             self._adjust_quest_fail_retry_count(-1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD):
@@ -250,7 +242,7 @@ class SpawnPlanView:
             scale=0.8,
             color=UI_TEXT_COLOR,
         )
-        hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: retry-count  Space: sim  Backspace: reset"
+        hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  ,/.: retry-count  Space: sim  Backspace: reset"
         draw_ui_text(self._small, hints, Vec2(margin, margin + line_h), scale=UI_TEXT_SCALE, color=UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
@@ -261,8 +253,6 @@ class SpawnPlanView:
         self._draw_ui_label("hardcore", str(self._hardcore), Vec2(margin, y))
         y += line_h
         self._draw_ui_label("retry_count", str(self._quest_fail_retry_count), Vec2(margin, y))
-        y += line_h
-        self._draw_ui_label("demo_mode_active", str(self._demo_mode_active), Vec2(margin, y))
         y += line_h
 
         if self._error is not None:

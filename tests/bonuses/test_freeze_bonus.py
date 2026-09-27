@@ -119,7 +119,6 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
 
 def test_freeze_stops_creature_movement_and_animation() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

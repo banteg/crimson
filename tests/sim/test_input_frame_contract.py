@@ -40,7 +40,6 @@ def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
 
 def test_world_step_applies_per_player_inputs_by_index() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

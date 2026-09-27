@@ -2,8 +2,8 @@
 
 Covers every template id with the tail stat scaling: the spider AI7 speed bump,
 hardcore buffs and each quest-retry multiplier bucket.  The native pool starts
-empty, `demo_mode_active` skips the burst effect on both sides, and the CRT
-`rand()` seed is shared.
+empty, attract mode is off so both sides run the in-arena spawn burst, and the
+CRT `rand()` seed is shared.
 """
 
 from __future__ import annotations
@@ -80,7 +80,8 @@ def _cases() -> list[tuple[SpawnId, bool, int, int, Vec2, float]]:
 
 def test_spawn_template_stats_match_native(oracle) -> None:
     oracle.stub("console_printf", None)
-    oracle.write_u8("demo_mode_active", 1)
+    oracle.call("effect_defaults_reset")
+    oracle.write_u8("demo_mode_active", 0)
     oracle.write_u32("terrain_texture_width", _TERRAIN_SIZE)
     oracle.write_u32("terrain_texture_height", _TERRAIN_SIZE)
     pristine = oracle.snapshot()
@@ -102,7 +103,7 @@ def test_spawn_template_stats_match_native(oracle) -> None:
         oracle.call("creature_spawn_template", int(template_id), pos_arg, heading)
 
         rng = CrtRand(seed)
-        state = GameplayState(rng=rng, demo_mode_active=True, hardcore=hardcore, quest_fail_retry_count=retries)
+        state = GameplayState(rng=rng, hardcore=hardcore, quest_fail_retry_count=retries)
         pool = CreaturePool()
         try:
             pool.spawn_template(template_id, pos, heading, state=state, detail_preset=5)

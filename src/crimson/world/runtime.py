@@ -33,7 +33,6 @@ class WorldRuntime:
         self,
         *,
         assets_dir: Path,
-        demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         preserve_bugs: bool = False,
@@ -43,7 +42,6 @@ class WorldRuntime:
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
         self.assets_dir = Path(assets_dir)
-        self.demo_mode_active = bool(demo_mode_active)
         self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(preserve_bugs)
@@ -103,7 +101,6 @@ class WorldRuntime:
         self.world = build_reset_world(
             seed=seed,
             player_count=player_count,
-            demo_mode_active=self.demo_mode_active,
             hardcore=self.hardcore,
             quest_fail_retry_count=self.quest_fail_retry_count,
             preserve_bugs=self.preserve_bugs,
@@ -184,7 +181,6 @@ class WorldRuntime:
             players=self.world.players,
             creatures=self.world.creatures,
             camera=self.camera,
-            demo_mode_active=bool(self.demo_mode_active),
             elapsed_ms=float(self.presentation_elapsed_ms),
             bonus_anim_phase=float(self.bonus_anim_phase),
             rtx_mode=self.rtx_mode,

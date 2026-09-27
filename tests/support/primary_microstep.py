@@ -16,7 +16,7 @@ from tests.support.helpers import owner_ref_from_native
 
 
 def observe(case):
-    world = WorldState.build(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     state = world.state
     rng = RecordingCrand(Crand(case["rng_seed"]))
     state.rng = rng

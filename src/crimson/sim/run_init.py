@@ -58,7 +58,7 @@ def initialize_run(
             raise ValueError(f"unknown quest_level={spec.quest_level.text!r}")
 
     world = WorldState.build(
-        demo_mode_active=False, hardcore=spec.hardcore,
+        hardcore=spec.hardcore,
         quest_fail_retry_count=spec.quest_fail_retry_count, preserve_bugs=spec.preserve_bugs,
     )
     world.state.rng.srand(spec.seed)

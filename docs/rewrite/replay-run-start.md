@@ -198,7 +198,7 @@ advance gameplay RNG again. The setup is derived during initialization, not
 stored as a second replay seed or serialized `TerrainSetup` in the CRD header.
 
 Quest ordering is generic unlock terrain, score-tag draw, explicit quest terrain,
-then spawn-table construction. Menu terrain uses the unlock helper; attract-mode
-variants use explicit terrain. Keep those native differences at setup call sites.
+then spawn-table construction. Menu terrain uses the unlock helper. Keep those
+native differences at setup call sites.
 See `tests/sim/test_terrain_bootstrap.py` and
 `tests/render/test_terrain_runtime_boundaries.py` for the boundary tests.

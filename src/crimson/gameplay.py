@@ -373,12 +373,10 @@ def _direction_from_heading_native(heading: float) -> Vec2:
     return Vec2(math.cos(radians), math.sin(radians))
 
 
-def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState) -> MovementControlType:
+def _resolve_move_mode_for_update(input_state: PlayerInput) -> MovementControlType:
     move_mode = input_state.move_mode
     if move_mode is not None:
         return move_mode
-    if state.demo_mode_active:
-        return MovementControlType.COMPUTER
     if (
         input_state.move_forward_pressed is not None
         and input_state.move_backward_pressed is not None
@@ -389,12 +387,10 @@ def _resolve_move_mode_for_update(input_state: PlayerInput, state: GameplayState
     return MovementControlType.DUAL_ACTION_PAD
 
 
-def _resolve_aim_scheme_for_update(input_state: PlayerInput, state: GameplayState) -> AimScheme:
+def _resolve_aim_scheme_for_update(input_state: PlayerInput) -> AimScheme:
     aim_scheme = input_state.aim_scheme
     if aim_scheme is not None:
         return aim_scheme
-    if state.demo_mode_active:
-        return AimScheme.COMPUTER
     return AimScheme.MOUSE
 
 
@@ -497,11 +493,10 @@ def _player_update_aim_by_scheme(
     dt: float,
     movement_mode: MovementControlType,
     aim_scheme: AimScheme,
-    demo_mode_active: bool,
 ) -> None:
     target_aim = input_state.aim
 
-    if not demo_mode_active and aim_scheme != AimScheme.COMPUTER:
+    if aim_scheme != AimScheme.COMPUTER:
         if aim_scheme == AimScheme.KEYBOARD:
             if movement_mode in (MovementControlType.RELATIVE, MovementControlType.STATIC):
                 if bool(input_state.turn_right_pressed):
@@ -637,7 +632,7 @@ def _player_move(
     # Movement.
     raw_move = input_state.move
     phase_sign = 1.0
-    player_controlled_movement = (not state.demo_mode_active) and move_mode != MovementControlType.COMPUTER
+    player_controlled_movement = move_mode != MovementControlType.COMPUTER
     if player_controlled_movement and move_mode == MovementControlType.RELATIVE:
         turning_left = bool(input_state.turn_left_pressed)
         turning_right = bool(input_state.turn_right_pressed)
@@ -861,7 +856,6 @@ def _player_tick_reload(
     # reloads back-to-back as each one completes.
     manual_reload_allowed = (
         bool(input_state.reload_down or input_state.reload_pressed)
-        and (not state.demo_mode_active)
         and (not has_alt_weapon_perk)
         and move_mode != MovementControlType.MOUSE_POINT_CLICK
         and float(player.weapon.reload_timer) == 0.0
@@ -934,8 +928,8 @@ def player_update(
         aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
         player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
 
-    move_mode = _resolve_move_mode_for_update(input_state, state)
-    aim_scheme = _resolve_aim_scheme_for_update(input_state, state)
+    move_mode = _resolve_move_mode_for_update(input_state)
+    aim_scheme = _resolve_aim_scheme_for_update(input_state)
 
     speed_multiplier = float(player.speed_multiplier)
     if speed_bonus_active:
@@ -980,7 +974,6 @@ def player_update(
         dt=frame_dt,
         movement_mode=move_mode,
         aim_scheme=aim_scheme,
-        demo_mode_active=bool(state.demo_mode_active),
     )
 
     # Native cools spread after perk timers/movement but before weapon fire.

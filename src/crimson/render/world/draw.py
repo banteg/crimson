@@ -549,7 +549,7 @@ def draw_bonus_and_ui(
             alpha=ctx.entity_alpha,
         )
 
-    draw_world_aim = draw_aim_indicators_enabled and (not render_ctx.frame.demo_mode_active)
+    draw_world_aim = draw_aim_indicators_enabled
     if draw_world_aim:
         with profile_pass("aim_indicators"):
             draw_aim_indicators(render_ctx, ctx=ctx)

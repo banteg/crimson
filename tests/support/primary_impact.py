@@ -21,7 +21,7 @@ def bits(x):
 
 
 def observe(case):
-    world = WorldState.build(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     state = world.state
     state.bonuses.freeze = case.get("freeze", 0.0)
     rng = RecordingCrand(Crand(case["rng_seed"]))

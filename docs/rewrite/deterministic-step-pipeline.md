@@ -71,7 +71,7 @@ Native hit audio and terrain effects consume authoritative RNG, so headless
 verification still builds the presentation plan even without rendering or audio.
 
 A `FixedStepClock` turns render-frame time into ticks for live play,
-the attract demo, debug views and replay playback
+debug views and replay playback
 (`src/crimson/replay/driver/playback_pump.py`).
 
 ## Input and timer ownership

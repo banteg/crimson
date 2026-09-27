@@ -19,13 +19,6 @@ from tests.support.helpers import ScriptedCrand
 _TEMPLATE_IDS = tuple(sorted(entry.spawn_id for entry in SPAWN_TEMPLATES))
 _VARIANT_CASES = (
     (
-        "demo_disabled",
-        0xBEEF,
-        0.0,
-        {"demo_mode_active": False},
-        (SpawnId.ZOMBIE_BOSS_SPAWNER_00, SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.ALIEN_RANDOM_1F),
-    ),
-    (
         "hardcore",
         0x1234,
         0.0,

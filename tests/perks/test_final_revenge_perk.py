@@ -18,7 +18,6 @@ from tests.support.helpers import assert_float_close
 
 def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -60,7 +59,6 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
 
 def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -94,7 +92,6 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
 
 def test_final_revenge_runs_before_later_creature_slots_update() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )
@@ -145,7 +142,6 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
 
 def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
     world = WorldState.build(
-        demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
     )

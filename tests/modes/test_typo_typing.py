@@ -155,7 +155,6 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
     from crimson.sim.world_state import WorldState
 
     world = WorldState.build(
-        demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )

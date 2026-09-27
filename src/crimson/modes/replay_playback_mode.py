@@ -321,7 +321,6 @@ class ReplayPlaybackMode:
 
         runtime = WorldRuntime(
             assets_dir=self._ctx.assets_dir,
-            demo_mode_active=False,
             quest_fail_retry_count=int(quest_fail_retry_count),
             hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),

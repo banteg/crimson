@@ -273,8 +273,6 @@ class BonusPool:
         game_mode = state.game_mode
         if game_mode == GameMode.TYPO:
             return None
-        if state.demo_mode_active:
-            return None
         if game_mode == GameMode.RUSH:
             return None
         if game_mode == GameMode.TUTORIAL:

@@ -53,7 +53,7 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
 def _python_step(seed: int, *, elapsed_ms: int, dt_ms: int, cooldown_ms: int) -> tuple[WorldState, list[int]]:
     """Run the port's spawn step; return the world and the RNG state before each creature allocation."""
 
-    world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
     world.state.typo.spawn_cooldown_ms = cooldown_ms
