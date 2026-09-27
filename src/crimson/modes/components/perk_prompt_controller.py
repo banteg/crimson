@@ -45,13 +45,12 @@ class PerkPromptState:
         any_alive: bool,
         paused: bool,
         menu_active: bool,
-        prompt_scale: float = 1.0,
     ) -> bool:
         if int(pending_count) <= 0 or (not any_alive) or paused or menu_active:
             return False
         label = PerkPromptUi.label(config, pending_count=int(pending_count))
         if label:
-            rect = PerkPromptUi.rect(resources=ctx.resources, scale=prompt_scale)
+            rect = PerkPromptUi.rect(resources=ctx.resources)
             self.hover = rect.contains(ctx.mouse)
         if self._prompt_open_requested(config=config, player_count=int(player_count)):
             self.pulse = 1000.0

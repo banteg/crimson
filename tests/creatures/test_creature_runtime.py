@@ -1983,8 +1983,6 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     pool._tick_dead(
         corpse,
         dt=0.018,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue_rotated=None,
     )
 
@@ -2013,8 +2011,6 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     pool._tick_dead(
         corpse,
         dt=0.1,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue_rotated=None,
         rng=rng,
         detail_preset=5,
@@ -2139,8 +2135,6 @@ def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
     pool._tick_dead(
         corpse,
         dt=0.05900000408291817,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue_rotated=None,
     )
 
@@ -2170,8 +2164,6 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
     pool._tick_dead(
         corpse,
         dt=0.018,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue_rotated=None,
     )
     assert pool.entries[6].active is True

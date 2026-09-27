@@ -121,13 +121,12 @@ class PerkMenuController:
             font,
             desc,
             max_width_px=self._DESC_WRAP_WIDTH_PX,
-            scale=1.0,
         )
         self._wrapped_desc_cache[key] = wrapped
         return wrapped
 
     @staticmethod
-    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float, *, scale: float) -> str:
+    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float) -> str:
         wrapped = list(str(text))
         if not wrapped:
             return ""

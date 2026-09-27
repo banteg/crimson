@@ -59,7 +59,6 @@ class PerkPromptUi:
         cls,
         *,
         resources: RuntimeResources,
-        scale: float = 1.0,
     ) -> Rect:
         hinge = cls.hinge()
         tex = resources.texture(TextureId.UI_MENU_ITEM)

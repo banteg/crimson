@@ -73,7 +73,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
     is_fire_bullets = type_id == ProjectileTemplateId.FIRE_BULLETS.value
     is_ion = type_id in ION_TYPES
 
-    origin = proj_origin(ctx.proj, ctx.pos)
+    origin = proj_origin(ctx.proj)
     beam = ctx.pos - origin
     direction, dist = beam.normalized_with_length()
     if dist <= 1e-6:

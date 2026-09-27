@@ -167,11 +167,10 @@ def test_perk_select_random_tags_exact_native_caller(mocker) -> None:
     state = GameplayState(rng=rng)
     state.perk_available = [False] * (PERK_ID_MAX + 1)
     state.perk_available[1] = True
-    player = PlayerState(index=0, pos=Vec2())
 
     mocker.patch.object(perk_selection_module, "perk_can_offer", return_value=True)
 
-    perk_id = perk_select_random(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
+    perk_id = perk_select_random(state, game_mode=GameMode.SURVIVAL, player_count=1)
 
     assert perk_id == PerkId.BLOODY_MESS_QUICK_LEARNER
     assert [record.caller for record in rng.records_since()] == [RngCallerStatic.PERK_SELECT_RANDOM]

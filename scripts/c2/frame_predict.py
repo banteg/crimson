@@ -975,8 +975,8 @@ def main() -> None:
     )
     args = parser.parse_args()
     if args.control:
-        match.validate_scratch_source = lambda source: None
-        match._validate_scratch_source_text = lambda text, source: None
+        match.validate_scratch_source = lambda _source: None
+        match._validate_scratch_source_text = lambda _text, _source: None
     frames, info = capture_and_observe(args.scratch, args.out, args.source, decisions=args.decisions)
     config = info["config"]
     want = args.function or config.symbol or config.function

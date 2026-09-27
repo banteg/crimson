@@ -91,7 +91,6 @@ class MenuView:
         self._last_mouse_pos = Vec2.from_xy(mouse)
         self._panel_open_sfx_played = False
         self._transition.duration_ms = self._menu_max_timeline_ms(
-            full_version=self._full_version,
             mods_available=self._mods_available(),
             other_games=self._other_games_enabled(),
         )
@@ -455,8 +454,7 @@ class MenuView:
         return Rect.from_pos_size(top_left, bottom_right - top_left)
 
     @staticmethod
-    def _menu_max_timeline_ms(full_version: bool, mods_available: bool, other_games: bool) -> int:
-        del full_version
+    def _menu_max_timeline_ms(mods_available: bool, other_games: bool) -> int:
         max_ms = 300  # sign element at index 0
         show_top = mods_available
         slot_active = [show_top, True, True, True, True, other_games]

@@ -79,7 +79,6 @@ def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> R
                 shots_hit=int(shots_hit),
                 most_used_weapon_id=most_used_weapon_id_for_player(
                     state,
-                    player_index=index,
                     fallback_weapon_id=player.weapon.weapon_id,
                 ),
             ),

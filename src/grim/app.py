@@ -104,7 +104,7 @@ def run_window(
         def open(self) -> None:
             return None
 
-        def update(self, dt: float) -> None:
+        def update(self, dt: float) -> None:  # noqa: ARG002 - View protocol signature
             return None
 
         def draw(self) -> None:

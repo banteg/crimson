@@ -47,16 +47,16 @@ def test_weapon_usage_tracks_most_used_weapon() -> None:
 
     state.weapon_usage_time[WeaponId.PISTOL] = 16
     state.weapon_usage_time[WeaponId.ASSAULT_RIFLE] = 48
-    assert most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=WeaponId.PISTOL) == 2
+    assert most_used_weapon_id_for_player(state, fallback_weapon_id=WeaponId.PISTOL) == 2
 
 
 def test_most_used_weapon_uses_pistol_for_zero_time_and_ties() -> None:
     state = GameplayState()
-    assert most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=WeaponId.MEAN_MINIGUN) == 1
+    assert most_used_weapon_id_for_player(state, fallback_weapon_id=WeaponId.MEAN_MINIGUN) == 1
 
     state.weapon_usage_time[WeaponId.PISTOL] = 100
     state.weapon_usage_time[WeaponId.ASSAULT_RIFLE] = 100
-    assert most_used_weapon_id_for_player(state, player_index=1, fallback_weapon_id=WeaponId.MEAN_MINIGUN) == 1
+    assert most_used_weapon_id_for_player(state, fallback_weapon_id=WeaponId.MEAN_MINIGUN) == 1
 
 
 def test_most_used_weapon_compares_native_u32_slots_as_signed() -> None:
@@ -64,7 +64,7 @@ def test_most_used_weapon_compares_native_u32_slots_as_signed() -> None:
     state.weapon_usage_time[WeaponId.PISTOL] = 0xFFFFFFFF
     state.weapon_usage_time[WeaponId.ASSAULT_RIFLE] = 0
 
-    assert most_used_weapon_id_for_player(state, player_index=0, fallback_weapon_id=WeaponId.PISTOL) == 2
+    assert most_used_weapon_id_for_player(state, fallback_weapon_id=WeaponId.PISTOL) == 2
 
 
 def test_weapon_usage_time_accumulates_fixed_player_zero_with_u32_wrapping() -> None:

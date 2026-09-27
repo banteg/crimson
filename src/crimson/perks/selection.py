@@ -54,7 +54,7 @@ def perk_choice_count(perks: PerkCounts) -> int:
     return 5
 
 
-def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: GameMode, player_count: int) -> PerkId:
+def perk_select_random(state: GameplayState, *, game_mode: GameMode, player_count: int) -> PerkId:
     """Randomly select an eligible perk id.
 
     Port of `perk_select_random` (0x0042fbd0).
@@ -68,7 +68,7 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
             continue
         if not state.perk_available[int(perk_id)]:
             continue
-        if perk_can_offer(state, player, perk_id, game_mode=game_mode, player_count=player_count):
+        if perk_can_offer(state, perk_id, game_mode=game_mode, player_count=player_count):
             return perk_id
 
     return PerkId.INSTANT_WINNER
@@ -76,7 +76,6 @@ def perk_select_random(state: GameplayState, player: PlayerState, *, game_mode: 
 
 def _perk_offerable_mask(
     state: GameplayState,
-    player: PlayerState,
     *,
     game_mode: GameMode,
     player_count: int,
@@ -88,7 +87,7 @@ def _perk_offerable_mask(
         if not state.perk_available[perk_index]:
             continue
         perk_id = PerkId(perk_index)
-        if perk_can_offer(state, player, perk_id, game_mode=game_mode, player_count=player_count):
+        if perk_can_offer(state, perk_id, game_mode=game_mode, player_count=player_count):
             offerable[perk_index] = True
     return offerable
 
@@ -109,7 +108,6 @@ def perk_generate_choices(
 
     offerable_mask = _perk_offerable_mask(
         state,
-        player,
         game_mode=game_mode,
         player_count=player_count,
     )

@@ -217,7 +217,7 @@ class ControlsMenuView(PanelMenuView):
         if not self._update_panel(dt):
             return
         entry = self._entry
-        if entry is None or not self._entry_enabled(entry):
+        if entry is None or not self._entry_enabled():
             return
         panel_scale = self._panel_scale()
         left_top_left = self._left_panel_top_left(panel_scale)

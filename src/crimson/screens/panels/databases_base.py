@@ -215,4 +215,4 @@ class _DatabaseBaseView:
         raise NotImplementedError
 
     def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
-        return
+        pass

@@ -64,7 +64,7 @@ class OptionsMenuView(PanelMenuView):
         if self._transition.closing:
             return
         entry = self._entry
-        if entry is None or not self._entry_enabled(entry):
+        if entry is None or not self._entry_enabled():
             return
 
         config = self.state.config
@@ -76,9 +76,8 @@ class OptionsMenuView(PanelMenuView):
 
         resources = require_runtime_resources(self.state)
         rect_on = resources.texture(TextureId.UI_RECT_ON)
-        rect_off = resources.texture(TextureId.UI_RECT_OFF)
 
-        if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, rect_off, scale):
+        if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, scale):
             config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
             set_sfx_volume(self.state.audio, config.audio.sfx_volume)
             self._dirty = True
@@ -88,7 +87,6 @@ class OptionsMenuView(PanelMenuView):
             self._slider_music,
             slider_pos.offset(dy=67.0 * scale),
             rect_on,
-            rect_off,
             scale,
         ):
             config.audio.music_volume = float(self._slider_music.value) * 0.1
@@ -100,7 +98,6 @@ class OptionsMenuView(PanelMenuView):
             self._slider_detail,
             slider_pos.offset(dy=87.0 * scale),
             rect_on,
-            rect_off,
             scale,
         ):
             preset = apply_detail_preset(config, self._slider_detail.value)
@@ -112,7 +109,6 @@ class OptionsMenuView(PanelMenuView):
             self._slider_mouse,
             slider_pos.offset(dy=107.0 * scale),
             rect_on,
-            rect_off,
             scale,
         ):
             sensitivity = float(self._slider_mouse.value) * 0.1
@@ -220,7 +216,6 @@ class OptionsMenuView(PanelMenuView):
         slider: SliderState,
         pos: Vec2,
         rect_on: rl.Texture,
-        rect_off: rl.Texture,
         scale: float,
     ) -> bool:
         rect_w = float(rect_on.width) * scale

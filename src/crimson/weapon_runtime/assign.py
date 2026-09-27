@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 from grim.sfx_types import SfxRequest
@@ -71,12 +70,10 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
 def most_used_weapon_id_for_player(
     state: GameplayState,
     *,
-    player_index: int,
     fallback_weapon_id: WeaponId,
 ) -> WeaponId:
     """Return native's most-used weapon from the global equipped-time table."""
 
-    _ = player_index
     times = state.weapon_usage_time
     if len(times) < 2:
         return WeaponId(fallback_weapon_id)
@@ -107,11 +104,8 @@ def player_swap_alt_weapon(player: PlayerState) -> bool:
 def player_start_reload(
     player: PlayerState,
     state: GameplayState,
-    *,
-    players: Sequence[PlayerState] | None = None,
 ) -> None:
     """Start or refresh a reload timer (`player_start_reload` @ 0x00413430)."""
-
 
     if player.weapon.reload_active and (
         PerkId.AMMUNITION_WITHIN in state.perks or PerkId.REGRESSION_BULLETS in state.perks

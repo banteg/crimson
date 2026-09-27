@@ -606,7 +606,7 @@ class ReplayPlaybackMode:
             runtime.sim_world.state.tutorial_overlay,
             draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
             measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
-            measure_line_height=lambda scale: int(
+            measure_line_height=lambda _scale: int(
                 self._small.cell_size if self._small is not None else 20,
             ),
         )

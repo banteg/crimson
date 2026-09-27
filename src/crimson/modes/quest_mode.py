@@ -159,7 +159,6 @@ class QuestMode(BaseGameplayMode):
             any_alive=self._any_player_alive(),
             paused=self._paused,
             menu_active=self._perk_menu.active,
-            prompt_scale=UI_TEXT_SCALE,
         ):
             self._try_open_perk_menu()
         self._perk_prompt.tick_timer(
@@ -192,7 +191,6 @@ class QuestMode(BaseGameplayMode):
                 fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
                 most_used_weapon_id = most_used_weapon_id_for_player(
                     self.state,
-                    player_index=int(self.player.index),
                     fallback_weapon_id=self.player.weapon.weapon_id,
                 )
                 player_health_values = tuple(float(player.health) for player in self.sim_world.players)
@@ -332,7 +330,6 @@ class QuestMode(BaseGameplayMode):
             fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
-                player_index=int(self.player.index),
                 fallback_weapon_id=self.player.weapon.weapon_id,
             )
             player_health_values = tuple(float(player.health) for player in self.sim_world.players)

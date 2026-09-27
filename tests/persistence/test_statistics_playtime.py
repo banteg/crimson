@@ -23,7 +23,6 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
     assert (
         _format_playtime_text(
             (1 * 60 * 60 + 1 * 60) * 1000,
-            preserve_bugs=True,
         )
         == "played for 1 hours 1 minutes"
     )

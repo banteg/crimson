@@ -130,7 +130,7 @@ class PanelMenuView:
         if entry is None:
             return
 
-        enabled = enabled and self._entry_enabled(entry)
+        enabled = enabled and self._entry_enabled()
         hovered = enabled and self._hovered_entry(entry)
         self._hovered = hovered
 
@@ -295,7 +295,7 @@ class PanelMenuView:
             rotation_deg=0.0,
             tint=tint,
         )
-        if self._entry_enabled(entry):
+        if self._entry_enabled():
             rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
             draw_ui_quad(
                 texture=label_tex,
@@ -307,7 +307,7 @@ class PanelMenuView:
             )
             rl.end_blend_mode()
 
-    def _entry_enabled(self, entry: MenuEntry) -> bool:
+    def _entry_enabled(self) -> bool:
         return self._transition.timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:

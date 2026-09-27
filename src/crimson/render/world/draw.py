@@ -511,7 +511,6 @@ def draw_aim_indicators(
 
         def draw_circle(center: Vec2, radius: float, alpha: float) -> None:
             draw_aim_circle(
-                render_ctx,
                 center=center,
                 radius=radius,
                 alpha=alpha,

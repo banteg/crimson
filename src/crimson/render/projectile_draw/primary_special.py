@@ -50,7 +50,7 @@ def draw_pulse_gun(ctx: ProjectileDrawCtx) -> bool:
     alpha = float(ctx.alpha)
     life = float(ctx.life)
     if life >= 0.4:
-        origin = proj_origin(ctx.proj, ctx.pos)
+        origin = proj_origin(ctx.proj)
         dist = origin.distance_to(ctx.pos)
 
         desired_size = dist * 0.16 * ctx.scale
@@ -116,7 +116,7 @@ def draw_splitter_or_blade(ctx: ProjectileDrawCtx) -> bool:
     if float(ctx.life) < 0.4:
         return True
 
-    origin = proj_origin(ctx.proj, ctx.pos)
+    origin = proj_origin(ctx.proj)
     dist = origin.distance_to(ctx.pos)
 
     desired_size = min(dist, 20.0) * ctx.scale

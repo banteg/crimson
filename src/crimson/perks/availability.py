@@ -6,7 +6,7 @@ from ..game_modes import GameMode
 from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
-from ..sim.state_types import PERK_COUNT_SIZE, PlayerState
+from ..sim.state_types import PERK_COUNT_SIZE
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
 if TYPE_CHECKING:
@@ -52,7 +52,7 @@ def prepare_perk_availability(state: GameplayState) -> None:
 
 
 def perk_can_offer(
-    state: GameplayState, player: PlayerState, perk_id: PerkId, *, game_mode: GameMode, player_count: int,
+    state: GameplayState, perk_id: PerkId, *, game_mode: GameMode, player_count: int,
 ) -> bool:
     """Return whether `perk_id` is eligible for selection.
 

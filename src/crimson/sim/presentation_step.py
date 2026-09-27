@@ -31,7 +31,6 @@ from ..rng_caller_static import RngCallerStatic
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
 from .state_types import BonusPickupEvent, PlayerState
 from .terrain_fx import TerrainFxBatch
-from .world_defs import BEAM_TYPES
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -93,10 +92,8 @@ def plan_player_audio_sfx(
 def _hit_sfx_for_type(
     type_id: int,
     *,
-    beam_types: frozenset[int],
     rng: CrandLike,
 ) -> SfxId:
-    _ = beam_types
     ammo_class = weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).ammo_class
     if ammo_class == 4:
         return SfxId.SHOCK_HIT_01
@@ -110,7 +107,6 @@ def plan_hit_sfx(
     demo_mode_active: bool,
     game_tune_started: bool,
     rng: CrandLike,
-    beam_types: frozenset[int] = BEAM_TYPES,
 ) -> tuple[bool, list[SfxRequest]]:
     if not hits:
         return False, []
@@ -132,7 +128,7 @@ def plan_hit_sfx(
             _ = rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             continue
         type_id = int(hits[idx].type_id)
-        sfx.append(SfxRequest(_hit_sfx_for_type(type_id, beam_types=beam_types, rng=rng), hits[idx].hit))
+        sfx.append(SfxRequest(_hit_sfx_for_type(type_id, rng=rng), hits[idx].hit))
     return trigger_game_tune, sfx
 
 

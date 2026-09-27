@@ -20,7 +20,7 @@ def grim2d_circle_segments_outline(radius: float) -> int:
     return max(3, int(radius * 0.2 + 14.0))
 
 
-def draw_aim_circle(render_ctx: WorldRenderCtx, *, center: Vec2, radius: float, alpha: float = 1.0) -> None:
+def draw_aim_circle(*, center: Vec2, radius: float, alpha: float = 1.0) -> None:
     if radius <= 1e-3:
         return
     alpha = clamp(float(alpha), 0.0, 1.0)

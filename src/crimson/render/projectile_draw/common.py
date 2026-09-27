@@ -7,8 +7,7 @@ from ...projectiles.types import Projectile
 RAD_TO_DEG = 57.29577951308232
 
 
-def proj_origin(proj: Projectile, fallback: Vec2) -> Vec2:
-    _ = fallback
+def proj_origin(proj: Projectile) -> Vec2:
     return proj.origin
 
 

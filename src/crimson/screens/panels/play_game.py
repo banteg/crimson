@@ -93,7 +93,7 @@ class PlayGameMenuView(PanelMenuView):
             return
         self._update_back_button(dt, enter=False)
         entry = self._entry
-        if self._transition.closing or entry is None or not self._entry_enabled(entry):
+        if self._transition.closing or entry is None or not self._entry_enabled():
             return
         dt_ms = int(min(dt, 0.1) * 1000.0)
 
@@ -439,7 +439,6 @@ class PlayGameMenuView(PanelMenuView):
         layout = self._content_layout()
         base_pos = layout.base_pos
         scale = layout.scale
-        text_scale = 1.0 * scale
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
         # `play_game_menu_update`: title label at (xy - 64, var_1c - 8), size 128x32.
@@ -476,12 +475,11 @@ class PlayGameMenuView(PanelMenuView):
             draw_small_text(font, "times played:", base_pos + Vec2(132.0 * scale, 16.0 * scale), text_color)
 
         for mode in entries:
-            self._draw_mode_button(mode, Vec2(base_pos.x, y), scale, resources=resources, font=font)
+            self._draw_mode_button(mode, Vec2(base_pos.x, y), scale, resources=resources)
             if show_counts and mode.show_count:
                 self._draw_mode_count(
                     mode.key,
                     Vec2(base_pos.x + 158.0 * scale, y + 8.0 * scale),
-                    text_scale,
                     text_color,
                     font=font,
                 )
@@ -571,13 +569,12 @@ class PlayGameMenuView(PanelMenuView):
         scale: float,
         *,
         resources: RuntimeResources,
-        font: SmallFontData,
     ) -> None:
         state = self._mode_button_state(mode)
         width = button_width(resources, state.label, scale=scale, force_wide=state.force_wide)
         button_draw(resources, state, pos=pos, width=width, scale=scale)
 
-    def _draw_mode_count(self, key: str, pos: Vec2, scale: float, color: rl.Color, *, font: SmallFontData) -> None:
+    def _draw_mode_count(self, key: str, pos: Vec2, color: rl.Color, *, font: SmallFontData) -> None:
         status = self.state.status
         if key == "quests":
             count = self._quests_total_played()

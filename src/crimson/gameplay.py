@@ -885,7 +885,7 @@ def _player_tick_reload(
         and bool(single_player_mode)
     )
     if manual_reload_allowed:
-        _player_start_reload(player, state, players=players)
+        _player_start_reload(player, state)
 
     return has_alt_weapon_perk
 

@@ -521,7 +521,7 @@ def _draw_right_panel_local_score(
     )
 
     weapon_id = entry.most_used_weapon_id
-    weapon_name, icon_index = _weapon_label_and_icon(view, weapon_id)
+    weapon_name, icon_index = _weapon_label_and_icon(weapon_id)
     if icon_index is not None:
         _draw_wicon(
             resources=resources,
@@ -621,7 +621,7 @@ def _draw_wicon(
     )
 
 
-def _weapon_label_and_icon(view: HighScoresView, weapon_id: int) -> tuple[str, int | None]:
+def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
     from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
     weapon = WEAPON_BY_ID[WeaponId(weapon_id)]

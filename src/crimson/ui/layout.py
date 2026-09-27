@@ -17,12 +17,13 @@ class DropdownLayoutBase(msgspec.Struct, frozen=True):
     full_h: float
 
 
-def ui_scale(screen_w: float, screen_h: float) -> float:
-    # Classic UI-space: draw in backbuffer pixels.
+# Identity placeholders: the UI draws in backbuffer pixels. Their callers still
+# thread `scale` through widget helpers that ignore it; remove both together.
+def ui_scale(screen_w: float, screen_h: float) -> float:  # noqa: ARG001
     return 1.0
 
 
-def ui_origin(screen_w: float, screen_h: float, scale: float) -> Vec2:
+def ui_origin(screen_w: float, screen_h: float, scale: float) -> Vec2:  # noqa: ARG001
     return Vec2()
 
 

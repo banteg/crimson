@@ -64,7 +64,7 @@ match-explain = [
 line-length = 120
 
 [tool.ruff.lint]
-extend-select = ["B006", "B007", "B017", "B023", "B904", "B905", "C4", "COM812", "FURB", "I001", "ISC", "PGH003", "PT017", "RET", "RUF012", "RUF100", "S113", "S607", "SIM", "TRY004", "UP035"]
+extend-select = ["ARG", "B006", "B007", "B017", "B023", "B904", "B905", "C4", "COM812", "FURB", "I001", "ISC", "PGH003", "PT017", "RET", "RUF012", "RUF100", "S113", "S607", "SIM", "TRY004", "UP035"]
 extend-ignore = [
     "E402",
     # Native branch shapes stay as if/else blocks.
@@ -77,9 +77,13 @@ extend-ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+# Quest builders share QuestBuilder's signature; most ignore rng and full_version.
+"src/crimson/quests/tier*.py" = ["ARG001"]
+# Fixtures, mock side effects and protocol fakes take arguments they don't use.
+"tests/**" = ["ARG"]
 # Frozen evidence and review probes keep the style they were recorded with.
-"analysis/**" = ["B905", "C4", "FURB", "I001", "ISC", "RET", "SIM"]
-"tools/match/evidence/**" = ["B905", "C4", "FURB", "ISC", "RET", "SIM"]
+"analysis/**" = ["ARG", "B905", "C4", "FURB", "I001", "ISC", "RET", "SIM"]
+"tools/match/evidence/**" = ["ARG", "B905", "C4", "FURB", "ISC", "RET", "SIM"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [

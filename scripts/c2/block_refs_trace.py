@@ -189,7 +189,7 @@ def main():
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
         c2, iv = stage.load_modules()
-        stage.profile = lambda c2_module, preset: profile(c2_module, args.rescore)
+        stage.profile = lambda c2_module, _preset: profile(c2_module, args.rescore)
         stage.observer_source = observer_source(stage.observer_source)
         result = stage.trace(c2, iv, args.scratch, args.out, "block-refs")
         print(json.dumps({"metrics": result["metrics"]}))

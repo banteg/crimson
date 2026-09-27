@@ -1047,7 +1047,6 @@ class CreaturePool:
         single_player_dormant_target: PlayerState | None,
     ) -> None:
         state, players, rng = options.state, options.players, options.rng
-        world_width, world_height = float(options.world_width), float(options.world_height)
         detail_preset, violence_disabled = int(options.detail_preset), int(options.violence_disabled)
         fx_queue_rotated = options.fx_queue_rotated
         # Native performs this first death-stage tick before calling
@@ -1086,8 +1085,6 @@ class CreaturePool:
             self._tick_dead(
                 creature,
                 dt=dt,
-                world_width=world_width,
-                world_height=world_height,
                 fx_queue_rotated=fx_queue_rotated,
                 rng=rng,
                 detail_preset=int(detail_preset),
@@ -1254,8 +1251,6 @@ class CreaturePool:
                     self._tick_dead(
                         creature,
                         dt=dt,
-                        world_width=world_width,
-                        world_height=world_height,
                         fx_queue_rotated=fx_queue_rotated,
                         rng=rng,
                         detail_preset=int(detail_preset),
@@ -1733,8 +1728,6 @@ class CreaturePool:
         creature: CreatureState,
         *,
         dt: float,
-        world_width: float,
-        world_height: float,
         fx_queue_rotated: FxQueueRotated | None,
         rng: CrandLike | None = None,
         detail_preset: int = 5,

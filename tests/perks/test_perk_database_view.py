@@ -59,7 +59,7 @@ def test_hovered_perk_id_returns_none_when_not_hovered(make_game_state) -> None:
 def test_wrap_small_text_native_inserts_newline_at_previous_space(mocker) -> None:
     mocker.patch.object(perk_db, "measure_small_text_width", side_effect=lambda _font, text: float(len(text)))
     fake_font = cast(SmallFontData, object())
-    wrapped = UnlockedPerksDatabaseView._wrap_small_text_native(fake_font, "alpha beta", 6.0, scale=1.0)
+    wrapped = UnlockedPerksDatabaseView._wrap_small_text_native(fake_font, "alpha beta", 6.0)
     assert wrapped == "alpha\nbeta"
 
 
