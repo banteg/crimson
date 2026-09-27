@@ -69,8 +69,7 @@ def normalize_type_text(text):
     text = re.sub(r"\s*\]\s*", "]", text)
     text = re.sub(r"\s*\(\s*", "(", text)
     text = re.sub(r"\s*\)", ")", text)
-    text = re.sub(r"\s*,\s*", ", ", text)
-    return text
+    return re.sub(r"\s*,\s*", ", ", text)
 
 
 def build_data_decl(type_text, ident="__ida_data"):
@@ -317,10 +316,7 @@ def apply_data_map(path, program_name):
     covered_ranges = []
 
     def is_covered(ea):
-        for start, end in covered_ranges:
-            if start < ea < end:
-                return True
-        return False
+        return any(start < ea < end for start, end in covered_ranges)
 
     for row in rows:
         if basename(row.get("program", "")) != program_name:

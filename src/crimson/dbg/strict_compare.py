@@ -31,7 +31,7 @@ def _ordered_f32(bits: int) -> int:
 
 
 def _path_or_root(path: str) -> str:
-    return path if path else "<root>"
+    return path or "<root>"
 
 
 def _path_attr(path: str, name: str) -> str:

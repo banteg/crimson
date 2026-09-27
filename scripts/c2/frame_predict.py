@@ -656,7 +656,7 @@ def stack_refs(code: bytes, base: int, direct_pop) -> dict:
             window = 0
         elif mn not in ("cmp", "test") and ops[:3] in ("ebx", "ebp", "esi", "edi"):
             written.add(ops[:3])
-        if (mn in ("jmp",) or mn.startswith(("j", "loop"))) and ops.startswith("0x"):
+        if (mn == "jmp" or mn.startswith(("j", "loop"))) and ops.startswith("0x"):
             state_at.setdefault(int(ops, 0), (depth, window))
         if mn in ("jmp", "ret"):
             depth = None

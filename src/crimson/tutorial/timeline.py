@@ -101,9 +101,9 @@ def _tick_stage_transition(stage_index: int, transition_timer_ms: int, *, frame_
         transition_timer_ms = 0
         return stage_index, transition_timer_ms
 
-    if -1 < transition_timer_ms:
+    if transition_timer_ms > -1:
         transition_timer_ms += dt_ms
-    if 1000 < transition_timer_ms:
+    if transition_timer_ms > 1000:
         transition_timer_ms = -1
     return stage_index, transition_timer_ms
 

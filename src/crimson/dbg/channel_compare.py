@@ -13,7 +13,7 @@ from .strict_compare import strict_mismatch_payload
 
 
 def _rng_stream_row_payload(row: RngStreamRow, *, field: str) -> BuiltinObject:
-    payload = to_builtin_object(
+    return to_builtin_object(
         {
             "tick_call_index": row.tick_call_index,
             "value_15": row.value_15,
@@ -26,7 +26,6 @@ def _rng_stream_row_payload(row: RngStreamRow, *, field: str) -> BuiltinObject:
         },
         field=field,
     )
-    return payload
 
 
 def compare_rng_stream(expected_rows: list[RngStreamRow], actual_rows: list[RngStreamRow]) -> tuple[bool, BuiltinObject | None]:

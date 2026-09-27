@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -87,10 +88,9 @@ class RenderPipeline:
                 self._on_resize(normalized_w, normalized_h)
             self._sink.open()
         except Exception:
-            try:
+            # Preserve the original open error during best-effort rollback.
+            with contextlib.suppress(Exception):
                 self._sink.close()
-            except Exception:  # noqa: BLE001, S110 - preserve the original open error during best-effort rollback
-                pass
             self._opened = False
             self._width = -1
             self._height = -1

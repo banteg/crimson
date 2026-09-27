@@ -140,9 +140,9 @@ def test_sdk_oracle_fingerprint_masks_linker_words() -> None:
     )
     segment = (
         b"\x90"
-        + b"\x55\x8b\xec\xe8\x11\x22\x33\x44\xc3"
-        + b"\x90"
-        + b"\x55\x8b\xec\xe8\xaa\xbb\xcc\xdd\xc3"
+         b"\x55\x8b\xec\xe8\x11\x22\x33\x44\xc3"
+         b"\x90"
+         b"\x55\x8b\xec\xe8\xaa\xbb\xcc\xdd\xc3"
     )
 
     assert _find_masked_fingerprint_hits(function, ((0x1000, segment),)) == (

@@ -265,8 +265,7 @@ class GameOverUi(msgspec.Struct):
                 self.input_caret = len(self.input_text)
                 self._defer_name_input_until_controls_released = True
                 return None
-            else:
-                self.phase = 1
+            self.phase = 1
 
         # Basic text input behavior for the name-entry phase.
         if self.phase == 0:

@@ -186,7 +186,7 @@ def tick_summary_from_row(row: TickRecord) -> BuiltinObject:
     checkpoint = to_builtin_object(checkpoint_obj, field="checkpoint") if checkpoint_obj is not None else {}
     samples = entity_samples_channel(row)
     if samples is None:
-        entity_counts = {kind: 0 for kind in ENTITY_SAMPLE_KINDS}
+        entity_counts = dict.fromkeys(ENTITY_SAMPLE_KINDS, 0)
     else:
         entity_counts = {
             "creatures": len(samples.creatures),

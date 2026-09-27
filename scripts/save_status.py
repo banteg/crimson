@@ -57,7 +57,7 @@ def apply_updates(data: dict, updates: dict) -> None:
         data["quest_play_counts"][idx] = int(value) & 0xFFFFFFFF
 
     mode_updates = updates.get("mode_play_counts", {})
-    mode_fields = {name: field for name, field in MODE_COUNT_ORDER}
+    mode_fields = dict(MODE_COUNT_ORDER)
     for key, value in mode_updates.items():
         key = str(key)
         field = mode_fields.get(key)

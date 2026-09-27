@@ -203,8 +203,7 @@ def normalize_type(value: str) -> str:
     text = TYPE_SPACE_RE.sub(" ", value.strip().lower())
     for source, replacement in TYPE_ALIASES:
         text = re.sub(rf"\b{re.escape(source)}\b", replacement, text)
-    text = re.sub(r"\s*\*\s*", "*", text)
-    return text
+    return re.sub(r"\s*\*\s*", "*", text)
 
 
 def prototype_shape(signature: str) -> tuple[str, int, bool] | None:

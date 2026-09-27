@@ -194,7 +194,7 @@ def common_prefix(names: list[str]) -> str:
         return ""
     split = [name.split("_") for name in names]
     prefix: list[str] = []
-    for parts in zip(*split):
+    for parts in zip(*split, strict=False):
         if all(part == parts[0] for part in parts):
             prefix.append(parts[0])
         else:

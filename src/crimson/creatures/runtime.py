@@ -167,7 +167,7 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     step_scale = wrapped
     if direct < wrapped:
         step_scale = direct
-    if 1.0 < step_scale:
+    if step_scale > 1.0:
         step_scale = 1.0
     step_scale = float(f32(step_scale))
 

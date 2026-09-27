@@ -2637,7 +2637,7 @@ def disassemble_normalized_function(
             )
             explained = True
         elif reference.read_only_data:
-            if 0 <= data_offset and data_offset + byte_count <= len(symbol_data):
+            if data_offset >= 0 and data_offset + byte_count <= len(symbol_data):
                 keys = (
                     f"bytes{byte_count}:{symbol_data[data_offset : data_offset + byte_count].hex()}",
                 )
@@ -3041,7 +3041,7 @@ def normalize_function(
 
 
 def common_prefix_length(target_lines: tuple[str, ...], candidate_lines: tuple[str, ...]) -> int:
-    for index, (target, candidate_line) in enumerate(zip(target_lines, candidate_lines)):
+    for index, (target, candidate_line) in enumerate(zip(target_lines, candidate_lines, strict=False)):
         if target != candidate_line:
             return index
     return min(len(target_lines), len(candidate_lines))
@@ -3456,7 +3456,7 @@ def _masked_reference_status(
         target.operand_index == candidate.operand_index
         and target.kind == candidate.kind
         and bool(set(target.keys) & set(candidate.keys))
-        for target, candidate in zip(target_references, candidate_references)
+        for target, candidate in zip(target_references, candidate_references, strict=True)
     ):
         return "ok"
     return "mismatch"
@@ -3478,6 +3478,7 @@ def audit_masked_operands(
         for target_index, candidate_index in zip(
             range(target_start, target_end),
             range(candidate_start, candidate_end),
+            strict=True,
         ):
             target_line = target_disassembly[target_index]
             candidate_line = candidate_disassembly[candidate_index]
@@ -8514,7 +8515,7 @@ def render_resolved_name_reference_table(
         ),
     ]
     widths = [max(len(row[column]) for row in rendered) for column in range(len(header))]
-    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rendered]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip() for row in rendered]
     lines.append(f"\n{render_resolved_name_reference_summary(rows)}")
     return "\n".join(lines)
 
@@ -8554,7 +8555,7 @@ def render_naming_debt_table(rows: Collection[NamingDebtRow]) -> str:
         ),
     ]
     widths = [max(len(row[column]) for row in rendered) for column in range(len(header))]
-    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rendered]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip() for row in rendered]
     lines.append(f"\n{render_naming_debt_summary(rows)}")
     return "\n".join(lines)
 
@@ -9636,7 +9637,7 @@ def render_compiler_scan_rows(rows: Collection[CompilerScanRow]) -> str:
         )
     widths = [max(len(row[column]) for row in rendered) for column in range(len(header))]
     return "\n".join(
-        "  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip()
+        "  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip()
         for row in rendered
     )
 
@@ -9676,7 +9677,7 @@ def render_profile_table(statuses: list[ScratchStatus]) -> str:
             ),
         )
     widths = [max(len(row[column]) for row in rows) for column in range(len(PROFILE_HEADER))]
-    return "\n".join("  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows)
+    return "\n".join("  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip() for row in rows)
 
 
 def triage_row_payload(row: TriageRow) -> dict[str, Any]:
@@ -9723,7 +9724,7 @@ def collect_residual_frontier_rows(
     for status in statuses:
         target: tuple[str, int | str] = (
             status.config.image,
-            status.address if status.address else status.config.function,
+            status.address or status.config.function,
         )
         best = best_by_target.get(target)
         if best is None or status_rank(status) > status_rank(best):
@@ -9979,7 +9980,7 @@ def render_triage_rows(rows: list[TriageRow], *, sort_by: str = "address") -> li
 def render_triage_table(rows: list[TriageRow], *, sort_by: str = "address") -> str:
     rendered = [TRIAGE_HEADER, *render_triage_rows(rows, sort_by=sort_by)]
     widths = [max(len(row[column]) for row in rendered) for column in range(len(TRIAGE_HEADER))]
-    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rendered]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip() for row in rendered]
     lines.append(render_triage_summary(rows))
     return "\n".join(lines)
 
@@ -10744,7 +10745,7 @@ def render_status_table(
 ) -> str:
     rows = [STATUS_HEADER, *render_status_rows(statuses, sort_by=sort_by)]
     widths = [max(len(row[column]) for row in rows) for column in range(len(STATUS_HEADER))]
-    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip() for row in rows]
     lines.append(f"\n{render_status_summary(totals)}")
     return "\n".join(lines)
 

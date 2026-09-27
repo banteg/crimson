@@ -225,8 +225,7 @@ def update_map_rows(rows: list[dict[str, str]], functions: dict[int, dict[str, A
 def sample_list(value: str | None) -> list[str]:
     if not value:
         return []
-    items = [v.strip() for v in value.split(";") if v.strip()]
-    return items
+    return [v.strip() for v in value.split(";") if v.strip()]
 
 
 def int_or_none(value: str | int | None) -> int | None:

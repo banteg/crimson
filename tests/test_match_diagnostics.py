@@ -32,7 +32,7 @@ def _result(
     return MatchResult(
         ratio=difflib.SequenceMatcher(a=target, b=candidate, autojunk=False).ratio(),
         prefix_instructions=next(
-            (i for i, pair in enumerate(zip(target, candidate)) if pair[0] != pair[1]),
+            (i for i, pair in enumerate(zip(target, candidate, strict=False)) if pair[0] != pair[1]),
             min(len(target), len(candidate)),
         ),
         target_lines=target,

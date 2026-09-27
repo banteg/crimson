@@ -776,41 +776,41 @@ def test_scratch_config_rejects_import_thunk_source(tmp_path: Path) -> None:
         ("FUNCTION=foo ARCHIVE_EXTENT=section-tail", "without ARCHIVE"),
         ("FUNCTION=foo ARCHIVE=provider.lib", "must set ARCHIVE_MEMBER, ARCHIVE_SHA256, SYMBOL"),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo SOURCE=foo.c",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo SOURCE=foo.c"),
             "cannot combine ARCHIVE and SOURCE",
         ),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo AUTO_INLINE_OFF=foo",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo AUTO_INLINE_OFF=foo"),
             "cannot combine ARCHIVE and AUTO_INLINE_OFF",
         ),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_EXTENT=bogus",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_EXTENT=bogus"),
             "invalid ARCHIVE_EXTENT",
         ),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
-            "ARCHIVE_EXTENT=section-tail ARCHIVE_END_SYMBOL=_foo_end",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
+            "ARCHIVE_EXTENT=section-tail ARCHIVE_END_SYMBOL=_foo_end"),
             "cannot combine ARCHIVE_END_SYMBOL",
         ),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
-            "ARCHIVE_EXTENT=section-tail ARCHIVE_SIZE=9",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
+            "ARCHIVE_EXTENT=section-tail ARCHIVE_SIZE=9"),
             "cannot combine ARCHIVE_SIZE",
         ),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
-            "ARCHIVE_END_SYMBOL=_foo_end ARCHIVE_SIZE=9",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo "
+            "ARCHIVE_END_SYMBOL=_foo_end ARCHIVE_SIZE=9"),
             "cannot combine ARCHIVE_SIZE",
         ),
         (
-            "FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
-            + f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_SIZE=0",
+            ("FUNCTION=foo ARCHIVE=provider.lib ARCHIVE_MEMBER=foo.obj "
+             f"ARCHIVE_SHA256={'a' * 64} SYMBOL=foo ARCHIVE_SIZE=0"),
             "ARCHIVE_SIZE must be positive",
         ),
     ),

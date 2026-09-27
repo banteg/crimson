@@ -455,7 +455,7 @@ def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: b
 def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     center = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
-    entries = [
+    return [
         spawn(
             Vec2(center.x, edges.bottom.y),
             heading=0.0,
@@ -541,7 +541,6 @@ def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version
             count=ctx.player_count * 2 + 2,
         ),
     ]
-    return entries
 
 
 @register_quest(

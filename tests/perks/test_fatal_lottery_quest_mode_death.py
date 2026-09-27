@@ -21,7 +21,7 @@ def _register_runtime_resources_stub(assets_dir: Path) -> None:
     register_runtime_resources(
         RuntimeResources(
             assets_dir=assets_dir,
-            textures={texture_id: tex for texture_id in TextureId},
+            textures=dict.fromkeys(TextureId, tex),
             small_font=cast(SmallFontData, SimpleNamespace(cell_size=10, widths=[8] * 256)),
         ),
     )

@@ -201,10 +201,7 @@ def _credits_line_clear_flag(lines: list[_CreditsLine], index: int) -> bool:
 
 
 def _credits_all_round_lines_flagged(lines: list[_CreditsLine]) -> bool:
-    for line in lines:
-        if line.text and ("o" in line.text) and ((line.flags & _FLAG_CLICKED) == 0):
-            return False
-    return True
+    return all(not (line.text and "o" in line.text and line.flags & _FLAG_CLICKED == 0) for line in lines)
 
 
 def _credits_unlock_secret_lines(lines: list[_CreditsLine], base_index: int) -> None:

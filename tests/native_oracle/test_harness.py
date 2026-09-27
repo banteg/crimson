@@ -21,7 +21,7 @@ def test_crt_rand_runs_natively_and_matches_port(oracle) -> None:
 
 def test_float_argument_float_return_and_callee_cleanup(oracle) -> None:
     # fld dword [esp+4]; fadd dword [esp+8]; ret 8   (stdcall float(float, float))
-    probe = oracle.load_code(bytes.fromhex("d9442404" "d8442408" "c20800"))
+    probe = oracle.load_code(bytes.fromhex("d9442404d8442408c20800"))
     result = oracle.call(probe, 0.1, 0.2)
     assert result.stack_popped == 8
     assert f32_bits(result.st0) == f32_bits(struct.unpack("<f", struct.pack("<f", 0.1))[0] + 0.2)
@@ -29,7 +29,7 @@ def test_float_argument_float_return_and_callee_cleanup(oracle) -> None:
 
 def test_pc24_control_word_rounds_every_op(oracle) -> None:
     # fld1; fdiv st(0), st(1); ret  with ST1 = 3.0 preloaded -> 1/3 at 24 bits
-    probe = oracle.load_code(bytes.fromhex("d9e8" "d8f1" "c3"))
+    probe = oracle.load_code(bytes.fromhex("d9e8d8f1c3"))
     third = oracle.call(probe, st=(3.0,)).fpu_stack[0]
     assert third.mantissa == 0xAAAAAB00_00000000
     extended = oracle.call(probe, st=(3.0,), control_word=0x037F).fpu_stack[0]

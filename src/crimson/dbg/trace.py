@@ -216,7 +216,7 @@ def _validate_wire_value(value: object, annotation: object, *, path: str) -> Non
     if origin in (dict, Mapping):
         if not isinstance(value, dict):
             raise TraceError(f"{path} must be encoded as a msgpack map")
-        key_type, item_type = args if args else (typing.Any, typing.Any)
+        key_type, item_type = args or (typing.Any, typing.Any)
         for key, item in value.items():
             _validate_wire_value(key, key_type, path=f"{path}.<key>")
             _validate_wire_value(item, item_type, path=f"{path}[{key!r}]")

@@ -17,10 +17,7 @@ PRIMARY_PROJECTILE_DRAW_HANDLERS = (
 
 
 def draw_projectile_from_registry(ctx: ProjectileDrawCtx) -> bool:
-    for handler in PRIMARY_PROJECTILE_DRAW_HANDLERS:
-        if handler(ctx):
-            return True
-    return False
+    return any(handler(ctx) for handler in PRIMARY_PROJECTILE_DRAW_HANDLERS)
 
 
 __all__ = ["draw_projectile_from_registry"]

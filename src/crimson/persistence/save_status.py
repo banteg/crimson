@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 from pathlib import Path
 from typing import Annotated, Final
 
@@ -90,10 +91,8 @@ class GameStatus(GameStatusData, kw_only=True):
         mark_dirty = name in _STATUS_FIELD_NAMES
         current = _MISSING
         if mark_dirty:
-            try:
+            with contextlib.suppress(AttributeError):
                 current = object.__getattribute__(self, name)
-            except AttributeError:
-                pass
         super().__setattr__(name, value)
         if mark_dirty and current is not _MISSING and current != value:
             super().__setattr__("dirty", True)

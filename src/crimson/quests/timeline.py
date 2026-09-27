@@ -29,7 +29,7 @@ def tick_quest_spawn_timeline(
     else:
         no_creatures_timer_ms = f32(no_creatures_timer_ms + dt_ms)
 
-    force_spawn = creatures_none_active and 3000.0 < no_creatures_timer_ms and 0x6A4 < timeline_ms
+    force_spawn = creatures_none_active and no_creatures_timer_ms > 3000.0 and timeline_ms > 0x6A4
 
     start_idx: int | None = None
     for idx, entry in enumerate(entries):

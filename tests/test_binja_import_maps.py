@@ -772,9 +772,9 @@ def test_data_map_symbol_type_distinguishes_data_and_code_labels(monkeypatch):
 def test_importer_preserves_ui_element_pointer_table_aggregate():
     importer = _load_importer()
 
-    assert importer._FORCED_DATA_AGGREGATES == frozenset(
+    assert frozenset(
         {"ui_element_table"},
-    )
+    ) == importer._FORCED_DATA_AGGREGATES
 
 
 def test_resolve_data_type_accepts_array_typedef(monkeypatch):

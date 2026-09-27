@@ -1,3 +1,4 @@
+import contextlib
 import json
 import os
 
@@ -181,7 +182,6 @@ def main():
 
 if __name__ == "__main__":
     rc = main()
-    try:
+    # IDA may terminate the interpreter inside qexit.
+    with contextlib.suppress(Exception):
         idc.qexit(rc)
-    except Exception:  # noqa: BLE001, S110 - IDA may terminate the interpreter inside qexit
-        pass

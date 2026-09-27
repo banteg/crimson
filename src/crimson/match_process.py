@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import signal
 import subprocess
@@ -14,10 +15,8 @@ COMPILER_CLEANUP_TIMEOUT = 1.0
 
 def _terminate_compiler(process: subprocess.Popen[str]) -> bool:
     # The wrapper execs Wibo, which can itself have compiler children.
-    try:
+    with contextlib.suppress(ProcessLookupError):
         os.killpg(process.pid, signal.SIGKILL)
-    except ProcessLookupError:
-        pass
     try:
         process.communicate(timeout=COMPILER_CLEANUP_TIMEOUT)
     except subprocess.TimeoutExpired:

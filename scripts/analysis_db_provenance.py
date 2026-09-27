@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
 import json
 import os
@@ -47,10 +48,8 @@ def write_state(path: Path, state: dict[str, Any]) -> None:
             stream.write("\n")
         os.replace(temp_name, path)
     except BaseException:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.unlink(temp_name)
-        except FileNotFoundError:
-            pass
         raise
 
 

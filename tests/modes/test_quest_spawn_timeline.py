@@ -55,7 +55,7 @@ def test_tick_quest_spawn_timeline_triggers_horizontal_spread_when_on_screen() -
     assert creatures_none_active is False
     assert_float_close(idle_ms, 16.0)
     assert len(spawns) == 3
-    for spawn, (expected_x, expected_y) in zip(spawns, ((512.0, 512.0), (472.0, 512.0), (592.0, 512.0))):
+    for spawn, (expected_x, expected_y) in zip(spawns, ((512.0, 512.0), (472.0, 512.0), (592.0, 512.0)), strict=True):
         assert_float_close(spawn.pos.x, expected_x)
         assert_float_close(spawn.pos.y, expected_y)
     for spawn in spawns:
@@ -81,7 +81,7 @@ def test_tick_quest_spawn_timeline_triggers_vertical_spread_when_offscreen_x() -
         no_creatures_timer_ms=0.0,
     )
 
-    for spawn, (expected_x, expected_y) in zip(spawns, ((-50.0, 512.0), (-50.0, 472.0), (-50.0, 592.0))):
+    for spawn, (expected_x, expected_y) in zip(spawns, ((-50.0, 512.0), (-50.0, 472.0), (-50.0, 592.0)), strict=True):
         assert_float_close(spawn.pos.x, expected_x)
         assert_float_close(spawn.pos.y, expected_y)
 

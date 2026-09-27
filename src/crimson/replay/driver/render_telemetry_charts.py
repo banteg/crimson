@@ -305,7 +305,7 @@ def _build_binned_pass_rows(
         tick_start = int(chunk[0]["tick_index"])
         tick_end = int(chunk[-1]["tick_index"])
         tick_index = (float(tick_start) + float(tick_end)) / 2.0
-        sums: dict[str, float] = {name: 0.0 for name in selected_passes}
+        sums: dict[str, float] = dict.fromkeys(selected_passes, 0.0)
         for frame in chunk:
             pass_ms = _exclusive_pass_ms(cast(dict[str, float], frame["pass_ms"]))
             other_total = 0.0

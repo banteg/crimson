@@ -336,7 +336,7 @@ def cmd_dbg_tick(
     )
     typer.echo(
         "checkpoint "
-        + "score_xp="
+         "score_xp="
         + str(checkpoint.get("score_xp"))
         + " kills="
         + str(checkpoint.get("kills"))
@@ -347,7 +347,7 @@ def cmd_dbg_tick(
     )
     typer.echo(
         "entity_counts "
-        + "creatures="
+         "creatures="
         + str(entity_counts.get("creatures"))
         + " projectiles="
         + str(entity_counts.get("projectiles"))
@@ -358,7 +358,7 @@ def cmd_dbg_tick(
     )
     typer.echo(
         "trace_rows "
-        + "rng_stream="
+         "rng_stream="
         + str(payload.get("rng_stream_count"))
         + " timing_samples="
         + str(payload.get("timing_samples_count")),
@@ -419,7 +419,7 @@ def cmd_dbg_entity(
         pos = _as_dict(row.get("pos"))
         typer.echo(
             "sample "
-            + "tick="
+             "tick="
             + str(row.get("tick_index"))
             + " index="
             + str(row.get("index"))
@@ -521,7 +521,7 @@ def cmd_dbg_focus(
     rng_stream = _as_dict(payload.get("rng_stream"))
     typer.echo(
         "rng_stream "
-        + "prefix_match_len="
+         "prefix_match_len="
         + str(rng_stream.get("behavior_prefix_match_len"))
         + " missing_tail="
         + str(rng_stream.get("missing_tail"))
@@ -534,21 +534,21 @@ def cmd_dbg_focus(
     timing_samples = _as_dict(payload.get("timing_samples"))
     typer.echo(
         "replay_step "
-        + "ok="
+         "ok="
         + str(replay_step.get("ok")),
     )
     typer.echo(
         "entity_samples "
-        + "ok="
+         "ok="
         + str(entity_samples.get("ok")),
     )
     typer.echo(
         "sim_state "
-        + "ok="
+         "ok="
         + str(sim_state.get("ok")),
     )
     typer.echo(
         "timing_samples "
-        + "ok="
+         "ok="
         + str(timing_samples.get("ok")),
     )

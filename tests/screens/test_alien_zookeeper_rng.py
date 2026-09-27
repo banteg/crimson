@@ -5,42 +5,37 @@ from typing import cast
 
 from crimson.game.types import GameState
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.screens.panels.alien_zookeeper import AlienZooKeeperView
-from grim.rand import Crand, CrandLike, RecordingCrand
-from tests.support.helpers import ScriptedCrand
+from crimson.screens.panels.alien_zookeeper import AlienZooKeeperView, _credits_secret_match3_find
+from grim.rand import Crand
 
 
-def _view_with_rng(rng: CrandLike) -> AlienZooKeeperView:
-    view = object.__new__(AlienZooKeeperView)
-    view.state = SimpleNamespace(rng=rng)
-    view._board = [0] * 36
-    return view
+def _traced_view(make_game_state, seed: int) -> tuple[AlienZooKeeperView, list[int | None]]:
+    rng = Crand(seed)
+    callers: list[int | None] = []
+    rng.set_trace_sink(lambda _before, _after, _value, caller: callers.append(caller))
+    return AlienZooKeeperView(make_game_state(rng=rng)), callers
 
 
-def test_fill_empty_cells_uses_exact_native_caller() -> None:
-    rng = RecordingCrand(Crand(123))
-    view = _view_with_rng(rng)
+def test_fill_empty_cells_uses_exact_native_caller(make_game_state) -> None:
+    view, callers = _traced_view(make_game_state, 123)
     view._board = [0, -1, 2, -1, 4, 0] * 6
 
     view._fill_empty_cells()
 
-    assert sum(1 for value in view._board if value == -1) == 0
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_FILL_EMPTY,
-        RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_FILL_EMPTY,
-    ] * 6
+    assert -1 not in view._board
+    assert callers == [RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_FILL_EMPTY] * 12
 
 
-def test_reroll_board_no_initial_match_uses_exact_native_caller() -> None:
-    latin_square = [(row + col) % 5 for row in range(6) for col in range(6)]
-    rng = ScriptedCrand(latin_square)
-    view = _view_with_rng(rng)
+def test_reroll_board_no_initial_match_uses_exact_native_caller(make_game_state) -> None:
+    view, callers = _traced_view(make_game_state, 123)
+
     view._reroll_board_no_initial_match()
 
-    assert view._board == latin_square
-    assert [record.caller for record in rng.records_since()] == [
-        RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL,
-    ] * 36
+    has_match, _idx, _direction = _credits_secret_match3_find(view._board)
+    assert not has_match
+    assert callers
+    assert len(callers) % 36 == 0
+    assert set(callers) == {RngCallerStatic.CREDITS_SECRET_ALIEN_ZOOKEEPER_REROLL_FILL}
 
 
 def test_open_preserves_native_process_lifetime_puzzle_state() -> None:

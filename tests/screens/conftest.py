@@ -15,7 +15,7 @@ def screen_resources(tmp_path: Path) -> RuntimeResources:
     texture = rl.Texture()
     texture.width = texture.height = 32
     font = SmallFontData(widths=[8] * 256, texture=texture, cell_size=8)
-    return RuntimeResources(tmp_path, {texture_id: texture for texture_id in TextureId}, font)
+    return RuntimeResources(tmp_path, dict.fromkeys(TextureId, texture), font)
 
 
 @pytest.fixture

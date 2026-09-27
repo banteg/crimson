@@ -134,7 +134,7 @@ def build_typo_session(
         dictionary_words=dictionary_words,
         highscore_names=highscore_names,
     )
-    session = DeterministicSession(
+    return DeterministicSession(
         world=world,
         world_size=world_size,
         damage_scale_by_type=damage_scale_by_type,
@@ -146,7 +146,6 @@ def build_typo_session(
         finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         mode_runtime=TypoSessionRuntime(world=world),
     )
-    return session
 
 
 def build_tutorial_session(
@@ -166,7 +165,7 @@ def build_tutorial_session(
         world.state.tutorial_overlay,
         preserve_bugs=world.state.preserve_bugs,
     )
-    session = DeterministicSession(
+    return DeterministicSession(
         world=world,
         world_size=world_size,
         damage_scale_by_type=damage_scale_by_type,
@@ -179,4 +178,3 @@ def build_tutorial_session(
         demo_mode_active=demo_mode_active,
         mode_runtime=TutorialSessionRuntime(world=world),
     )
-    return session

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import shutil
@@ -170,11 +171,8 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
         max_delta, mean_delta = _diff_summary(expected, actual)
 
         # Keep a copy of the expected fixture next to the output for side-by-side viewing.
-        try:
+        with contextlib.suppress(OSError):
             shutil.copyfile(fixture_path, expected_out)
-        except OSError:
-            # If copying fails for any reason, still allow the test to proceed.
-            pass
 
         if max_delta > MAX_DELTA_TOL or mean_delta > MEAN_DELTA_TOL:
             ImageChops.difference(expected, actual).save(diff_out)
@@ -211,10 +209,8 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
         else:
             # Avoid stale artifacts from previous failing runs.
             for p in (diff_out, meta_out):
-                try:
+                with contextlib.suppress(FileNotFoundError):
                     p.unlink()
-                except FileNotFoundError:
-                    pass
 
     if failures:
         pytest.fail("\n".join(failures))

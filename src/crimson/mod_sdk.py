@@ -627,7 +627,7 @@ def _resolve_oracle_addresses(
         for symbol, hits in fingerprint_hits.items()
         if len(hits) == 1
     }
-    evidence = {symbol: "masked-fingerprint" for symbol in resolved}
+    evidence = dict.fromkeys(resolved, "masked-fingerprint")
     changed = True
     while changed:
         changed = False

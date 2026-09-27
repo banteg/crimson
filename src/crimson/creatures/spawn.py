@@ -1132,7 +1132,7 @@ def alloc_creature(
 def clamp01(value: float) -> float:
     if value < 0.0:
         return 0.0
-    if 1.0 < value:
+    if value > 1.0:
         return 1.0
     return value
 
@@ -1188,7 +1188,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         type_id = 2 if r10 < 9 else 3
     elif xp < 25000:
         type_id = 0 if r10 < 4 else 3
-        if 8 < r10:
+        if r10 > 8:
             type_id = 2
     elif xp < 42000:
         if r10 < 5:
@@ -1201,7 +1201,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     elif xp < 90000:
         type_id = 4
     else:
-        if 109999 < xp:
+        if xp > 109999:
             if r10 < 6:
                 type_id = 2
             elif r10 < 9:
@@ -1755,7 +1755,7 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
     depending on `repeat_spawn_count`. This helper only reproduces the `creature_spawn_template` calls.
     """
     n = int(repeat_spawn_count)
-    if n < 1 or 8 <= n:
+    if n < 1 or n >= 8:
         return ()
 
     heading = float(math.pi)

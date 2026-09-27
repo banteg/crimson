@@ -1100,7 +1100,7 @@ def _player_heading_approach_target_with_delta(
         low = target
     # 0x00413602: `fld 6.2831855f; fsub high; fadd low` rounds each op at PC24.
     wrapped = abs(x87_pc24_add(x87_pc24_sub(NATIVE_TAU, high), low))
-    diff = wrapped if direct >= wrapped else direct
+    diff = min(wrapped, direct)
 
     dt_f32 = float(f32(float(dt)))
     # Native computes `frame_dt * diff * 5.0` under x87 PC=24. Quantize after

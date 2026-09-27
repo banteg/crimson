@@ -97,7 +97,7 @@ class BootView:
         self._boot_time += frame_dt * LOGO_TIME_SCALE
         t = self._boot_time - LOGO_TIME_OFFSET
         if self._logo_skip:
-            if t < LOGO_10_IN_START or (LOGO_10_OUT_END <= t and (t < LOGO_REF_IN_START or LOGO_REF_OUT_END <= t)):
+            if t < LOGO_10_IN_START or (t >= LOGO_10_OUT_END and (t < LOGO_REF_IN_START or t >= LOGO_REF_OUT_END)):
                 t = LOGO_SKIP_JUMP
             else:
                 t += frame_dt * LOGO_SKIP_ACCEL

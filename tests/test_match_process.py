@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import io
 import os
 import signal
@@ -78,10 +79,8 @@ def test_compiler_cleanup_is_bounded_when_descendant_keeps_pipes_open(
         assert pid_file.exists()
     finally:
         if pid_file.exists():
-            try:
+            with contextlib.suppress(ProcessLookupError):
                 os.kill(int(pid_file.read_text()), signal.SIGKILL)
-            except ProcessLookupError:
-                pass
 
 
 def test_compiler_does_not_wait_forever_for_an_unkillable_process(

@@ -27,10 +27,7 @@ def draw_secondary_projectile_from_registry(ctx: SecondaryProjectileDrawCtx) -> 
     draw_secondary_projectile_bloom(ctx)
 
     handlers = SECONDARY_PROJECTILE_DRAW_HANDLERS_BY_TYPE.get(int(ctx.proj_type), ())
-    for handler in handlers:
-        if handler(ctx):
-            return True
-    return False
+    return any(handler(ctx) for handler in handlers)
 
 
 __all__ = ["draw_secondary_projectile_from_registry"]

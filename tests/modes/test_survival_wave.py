@@ -174,7 +174,7 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
 
     assert_float_close(cooldown, 0.0)
     assert len(spawns) == 3
-    for spawn, (expected_x, expected_y) in zip(spawns, ((35.0, 1064.0), (1064.0, 947.0), (-40.0, 435.0))):
+    for spawn, (expected_x, expected_y) in zip(spawns, ((35.0, 1064.0), (1064.0, 947.0), (-40.0, 435.0)), strict=True):
         assert_float_close(spawn.pos.x, expected_x)
         assert_float_close(spawn.pos.y, expected_y)
     assert [c.type_id for c in spawns] == [

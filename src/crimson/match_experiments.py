@@ -847,7 +847,7 @@ def render_experiment_summary(payload: dict[str, Any]) -> str:
             ),
         )
     widths = [max(len(row[column]) for row in rows) for column in range(len(rows[0]))]
-    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip() for row in rows]
+    lines = ["  ".join(cell.ljust(width) for cell, width in zip(row, widths, strict=True)).rstrip() for row in rows]
     summary = payload["summary"]
     lines.append(
         (

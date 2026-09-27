@@ -679,11 +679,10 @@ def record_replay_to_trace(
     if warnings_out is None:
         warnings_out = []
     if str(impl) == "python":
-        summary = _record_replay_to_trace_python(
+        return _record_replay_to_trace_python(
             replay_path=replay_path,
             out_path=out_path,
         )
-        return summary
     if str(impl) == "zig":
         if replay_path.suffix == CAPTURE_REPLAY_SUFFIX:
             raise ValueError("capture replays record only with the python impl")

@@ -185,7 +185,7 @@ def main() -> int:
     nav_duplicates = sorted(path for path, count in nav_counts.items() if count > 1)
 
     allowlist = load_allowlist(allowlist_path)
-    missing_tags = sorted(rel for rel, path in zip(docs_rel, docs_files) if not has_frontmatter_tags(path))
+    missing_tags = sorted(rel for rel, path in zip(docs_rel, docs_files, strict=True) if not has_frontmatter_tags(path))
     unexpected_missing_tags = sorted(rel for rel in missing_tags if rel not in allowlist)
     stale_allowlist = sorted(rel for rel in allowlist if rel not in set(missing_tags))
 

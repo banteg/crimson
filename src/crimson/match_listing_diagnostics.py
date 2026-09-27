@@ -194,7 +194,7 @@ def stack_local_observations_payload(
             continue
         if len(operands) != len(candidate_slots) or any(
             (operand["base"], operand["effective_offset"]) != _normal_displacement(slot)
-            for operand, slot in zip(operands, candidate_slots)
+            for operand, slot in zip(operands, candidate_slots, strict=True)
         ):
             skipped.append({**sample, "reason": "listing-displacement-does-not-match-candidate"})
             continue

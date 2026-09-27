@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import queue
 import shutil
 import subprocess
@@ -526,14 +527,10 @@ def _capture_replay_audio_track(
             effective_sample_rate=effective_sample_rate,
         )
     finally:
-        try:
+        with contextlib.suppress(RuntimeError):
             rl.set_master_volume(prior_master_volume)
-        except RuntimeError:
-            pass
-        try:
+        with contextlib.suppress(ReplayRenderError):
             capture.close()
-        except ReplayRenderError:
-            pass
         if mode is not None:
             mode.close()
 
@@ -757,10 +754,8 @@ def _abort_ffmpeg_process(proc: subprocess.Popen[bytes] | None) -> None:
     if proc is None:
         return
     if proc.stdin is not None and not proc.stdin.closed:
-        try:
+        with contextlib.suppress(OSError):
             proc.stdin.close()
-        except OSError:
-            pass
     if proc.poll() is None:
         proc.terminate()
         try:

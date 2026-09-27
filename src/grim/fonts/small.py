@@ -80,5 +80,4 @@ def measure_small_text_width(font: SmallFontData, text: str) -> float:
         if width <= 0:
             continue
         x += float(width)
-    best = max(best, x)
-    return best
+    return max(best, x)

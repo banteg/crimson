@@ -93,7 +93,4 @@ def gameplay_controls_held(config: CrimsonConfig) -> bool:
             if input_code_is_down(code, player_index=player_index):
                 return True
 
-    for code in _SINGLE_PLAYER_ALT_MOVE_CODES:
-        if input_code_is_down(int(code), player_index=0):
-            return True
-    return False
+    return any(input_code_is_down(int(code), player_index=0) for code in _SINGLE_PLAYER_ALT_MOVE_CODES)

@@ -557,7 +557,7 @@ def main(argv: list[str] | None = None) -> int:
         "run_ids": sorted(run_ids),
         "resolution_filter": want_res,
         "event_counts": dict(counts),
-        "labels": {k: v for k, v in sorted(label_stats.items(), key=lambda kv: kv[0])},
+        "labels": dict(sorted(label_stats.items(), key=lambda kv: kv[0])),
         "screens": screens,
     }
 

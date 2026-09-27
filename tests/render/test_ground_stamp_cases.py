@@ -40,7 +40,7 @@ def test_ground_stamp_cases_match_captured_triplets() -> None:
         if got != expected:
             # Find the first mismatch for quick diagnosis.
             first = None
-            for i, (a, b) in enumerate(zip(got, expected), start=1):
+            for i, (a, b) in enumerate(zip(got, expected, strict=False), start=1):
                 if a != b:
                     first = (i, a, b)
                     break
