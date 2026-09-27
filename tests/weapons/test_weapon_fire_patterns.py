@@ -138,3 +138,38 @@ def test_shotgun_family_fires_expected_pellets(
         assert int(getattr(proj, "type_id", -1)) == int(projectile_type_id)
         assert_float_close(float(getattr(proj, "angle", 0.0)), expected_angle)
         assert_float_close(float(getattr(proj, "speed_scale", 0.0)), expected_speed)
+
+
+@pytest.mark.parametrize(
+    "weapon_id",
+    [
+        WeaponId.SPIDER_PLASMA,
+        WeaponId.EVIL_SCYTHE,
+        WeaponId.FLAMEBURST,
+        WeaponId.RAYGUN,
+        WeaponId.GRIM_WEAPON,
+        WeaponId.FIRE_BULLETS,
+        WeaponId.TRANSMUTATOR,
+        WeaponId.BLASTER_R_300,
+        WeaponId.LIGHTNING_RIFLE,
+        WeaponId.NUKE_LAUNCHER,
+    ],
+)
+def test_weapons_without_a_fire_branch_spend_the_shot_but_spawn_nothing(weapon_id: WeaponId) -> None:
+    world = make_world()
+    state = world.state
+    state.rng = Crand(0x1234)
+    player = world.players[0]
+    player.pos = Vec2()
+    player.aim_dir = Vec2(1.0, 0.0)
+    weapon_assign_player(player, weapon_id, state=state)
+    ammo = player.weapon.ammo
+
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+
+    assert _active_projectiles(state) == []
+    assert not any(entry.active for entry in state.secondary_projectiles.entries)
+    assert not any(entry.active for entry in state.particles.entries)
+    assert state.shots_fired[0] == 0
+    assert player.weapon.ammo == ammo - 1.0
+    assert player.weapon.shot_cooldown > 0.0

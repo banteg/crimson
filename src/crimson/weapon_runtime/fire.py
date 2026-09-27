@@ -460,12 +460,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 )
                 counts_accuracy_shots = False
                 ammo_cost = f32(0.15)
-            case WeaponId.SPIDER_PLASMA | WeaponId.FIRE_BULLETS:
-                # Port-only: native `player_update` has no branch for these ids
-                # and spawns nothing; the port fires their own projectile type.
-                shot.projectile(ProjectileTemplateId(weapon_id), shot_angle)
             case _:
-                raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
+                # Native `player_update` has no branch for the other ids (Spider
+                # Plasma, Fire Bullets as a weapon, the unused weapons): the shot
+                # costs its cooldown, sound and ammo but spawns nothing.
+                shot_count = 0
 
     if 0 <= int(player.index) < len(state.shots_fired):
         if counts_accuracy_shots:
