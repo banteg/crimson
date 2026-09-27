@@ -8,7 +8,7 @@
     {
       "id": "grim-recovered-platform-vc6",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "sha256": "5d7326c1a4d3da692a03ec984de89855f5716d78ec34b01bbc7fb6b886241a22",
+      "sha256": "10c133faf469f31d2490c9b0569b98657e22b9a63e07a4e0b6b1beb949c17d22",
       "provenance": {
         "path": "analysis/library_provenance.json",
         "derived_artifact": "grim-recovered-platform-vc6-provider"
@@ -343,7 +343,7 @@
           "binding": "function"
         },
         {
-          "name": "?grim_keyboard_key_down@@YAEI@Z",
+          "name": "?grim_keyboard_key_down@@YAEE@Z",
           "binding": "function"
         },
         {

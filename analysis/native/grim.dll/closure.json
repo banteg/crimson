@@ -1,5 +1,5 @@
 {
-  "audit_digest": "567702b135eb194d6dafd4c2e814877f20e633b043d5af5fee9934ea942db0f6",
+  "audit_digest": "74e669f9ce611df39c3b105f6420c7e734aa87b586e3329ee6d15cac3ed689d3",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -3359,7 +3359,7 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z",
+          "comdat_key": "?grim_is_key_down@IGrim2D_cpp@@UAEEE@Z",
           "comdat_selection": 1,
           "function": "grim_is_key_down",
           "kind": "section",
@@ -3370,7 +3370,7 @@
           "weak": false
         }
       ],
-      "name": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z"
+      "name": "?grim_is_key_down@IGrim2D_cpp@@UAEEE@Z"
     },
     {
       "definitions": [
@@ -12679,7 +12679,7 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z",
+          "comdat_key": "?grim_is_key_down@IGrim2D_cpp@@UAEEE@Z",
           "comdat_selection": 1,
           "function": "grim_is_key_down",
           "kind": "section",
@@ -12690,7 +12690,7 @@
           "weak": false
         }
       ],
-      "name": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z",
+      "name": "?grim_is_key_down@IGrim2D_cpp@@UAEEE@Z",
       "referenced_by": [
         {
           "function": null,
@@ -18256,7 +18256,7 @@
       ],
       "category": "excluded_function",
       "lookup_name": "grim_keyboard_key_down",
-      "name": "?grim_keyboard_key_down@@YAEI@Z",
+      "name": "?grim_keyboard_key_down@@YAEE@Z",
       "referenced_by": [
         {
           "function": "grim_is_key_down",

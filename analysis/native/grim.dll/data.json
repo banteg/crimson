@@ -1,5 +1,5 @@
 {
-  "audit_digest": "567702b135eb194d6dafd4c2e814877f20e633b043d5af5fee9934ea942db0f6",
+  "audit_digest": "74e669f9ce611df39c3b105f6420c7e734aa87b586e3329ee6d15cac3ed689d3",
   "entries": [
     {
       "address": 268747320,
@@ -99,7 +99,7 @@
         {
           "address": 268464928,
           "offset": 68,
-          "symbol": "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z"
+          "symbol": "?grim_is_key_down@IGrim2D_cpp@@UAEEE@Z"
         },
         {
           "address": 268465040,
@@ -10947,7 +10947,7 @@
     },
     "data_map_sha256": "5d2bc13040a175a87e23fe318a048de602f6e1d97514a51f365f8099a824eca2",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "9b974fd0882545f1fe7ff1fa09c5d6b8e488114cad10aa68771fac6236d77cc6",
+    "definitions_sha256": "4ff5ddd6a9e3993e744a5eb4ba4803ee7d50fba79bad52f4252cf6ccf21e4b02",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"

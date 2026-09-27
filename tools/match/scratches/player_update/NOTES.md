@@ -2,6 +2,15 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Byte key for `grim_is_key_down` (2026-09-27)
+
+`grim2d_cpp.h` declares `grim_is_key_down(unsigned char key)`, and the recovered
+grim input sources (`grim_is_key_down`, `grim_keyboard_key_down`,
+`grim_was_key_pressed`) take byte keys. The mode-1 alternate keys now load the
+key like native (`mov al, byte [key]; push eax`): 92.70% → 92.79% raw, refs
+912/0/0 → 916/0/0. The grim input functions and the eight other game callers
+stay exact.
+
 ## Position through the player field (2026-09-27)
 
 There is no `player_position` local any more. The SDK operators take
@@ -42,7 +51,7 @@ diagnostic shows the counts are whole-function (pool-B chunks), not local.
 
 Remaining besides the ties: auto-target index register (3 lines), the demo
 join-tail clone (4), `normal_fire_ready` in memory (5, its range scores −5),
-`smoke_angle` vs `scalar` (3), and the byte key for `grim_is_key_down` (4).
+and `smoke_angle` vs `scalar` (3).
 
 ## Natural alias-class collapse (2026-09-27)
 
@@ -100,7 +109,7 @@ Remaining residuals:
 Declaring `grim_is_key_down(unsigned char key)` returning `unsigned char` in
 `grim2d_cpp.h`, with the grim input sources taking byte keys, gives 94.01% and
 918/0/0 while the grim functions and all eight game callers stay exact. It
-waits on refreshing the recovered grim provider archive's provenance.
+landed with the re-pinned grim provider archive (see the byte-key section).
 
 ## Shared sixteen-byte storage controls (2026-09-26)
 

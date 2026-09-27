@@ -7,11 +7,14 @@ normalized instructions, full prefix, and masked references `1/0/0`.
 
 ## Recovered source shape
 
-- Static callers establish a C++ vtable member with `this` in `ECX`, one key
+- Static callers establish a C++ vtable member with `this` in `ECX`, one byte key
   argument, callee cleanup via `retn 4`, and a byte result consumed through
   `AL`.
 - The body simply forwards to the exact `grim_keyboard_key_down` helper and
-  therefore inherits its low-byte key aliasing and 0/1 result.
+  returns its 0/1 result.
+- The key is a byte: `player_update`'s mode-1 alternate keys load it with
+  `mov al, byte [key]; push eax`, which an `unsigned int` key compiles as
+  `mov eax,[key]; and eax,0xff`. Both key types compile this body identically.
 - Keeping both source returns byte-sized is material: `int` adds a zero extend,
   while native C++ `bool` adds normalization after the helper call.
 

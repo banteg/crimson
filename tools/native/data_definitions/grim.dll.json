@@ -33,7 +33,7 @@
         ["0x38", "0x10006e50", "?grim_set_time_ms@IGrim2D_cpp@@UAEXH@Z"],
         ["0x3c", "0x10006e60", "?grim_get_frame_dt@IGrim2D_cpp@@UAEMXZ"],
         ["0x40", "0x10006e90", "?grim_get_fps@IGrim2D_cpp@@UAEMXZ"],
-        ["0x44", "0x10007320", "?grim_is_key_down@IGrim2D_cpp@@UAEEI@Z"],
+        ["0x44", "0x10007320", "?grim_is_key_down@IGrim2D_cpp@@UAEEE@Z"],
         ["0x48", "0x10007390", "?grim_was_key_pressed@IGrim2D_cpp@@UAE_NI@Z"],
         ["0x4c", "0x10007330", "?grim_flush_input@IGrim2D_cpp@@UAEXXZ"],
         ["0x50", "0x10005c40", "?grim_get_key_char@IGrim2D_cpp@@UAEHXZ"],

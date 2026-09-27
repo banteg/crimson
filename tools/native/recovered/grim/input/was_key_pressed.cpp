@@ -1,6 +1,6 @@
 #include "grim2d_cpp.h"
 
-extern unsigned char grim_keyboard_key_down(unsigned int key);
+extern unsigned char grim_keyboard_key_down(unsigned char key);
 extern float grim_key_repeat_timers[256];
 extern unsigned char grim_key_repeat_first_press[256];
 extern float grim_key_repeat_delay;

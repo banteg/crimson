@@ -7,8 +7,8 @@ normalized instructions, full prefix, and masked references `1/0/0`.
 
 ## Recovered source shape
 
-- The helper truncates every key code to its low byte before indexing the
-  256-byte DirectInput keyboard-state array; larger values therefore alias.
+- The helper takes a byte key (see `grim_is_key_down`) and indexes the
+  256-byte DirectInput keyboard-state array with it.
 - It loads the cached state byte, shifts that byte right by seven, and returns
   the resulting 0/1 byte. There is no bounds check or live device query.
 - Keeping the loaded byte as a named local and applying `>>=` naturally
