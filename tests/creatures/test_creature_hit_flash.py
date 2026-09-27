@@ -5,14 +5,13 @@ import struct
 from pathlib import Path
 
 from crimson.creatures.damage import creature_apply_damage
-from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags
 from crimson.owner_ref import OwnerRef
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.factories import make_creature_state, make_creature_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import make_creature_state, step_creatures
 
 FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-hit-flash.json"
 
@@ -26,10 +25,10 @@ def test_hit_flash_countdown_matches_native_witnesses() -> None:
     assert len(witnesses) == 8
     for witness in witnesses:
         case = witness["input"]
-        pool = CreaturePool()
-        state = GameplayState()
-        state.bonuses.freeze = case["freeze"]
-        players = [PlayerState(index=0, pos=Vec2(300, 400), health=100)]
+        world = make_world()
+        pool = world.creatures
+        world.state.bonuses.freeze = case["freeze"]
+        world.players[0].pos = Vec2(300, 400)
         for row in case["creatures"]:
             creature = make_creature_state(
                 pos=Vec2(120, 230),
@@ -41,7 +40,7 @@ def test_hit_flash_countdown_matches_native_witnesses() -> None:
             creature.hit_flash_timer = row["hit_flash_timer"]
             creature.ai_mode = CreatureAiMode(row["ai_mode"])
             pool.entries[row["index"]] = creature
-        pool.update(case["dt"], options=make_creature_update_options(state=state, players=players))
+        step_creatures(world, case["dt"])
         for expected in witness["expected"]:
             assert bits(pool.entries[expected["index"]].hit_flash_timer) == expected["timer_bits"], case["name"]
 

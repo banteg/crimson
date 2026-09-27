@@ -9,14 +9,12 @@ from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
-from crimson.creatures.runtime import CreaturePool
-from crimson.effects import FxQueue
+from crimson.effects import FxQueue, ParticlePool, SpriteEffectPool
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     _direction_from_heading_native,
     _player_heading_approach_target_with_delta,
     _player_turn_aligned_velocity_native,
-    player_update,
 )
 from crimson.math_parity import (
     NATIVE_HALF_PI,
@@ -40,19 +38,21 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
-from crimson.weapon_runtime import (
-    WeaponFireCtx,
-    fire_weapon,
-    weapon_assign_player,
-)
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand, RecordingCrand
+from grim.rand import Crand, CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
+from tests.support.factories import (
+    fire_player_weapon,
+    make_projectile_update_options,
+    make_step_runtime,
+    place_creatures,
+    step_player,
+)
 from tests.support.factories import make_creature_state as _creature
-from tests.support.factories import make_projectile_update_options, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -60,8 +60,18 @@ def _active_type_ids(pool: ProjectilePool) -> list[int]:
     return [entry.type_id for entry in pool.entries if entry.active]
 
 
+def _use_rng(state: GameplayState, rng: CrandLike) -> None:
+    """Route the state's rng and its rng-owning fx pools through `rng`, as `GameplayState(rng=...)` does."""
+
+    state.rng = rng
+    state.particles = ParticlePool(rng=rng)
+    state.sprite_effects = SpriteEffectPool(rng=rng)
+
+
 def test_dead_player_update_only_advances_native_death_timer() -> None:
-    state = GameplayState(player_spread_damping_scalar=0.5)
+    world = make_world()
+    state = world.state
+    state.player_spread_damping_scalar = 0.5
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -71,8 +81,9 @@ def test_dead_player_update_only_advances_native_death_timer() -> None:
         muzzle_flash_alpha=0.75,
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=0.5),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(), f32(0.1), state)
+    step_player(world, player, PlayerInput(), f32(0.1))
 
     assert player.death_timer == x87_pc24_sub(16.0, x87_pc24_mul(f32(0.1), f32(20.0)))
     assert player.low_health_timer == 0.25
@@ -82,14 +93,15 @@ def test_dead_player_update_only_advances_native_death_timer() -> None:
 
 
 def test_player_update_muzzle_flash_decay_keeps_native_store() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         muzzle_flash_alpha=0.75,
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(), f32(0.1), state)
+    step_player(world, player, PlayerInput(), f32(0.1))
 
     assert player.muzzle_flash_alpha == x87_pc24_sub(
         0.75,
@@ -98,7 +110,8 @@ def test_player_update_muzzle_flash_decay_keeps_native_store() -> None:
 
 
 def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     state.bonuses.weapon_power_up = 1.0
 
     player = PlayerState(
@@ -106,33 +119,36 @@ def test_player_update_weapon_power_up_scales_shot_cooldown_decay() -> None:
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=1.0),
     )
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
+    world.players[:] = [player]
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5)
 
     assert_float_close(player.weapon.shot_cooldown, 0.25)
 
 
 def test_player_update_shot_cooldown_decay_keeps_tiny_positive_residual() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=0.034000005573034286),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.034, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.034)
 
     assert player.weapon.shot_cooldown == 3.725290298461914e-09
 
 
 def test_player_update_spread_floor_is_native_f32() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         spread_heat=f32(0.01),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), f32(0.1), state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), f32(0.1))
 
     assert player.spread_heat == f32(0.01)
     assert player.spread_heat != 0.01
@@ -140,7 +156,9 @@ def test_player_update_spread_floor_is_native_f32() -> None:
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
     rng = ScriptedCrand(0)
-    state = GameplayState(rng=rng)
+    world = make_world()
+    state = world.state
+    _use_rng(state, rng)
     aim_heading_before = 1.25
     player = PlayerState(
         index=0,
@@ -149,10 +167,11 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
         low_health_timer=0.0,
         aim_heading=aim_heading_before,
     )
+    world.players[:] = [player]
     spawn_blood_splatter = mocker.Mock()
     state.effects.spawn_blood_splatter = spawn_blood_splatter
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016)
 
     expected_angle = float(aim_heading_before)
     expected_bleed_dir_angle = x87_pc24_sub(
@@ -188,17 +207,19 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
 
 
 def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 200.0),
         health=19.0,
         low_health_timer=100.0,
     )
+    world.players[:] = [player]
     spawn_blood_splatter = mocker.Mock()
     state.effects.spawn_blood_splatter = spawn_blood_splatter
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 200.0)), 0.016)
 
     spawn_blood_splatter.assert_not_called()
     assert player.low_health_timer == 100.0
@@ -206,25 +227,34 @@ def test_player_update_low_health_timer_100_sentinel_skips_bleed_fx(mocker) -> N
 
 
 def test_player_update_spread_damping_scalar_recovers_toward_one_when_gate_non_positive() -> None:
-    state = GameplayState(player_spread_damping_scalar=0.5, player_spread_damping_gate=0.0)
+    world = make_world()
+    state = world.state
+    state.player_spread_damping_scalar = 0.5
+    state.player_spread_damping_gate = 0.0
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.5)
 
     assert_float_close(state.player_spread_damping_scalar, f32(0.9))
 
 
 def test_player_update_spread_damping_scalar_decays_to_floor_when_gate_positive() -> None:
-    state = GameplayState(player_spread_damping_scalar=0.35, player_spread_damping_gate=1.0)
+    world = make_world()
+    state = world.state
+    state.player_spread_damping_scalar = 0.35
+    state.player_spread_damping_gate = 1.0
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1)
 
     assert_float_close(state.player_spread_damping_scalar, 0.3)
 
 
 def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -237,15 +267,17 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
             reload_timer_max=1.0,
         ),
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
+    step_player(world, player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1)
 
     assert_float_close(player.weapon.reload_timer, f32(0.7))
 
 
 def test_player_update_stationary_reload_keeps_native_completion_frame() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -258,21 +290,22 @@ def test_player_update_stationary_reload_keeps_native_completion_frame() -> None
             reload_timer_max=1.5,
         ),
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
     input_state = PlayerInput(aim=Vec2(51.0, 50.0))
 
     for _ in range(19):
-        player_update(player, input_state, 1.0 / 38.0, state)
+        step_player(world, player, input_state, 1.0 / 38.0)
 
     assert player.weapon.reload_timer == 4.172325134277344e-07
 
-    player_update(player, input_state, 1.0 / 38.0, state)
+    step_player(world, player, input_state, 1.0 / 38.0)
 
     assert player.weapon.reload_timer == 0.0
 
 
 def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -286,14 +319,15 @@ def test_player_update_preloads_ammo_only_before_reload_underflow() -> None:
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016)
 
     assert_float_close(player.weapon.ammo, 6.0)
 
 
 def test_player_update_preload_gate_ignores_reload_active_byte() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -307,14 +341,15 @@ def test_player_update_preload_gate_ignores_reload_active_byte() -> None:
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016)
 
     assert_float_close(player.weapon.ammo, 6.0)
 
 
 def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -328,14 +363,15 @@ def test_player_update_does_not_preload_ammo_when_reload_timer_is_zero() -> None
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.016)
 
     assert_float_close(player.weapon.ammo, -1.0)
 
 
 def test_player_update_preloads_ammo_on_tiny_negative_reload_crossing() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -349,14 +385,15 @@ def test_player_update_preloads_ammo_on_tiny_negative_reload_crossing() -> None:
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.03200000151991844, state)
+    step_player(world, player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.03200000151991844)
 
     assert_float_close(player.weapon.ammo, 6.0)
 
 
 def test_player_update_does_not_preload_ammo_on_tiny_positive_reload_residual() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -370,15 +407,16 @@ def test_player_update_does_not_preload_ammo_on_tiny_positive_reload_residual() 
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True), 0.10000000149011612, state)
+    step_player(world, player, PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True), 0.10000000149011612)
 
     assert_float_close(player.weapon.ammo, -1.0)
     assert player.weapon.reload_timer == 7.450580596923828e-09
 
 
 def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reload() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -392,12 +430,13 @@ def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reloa
             shot_cooldown=0.0,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True),
         0.03100000135600567,
-        state,
     )
 
     assert_float_close(player.weapon.ammo, -1.0)
@@ -407,7 +446,7 @@ def test_player_update_empty_reload_fire_tick_keeps_underflow_and_restarts_reloa
 
 
 def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -421,12 +460,13 @@ def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() 
             shot_cooldown=0.0,
         ),
     )
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True),
         0.10000000149011612,
-        state,
     )
 
     assert_float_close(player.weapon.reload_timer, 0.0)
@@ -435,7 +475,8 @@ def test_player_update_fire_held_at_reload_boundary_preloads_clip_before_shot() 
 
 
 def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -449,13 +490,14 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True),
         0.03100000135600567,
-        state,
     )
 
     assert_float_close(player.weapon.reload_timer, 0.0)
@@ -464,7 +506,8 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
 
 
 def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
-    state = GameplayState(preserve_bugs=True)
+    world = make_world(preserve_bugs=True)
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -478,13 +521,14 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
             shot_cooldown=0.5,
         ),
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(aim=Vec2(51.0, 50.0), fire_down=True),
         0.03100000135600567,
-        state,
     )
 
     assert_float_close(player.weapon.reload_timer, 0.0)
@@ -493,14 +537,16 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
 
 
 def test_player_update_point_click_reload_key_does_not_start_reload() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
     )
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(
             aim=Vec2(51.0, 50.0),
@@ -508,7 +554,6 @@ def test_player_update_point_click_reload_key_does_not_start_reload() -> None:
             move_mode=MovementControlType.MOUSE_POINT_CLICK,
         ),
         0.1,
-        state,
     )
 
     assert player.weapon.reload_active is False
@@ -516,14 +561,16 @@ def test_player_update_point_click_reload_key_does_not_start_reload() -> None:
 
 
 def test_player_update_point_click_reload_gate_blocks_manual_reload_on_empty_clip() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=0.0),
     )
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(
             aim=Vec2(51.0, 50.0),
@@ -531,7 +578,6 @@ def test_player_update_point_click_reload_gate_blocks_manual_reload_on_empty_cli
             move_mode=MovementControlType.MOUSE_POINT_CLICK,
         ),
         0.1,
-        state,
     )
 
     assert player.weapon.reload_active is False
@@ -539,7 +585,7 @@ def test_player_update_point_click_reload_gate_blocks_manual_reload_on_empty_cli
 
 
 def test_player_update_manual_reload_requires_single_player() -> None:
-    state = GameplayState()
+    world = make_world(player_count=2)
     player0 = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
@@ -550,34 +596,30 @@ def test_player_update_manual_reload_requires_single_player() -> None:
         pos=Vec2(60.0, 50.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10.0),
     )
+    world.players[:] = [player0, player1]
 
-    player_update(
-        player0,
-        PlayerInput(aim=Vec2(51.0, 50.0), reload_pressed=True),
-        0.1,
-        state,
-        players=[player0, player1],
-    )
+    step_player(world, player0, PlayerInput(aim=Vec2(51.0, 50.0), reload_pressed=True), 0.1)
 
     assert player0.weapon.reload_active is False
     assert player0.weapon.reload_timer == 0.0
 
 
 def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
-    state = GameplayState()
+    world = make_world(player_count=2)
     no_bonus = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     no_bonus.move_speed = 2.0
     no_bonus.heading = 0.0
 
-    with_bonus = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    with_bonus = PlayerState(index=1, pos=Vec2(100.0, 100.0))
     with_bonus.speed_bonus_timer = 0.018
     with_bonus.move_speed = 2.0
     with_bonus.heading = 0.0
+    world.players[:] = [no_bonus, with_bonus]
 
     input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0))
-    perks_update_effects(state, [no_bonus, with_bonus], 0.018, creatures=CreaturePool().entries, fx_queue=FxQueue())
-    player_update(no_bonus, input_state, 0.018, state)
-    player_update(with_bonus, input_state, 0.018, state)
+    perks_update_effects(world.state, world.players, 0.018, creatures=world.creatures.entries, fx_queue=FxQueue())
+    step_player(world, no_bonus, input_state, 0.018)
+    step_player(world, with_bonus, input_state, 0.018)
 
     no_bonus_delta = (no_bonus.pos - Vec2(100.0, 100.0)).length()
     with_bonus_delta = (with_bonus.pos - Vec2(100.0, 100.0)).length()
@@ -587,8 +629,9 @@ def test_player_update_speed_bonus_expires_before_player_update_step() -> None:
 
 
 def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -601,9 +644,10 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
             reload_timer_max=2.0,
         ),
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.ANGRY_RELOADER)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2)
 
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
@@ -612,14 +656,17 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
-    pool = ProjectilePool(size=32)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
+    world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2)
 
     assert state.bonus_spawn_guard
     owners = {entry.owner for entry in pool.entries if entry.active}
@@ -641,21 +688,23 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
 
 
 def test_player_update_perk_timers_keep_native_stored_cadence() -> None:
-    pool = ProjectilePool(size=32)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1
     state.perks[int(PerkId.LIVING_FORTRESS)] = 1
     input_state = PlayerInput(aim=Vec2(101.0, 100.0))
 
     for _ in range(240):
-        player_update(player, input_state, 1.0 / 60.0, state)
+        step_player(world, player, input_state, 1.0 / 60.0)
 
     assert pool.iter_active() == []
     assert player.man_bomb_timer == 3.9999969005584717
     assert player.living_fortress_timer == 3.9999969005584717
 
-    player_update(player, input_state, 1.0 / 60.0, state)
+    step_player(world, player, input_state, 1.0 / 60.0)
 
     assert len(pool.iter_active()) == 8
     assert player.man_bomb_timer == 0.016663551330566406
@@ -663,13 +712,16 @@ def test_player_update_perk_timers_keep_native_stored_cadence() -> None:
 
 
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
-    pool = ProjectilePool(size=32)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
+    world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1
 
-    player_update(player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0)), 4.2, state)
+    step_player(world, player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0)), 4.2)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
@@ -689,13 +741,16 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
-    pool = ProjectilePool(size=8)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_cough_timer=1.95)
+    world.players[:] = [player]
     state.perks[int(PerkId.FIRE_CAUGH)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1)
 
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
@@ -710,11 +765,10 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
 
 
 def test_player_update_fire_cough_uses_native_spread_angle() -> None:
-    pool = ProjectilePool(size=8)
-    state = GameplayState(
-        projectiles=pool,
-        rng=ScriptedCrand([65, 3, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-    )
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, ScriptedCrand([65, 3, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -722,18 +776,21 @@ def test_player_update_fire_cough_uses_native_spread_angle() -> None:
         spread_heat=0.2,
         fire_cough_timer=1.95,
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.FIRE_CAUGH)] = 1
 
-    player_update(player, PlayerInput(aim=player.aim), 0.1, state)
+    step_player(world, player, PlayerInput(aim=player.aim), 0.1)
 
     projectile = next(entry for entry in pool.entries if entry.active)
     assert projectile.angle == -4.71196985244751
 
 
 def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
-    pool = ProjectilePool(size=8)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -741,14 +798,15 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
         aim_heading=0.0,
         fire_cough_timer=1.95,
     )
+    world.players[:] = [player]
     state.perks[int(PerkId.FIRE_CAUGH)] = 1
 
     before_pos = Vec2(float(player.pos.x), float(player.pos.y))
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0)),
         0.1,
-        state,
     )
 
     assert float(player.pos.x) > float(before_pos.x)
@@ -765,24 +823,19 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
 
 
 def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.SHOTGUN, clip_size=10, ammo=10),
         fire_bullets_timer=1.0,
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -800,23 +853,18 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
     )
 
     for weapon_id in rocket_weapon_ids:
-        pool = ProjectilePool(size=64)
-        state = GameplayState(projectiles=pool)
+        world = make_world()
+        state = world.state
+        pool = state.projectiles
         player = PlayerState(index=0, pos=Vec2())
+        world.players[:] = [player]
         player.aim_dir = Vec2(1.0, 0.0)
         player.spread_heat = 0.0
         weapon_assign_player(player, weapon_id, state=state)
 
         player.fire_bullets_timer = 1.0
 
-        fire_weapon(
-            WeaponFireCtx(
-                player=player,
-                input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-                dt=0.016,
-                state=state,
-            ),
-        )
+        fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
         weapon = WEAPON_BY_ID[weapon_id]
 
@@ -827,47 +875,35 @@ def test_player_fire_weapon_fire_bullets_overrides_rocket_weapons() -> None:
 
 
 def test_player_fire_weapon_fire_bullets_does_not_consume_ammo() -> None:
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.SHOTGUN, clip_size=10, ammo=10),
         fire_bullets_timer=1.0,
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0)
 
     assert_float_close(player.weapon.ammo, 10.0)
 
 
 def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload() -> None:
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.SHOTGUN, clip_size=10, ammo=0),
         fire_bullets_timer=1.0,
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -877,23 +913,18 @@ def test_player_fire_weapon_fire_bullets_can_fire_at_zero_ammo_and_then_reload()
 
 
 def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
-    pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.ION_CANNON, clip_size=6, ammo=-1.0, reload_active=False, reload_timer=0.0),
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
 
     type_ids = _active_type_ids(pool)
     assert type_ids == [int(ProjectileTemplateId.ION_CANNON)]
@@ -903,23 +934,16 @@ def test_player_fire_weapon_can_fire_with_negative_ammo_then_reloads() -> None:
 
 
 def test_player_fire_weapon_spread_cap_is_native_f32() -> None:
-    pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
         spread_heat=f32(0.47),
     )
+    world.players[:] = [player]
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.0)
 
     assert player.spread_heat == f32(0.48)
     assert player.spread_heat != 0.48
@@ -928,14 +952,14 @@ def test_player_fire_weapon_spread_cap_is_native_f32() -> None:
 def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_pellet_weapons() -> None:
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.SHOTGUN, clip_size=10, ammo=10),
         fire_bullets_timer=1.0,
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
@@ -946,14 +970,7 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_p
         x87_pc24_mul(fire_bullets_weapon.spread_heat_inc, f32(1.3)),
     )
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0)
 
     assert player.spread_heat == expected
 
@@ -962,14 +979,14 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
     from crimson.projectiles.types import ProjectileTemplateId
     from crimson.weapons import weapon_entry_for_projectile_type_id
 
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE, clip_size=25, ammo=25),
         fire_bullets_timer=1.0,
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
@@ -980,36 +997,24 @@ def test_player_fire_weapon_fire_bullets_uses_fire_bullets_spread_heat_inc_for_s
         x87_pc24_mul(fire_bullets_weapon.spread_heat_inc, f32(1.3)),
     )
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0)
 
     assert player.spread_heat == expected
 
 
 def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.SHOTGUN, clip_size=10, ammo=10),
     )
+    world.players[:] = [player]
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(101.0, 100.0)), 0.0)
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
@@ -1017,47 +1022,53 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
 
 
 def test_player_update_tracks_aim_point() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0))
+    world.players[:] = [player]
     input_state = PlayerInput(aim=Vec2(123.0, 456.0))
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.aim == Vec2(123.0, 456.0)
 
 
 def test_player_update_keeps_survival_fire_unseen_while_shot_is_on_cooldown() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, shot_cooldown=1.0),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016)
 
     assert state.survival_reward_fire_seen is False
 
 
 def test_player_update_sets_survival_fire_seen_when_ready_shot_is_attempted() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, ammo=12.0),
     )
+    world.players[:] = [player]
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0), fire_down=True), 0.016)
 
     assert state.survival_reward_fire_seen is True
 
 
 def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=0.0)
+    world.players[:] = [player]
     input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0))
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     # Native steers toward `atan2f(-move) - 1.5707964f`, one ulp below pi/2 here
     # (fpatan's pi stays wide), and eases halfway there in one 0.1 s tick.
@@ -1082,19 +1093,20 @@ def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
         diff = abs((a - b) % math.tau)
         return min(diff, math.tau - diff)
 
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=2.0, heading=0.0)
+    world.players[:] = [player]
     dt = 1.0 / 60.0
     aim = Vec2(200.0, 100.0)
 
     for _ in range(30):
-        player_update(player, PlayerInput(move=Vec2(0.0, -1.0), aim=aim), dt, state)
+        step_player(world, player, PlayerInput(move=Vec2(0.0, -1.0), aim=aim), dt)
 
     target_heading = Vec2(-1.0, -1.0).to_heading() % math.tau
     start_diff = _angular_distance(player.heading % math.tau, target_heading)
 
     for _ in range(20):
-        player_update(player, PlayerInput(move=Vec2(-1.0, -1.0), aim=aim), dt, state)
+        step_player(world, player, PlayerInput(move=Vec2(-1.0, -1.0), aim=aim), dt)
 
     end_diff = _angular_distance(player.heading % math.tau, target_heading)
     assert end_diff < start_diff - 0.25
@@ -1102,8 +1114,9 @@ def test_player_update_w_then_up_left_converges_to_diagonal_heading() -> None:
 
 
 def test_player_update_relative_mode_dispatch_updates_turn_speed() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.5, turn_speed=1.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         aim=Vec2(200.0, 100.0),
         move_mode=MovementControlType.RELATIVE,
@@ -1113,7 +1126,7 @@ def test_player_update_relative_mode_dispatch_updates_turn_speed() -> None:
         turn_right_pressed=True,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.turn_speed > 1.0
     assert player.heading > 0.0
@@ -1132,6 +1145,7 @@ def test_player_update_relative_mode_applies_speed_multiplier(
     moving_backward: bool,
     speed_scale: float,
 ) -> None:
+    world = make_world()
     start_pos = Vec2(512.0, 512.0)
     player = PlayerState(
         index=0,
@@ -1140,9 +1154,11 @@ def test_player_update_relative_mode_applies_speed_multiplier(
         move_speed=1.0,
         speed_multiplier=3.0,
     )
+    world.players[:] = [player]
     dt = f32(0.01)
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(
             aim=Vec2(600.0, 512.0),
@@ -1153,7 +1169,6 @@ def test_player_update_relative_mode_applies_speed_multiplier(
             turn_right_pressed=False,
         ),
         dt,
-        GameplayState(),
     )
 
     direction = _direction_from_heading_native(0.0)
@@ -1168,8 +1183,9 @@ def test_player_update_relative_mode_applies_speed_multiplier(
 
 
 def test_player_update_computer_aim_preserves_static_movement_mode() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, move_speed=0.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         move=Vec2(),
         aim=Vec2(200.0, 100.0),
@@ -1181,15 +1197,16 @@ def test_player_update_computer_aim_preserves_static_movement_mode() -> None:
         turn_right_pressed=False,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.move_speed > 0.0
     assert player.pos.y < 100.0
 
 
 def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         move=Vec2(1.0, 0.0),
         aim=Vec2(200.0, 100.0),
@@ -1199,7 +1216,7 @@ def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
         turn_right_pressed=True,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.heading > 0.0
     assert (float(player.aim_heading) % math.tau) > 0.0
@@ -1210,8 +1227,9 @@ def test_player_update_digital_turn_only_rotates_and_accelerates() -> None:
 
 
 def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         move=Vec2(-1.0, -1.0),
         aim=Vec2(200.0, 100.0),
@@ -1221,7 +1239,7 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
         turn_right_pressed=False,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.heading < 0.0
     assert_float_close(
@@ -1235,8 +1253,9 @@ def test_player_update_digital_forward_turn_moves_in_heading_direction() -> None
 
 
 def test_player_update_digital_turn_conflict_prefers_right() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         move=Vec2(0.0, 0.0),
         aim=Vec2(200.0, 100.0),
@@ -1246,7 +1265,7 @@ def test_player_update_digital_turn_conflict_prefers_right() -> None:
         turn_right_pressed=True,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.heading > 0.0
     assert (float(player.aim_heading) % math.tau) > math.pi / 2.0
@@ -1256,8 +1275,9 @@ def test_player_update_digital_turn_conflict_prefers_right() -> None:
 
 
 def test_player_update_digital_move_conflict_prefers_backward() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0, move_speed=0.0, turn_speed=1.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         move=Vec2(0.0, 0.0),
         aim=Vec2(200.0, 100.0),
@@ -1267,7 +1287,7 @@ def test_player_update_digital_move_conflict_prefers_backward() -> None:
         turn_right_pressed=False,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.move_speed > 0.0
     assert_float_close(player.pos.x, 100.0)
@@ -1276,14 +1296,15 @@ def test_player_update_digital_move_conflict_prefers_backward() -> None:
 
 
 def test_player_update_move_phase_uses_native_intermediate_f32_store() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(move=Vec2(0.0, 1.0), aim=Vec2(512.0, 512.0)),
         0.03200000151991844,
-        state,
     )
 
     assert player.move_speed == f32(0.1600000113248825)
@@ -1291,7 +1312,7 @@ def test_player_update_move_phase_uses_native_intermediate_f32_store() -> None:
 
 
 def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(439.3449401855469, 646.193603515625),
@@ -1299,8 +1320,10 @@ def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
         move_phase=1.4318476915359497,
         weapon=WeaponSlot(weapon_id=WeaponId.MEAN_MINIGUN, clip_size=120, ammo=19),
     )
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(
             aim=Vec2(560.0, 496.0),
@@ -1310,7 +1333,6 @@ def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
             turn_right_pressed=True,
         ),
         0.08900000154972076,
-        state,
     )
 
     assert player.move_speed == f32(0.8)
@@ -1318,24 +1340,27 @@ def test_player_update_minigun_speed_cap_is_f32_before_move_phase() -> None:
 
 
 def test_player_update_move_speed_uses_native_acceleration_f32_store() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), move_speed=0.4750000238418579)
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(move=Vec2(0.0, 1.0), aim=Vec2(512.0, 512.0)),
         0.032999999821186066,
-        state,
     )
 
     assert player.move_speed == 0.6399999856948853
 
 
 def test_player_update_normalizes_analog_move_with_native_safe_helper() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), heading=0.0, aim_heading=0.0)
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(
             move=Vec2(0.19850380718708038, -0.9801002740859985),
@@ -1343,7 +1368,6 @@ def test_player_update_normalizes_analog_move_with_native_safe_helper() -> None:
             move_mode=MovementControlType.DUAL_ACTION_PAD,
         ),
         0.1,
-        state,
     )
 
     # Native normalizes the negated stick and takes `atan2f - 1.5707964f + 6.2831855f`.
@@ -1377,8 +1401,9 @@ def test_player_turn_aligned_velocity_uses_native_intermediate_f32_stores() -> N
 
 
 def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0)
+    world.players[:] = [player]
     input_state = PlayerInput(
         move=Vec2(),
         aim=Vec2(500.0, 500.0),
@@ -1390,7 +1415,7 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
         move_backward_pressed=False,
     )
 
-    player_update(player, input_state, 0.1, state)
+    step_player(world, player, input_state, 0.1)
 
     assert player.aim != Vec2(500.0, 500.0)
     assert_float_close(
@@ -1400,16 +1425,17 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
 
 
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(796.2267, 538.7482),
         move_speed=2.0,
         heading=-0.011166,
     )
+    world.players[:] = [player]
     input_state = PlayerInput(move=Vec2(-1.0, -1.0), aim=Vec2(972.364, 723.654))
 
-    player_update(player, input_state, 0.011, state)
+    step_player(world, player, input_state, 0.011)
 
     # Native normalizes movement target headings into [0, 2pi] before
     # `player_heading_approach_target`; x movement should continue left here.
@@ -1438,10 +1464,12 @@ def test_player_heading_approach_target_rounds_scaled_product_at_pc24() -> None:
 
 
 def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
-    pool = ProjectilePool(size=8)
     seed = 0xBEEF
     rng = RecordingCrand(Crand(seed))
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
 
     player = PlayerState(
         index=0,
@@ -1449,6 +1477,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
         spread_heat=0.2,
     )
+    world.players[:] = [player]
 
     aim_x = 200.0
     aim_y = 100.0
@@ -1482,14 +1511,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
         NATIVE_HALF_PI,
     )
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), 0.0)
 
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
@@ -1509,10 +1531,12 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
 
 
 def test_player_fire_weapon_disc_spread_rounds_each_x87_operation() -> None:
-    pool = ProjectilePool(size=8)
-    state = GameplayState(
-        projectiles=pool,
-        rng=ScriptedCrand(
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(
+        state,
+        ScriptedCrand(
             [3210, 6757, 16721, 32587, 146, 4299, 4835],
             fallback=ScriptedCrand.Fallback.REPEAT_LAST,
         ),
@@ -1523,15 +1547,9 @@ def test_player_fire_weapon_disc_spread_rounds_each_x87_operation() -> None:
         weapon=WeaponSlot(weapon_id=WeaponId.MEAN_MINIGUN, clip_size=120, ammo=110),
         spread_heat=0.24259991943836212,
     )
+    world.players[:] = [player]
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(272.0, 787.0)),
-            dt=0.07300000637769699,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(272.0, 787.0)), 0.07300000637769699)
 
     projectiles = pool.iter_active()
     assert len(projectiles) == 1
@@ -1549,19 +1567,13 @@ def test_player_fire_weapon_uses_native_muzzle_arithmetic() -> None:
 
 
 def test_player_fire_weapon_secondary_owner_uses_native_friendly_fire_encoding() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    world.players[:] = [player]
     weapon_assign_player(player, WeaponId.SEEKER_ROCKETS, state=state)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
-            dt=0.0,
-            state=state,
-            creatures=[],
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.0)
 
     projectile = state.secondary_projectiles.iter_active()[0]
     assert projectile.owner.to_legacy() == -100
@@ -1614,23 +1626,19 @@ def test_player_fire_weapon_tags_exact_pellet_loop_callers(
     jitter_caller: RngCallerStatic,
     speed_caller: RngCallerStatic,
 ) -> None:
-    pool = ProjectilePool(size=64)
     rng = RecordingCrand(Crand(0xBEEF))
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
         weapon=WeaponSlot(weapon_id=weapon_id, clip_size=99, ammo=99),
     )
+    world.players[:] = [player]
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
-            dt=0.0,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.0)
 
     assert len(pool.iter_active()) == pellet_count
     assert [record.caller for record in rng.records_since()[-(pellet_count * 2) :]] == [
@@ -1639,13 +1647,16 @@ def test_player_fire_weapon_tags_exact_pellet_loop_callers(
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:
-    pool = ProjectilePool(size=16)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.35)
+    world.players[:] = [player]
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.08400000631809235, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.08400000631809235)
 
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
@@ -1670,13 +1681,17 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
 
 
 def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
-    pool = ProjectilePool(size=16)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
+    world.players[:] = [player]
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(
             aim=Vec2(101.0, 100.0),
@@ -1686,7 +1701,6 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
             turn_right_pressed=False,
         ),
         0.1,
-        state,
     )
 
     assert abs(player.pos.y - 100.0) > 1e-6
@@ -1698,13 +1712,16 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
 
 
 def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> None:
-    pool = ProjectilePool(size=16)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(projectiles=pool, rng=rng)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    _use_rng(state, rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95, fire_bullets_timer=1.0)
+    world.players[:] = [player]
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
 
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state, players=[player])
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1)
 
     owners = {entry.owner for entry in pool.entries if entry.active}
     assert owners == {OwnerRef.from_local_player(0)}
@@ -1826,18 +1843,19 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
 def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
     # Native gates manual reload on grim_is_key_active (key held), so a held
     # reload key chains reloads back-to-back as each one completes.
-    state = GameplayState()
+    world = make_world()
     player = PlayerState(
         index=0,
         pos=Vec2(50.0, 50.0),
         weapon=WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=10, ammo=10),
     )
+    world.players[:] = [player]
 
-    player_update(
+    step_player(
+        world,
         player,
         PlayerInput(aim=Vec2(51.0, 50.0), reload_down=True),
         0.1,
-        state,
     )
 
     assert player.weapon.reload_active is True
@@ -1853,10 +1871,13 @@ def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
     ],
 )
 def test_man_bomb_stores_native_pc24_angles(jitter: int, expected_bits: list[int]) -> None:
-    state = GameplayState(rng=ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    world = make_world()
+    state = world.state
+    _use_rng(state, ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(100, 100), man_bomb_timer=3.9)
+    world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1
-    player_update(player, PlayerInput(aim=Vec2(101, 100)), 0.2, state)
+    step_player(world, player, PlayerInput(aim=Vec2(101, 100)), 0.2)
     assert [
         struct.unpack("<I", struct.pack("<f", p.angle))[0] for p in state.projectiles.iter_active()
     ] == expected_bits

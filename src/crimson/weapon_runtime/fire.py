@@ -24,7 +24,6 @@ from ..math_parity import (
 )
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
-from ..player_damage import PlayerDeathRuntime
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
@@ -38,6 +37,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ..creatures.runtime import CreatureState
+    from ..sim.world_state import WorldStepRuntime
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
@@ -63,12 +63,8 @@ class WeaponFireCtx(msgspec.Struct):
     player: PlayerState
     input_state: PlayerInput
     dt: float
-    state: GameplayState
-    detail_preset: int = 5
-    creatures: Sequence[CreatureState] | None = None
-    players: Sequence[PlayerState] | None = None
-    fire_gate: WeaponFireGate | None = None
-    player_death_runtime: PlayerDeathRuntime | None = None
+    step_runtime: WorldStepRuntime
+    fire_gate: WeaponFireGate
 
 
 class WeaponFireResult(msgspec.Struct, frozen=True):
@@ -164,11 +160,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     player = ctx.player
     input_state = ctx.input_state
     dt = float(ctx.dt)
-    state = ctx.state
-    creatures = ctx.creatures
-    players = ctx.players
-    player_death_runtime = ctx.player_death_runtime
-    fire_gate = ctx.fire_gate if ctx.fire_gate is not None else capture_fire_gate(player, state.perks)
+    state = ctx.step_runtime.world.state
+    creatures = ctx.step_runtime.world.creatures.entries
+    fire_gate = ctx.fire_gate
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
@@ -208,14 +202,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             from ..player_damage import player_take_damage
 
             cost = 0.15 if ammo_class == 1 else 1.0
-            player_take_damage(
-                state,
-                player,
-                cost,
-                dt=dt,
-                players=players,
-                death_runtime=player_death_runtime,
-            )
+            player_take_damage(ctx.step_runtime, player, cost, dt=dt)
     # Native player_update grants ten seconds for DIK_G on an eligible shot.
     # Keep this legacy cheat opt-in, including when replay input supplies it.
     if state.preserve_bugs and input_state.fire_bullets_key_down:
@@ -261,7 +248,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             pos=muzzle,
             aim_heading=aim_heading,
             draws=shell_casing_draws,
-            detail_preset=int(ctx.detail_preset),
+            detail_preset=int(ctx.step_runtime.detail_preset),
         )
 
     shot_angle = _native_shot_angle_with_jitter(

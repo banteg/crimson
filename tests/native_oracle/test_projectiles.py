@@ -15,10 +15,12 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.weapon_runtime import WeaponFireCtx, fire_weapon, weapon_assign_player
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import CRT_RAND_INC, CRT_RAND_MULT, CrtRand
+from tests.support.builders.session import make_world
+from tests.support.factories import fire_player_weapon
 
 from ._support import (
     PARTICLE_LAYOUT,
@@ -91,7 +93,11 @@ _NATIVE_PELLET_JITTER_RETURN = 0x00444D6A
 def _python_shotgun_volley(seed: int, pos: Vec2, aim: Vec2, aim_heading: float) -> tuple[GameplayState, int]:
     """Fire the port's shotgun; return the state and the RNG seed at the first pellet draw."""
 
-    rng = CrtRand(seed)
+    world = make_world()
+    state = world.state
+    rng = state.rng
+    assert isinstance(rng, CrtRand)
+    rng.srand(seed)
     first_pellet_state: list[int] = []
     pellet_caller = int(RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_JITTER)
 
@@ -100,13 +106,13 @@ def _python_shotgun_volley(seed: int, pos: Vec2, aim: Vec2, aim_heading: float) 
             first_pellet_state.append(state_before)
 
     rng.set_trace_sink(sink)
-    state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=pos)
+    world.players[:] = [player]
     weapon_assign_player(player, WeaponId.SHOTGUN, state=state)
     player.spread_heat = 0.0
     # `player_update` stores aim_heading before firing; the muzzle reads it.
     player.aim_heading = aim_heading
-    fire_weapon(WeaponFireCtx(player=player, input_state=PlayerInput(fire_down=True, aim=aim), dt=0.016, state=state))
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=aim), 0.016)
     assert first_pellet_state, "port did not draw shotgun pellet jitter"
     return state, first_pellet_state[0]
 
@@ -234,9 +240,11 @@ def test_particle_weapons_match_native(oracle, weapon_id: WeaponId) -> None:
         # Headings outside (-pi/2, 3pi/2] expose angle wrapping.
         aim_heading = f32(rng.uniform(-1.0, 7.3))
 
-        state = GameplayState()
+        world = make_world()
+        state = world.state
         state.rng.srand(seed)
         python_player = PlayerState(index=0, pos=pos)
+        world.players[:] = [python_player]
         weapon_assign_player(python_player, weapon_id, state=state)
         python_player.aim_heading = aim_heading
 
@@ -267,11 +275,7 @@ def test_particle_weapons_match_native(oracle, weapon_id: WeaponId) -> None:
             # Keep the port's cooldown and spread gates in step with the fragment.
             python_player.weapon.shot_cooldown = 0.0
             python_player.spread_heat = 0.0
-            fire_weapon(
-                WeaponFireCtx(
-                    player=python_player, input_state=PlayerInput(fire_down=True, aim=aim), dt=0.016, state=state,
-                ),
-            )
+            fire_player_weapon(world, python_player, PlayerInput(fire_down=True, aim=aim), 0.016)
             if shot == 1:
                 particle = next(entry for entry in reversed(state.particles.entries) if entry.active)
                 slot = state.particles.entries.index(particle)

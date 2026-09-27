@@ -4,9 +4,8 @@ import pytest
 
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
-from grim.geom import Vec2
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 from tests.support.helpers import ScriptedCrand
 
 
@@ -23,12 +22,14 @@ def test_player_take_damage_highlander_behavior(
     expected_applied: float,
     expected_health: float,
 ) -> None:
-    state = GameplayState(rng=ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
     state.perks[int(PerkId.HIGHLANDER)] = 1
     state.perks[int(PerkId.UNSTOPPABLE)] = 1
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == expected_applied
     assert player.health == expected_health

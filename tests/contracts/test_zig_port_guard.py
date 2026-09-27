@@ -21,12 +21,12 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.quests import all_quests
 from crimson.quests.level import QUEST_COUNT
 from crimson.screens.panels.controls_labels import RebindRowSpec, controls_rebind_plan
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
-from crimson.weapon_runtime import WeaponFireCtx, fire_weapon, weapon_assign_player
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WEAPON_BY_ID, WeaponId
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
+from tests.support.factories import fire_player_weapon
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ZIG_CREATURES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "creatures.zig"
@@ -77,18 +77,12 @@ def _python_supported_fire_weapons() -> set[str]:
     for weapon_id in WeaponId:
         if int(weapon_id) <= 0 or weapon_id not in WEAPON_BY_ID:
             continue
-        state = GameplayState()
-        player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-        weapon_assign_player(player, weapon_id, state=state)
+        world = make_world()
+        player = world.players[0]
+        player.pos = Vec2(512.0, 512.0)
+        weapon_assign_player(player, weapon_id, state=world.state)
         try:
-            fire_weapon(
-                WeaponFireCtx(
-                    player=player,
-                    input_state=PlayerInput(fire_down=True, aim=Vec2(600.0, 512.0)),
-                    dt=0.016,
-                    state=state,
-                ),
-            )
+            fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(600.0, 512.0)), 0.016)
         except ValueError:
             continue
         supported.add(weapon_id.name.lower())

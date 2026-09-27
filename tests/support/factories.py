@@ -1,17 +1,19 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from typing import Any
 
-from crimson.creatures.runtime import CreatureState, CreatureUpdateOptions
-from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
+from crimson.creatures.runtime import CreatureState
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.gameplay import player_update
 from crimson.projectiles.runtime import ProjectileUpdateOptions
-from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
+from crimson.weapon_runtime.fire import WeaponFireCtx, WeaponFireResult, capture_fire_gate, fire_weapon
 from grim.geom import Vec2
-from grim.rand import CrandLike
 
 
 def make_creature_state(
@@ -40,34 +42,6 @@ def make_creature_state(
     )
 
 
-def make_creature_update_options(
-    *,
-    state: GameplayState,
-    players: list[PlayerState],
-    rng: CrandLike | None = None,
-    detail_preset: int = 5,
-    violence_disabled: int = 0,
-    env: SpawnEnv | None = None,
-    fx_queue: FxQueue | None = None,
-    fx_queue_rotated: FxQueueRotated | None = None,
-    quest_fail_retry_count: int = 0,
-) -> CreatureUpdateOptions:
-    default_env = SpawnEnv(
-        demo_mode_active=bool(state.demo_mode_active),
-        hardcore=bool(state.hardcore),
-        quest_fail_retry_count=int(quest_fail_retry_count),
-    )
-    return CreatureUpdateOptions(
-        state=state,
-        players=players,
-        rng=state.rng if rng is None else rng,
-        env=default_env if env is None else env,
-        fx_queue=FxQueue() if fx_queue is None else fx_queue,
-        fx_queue_rotated=FxQueueRotated() if fx_queue_rotated is None else fx_queue_rotated,
-        detail_preset=int(detail_preset),
-        violence_disabled=int(violence_disabled),
-    )
-
 
 def make_step_runtime(
     world: WorldState,
@@ -86,6 +60,7 @@ def make_step_runtime(
         detail_preset=int(detail_preset),
         violence_disabled=int(violence_disabled),
         fx_queue=FxQueue() if fx_queue is None else fx_queue,
+        fx_queue_rotated=FxQueueRotated(),
         game_mode=game_mode,
         hit_audio_game_tune_started=True,
         deaths=[],
@@ -114,3 +89,51 @@ def make_projectile_update_options(
         step_runtime=make_step_runtime(world, detail_preset=detail_preset) if step_runtime is None else step_runtime,
         detail_preset=int(detail_preset),
     )
+
+
+def step_player(
+    world: WorldState,
+    player: PlayerState,
+    input_state: PlayerInput,
+    dt: float,
+    *,
+    step_runtime: WorldStepRuntime | None = None,
+) -> float:
+    """Run `player_update` for one player the way `WorldState.step` does."""
+
+    return player_update(
+        player,
+        input_state,
+        dt,
+        step_runtime=make_step_runtime(world, dt=dt) if step_runtime is None else step_runtime,
+        reload_active_any=bool(input_state.reload_down or input_state.reload_pressed),
+    )
+
+
+def fire_player_weapon(
+    world: WorldState,
+    player: PlayerState,
+    input_state: PlayerInput,
+    dt: float,
+    *,
+    step_runtime: WorldStepRuntime | None = None,
+) -> WeaponFireResult:
+    """Fire `player`'s weapon with the gate `player_update` would capture right now."""
+
+    return fire_weapon(
+        WeaponFireCtx(
+            player=player,
+            input_state=input_state,
+            dt=dt,
+            step_runtime=make_step_runtime(world, dt=dt) if step_runtime is None else step_runtime,
+            fire_gate=capture_fire_gate(player, world.state.perks),
+        ),
+    )
+
+
+def step_creatures(world: WorldState, dt: float, **runtime_kwargs: Any) -> WorldStepRuntime:
+    """Run `creature_update_all` for one frame; the runtime holds its deaths and sfx."""
+
+    step_runtime = make_step_runtime(world, dt=dt, **runtime_kwargs)
+    world.creatures.update(step_runtime)
+    return step_runtime

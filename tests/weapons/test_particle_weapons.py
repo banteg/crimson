@@ -6,20 +6,14 @@ from crimson.creatures.runtime import CreatureState
 from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.weapon_runtime import (
-    WeaponFireCtx,
-    fire_weapon,
-    weapon_assign_player,
-)
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.builders.session import make_world
-from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
+from tests.support.factories import fire_player_weapon, make_creature_state, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -32,8 +26,11 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
     )
 
     for weapon_id, expected_style, ammo_cost in cases:
-        state = GameplayState(rng=ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-        player = PlayerState(index=0, pos=Vec2())
+        world = make_world()
+        state = world.state
+        state.rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+        player = world.players[0]
+        player.pos = Vec2()
         player.aim_dir = Vec2(1.0, 0.0)
         player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
         player.spread_heat = 0.0
@@ -41,14 +38,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         weapon_assign_player(player, weapon_id, state=state)
         start_ammo = float(player.weapon.ammo)
 
-        fire_weapon(
-            WeaponFireCtx(
-                player=player,
-                input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-                dt=0.016,
-                state=state,
-            ),
-        )
+        fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
         particles = [entry for entry in state.particles.entries if entry.active]
         assert len(particles) == 1
@@ -73,8 +63,11 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 
 
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2())
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.pos = Vec2()
     player.aim_dir = Vec2(0.0, 1.0)
     player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.0
@@ -83,14 +76,7 @@ def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
 
     aim_x = 200.0
     aim_y = 0.0
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), 0.016)
 
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 1
@@ -106,23 +92,19 @@ def test_flamethrower_particle_angle_ignores_spread_heat_jitter() -> None:
     aim_x = 200.0
     aim_y = 0.0
 
+    world = make_world()
+    state = world.state
     # Ensure the jittered aim point is significantly off-axis: dir_angle -> pi/2, mag -> near 1.0.
-    # The third value is consumed by `spawn_particle` (spin).
-    state = GameplayState(rng=ScriptedCrand([128, 511, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2())
+    # The particle pool keeps drawing from the world rng.
+    state.rng = ScriptedCrand([128, 511], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.pos = Vec2()
     player.aim_dir = Vec2(1.0, 0.0)
     player.aim_heading = f32(math.atan2(0.0, -200.0) - NATIVE_HALF_PI)
     player.spread_heat = 0.48
 
     weapon_assign_player(player, WeaponId.FLAMETHROWER, state=state)
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(aim_x, aim_y)), 0.016)
 
     particles = [entry for entry in state.particles.entries if entry.active]
     assert len(particles) == 1
@@ -153,14 +135,7 @@ def _fire_at_creature(world: WorldState, weapon_id: WeaponId) -> CreatureState:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, weapon_id, state=state)
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
     return place_creatures(world, [make_creature_state(pos=Vec2(16.0, 0.0))])[0]
 

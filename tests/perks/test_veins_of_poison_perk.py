@@ -1,21 +1,20 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE
 from crimson.creatures.spawn import CreatureFlags
 from crimson.perks import PerkId
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.factories import make_creature_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import step_creatures
 
 
 def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    state.perks[int(PerkId.VEINS_OF_POISON)] = 1
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    world.state.perks[int(PerkId.VEINS_OF_POISON)] = 1
 
-    pool = CreaturePool()
-    creature = pool.entries[0]
+    creature = world.creatures.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(100.0, 100.0)
@@ -24,18 +23,19 @@ def test_veins_of_poison_sets_self_damage_flag_on_contact_hit() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.2)
 
     assert creature.flags & CreatureFlags.SELF_DAMAGE_TICK
 
 
 def test_veins_of_poison_skips_when_player_shielded() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shield_timer=1.0)
-    state.perks[int(PerkId.VEINS_OF_POISON)] = 1
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.shield_timer = 1.0
+    world.state.perks[int(PerkId.VEINS_OF_POISON)] = 1
 
-    pool = CreaturePool()
-    creature = pool.entries[0]
+    creature = world.creatures.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
     creature.pos = Vec2(100.0, 100.0)
@@ -44,6 +44,6 @@ def test_veins_of_poison_skips_when_player_shielded() -> None:
     creature.contact_damage = 10.0
     creature.collision_timer = 0.1
 
-    pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.2)
 
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)

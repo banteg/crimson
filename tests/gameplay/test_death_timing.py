@@ -7,7 +7,7 @@ import pytest
 import crimson.sim.world_state as world_state_mod
 from crimson.bonuses import BonusId
 from crimson.creatures.damage_types import CreatureDamageType
-from crimson.creatures.runtime import CreatureDeath, CreatureUpdateResult
+from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId
 from crimson.game_modes import GameMode
@@ -17,7 +17,7 @@ from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId, Secon
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
-from crimson.sim.world_state import WorldState
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -372,7 +372,7 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
     creature.reward_value = 0.0
     creature.lifecycle_stage = 16.0
 
-    mocker.patch.object(world.creatures, "update", return_value=CreatureUpdateResult())
+    mocker.patch.object(world.creatures, "update", return_value=None)
     rng = ScriptedCrand(2, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
     world.state.particles = ParticlePool(rng=rng)
@@ -479,9 +479,9 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
         owner=OwnerRef.from_player(0),
     )
 
-    def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
-        _ = args, kwargs
-        return CreatureUpdateResult(deaths=(death,), sfx=(SfxRequest(SfxId.UI_PANELCLICK),))
+    def _fake_update(step_runtime: WorldStepRuntime) -> None:
+        step_runtime.deaths.append(death)
+        step_runtime.sfx.append(SfxRequest(SfxId.UI_PANELCLICK))
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
@@ -601,9 +601,9 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
         SfxId.ZOMBIE_DIE_03,
     )
 
-    def _fake_update(*args: object, **kwargs: object) -> CreatureUpdateResult:
-        _ = args, kwargs
-        return CreatureUpdateResult(deaths=deaths, sfx=tuple(SfxRequest(sfx) for sfx in death_sfx))
+    def _fake_update(step_runtime: WorldStepRuntime) -> None:
+        step_runtime.deaths.extend(deaths)
+        step_runtime.sfx.extend(SfxRequest(sfx) for sfx in death_sfx)
 
     mocker.patch.object(world.creatures, "update", side_effect=_fake_update)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)

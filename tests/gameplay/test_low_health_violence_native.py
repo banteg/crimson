@@ -9,16 +9,16 @@ import pytest
 from crimson.aim_schemes import AimScheme
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
-from crimson.gameplay import player_update
 from crimson.math_parity import f32
 from crimson.movement_controls import MovementControlType
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime, step_player
 
 _FIXTURE = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/violence-disabled-low-health.json"
 
@@ -35,7 +35,9 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
         frame = case["input"]["frame"]
         expected = case["expected"]
         rng = RecordingCrand(Crand(frame["seed"]))
-        state = GameplayState(rng=rng, preserve_bugs=True)
+        world = make_world(player_count=frame["index"] + 1, preserve_bugs=True)
+        state = world.state
+        state.rng = rng
         player = PlayerState(
             index=frame["index"],
             pos=Vec2(frame["pos_x"], frame["pos_y"]),
@@ -43,10 +45,13 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
             low_health_timer=f32(frame["low_health_timer"]),
             aim_heading=f32(frame["aim_heading"]),
         )
-        player_update(
+        world.players[player.index] = player
+        step_player(
+            world,
             player,
             PlayerInput(aim=Vec2(300.0, 400.0), aim_scheme=AimScheme.MOUSE, move_mode=MovementControlType.STATIC),
-            frame["dt"], state, violence_disabled=frame["violence_disabled"],
+            frame["dt"],
+            step_runtime=make_step_runtime(world, dt=frame["dt"], violence_disabled=frame["violence_disabled"]),
         )
         assert _bits(player.low_health_timer) == expected["timer_bits"], case["input"]["name"]
         assert [record.value for record in rng.records_since()] == expected["rng_draws"], case["input"]["name"]

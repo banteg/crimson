@@ -6,11 +6,10 @@ from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
-from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -35,12 +34,15 @@ def test_player_take_damage_dodge_perks(
     expected_applied: float,
     expected_health: float,
 ) -> None:
-    state = GameplayState(rng=ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.health = 100.0
     for perk_id, count in perks.items():
         state.perks[int(perk_id)] = count
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == expected_applied
     assert player.health == expected_health
@@ -48,11 +50,14 @@ def test_player_take_damage_dodge_perks(
 
 def test_player_take_damage_tags_ninja_dodge_caller() -> None:
     rng = ScriptedCrand([0, 0])
-    state = GameplayState(rng=rng)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    world = make_world()
+    state = world.state
+    state.rng = rng
+    player = world.players[0]
+    player.health = 100.0
     state.perks[int(PerkId.NINJA)] = 1
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 0.0
     assert [record.caller for record in rng.records_since()] == [
@@ -63,11 +68,14 @@ def test_player_take_damage_tags_ninja_dodge_caller() -> None:
 
 def test_player_take_damage_tags_dodger_dodge_caller() -> None:
     rng = ScriptedCrand([0, 0])
-    state = GameplayState(rng=rng)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    world = make_world()
+    state = world.state
+    state.rng = rng
+    player = world.players[0]
+    player.health = 100.0
     state.perks[int(PerkId.DODGER)] = 1
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 0.0
     assert [record.caller for record in rng.records_since()] == [
@@ -77,11 +85,15 @@ def test_player_take_damage_tags_dodger_dodge_caller() -> None:
 
 
 def test_repeated_heading_jitter_stores_each_native_precision_result() -> None:
-    state = GameplayState(rng=ScriptedCrand([0, 43, 0, 15]))
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=f32(1.1))
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand([0, 43, 0, 15])
+    player = world.players[0]
+    player.health = 100.0
+    player.heading = f32(1.1)
 
-    player_take_damage(state, player, 1.0)
-    player_take_damage(state, player, 1.0)
+    player_take_damage(make_step_runtime(world), player, 1.0, dt=0.1)
+    player_take_damage(make_step_runtime(world), player, 1.0, dt=0.1)
 
     expected = x87_pc24_add(
         x87_pc24_add(f32(1.1), x87_pc24_mul(-7.0, f32(0.04))),
@@ -103,10 +115,13 @@ def test_player_take_damage_low_health_timer_behavior(
     expected_health: float,
     expected_low_health_timer: float,
 ) -> None:
-    state = GameplayState(rng=ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=start_health)
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(3, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.health = start_health
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player.health == expected_health
@@ -114,10 +129,14 @@ def test_player_take_damage_low_health_timer_behavior(
 
 
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=5.0, death_timer=16.0)
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.health = 5.0
+    player.death_timer = 16.0
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player.health == -5.0
@@ -126,11 +145,15 @@ def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
 
 def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(preserve_bugs=False, rng=rng)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
+    world = make_world(preserve_bugs=False)
+    state = world.state
+    state.rng = rng
+    player = world.players[0]
+    player.health = 100.0
+    player.death_timer = 16.0
     state.perks[int(PerkId.HIGHLANDER)] = 1
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 100.0
     assert player.health == 0.0
@@ -146,11 +169,15 @@ def test_player_take_damage_exact_zero_kill_uses_death_path_by_default() -> None
 
 def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    state = GameplayState(preserve_bugs=True, rng=rng)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, death_timer=16.0)
+    world = make_world(preserve_bugs=True)
+    state = world.state
+    state.rng = rng
+    player = world.players[0]
+    player.health = 100.0
+    player.death_timer = 16.0
     state.perks[int(PerkId.HIGHLANDER)] = 1
 
-    applied = player_take_damage(state, player, 10.0, dt=0.1)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 100.0
     assert player.health == 0.0
@@ -165,21 +192,28 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
 
 
 def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=50.90475845336914)
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.health = 50.90475845336914
     state.perks[int(PerkId.THICK_SKINNED)] = 1
 
-    applied = player_take_damage(state, player, 5.238095283508301)
+    applied = player_take_damage(make_step_runtime(world), player, 5.238095283508301, dt=0.1)
 
     assert_float_close(applied, 3.4885711669921875)
     assert_float_close(player.health, 47.41618728637695)
 
 
 def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, shield_timer=1.0)
+    world = make_world()
+    state = world.state
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player = world.players[0]
+    player.health = 100.0
+    player.shield_timer = 1.0
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 0.0
     assert state.survival_reward_damage_seen is True
@@ -187,10 +221,14 @@ def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> No
 
 def test_player_take_damage_zero_contact_damage_preserves_native_side_effects() -> None:
     rng = ScriptedCrand([1, 50])
-    state = GameplayState(rng=rng)
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=1.0)
+    world = make_world()
+    state = world.state
+    state.rng = rng
+    player = world.players[0]
+    player.health = 100.0
+    player.heading = 1.0
 
-    applied = player_take_damage(state, player, 0.0, dt=0.1)
+    applied = player_take_damage(make_step_runtime(world), player, 0.0, dt=0.1)
 
     assert applied == 0.0
     assert player.health == 100.0
@@ -204,11 +242,15 @@ def test_player_take_damage_zero_contact_damage_preserves_native_side_effects() 
 
 
 def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
-    state = GameplayState(preserve_bugs=False, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
-    player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
+    world = make_world(player_count=2, preserve_bugs=False)
+    state = world.state
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player1, player2 = world.players
+    player1.health = -1.0
+    player2.health = 5.0
+    player2.death_timer = 16.0
 
-    applied = player_take_damage(state, player2, 10.0, dt=0.1, players=[player1, player2])
+    applied = player_take_damage(make_step_runtime(world), player2, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player2.health == -5.0
@@ -217,11 +259,15 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
 
 
 def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
-    state = GameplayState(preserve_bugs=True, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player1 = PlayerState(index=0, pos=Vec2(), health=-1.0)
-    player2 = PlayerState(index=1, pos=Vec2(), health=5.0, death_timer=16.0)
+    world = make_world(player_count=2, preserve_bugs=True)
+    state = world.state
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    player1, player2 = world.players
+    player1.health = -1.0
+    player2.health = 5.0
+    player2.death_timer = 16.0
 
-    applied = player_take_damage(state, player2, 10.0, dt=0.1, players=[player1, player2])
+    applied = player_take_damage(make_step_runtime(world), player2, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player2.health == -5.0

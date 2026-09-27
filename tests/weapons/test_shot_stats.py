@@ -10,16 +10,13 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.weapon_runtime import (
-    WeaponFireCtx,
-    fire_weapon,
-    weapon_assign_player,
-)
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapon_runtime.spawn import projectile_spawn
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
 from tests.support.factories import (
+    fire_player_weapon,
     make_creature_state,
     make_projectile_update_options,
     make_step_runtime,
@@ -38,14 +35,7 @@ def _fire_pistol_right() -> WorldState:
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
     return world
 
 

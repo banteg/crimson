@@ -9,8 +9,6 @@ from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
@@ -18,10 +16,10 @@ from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import (
     make_creature_state,
-    make_creature_update_options,
     make_projectile_update_options,
     make_step_runtime,
     place_creatures,
+    step_creatures,
 )
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -31,11 +29,12 @@ def _wrap_angle(angle: float) -> float:
 
 
 def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 200.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(0.0, 200.0)
 
-    pool = CreaturePool()
-    creature = pool.entries[0]
+    creature = world.creatures.entries[0]
     creature.active = True
     creature.hp = 10.0
     creature.pos = Vec2()
@@ -44,7 +43,7 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     creature.ai_mode = CreatureAiMode.CHASE_PLAYER
     creature.contact_damage = 0.0
 
-    result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player]))
+    step_runtime = step_creatures(world, 0.001)
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -55,15 +54,16 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
 
     direct_aim = math.atan2(player.pos.y - creature.pos.y, player.pos.x - creature.pos.x) + math.pi / 2.0
     assert abs(_wrap_angle(proj.angle - direct_aim)) > 0.1
-    assert result.sfx == (SfxRequest(SfxId.SHOCK_FIRE, creature.pos),)
+    assert step_runtime.sfx == [SfxRequest(SfxId.SHOCK_FIRE, creature.pos)]
 
 
 def test_ranged_creature_does_not_fire_when_too_close() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 64.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(0.0, 64.0)
 
-    pool = CreaturePool()
-    creature = pool.entries[0]
+    creature = world.creatures.entries[0]
     creature.active = True
     creature.hp = 10.0
     creature.pos = Vec2()
@@ -72,19 +72,22 @@ def test_ranged_creature_does_not_fire_when_too_close() -> None:
     creature.move_speed = 0.0
     creature.contact_damage = 0.0
 
-    result = pool.update(0.001, options=make_creature_update_options(state=state, players=[player]))
+    step_runtime = step_creatures(world, 0.001)
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert not spawned
-    assert sfx_ids(result.sfx) == []
+    assert sfx_ids(step_runtime.sfx) == []
 
 
 def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 200.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(0.0, 200.0)
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = rng
 
-    pool = CreaturePool()
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 10.0
@@ -96,14 +99,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     creature.orbit_angle = 0.4
     creature.contact_damage = 0.0
 
-    result = pool.update(
-        0.001,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=rng,
-        ),
-    )
+    step_runtime = step_creatures(world, 0.001)
 
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
@@ -111,7 +107,7 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     assert proj.hits_players is True
     assert int(proj.type_id) == 26
     assert creature.attack_cooldown == f32(0.4)
-    assert result.sfx == (SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8),)
+    assert step_runtime.sfx == [SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8)]
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.CREATURE_UPDATE_ALL_PLASMAMINIGUN_COOLDOWN,
     ]

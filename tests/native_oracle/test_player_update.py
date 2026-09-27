@@ -27,7 +27,6 @@ from crimson.gameplay import (
     _player_move,
     _player_move_delta_from_velocity,
     _player_move_toward_heading,
-    player_update,
     survival_level_threshold,
 )
 from crimson.math_parity import f32, x87_pc24_hypot, x87_pc24_sub
@@ -39,6 +38,8 @@ from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from crimson.sim.timing import reflex_boost_time_scale_factor
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
+from tests.support.factories import step_player
 
 from ._support import CREATURE_STRIDE, Mismatch, compare_fields, mismatch_report
 
@@ -525,12 +526,13 @@ def test_angry_reloader_ring_matches_native(oracle, mocker: MockerFixture) -> No
         harness.reset(reload_timer_max=reload_timer_max)
         harness.run(0x00415162, 0x004151C1, _Frame().i32(0x20, -100))
 
+        world = make_world()
+        world.state.perks[PerkId.ANGRY_RELOADER] = 1
         player = _python_player()
-        state = GameplayState()
-        state.perks[PerkId.ANGRY_RELOADER] = 1
+        world.players[:] = [player]
         player.weapon.reload_timer_max = reload_timer_max
         player.weapon.reload_timer = f32(reload_timer_max * 0.5 + 0.001)
-        player_update(player, PlayerInput(aim=Vec2(1.0, 0.0)), 0.05, state)
+        step_player(world, player, PlayerInput(aim=Vec2(1.0, 0.0)), 0.05)
         python_angles = [call.kwargs["angle"] for call in python_spawn.call_args_list]
 
         case = f"reload_timer_max={reload_timer_max!r}"
@@ -562,13 +564,15 @@ def test_reflex_restored_frame_dt_drives_spread_and_reload(oracle) -> None:
         reload_timer = rng.choice((0.0, _rf(rng, 0.0, 0.1), _rf(rng, 0.0, reload_timer_max)))
         time_scale_factor = reflex_boost_time_scale_factor(reflex_boost_timer=reflex_timer, time_scale_active=True)
 
-        state = GameplayState()
-        state.time_scale_active = True
-        state.bonuses.reflex_boost = reflex_timer
+        world = make_world()
+        world.state.time_scale_active = True
+        world.state.bonuses.reflex_boost = reflex_timer
         player = _python_player(pos=pos, spread_heat=spread_heat)
+        world.players[:] = [player]
         player.weapon.reload_timer = reload_timer
         player.weapon.reload_timer_max = reload_timer_max
-        frame_dt = player_update(
+        frame_dt = step_player(
+            world,
             player,
             PlayerInput(
                 aim=Vec2(pos.x + 60.0, pos.y),
@@ -579,7 +583,6 @@ def test_reflex_restored_frame_dt_drives_spread_and_reload(oracle) -> None:
                 turn_right_pressed=False,
             ),
             dt,
-            state,
         )
 
         harness.reset(pos_x=pos.x, pos_y=pos.y, spread_heat=spread_heat, reload_timer=reload_timer)
@@ -613,8 +616,10 @@ def test_aim_heading_is_recomputed_on_the_player(oracle) -> None:
         harness.reset(pos_x=pos.x, pos_y=pos.y, aim_x=aim.x, aim_y=aim.y, aim_heading=1.0)
         native = harness.run(0x0041572E, 0x00415753, _Frame())
 
+        world = make_world()
         player = _python_player(pos=pos, aim_heading=1.0)
-        player_update(player, PlayerInput(aim=aim), 0.016, GameplayState())
+        world.players[:] = [player]
+        step_player(world, player, PlayerInput(aim=aim), 0.016)
         python = {
             "aim_heading": player.aim_heading,
             "helper": _aim_heading_from_aim_point_native(pos, aim),

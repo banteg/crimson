@@ -3,39 +3,30 @@ from __future__ import annotations
 import math
 
 from crimson.math_parity import NATIVE_HALF_PI, f32
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState, WeaponSlot
-from crimson.weapon_runtime.fire import WeaponFireCtx, fire_weapon
+from crimson.sim.state_types import WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
+from tests.support.factories import fire_player_weapon
 
 
 def _spawn_swarmer_burst(*, preserve_bugs: bool, ammo: float) -> list[tuple[float, float]]:
-    state = GameplayState(preserve_bugs=bool(preserve_bugs))
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        aim_heading=f32(math.atan2(0.0, -100.0) - NATIVE_HALF_PI),
-        weapon=WeaponSlot(
-            weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
-            clip_size=int(ammo),
-            ammo=float(ammo),
-        ),
-        spread_heat=0.0,
+    world = make_world(preserve_bugs=preserve_bugs)
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.aim_heading = f32(math.atan2(0.0, -100.0) - NATIVE_HALF_PI)
+    player.weapon = WeaponSlot(
+        weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
+        clip_size=int(ammo),
+        ammo=float(ammo),
     )
+    player.spread_heat = 0.0
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
 
     headings: list[tuple[float, float]] = []
-    for entry in state.secondary_projectiles.entries:
+    for entry in world.state.secondary_projectiles.entries:
         if not entry.active:
             continue
         direction = Vec2.from_heading(float(entry.angle))
@@ -64,26 +55,18 @@ def test_mini_rocket_swarmer_clumping_bug_can_be_preserved() -> None:
 def test_mini_rocket_swarmer_empty_clip_fires_no_rockets() -> None:
     # Reachable when firing during reload with Regression Bullets / Ammunition
     # Within; native spawns zero rockets and zeroes the clip.
-    state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        weapon=WeaponSlot(
-            weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
-            clip_size=6,
-            ammo=-0.5,
-        ),
-        spread_heat=0.0,
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(
+        weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
+        clip_size=6,
+        ammo=-0.5,
     )
+    player.spread_heat = 0.0
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)),
-            dt=0.016,
-            state=state,
-        ),
-    )
+    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
 
     assert not any(entry.active for entry in state.secondary_projectiles.entries)
     assert player.weapon.ammo == 0.0

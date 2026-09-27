@@ -5,15 +5,13 @@ import json
 import struct
 from pathlib import Path
 
-from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueueRotated, FxQueueRotatedEntry
 from crimson.math_parity import f32
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
 from grim.color import RGBA
 from grim.geom import Vec2
-from tests.support.factories import make_creature_state, make_creature_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import make_creature_state, make_step_runtime
 
 FIXTURE = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/corpse-queue.json"
 
@@ -32,8 +30,7 @@ def entry_bits(entry: FxQueueRotatedEntry) -> dict:
     }
 
 
-def filled_queue(count: int) -> FxQueueRotated:
-    queue = FxQueueRotated()
+def fill_queue(queue: FxQueueRotated, count: int) -> FxQueueRotated:
     for index in range(count):
         assert queue.add(top_left=Vec2(index, -index), rgba=RGBA(0.2, 0.3, 0.4, 0.5),
                          rotation=0.1, scale=3.0, creature_type_id=2)
@@ -45,7 +42,7 @@ def test_corpse_queue_matches_native_fields_capacity_and_failure() -> None:
     assert len(witnesses) == 240
     for witness in witnesses:
         case, expected = witness["input"], witness["expected"]
-        queue = filled_queue(case["count"])
+        queue = fill_queue(FxQueueRotated(), case["count"])
         previous = copy.deepcopy(queue.entries)
         accepted = queue.add(
             top_left=Vec2(*case["pos"]), rgba=RGBA(*case["color"]), rotation=case["rotation"],
@@ -67,10 +64,12 @@ def test_staged_death_matches_native_corpse_tint_size_and_retry() -> None:
     for witness in witnesses:
         case, expected = witness["input"], witness["expected"]
         row = case["creatures"][0]
-        queue = filled_queue(0 if case["queued"] else 63)
+        world = make_world(preserve_bugs=True)
+        world.players[0].pos = Vec2(300, 400)
+        step_runtime = make_step_runtime(world, dt=case["dt"], violence_disabled=case["violence"])
+        queue = fill_queue(step_runtime.fx_queue_rotated, 0 if case["queued"] else 63)
         initial_count = queue.count
-        pool = CreaturePool()
-        state = GameplayState(preserve_bugs=True)
+        pool = world.creatures
         creature = make_creature_state(
             pos=Vec2(f32(row["pos_x"]), f32(row["pos_y"])), hp=row["health"], active=True,
             lifecycle_stage=f32(row["lifecycle_stage"]), size=f32(row["size"]), flags=CreatureFlags(row["flags"]),
@@ -79,10 +78,7 @@ def test_staged_death_matches_native_corpse_tint_size_and_retry() -> None:
         creature.heading = f32(row["heading"])
         creature.tint = RGBA(*(f32(row[f"tint_{channel}"]) for channel in "rgba"))
         pool.entries[0] = creature
-        pool.update(case["dt"], options=make_creature_update_options(
-            state=state, players=[PlayerState(index=0, pos=Vec2(300, 400), health=100)],
-            violence_disabled=case["violence"], fx_queue_rotated=queue,
-        ))
+        pool.update(step_runtime)
         assert bits(creature.lifecycle_stage) == expected["lifecycle_bits"], case
         assert pool.kill_count == expected["kill_count"], case
         assert queue.count == initial_count + int(expected["entry"] is not None), case

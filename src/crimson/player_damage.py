@@ -6,10 +6,7 @@ See: `docs/crimsonland-exe/player-damage.md`.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
-
-import msgspec
 
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
@@ -21,9 +18,10 @@ from .sim.state_types import PlayerState
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
+    from crimson.sim.world_state import WorldStepRuntime
 
 
-__all__ = ["PlayerDeathRuntime", "player_take_damage", "player_take_projectile_damage"]
+__all__ = ["player_take_damage", "player_take_projectile_damage"]
 _PLAYER_PAIN_SFX: tuple[SfxId, ...] = (
     SfxId.TROOPER_INPAIN_01,
     SfxId.TROOPER_INPAIN_02,
@@ -33,22 +31,11 @@ _PLAYER_DEATH_SFX: tuple[SfxId, ...] = (SfxId.TROOPER_DIE_01, SfxId.TROOPER_DIE_
 _THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
 
 
-class PlayerDeathRuntime(msgspec.Struct):
-    def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
-        _ = player, dt
+def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, damage: float, *, dt: float) -> float:
+    """Port of `player_take_damage`, returning the actual damage applied."""
 
-
-def player_take_damage(
-    state: GameplayState,
-    player: PlayerState,
-    damage: float,
-    *,
-    dt: float | None = None,
-    players: Sequence[PlayerState] | None = None,
-    death_runtime: PlayerDeathRuntime | None = None,
-) -> float:
-    """Apply damage to a player, returning the actual damage applied."""
-
+    state = step_runtime.world.state
+    players = step_runtime.world.players
     raw_damage = float(f32(damage))
     if state.debug_god_mode:
         return 0.0
@@ -67,7 +54,7 @@ def player_take_damage(
         return 0.0
 
     # Native reads player one's health here whichever player takes the damage.
-    was_alive_player = players[0] if state.preserve_bugs and players else player
+    was_alive_player = players[0] if state.preserve_bugs else player
     was_alive = float(was_alive_player.health) > 0.0
 
     if PerkId.THICK_SKINNED in state.perks:
@@ -96,7 +83,7 @@ def player_take_damage(
     # Native's dodge proc jumps past the damage stores but still runs the
     # health branch: a dodged hit on an already-dead player keeps decrementing
     # the death-animation timer.
-    if lethal_hit and dt is not None and float(dt) > 0.0:
+    if lethal_hit and float(dt) > 0.0:
         player.death_timer = x87_pc24_sub(
             f32(player.death_timer),
             x87_pc24_mul(f32(dt), f32(28.0)),
@@ -124,8 +111,8 @@ def player_take_damage(
                     player.pos,
                 ),
             )
-        elif death_runtime is not None:
-            death_runtime.on_player_lethal(player, dt=0.0 if dt is None else float(dt))
+        else:
+            step_runtime.on_player_lethal(player, dt=float(dt))
 
     if not dodged:
         if PerkId.UNSTOPPABLE not in state.perks:

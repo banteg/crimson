@@ -3,7 +3,7 @@
 import struct
 from unittest.mock import patch
 
-from crimson.effects import EffectPool, FxQueue
+from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
@@ -57,6 +57,7 @@ def observe(case):
         detail_preset=5,
         violence_disabled=1,
         fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         hit_audio_game_tune_started=True,
         deaths=[],

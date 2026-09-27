@@ -8,7 +8,8 @@ from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.factories import make_creature_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import step_creatures
 from tests.support.helpers import assert_float_close
 
 
@@ -36,11 +37,12 @@ def test_plaguebearer_preserve_bugs_sets_only_player_zero_active() -> None:
 
 
 def test_plaguebearer_infects_weak_creatures_near_player() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
     player.plaguebearer_active = True
 
-    pool = CreaturePool()
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
@@ -48,17 +50,18 @@ def test_plaguebearer_infects_weak_creatures_near_player() -> None:
     creature.hp = 100.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    pool.update(0.016, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.016)
 
     assert creature.plague_infected
 
 
 def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     dt = 0.2
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(500.0, 500.0)
 
-    pool = CreaturePool()
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
@@ -68,7 +71,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
     creature.hp = 100.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, dt)
 
     expected_timer = x87_pc24_add(
         x87_pc24_sub(f32(0.1), float(dt)),
@@ -79,11 +82,13 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 
 
 def test_plaguebearer_spreads_between_nearby_creatures() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(500.0, 500.0)
     state.perks[int(PerkId.PLAGUEBEARER)] = 1
 
-    pool = CreaturePool()
+    pool = world.creatures
     infected = pool.entries[0]
     infected.active = True
     infected.flags = CreatureFlags.ANIM_PING_PONG
@@ -100,7 +105,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     other.hp = 100.0
     other.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    pool.update(0.016, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.016)
 
     assert other.plague_infected
 
@@ -125,11 +130,13 @@ def test_plaguebearer_spread_rejects_distance_rounded_to_native_radius() -> None
 
 def test_plaguebearer_infection_kill_increments_global_count() -> None:
     dt = 0.2
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+    player = world.players[0]
+    player.pos = Vec2(500.0, 500.0)
 
-    pool = CreaturePool()
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags.ANIM_PING_PONG
@@ -140,19 +147,21 @@ def test_plaguebearer_infection_kill_increments_global_count() -> None:
     creature.reward_value = 10.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    result = pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+    step_runtime = step_creatures(world, dt)
 
     assert state.plaguebearer_infection_count == 1
-    assert len(result.deaths) == 1
+    assert len(step_runtime.deaths) == 1
 
 
 def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> None:
     dt = 0.063
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+    player = world.players[0]
+    player.pos = Vec2(500.0, 500.0)
 
-    pool = CreaturePool()
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.flags = CreatureFlags(0)
@@ -163,9 +172,9 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
     creature.reward_value = 10.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    result = pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+    step_runtime = step_creatures(world, dt)
 
-    assert len(result.deaths) == 1
+    assert len(step_runtime.deaths) == 1
     # Native plague timer kills call creature_handle_death, then continue the
     # live branch without an immediate `_tick_dead` pass.
     assert creature.lifecycle_stage == x87_pc24_sub(CREATURE_LIFECYCLE_ALIVE, f32(float(dt)))
@@ -173,11 +182,14 @@ def test_plaguebearer_infection_kill_does_not_apply_immediate_dead_decay() -> No
 
 def test_plaguebearer_kill_finishes_contact_and_small_creature_tail() -> None:
     dt = f32(0.063)
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0)
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.health = 100.0
 
-    pool = CreaturePool()
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.plague_infected = True
@@ -190,9 +202,9 @@ def test_plaguebearer_kill_finishes_contact_and_small_creature_tail() -> None:
     creature.contact_damage = 7.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    result = pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+    step_runtime = step_creatures(world, dt)
 
-    assert len(result.deaths) == 1
+    assert len(step_runtime.deaths) == 1
     assert_float_close(player.health, 93.0)
     assert creature.hp == 0.0
     expected_lifecycle = x87_pc24_sub(

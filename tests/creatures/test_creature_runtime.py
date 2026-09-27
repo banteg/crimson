@@ -32,13 +32,13 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
-from crimson.weapon_runtime import prepare_weapon_availability
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
-from tests.support.factories import make_creature_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import step_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -222,13 +222,9 @@ def test_creature_movement_heading_subtraction_uses_native_f32_store() -> None:
 
 
 def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
-    state = GameplayState()
-    env = SpawnEnv(
-        demo_mode_active=True,
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    pool = CreaturePool(env=env)
+    world = make_world()
+    world.spawn_env.demo_mode_active = True
+    pool = world.creatures
 
     owner = pool.entries[0]
     owner.active = True
@@ -238,7 +234,9 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
     owner.spawn_slot_index = 0
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     pool.spawn_slots.append(
         SpawnSlotInit(
@@ -260,7 +258,7 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     build_spawn_plan = mocker.patch.object(creature_runtime, "build_spawn_plan", return_value=sentinel_plan)
     spawn_plan = mocker.patch.object(CreaturePool, "spawn_plan", autospec=True, side_effect=_fake_spawn_plan)
 
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], env=env))
+    step_creatures(world, 1.0 / 60.0)
 
     build_spawn_plan.assert_called_once()
     child_template_id = int(build_spawn_plan.call_args.args[0])
@@ -268,19 +266,17 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
     assert child_template_id == int(SpawnId.ALIEN_RANDOM_1D)
     assert_float_close(heading, RANDOM_HEADING_SENTINEL)
-    assert env_arg is env
+    assert env_arg is world.spawn_env
     spawn_plan.assert_called_once()
 
 
 def test_spawn_slot_update_requires_spawner_flag() -> None:
-    state = GameplayState()
-    env = SpawnEnv(
-        demo_mode_active=True,
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    pool = CreaturePool(env=env)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    world = make_world()
+    world.spawn_env.demo_mode_active = True
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     owner = pool.entries[0]
     owner.active = True
@@ -304,7 +300,7 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
         ),
     )
 
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], env=env))
+    step_creatures(world, 1.0 / 60.0)
 
     assert pool.spawn_slots[0].count == 0
     assert_float_close(pool.spawn_slots[0].timer, 0.0)
@@ -312,14 +308,12 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
 
 
 def test_spawn_slot_child_can_update_in_same_tick() -> None:
-    state = GameplayState()
-    env = SpawnEnv(
-        demo_mode_active=True,
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    pool = CreaturePool(env=env)
-    player = PlayerState(index=0, pos=Vec2(640.0, 700.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    world = make_world()
+    world.spawn_env.demo_mode_active = True
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(640.0, 700.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     owner = pool.entries[0]
     owner.active = True
@@ -343,7 +337,7 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
         ),
     )
 
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], env=env))
+    step_creatures(world, 1.0 / 60.0)
 
     child_indices = [idx for idx, creature in enumerate(pool.entries) if idx != 0 and creature.active]
     assert child_indices
@@ -354,9 +348,11 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
 
 
 def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -368,16 +364,18 @@ def test_non_spawner_update_does_not_clamp_offscreen_positions() -> None:
     creature.size = 45.0
     creature.pos = Vec2(-64.0, 1088.0)
 
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 1.0 / 60.0)
 
     assert_float_close(creature.pos.x, -64.0)
     assert_float_close(creature.pos.y, 1088.0)
 
 
 def test_attack_cooldown_is_stored_at_native_precision() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -388,18 +386,20 @@ def test_attack_cooldown_is_stored_at_native_precision() -> None:
     creature.pos = Vec2(128.0, 128.0)
     creature.attack_cooldown = 1.0
 
-    options = make_creature_update_options(state=state, players=[player])
-    pool.update(0.1, options=options)
-    pool.update(0.1, options=options)
+    step_creatures(world, 0.1)
+    step_creatures(world, 0.1)
 
     expected = f32(f32(1.0 - f32(0.1)) - f32(0.1))
     assert creature.attack_cooldown == expected
 
 
 def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    pool = world.creatures
 
     start_pos = Vec2(120.0, 160.0)
     for idx, type_id in enumerate((CreatureTypeId.ZOMBIE, CreatureTypeId.SPIDER_SP2)):
@@ -415,14 +415,8 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
         creature.pos = start_pos
         creature.contact_damage = 0.0
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     base = pool.entries[0]
     variant = pool.entries[1]
@@ -436,9 +430,12 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
 
 
 def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(900.0, 900.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(900.0, 900.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    pool = world.creatures
 
     link = pool.entries[0]
     link.active = True
@@ -481,14 +478,8 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
     near_start = near.pos
     far_start = far.pos
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     near_step = (near.pos - near_start).length()
     far_step = (far.pos - far_start).length()
@@ -499,22 +490,18 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
 
 def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
+    world = make_world(player_count=2)
+    state = world.state
+    pool = world.creatures
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    player0 = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=0.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
-    player1 = PlayerState(
-        index=1,
-        pos=Vec2(110.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    player0 = world.players[0]
+    player0.pos = Vec2(100.0, 100.0)
+    player0.health = 0.0
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    player1 = world.players[1]
+    player1.pos = Vec2(110.0, 100.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -528,14 +515,8 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     creature.target_player = 0
     creature.pos = Vec2(110.0, 100.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=rng,
-        ),
-    )
+    state.rng = rng
+    step_creatures(world, 1.0 / 60.0)
 
     assert creature.target_player == 1
     assert_float_close(player0.health, 0.0)
@@ -546,14 +527,11 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
 
 
 def test_near_player_movement_rollback_is_stored_at_native_precision() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -564,21 +542,18 @@ def test_near_player_movement_rollback_is_stored_at_native_precision() -> None:
     creature.pos = Vec2(110.0, 100.0)
     creature.target_player = 0
 
-    pool.update(0.1, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.1)
 
     assert creature.pos.x == f32(creature.pos.x)
     assert creature.pos.y == f32(creature.pos.y)
 
 
 def test_contact_cooldown_addition_is_stored_at_native_precision() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -590,21 +565,18 @@ def test_contact_cooldown_addition_is_stored_at_native_precision() -> None:
     creature.attack_cooldown = f32(0.077)
 
     dt = f32(0.084)
-    pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, dt)
 
     expected = x87_pc24_add(x87_pc24_sub(f32(0.077), dt), f32(1.0))
     assert creature.attack_cooldown == expected
 
 
 def test_creature_eat_gate_uses_stored_native_distance() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2()
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -621,20 +593,17 @@ def test_creature_eat_gate_uses_stored_native_distance() -> None:
     assert Vec2.distance_sq(creature.pos, player.pos) < 20.0 * 20.0
     assert x87_pc24_hypot(creature.pos.x, creature.pos.y) == 20.0
 
-    pool.update(0.01, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.01)
 
     assert creature.pos == Vec2(19.999998092651367, 0.003907000180333853)
 
 
 def test_creature_contact_gate_uses_stored_native_distance() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2()
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -650,18 +619,21 @@ def test_creature_contact_gate_uses_stored_native_distance() -> None:
     assert Vec2.distance_sq(creature.pos, player.pos) < 30.0 * 30.0
     assert x87_pc24_hypot(creature.pos.x, creature.pos.y) == 30.0
 
-    result = pool.update(0.01, options=make_creature_update_options(state=state, players=[player]))
+    step_runtime = step_creatures(world, 0.01)
 
     assert player.health == 100.0
     assert creature.attack_cooldown == 0.0
-    assert sfx_ids(result.sfx) == []
+    assert sfx_ids(step_runtime.sfx) == []
 
 
 def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    pool = world.creatures
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -677,19 +649,15 @@ def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
     creature.collision_timer = 0.0
     creature.pos = Vec2(400.0, 400.0)
 
-    result = pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=rng,
-        ),
-    )
+    state.rng = rng
+    step_runtime = step_creatures(world, 1.0 / 60.0)
 
-    assert sfx_ids(result.sfx) == [
+    assert sfx_ids(step_runtime.sfx) == [
         SfxId.ZOMBIE_ATTACK_01,
     ]
+    # The bonus drop gate in the death handler draws from the same world rng first.
     assert [record.caller for record in rng.records_since() if record.caller is not None] == [
+        RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE,
         RngCallerStatic.CREATURE_UPDATE_ALL_PLAGUE_KILL_SFX,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
@@ -699,9 +667,10 @@ def test_plague_kill_uses_exact_native_attack_sfx_caller() -> None:
 
 
 def test_plague_infection_timer_keeps_native_stored_cadence() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
+    world = make_world()
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(500.0, 500.0)
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 100.0
@@ -716,16 +685,18 @@ def test_plague_infection_timer_keeps_native_stored_cadence() -> None:
     creature.collision_timer = 0.0
 
     for _ in range(25):
-        pool.update(0.02, options=make_creature_update_options(state=state, players=[player]))
+        step_creatures(world, 0.02)
 
     assert creature.hp == 70.0
     assert creature.collision_timer == 0.49999991059303284
 
 
 def test_radioactive_timer_keeps_native_stored_cadence() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(index=0, pos=Vec2(), health=100.0)
+    world = make_world()
+    state = world.state
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2()
     state.perks[int(PerkId.RADIOACTIVE)] = 1
     creature = pool.entries[0]
     creature.active = True
@@ -740,22 +711,21 @@ def test_radioactive_timer_keeps_native_stored_cadence() -> None:
     creature.collision_timer = 0.0
 
     for _ in range(41):
-        pool.update(1.0 / 120.0, options=make_creature_update_options(state=state, players=[player]))
+        step_creatures(world, 1.0 / 120.0)
 
     assert creature.hp == 97.0
     assert creature.collision_timer == 1.8440186977386475e-07
 
 
 def test_single_player_dead_player_uses_dead_target_position() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    pool = world.creatures
 
-    dead_player = PlayerState(
-        index=0,
-        pos=Vec2(660.0, 520.0),
-        health=0.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    dead_player = world.players[0]
+    dead_player.pos = Vec2(660.0, 520.0)
+    dead_player.health = 0.0
+    dead_player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -769,41 +739,28 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature.target_player = 0
     creature.pos = Vec2(500.0, 500.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[dead_player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
     assert creature.target == Vec2(569.058349609375, expected_dead_target.y)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[dead_player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert creature.target == Vec2(513.7415771484375, expected_dead_target.y)
 
 
 def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    pool = world.creatures
 
-    dead_player = PlayerState(
-        index=0,
-        pos=Vec2(400.0, 400.0),
-        health=0.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    dead_player = world.players[0]
+    dead_player.pos = Vec2(400.0, 400.0)
+    dead_player.health = 0.0
+    dead_player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -817,14 +774,8 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature.target_player = 0
     creature.pos = Vec2(432.0, 432.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[dead_player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
@@ -834,21 +785,16 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
 
 
 def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
+    world = make_world(player_count=2)
+    state = world.state
+    pool = world.creatures
 
-    player0 = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
-    player1 = PlayerState(
-        index=1,
-        pos=Vec2(104.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    player0 = world.players[0]
+    player0.pos = Vec2(100.0, 100.0)
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    player1 = world.players[1]
+    player1.pos = Vec2(104.0, 100.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -862,14 +808,8 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature.target_player = 0
     creature.pos = Vec2(104.0, 100.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert creature.target_player == 1
     assert_float_close(player0.health, 100.0)
@@ -901,14 +841,12 @@ def test_creature_retarget_keeps_current_player_when_native_distances_round_equa
 
 
 def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    state = world.state
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     far = pool.entries[0]
     far.active = True
@@ -934,27 +872,19 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     near.target_player = 0
     near.pos = Vec2(120.0, 100.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert player.auto_target == 1
 
 
 def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    state = world.state
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     dead_target = pool.entries[0]
     dead_target.active = True
@@ -981,14 +911,8 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     live_target.pos = Vec2(120.0, 100.0)
 
     player.auto_target = 0
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert player.auto_target == 1
 
@@ -1022,14 +946,12 @@ def test_creature_auto_target_keeps_current_slot_when_native_distances_round_equ
 
 
 def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world()
+    state = world.state
+    pool = world.creatures
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     far = pool.entries[0]
     far.active = True
@@ -1058,43 +980,26 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     player.auto_target = 0
     pool._update_tick = creature_runtime._TARGET_REEVAL_PERIOD - 1
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
     assert pool._update_tick == creature_runtime._TARGET_REEVAL_PERIOD
     assert player.auto_target == 0
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
     assert player.auto_target == 1
 
 
 def test_creature_update_coop_auto_target_uses_target_player_position_by_default() -> None:
-    state = GameplayState(preserve_bugs=False)
-    pool = CreaturePool()
-    player0 = PlayerState(
-        index=0,
-        pos=Vec2(0.0, 0.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
-    player1 = PlayerState(
-        index=1,
-        pos=Vec2(100.0, 0.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world(player_count=2)
+    state = world.state
+    pool = world.creatures
+    player0 = world.players[0]
+    player0.pos = Vec2(0.0, 0.0)
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    player1 = world.players[1]
+    player1.pos = Vec2(100.0, 0.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     current = pool.entries[0]
     current.active = True
@@ -1121,33 +1026,22 @@ def test_creature_update_coop_auto_target_uses_target_player_position_by_default
     nearer_for_player1.pos = Vec2(80.0, 0.0)
 
     player1.auto_target = 0
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert player1.auto_target == 1
 
 
 def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_bias() -> None:
-    state = GameplayState(preserve_bugs=True)
-    pool = CreaturePool()
-    player0 = PlayerState(
-        index=0,
-        pos=Vec2(0.0, 0.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
-    player1 = PlayerState(
-        index=1,
-        pos=Vec2(100.0, 0.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    world = make_world(player_count=2, preserve_bugs=True)
+    state = world.state
+    pool = world.creatures
+    player0 = world.players[0]
+    player0.pos = Vec2(0.0, 0.0)
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
+    player1 = world.players[1]
+    player1.pos = Vec2(100.0, 0.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     current = pool.entries[0]
     current.active = True
@@ -1174,23 +1068,21 @@ def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_b
     nearer_for_player1.pos = Vec2(80.0, 0.0)
 
     player1.auto_target = 0
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert player1.auto_target == 0
 
 
 def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_distance() -> None:
-    state = GameplayState(preserve_bugs=True)
-    pool = CreaturePool()
-    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=100.0, auto_target=0)
-    player1 = PlayerState(index=1, pos=Vec2(100.0, 0.0), health=100.0)
+    world = make_world(player_count=2, preserve_bugs=True)
+    state = world.state
+    pool = world.creatures
+    player0 = world.players[0]
+    player0.pos = Vec2(0.0, 0.0)
+    player0.auto_target = 0
+    player1 = world.players[1]
+    player1.pos = Vec2(100.0, 0.0)
 
     current = pool.entries[0]
     current.active = True
@@ -1212,14 +1104,8 @@ def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_dist
     candidate.target_player = 0
     candidate.pos = Vec2(10.0, 0.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     # The candidate is 10 units from player 1, but native reuses its 90-unit
     # distance from player 2. It therefore does not replace the 50-unit slot.
@@ -1227,10 +1113,16 @@ def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_dist
 
 
 def test_creature_update_preserve_bugs_updates_dead_auto_target_before_redirect() -> None:
-    state = GameplayState(preserve_bugs=True)
-    pool = CreaturePool()
-    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), health=0.0, auto_target=0)
-    player1 = PlayerState(index=1, pos=Vec2(100.0, 0.0), health=100.0, auto_target=0)
+    world = make_world(player_count=2, preserve_bugs=True)
+    state = world.state
+    pool = world.creatures
+    player0 = world.players[0]
+    player0.pos = Vec2(0.0, 0.0)
+    player0.health = 0.0
+    player0.auto_target = 0
+    player1 = world.players[1]
+    player1.pos = Vec2(100.0, 0.0)
+    player1.auto_target = 0
 
     stale_current = pool.entries[0]
     stale_current.pos = Vec2(200.0, 0.0)
@@ -1245,14 +1137,8 @@ def test_creature_update_preserve_bugs_updates_dead_auto_target_before_redirect(
     candidate.target_player = 0
     candidate.pos = Vec2(10.0, 0.0)
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     assert player0.auto_target == 1
     assert player1.auto_target == 0
@@ -1260,15 +1146,13 @@ def test_creature_update_preserve_bugs_updates_dead_auto_target_before_redirect(
 
 
 def test_small_creature_dies_on_contact() -> None:
-    state = GameplayState()
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    pool = world.creatures
 
-    player = PlayerState(
-        index=0,
-        pos=Vec2(100.0, 100.0),
-        health=100.0,
-        weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE),
-    )
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
     creature = pool.entries[0]
     creature.active = True
@@ -1283,14 +1167,8 @@ def test_small_creature_dies_on_contact() -> None:
     creature.pos = Vec2(120.0, 100.0)  # dist=20
 
     dt = 1.0 / 60.0
-    pool.update(
-        dt,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, dt)
 
     assert_float_close(player.health, 90.0)
     assert_float_close(creature.hp, 0.0)
@@ -2003,9 +1881,12 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
 
 
 def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     corpse = pool.entries[42]
     corpse.active = True
@@ -2014,23 +1895,20 @@ def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() 
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
     # Exercise a non-round frame time at the native damage boundary.
-    pool.update(
-        0.03800000250339508,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 0.03800000250339508)
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
     assert_float_close(corpse.lifecycle_stage, f32(11.006003))
 
 
 def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     corpse = pool.entries[42]
     corpse.active = True
@@ -2039,14 +1917,8 @@ def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
     dt = f32(0.03800000250339508)
-    pool.update(
-        dt,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, dt)
 
     expected = x87_pc24_sub(
         x87_pc24_sub(
@@ -2059,9 +1931,11 @@ def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
 
 
 def test_live_self_damage_product_is_stored_at_native_precision() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2074,7 +1948,7 @@ def test_live_self_damage_product_is_stored_at_native_precision() -> None:
     creature.pos = Vec2(128.0, 128.0)
 
     dt = f32(0.09800000488758087)
-    pool.update(dt, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, dt)
 
     expected = f32(8.0 - f32(dt * 60.0))
     assert creature.hp == expected
@@ -2190,9 +2064,12 @@ def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
 
 
 def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2209,7 +2086,8 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
     # 0.0329999998s is captured as frame_dt_ms_i32=33 in native traces.
     dt = 0.032999999821186066
     stub_rand = _StubRand([0x11])
-    pool.update(dt, options=make_creature_update_options(state=state, players=[player], rng=stub_rand))
+    state.rng = stub_rand
+    step_creatures(world, dt)
 
     assert creature.ai_mode == 7
     assert creature.link_index == 517
@@ -2219,11 +2097,14 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
 
 
 def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
     state.perks[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
-    pool = CreaturePool()
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2238,7 +2119,8 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     creature.size = 45.0
 
     stub_rand = _StubRand([0x2A])
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rng=stub_rand))
+    state.rng = stub_rand
+    step_creatures(world, 1.0 / 60.0)
 
     # Native ticks AI7 link timers before Evil Eyes movement freeze.
     assert creature.link_index == -742
@@ -2246,10 +2128,12 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
 
 
 def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    prepare_weapon_availability(state)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2263,14 +2147,8 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     creature.move_speed = 0.0
     creature.size = 45.0
 
-    pool.update(
-        0.01,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 0.01)
 
     # Native runs AI7 timer update before live-branch kill handling.
     assert creature.link_index == 500
@@ -2282,11 +2160,15 @@ def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> No
     [(1.0, CREATURE_LIFECYCLE_ALIVE), (-1.0, 10.0), (10.0, 10.0)],
 )
 def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stage: float) -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    prepare_weapon_availability(state)
-    player0 = PlayerState(index=0, pos=Vec2(500.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world(player_count=2)
+    state = world.state
+    player0 = world.players[0]
+    player0.pos = Vec2(500.0, 100.0)
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    player1 = world.players[1]
+    player1.pos = Vec2(110.0, 100.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2299,23 +2181,20 @@ def test_dead_creature_still_reevaluates_target_player(hp: float, lifecycle_stag
     creature.move_speed = 0.0
     creature.size = 45.0
 
-    pool.update(
-        0.1,
-        options=make_creature_update_options(
-            state=state,
-            players=[player0, player1],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 0.1)
 
     assert creature.lifecycle_stage != CREATURE_LIFECYCLE_ALIVE
     assert creature.target_player == 1
 
 
 def test_fading_corpse_redirects_from_dead_single_player() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(500.0, 100.0), health=0.0)
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(500.0, 100.0)
+    player.health = 0.0
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2325,23 +2204,19 @@ def test_fading_corpse_redirects_from_dead_single_player() -> None:
     creature.pos = Vec2(100.0, 100.0)
     creature.size = 45.0
 
-    pool.update(
-        0.1,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 0.1)
 
     assert creature.target_player == 1
 
 
 def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
+    world = make_world()
+    state = world.state
     state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0)
-    pool = CreaturePool()
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2360,7 +2235,7 @@ def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
     dead_link.active = False
     dead_link.hp = 0.0
 
-    pool.update(0.1, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.1)
 
     assert creature.ai_mode == CreatureAiMode.ORBIT_PLAYER
     assert_float_close(player.health, 93.0)
@@ -2369,9 +2244,12 @@ def test_dead_link_cleanup_finishes_current_live_interaction_tail() -> None:
 
 
 def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2386,14 +2264,8 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     creature.move_speed = 4.2
     creature.size = 45.0
 
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(
-            state=state,
-            players=[player],
-            rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        ),
-    )
+    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    step_creatures(world, 1.0 / 60.0)
 
     # Native `creature_update_all` skips movement work for AI7 here without
     # writing vel=0 for non-spawner creatures.
@@ -2402,11 +2274,14 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
 
 
 def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
     state.perks[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
-    pool = CreaturePool()
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2423,7 +2298,8 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     creature.size = 45.0
 
     stub_rand = _StubRand([0x2A])
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rng=stub_rand))
+    state.rng = stub_rand
+    step_creatures(world, 1.0 / 60.0)
 
     # Native Evil Eyes path jumps to loop tail before cooldown/interaction/ranged branches.
     assert_float_close(creature.attack_cooldown, 1.0)
@@ -2435,11 +2311,14 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
 
 
 def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(512.0, 512.0)
+    player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
     state.perks[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
-    pool = CreaturePool()
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2454,7 +2333,7 @@ def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
     creature.size = 50.0
 
     before_pos = creature.pos
-    pool.update(0.2, options=make_creature_update_options(state=state, players=[player]))
+    step_creatures(world, 0.2)
 
     assert_float_close(creature.hp, 85.0)
     assert creature.collision_timer == f32(0.4)
@@ -2462,12 +2341,17 @@ def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
 
 
 def test_evil_eyes_target_still_reevaluates_target_player() -> None:
-    state = GameplayState(rng=Crand(0xBEEF))
-    player0 = PlayerState(index=0, pos=Vec2(500.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    world = make_world(player_count=2)
+    state = world.state
+    player0 = world.players[0]
+    player0.pos = Vec2(500.0, 100.0)
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
     state.perks[int(PerkId.EVIL_EYES)] = 1
     player0.evil_eyes_target_creature = 0
-    player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    pool = CreaturePool()
+    player1 = world.players[1]
+    player1.pos = Vec2(110.0, 100.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
+    pool = world.creatures
 
     creature = pool.entries[0]
     creature.active = True
@@ -2480,24 +2364,29 @@ def test_evil_eyes_target_still_reevaluates_target_player() -> None:
     creature.size = 50.0
 
     before_pos = creature.pos
-    pool.update(0.2, options=make_creature_update_options(state=state, players=[player0, player1]))
+    step_creatures(world, 0.2)
 
     assert creature.target_player == 1
     assert creature.pos == before_pos
 
 
 def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
-    state = GameplayState(rng=Crand(0xBEEF), preserve_bugs=False)
+    world = make_world(player_count=2)
+    state = world.state
 
-    player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    player0 = world.players[0]
+    player0.pos = Vec2(512.0, 512.0)
+    player0.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
     state.perks[int(PerkId.EVIL_EYES)] = 1
     player0.evil_eyes_target_creature = 0
 
-    player1 = PlayerState(index=1, pos=Vec2(520.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
+    player1 = world.players[1]
+    player1.pos = Vec2(520.0, 512.0)
+    player1.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL)
     state.perks[int(PerkId.EVIL_EYES)] = 1
     player1.evil_eyes_target_creature = 1
 
-    pool = CreaturePool()
+    pool = world.creatures
 
     creature0 = pool.entries[0]
     creature0.active = True
@@ -2528,10 +2417,8 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature1.size = 45.0
 
     stub_rand = _StubRand([0x2A, 0x2B])
-    pool.update(
-        1.0 / 60.0,
-        options=make_creature_update_options(state=state, players=[player0, player1], rng=stub_rand),
-    )
+    state.rng = stub_rand
+    step_creatures(world, 1.0 / 60.0)
 
     assert_float_close(creature0.attack_cooldown, 1.0)
     assert_float_close(creature1.attack_cooldown, 1.0)
@@ -2587,9 +2474,11 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
 def test_long_strip_spawner_clamps_only_before_moving() -> None:
     # creature_update_all clamps PING_PONG movers to [size, 1024 - size] before
     # the move; the step itself may carry a long-strip mover past the bound.
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(1500.0, 500.0))
-    pool = CreaturePool()
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(1500.0, 500.0)
+    pool = world.creatures
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 100.0
@@ -2601,7 +2490,8 @@ def test_long_strip_spawner_clamps_only_before_moving() -> None:
     creature.target_heading = creature.heading
     creature.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
 
-    pool.update(1.0 / 60.0, options=make_creature_update_options(state=state, players=[player], rng=Crand(0)))
+    state.rng = Crand(0)
+    step_creatures(world, 1.0 / 60.0)
 
     assert creature.vel.x > 0.0
     assert creature.pos.x == x87_pc24_add(960.0, creature.vel.x)

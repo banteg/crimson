@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from crimson.effects import FxQueue, ParticlePool, ParticleStyleId
+from crimson.effects import FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.sim.state_types import PlayerState
@@ -49,6 +49,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         detail_preset=5,
         violence_disabled=0,
         fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         hit_audio_game_tune_started=True,
         deaths=[],

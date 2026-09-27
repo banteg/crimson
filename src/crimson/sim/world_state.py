@@ -12,7 +12,7 @@ from grim.sfx_types import SfxRequest
 from ..bonuses.update import bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
 from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
-from ..creatures.runtime import CreatureDeath, CreaturePool, CreatureUpdateOptions
+from ..creatures.runtime import CreatureDeath, CreaturePool
 from ..creatures.spawn import SpawnEnv
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
@@ -26,7 +26,7 @@ from ..owner_ref import OwnerRef
 from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
 from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from ..perks.runtime.effects import perks_update_effects
-from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
+from ..player_damage import player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
@@ -57,12 +57,13 @@ class WorldMidStepRuntime(msgspec.Struct):
         return None
 
 
-class WorldStepRuntime(PlayerDeathRuntime):
+class WorldStepRuntime(msgspec.Struct):
     world: WorldState
     dt: float
     detail_preset: int
     violence_disabled: int
     fx_queue: FxQueue
+    fx_queue_rotated: FxQueueRotated
     game_mode: GameMode
     hit_audio_game_tune_started: bool
     deaths: list[CreatureDeath]
@@ -301,30 +302,19 @@ class WorldState(msgspec.Struct):
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
 
-        creature_result = self.creatures.update(
-            dt,
-            options=CreatureUpdateOptions(
-                state=self.state,
-                players=self.players,
-                rng=self.state.rng,
-                env=self.spawn_env,
-                fx_queue=fx_queue,
-                fx_queue_rotated=fx_queue_rotated,
-                detail_preset=int(detail_preset),
-                violence_disabled=int(violence_disabled),
-            ),
-        )
         step_runtime = WorldStepRuntime(
             world=self,
             dt=float(dt),
             detail_preset=int(detail_preset),
             violence_disabled=int(violence_disabled),
             fx_queue=fx_queue,
+            fx_queue_rotated=fx_queue_rotated,
             game_mode=game_mode,
             hit_audio_game_tune_started=bool(game_tune_started),
-            deaths=list(creature_result.deaths),
-            sfx=list(creature_result.sfx),
+            deaths=[],
+            sfx=[],
         )
+        self.creatures.update(step_runtime)
         hits = self.state.projectiles.step(
             PrimaryStepCtx(
                 dt=float(dt),
@@ -367,13 +357,7 @@ class WorldState(msgspec.Struct):
                 player,
                 input_state,
                 player_dt,
-                self.state,
-                detail_preset=int(detail_preset),
-                violence_disabled=int(violence_disabled),
-                players=self.players,
-                creatures=self.creatures.entries,
-                spawn_slots=self.creatures.spawn_slots,
-                player_death_runtime=step_runtime,
+                step_runtime=step_runtime,
                 reload_active_any=bool(reload_active_any),
             )
         dt = float(player_dt)

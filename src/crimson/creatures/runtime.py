@@ -49,7 +49,7 @@ from ..math_parity import (
 )
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
-from ..player_damage import PlayerDeathRuntime, player_take_damage
+from ..player_damage import player_take_damage
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import TERRAIN_SIZE, PlayerState
@@ -83,6 +83,7 @@ from .spawn import (
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
+    from ..sim.world_state import WorldStepRuntime
     from .damage import CreatureLethalHandler
 
 
@@ -92,8 +93,6 @@ __all__ = [
     "CreatureDeath",
     "CreaturePool",
     "CreatureState",
-    "CreatureUpdateOptions",
-    "CreatureUpdateResult",
 ]
 
 
@@ -327,64 +326,53 @@ class CreatureDeath(msgspec.Struct, frozen=True):
     owner: OwnerRef
 
 
-class CreatureUpdateResult(msgspec.Struct, frozen=True):
-    deaths: tuple[CreatureDeath, ...] = ()
-    spawned: tuple[int, ...] = ()
-    sfx: tuple[SfxRequest, ...] = ()
-
-
 class _TargetPlayerResolution(msgspec.Struct, frozen=True):
     target_player: int
     auto_target_player: int
     native_auto_target_distance: float | None = None
 
 
-class CreatureUpdateOptions(msgspec.Struct, frozen=True):
-    state: GameplayState
-    players: list[PlayerState]
-    rng: CrandLike
-    env: SpawnEnv
-    fx_queue: FxQueue
-    fx_queue_rotated: FxQueueRotated
-    detail_preset: int = 5
-    violence_disabled: int = 0
-
-
 class _CreatureInteractionCtx(msgspec.Struct):
-    pool: CreaturePool
+    step_runtime: WorldStepRuntime
     creature_index: int
     creature: CreatureState
-    state: GameplayState
-    players: list[PlayerState]
     player: PlayerState
+    # `creature_update_all` runs on the f32-rounded frame dt.
     dt: float
-    rng: CrandLike
-    detail_preset: int
-    fx_queue: FxQueue | None
-    deaths: list[CreatureDeath]
-    sfx: list[SfxRequest]
     skip_creature: bool = False
     contact_distance: float = 0.0
 
+    @property
+    def pool(self) -> CreaturePool:
+        return self.step_runtime.world.creatures
 
-class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
-    ctx: _CreatureInteractionCtx
+    @property
+    def state(self) -> GameplayState:
+        return self.step_runtime.world.state
 
-    def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
-        _ = player
-        from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
+    @property
+    def players(self) -> list[PlayerState]:
+        return self.step_runtime.world.players
 
-        ctx = self.ctx
-        apply_final_revenge_on_player_death(
-            state=ctx.state,
-            creatures=ctx.pool,
-            players=ctx.players,
-            player=ctx.player,
-            dt=float(dt),
-            detail_preset=int(ctx.detail_preset),
-            fx_queue=ctx.fx_queue,
-            deaths=ctx.deaths,
-        )
+    @property
+    def rng(self) -> CrandLike:
+        return self.step_runtime.world.state.rng
+
+    @property
+    def detail_preset(self) -> int:
+        return self.step_runtime.detail_preset
+
+    @property
+    def fx_queue(self) -> FxQueue:
+        return self.step_runtime.fx_queue
+
+    @property
+    def deaths(self) -> list[CreatureDeath]:
+        return self.step_runtime.deaths
+
+    @property
+    def sfx(self) -> list[SfxRequest]:
+        return self.step_runtime.sfx
 
 
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
@@ -505,29 +493,21 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         elif PerkId.VEINS_OF_POISON in ctx.state.perks:
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
-    player_take_damage(
-        ctx.state,
-        ctx.player,
-        float(creature.contact_damage),
-        dt=ctx.dt,
-        players=ctx.players,
-        death_runtime=_CreatureInteractionPlayerDeathRuntime(ctx=ctx),
-    )
+    player_take_damage(ctx.step_runtime, ctx.player, float(creature.contact_damage), dt=ctx.dt)
 
-    if ctx.fx_queue is not None:
-        push_dir = x87_d3dx_vec2_normalize(
-            Vec2(
-                x87_pc24_sub(ctx.player.pos.x, creature.pos.x),
-                x87_pc24_sub(ctx.player.pos.y, creature.pos.y),
-            ),
-        )
-        ctx.fx_queue.add_random(
-            pos=Vec2(
-                x87_pc24_add(ctx.player.pos.x, x87_pc24_mul(push_dir.x, f32(3.0))),
-                x87_pc24_add(ctx.player.pos.y, x87_pc24_mul(push_dir.y, f32(3.0))),
-            ),
-            rng=ctx.rng,
-        )
+    push_dir = x87_d3dx_vec2_normalize(
+        Vec2(
+            x87_pc24_sub(ctx.player.pos.x, creature.pos.x),
+            x87_pc24_sub(ctx.player.pos.y, creature.pos.y),
+        ),
+    )
+    ctx.fx_queue.add_random(
+        pos=Vec2(
+            x87_pc24_add(ctx.player.pos.x, x87_pc24_mul(push_dir.x, f32(3.0))),
+            x87_pc24_add(ctx.player.pos.y, x87_pc24_mul(push_dir.y, f32(3.0))),
+        ),
+        rng=ctx.rng,
+    )
 
     creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
@@ -946,11 +926,12 @@ class CreaturePool:
         creature: CreatureState,
         *,
         dt: float,
-        options: CreatureUpdateOptions,
+        step_runtime: WorldStepRuntime,
         on_lethal: CreatureLethalHandler,
     ) -> bool:
-        state, players, rng = options.state, options.players, options.rng
-        detail_preset = int(options.detail_preset)
+        state, players = step_runtime.world.state, step_runtime.world.players
+        rng = state.rng
+        detail_preset = int(step_runtime.detail_preset)
         if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
             return False
         damage_amount = 0.0
@@ -988,13 +969,14 @@ class CreaturePool:
         *,
         dt: float,
         dt_ms: int,
-        options: CreatureUpdateOptions,
+        step_runtime: WorldStepRuntime,
         on_lethal: CreatureLethalHandler,
         single_player_dormant_target: PlayerState | None,
     ) -> None:
-        state, players, rng = options.state, options.players, options.rng
-        detail_preset, violence_disabled = int(options.detail_preset), int(options.violence_disabled)
-        fx_queue_rotated = options.fx_queue_rotated
+        state, players = step_runtime.world.state, step_runtime.world.players
+        rng = state.rng
+        detail_preset, violence_disabled = int(step_runtime.detail_preset), int(step_runtime.violence_disabled)
+        fx_queue_rotated = step_runtime.fx_queue_rotated
         # Native performs this first death-stage tick before calling
         # creature_apply_damage for periodic poison flags.  Keeping it
         # ahead of that call matters when a corpse enters the sweep at
@@ -1002,7 +984,7 @@ class CreaturePool:
         # dead-entry dt * 15 decrement before the usual dt * 28 decay.
         if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
             creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
-        self._apply_self_damage_tick(idx, creature, dt=dt, options=options, on_lethal=on_lethal)
+        self._apply_self_damage_tick(idx, creature, dt=dt, step_runtime=step_runtime, on_lethal=on_lethal)
         # Native still ticks AI7 link-timer state (and its RNG draws) for
         # dead creatures inside `creature_update_all`.
         if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0:
@@ -1037,31 +1019,23 @@ class CreaturePool:
                 violence_disabled=int(violence_disabled),
             )
 
-    def update(
-        self,
-        dt: float,
-        *,
-        options: CreatureUpdateOptions,
-    ) -> CreatureUpdateResult:
-        """Advance the creature runtime pool by `dt` seconds.
+    def update(self, step_runtime: WorldStepRuntime) -> None:
+        """Port of `creature_update_all` for one frame of the step runtime.
 
         Death side effects are initiated by damage call sites.
         """
-        dt = float(f32(float(dt)))
-        state = options.state
-        players = options.players
-        rng = options.rng
-        detail_preset = int(options.detail_preset)
-        violence_disabled = int(options.violence_disabled)
-        env = options.env
-        fx_queue = options.fx_queue
-        fx_queue_rotated = options.fx_queue_rotated
-
-        spawn_env = env
-
-        deaths: list[CreatureDeath] = []
-        spawned: list[int] = []
-        sfx: list[SfxRequest] = []
+        dt = float(f32(float(step_runtime.dt)))
+        world = step_runtime.world
+        state = world.state
+        players = world.players
+        rng = state.rng
+        detail_preset = int(step_runtime.detail_preset)
+        violence_disabled = int(step_runtime.violence_disabled)
+        spawn_env = world.spawn_env
+        fx_queue = step_runtime.fx_queue
+        fx_queue_rotated = step_runtime.fx_queue_rotated
+        deaths = step_runtime.deaths
+        sfx = step_runtime.sfx
         self._update_tick = int(self._update_tick) + 1
         single_player_dormant_target: PlayerState | None = None
         if len(players) == 1:
@@ -1131,7 +1105,7 @@ class CreaturePool:
                     creature,
                     dt=dt,
                     dt_ms=dt_ms,
-                    options=options,
+                    step_runtime=step_runtime,
                     on_lethal=on_lethal,
                     single_player_dormant_target=single_player_dormant_target,
                 )
@@ -1144,7 +1118,7 @@ class CreaturePool:
                 idx,
                 creature,
                 dt=dt,
-                options=options,
+                step_runtime=step_runtime,
                 on_lethal=on_lethal,
             )
             # Native order runs AI7 link timer update after periodic self-damage
@@ -1230,8 +1204,7 @@ class CreaturePool:
                             sfx.append(SfxRequest(contact_sfx_options[sfx_index], creature.pos))
                         plague_killed = True
 
-                    if fx_queue is not None:
-                        fx_queue.add_random(pos=creature.pos, rng=rng)
+                    fx_queue.add_random(pos=creature.pos, rng=rng)
                     if plague_killed:
                         # Native keeps executing the current live-branch body after
                         # `creature_handle_death` in this timer-wrap kill path.
@@ -1331,7 +1304,7 @@ class CreaturePool:
                         if int(slot.owner_creature) == int(idx):
                             child_template_id = tick_spawn_slot(slot, dt)
                             if child_template_id is not None:
-                                mapping, _ = self.spawn_template(
+                                _mapping, _ = self.spawn_template(
                                     child_template_id,
                                     creature.pos,
                                     float(RANDOM_HEADING_SENTINEL),
@@ -1339,7 +1312,6 @@ class CreaturePool:
                                     env=spawn_env,
                                     detail_preset=int(detail_preset),
                                 )
-                                spawned.extend(mapping)
 
             if (
                 players
@@ -1391,8 +1363,7 @@ class CreaturePool:
                         f32(0.3),
                     )
                     creature.hp = x87_pc24_sub(float(creature.hp), pulse_damage)
-                    if fx_queue is not None:
-                        fx_queue.add_random(pos=creature.pos, rng=rng)
+                    fx_queue.add_random(pos=creature.pos, rng=rng)
 
                     if creature.hp < 0.0:
                         if creature.type_id == CreatureTypeId.LIZARD:
@@ -1445,18 +1416,11 @@ class CreaturePool:
                         )
 
             interaction_ctx = _CreatureInteractionCtx(
-                pool=self,
+                step_runtime=step_runtime,
                 creature_index=int(idx),
                 creature=creature,
-                state=state,
-                players=players,
                 player=player,
                 dt=dt,
-                rng=rng,
-                detail_preset=int(detail_preset),
-                fx_queue=fx_queue,
-                deaths=deaths,
-                sfx=sfx,
                 contact_distance=float(target_dist),
             )
             for step in _CREATURE_INTERACTION_STEPS:
@@ -1465,8 +1429,6 @@ class CreaturePool:
                     break
             if interaction_ctx.skip_creature:
                 continue
-
-        return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
 
     def record_death(
         self,

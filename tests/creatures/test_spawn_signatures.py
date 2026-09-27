@@ -4,7 +4,6 @@ from collections import Counter
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
@@ -13,7 +12,7 @@ from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import make_step_runtime
+from tests.support.factories import make_step_runtime, step_player
 
 
 def _signature(pool: ProjectilePool) -> Counter[int]:
@@ -67,7 +66,8 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
         ),
     )
     state.perks[int(PerkId.ANGRY_RELOADER)] = 1
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
+    world.players[:] = [player]
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2)
     assert _signature(pool) == Counter({int(ProjectileTemplateId.PLASMA_MINIGUN): 15})
 
     pool.reset()
@@ -75,7 +75,8 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     # Man Bomb.
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     state.perks[int(PerkId.MAN_BOMB)] = 1
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
+    world.players[:] = [player]
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2)
     assert _signature(pool) == Counter(
         {int(ProjectileTemplateId.ION_RIFLE): 4, int(ProjectileTemplateId.ION_MINIGUN): 4},
     )
@@ -85,7 +86,8 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
     # Hot Tempered.
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
-    player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
+    world.players[:] = [player]
+    step_player(world, player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1)
     assert _signature(pool) == Counter(
         {int(ProjectileTemplateId.PLASMA_MINIGUN): 4, int(ProjectileTemplateId.PLASMA_RIFLE): 4},
     )

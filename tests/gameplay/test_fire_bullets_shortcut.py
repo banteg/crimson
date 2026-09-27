@@ -4,17 +4,17 @@ import msgspec
 import pytest
 
 from crimson import local_input
-from crimson.gameplay import player_update
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.replay.input_codec import pack_player_input, unpack_player_input
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
+from tests.support.factories import step_player
 
 
 class _Witness(msgspec.Struct, frozen=True):
@@ -54,8 +54,10 @@ def test_fire_bullets_shortcut_native_witnesses_through_replay(preserve_bugs: bo
         # Native console return is a whole-frame pause in the port, outside player_update.
         if row.console:
             continue
-        state = GameplayState(preserve_bugs=preserve_bugs)
-        players = [PlayerState(index=i, pos=Vec2(100.0, 100.0)) for i in range(2)]
+        world = make_world(player_count=2, preserve_bugs=preserve_bugs)
+        state = world.state
+        players = world.players
+        players[:] = [PlayerState(index=i, pos=Vec2(100.0, 100.0)) for i in range(2)]
         player = players[row.index]
         player.health = row.health
         player.experience = row.experience
@@ -78,7 +80,7 @@ def test_fire_bullets_shortcut_native_witnesses_through_replay(preserve_bugs: bo
         )
         decoded = unpack_player_input(pack_player_input(live))
         assert decoded == live
-        player_update(player, decoded, 0.016, state, players=players)
+        step_player(world, player, decoded, 0.016)
         expected_timer = row.timer_after if preserve_bugs else row.timer_before
         assert player.fire_bullets_timer == expected_timer, row.name
         assert players[1 - row.index].fire_bullets_timer == 0.0, row.name

@@ -2,22 +2,30 @@ from __future__ import annotations
 
 import math
 
-from crimson.gameplay import player_update
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime, step_player
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
-def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unstoppable() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=1.0, spread_heat=0.1)
+def _scripted_world() -> WorldState:
+    world = make_world()
+    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    return world
 
-    applied = player_take_damage(state, player, 10.0)
+
+def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unstoppable() -> None:
+    world = _scripted_world()
+    player = world.players[0]
+    player.heading = 1.0
+    player.spread_heat = 0.1
+
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player.health == 90.0
@@ -26,11 +34,13 @@ def test_player_take_damage_applies_heading_jitter_and_spread_heat_without_unsto
 
 
 def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unstoppable() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, heading=1.0, spread_heat=0.1)
-    state.perks[int(PerkId.UNSTOPPABLE)] = 1
+    world = _scripted_world()
+    player = world.players[0]
+    player.heading = 1.0
+    player.spread_heat = 0.1
+    world.state.perks[int(PerkId.UNSTOPPABLE)] = 1
 
-    applied = player_take_damage(state, player, 10.0)
+    applied = player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
 
     assert applied == 10.0
     assert player.health == 90.0
@@ -39,16 +49,14 @@ def test_player_take_damage_suppresses_heading_jitter_and_spread_heat_with_unsto
 
 
 def test_player_take_damage_heading_jitter_is_not_snapped_by_player_update() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=100.0, heading=1.0, move_speed=2.0)
+    world = _scripted_world()
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.heading = 1.0
+    player.move_speed = 2.0
 
-    player_take_damage(state, player, 10.0)
+    player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
     target_heading = Vec2(1.0, 0.0).to_heading()
-    player_update(
-        player,
-        PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0)),
-        dt=0.1,
-        state=state,
-    )
+    step_player(world, player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0)), 0.1)
 
     assert abs((player.heading % math.tau) - target_heading) > 1e-6

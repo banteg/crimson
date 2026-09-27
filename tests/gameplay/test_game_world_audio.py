@@ -4,7 +4,6 @@ from pathlib import Path
 
 import crimson.world.audio_bridge as audio_bridge_module
 from crimson.bonuses import BonusId
-from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
@@ -18,6 +17,7 @@ from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.builders.tick_payload import make_tick_payload
+from tests.support.factories import step_player
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -57,7 +57,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, runtime.world.state)
+    step_player(runtime.world, player, input_state, 0.05)
 
     sounds = plan_player_audio_sfx(
         player,
@@ -98,7 +98,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, runtime.world.state)
+    step_player(runtime.world, player, input_state, 0.05)
 
     sounds = plan_player_audio_sfx(
         player,

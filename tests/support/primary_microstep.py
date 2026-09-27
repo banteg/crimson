@@ -3,7 +3,7 @@
 import struct
 from unittest.mock import patch
 
-from crimson.effects import FxQueue
+from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions
@@ -50,6 +50,7 @@ def observe(case):
         detail_preset=5,
         violence_disabled=0,
         fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         hit_audio_game_tune_started=True,
         deaths=[],

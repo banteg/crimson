@@ -29,7 +29,6 @@ from .movement_controls import MovementControlType
 from .perks import PerkId
 from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.state import PerkSelectionState
-from .player_damage import PlayerDeathRuntime
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import TERRAIN_SIZE
@@ -76,6 +75,7 @@ if TYPE_CHECKING:
     from .creatures.spawn import SpawnSlotInit
     from .sim.input import PlayerInput
     from .sim.state_types import PerkCounts, PlayerState
+    from .sim.world_state import WorldStepRuntime
 
 
 _RELATIVE_MOVE_HEADING_NONE = -1.0
@@ -895,15 +895,9 @@ def player_update(
     player: PlayerState,
     input_state: PlayerInput,
     dt: float,
-    state: GameplayState,
     *,
-    detail_preset: int = 5,
-    violence_disabled: int = 0,
-    players: list[PlayerState] | None = None,
-    creatures: Sequence[CreatureState] | None = None,
-    spawn_slots: Sequence[SpawnSlotInit] | None = None,
-    player_death_runtime: PlayerDeathRuntime | None = None,
-    reload_active_any: bool | None = None,
+    step_runtime: WorldStepRuntime,
+    reload_active_any: bool,
 ) -> float:
     """Port of `player_update` (0x004136b0) for the rewrite runtime.
 
@@ -911,6 +905,11 @@ def player_update(
     Reflex Boost's movement scaling round-trips it for live players.
     """
 
+    world = step_runtime.world
+    state = world.state
+    players = world.players
+    creatures = world.creatures.entries
+    spawn_slots = world.creatures.spawn_slots
     dt = float(f32(float(dt)))
     if dt <= 0.0:
         return dt
@@ -924,7 +923,7 @@ def player_update(
         )
         return dt
 
-    _player_tick_low_health(player, state, dt, detail_preset, violence_disabled)
+    _player_tick_low_health(player, state, dt, step_runtime.detail_preset, step_runtime.violence_disabled)
 
     damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
     if float(state.player_spread_damping_gate) <= 0.0:
@@ -1023,7 +1022,7 @@ def player_update(
         player.weapon.reload_active = False
 
     reload_key_active = bool(input_state.reload_down or input_state.reload_pressed)
-    reload_key_released = (not bool(reload_active_any)) if reload_active_any is not None else (not reload_key_active)
+    reload_key_released = not reload_active_any
     if has_alt_weapon_perk:
         cooldown_ms = int(state.player_alt_weapon_swap_cooldown_ms)
         dt_ms = ftol_ms_i32(float(dt)) if float(dt) > 0.0 else 0
@@ -1050,12 +1049,8 @@ def player_update(
             player=player,
             input_state=input_state,
             dt=frame_dt,
-            state=state,
-            detail_preset=int(detail_preset),
-            creatures=creatures,
-            players=players,
+            step_runtime=step_runtime,
             fire_gate=fire_gate,
-            player_death_runtime=player_death_runtime,
         ),
     )
 
