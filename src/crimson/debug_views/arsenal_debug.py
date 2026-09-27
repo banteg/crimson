@@ -19,15 +19,8 @@ from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
-from ..weapon_runtime.fire_recipes import (
-    MultiPlasmaFanMode,
-    ParticleStreamMode,
-    PrimaryPelletsMode,
-    SecondaryShotMode,
-    SwarmerDumpMode,
-    resolve_fire_recipe,
-)
 from ..weapons import (
+    PROJECTILE_TEMPLATE_OVERRIDES,
     WEAPON_BY_ID,
     WEAPON_TABLE,
     WeaponId,
@@ -284,32 +277,11 @@ class ArsenalDebugView:
         return [self._build_input()]
 
     def _weapon_projectile_desc(self, weapon_id: WeaponId) -> str:
-        weapon = WEAPON_BY_ID[weapon_id]
-        recipe = resolve_fire_recipe(
-            weapon_id,
-            pellet_count=int(weapon.pellet_count),
-            fire_bullets_active=False,
-        )
-        if recipe is None:
-            return "unsupported/unmapped"
-        match recipe.mode:
-            case PrimaryPelletsMode(type_id=type_id):
-                if type_id is None:
-                    return "unsupported/unmapped"
-                return _projectile_type_label(int(type_id))
-            case SecondaryShotMode(type_id=type_id):
-                return f"secondary type {int(type_id)}"
-            case ParticleStreamMode(style=style, slow=slow):
-                if style is None:
-                    return "slow particle stream" if slow else "particle stream"
-                return f"particle style {int(style)}"
-            case MultiPlasmaFanMode():
-                return "plasma fan"
-            case SwarmerDumpMode():
-                return "secondary swarm dump"
         try:
             type_id = projectile_type_id_for_weapon_id(weapon_id)
         except ValueError:
+            if PROJECTILE_TEMPLATE_OVERRIDES.get(weapon_id) == ():
+                return "secondary/particle path"
             return "unsupported/unmapped"
         return _projectile_type_label(int(type_id))
 

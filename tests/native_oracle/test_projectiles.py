@@ -11,6 +11,7 @@ from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime.projectile_pool import ProjectilePool
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
@@ -90,11 +91,9 @@ _NATIVE_PELLET_JITTER_RETURN = 0x00444D6A
 def _python_shotgun_volley(seed: int, pos: Vec2, aim: Vec2, aim_heading: float) -> tuple[GameplayState, int]:
     """Fire the port's shotgun; return the state and the RNG seed at the first pellet draw."""
 
-    from crimson.weapon_runtime.fire import _PELLET_JITTER_CALLER_BY_WEAPON
-
     rng = CrtRand(seed)
     first_pellet_state: list[int] = []
-    pellet_caller = int(_PELLET_JITTER_CALLER_BY_WEAPON[WeaponId.SHOTGUN])
+    pellet_caller = int(RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_JITTER)
 
     def sink(state_before: int, _state_after: int, _value: int, caller: int | None) -> None:
         if caller == pellet_caller and not first_pellet_state:

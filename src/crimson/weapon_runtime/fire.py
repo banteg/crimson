@@ -10,6 +10,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
+from ..effects import ParticleStyleId
 from ..math_parity import (
     NATIVE_HALF_PI,
     NATIVE_PI,
@@ -21,6 +22,7 @@ from ..math_parity import (
     x87_pc24_mul,
     x87_pc24_sub,
 )
+from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..player_damage import PlayerDeathRuntime
 from ..projectiles.runtime import SecondarySpawnSpec
@@ -30,20 +32,6 @@ from ..sim.input import PlayerInput
 from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
-from .fire_recipes import (
-    MaskCenteredJitter,
-    ModuloCenteredJitter,
-    ModuloSpeedScale,
-    MultiPlasmaFanMode,
-    NoJitter,
-    NoSpeedScale,
-    ParticleStreamMode,
-    PrimaryPelletsMode,
-    SecondaryShotMode,
-    SwarmerDumpMode,
-    UseAimTargetHint,
-    resolve_fire_recipe,
-)
 from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles
 
 if TYPE_CHECKING:
@@ -52,47 +40,6 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
-
-_NATIVE_FIRE_MUZZLE_SPRITES: dict[int, tuple[tuple[float, float, float], ...]] = {
-    WeaponId.PISTOL: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    WeaponId.ASSAULT_RIFLE: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    WeaponId.SHOTGUN: ((25.0, 1.0, 0.25), (15.0, 2.0, 0.223)),
-    WeaponId.SAWED_OFF_SHOTGUN: ((25.0, 1.0, 0.26), (15.0, 2.0, 0.233)),
-    WeaponId.SUBMACHINE_GUN: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    WeaponId.GAUSS_GUN: ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
-    WeaponId.ROCKET_LAUNCHER: ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
-    WeaponId.SEEKER_ROCKETS: ((25.0, 1.0, 0.31), (15.0, 2.0, 0.243)),
-    WeaponId.MINI_ROCKET_SWARMERS: ((25.0, 1.0, 0.34), (15.0, 2.0, 0.283)),
-    WeaponId.ROCKET_MINIGUN: ((25.0, 1.0, 0.34),),
-    WeaponId.JACKHAMMER: ((15.0, 2.0, 0.223),),
-    WeaponId.SHRINKIFIER_5K: ((25.0, 1.0, 0.23), (15.0, 2.0, 0.213)),
-    WeaponId.GAUSS_SHOTGUN: ((25.0, 1.0, 0.33), (15.0, 2.0, 0.263)),
-}
-
-_NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE: frozenset[int] = frozenset(
-    {
-        WeaponId.PISTOL,
-        WeaponId.SHRINKIFIER_5K,
-    },
-)
-
-_PELLET_JITTER_CALLER_BY_WEAPON: dict[WeaponId, int] = {
-    WeaponId.SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_JITTER,
-    WeaponId.SAWED_OFF_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_JITTER,
-    WeaponId.JACKHAMMER: RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_JITTER,
-    WeaponId.ION_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_JITTER,
-    WeaponId.GAUSS_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_JITTER,
-    WeaponId.PLASMA_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_JITTER,
-}
-
-_PELLET_SPEED_SCALE_CALLER_BY_WEAPON: dict[WeaponId, int] = {
-    WeaponId.SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_SPEED_SCALE,
-    WeaponId.SAWED_OFF_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_SPEED_SCALE,
-    WeaponId.JACKHAMMER: RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_SPEED_SCALE,
-    WeaponId.ION_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_SPEED_SCALE,
-    WeaponId.GAUSS_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_SPEED_SCALE,
-    WeaponId.PLASMA_SHOTGUN: RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_SPEED_SCALE,
-}
 
 
 class WeaponFireGate(msgspec.Struct, frozen=True):
@@ -130,29 +77,54 @@ class WeaponFireResult(msgspec.Struct, frozen=True):
     ammo_cost: float = 0.0
 
 
-def _spawn_native_fire_muzzle_sprites(
-    *,
-    state: GameplayState,
-    weapon_id: int,
-    muzzle: Vec2,
-    aim_heading: float,
-    fire_bullets_active: bool,
-) -> None:
-    if fire_bullets_active:
-        specs: tuple[tuple[float, float, float], ...] = ((25.0, 1.0, 0.413),)
-    else:
-        specs = _NATIVE_FIRE_MUZZLE_SPRITES.get(int(weapon_id), ())
-    if not specs:
-        return
+class _ShotSpawner(msgspec.Struct, frozen=True):
+    """The muzzle, owner and pools every `player_update` fire branch spawns into."""
 
-    for speed, scale, alpha in specs:
+    state: GameplayState
+    muzzle: Vec2
+    aim_heading: float
+    owner: OwnerRef
+    # Native encodes friendly fire in the owner id (-1 - player_index): with the
+    # cvar enabled, primary player shots can hit other players for 10 damage.
+    hits_players: bool
+
+    def projectile(self, type_id: ProjectileTemplateId, angle: float) -> int:
+        return self.state.projectiles.spawn(
+            pos=self.muzzle,
+            angle=angle,
+            type_id=type_id,
+            owner=self.owner,
+            hits_players=self.hits_players,
+        )
+
+    def secondary(
+        self,
+        type_id: SecondaryProjectileTypeId,
+        angle: float,
+        *,
+        target_hint: Vec2 | None = None,
+        creatures: Sequence[CreatureState] | None = None,
+    ) -> None:
+        self.state.secondary_projectiles.spawn_from_spec(
+            SecondarySpawnSpec(
+                pos=self.muzzle,
+                angle=angle,
+                type_id=type_id,
+                owner=self.owner,
+                target_hint=target_hint,
+                creatures=creatures,
+                preserve_bugs=bool(self.state.preserve_bugs),
+            ),
+        )
+
+    def muzzle_sprite(self, speed: float, scale: float, alpha: float) -> None:
         # Native uses raw (cos h, sin h) of the aim heading - the aim direction
         # rotated 90 degrees - matching the Fire Cough and shell-casing ports.
-        state.sprite_effects.spawn(
-            pos=muzzle,
-            vel=Vec2.from_angle(aim_heading) * float(speed),
-            scale=float(scale),
-            color=RGBA(0.5, 0.5, 0.5, float(alpha)),
+        self.state.sprite_effects.spawn(
+            pos=self.muzzle,
+            vel=Vec2.from_angle(self.aim_heading) * speed,
+            scale=scale,
+            color=RGBA(0.5, 0.5, 0.5, alpha),
         )
 
 
@@ -176,41 +148,16 @@ def _native_shot_angle_with_jitter(
     )
 
 
-def _apply_pellet_jitter(
-    *,
-    shot_angle: float,
-    rng: CrandLike,
-    jitter_rule: ModuloCenteredJitter | MaskCenteredJitter,
-    caller: int,
-) -> float:
-    # Native pellet loops in `player_update` (e.g. shotgun @ 0x00416378):
-    # `fild roll; fmul float step; fadd shot_angle`, each rounded at PC24.
-    match jitter_rule:
-        case ModuloCenteredJitter(modulo=modulo, center=center, step=step):
-            roll = rng.rand_tagged(caller) % int(modulo) - int(center)
-        case MaskCenteredJitter(mask=mask, center=center, step=step):
-            roll = (rng.rand_tagged(caller) & int(mask)) - int(center)
+def _pellet_angle(shot_angle: float, roll: int, step: float) -> float:
+    # Native pellet loops (e.g. shotgun @ 0x00416378): `fild roll; fmul float step;
+    # fadd shot_angle`, each rounded at PC24.
     return x87_pc24_add(x87_pc24_mul(float(roll), f32(step)), shot_angle)
 
 
-def _apply_speed_scale_rule(
-    *,
-    state: GameplayState,
-    proj_id: int,
-    speed_rule: NoSpeedScale | ModuloSpeedScale,
-    caller: int,
-) -> None:
-    match speed_rule:
-        case NoSpeedScale():
-            return
-        case ModuloSpeedScale(base=base, modulo=modulo, step=step):
-            # Native (e.g. shotgun @ 0x004163b1): `fild roll; fmul 0.01f; fadd base`
-            # at PC24, then a float store into the projectile.
-            roll = state.rng.rand_tagged(caller) % int(modulo)
-            state.projectiles.entries[int(proj_id)].speed_scale = x87_pc24_add(
-                x87_pc24_mul(float(roll), f32(step)),
-                f32(base),
-            )
+def _pellet_speed_scale(roll: int, base: float) -> float:
+    # Native (e.g. shotgun @ 0x004163b1): `fild roll; fmul 0.01f; fadd base` at
+    # PC24, then a float store into the projectile.
+    return x87_pc24_add(x87_pc24_mul(float(roll), f32(0.01)), f32(base))
 
 
 def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
@@ -231,7 +178,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     if not input_state.fire_down:
         return WeaponFireResult(fired=False)
 
-    ammo_cost = 1.0
     perk_fire_ready = not fire_gate.normal_ready
     use_regression_bullets = False
     use_ammunition_within = False
@@ -325,195 +271,215 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         rng=state.rng,
     )
 
-    # Native gameplay fire consumes one exact `player_update` RNG draw for shot
-    # SFX variant selection on every non-Fire-Bullets shot.
-    if not is_fire_bullets:
-        state.rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_SFX)
-
+    rng = state.rng
     owner = owner_ref_for_player(player.index)
-    projectile_owner = owner_ref_for_player_projectiles(state, player.index)
-    # Native encodes friendly fire in the owner id (-1 - player_index): with the
-    # cvar enabled, primary player shots can hit other players for 10 damage.
-    projectile_hits_players = bool(state.friendly_fire_enabled)
+    shot = _ShotSpawner(
+        state=state,
+        muzzle=muzzle,
+        aim_heading=aim_heading,
+        owner=owner_ref_for_player_projectiles(state, player.index),
+        hits_players=bool(state.friendly_fire_enabled),
+    )
+    ammo_cost = 1.0
     shot_count = 1
     # Native increments the accuracy counter only inside projectile_spawn /
     # fx_spawn_secondary_projectile; particle weapons (flamethrowers, bubblegun)
     # never count toward shots fired. The per-weapon usage counter keeps
     # incrementing as the rewrite's most-used-weapon heuristic.
     counts_accuracy_shots = True
-    spawn_muzzle_after_projectile = bool(is_fire_bullets) or int(weapon_id) in _NATIVE_FIRE_MUZZLE_AFTER_PROJECTILE
-    if not spawn_muzzle_after_projectile:
-        _spawn_native_fire_muzzle_sprites(
-            state=state,
-            weapon_id=int(weapon_id),
-            muzzle=muzzle,
-            aim_heading=float(aim_heading),
-            fire_bullets_active=bool(is_fire_bullets),
-        )
 
-    recipe = resolve_fire_recipe(
-        weapon_id=weapon_id,
-        pellet_count=pellet_count,
-        fire_bullets_active=is_fire_bullets,
-    )
-    ammo_cost = float(recipe.ammo_cost)
+    if is_fire_bullets:
+        for _ in range(pellet_count):
+            jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_BULLETS_PELLET_JITTER) % 200 - 100
+            shot.projectile(ProjectileTemplateId.FIRE_BULLETS, _pellet_angle(shot_angle, jitter, 0.0015))
+        shot_count = pellet_count
+        shot.muzzle_sprite(25.0, 1.0, 0.413)
+    else:
+        # Native gameplay fire consumes one exact `player_update` RNG draw for shot
+        # SFX variant selection on every non-Fire-Bullets shot.
+        rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_SFX)
 
-    match recipe.mode:
-        case PrimaryPelletsMode(type_id=type_id, count=count, jitter=jitter_rule, speed_scale=speed_rule):
-            if type_id is None:
-                raise ValueError(f"missing projectile type in recipe for weapon {int(weapon_id)}")
-            pellets = max(0, int(count if count is not None else 0))
-            shot_count = pellets
-            pellet_jitter_caller = (
-                RngCallerStatic.PLAYER_UPDATE_FIRE_BULLETS_PELLET_JITTER
-                if is_fire_bullets
-                else _PELLET_JITTER_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
-            )
-            pellet_speed_caller = _PELLET_SPEED_SCALE_CALLER_BY_WEAPON.get(WeaponId(weapon_id))
-            if not isinstance(speed_rule, NoSpeedScale) and pellet_speed_caller is None:
-                raise ValueError(f"missing pellet speed caller for weapon {int(weapon_id)}")
-            for _ in range(pellets):
-                match jitter_rule:
-                    case NoJitter():
-                        angle = float(shot_angle)
-                    case ModuloCenteredJitter() | MaskCenteredJitter():
-                        if pellet_jitter_caller is None:
-                            raise ValueError(f"missing pellet jitter caller for weapon {int(weapon_id)}")
-                        angle = _apply_pellet_jitter(
-                            shot_angle=float(shot_angle),
-                            rng=state.rng,
-                            jitter_rule=jitter_rule,
-                            caller=int(pellet_jitter_caller),
-                        )
-                proj_id = state.projectiles.spawn(
-                    pos=muzzle,
-                    angle=angle,
-                    type_id=type_id,
-                    owner=projectile_owner,
-                    hits_players=projectile_hits_players,
-                )
-                if isinstance(speed_rule, ModuloSpeedScale):
-                    assert pellet_speed_caller is not None
-                    _apply_speed_scale_rule(
-                        state=state,
-                        proj_id=int(proj_id),
-                        speed_rule=speed_rule,
-                        caller=int(pellet_speed_caller),
-                    )
-        case SecondaryShotMode(type_id=type_id, targeting=targeting):
-            target_hint = None
-            spawn_creatures = None
-            match targeting:
-                case UseAimTargetHint():
-                    target_hint = aim
-                    spawn_creatures = creatures
-                case _:
-                    pass
-            state.secondary_projectiles.spawn_from_spec(
-                SecondarySpawnSpec(
-                    pos=muzzle,
-                    angle=shot_angle,
-                    type_id=type_id,
-                    owner=projectile_owner,
-                    target_hint=target_hint,
-                    creatures=spawn_creatures,
-                    preserve_bugs=bool(state.preserve_bugs),
-                ),
-            )
-        case ParticleStreamMode(style=style, slow=slow):
-            counts_accuracy_shots = False
-            # Native passes the unwrapped `heading - 1.5707964f`: the shot angle
-            # for Bubblegun (0x0041744a), the aim heading for the flamers
-            # (stored at 0x00415a29).
-            if slow:
-                state.particles.spawn_particle_slow(
-                    pos=muzzle,
-                    angle=x87_pc24_sub(shot_angle, NATIVE_HALF_PI),
-                    owner=owner,
-                )
-            else:
-                particle_id = state.particles.spawn_particle(
+        match weapon_id:
+            case WeaponId.SHRINKIFIER_5K | WeaponId.PISTOL:
+                shot.projectile(ProjectileTemplateId(weapon_id), shot_angle)
+                shot.muzzle_sprite(25.0, 1.0, 0.23)
+                shot.muzzle_sprite(15.0, 2.0, 0.213)
+            case WeaponId.ASSAULT_RIFLE | WeaponId.SUBMACHINE_GUN:
+                shot.muzzle_sprite(25.0, 1.0, 0.23)
+                shot.muzzle_sprite(15.0, 2.0, 0.213)
+                shot.projectile(ProjectileTemplateId(weapon_id), shot_angle)
+            case WeaponId.SHOTGUN:
+                shot.muzzle_sprite(25.0, 1.0, 0.25)
+                shot.muzzle_sprite(15.0, 2.0, 0.223)
+                for _ in range(12):
+                    jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_JITTER) % 200 - 100
+                    pellet = shot.projectile(ProjectileTemplateId.SHOTGUN, _pellet_angle(shot_angle, jitter, 0.0013))
+                    speed = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOTGUN_PELLET_SPEED_SCALE) % 100
+                    state.projectiles.entries[pellet].speed_scale = _pellet_speed_scale(speed, 1.0)
+                shot_count = 12
+            case WeaponId.JACKHAMMER:
+                shot.muzzle_sprite(15.0, 2.0, 0.223)
+                for _ in range(4):
+                    jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_JITTER) % 200 - 100
+                    pellet = shot.projectile(ProjectileTemplateId.SHOTGUN, _pellet_angle(shot_angle, jitter, 0.0013))
+                    speed = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_JACKHAMMER_PELLET_SPEED_SCALE) % 100
+                    state.projectiles.entries[pellet].speed_scale = _pellet_speed_scale(speed, 1.0)
+                shot_count = 4
+            case WeaponId.SAWED_OFF_SHOTGUN:
+                shot.muzzle_sprite(25.0, 1.0, 0.26)
+                shot.muzzle_sprite(15.0, 2.0, 0.233)
+                for _ in range(12):
+                    jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_JITTER) % 200 - 100
+                    pellet = shot.projectile(ProjectileTemplateId.SHOTGUN, _pellet_angle(shot_angle, jitter, 0.004))
+                    speed = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SAWED_OFF_SHOTGUN_PELLET_SPEED_SCALE) % 100
+                    state.projectiles.entries[pellet].speed_scale = _pellet_speed_scale(speed, 1.0)
+                shot_count = 12
+            # Native passes the unwrapped `heading - 1.5707964f`: the aim heading
+            # for the flamers (stored at 0x00415a29), the shot angle for Bubblegun
+            # (0x0041744a).
+            case WeaponId.FLAMETHROWER:
+                state.particles.spawn_particle(
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
                     owner=owner,
                 )
-                if style is not None:
-                    state.particles.entries[particle_id].style_id = style
-        case MultiPlasmaFanMode():
-            # Multi-Plasma: 5-shot fixed spread using type 0x09 and 0x0B.
-            shot_count = 5
-            spread_small = f32(0.31415927)
-            spread_large = f32(0.5235988)
-            patterns: tuple[tuple[float, ProjectileTemplateId], ...] = (
-                (x87_pc24_sub(shot_angle, spread_small), ProjectileTemplateId.PLASMA_RIFLE),
-                (x87_pc24_sub(shot_angle, spread_large), ProjectileTemplateId.PLASMA_MINIGUN),
-                (shot_angle, ProjectileTemplateId.PLASMA_RIFLE),
-                (x87_pc24_add(shot_angle, spread_large), ProjectileTemplateId.PLASMA_MINIGUN),
-                (x87_pc24_add(shot_angle, spread_small), ProjectileTemplateId.PLASMA_RIFLE),
-            )
-            for angle, type_id in patterns:
-                state.projectiles.spawn(
+                counts_accuracy_shots = False
+                ammo_cost = f32(0.1)
+            case WeaponId.HR_FLAMER:
+                particle = state.particles.spawn_particle(
                     pos=muzzle,
-                    angle=angle,
-                    type_id=type_id,
-                    owner=projectile_owner,
-                    hits_players=projectile_hits_players,
+                    angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
+                    intensity=1.0,
+                    owner=owner,
                 )
-        case SwarmerDumpMode():
-            # Mini-Rocket Swarmers -> secondary type 2 (fires the full clip in a spread).
-            # Native spawns one rocket per integer counter step below the float ammo
-            # value (ceil), and zero rockets when firing with an empty/negative clip
-            # (reachable via Regression Bullets / Ammunition Within).
-            clip_ammo = float(player.weapon.ammo)
-            rocket_count = math.ceil(clip_ammo) if clip_ammo > 0.0 else 0
-            preserve_swarmer_bug = bool(state.preserve_bugs)
-            if preserve_swarmer_bug:
-                # Native bug: step scales by ammo (`ammo * pi/3`), which aliases
-                # to near-identical headings for common clip sizes.
-                step = x87_pc24_mul(clip_ammo, f32(1.0471976))
-                angle = x87_pc24_sub(
-                    x87_pc24_sub(shot_angle, NATIVE_PI),
-                    x87_pc24_mul(x87_pc24_mul(step, clip_ammo), 0.5),
+                state.particles.entries[particle].style_id = ParticleStyleId.HR_FLAMER
+                counts_accuracy_shots = False
+                ammo_cost = f32(0.1)
+            case WeaponId.BLOW_TORCH:
+                particle = state.particles.spawn_particle(
+                    pos=muzzle,
+                    angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
+                    intensity=1.0,
+                    owner=owner,
                 )
-            else:
-                # Port fix: spread the clip evenly over 120 degrees, in the same
-                # per-operation f32 steps as the rest of the fire path.
-                spread = x87_pc24_mul(NATIVE_PI, f32(2.0 / 3.0))
-                step = 0.0 if rocket_count <= 1 else x87_pc24_div(spread, float(rocket_count - 1))
-                angle = x87_pc24_sub(shot_angle, x87_pc24_mul(NATIVE_PI, f32(1.0 / 3.0)))
-            for _ in range(rocket_count):
-                state.secondary_projectiles.spawn_from_spec(
-                    SecondarySpawnSpec(
-                        pos=muzzle,
-                        angle=angle,
-                        type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-                        owner=projectile_owner,
-                        target_hint=aim,
-                        creatures=creatures,
-                        preserve_bugs=bool(state.preserve_bugs),
-                    ),
+                state.particles.entries[particle].style_id = ParticleStyleId.BLOW_TORCH
+                counts_accuracy_shots = False
+                ammo_cost = f32(0.05)
+            case (
+                WeaponId.PLASMA_RIFLE
+                | WeaponId.PULSE_GUN
+                | WeaponId.BLADE_GUN
+                | WeaponId.SPLITTER_GUN
+                | WeaponId.ION_RIFLE
+                | WeaponId.ION_MINIGUN
+                | WeaponId.ION_CANNON
+                | WeaponId.PLASMA_CANNON
+                | WeaponId.PLASMA_MINIGUN
+                | WeaponId.PLAGUE_SPREADER_GUN
+                | WeaponId.RAINBOW_GUN
+            ):
+                shot.projectile(ProjectileTemplateId(weapon_id), shot_angle)
+            case WeaponId.MULTI_PLASMA:
+                shot.projectile(ProjectileTemplateId.PLASMA_RIFLE, x87_pc24_sub(shot_angle, f32(0.31415927)))
+                shot.projectile(ProjectileTemplateId.PLASMA_MINIGUN, x87_pc24_sub(shot_angle, f32(0.5235988)))
+                shot.projectile(ProjectileTemplateId.PLASMA_RIFLE, shot_angle)
+                shot.projectile(ProjectileTemplateId.PLASMA_MINIGUN, x87_pc24_add(shot_angle, f32(0.5235988)))
+                shot.projectile(ProjectileTemplateId.PLASMA_RIFLE, x87_pc24_add(shot_angle, f32(0.31415927)))
+                shot_count = 5
+            case WeaponId.ION_SHOTGUN:
+                for _ in range(8):
+                    jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_JITTER) % 200 - 100
+                    pellet = shot.projectile(ProjectileTemplateId.ION_MINIGUN, _pellet_angle(shot_angle, jitter, 0.0026))
+                    speed = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_ION_SHOTGUN_PELLET_SPEED_SCALE) % 80
+                    state.projectiles.entries[pellet].speed_scale = _pellet_speed_scale(speed, 1.4)
+                shot_count = 8
+            case WeaponId.GAUSS_SHOTGUN:
+                shot.muzzle_sprite(25.0, 1.0, 0.33)
+                shot.muzzle_sprite(15.0, 2.0, 0.263)
+                for _ in range(6):
+                    jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_JITTER) % 200 - 100
+                    pellet = shot.projectile(ProjectileTemplateId.GAUSS_GUN, _pellet_angle(shot_angle, jitter, 0.002))
+                    speed = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_GAUSS_SHOTGUN_PELLET_SPEED_SCALE) % 80
+                    state.projectiles.entries[pellet].speed_scale = _pellet_speed_scale(speed, 1.4)
+                shot_count = 6
+            case WeaponId.GAUSS_GUN:
+                shot.muzzle_sprite(25.0, 1.0, 0.33)
+                shot.muzzle_sprite(15.0, 2.0, 0.263)
+                shot.projectile(ProjectileTemplateId.GAUSS_GUN, shot_angle)
+            case WeaponId.ROCKET_LAUNCHER:
+                shot.muzzle_sprite(25.0, 1.0, 0.34)
+                shot.muzzle_sprite(15.0, 2.0, 0.283)
+                shot.secondary(SecondaryProjectileTypeId.ROCKET, shot_angle)
+            case WeaponId.MINI_ROCKET_SWARMERS:
+                shot.muzzle_sprite(25.0, 1.0, 0.34)
+                shot.muzzle_sprite(15.0, 2.0, 0.283)
+                # Fires the full clip in a spread. Native spawns one rocket per
+                # integer counter step below the float ammo value (ceil), and zero
+                # rockets when firing with an empty/negative clip (reachable via
+                # Regression Bullets / Ammunition Within).
+                clip_ammo = float(player.weapon.ammo)
+                rocket_count = math.ceil(clip_ammo) if clip_ammo > 0.0 else 0
+                if state.preserve_bugs:
+                    # Native bug: step scales by ammo (`ammo * pi/3`), which aliases
+                    # to near-identical headings for common clip sizes.
+                    step = x87_pc24_mul(clip_ammo, f32(1.0471976))
+                    angle = x87_pc24_sub(
+                        x87_pc24_sub(shot_angle, NATIVE_PI),
+                        x87_pc24_mul(x87_pc24_mul(step, clip_ammo), 0.5),
+                    )
+                else:
+                    # Port fix: spread the clip evenly over 120 degrees, in the same
+                    # per-operation f32 steps as the rest of the fire path.
+                    spread = x87_pc24_mul(NATIVE_PI, f32(2.0 / 3.0))
+                    step = 0.0 if rocket_count <= 1 else x87_pc24_div(spread, float(rocket_count - 1))
+                    angle = x87_pc24_sub(shot_angle, x87_pc24_mul(NATIVE_PI, f32(1.0 / 3.0)))
+                for _ in range(rocket_count):
+                    shot.secondary(SecondaryProjectileTypeId.HOMING_ROCKET, angle, target_hint=aim, creatures=creatures)
+                    angle = x87_pc24_add(angle, step)
+                # Native subtracts the full clip value, zeroing the ammo even when
+                # the clip was fractional or negative.
+                ammo_cost = clip_ammo
+                shot_count = rocket_count
+            case WeaponId.ROCKET_MINIGUN:
+                shot.muzzle_sprite(25.0, 1.0, 0.34)
+                shot.secondary(SecondaryProjectileTypeId.ROCKET_MINIGUN, shot_angle)
+            case WeaponId.SEEKER_ROCKETS:
+                shot.muzzle_sprite(25.0, 1.0, 0.31)
+                shot.muzzle_sprite(15.0, 2.0, 0.243)
+                shot.secondary(SecondaryProjectileTypeId.HOMING_ROCKET, shot_angle, target_hint=aim, creatures=creatures)
+            case WeaponId.MEAN_MINIGUN:
+                shot.projectile(ProjectileTemplateId.PISTOL, shot_angle)
+            case WeaponId.PLASMA_SHOTGUN:
+                for _ in range(14):
+                    jitter = (rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_JITTER) & 0xFF) - 0x80
+                    pellet = shot.projectile(
+                        ProjectileTemplateId.PLASMA_MINIGUN,
+                        _pellet_angle(shot_angle, jitter, 0.002),
+                    )
+                    speed = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_PLASMA_SHOTGUN_PELLET_SPEED_SCALE) % 100
+                    state.projectiles.entries[pellet].speed_scale = _pellet_speed_scale(speed, 1.0)
+                shot_count = 14
+            case WeaponId.BUBBLEGUN:
+                state.particles.spawn_particle_slow(
+                    pos=muzzle,
+                    angle=x87_pc24_sub(shot_angle, NATIVE_HALF_PI),
+                    owner=owner,
                 )
-                angle = x87_pc24_add(angle, step)
-            # Native subtracts the full clip value, zeroing the ammo even when
-            # the clip was fractional or negative.
-            ammo_cost = clip_ammo
-            shot_count = rocket_count
+                counts_accuracy_shots = False
+                ammo_cost = f32(0.15)
+            case WeaponId.SPIDER_PLASMA | WeaponId.FIRE_BULLETS:
+                # Port-only: native `player_update` has no branch for these ids
+                # and spawns nothing; the port fires their own projectile type.
+                shot.projectile(ProjectileTemplateId(weapon_id), shot_angle)
+            case _:
+                raise ValueError(f"weapon has no primary projectile type: {int(weapon_id)}")
 
     if 0 <= int(player.index) < len(state.shots_fired):
         if counts_accuracy_shots:
             state.shots_fired[int(player.index)] += int(shot_count)
         if 0 <= weapon_id < WEAPON_COUNT_SIZE:
             state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
-
-    if spawn_muzzle_after_projectile:
-        _spawn_native_fire_muzzle_sprites(
-            state=state,
-            weapon_id=int(weapon_id),
-            muzzle=muzzle,
-            aim_heading=float(aim_heading),
-            fire_bullets_active=bool(is_fire_bullets),
-        )
 
     if PerkId.SHARPSHOOTER not in state.perks:
         player.spread_heat = min(f32(0.48), max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))
