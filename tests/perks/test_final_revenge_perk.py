@@ -166,7 +166,7 @@ def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> No
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     state.perks[int(PerkId.FINAL_REVENGE)] = 1
 
-    pool = CreaturePool(size=4)
+    pool = CreaturePool()
     active_dead = pool.entries[0]
     active_dead.active = True
     active_dead.hp = 0.0
@@ -213,7 +213,7 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
     player = PlayerState(index=0, pos=Vec2())
     state.perks[int(PerkId.FINAL_REVENGE)] = 1
 
-    pool = CreaturePool(size=1)
+    pool = CreaturePool()
     creature = pool.entries[0]
     creature.active = True
     creature.pos = Vec2(155.231201171875, 295.6527099609375)

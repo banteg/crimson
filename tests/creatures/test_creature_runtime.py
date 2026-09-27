@@ -1986,7 +1986,7 @@ def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
 
 
 def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> None:
-    pool = CreaturePool(size=24)
+    pool = CreaturePool()
     for idx in range(22):
         entry = pool.entries[idx]
         entry.active = True
@@ -2034,9 +2034,10 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
 
 
 def test_spawn_init_returns_none_when_pool_is_full() -> None:
-    pool = CreaturePool(size=1)
-    pool.entries[0].active = True
-    pool.entries[0].hp = 1.0
+    pool = CreaturePool()
+    for entry in pool.entries:
+        entry.active = True
+        entry.hp = 1.0
 
     spawned_idx = pool.spawn_init(
         CreatureInit(
@@ -2055,7 +2056,7 @@ def test_spawn_init_returns_none_when_pool_is_full() -> None:
     )
 
     assert spawned_idx is None
-    assert pool.entries[0].active is True
+    assert all(entry.active for entry in pool.entries)
     assert pool.spawned_count == 0
 
 
@@ -2066,11 +2067,12 @@ def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    pool = CreaturePool(size=1, env=env)
-    pool.entries[0].active = True
-    pool.entries[0].hp = 1.0
-
+    pool = CreaturePool(env=env)
     plan = build_spawn_plan(SpawnId.ALIEN_RANDOM_1D, Vec2(100.0, 200.0), 0.0, rng, env)
+    # Leave one free slot fewer than the plan needs.
+    for entry in pool.entries[len(plan.creatures) - 1 :]:
+        entry.active = True
+        entry.hp = 1.0
 
     mapping, primary = pool.spawn_plan(plan, rng=rng, detail_preset=5)
 

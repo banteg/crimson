@@ -298,8 +298,8 @@ def _tick_rocket_trail(
 
 
 class SecondaryProjectilePool:
-    def __init__(self, *, size: int = SECONDARY_PROJECTILE_POOL_SIZE) -> None:
-        self._entries = [SecondaryProjectile() for _ in range(size)]
+    def __init__(self) -> None:
+        self._entries = [SecondaryProjectile() for _ in range(SECONDARY_PROJECTILE_POOL_SIZE)]
 
     @property
     def entries(self) -> list[SecondaryProjectile]:

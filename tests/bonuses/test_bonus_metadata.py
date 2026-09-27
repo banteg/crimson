@@ -19,7 +19,7 @@ from grim.geom import Vec2
     ],
 )
 def test_bonus_spawn_uses_native_constructor_default_amount(bonus_id: BonusId) -> None:
-    pool = BonusPool(size=1)
+    pool = BonusPool()
 
     entry = pool.spawn_at(
         Vec2(100.0, 100.0),
@@ -33,7 +33,7 @@ def test_bonus_spawn_uses_native_constructor_default_amount(bonus_id: BonusId) -
 
 
 def test_tutorial_bonus_seed_overwrites_fixed_slot_with_native_timer() -> None:
-    pool = BonusPool(size=3)
+    pool = BonusPool()
     pool.entries[1].bonus_id = BonusId.NUKE
     pool.entries[1].time_left = 7.0
 
@@ -55,7 +55,7 @@ def test_tutorial_bonus_seed_overwrites_fixed_slot_with_native_timer() -> None:
 
 
 def test_bonus_spawn_spacing_uses_native_pc24_hypotenuse_boundary() -> None:
-    pool = BonusPool(size=2)
+    pool = BonusPool()
     active = pool.entries[0]
     active.bonus_id = BonusId.POINTS
     active.pos = Vec2(100.0, 100.0)

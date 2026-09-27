@@ -567,11 +567,10 @@ class CreaturePool:
     def __init__(
         self,
         *,
-        size: int = CREATURE_POOL_SIZE,
         env: SpawnEnv | None = None,
         effects: EffectPool | None = None,
     ) -> None:
-        self._entries: list[CreatureState] = [CreatureState() for _ in range(int(size))]
+        self._entries: list[CreatureState] = [CreatureState() for _ in range(CREATURE_POOL_SIZE)]
         self.spawn_slots: list[SpawnSlotInit] = []
         self.env = env
         self.effects = effects

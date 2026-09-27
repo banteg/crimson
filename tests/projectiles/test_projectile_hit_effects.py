@@ -143,7 +143,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
 
 
 def test_ion_hit_effects_tag_exact_native_callers() -> None:
-    effects = EffectPool(size=64)
+    effects = EffectPool()
     sfx_queue: list[SfxRequest] = []
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 

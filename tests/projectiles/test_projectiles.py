@@ -81,7 +81,7 @@ def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
 
 
 def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
-    pool = ProjectilePool(size=1)
+    pool = ProjectilePool()
     idx = pool.spawn(
         pos=Vec2(-49.92948532104492, 681.1566772460938),
         angle=-0.8641037344932556,
@@ -97,7 +97,7 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
 
 
 def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
-    pool = ProjectilePool(size=1)
+    pool = ProjectilePool()
     idx = pool.spawn(
         pos=Vec2(),
         angle=0.0,
@@ -114,7 +114,7 @@ def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
 
 
 def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
-    pool = ProjectilePool(size=1)
+    pool = ProjectilePool()
     idx = pool.spawn(
         pos=Vec2(),
         angle=0.0,
@@ -275,7 +275,7 @@ def test_projectile_collision_profile_matches_native_spawn_constants() -> None:
 
 
 def test_primary_spawn_uses_collision_profile_defaults() -> None:
-    pool = ProjectilePool(size=1)
+    pool = ProjectilePool()
     for type_id in (
         ProjectileTemplateId.PISTOL,
         ProjectileTemplateId.ION_MINIGUN,
@@ -337,7 +337,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
     ]
 
     for case in cases:
-        pool = ProjectilePool(size=1)
+        pool = ProjectilePool()
         idx = pool.spawn(
             pos=Vec2(),
             angle=math.pi / 2.0,
@@ -355,7 +355,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
 
 
 def test_primary_spawn_persists_velocity_vector() -> None:
-    pool = ProjectilePool(size=1)
+    pool = ProjectilePool()
     idx = pool.spawn(
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
@@ -371,7 +371,7 @@ def test_primary_spawn_persists_velocity_vector() -> None:
 
 def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None:
     # Type 2: targeting pass
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     creatures: list[CreatureState] = [
         _creature(pos=Vec2(100.0, 0.0), hp=100.0),
         _creature(pos=Vec2(1000.0, 0.0), hp=100.0),
@@ -396,7 +396,7 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
     detonation_world = _world_with(detonation_creatures)
     runtime_state = detonation_world.state
     fx_queue = FxQueue()
-    detonation_pool = SecondaryProjectilePool(size=1)
+    detonation_pool = SecondaryProjectilePool()
     detonation_idx = detonation_pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(),
@@ -420,7 +420,7 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
 
 
 def test_homing_rocket_spawn_uses_native_trig_store_order() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
 
     idx = pool.spawn_from_spec(
         SecondarySpawnSpec(
@@ -435,7 +435,7 @@ def test_homing_rocket_spawn_uses_native_trig_store_order() -> None:
 
 
 def test_non_homing_spawn_preserves_reused_slot_target_id() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.entries[0].target_id = 37
 
     idx = pool.spawn_from_spec(
@@ -450,7 +450,7 @@ def test_non_homing_spawn_preserves_reused_slot_target_id() -> None:
 
 
 def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     idx = pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(193.97930908203125, 971.7576904296875),
@@ -475,7 +475,7 @@ def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
 
 
 def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     idx = pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(750.26220703125, 714.5313110351562),
@@ -497,7 +497,7 @@ def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
 
 
 def test_secondary_projectile_direct_hit_snapshot(snapshot: SnapshotAssertion) -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET, time_to_live=2.0),
     )
@@ -516,7 +516,7 @@ def test_secondary_projectile_direct_hit_snapshot(snapshot: SnapshotAssertion) -
 
 
 def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion) -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.DETONATION, time_to_live=1.0),
     )
@@ -541,7 +541,7 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
 
 
 def test_secondary_detonation_damage_rounds_each_x87_operation() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(),
@@ -562,7 +562,7 @@ def test_secondary_detonation_damage_rounds_each_x87_operation() -> None:
 
 
 def test_secondary_detonation_impulse_uses_native_safe_normalization() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(),
@@ -585,7 +585,7 @@ def test_secondary_detonation_impulse_uses_native_safe_normalization() -> None:
 def test_secondary_detonation_damages_positive_health_corpses() -> None:
     # Native gates the blast on `active && health > 0` only: a Shrinkifier kill
     # keeps positive health, so its fading corpse still takes blast damage.
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(),
@@ -612,7 +612,7 @@ def _secondary_callers(rng: RecordingCrand, allowed: set[RngCallerStatic]) -> li
 
 
 def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
     fx_queue = FxQueue()
     rng = _recording_rng(world)
@@ -664,7 +664,7 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
 
 
 def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
     fx_queue = FxQueue()
     rng = _recording_rng(world)
@@ -702,7 +702,7 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
 
 
 def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
     fx_queue = FxQueue()
     rng = _recording_rng(world)
@@ -734,7 +734,7 @@ def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
 
 
 def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
     runtime_state = world.state
     runtime_state.bonuses.freeze = 1.0

@@ -46,7 +46,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
     creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.1
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player], dt, creatures=[creature], fx_queue=fx_queue)
 
@@ -79,7 +79,7 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
     creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.034000009298324585
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(
         state,
@@ -122,7 +122,7 @@ def test_perks_update_effects_pyrokinetic_keeps_native_36hz_proc_frame() -> None
     creature.pos = Vec2(100.0, 200.0)
     creature.hp = 100.0
     creature.collision_timer = 0.25
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     for _ in range(9):
         perks_update_effects(
@@ -164,7 +164,7 @@ def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -
     creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.1
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player0, player1], 0.2, creatures=[creature], fx_queue=fx_queue)
 
@@ -191,7 +191,7 @@ def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targe
     creature.lifecycle_stage = 16.0
     creature.collision_timer = 0.1
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player0, player1], 0.2, creatures=[creature], fx_queue=fx_queue)
 
@@ -223,7 +223,7 @@ def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() ->
     creature1.lifecycle_stage = 16.0
     creature1.collision_timer = 0.1
 
-    fx_queue = FxQueue(capacity=16, max_count=16)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player0, player1], dt, creatures=[creature0, creature1], fx_queue=fx_queue)
 

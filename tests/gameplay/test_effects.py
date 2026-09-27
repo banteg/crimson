@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import math
 
-from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId, SpriteEffectPool
+from crimson.effects import (
+    FX_QUEUE_MAX_COUNT,
+    EffectPool,
+    FxQueue,
+    FxQueueRotated,
+    ParticlePool,
+    ParticleStyleId,
+    SpriteEffectPool,
+)
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
@@ -22,18 +30,17 @@ def test_effect_src_rect_uses_grid_and_frame() -> None:
 
 
 def test_fx_queue_caps_count() -> None:
-    q = FxQueue(capacity=4, max_count=3)
+    q = FxQueue()
     rgba = RGBA(1.0, 1.0, 1.0, 1.0)
-    assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
+    for _ in range(FX_QUEUE_MAX_COUNT):
+        assert q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
     assert not q.add(effect_id=0, pos=Vec2(), width=10.0, height=10.0, rotation=0.0, rgba=rgba)
-    assert q.count == 3
+    assert q.count == FX_QUEUE_MAX_COUNT
 
 
 def test_fx_queue_add_random_tags_exact_native_callers() -> None:
     rng = ScriptedCrand([0, 0, 0, 0])
-    q = FxQueue(capacity=4, max_count=4)
+    q = FxQueue()
 
     assert q.add_random(pos=Vec2(), rng=rng)
     assert [record.caller for record in rng.records_since()] == [
@@ -46,9 +53,11 @@ def test_fx_queue_add_random_tags_exact_native_callers() -> None:
 
 def test_particle_pool_tags_exact_native_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool = ParticlePool(size=1)
+    pool = ParticlePool()
 
     pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
+    for entry in pool.entries:
+        entry.active = True
     pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
     pool.spawn_particle_slow(pos=Vec2(), angle=0.0, rng=rng)
 
@@ -63,7 +72,7 @@ def test_particle_pool_tags_exact_native_callers() -> None:
 
 def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
     rng = ScriptedCrand([5, 5])
-    pool = ParticlePool(size=2)
+    pool = ParticlePool()
 
     fast_idx = pool.spawn_particle(
         pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
@@ -86,9 +95,11 @@ def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
 
 def test_sprite_effect_pool_tags_exact_native_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool = SpriteEffectPool(size=1)
+    pool = SpriteEffectPool()
 
     pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0, rng=rng)
+    for entry in pool.entries:
+        entry.active = True
     pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0, rng=rng)
 
     assert [record.caller for record in rng.records_since()] == [
@@ -99,7 +110,7 @@ def test_sprite_effect_pool_tags_exact_native_callers() -> None:
 
 
 def test_sprite_effect_spawn_canonicalizes_native_f32_fields() -> None:
-    pool = SpriteEffectPool(size=1)
+    pool = SpriteEffectPool()
 
     idx = pool.spawn(
         pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
@@ -116,7 +127,7 @@ def test_sprite_effect_spawn_canonicalizes_native_f32_fields() -> None:
 
 
 def test_effect_pool_spawn_canonicalizes_native_f32_fields() -> None:
-    pool = EffectPool(size=1)
+    pool = EffectPool()
 
     idx = pool.spawn(
         effect_id=3,
@@ -156,7 +167,7 @@ def test_effect_pool_spawn_canonicalizes_native_f32_fields() -> None:
 
 
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
-    q = FxQueueRotated(capacity=2, max_count=2)
+    q = FxQueueRotated()
     assert q.add(
         top_left=Vec2(),
         rgba=RGBA(1.0, 1.0, 1.0, 1.0),
@@ -182,7 +193,7 @@ def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
 
 
 def test_fx_queue_rotated_texture_failure_is_a_successful_noop() -> None:
-    q = FxQueueRotated(capacity=2, max_count=2)
+    q = FxQueueRotated()
     assert q.add(
         top_left=Vec2(1.0, 2.0),
         rgba=RGBA(1.0, 1.0, 1.0, 1.0),
@@ -195,7 +206,7 @@ def test_fx_queue_rotated_texture_failure_is_a_successful_noop() -> None:
 
 
 def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
-    pool = EffectPool(size=8)
+    pool = EffectPool()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn_freeze_shard(
@@ -216,7 +227,7 @@ def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
 
 
 def test_spawn_freeze_shatter_tags_exact_native_callers() -> None:
-    pool = EffectPool(size=32)
+    pool = EffectPool()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn_freeze_shatter(
@@ -246,7 +257,7 @@ def test_spawn_freeze_shatter_tags_exact_native_callers() -> None:
 
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
-    pool = SpriteEffectPool(size=1)
+    pool = SpriteEffectPool()
     idx = pool.spawn(
         pos=Vec2(10.0, 20.0),
         vel=Vec2(2.0, -3.0),
@@ -272,7 +283,7 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
 def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     world = make_world()
     rng = world.state.rng
-    pool = ParticlePool(size=2)
+    pool = ParticlePool()
     step_runtime = make_step_runtime(world, dt=1.0)
 
     # Style 0 persists until intensity <= 0.0.
@@ -311,8 +322,8 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     world = make_world()
     world.state.rng = rng
     sprite_effects = world.state.sprite_effects
-    pool = ParticlePool(size=1)
-    fx_queue = FxQueue(capacity=1, max_count=1)
+    pool = ParticlePool()
+    fx_queue = FxQueue()
 
     particle_id = pool.spawn_particle(
         pos=Vec2(),
@@ -373,7 +384,7 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world = make_world()
     world.state.rng = rng
-    pool = ParticlePool(size=3)
+    pool = ParticlePool()
 
     flame_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
     alt_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
@@ -401,7 +412,7 @@ def test_particle_hit_applies_owner_fire_damage() -> None:
     world = make_world()
     world.state.perks[int(PerkId.PYROMANIAC)] = 1
     creatures = place_creatures(world, [make_creature_state(pos=Vec2())])
-    pool = ParticlePool(size=1)
+    pool = ParticlePool()
     pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner=OwnerRef.from_player(0), rng=world.state.rng)
 
     pool.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
@@ -412,8 +423,8 @@ def test_particle_hit_applies_owner_fire_damage() -> None:
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
-    q = FxQueue(capacity=8, max_count=8)
-    pool = EffectPool(size=8)
+    q = FxQueue()
+    pool = EffectPool()
 
     pool.spawn_blood_splatter(
         pos=Vec2(10.0, 20.0),
@@ -446,7 +457,7 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
 
 
 def test_effect_pool_update_keeps_native_f32_lifetime_boundary() -> None:
-    pool = EffectPool(size=1)
+    pool = EffectPool()
     idx = pool.spawn(
         effect_id=1,
         pos=Vec2(),
@@ -478,7 +489,7 @@ def test_effect_pool_update_keeps_native_f32_lifetime_boundary() -> None:
 
 
 def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
-    pool = EffectPool(size=1)
+    pool = EffectPool()
     expired_idx = pool.spawn(
         effect_id=0,
         pos=Vec2(),
@@ -526,7 +537,7 @@ def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
 
 
 def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
-    pool = EffectPool(size=8)
+    pool = EffectPool()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn_blood_splatter(
@@ -548,8 +559,8 @@ def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
 
 
 def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
-    q = FxQueue(capacity=4, max_count=4)
-    pool = EffectPool(size=4)
+    q = FxQueue()
+    pool = EffectPool()
 
     pool.spawn_shell_casing(
         pos=Vec2(10.0, 20.0),
@@ -577,7 +588,7 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
 
 
 def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
-    pool = EffectPool(size=8)
+    pool = EffectPool()
 
     pool.spawn_burst(
         pos=Vec2(10.0, 20.0),
@@ -598,7 +609,7 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
 
 
 def test_spawn_burst_tags_exact_native_callers() -> None:
-    pool = EffectPool(size=8)
+    pool = EffectPool()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn_burst(
@@ -617,7 +628,7 @@ def test_spawn_burst_tags_exact_native_callers() -> None:
 
 
 def test_spawn_explosion_burst_tags_exact_native_callers() -> None:
-    pool = EffectPool(size=32)
+    pool = EffectPool()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
     pool.spawn_explosion_burst(
@@ -640,7 +651,7 @@ def test_spawn_explosion_burst_tags_exact_native_callers() -> None:
 
 
 def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
-    pool = EffectPool(size=4)
+    pool = EffectPool()
 
     pool.spawn_ring(
         pos=Vec2(3.0, 4.0),

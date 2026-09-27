@@ -45,7 +45,7 @@ def test_creature_spatial_hash_sync_updates_membership() -> None:
 
 
 def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(96.0, 0.0),

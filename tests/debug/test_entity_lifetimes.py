@@ -16,10 +16,14 @@ from tests.replay.cli._helpers import build_replay
 
 def test_entity_uids_follow_allocations_between_snapshots() -> None:
     world = build_verify_playback_driver(build_replay(mode=GameMode.SURVIVAL, ticks=1)).world
-    world.creatures = CreaturePool(size=1)
-    world.state.projectiles = ProjectilePool(size=1)
-    world.state.secondary_projectiles = SecondaryProjectilePool(size=1)
-    world.state.bonus_pool = BonusPool(size=1)
+    world.creatures = CreaturePool()
+    world.state.projectiles = ProjectilePool()
+    world.state.secondary_projectiles = SecondaryProjectilePool()
+    world.state.bonus_pool = BonusPool()
+    # Leave only the last projectile slot free so the second round finds both pools full.
+    for projectile_pool in (world.state.projectiles, world.state.secondary_projectiles):
+        for entry in projectile_pool.entries[:-1]:
+            entry.active = True
 
     def spawn_all() -> None:
         world.creatures.spawn_init(CreatureInit(origin_template_id=0, pos=Vec2(), heading=0.0, phase_seed=0))
@@ -39,7 +43,7 @@ def test_entity_uids_follow_allocations_between_snapshots() -> None:
     spawn_all()  # Full projectile pools overwrite an active slot.
     second = _entity_samples_for_world(world)
     for name in ["creatures", "projectiles", "secondary_projectiles", "bonuses"]:
-        before, after = getattr(first, name)[0], getattr(second, name)[0]
+        before, after = getattr(first, name)[-1], getattr(second, name)[-1]
         assert (before.generation, after.generation) == (1, 2)
         assert before.uid != after.uid
     assert _entity_samples_for_world(world) == second

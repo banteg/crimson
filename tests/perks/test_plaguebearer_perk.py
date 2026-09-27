@@ -111,7 +111,7 @@ def test_plaguebearer_spreads_between_nearby_creatures() -> None:
 
 
 def test_plaguebearer_spread_rejects_distance_rounded_to_native_radius() -> None:
-    pool = CreaturePool(size=2)
+    pool = CreaturePool()
     target = pool.entries[0]
     target.active = True
     target.pos = Vec2(14.757906913757324, -42.51122283935547)

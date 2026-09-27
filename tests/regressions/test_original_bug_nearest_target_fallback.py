@@ -151,7 +151,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
     ids=["default-uses-no-target-sentinel", "preserve-bugs-falls-back-to-slot0"],
 )
 def test_seeker_spawn_target_miss_handling(preserve_bugs: bool, expected_target_id: int) -> None:
-    pool = SecondaryProjectilePool(size=1)
+    pool = SecondaryProjectilePool()
     creatures = [make_creature_state(pos=Vec2(100.0, 0.0), active=False)]
 
     idx = pool.spawn_from_spec(

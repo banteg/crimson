@@ -92,8 +92,8 @@ def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCol
 
 
 class ProjectilePool:
-    def __init__(self, *, size: int = MAIN_PROJECTILE_POOL_SIZE) -> None:
-        self._entries = [Projectile() for _ in range(size)]
+    def __init__(self) -> None:
+        self._entries = [Projectile() for _ in range(MAIN_PROJECTILE_POOL_SIZE)]
 
     @property
     def entries(self) -> list[Projectile]:

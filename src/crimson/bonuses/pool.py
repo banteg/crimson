@@ -101,8 +101,8 @@ def _within_native_radius(a: Vec2, b: Vec2, radius: float) -> bool:
 
 
 class BonusPool:
-    def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
-        self._entries = [BonusEntry() for _ in range(int(size))]
+    def __init__(self) -> None:
+        self._entries = [BonusEntry() for _ in range(BONUS_POOL_SIZE)]
         # Native bonus code uses a writable sentinel entry when allocation/spacing
         # checks fail. Some callers still mutate it, which affects RNG consumption.
         self._sentinel = BonusEntry()

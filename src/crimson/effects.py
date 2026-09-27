@@ -113,12 +113,8 @@ class Particle(msgspec.Struct):
 
 
 class ParticlePool:
-    def __init__(
-        self,
-        *,
-        size: int = PARTICLE_POOL_SIZE,
-    ) -> None:
-        self._entries = [Particle() for _ in range(int(size))]
+    def __init__(self) -> None:
+        self._entries = [Particle() for _ in range(PARTICLE_POOL_SIZE)]
 
     @property
     def entries(self) -> list[Particle]:
@@ -132,8 +128,6 @@ class ParticlePool:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 return i
-        if not self._entries:
-            raise ValueError("Particle pool has zero entries")
         # Native: `crt_rand() & 0x7f` (pool size is 0x80).
         return rng.rand_tagged(caller) % len(self._entries)
 
@@ -419,8 +413,8 @@ class SpriteEffect(msgspec.Struct):
 
 
 class SpriteEffectPool:
-    def __init__(self, *, size: int = SPRITE_EFFECT_POOL_SIZE) -> None:
-        self._entries = [SpriteEffect() for _ in range(int(size))]
+    def __init__(self) -> None:
+        self._entries = [SpriteEffect() for _ in range(SPRITE_EFFECT_POOL_SIZE)]
 
     @property
     def entries(self) -> list[SpriteEffect]:
@@ -439,8 +433,6 @@ class SpriteEffectPool:
                 idx = i
                 break
         if idx is None:
-            if not self._entries:
-                raise ValueError("Sprite effect pool has zero entries")
             idx = rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ALLOC) % len(self._entries)
 
         entry = self._entries[idx]
@@ -496,12 +488,9 @@ class FxQueueEntry(msgspec.Struct):
 class FxQueue:
     """Per-frame terrain decal queue (`fx_queue` / `fx_queue_add`)."""
 
-    def __init__(self, *, capacity: int = FX_QUEUE_CAPACITY, max_count: int = FX_QUEUE_MAX_COUNT) -> None:
-        capacity = max(0, int(capacity))
-        max_count = max(0, min(int(max_count), capacity))
-        self._entries = [FxQueueEntry() for _ in range(capacity)]
+    def __init__(self) -> None:
+        self._entries = [FxQueueEntry() for _ in range(FX_QUEUE_CAPACITY)]
         self._count = 0
-        self._max_count = max_count
         # Mirrors native `config_violence_disabled` gate in `fx_queue_add_random`.
         # Nonzero suppresses violence-linked random decals.
         self.violence_disabled = 0
@@ -532,7 +521,7 @@ class FxQueue:
     ) -> bool:
         """Port of `fx_queue_add` (0x0041e840)."""
 
-        if self._count >= self._max_count:
+        if self._count >= FX_QUEUE_MAX_COUNT:
             return False
 
         entry = self._entries[self._count]
@@ -584,17 +573,9 @@ class FxQueueRotatedEntry(msgspec.Struct):
 class FxQueueRotated:
     """Rotated corpse queue (`fx_queue_rotated` / `fx_queue_add_rotated`)."""
 
-    def __init__(
-        self,
-        *,
-        capacity: int = FX_QUEUE_ROTATED_CAPACITY,
-        max_count: int = FX_QUEUE_ROTATED_MAX_COUNT,
-    ) -> None:
-        capacity = max(0, int(capacity))
-        max_count = max(0, min(int(max_count), capacity))
-        self._entries = [FxQueueRotatedEntry() for _ in range(capacity)]
+    def __init__(self) -> None:
+        self._entries = [FxQueueRotatedEntry() for _ in range(FX_QUEUE_ROTATED_CAPACITY)]
         self._count = 0
-        self._max_count = max_count
 
     @property
     def entries(self) -> list[FxQueueRotatedEntry]:
@@ -626,7 +607,7 @@ class FxQueueRotated:
         if terrain_texture_failed:
             # Native skips the queue write but still reports success.
             return True
-        if self._count >= self._max_count:
+        if self._count >= FX_QUEUE_ROTATED_MAX_COUNT:
             return False
 
         transparency = f32(terrain_bodies_transparency)
@@ -668,10 +649,9 @@ class EffectPool:
     into `FxQueue` on expiry (flags bit `0x80`).
     """
 
-    def __init__(self, *, size: int = EFFECT_POOL_SIZE) -> None:
-        size = max(0, int(size))
-        self._entries = [EffectEntry() for _ in range(size)]
-        self._free = list(range(size - 1, -1, -1))
+    def __init__(self) -> None:
+        self._entries = [EffectEntry() for _ in range(EFFECT_POOL_SIZE)]
+        self._free = list(range(EFFECT_POOL_SIZE - 1, -1, -1))
         self._detail_toggle = 0
         self._overwrite_cursor = 0
 
@@ -699,9 +679,6 @@ class EffectPool:
 
         if self._free:
             return self._free.pop()
-
-        if not self._entries:
-            return None
 
         idx = self._overwrite_cursor % len(self._entries)
         self._overwrite_cursor = idx + 1

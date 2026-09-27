@@ -29,7 +29,7 @@ def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.collision_timer = 0.1
 
-    step_runtime = step_creatures(world, dt, fx_queue=FxQueue(capacity=8, max_count=8))
+    step_runtime = step_creatures(world, dt, fx_queue=FxQueue())
 
     # Radioactive pulse evaluates after movement/clamp in the live-creature body.
     dist_after_move = x87_pc24_hypot(
@@ -67,7 +67,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     creature.reward_value = 12.7
     creature.collision_timer = 0.1
 
-    step_runtime = step_creatures(world, dt, fx_queue=FxQueue(capacity=8, max_count=8))
+    step_runtime = step_creatures(world, dt, fx_queue=FxQueue())
 
     assert player.experience == 112
     assert not step_runtime.deaths
@@ -100,7 +100,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     creature.reward_value = 12.7
     creature.collision_timer = 0.1
 
-    step_runtime = step_creatures(world, dt, fx_queue=FxQueue(capacity=8, max_count=8))
+    step_runtime = step_creatures(world, dt, fx_queue=FxQueue())
 
     assert player.experience == 100
     assert not step_runtime.deaths

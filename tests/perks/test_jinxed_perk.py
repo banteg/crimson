@@ -113,7 +113,7 @@ def test_perks_update_effects_jinxed_accident_damages_player_and_spawns_fx() -> 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0), health=50.0)
     state.perks[int(PerkId.JINXED)] = 1
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player], dt, creatures=[], fx_queue=fx_queue)
 
@@ -147,7 +147,7 @@ def test_perks_update_effects_jinxed_default_accident_can_hit_other_alive_player
     state.perks[int(PerkId.JINXED)] = 1
     player1 = PlayerState(index=1, pos=Vec2(20.0, 20.0), health=70.0)
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
@@ -181,7 +181,7 @@ def test_perks_update_effects_jinxed_preserve_bugs_keeps_accident_on_player0() -
     state.perks[int(PerkId.JINXED)] = 1
     player1 = PlayerState(index=1, pos=Vec2(20.0, 20.0), health=70.0)
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
@@ -214,7 +214,7 @@ def test_perks_update_effects_jinxed_default_skips_dead_players_without_extra_pi
     state.perks[int(PerkId.JINXED)] = 1
     player1 = PlayerState(index=1, pos=Vec2(20.0, 20.0), health=0.0)
 
-    fx_queue = FxQueue(capacity=8, max_count=8)
+    fx_queue = FxQueue()
 
     perks_update_effects(state, [player0, player1], dt, creatures=[], fx_queue=fx_queue)
 
