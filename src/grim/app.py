@@ -8,6 +8,7 @@ import msgspec
 
 from grim.raylib_api import rl
 
+from .canvas import Canvas
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
 from .view import View
 
@@ -46,12 +47,14 @@ def run_view(
     exit_key: int | None = None,
     hooks: RunViewHooks | None = None,
 ) -> None:
-    """Run a Raylib window with a pluggable debug view."""
+    """Run a Raylib window with a pluggable debug view drawn on a `width` x `height` canvas."""
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
     rl.init_window(width, height, title)
     if window_state:
         # Borderless windowed only applies to an open window, so it can't go through set_config_flags.
         rl.set_window_state(window_state)
+    canvas = Canvas(width, height)
+    canvas.fit()
     if exit_key is not None:
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
@@ -66,12 +69,13 @@ def run_view(
         screenshot_index = _next_screenshot_index(screenshot_dir)
         while not rl.window_should_close():
             dt = rl.get_frame_time()
+            canvas.fit()
             view.update(dt)
             take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
             if run_hooks.consume_screenshot_request():
                 take_screenshot = True
             render_pipeline.draw(
-                draw_frame=view.draw,
+                draw_frame=lambda: canvas.draw(view.draw),
                 width=rl.get_render_width(),
                 height=rl.get_render_height(),
             )
@@ -90,6 +94,7 @@ def run_view(
         try:
             view.close()
         finally:
+            canvas.close()
             render_pipeline.close()
             rl.close_window()
 

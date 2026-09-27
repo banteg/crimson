@@ -6,9 +6,9 @@ from typing import Protocol
 
 import msgspec
 
+from grim import canvas
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
-from grim.raylib_api import rl
 
 from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
@@ -494,7 +494,7 @@ class LocalInputInterpreter:
         creatures: Sequence[_ComputerAimCreature] | None = None,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
-        screen_center = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
+        screen_center = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
         out: list[PlayerInput] = []
         for idx, player in enumerate(players):
             out.append(

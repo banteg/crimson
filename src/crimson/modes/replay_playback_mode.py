@@ -4,6 +4,7 @@ from pathlib import Path
 
 import msgspec
 
+from grim import canvas
 from grim import music as grim_music
 from grim.assets import (
     TextureId,
@@ -185,7 +186,7 @@ class ReplayPlaybackMode:
         )
 
     def _replay_widget_metrics(self) -> tuple[float, float, float, float, float]:
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
 
         panel_w = _REPLAY_WIDGET_PANEL_SIZE.x
         panel_h = _REPLAY_WIDGET_PANEL_SIZE.y

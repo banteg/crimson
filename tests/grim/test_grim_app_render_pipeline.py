@@ -58,6 +58,20 @@ class _FakeRl:
         self.close_calls += 1
 
 
+class _CanvasStub:
+    def __init__(self, width: int, height: int) -> None:
+        self.size = (width, height)
+
+    def fit(self) -> None:
+        return None
+
+    def draw(self, draw_frame: Any) -> None:
+        draw_frame()
+
+    def close(self) -> None:
+        return None
+
+
 class _ViewSpy:
     def __init__(self) -> None:
         self.open_calls = 0
@@ -114,6 +128,7 @@ def test_run_view_uses_render_pipeline(monkeypatch) -> None:
     draw_scope_sentinel = object()
 
     monkeypatch.setattr(grim_app, "rl", fake_rl)
+    monkeypatch.setattr(grim_app, "Canvas", _CanvasStub)
     monkeypatch.setattr(grim_app, "WindowSink", lambda: sink_sentinel)
     monkeypatch.setattr(grim_app, "RaylibDrawScope", lambda *, raylib: draw_scope_sentinel)
     _PipelineSpy.instances.clear()
@@ -139,6 +154,7 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     fake_rl = _FakeRl()
     view = _ViewSpy()
     mocker.patch.object(grim_app, "rl", fake_rl)
+    mocker.patch.object(grim_app, "Canvas", _CanvasStub)
     mocker.patch.object(grim_app, "SCREENSHOT_DIR", tmp_path)
     mocker.patch.object(grim_app, "WindowSink")
     mocker.patch.object(grim_app, "RaylibDrawScope")

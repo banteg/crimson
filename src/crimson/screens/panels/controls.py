@@ -8,6 +8,7 @@ from crimson.screens.actions import Route, ScreenAction
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
 from crimson.ui.menu_layout import MENU_PANEL_HEIGHT, MENU_PANEL_WIDTH
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.config import (
     default_crimson_cfg,
@@ -343,7 +344,7 @@ class ControlsMenuView(PanelMenuView):
         label_w = measure_small_text_width(font, label)
         rect_w = float(check_on.width) + 6.0 + label_w
         rect_h = max(float(check_on.height), font.cell_size)
-        mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+        mouse_pos = Vec2.from_xy(canvas.mouse_position())
         return Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
 
     def _update_direction_arrow_checkbox(
@@ -382,7 +383,7 @@ class ControlsMenuView(PanelMenuView):
             pos=pos,
             width=width,
             dt_ms=min(dt, 0.1) * 1000.0,
-            mouse=rl.get_mouse_position(),
+            mouse=canvas.mouse_position(),
             click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
         ):
             return False
@@ -521,7 +522,7 @@ class ControlsMenuView(PanelMenuView):
 
         if not rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             return False
-        mouse = Vec2.from_xy(rl.get_mouse_position())
+        mouse = Vec2.from_xy(canvas.mouse_position())
         for row in rows:
             if row.value_rect.contains(mouse):
                 self._start_rebind_capture(row=row.row, player_index=player_idx)
@@ -580,7 +581,7 @@ class ControlsMenuView(PanelMenuView):
         is_open: bool,
         enabled: bool,
     ) -> tuple[bool, int | None, bool]:
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
             mouse,
@@ -912,7 +913,7 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
         row_iter = iter(rows)
-        mouse = Vec2.from_xy(rl.get_mouse_position())
+        mouse = Vec2.from_xy(canvas.mouse_position())
         dropdown_blocked = self._dropdown is not None
 
         y = right_top_left.y + 64.0
@@ -978,7 +979,7 @@ class ControlsMenuView(PanelMenuView):
         resources: RuntimeResources,
         font: SmallFontData,
     ) -> None:
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
             mouse,
             pos=layout.pos,

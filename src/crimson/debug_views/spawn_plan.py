@@ -4,6 +4,7 @@ import math
 
 import msgspec
 
+from grim import canvas
 from grim.fonts.small import SmallFontData, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -212,16 +213,16 @@ class SpawnPlanView:
                 self._sim_events = self._sim_events[-12:]
 
     def _world_to_screen(self, pos: Vec2) -> Vec2:
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        screen_w = float(canvas.width())
+        screen_h = float(canvas.height())
         return Vec2(
             screen_w * 0.5 + (pos.x - BASE_POS.x) * self._world_scale,
             screen_h * 0.5 + (pos.y - BASE_POS.y) * self._world_scale,
         )
 
     def _draw_grid(self) -> None:
-        screen_w = rl.get_screen_width()
-        screen_h = rl.get_screen_height()
+        screen_w = canvas.width()
+        screen_h = canvas.height()
         step = int(64 * self._world_scale)
         if step < 24:
             return

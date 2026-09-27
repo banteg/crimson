@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from grim import canvas
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -30,7 +31,7 @@ def tutorial_prompt_panel_rect(
 
     width = max_w + TUTORIAL_PANEL_PADDING.x * 2.0
     height = float(len(lines)) * line_h + TUTORIAL_PANEL_PADDING.y * 2.0
-    screen_w = float(rl.get_screen_width())
+    screen_w = float(canvas.width())
     x = (screen_w - width) * 0.5
     rect = rl.Rectangle(float(x), pos.y, float(width), float(height))
     return rect, lines, line_h

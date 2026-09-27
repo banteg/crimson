@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ScreenAction, ShowScores
+from grim import canvas
 from grim.audio import AudioState, play_music, stop_music, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -377,9 +378,9 @@ class BaseGameplayMode:
         return self._ui_mouse.to_rl()
 
     def _update_ui_mouse(self) -> None:
-        mouse = rl.get_mouse_position()
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        mouse = canvas.mouse_position()
+        screen_w = float(canvas.width())
+        screen_h = float(canvas.height())
         self._ui_mouse = Vec2.from_xy(mouse).clamp_rect(
             0.0,
             0.0,
@@ -582,7 +583,7 @@ class BaseGameplayMode:
         self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=False)
 
-        self._ui_mouse = Vec2(float(rl.get_screen_width()) * 0.5, float(rl.get_screen_height()) * 0.5)
+        self._ui_mouse = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
         self._cursor_pulse_time = 0.0
 
     def _initialize_run(
@@ -721,7 +722,7 @@ class BaseGameplayMode:
         if fade_alpha <= 0.0:
             return
         alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
-        rl.draw_rectangle(0, 0, int(rl.get_screen_width()), int(rl.get_screen_height()), rl.Color(0, 0, 0, alpha))
+        rl.draw_rectangle(0, 0, int(canvas.width()), int(canvas.height()), rl.Color(0, 0, 0, alpha))
 
     def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(

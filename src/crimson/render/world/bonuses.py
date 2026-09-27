@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from grim import canvas
 from grim.assets import TextureId
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -168,7 +169,7 @@ def draw_bonus_hover_labels(
     frame = render_ctx.frame
     font = frame.resources.small_font
     text_scale = 1.0
-    screen_w = float(rl.get_screen_width())
+    screen_w = float(canvas.width())
 
     shadow = rl.Color(0, 0, 0, int(180 * alpha + 0.5))
     color = rl.Color(230, 230, 230, int(255 * alpha + 0.5))

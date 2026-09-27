@@ -3,7 +3,9 @@ from __future__ import annotations
 import webbrowser
 
 from crimson.screens.chrome import ensure_menu_ground
+from grim import canvas
 from grim.raylib_api import rl
+from grim.texture_mode import texture_mode
 
 from ..debug import debug_enabled
 from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
@@ -328,7 +330,7 @@ class GameLoopView:
             self._draw_scene_layers()
             return
 
-        screen_w, screen_h = rl.get_screen_width(), rl.get_screen_height()
+        screen_w, screen_h = canvas.width(), canvas.height()
         render_w, render_h = rl.get_render_width(), rl.get_render_height()
         if min(screen_w, screen_h, render_w, render_h) <= 0:
             return
@@ -338,17 +340,9 @@ class GameLoopView:
         # Inner world/UI shaders may change the shader binding. Capture their
         # completed frame first, then apply the native linear gamma multiplier.
         # Scale logical drawing coordinates into the full DPI-sized framebuffer.
-        rl.begin_texture_mode(target)
-        try:
+        with texture_mode(target, scale_x=render_w / screen_w, scale_y=render_h / screen_h):
             rl.clear_background(rl.BLACK)
-            rl.rl_push_matrix()
-            try:
-                rl.rl_scalef(render_w / screen_w, render_h / screen_h, 1.0)
-                self._draw_scene_layers()
-            finally:
-                rl.rl_pop_matrix()
-        finally:
-            rl.end_texture_mode()
+            self._draw_scene_layers()
         _set_gamma_ramp_gain(shader, self._gamma_gain_loc, gamma_gain)
         rl.begin_shader_mode(shader)
         try:

@@ -24,6 +24,7 @@ from crimson.ui.menu_layout import (
     label_alpha,
 )
 from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
+from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
@@ -307,7 +308,7 @@ class PanelMenuView:
         return self._transition.timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         mouse_pos = Vec2.from_xy(mouse)
         return self._menu_item_bounds(entry).contains(mouse_pos)
 

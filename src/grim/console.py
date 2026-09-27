@@ -6,6 +6,7 @@ from pathlib import Path
 
 import msgspec
 
+from grim import canvas
 from grim.color import RGBA
 from grim.fonts.grim_mono import (
     GrimMonoFont,
@@ -304,7 +305,7 @@ class ConsoleState(msgspec.Struct):
         ratio = self._open_ratio(height)
         if ratio <= 0.0:
             return
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(canvas.width())
         offset_y = self._offset_y
         rl.draw_rectangle(
             0,
@@ -363,11 +364,11 @@ class ConsoleState(msgspec.Struct):
         fps = max(0, int(rl.get_fps()))
         if fps < FPS_COUNTER_CAP:
             text = str(fps)
-            pos_x = float(rl.get_screen_width()) - FPS_COUNTER_X_SHORT
+            pos_x = float(canvas.width()) - FPS_COUNTER_X_SHORT
         else:
             text = FPS_COUNTER_CAP_TEXT
-            pos_x = float(rl.get_screen_width()) - FPS_COUNTER_X_LONG
-        pos_y = float(rl.get_screen_height()) - FPS_COUNTER_Y
+            pos_x = float(canvas.width()) - FPS_COUNTER_X_LONG
+        pos_y = float(canvas.height()) - FPS_COUNTER_Y
         self._draw_small_text(text, Vec2(pos_x, pos_y), _rgba(1.0, 1.0, 1.0, FPS_COUNTER_ALPHA))
 
     def close(self) -> None:

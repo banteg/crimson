@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
 from grim.fonts.small import draw_small_text, load_small_font
 from grim.geom import Vec2
@@ -93,9 +94,9 @@ class DemoTrialOverlayUi:
     def update(self, dt_ms: int) -> str | None:
         dt_ms = max(0, int(dt_ms))
         self._cursor_pulse_time += float(dt_ms) * 0.001 * 1.1
-        mouse = rl.get_mouse_position()
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        mouse = canvas.mouse_position()
+        screen_w = float(canvas.width())
+        screen_h = float(canvas.height())
         mouse.x = clamp(mouse.x, 0.0, max(0.0, screen_w - 1.0))
         mouse.y = clamp(mouse.y, 0.0, max(0.0, screen_h - 1.0))
 
@@ -134,8 +135,8 @@ class DemoTrialOverlayUi:
         if not info.visible:
             return
 
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
+        screen_w = float(canvas.width())
+        screen_h = float(canvas.height())
         panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
 
         rl.draw_rectangle(int(panel_pos.x), int(panel_pos.y), 512, 256, rl.Color(18, 18, 22, 230))
@@ -183,6 +184,6 @@ class DemoTrialOverlayUi:
         draw_menu_cursor(
             self._resources.texture(TextureId.PARTICLES),
             self._resources.texture(TextureId.UI_CURSOR),
-            pos=Vec2.from_xy(rl.get_mouse_position()),
+            pos=Vec2.from_xy(canvas.mouse_position()),
             pulse_time=float(self._cursor_pulse_time),
         )

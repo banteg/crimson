@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -61,7 +62,7 @@ def draw_screen_cursor(*, resources: RuntimeResources, pulse_time: float) -> Non
     particles = resources.texture(TextureId.PARTICLES)
     cursor_tex = resources.texture(TextureId.UI_CURSOR)
 
-    mouse = rl.get_mouse_position()
+    mouse = canvas.mouse_position()
     draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))
 
 

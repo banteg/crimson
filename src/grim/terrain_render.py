@@ -7,11 +7,13 @@ from contextlib import contextmanager
 import msgspec
 
 from crimson.rng_caller_static import RngCallerStatic
+from grim import canvas
 from grim.raylib_api import rd, rl
 
 from .geom import Vec2
 from .rand import CrtRand
 from .shaders import AlphaTestShader
+from .texture_mode import texture_mode
 
 TERRAIN_TEXTURE_SIZE = 1024
 TERRAIN_PATCH_SIZE = 128.0
@@ -94,14 +96,6 @@ def _terrain_rt_blend(
     with _color_mask(write_alpha=False), _blend_custom(src_factor, dst_factor, blend_equation):
         yield
 
-
-@contextmanager
-def _texture_target(target: rl.RenderTexture) -> Iterator[None]:
-    rl.begin_texture_mode(target)
-    try:
-        yield
-    finally:
-        rl.end_texture_mode()
 
 class GroundDecal(msgspec.Struct):
     texture: rl.Texture
@@ -189,7 +183,7 @@ class GroundRenderer(msgspec.Struct):
             if generation_kind == "unlock_random"
             else _EXPLICIT_TERRAIN_CALLERS
         )
-        with _texture_target(self.render_target):
+        with texture_mode(self.render_target):
             rl.clear_background(TERRAIN_CLEAR_COLOR)
             # Intentional rewrite deviation: the classic game appears to point-sample
             # terrain stamps while rotating them into the RT, but bilinear sampling
@@ -232,7 +226,7 @@ class GroundRenderer(msgspec.Struct):
             return False
 
         inv_scale = 1.0 / self._normalized_texture_scale()
-        with _texture_target(self.render_target), self.alpha_test.scope(), _terrain_rt_blend(
+        with texture_mode(self.render_target), self.alpha_test.scope(), _terrain_rt_blend(
             rd.RL_SRC_ALPHA,
             rd.RL_ONE_MINUS_SRC_ALPHA,
             rd.RL_FUNC_ADD,
@@ -269,7 +263,7 @@ class GroundRenderer(msgspec.Struct):
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
         # Intentional deviation: bilinear sampling reads better at modern output scales.
-        with _texture_target(self.render_target), self.alpha_test.scope():
+        with texture_mode(self.render_target), self.alpha_test.scope():
             self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
             self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
 
@@ -277,8 +271,8 @@ class GroundRenderer(msgspec.Struct):
         return True
 
     def draw(self, camera: Vec2) -> None:
-        out_w = max(1.0, float(rl.get_screen_width()))
-        out_h = max(1.0, float(rl.get_screen_height()))
+        out_w = max(1.0, float(canvas.width()))
+        out_h = max(1.0, float(canvas.height()))
         screen_w, screen_h = self._fit_view_window(out_w, out_h)
         cam = self._clamp_camera(camera, screen_w, screen_h)
         self._draw_view(cam, screen_w=screen_w, screen_h=screen_h, out_w=out_w, out_h=out_h)

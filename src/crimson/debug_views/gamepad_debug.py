@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from grim import canvas
 from grim.config import default_crimson_cfg
 from grim.fonts.small import SmallFontData, load_small_font
 from grim.geom import Vec2
@@ -99,7 +100,7 @@ class GamepadDebugView:
         held = ", ".join(snapshot.held) if snapshot.held else "-"
         draw_ui_text(self._small, f"held: {held}", Vec2(origin.x, y), color=HELD_COLOR)
 
-        center = Vec2(float(rl.get_screen_width()) - ARENA_RADIUS * 2.0, origin.y + PANEL_HEIGHT * 0.5)
+        center = Vec2(float(canvas.width()) - ARENA_RADIUS * 2.0, origin.y + PANEL_HEIGHT * 0.5)
         rl.draw_circle_lines(int(center.x), int(center.y), ARENA_RADIUS, RING_COLOR)
         move = self._move[pad]
         if move.length_sq() > 0.0:

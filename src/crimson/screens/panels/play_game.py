@@ -11,6 +11,7 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
 )
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -105,7 +106,7 @@ class PlayGameMenuView(PanelMenuView):
             return
         self._step_player_count()
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         button_enabled = not self._player_list_open
 
@@ -281,7 +282,7 @@ class PlayGameMenuView(PanelMenuView):
         return entries, y_step, y_start, y_end
 
     def _update_focus(self, count: int) -> None:
-        mouse_delta = rl.get_mouse_delta()
+        mouse_delta = canvas.mouse_delta()
         if mouse_delta.x or mouse_delta.y:
             self._focus_index = None
         step = menu_focus_step()
@@ -386,7 +387,7 @@ class PlayGameMenuView(PanelMenuView):
         config = self.state.config
         layout = self._player_count_widget_layout(pos, font=font)
 
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         hovered_header = mouse_inside_rect_with_padding(
             mouse,
             pos=layout.pos,
@@ -497,7 +498,7 @@ class PlayGameMenuView(PanelMenuView):
         rl.draw_rectangle(int(layout.pos.x) + 1, int(layout.pos.y) + 1, inner_w, inner_h, rl.BLACK)
 
         # Arrow icon (the ui_drop* assets are 16x16 icons, not the background).
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         hovered_header = mouse_inside_rect_with_padding(
             mouse,
             pos=layout.pos,

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim import canvas
 from grim.raylib_api import rl
 
 
@@ -39,5 +40,5 @@ def was_mouse_button_pressed(button: int) -> bool:
 
 
 def mouse_position() -> tuple[int, int]:
-    pos = rl.get_mouse_position()
+    pos = canvas.mouse_position()
     return int(pos.x), int(pos.y)

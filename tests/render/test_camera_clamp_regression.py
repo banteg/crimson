@@ -118,8 +118,8 @@ def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(m
         screen_width=1024,
         screen_height=768,
     )
-    mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
-    mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
+    mocker.patch.object(world_runtime.canvas, "width", return_value=1280)
+    mocker.patch.object(world_runtime.canvas, "height", return_value=720)
     size = world.view_transform().screen_size
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
@@ -130,8 +130,8 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(mocker) -> N
         screen_width=1024,
         screen_height=768,
     )
-    mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=768)
+    mocker.patch.object(world_runtime.canvas, "width", return_value=1024)
+    mocker.patch.object(world_runtime.canvas, "height", return_value=768)
     size = viewport.camera_screen_size(config=world.config, runtime_w=1280.0, runtime_h=720.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
@@ -145,8 +145,8 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
     player = runtime.world.players[0]
     player.health = 100.0
     player.pos = Vec2(512.0, 512.0)
-    mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
-    mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
+    mocker.patch.object(world_runtime.canvas, "width", return_value=1280)
+    mocker.patch.object(world_runtime.canvas, "height", return_value=720)
 
     runtime.update_camera()
 
@@ -157,8 +157,8 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
 def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(mocker) -> None:
     world = _runtime_world()
     world.camera = Vec2(-32.0, -48.0)
-    width = mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
-    height = mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
+    width = mocker.patch.object(world_runtime.canvas, "width", return_value=1280)
+    height = mocker.patch.object(world_runtime.canvas, "height", return_value=720)
     view = world.view_transform()
     assert view.screen_size == Vec2(1024, 576)
     assert view.camera == Vec2(0, -48)
@@ -270,6 +270,7 @@ def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None
     )
     mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(terrain_render.rl, "rl_scalef")
     mocker.patch.object(terrain_render.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
 
@@ -422,6 +423,8 @@ def test_bake_decals_keep_default_filter(mocker) -> None:
     )
 
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
+
+    mocker.patch.object(terrain_render.rl, "rl_scalef")
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(terrain_render.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
     set_texture_filter = mocker.patch.object(terrain_render.rl, "set_texture_filter", autospec=True)
@@ -452,6 +455,8 @@ def test_bake_corpse_decals_keeps_default_filter(mocker) -> None:
     )
 
     mocker.patch.object(terrain_render.rl, "begin_texture_mode", side_effect=lambda *_args, **_kwargs: None)
+
+    mocker.patch.object(terrain_render.rl, "rl_scalef")
     mocker.patch.object(terrain_render.rl, "end_texture_mode", side_effect=lambda *_args, **_kwargs: None)
     set_texture_filter = mocker.patch.object(terrain_render.rl, "set_texture_filter", autospec=True)
     draw_shadow_pass = mocker.patch.object(
@@ -503,6 +508,7 @@ def test_generation_failure_unbinds_target_and_retains_pending_seed(mocker) -> N
     ground._render_target_ready = True
     mocker.patch.object(GroundRenderer, "_ensure_render_target")
     mocker.patch.object(terrain_render.rl, "begin_texture_mode")
+    mocker.patch.object(terrain_render.rl, "rl_scalef")
     end_target = mocker.patch.object(terrain_render.rl, "end_texture_mode")
     mocker.patch.object(terrain_render.rl, "clear_background")
     mocker.patch.object(terrain_render.rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))

@@ -12,6 +12,7 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
 )
+from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
 from grim.config import HighScoreDateMode
@@ -196,7 +197,7 @@ class HighScoresView:
 
         if enabled:
             button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
-            mouse = rl.get_mouse_position()
+            mouse = canvas.mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             w = button_width(
                 resources,
@@ -324,7 +325,7 @@ class HighScoresView:
         is_open: bool,
         enabled: bool,
     ) -> tuple[bool, int | None, bool]:
-        mouse = rl.get_mouse_position()
+        mouse = canvas.mouse_position()
         click = bool(enabled) and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
             mouse,
@@ -388,7 +389,7 @@ class HighScoresView:
             font_h = float(font.cell_size)
             rect_w = float(check_tex.width) + 6.0 + label_w
             rect_h = max(float(check_tex.height), font_h)
-            mouse_pos = Vec2.from_xy(rl.get_mouse_position())
+            mouse_pos = Vec2.from_xy(canvas.mouse_position())
             if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos) and rl.is_mouse_button_pressed(
                 rl.MouseButton.MOUSE_BUTTON_LEFT,
             ):
@@ -552,7 +553,7 @@ class HighScoresView:
         max_index = max(0, min(49, unlock))
         arrow = resources.texture(TextureId.UI_ARROW)
 
-        mouse = Vec2.from_xy(rl.get_mouse_position())
+        mouse = Vec2.from_xy(canvas.mouse_position())
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         arrow_w = float(arrow.width)
         arrow_h = float(arrow.height)
@@ -681,7 +682,7 @@ class HighScoresView:
         row_step = float(font.cell_size)
         table_top = 188.0 + row_step
         reserved_bottom = 96.0
-        available = max(0.0, float(rl.get_screen_height()) - table_top - reserved_bottom)
+        available = max(0.0, float(canvas.height()) - table_top - reserved_bottom)
         return max(1, int(available // row_step))
 
 

@@ -1,0 +1,15 @@
+id: no-window-screen-reads
+valid:
+  - |
+    canvas.width()
+  - |
+    canvas.mouse_position()
+invalid:
+  - |
+    rl.get_screen_width()
+  - |
+    rl.get_screen_height()
+  - |
+    rl.get_mouse_position()
+  - |
+    rl.get_mouse_delta()
