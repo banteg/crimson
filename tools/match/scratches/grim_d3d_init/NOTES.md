@@ -1,5 +1,9 @@
 # grim_d3d_init
 
+## Plausibility pass (2026-09-27)
+
+`(D3DSWAPEFFECT)((is_voodoo3 != 0) + 1)` became `is_voodoo3 ? D3DSWAPEFFECT_FLIP : D3DSWAPEFFECT_DISCARD` with a `bool` flag. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 `grim_d3d_init` at `0x10003e60` reconstructs the complete Direct3D8 startup
 path: interface and caps discovery, the `Voodoo3` adapter workaround, window
 creation, presentation-parameter setup, device and geometry-buffer creation,

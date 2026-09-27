@@ -1,5 +1,9 @@
 # grim_get_key_char
 
+## Plausibility pass (2026-09-27)
+
+The count snapshot and countdown cursor became an indexed shift loop over `grim_key_char_queue` and a direct decrement of the count. C2 reverses the unused index into the same countdown. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10005c40` (52 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 22/22

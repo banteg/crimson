@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "grim_d3d8.h"
 #include "grim2d_cpp.h"
 
@@ -60,7 +58,7 @@ void IGrim2D_cpp::grim_draw_circle_filled(float x, float y, float radius)
 
     vertex.x = x;
     vertex.y = y;
-    memcpy(grim_vertex_write_ptr, &vertex, 0x1c);
+    *grim_vertex_write_ptr = vertex;
     ++grim_vertex_write_ptr;
     ++*(unsigned short *)&grim_vertex_count;
 
@@ -69,7 +67,7 @@ void IGrim2D_cpp::grim_draw_circle_filled(float x, float y, float radius)
         double angle = segment * 6.2831855f / segment_count;
         vertex.x = (float)cos(angle) * radius + x;
         vertex.y = (float)sin(angle) * radius + y;
-        memcpy(grim_vertex_write_ptr, &vertex, 0x1c);
+        *grim_vertex_write_ptr = vertex;
         ++grim_vertex_write_ptr;
         ++*(unsigned short *)&grim_vertex_count;
     }

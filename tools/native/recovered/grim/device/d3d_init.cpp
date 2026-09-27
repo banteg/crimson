@@ -9,8 +9,8 @@ extern unsigned int grim_selected_adapter_index;
 extern D3DCAPS8 grim_device_caps;
 extern int grim_config_backbuffer_count;
 extern char grim_windowed_mode_enabled;
-extern int grim_backbuffer_width;
-extern int grim_backbuffer_height;
+extern unsigned int grim_backbuffer_width;
+extern unsigned int grim_backbuffer_height;
 extern char grim_enable_auto_depth_stencil;
 extern HWND grim_device_window_override;
 extern HWND grim_main_window_hwnd;
@@ -49,7 +49,7 @@ bool grim_d3d_init(void)
         grim_selected_adapter_index,
         grim_d3d_device_type,
         &grim_device_caps);
-    char is_voodoo3 = false;
+    bool is_voodoo3 = false;
     grim_d3d8->GetAdapterIdentifier(
         grim_selected_adapter_index,
         D3DENUM_NO_WHQL_LEVEL,
@@ -93,7 +93,7 @@ bool grim_d3d_init(void)
     } else {
         grim_present_parameters.Windowed = false;
         grim_present_parameters.SwapEffect =
-            (D3DSWAPEFFECT)((is_voodoo3 != 0) + 1);
+            is_voodoo3 ? D3DSWAPEFFECT_FLIP : D3DSWAPEFFECT_DISCARD;
         grim_present_parameters.FullScreen_RefreshRateInHz = 0;
         grim_present_parameters.FullScreen_PresentationInterval =
             D3DPRESENT_INTERVAL_IMMEDIATE;

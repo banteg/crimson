@@ -1,5 +1,9 @@
 # grim_submit_vertices_offset
 
+## Plausibility pass (2026-09-27)
+
+The `remaining` countdown became an indexed loop. C2 reverses the unused index into the same `dec`/`jne` countdown. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10008680` (153 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 50/50

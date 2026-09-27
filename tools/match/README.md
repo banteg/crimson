@@ -1233,11 +1233,17 @@ plain source:
 - countdown `do`/`while (--n)` loops;
 - container-of and negative-offset cursors;
 - constant-register locals such as `int one = 1`;
-- integer puns for float copies.
+- integer puns for float copies;
+- overlapping `memcpy` smears that fill an array from its first element;
+- `goto` into a shared tail, `do { } while (0)` exits and `goto` to a
+  shared `return`.
 
 Write indexed `for` loops and plain field accesses first. The
 [plausibility audit](PLAUSIBILITY-AUDIT-2026-09-25.md) lists the C2
 mechanism behind each shape and the 52 exact scratches rewritten this way.
+The [Grim audit](PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md) repeats it for
+`grim.dll`: 28 rewritten scratches, and the shapes retained with native
+evidence.
 
 ## Regression checks
 

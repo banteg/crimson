@@ -16,7 +16,7 @@ void IGrim2D_cpp::grim_submit_vertices_offset(
 
     memcpy(grim_vertex_write_ptr, vertices, count * 0x1c);
 
-    for (int remaining = count; remaining > 0; --remaining) {
+    for (int i = 0; i < count; ++i) {
         float *out = grim_vertex_write_ptr;
         out[0] += offset[0];
         out[1] += offset[1];

@@ -24,8 +24,8 @@ public:
 };
 
 extern HWND grim_main_window_hwnd;
-extern int grim_backbuffer_width;
-extern int grim_backbuffer_height;
+extern unsigned int grim_backbuffer_width;
+extern unsigned int grim_backbuffer_height;
 extern char grim_working_dir[260];
 
 union GrimClientRect {

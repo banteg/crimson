@@ -1,5 +1,9 @@
 # grim_draw_quad_points
 
+## Plausibility pass (2026-09-27)
+
+The `float point[2]` staging array and its `*(GrimPoint *)` pun became a `GrimPoint` local assigned field by field and copied as a struct. Native's 8-byte stack slot and paired integer copy are unchanged. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10009080` (554 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 130/130

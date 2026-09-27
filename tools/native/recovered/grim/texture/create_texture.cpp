@@ -27,8 +27,7 @@ bool IGrim2D_cpp::grim_create_texture(char *name, int width, int height)
     grim_texture_slots[handle]->width = width;
     grim_texture_slots[handle]->height = height;
 
-    int last_handle = grim_texture_slot_max_index;
-    if (handle > last_handle) {
+    if (handle > grim_texture_slot_max_index) {
         grim_texture_slot_max_index = handle;
     }
     return true;

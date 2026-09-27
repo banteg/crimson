@@ -1,5 +1,9 @@
 # `grim_is_key_active`
 
+## Plausibility pass (2026-09-27)
+
+The axis `goto` ladder is retained. Native keeps the shared `fmul`/`fabs`/`fcomp` return tail in the first (0x13f) arm, so that arm's return has to be the newest reference to the exit label. Plain `if` chains, `else if` chains, a select-then-test join, an inline axis helper and descending order all keep the tail in the last arm (87.43%), and a `switch` becomes a jump table. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md).
+
 Native target: `grim.dll` at `0x10006fe0..0x100071a8` (456 bytes).
 
 The canonical MSVC 6.5 `/O2 /GB /W3 /GR-` source is exact: 175/175

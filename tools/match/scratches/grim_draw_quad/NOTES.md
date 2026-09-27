@@ -1,5 +1,9 @@
 # grim_draw_quad
 
+## Plausibility pass (2026-09-27)
+
+The `float points[5][2]` staging and its `*(GrimPoint *)` copies are retained. A `GrimPoint` array, or separate center and corner points, makes C2 align the frame (`and esp, -8`). Per-field copies make the array register-promotable and change the x87 allocation (68–69%). The per-lane `p = c; p += d;` statements and the single-use `neg_dx` pin operand order and keep native's `fchs`, because C2 folds `a + -b` into `fsub` (91.52%); merging only the split lanes reaches 95.90%. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md).
+
 Native target: `grim.dll` at `0x10008b10` (800 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 195/195

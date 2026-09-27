@@ -5,8 +5,8 @@ bool IGrim2D_cpp::grim_save_screenshot(char *path)
 {
     IDirect3DSurface8 *surface = 0;
     if (grim_d3d_device->CreateImageSurface(
-            grim_present_width,
-            grim_present_height,
+            grim_present_parameters.BackBufferWidth,
+            grim_present_parameters.BackBufferHeight,
             D3DFMT_A8R8G8B8,
             &surface) < 0) {
         return false;

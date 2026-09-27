@@ -1,5 +1,9 @@
 # grim_draw_fullscreen_quad
 
+## Plausibility pass (2026-09-27)
+
+`grim_backbuffer_width` and `grim_backbuffer_height` are declared `unsigned int`, as in every other user, so the `(float)(unsigned int)` casts are gone. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10007870` (109 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 32/32

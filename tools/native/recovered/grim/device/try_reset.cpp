@@ -35,7 +35,7 @@ HRESULT grim_try_reset_device(void)
     int k;
     bool canceled = false;
     if (grim_d3d_device->Reset(
-            (D3DPRESENT_PARAMETERS *)&grim_present_width) != D3D_OK) {
+            &grim_present_parameters) != D3D_OK) {
         do {
             ++grim_device_reset_retry_count;
             Sleep(500);
@@ -67,7 +67,7 @@ HRESULT grim_try_reset_device(void)
                 }
             }
         } while (grim_d3d_device->Reset(
-                     (D3DPRESENT_PARAMETERS *)&grim_present_width) !=
+                     &grim_present_parameters) !=
                  D3D_OK);
     }
 

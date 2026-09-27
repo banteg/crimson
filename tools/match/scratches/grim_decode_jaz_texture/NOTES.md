@@ -1,5 +1,9 @@
 # grim_decode_jaz_texture
 
+## Plausibility pass (2026-09-27)
+
+The `do { ... } while (0)` wrapper became early `return 0` statements; cross-jumping rebuilds the shared destructor and return tail. The guarded pixel `do`/`while` with its separate `source_offset` counter became a plain `for` over `x` that reads `scanline[0][x * 3 + k]`. The shorter source renumbers the compiler-local EH labels, so `REFERENCE_ALIASES` now names `$L516` and `$T503` (formerly `$L519` and `$T507`). The in-place `image += sizeof(GrimTgaHeader)` stays: native writes the bumped pointer back to `image`'s frame slot, so the setjmp path really deletes the offset pointer. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10004b70..0x10004e81` (785 bytes).
 
 Exact Microsoft Visual C++ 6.5 `/O2 /GB /W3 /GR- /GX /MD` match:
@@ -57,10 +61,10 @@ all **22 references** resolve (`22/0/0`).
 The final instruction match initially left four masked relocations unresolved.
 They are now tied to live native evidence rather than ignored:
 
-- VC6 local `$L519` is the compiler-generated exception-handler thunk at
+- VC6 local `$L516` is the compiler-generated exception-handler thunk at
   `0x1004b7e8`. It loads `0x100516e8` and tail-jumps to
   `__CxxFrameHandler`.
-- VC6 local `$T507` is the corresponding C++ `FuncInfo` record at
+- VC6 local `$T503` is the corresponding C++ `FuncInfo` record at
   `0x100516e8`, beginning with the VC6 magic `0x19930520`. It is referenced by
   both the handler thunk and the decode function's setjmp setup.
 - Binary Ninja resolves the cleanup calls at `0x10004cb5` and `0x10004e69` to

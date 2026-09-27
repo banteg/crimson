@@ -1,5 +1,9 @@
 # grim_submit_vertices_transform
 
+## Plausibility pass (2026-09-27)
+
+The split `double` multiply-accumulate temporaries became two inline helpers, `grim_rotate_point` (compute x, store y, store x) and `grim_translate_point`. Each takes `grim_vertex_write_ptr` as its argument, which explains native's pointer reloads: one per helper and one for the stride. The countdown became an indexed loop. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x100085c0` (192 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 64/64

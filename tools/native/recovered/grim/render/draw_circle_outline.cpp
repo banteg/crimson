@@ -1,5 +1,3 @@
-#include <string.h>
-
 #include "grim_d3d8.h"
 #include "grim2d_cpp.h"
 
@@ -57,28 +55,23 @@ void IGrim2D_cpp::grim_draw_circle_outline(float x, float y, float radius)
     vertex.v = grim_uv_v0;
 
     int segment_count = (int)(radius * 0.2f + 14.0f);
-    int segment = 0;
-    if (segment_count >= 0) {
-        double segment_divisor = segment_count;
-        do {
-            double angle = segment * 6.2831855f / segment_divisor;
-            float cosine = (float)cos(angle);
-            vertex.x = cosine * radius + x;
-            float sine = (float)sin(angle);
-            vertex.y = sine * radius + y;
-            vertex.v = 0.0f;
-            memcpy(grim_vertex_write_ptr, &vertex, 0x1c);
-            ++grim_vertex_write_ptr;
-            ++*(unsigned short *)&grim_vertex_count;
+    for (int segment = 0; segment <= segment_count; ++segment) {
+        double angle = segment * 6.2831855f / segment_count;
+        float cosine = (float)cos(angle);
+        vertex.x = cosine * radius + x;
+        float sine = (float)sin(angle);
+        vertex.y = sine * radius + y;
+        vertex.v = 0.0f;
+        *grim_vertex_write_ptr = vertex;
+        ++grim_vertex_write_ptr;
+        ++*(unsigned short *)&grim_vertex_count;
 
-            vertex.x = (radius + 2.0f) * cosine + x;
-            vertex.y = (radius + 2.0f) * sine + y;
-            vertex.v = 1.0f;
-            memcpy(grim_vertex_write_ptr, &vertex, 0x1c);
-            ++grim_vertex_write_ptr;
-            ++*(unsigned short *)&grim_vertex_count;
-            ++segment;
-        } while (segment <= segment_count);
+        vertex.x = (radius + 2.0f) * cosine + x;
+        vertex.y = (radius + 2.0f) * sine + y;
+        vertex.v = 1.0f;
+        *grim_vertex_write_ptr = vertex;
+        ++grim_vertex_write_ptr;
+        ++*(unsigned short *)&grim_vertex_count;
     }
 
     grim_vertex_buffer->Unlock();

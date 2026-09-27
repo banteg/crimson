@@ -475,8 +475,8 @@
     {
       "id": "grim-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
-      "size": 111418,
-      "sha256": "43fbef1ad1bddb691e50bf3125e3fccd3ed0e9f961927ca25e0baf9ae9dc1655",
+      "size": 110932,
+      "sha256": "c5e9ccaeeefeb835dbebe1af75fc8a6a3107b1286868b3a3173cd8c14a964e60",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
@@ -532,7 +532,7 @@
       ],
       "tools": {
         "lib_sha256": "2a2b5c23b1ca784f6b62fdd2e9d29ce10bc85e95f47117bda03767f02d68f2f6",
-        "wibo_sha256": "e81ef773fb511e3780bbd8dcf324ffec2497f52805f10fa20d6e4a29bc0f94bc"
+        "wibo_sha256": "917017253dac31557825aecffb117fc0c96221271b5c812fac3f704407fd0cc7"
       }
     },
     {

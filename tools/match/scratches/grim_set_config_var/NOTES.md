@@ -1,5 +1,9 @@
 # `grim_set_config_var`
 
+## Plausibility pass (2026-09-27)
+
+The `goto copy_config_tail` from case 26 into the default tail became a whole-value assignment in both places; C2's cross-jumping rebuilds the shared four-word tail. Case 21 reads and writes `grim_config_values[id]` directly instead of caching the value and a `config` pointer. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10006580..0x10006b7e` (1534 bytes).
 
 The function is a sparse router over configuration IDs `5..85`. Its native

@@ -1,14 +1,14 @@
 #include <string.h>
 
 #include "grim2d_cpp.h"
+#include "grim_uv.h"
 
 extern unsigned char grim_render_disabled;
 extern int grim_font2_texture_handle;
 extern grim_config_value_t grim_config_values[128];
 extern unsigned char grim_font2_char_map[256];
 extern unsigned char grim_font2_glyph_widths[256];
-extern float grim_font2_uv_u[];
-extern float grim_font2_uv_v[];
+extern GrimUV grim_font2_uv_u[256];
 
 struct GrimTextPoint {
     float x;
@@ -55,8 +55,8 @@ void IGrim2D_cpp::grim_draw_text_small(float x, float y, char *text)
 
         float width = (float)grim_font2_glyph_widths[glyph];
         GrimTextPoint uv0(
-            grim_font2_uv_u[glyph * 2] + 0.001953125f,
-            grim_font2_uv_v[glyph * 2] + 0.001953125f
+            grim_font2_uv_u[glyph].u + 0.001953125f,
+            grim_font2_uv_u[glyph].v + 0.001953125f
         );
         GrimTextPoint uv1_raw(
             width * 0.00390625f + uv0.x,

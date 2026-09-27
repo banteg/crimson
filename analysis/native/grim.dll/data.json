@@ -1,5 +1,5 @@
 {
-  "audit_digest": "850055cac42628d103019a919ad7cf2603427e6874138e7f111f9c00e81bf21b",
+  "audit_digest": "2b6f6f91f54be7d50a84617b0891c153492400791da027528d924d1c832acb56",
   "entries": [
     {
       "address": 268747320,
@@ -64,7 +64,7 @@
         {
           "address": 268463264,
           "offset": 40,
-          "symbol": "_grim_get_error_text"
+          "symbol": "?grim_get_error_text@IGrim2D_cpp@@UAEPADXZ"
         },
         {
           "address": 268463280,
@@ -79,7 +79,7 @@
         {
           "address": 268463680,
           "offset": 52,
-          "symbol": "_grim_get_time_ms"
+          "symbol": "?grim_get_time_ms@IGrim2D_cpp@@UAEHXZ"
         },
         {
           "address": 268463696,
@@ -89,7 +89,7 @@
         {
           "address": 268463712,
           "offset": 60,
-          "symbol": "_grim_get_frame_dt"
+          "symbol": "?grim_get_frame_dt@IGrim2D_cpp@@UAEMXZ"
         },
         {
           "address": 268463760,
@@ -134,7 +134,7 @@
         {
           "address": 268465504,
           "offset": 96,
-          "symbol": "_grim_get_mouse_wheel_delta"
+          "symbol": "?grim_get_mouse_wheel_delta@IGrim2D_cpp@@UAEMXZ"
         },
         {
           "address": 268465456,
@@ -144,7 +144,7 @@
         {
           "address": 268465424,
           "offset": 104,
-          "symbol": "_grim_get_mouse_x"
+          "symbol": "?grim_get_mouse_x@IGrim2D_cpp@@UAEMXZ"
         },
         {
           "address": 268465440,
@@ -10947,7 +10947,7 @@
     },
     "data_map_sha256": "5d2bc13040a175a87e23fe318a048de602f6e1d97514a51f365f8099a824eca2",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "41b37e9461b33db580e7494d91a72fc9b7f71a89f15f6d7863d1bb03e88d6795",
+    "definitions_sha256": "9b974fd0882545f1fe7ff1fa09c5d6b8e488114cad10aa68771fac6236d77cc6",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"

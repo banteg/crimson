@@ -14,8 +14,8 @@ extern void (*grim_frame_callback)(void);
 extern char *grim_window_title;
 extern char grim_empty_string;
 extern unsigned char grim_lookup_blob_loaded;
-extern int grim_backbuffer_width;
-extern int grim_backbuffer_height;
+extern unsigned int grim_backbuffer_width;
+extern unsigned int grim_backbuffer_height;
 extern int grim_texture_format;
 extern unsigned char grim_input_cached;
 extern bool grim_mouse_enabled;
@@ -28,16 +28,13 @@ unsigned char grim_set_texture_stage_ops(unsigned int mode);
 void IGrim2D_cpp::grim_set_config_var(
     unsigned int id, grim_config_value_t value)
 {
-    grim_config_value_t *config;
-
     switch (id) {
     case 26:
         if (!grim_set_texture_stage_ops(value.words[0])) {
             return;
         }
-        config = &grim_config_values[id];
-        config->words[0] = value.words[0];
-        goto copy_config_tail;
+        grim_config_values[id] = value;
+        return;
 
     case 27: {
         grim_config_values[id] = value;
@@ -210,9 +207,7 @@ void IGrim2D_cpp::grim_set_config_var(
                     0, D3DTSS_MAXANISOTROPY, filter);
             }
         }
-        unsigned int current = grim_config_values[id].words[0];
-        grim_config_value_t *config = &grim_config_values[id];
-        if (current == 3) {
+        if (grim_config_values[id].words[0] == 3) {
             grim_d3d_device->SetTextureStageState(
                 0, D3DTSS_MAXANISOTROPY, 1);
         }
@@ -220,7 +215,7 @@ void IGrim2D_cpp::grim_set_config_var(
             0, D3DTSS_MINFILTER, filter);
         grim_d3d_device->SetTextureStageState(
             0, D3DTSS_MAGFILTER, filter);
-        config->words[0] = filter;
+        grim_config_values[id].words[0] = filter;
         return;
     }
 
@@ -237,10 +232,5 @@ void IGrim2D_cpp::grim_set_config_var(
         break;
     }
 
-    config = &grim_config_values[id];
-    config->words[0] = value.words[0];
-copy_config_tail:
-    config->words[1] = value.words[1];
-    config->words[2] = value.words[2];
-    config->words[3] = value.words[3];
+    grim_config_values[id] = value;
 }

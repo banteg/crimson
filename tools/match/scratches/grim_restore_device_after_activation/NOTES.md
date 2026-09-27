@@ -1,5 +1,9 @@
 # grim_restore_device_after_activation
 
+## Plausibility pass (2026-09-27)
+
+`goto succeeded` and `goto failed` became a nested `if (grim_d3d_device != 0)` whose paths fall through to one `return true`. Separate `return true` statements let C2 duplicate the epilogue differently. `Reset` takes `&grim_present_parameters`; `grim_present_width` is only its first field. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 `grim_restore_device_after_activation` at `0x100030b0` handles the narrow
 window-reactivation reset path. It tests the Direct3D cooperative level,
 releases default-pool resources before reset, recreates owned render-target

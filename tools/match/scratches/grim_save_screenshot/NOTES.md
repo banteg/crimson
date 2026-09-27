@@ -1,5 +1,9 @@
 # grim_save_screenshot
 
+## Plausibility pass (2026-09-27)
+
+The surface size reads `grim_present_parameters.BackBufferWidth` and `BackBufferHeight` instead of the field alias globals. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 The vtable slot `0x0c` function at `0x10005cb0` was previously labeled
 `grim_check_device`, but its body and ABI establish a screenshot operation:
 

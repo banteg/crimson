@@ -1,5 +1,9 @@
 # grim_run_loop
 
+## Plausibility pass (2026-09-27)
+
+The guarded `do`/`while` main loop became `if (grim_main_window_hwnd != 0)` around `while (msg.message != WM_QUIT)`; loop inversion supplies the guard. The key-repeat decay indexes `grim_key_repeat_timers[i]` directly instead of through a field pointer. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 `grim_run_loop` at `0x10003c00` owns the Win32 message pump, input sampling,
 lost-device recovery, per-frame callback, presentation, and orderly runtime
 shutdown. The initial timing sequence and 30 ms `MyApp` pump are preserved as

@@ -48,7 +48,7 @@ void IGrim2D_cpp::grim_draw_quad_points(
     float x3,
     float y3)
 {
-    float point[2];
+    GrimPoint point;
 
     if (grim_render_disabled || !grim_device_ready) {
         return;
@@ -58,33 +58,33 @@ void IGrim2D_cpp::grim_draw_quad_points(
         grim_begin_batch();
     }
 
-    point[0] = x0;
-    point[1] = y0;
-    grim_vertex_write_ptr->position = *(GrimPoint *)&point[0];
+    point.x = x0;
+    point.y = y0;
+    grim_vertex_write_ptr->position = point;
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot0;
     grim_vertex_write_ptr->uv = grim_uv_u0[0];
     ++grim_vertex_write_ptr;
 
-    point[0] = x1;
-    point[1] = y1;
-    grim_vertex_write_ptr->position = *(GrimPoint *)&point[0];
+    point.x = x1;
+    point.y = y1;
+    grim_vertex_write_ptr->position = point;
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot1;
     grim_vertex_write_ptr->uv = grim_uv_u0[1];
     ++grim_vertex_write_ptr;
 
-    point[0] = x2;
-    point[1] = y2;
-    grim_vertex_write_ptr->position = *(GrimPoint *)&point[0];
+    point.x = x2;
+    point.y = y2;
+    grim_vertex_write_ptr->position = point;
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot2;
     grim_vertex_write_ptr->uv = grim_uv_u0[2];
     ++grim_vertex_write_ptr;
 
-    point[0] = x3;
-    point[1] = y3;
-    grim_vertex_write_ptr->position = *(GrimPoint *)&point[0];
+    point.x = x3;
+    point.y = y3;
+    grim_vertex_write_ptr->position = point;
     grim_vertex_write_ptr->depth = grim_vertex_z;
     grim_vertex_write_ptr->color = grim_color_slot3;
     grim_vertex_write_ptr->uv = grim_uv_u0[3];

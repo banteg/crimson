@@ -1,5 +1,9 @@
 # `grim_window_proc` recovery notes
 
+## Plausibility pass (2026-09-27)
+
+The quit path assigns both DC flags and then calls `PostQuitMessage(0)` instead of passing the chained assignment as the argument. Normalized exactness, all 148 references, and the two documented SIB byte differences are unchanged. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Target: `grim.dll` `grim_window_proc @ 0x100033b0`, 1,671 bytes and 472
 normalized instructions.
 

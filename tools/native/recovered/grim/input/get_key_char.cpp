@@ -5,21 +5,13 @@ extern int grim_key_char_queue_count;
 
 int IGrim2D_cpp::grim_get_key_char(void)
 {
-    int count = grim_key_char_queue_count;
-    if (count == 0) {
+    if (grim_key_char_queue_count == 0) {
         return 0;
     }
     int result = grim_key_char_queue[0];
-    if (count > 0) {
-        int *cursor = grim_key_char_queue;
-        int remaining = count;
-        do {
-            int value = cursor[1];
-            cursor[0] = value;
-            ++cursor;
-            --remaining;
-        } while (remaining != 0);
+    for (int i = 0; i < grim_key_char_queue_count; ++i) {
+        grim_key_char_queue[i] = grim_key_char_queue[i + 1];
     }
-    grim_key_char_queue_count = count - 1;
+    --grim_key_char_queue_count;
     return result;
 }

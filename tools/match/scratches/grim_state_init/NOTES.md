@@ -1,5 +1,9 @@
 # grim_state_init
 
+## Plausibility pass (2026-09-27)
+
+The five negative-offset cursor nests (`entry_v[-1]`) became plain row and column loops over a running `index` into each table. C2 derives the per-row pointer, the per-entry pointer anchored at the `v` field, and keeps the `y` counter test. A flat `y * n + column` index lets C2 fold the row pointer into the entry pointer, which native does not do. The overlapping `memcpy` that smeared `grim_config_values[0]` across the table became a fill loop: C2 peels the first store and emits the same overlapping forward `rep movsd`. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x100052f0..0x10005a40` (1872 bytes).
 
 This scratch reconstructs the observed global initialization domains:

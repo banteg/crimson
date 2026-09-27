@@ -1,5 +1,9 @@
 # grim_submit_vertices_offset_color
 
+## Plausibility pass (2026-09-27)
+
+The countdown became an indexed loop, and the offset add goes through a small `grim_translate_point` helper shared with the transform submitters. Its single-use `x`/`y` locals are FROUND owners that give native's operand order. The packed color is stored through a named `unsigned long *vertex`, and the write pointer has the same `float *` type as its siblings. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x10008430` (168 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 54/54

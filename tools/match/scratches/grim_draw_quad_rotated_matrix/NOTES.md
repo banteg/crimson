@@ -1,5 +1,9 @@
 # grim_draw_quad_rotated_matrix
 
+## Plausibility pass (2026-09-27)
+
+The `float points[5][2]` staging and its `*(GrimPoint *)` copies are retained for the same reason as `grim_draw_quad`: point-struct arrays align the frame, and per-field copies change the allocation (42.62%). See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md).
+
 Emits the current colored and textured quad after transforming its four
 center-relative corners by the cached 2x2 rotation matrix.
 

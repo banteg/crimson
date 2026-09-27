@@ -66,8 +66,8 @@ extern "C" int grim_run_loop(void)
     SetFocus(grim_main_window_hwnd);
     SetForegroundWindow(grim_main_window_hwnd);
 
-    if (grim_main_window_hwnd != 0 && msg.message != WM_QUIT) {
-        do {
+    if (grim_main_window_hwnd != 0) {
+        while (msg.message != WM_QUIT) {
             if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&msg);
                 DispatchMessageA(&msg);
@@ -83,10 +83,9 @@ extern "C" int grim_run_loop(void)
                     if (grim_keyboard_enabled) {
                         grim_keyboard_poll();
                         for (int i = 0; i < 256; ++i) {
-                            float *timer = &grim_key_repeat_timers[i];
-                            *timer -= grim_frame_dt;
-                            if (*timer < 0.0f) {
-                                *timer = 0.0f;
+                            grim_key_repeat_timers[i] -= grim_frame_dt;
+                            if (grim_key_repeat_timers[i] < 0.0f) {
+                                grim_key_repeat_timers[i] = 0.0f;
                             }
                         }
                     }
@@ -140,7 +139,7 @@ extern "C" int grim_run_loop(void)
                     Sleep(50);
                 }
             }
-        } while (msg.message != WM_QUIT);
+        }
     }
 
     timeEndPeriod(1);

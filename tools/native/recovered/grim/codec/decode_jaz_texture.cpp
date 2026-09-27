@@ -97,107 +97,94 @@ unsigned char *grim_decode_jaz_texture(
     GrimJazPayload *payload = (GrimJazPayload *)unpacked;
     unsigned char *jpeg_data = payload->jpeg_data;
     unsigned int jpeg_size = payload->jpeg_size;
-    do {
-        if (jpeg_data == 0) {
-            break;
-        }
-        GrimJpegDecompress context;
-        GrimJazJpegError error;
-        context.err = jpeg_std_error(&error.base);
-        error.base.error_exit = grim_jaz_jpeg_error_exit;
+    if (jpeg_data == 0) {
+        return 0;
+    }
+    GrimJpegDecompress context;
+    GrimJazJpegError error;
+    context.err = jpeg_std_error(&error.base);
+    error.base.error_exit = grim_jaz_jpeg_error_exit;
 
-        if (setjmp(error.jump_buffer)) {
-            jpeg_destroy_decompress(&context);
-            if (image != 0) {
-                delete image;
-            }
-            return 0;
-        }
-
-        jpeg_CreateDecompress(&context, 61, sizeof(context));
-        grim_jpeg_memory_src(&context, jpeg_data, jpeg_size);
-        jpeg_read_header(&context, 1);
-        jpeg_start_decompress(&context);
-
-        *image_size = context.output_width * context.output_height * 4 +
-                      sizeof(GrimTgaHeader);
-        image = new unsigned char[*image_size];
-        if (image == 0) {
-            jpeg_destroy_decompress(&context);
-            break;
-        }
-
-        *width = context.output_width;
-        image += sizeof(GrimTgaHeader);
-        *height = context.output_height;
-
-        unsigned int row_samples =
-            context.output_width * context.output_components;
-        GrimJpegRows scanline = (*context.mem->alloc_sarray)(
-            &context, 1, row_samples, 1);
-        while (context.output_scanline < context.output_height) {
-            jpeg_read_scanlines(&context, scanline, 1);
-            unsigned int destination_offset =
-                (*height - context.output_scanline) * *width * 4;
-            unsigned int x = 0;
-            if ((unsigned int)*width > 0) {
-                unsigned int source_offset = 0;
-                do {
-                    image[destination_offset + x * 4 + 3] = 255;
-                    image[destination_offset + x * 4 + 2] =
-                        scanline[0][source_offset];
-                    image[destination_offset + x * 4 + 1] =
-                        scanline[0][source_offset + 1];
-                    image[destination_offset + x * 4] =
-                        scanline[0][source_offset + 2];
-                    ++x;
-                    source_offset += 3;
-                } while (x < (unsigned int)*width);
-            }
-        }
-
-        image -= sizeof(GrimTgaHeader);
-        jpeg_finish_decompress(&context);
+    if (setjmp(error.jump_buffer)) {
         jpeg_destroy_decompress(&context);
+        if (image != 0) {
+            delete image;
+        }
+        return 0;
+    }
 
-        GrimTgaHeader *header = (GrimTgaHeader *)image;
-        header->id_length = 0;
-        header->color_map_type = 0;
-        header->image_type = 2;
-        header->color_map_start_and_length = 0;
-        header->color_map_bits = 0;
-        header->x_origin = 0;
-        header->y_origin = 0;
-        header->width = (unsigned short)*width;
-        header->height = (unsigned short)*height;
-        header->pixel_bits = 32;
-        header->descriptor = 8;
+    jpeg_CreateDecompress(&context, 61, sizeof(context));
+    grim_jpeg_memory_src(&context, jpeg_data, jpeg_size);
+    jpeg_read_header(&context, 1);
+    jpeg_start_decompress(&context);
 
-        unsigned char *alpha = unpacked + jpeg_size + 4;
-        int alpha_offset = 0;
-        int run_remaining = 0;
-        int alpha_value;
-        for (int y = header->height - 1; y >= 0; --y) {
-            for (int x = 0; x < header->width; ++x) {
-                if (run_remaining > 0) {
-                    image[(y * header->width + x) * 4 +
-                          sizeof(GrimTgaHeader) + 3] =
-                        (unsigned char)alpha_value;
-                    --run_remaining;
-                } else {
-                    run_remaining = alpha[alpha_offset];
-                    alpha_offset += 2;
-                    alpha_value = alpha[alpha_offset - 1];
-                    --x;
-                }
+    *image_size = context.output_width * context.output_height * 4 +
+                  sizeof(GrimTgaHeader);
+    image = new unsigned char[*image_size];
+    if (image == 0) {
+        jpeg_destroy_decompress(&context);
+        return 0;
+    }
+
+    *width = context.output_width;
+    image += sizeof(GrimTgaHeader);
+    *height = context.output_height;
+
+    unsigned int row_samples =
+        context.output_width * context.output_components;
+    GrimJpegRows scanline = (*context.mem->alloc_sarray)(
+        &context, 1, row_samples, 1);
+    while (context.output_scanline < context.output_height) {
+        jpeg_read_scanlines(&context, scanline, 1);
+        unsigned int destination_offset =
+            (*height - context.output_scanline) * *width * 4;
+        for (unsigned int x = 0; x < (unsigned int)*width; ++x) {
+            image[destination_offset + x * 4 + 3] = 255;
+            image[destination_offset + x * 4 + 2] = scanline[0][x * 3];
+            image[destination_offset + x * 4 + 1] = scanline[0][x * 3 + 1];
+            image[destination_offset + x * 4] = scanline[0][x * 3 + 2];
+        }
+    }
+
+    image -= sizeof(GrimTgaHeader);
+    jpeg_finish_decompress(&context);
+    jpeg_destroy_decompress(&context);
+
+    GrimTgaHeader *header = (GrimTgaHeader *)image;
+    header->id_length = 0;
+    header->color_map_type = 0;
+    header->image_type = 2;
+    header->color_map_start_and_length = 0;
+    header->color_map_bits = 0;
+    header->x_origin = 0;
+    header->y_origin = 0;
+    header->width = (unsigned short)*width;
+    header->height = (unsigned short)*height;
+    header->pixel_bits = 32;
+    header->descriptor = 8;
+
+    unsigned char *alpha = unpacked + jpeg_size + 4;
+    int alpha_offset = 0;
+    int run_remaining = 0;
+    int alpha_value;
+    for (int y = header->height - 1; y >= 0; --y) {
+        for (int x = 0; x < header->width; ++x) {
+            if (run_remaining > 0) {
+                image[(y * header->width + x) * 4 +
+                      sizeof(GrimTgaHeader) + 3] =
+                    (unsigned char)alpha_value;
+                --run_remaining;
+            } else {
+                run_remaining = alpha[alpha_offset];
+                alpha_offset += 2;
+                alpha_value = alpha[alpha_offset - 1];
+                --x;
             }
         }
+    }
 
-        if (unpacked != 0) {
-            delete unpacked;
-        }
-        return image;
-    } while (0);
-
-    return 0;
+    if (unpacked != 0) {
+        delete unpacked;
+    }
+    return image;
 }

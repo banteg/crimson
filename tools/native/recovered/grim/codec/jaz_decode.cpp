@@ -24,22 +24,16 @@ GrimJazDecodeScope::GrimJazDecodeScope()
 
 extern "C" bool grim_zlib_status_is_error(int status)
 {
-    bool is_error;
     switch (status) {
     case 0:
-        is_error = false;
-        break;
+        return false;
     case 1:
-        is_error = false;
-        break;
+        return false;
     case 2:
-        is_error = false;
-        break;
+        return false;
     default:
-        is_error = true;
-        break;
+        return true;
     }
-    return is_error;
 }
 
 bool GrimJazDecodeScope::decompress_alloc(

@@ -1,19 +1,11 @@
-extern void *grim_texture_slots;
+#include "grim_texture.h"
 
 extern "C" int grim_find_free_texture_slot(void)
 {
-    int index = 0;
-    void **slot = &grim_texture_slots;
-
-    while ((int)slot < (int)(&grim_texture_slots + 256)) {
-        if (*slot == 0) {
-            goto done;
+    for (int i = 0; i < 256; ++i) {
+        if (grim_texture_slots[i] == 0) {
+            return i;
         }
-        ++slot;
-        ++index;
     }
-    index = -1;
-
-done:
-    return index;
+    return -1;
 }

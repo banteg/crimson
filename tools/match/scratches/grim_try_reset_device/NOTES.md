@@ -1,5 +1,9 @@
 # grim_try_reset_device
 
+## Plausibility pass (2026-09-27)
+
+`Reset` takes `&grim_present_parameters` instead of casting the address of its first field, `grim_present_width`. The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 The native log strings identify the helper at `0x10002cf0` as
 `D3D_TryResetDevice`. It releases cached render-target/backbuffer surfaces and
 the owned default-pool texture objects before calling `IDirect3DDevice8::Reset`.

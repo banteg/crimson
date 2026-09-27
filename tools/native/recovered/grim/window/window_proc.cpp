@@ -127,8 +127,8 @@ LRESULT CALLBACK grim_window_proc(
 
         case WM_DESTROY:
         case WM_CLOSE:
-            PostQuitMessage(
-                grim_window_proc_dc_flag = grim_dc_mode_active = false);
+            grim_window_proc_dc_flag = grim_dc_mode_active = false;
+            PostQuitMessage(0);
             return 0;
 
         case WM_ERASEBKGND:

@@ -1,5 +1,9 @@
 # grim_submit_vertices_transform_color
 
+## Plausibility pass (2026-09-27)
+
+The split `double`/`float` temporaries became the same `grim_rotate_point` and `grim_translate_point` helpers as the plain transform submitter, and the countdown became an indexed loop. The color is stored through a named `unsigned long *vertex`. That local shifts the helpers' inline-copy ids by one, which gives native's `y*m1 + x*m0` operand order (x87 sort keys compare ids mod 8, see [x87-scheduling.md](../../c2/compiler/x87-scheduling.md)). The source stays exact, byte for byte. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+
 Native target: `grim.dll` at `0x100084e0` (218 bytes).
 
 Verified with Microsoft Visual C++ 6.5 using `/O2 /GB /W3 /GR-`: 72/72

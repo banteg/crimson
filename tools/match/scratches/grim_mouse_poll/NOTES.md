@@ -1,5 +1,9 @@
 # grim_mouse_poll
 
+## Plausibility pass (2026-09-27)
+
+The `goto reacquire` error exit is retained. A `while (result >= 0)` loop that returns on success reaches 95.56%: C2 then merges the success return into the preceding block and schedules `mov al, 1; pop esi` into the float updates. Shared-return restructurings change the loop layout (64–66%). See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md).
+
 Polls the DirectInput mouse repeatedly so relative motion is drained into one
 frame delta, reacquiring the device after a failed state query.
 
