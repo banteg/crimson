@@ -10,6 +10,8 @@ We go great lengths to achieve this goal, including a headless differential test
 
 **[Browse the docs](https://crimson.banteg.xyz/)** — 100+ pages of analysis, struct layouts, format specs, and parity tracking.
 
+**[Join the Telegram group](https://t.me/+pG-Ow90lt28zMWFi)** — chat about the project, report bugs, share runs.
+
 ## Current state
 
 The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, and Typ-o-Shooter, with full weapon/creature/perk content, terrain/sprite/decal rendering, music, gameplay SFX, and even secrets. The simulation is fully deterministic, supporting seeded runs and headless verifiable replays.
