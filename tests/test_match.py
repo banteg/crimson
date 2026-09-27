@@ -48,6 +48,7 @@ from crimson.match import (
     ResidualFrontierRow,
     ScratchConfig,
     ScratchStatus,
+    SharedInputHashes,
     TriageExperimentEvidence,
     TriageRow,
     _coff_local_jump_table_key,
@@ -6939,6 +6940,7 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
         match_root: Path,
         *,
         include_resolver: _ScratchIncludeResolver | None = None,
+        input_hashes: SharedInputHashes | None = None,
         force: bool = False,
     ) -> Path:
         del force
@@ -7016,6 +7018,7 @@ def test_collect_status_can_limit_evaluation_to_selected_directories(
         match_root: Path,
         *,
         include_resolver: _ScratchIncludeResolver | None = None,
+        input_hashes: SharedInputHashes | None = None,
         force: bool = False,
     ) -> Path:
         del force

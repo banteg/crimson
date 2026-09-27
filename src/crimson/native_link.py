@@ -1861,6 +1861,9 @@ def build_native_object_set(
         manifest,
         functions_path=functions_path,
     )
+    # Every forced compile below records a build key that fingerprints its
+    # compiler's Bin/Include trees; walk each compiler once, not once per object.
+    shared_input_hashes = matchlib.SharedInputHashes()
 
     def match_object_function(
         object_function: matchlib.ObjectFunction,
@@ -1883,7 +1886,12 @@ def build_native_object_set(
         status: matchlib.ScratchStatus,
     ) -> NativeObjectRecord:
         inputs_before = _compile_input_snapshot(status.config, match_root)
-        object_path = matchlib.compile_scratch(status.config, match_root, force=True)
+        object_path = matchlib.compile_scratch(
+            status.config,
+            match_root,
+            input_hashes=shared_input_hashes,
+            force=True,
+        )
         object_data = object_path.read_bytes()
         coff = matchlib.parse_coff_object(object_data)
         object_function = matchlib.extract_object_function(
@@ -1930,7 +1938,12 @@ def build_native_object_set(
         members: tuple[NativeTranslationUnitMember, ...],
     ) -> NativeObjectRecord:
         inputs_before = _compile_input_snapshot(provider, match_root)
-        object_path = matchlib.compile_scratch(provider, match_root, force=True)
+        object_path = matchlib.compile_scratch(
+            provider,
+            match_root,
+            input_hashes=shared_input_hashes,
+            force=True,
+        )
         object_data = object_path.read_bytes()
         coff = matchlib.parse_coff_object(object_data)
         aliases = tuple((member.symbol, member.function) for member in members)
@@ -2029,7 +2042,12 @@ def build_native_object_set(
     abi_object_sha256: str | None = None
     if abi_config is not None:
         abi_inputs_before = _compile_input_snapshot(abi_config, match_root)
-        abi_object_path = matchlib.compile_scratch(abi_config, match_root, force=True)
+        abi_object_path = matchlib.compile_scratch(
+            abi_config,
+            match_root,
+            input_hashes=shared_input_hashes,
+            force=True,
+        )
         abi_data = abi_object_path.read_bytes()
         abi_compile_inputs = _compile_input_snapshot(abi_config, match_root)
         if abi_inputs_before != abi_compile_inputs:

@@ -5481,6 +5481,7 @@ def _scratch_object_is_current(
     match_root: Path,
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
+    input_hashes: SharedInputHashes | None = None,
 ) -> bool:
     if not obj_path.exists():
         return False
@@ -5493,7 +5494,12 @@ def _scratch_object_is_current(
         cached = json.loads(key_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
-    return cached.get("key") == _scratch_build_key(config, match_root, include_resolver=include_resolver)
+    return cached.get("key") == _scratch_build_key(
+        config,
+        match_root,
+        include_resolver=include_resolver,
+        input_hashes=input_hashes,
+    )
 
 
 def compile_scratch(
@@ -5501,6 +5507,7 @@ def compile_scratch(
     match_root: Path = DEFAULT_MATCH_ROOT,
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
+    input_hashes: SharedInputHashes | None = None,
     force: bool = False,
     deadline: float | None = None,
 ) -> Path:
@@ -5515,12 +5522,22 @@ def compile_scratch(
             config,
             match_root,
             include_resolver=include_resolver,
+            input_hashes=input_hashes,
         ):
             return obj_path
         _write_bytes_atomic(obj_path, _import_thunk_object_bytes(config.import_thunk))
         _write_text_atomic(
             build_dir / "scratch-build.json",
-            json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
+            json.dumps(
+                {
+                    "key": _scratch_build_key(
+                        config,
+                        match_root,
+                        include_resolver=include_resolver,
+                        input_hashes=input_hashes,
+                    ),
+                },
+            ),
         )
         return obj_path
     if config.archive is not None:
@@ -5531,13 +5548,23 @@ def compile_scratch(
             config,
             match_root,
             include_resolver=include_resolver,
+            input_hashes=input_hashes,
         ):
             return obj_path
         obj_data = _archive_scratch_object_bytes(config)
         _write_bytes_atomic(obj_path, obj_data)
         _write_text_atomic(
             build_dir / "scratch-build.json",
-            json.dumps({"key": _scratch_build_key(config, match_root, include_resolver=include_resolver)}),
+            json.dumps(
+                {
+                    "key": _scratch_build_key(
+                        config,
+                        match_root,
+                        include_resolver=include_resolver,
+                        input_hashes=input_hashes,
+                    ),
+                },
+            ),
         )
         return obj_path
 
@@ -5557,6 +5584,7 @@ def compile_scratch(
         config,
         match_root,
         include_resolver=include_resolver,
+        input_hashes=input_hashes,
     ):
         return obj_path
 
@@ -5589,7 +5617,12 @@ def compile_scratch(
         build_dir / "scratch-build.json",
         json.dumps(
             {
-                "key": _scratch_build_key(config, match_root, include_resolver=include_resolver),
+                "key": _scratch_build_key(
+                    config,
+                    match_root,
+                    include_resolver=include_resolver,
+                    input_hashes=input_hashes,
+                ),
                 "compiler_output": {
                     "stdout": completed.stdout,
                     "stderr": completed.stderr,
@@ -6731,6 +6764,7 @@ def collect_scratch_statuses(
                 config,
                 match_root,
                 include_resolver=include_resolver,
+                input_hashes=input_hashes,
                 force=force,
             )
             obj = parse_coff_object(obj_path.read_bytes())
