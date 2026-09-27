@@ -88,7 +88,6 @@ release versus a fading entry. The negative-lifecycle path subtracts `dt * 20`;
 render/post-render cleanup completes the remaining lifecycle.
 
 The Python owners are `src/crimson/creatures/runtime.py`,
-`src/crimson/creatures/damage.py`, `src/crimson/creatures/damage_runtime.py` and
-`src/crimson/creatures/lifecycle.py`. Session post-render finalization preserves
+`src/crimson/creatures/damage.py` and `src/crimson/creatures/lifecycle.py`. Session post-render finalization preserves
 the native boundary for headless replay; see the
 [session contract](../rewrite/deterministic-step-pipeline.md).
