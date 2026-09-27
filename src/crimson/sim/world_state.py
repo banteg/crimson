@@ -291,7 +291,6 @@ class WorldState(msgspec.Struct):
         mid_step_runtime: WorldMidStepRuntime | None = None,
         inputs: Sequence[PlayerInput] | None,
         world_size: float,
-        damage_scale_by_type: dict[int, float],
         detail_preset: int,
         violence_disabled: int = 0,
         fx_queue: FxQueue,
@@ -343,7 +342,6 @@ class WorldState(msgspec.Struct):
                 creatures=self.creatures.entries,
                 options=ProjectileUpdateOptions(
                     world_size=float(world_size),
-                    damage_scale_by_type=damage_scale_by_type,
                     detail_preset=int(detail_preset),
                     rng=self.state.rng,
                     runtime_state=self.state,

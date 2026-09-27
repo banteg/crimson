@@ -380,7 +380,6 @@ class DeterministicSession(msgspec.Struct):
     # Core state
     world: WorldState
     world_size: float
-    damage_scale_by_type: dict[int, float]
 
     # Mode identity
     game_mode: GameMode
@@ -560,7 +559,6 @@ class DeterministicSession(msgspec.Struct):
             mid_step_runtime=mid_step_runtime,
             inputs=tick_inputs,
             world_size=self.world_size,
-            damage_scale_by_type=self.damage_scale_by_type,
             detail_preset=self.detail_preset,
             violence_disabled=self.violence_disabled,
             fx_queue=fx_queue,

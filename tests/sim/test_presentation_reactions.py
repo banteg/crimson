@@ -7,7 +7,6 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.session_builders import build_quest_session
 from crimson.sim.sessions import IllegalCommandError
-from crimson.weapons import build_damage_scale_by_type
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
 from grim.audio import AudioState
@@ -77,7 +76,6 @@ def test_quest_audio_requests_survive_render_partitions(
     session, spawn = build_quest_session(
         world=make_world(),
         world_size=1024.0,
-        damage_scale_by_type=build_damage_scale_by_type(),
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
@@ -180,7 +178,6 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
         session = DeterministicSession(
             world=world,
             world_size=1024,
-            damage_scale_by_type=build_damage_scale_by_type(),
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
         )

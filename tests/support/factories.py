@@ -143,7 +143,6 @@ def make_projectile_update_options(
     *,
     creatures: Sequence[CreatureState],
     world_size: float = 1024.0,
-    damage_scale_by_type: dict[int, float] | None = None,
     ion_aoe_scale: float = 1.0,
     detail_preset: int = 5,
     rng: CrandLike | None = None,
@@ -156,7 +155,6 @@ def make_projectile_update_options(
     player_seq: Sequence[PlayerState] = () if players is None else players
     return ProjectileUpdateOptions(
         world_size=float(world_size),
-        damage_scale_by_type={} if damage_scale_by_type is None else damage_scale_by_type,
         rng=state.rng if rng is None else rng,
         runtime_state=state,
         players=player_seq,

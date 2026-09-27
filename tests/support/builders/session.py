@@ -4,7 +4,6 @@ from crimson.game_modes import GameMode
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.world_reset import build_reset_world
 from crimson.sim.world_state import WorldState
-from crimson.weapons import build_damage_scale_by_type
 
 
 def make_world(
@@ -31,7 +30,6 @@ def make_session(
     session = DeterministicSession(
         world=world,
         world_size=world_size,
-        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=game_mode,
         perk_progression_enabled=perk_progression_enabled,
     )

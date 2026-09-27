@@ -59,7 +59,6 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         1.0 / 60.0,
         inputs=[],
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         violence_disabled=0,
         fx_queue=fx_queue,

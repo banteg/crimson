@@ -7,7 +7,6 @@ from crimson.game_modes import GameMode
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
-from crimson.weapons import build_damage_scale_by_type
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -28,7 +27,6 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
     session = DeterministicSession(
         world=runtime.world,
         world_size=float(runtime.world_size),
-        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.SURVIVAL,
         detail_preset=5,
         violence_disabled=0,

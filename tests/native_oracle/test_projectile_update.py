@@ -21,7 +21,6 @@ from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions,
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, _WorldStepRuntime
-from crimson.weapons import build_damage_scale_by_type
 from grim.geom import Vec2
 
 from ._support import (
@@ -375,7 +374,6 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
                 creatures=world.creatures.entries,
                 options=ProjectileUpdateOptions(
                     world_size=_WORLD_SIZE,
-                    damage_scale_by_type=build_damage_scale_by_type(),
                     detail_preset=5,
                     rng=state.rng,
                     runtime_state=state,

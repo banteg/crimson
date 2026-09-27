@@ -67,7 +67,6 @@ class ProjectileHitRuntime(msgspec.Struct):
 
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     world_size: float
-    damage_scale_by_type: dict[int, float]
     rng: CrandLike
     runtime_state: GameplayState
     players: Sequence[PlayerState]
@@ -195,7 +194,6 @@ class ProjectilePool:
         creatures = ctx.creatures
         options = ctx.options
         world_size = float(f32(float(options.world_size)))
-        damage_scale_by_type = options.damage_scale_by_type
         ion_aoe_scale = float(options.ion_aoe_scale)
         detail_preset = int(options.detail_preset)
         rng = options.rng
@@ -230,9 +228,6 @@ class ProjectilePool:
         creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
 
         def _damage_scale(type_id: int) -> float:
-            value = damage_scale_by_type.get(type_id)
-            if value is not None:
-                return float(value)
             return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).damage_scale)
 
         def _damage_distance_f32(origin: Vec2, pos: Vec2) -> float:

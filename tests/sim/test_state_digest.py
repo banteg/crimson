@@ -41,13 +41,7 @@ def test_session_digest_ignores_paths_dirty_flags_and_rng_tracing() -> None:
 
 def test_session_digest_rejects_unrepresented_components(mocker) -> None:
     session, _sim = make_session()
-    mocker.patch.object(session, "damage_scale_by_type", {1: object()})
+    mocker.patch.object(session, "world_size", object())
     with pytest.raises(TypeError, match="unsupported deterministic state component"):
         session_digest(session)
 
-
-def test_session_digest_is_independent_of_mapping_insertion_order() -> None:
-    a, _ = make_session()
-    b, _ = make_session()
-    b.damage_scale_by_type = dict(reversed(list(a.damage_scale_by_type.items())))
-    assert session_digest(a) == session_digest(b)

@@ -13,7 +13,6 @@ from crimson.sim.sessions import (
 )
 from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
-from crimson.weapons import build_damage_scale_by_type
 from crimson.world import WorldRuntime
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -114,7 +113,6 @@ class WorldRuntimeHost(WorldRuntime):
         session = DeterministicSession(
             world=self.world,
             world_size=self.world_size,
-            damage_scale_by_type=build_damage_scale_by_type(),
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=perk_progression_enabled,
             detail_preset=detail_preset,

@@ -41,7 +41,7 @@
 # name: test_primary_projectile_update_snapshot[pistol_near_hit]
   dict({
     'creature_hp': list([
-      33.5,
+      -143.199997,
     ]),
     'hits': list([
       dict({
@@ -80,7 +80,7 @@
 # name: test_primary_projectile_update_snapshot[pistol_rng_jitter]
   dict({
     'creature_hp': list([
-      48.588238,
+      -81.338226,
     ]),
     'hits': list([
       dict({
@@ -119,7 +119,7 @@
 # name: test_primary_projectile_update_snapshot[rocket_no_splash_type_0x0b]
   dict({
     'creature_hp': list([
-      47.318184,
+      -0.181816,
       100.0,
       100.0,
     ]),

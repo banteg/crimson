@@ -92,7 +92,6 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     from crimson.projectiles.types import ProjectileTemplateId
     from crimson.sim.input import PlayerInput
     from crimson.sim.sessions import DeterministicSession
-    from crimson.weapons import build_damage_scale_by_type
     from tests.support.builders.session import make_world
 
     world = make_world(preserve_bugs=True)
@@ -111,7 +110,6 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
-        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -150,7 +148,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         0.2,
         inputs=None,
         world_size=world_size,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -170,7 +167,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         0.2,
         inputs=None,
         world_size=world_size,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

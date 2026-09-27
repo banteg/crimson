@@ -34,7 +34,6 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
         1.0,
         inputs=[PlayerInput(move=Vec2(1.0, 0.0))],
         world_size=world_size,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -59,7 +58,6 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
     session, spawn = build_survival_session(
         world=world,
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
@@ -103,7 +101,6 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         apply_world_dt_steps=False,
         inputs=[PlayerInput()],
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -140,7 +137,6 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
     session, _spawn = build_survival_session(
         world=world,
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,

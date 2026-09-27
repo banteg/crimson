@@ -42,7 +42,6 @@ def _step_world_over_bonuses(
         0.016,
         inputs=None,
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

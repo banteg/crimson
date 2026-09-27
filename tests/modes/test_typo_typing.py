@@ -83,7 +83,6 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
-        damage_scale_by_type={},
         game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
         mode_runtime=_TransformObserver(world=world, seen_typing_text=seen_typing_text),

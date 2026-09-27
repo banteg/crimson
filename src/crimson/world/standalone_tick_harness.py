@@ -10,7 +10,6 @@ from ..sim.batch_apply import apply_presentation_plans
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
-from ..weapons import build_damage_scale_by_type
 
 if TYPE_CHECKING:
     from .runtime import WorldRuntime
@@ -54,7 +53,6 @@ class StandaloneTickHarness:
         session = DeterministicSession(
             world=world_state,
             world_size=float(runtime.world_size),
-            damage_scale_by_type=build_damage_scale_by_type(),
             game_mode=self.game_mode,
             detail_preset=int(detail_preset),
             violence_disabled=int(violence_disabled),

@@ -121,7 +121,6 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
         dt,
         inputs=None,
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

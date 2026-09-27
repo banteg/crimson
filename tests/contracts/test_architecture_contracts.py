@@ -24,7 +24,6 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import DeterministicSession
-from crimson.weapons import build_damage_scale_by_type
 from crimson.world import WorldRuntime
 from crimson.world.audio_bridge import AudioBridge
 from crimson.world.standalone_tick_harness import StandaloneTickHarness
@@ -84,7 +83,6 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
     session = DeterministicSession(
         world=runtime.world,
         world_size=runtime.world_size,
-        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )

@@ -70,7 +70,6 @@ def observe(case):
                 creatures=world.creatures.entries,
                 options=ProjectileUpdateOptions(
                     world_size=1024.0,
-                    damage_scale_by_type={},
                     rng=rng,
                     runtime_state=state,
                     players=world.players,

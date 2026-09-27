@@ -335,7 +335,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             ],
             "rng": None,
             "double_update": True,
-            "damage_scale_by_type": {0x16: 1.4},
         },
     ]
 
@@ -348,7 +347,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             owner=OwnerRef.from_local_player(0),
         )
         creatures = case["creatures"]
-        damage_scale_by_type = case.get("damage_scale_by_type") or {int(case["type_id"]): 1.0}
         hits = pool.step(
             PrimaryStepCtx(
                 dt=0.1,
@@ -356,7 +354,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                 options=make_projectile_update_options(
                     creatures=creatures,
                     world_size=1024.0,
-                    damage_scale_by_type=damage_scale_by_type,
                     rng=case.get("rng"),
                 ),
             ),
@@ -369,8 +366,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                     options=make_projectile_update_options(
                         creatures=creatures,
                         world_size=1024.0,
-                        damage_scale_by_type=damage_scale_by_type,
-                        rng=case.get("rng"),
+                            rng=case.get("rng"),
                     ),
                 ),
             )

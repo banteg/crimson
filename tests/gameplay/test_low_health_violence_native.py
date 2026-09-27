@@ -81,7 +81,7 @@ def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled)
     world.step(
         0.016,
         inputs=[PlayerInput(), PlayerInput()], world_size=1024.0,
-        damage_scale_by_type={}, detail_preset=5, violence_disabled=violence_disabled,
+        detail_preset=5, violence_disabled=violence_disabled,
         fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,
     )

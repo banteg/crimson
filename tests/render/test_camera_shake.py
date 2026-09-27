@@ -20,7 +20,6 @@ from crimson.sim.sessions import (
 )
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.weapons import build_damage_scale_by_type
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from tests.support.factories import RecordingCreatureDamageRuntime
@@ -196,7 +195,6 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
-        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
         mode_runtime=SurvivalSessionRuntime(),
@@ -220,7 +218,6 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     session = DeterministicSession(
         world=world,
         world_size=1024.0,
-        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
         mode_runtime=RushSessionRuntime(world=world),

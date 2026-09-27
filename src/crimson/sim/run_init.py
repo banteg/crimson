@@ -11,7 +11,7 @@ from ..quests.runtime import build_quest_spawn_table
 from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..rng_caller_static import RngCallerStatic
-from ..weapons import WeaponId, build_damage_scale_by_type
+from ..weapons import WeaponId
 from .bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
 from .run_spec import WORLD_SIZE, RunSpec
 from .session_builders import (
@@ -72,19 +72,18 @@ def initialize_run(
     terrain = advance_unlock_terrain(
         world.state.rng, unlock_index=spec.status.quest_unlock_index, width=int(WORLD_SIZE), height=int(WORLD_SIZE),
     )
-    damage = build_damage_scale_by_type()
     highscore_tag = 0
     match spec.game_mode_id:
         case GameMode.SURVIVAL:
             session, _ = build_survival_session(
-                world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
+                world=world, world_size=WORLD_SIZE,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
                 game_tune_started=False, finalize_post_render_lifecycle=True, apply_world_dt_steps=apply_world_dt_steps,
             )
         case GameMode.RUSH:
             enforce_rush_loadout(world)
             session, _ = build_rush_session(
-                world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
+                world=world, world_size=WORLD_SIZE,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
                 game_tune_started=False, finalize_post_render_lifecycle=True,
             )
@@ -100,7 +99,7 @@ def initialize_run(
                 rng=world.state.rng, hardcore=spec.hardcore, full_version=not spec.demo,
             ))
             session, _ = build_quest_session(
-                world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
+                world=world, world_size=WORLD_SIZE,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
                 game_tune_started=False, finalize_post_render_lifecycle=True, apply_world_dt_steps=apply_world_dt_steps,
                 demo_mode_active=spec.demo, quest_level=quest.level,
@@ -112,13 +111,13 @@ def initialize_run(
                 world.state.status.increment_quest_play_count(index)
         case GameMode.TYPO:
             session = build_typo_session(
-                world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
+                world=world, world_size=WORLD_SIZE,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled, game_tune_started=False,
                 finalize_post_render_lifecycle=True, dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
             )
         case GameMode.TUTORIAL:
             session = build_tutorial_session(
-                world=world, world_size=WORLD_SIZE, damage_scale_by_type=damage,
+                world=world, world_size=WORLD_SIZE,
                 detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled, game_tune_started=False,
                 finalize_post_render_lifecycle=True, demo_mode_active=spec.demo,
             )

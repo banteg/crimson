@@ -57,7 +57,6 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
             PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(400.0, 300.0)),
         ],
         world_size=1024.0,
-        damage_scale_by_type={},
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
