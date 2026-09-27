@@ -2,6 +2,48 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Position through the player field (2026-09-27)
+
+There is no `player_position` local any more. The SDK operators take
+`*(vec2_t *)&player->position` directly, and the operator's reference formal
+survives. Its copy coalesces with the one `player + 0x14` value that C2 keeps
+in esi, which is the shape native has:
+
+- the seven pellet loops copy it per iteration (`mov eax,esi`) before the
+  operator+ lanes;
+- the blood splatter adds it with `blood_position += player->position`, which
+  reads y as `[esi+4]`.
+
+With a named pointer, esi held the local and the loop formals became a second
+value: C2 rematerialized it with `lea` and gave it a spilled home.
+
+The auto-aim block uses the same idea for `player->aim`:
+`aim_delta = target - aim` and `aim += aim_step`. That keeps `&player->aim` in
+ebp and addresses y as `[ebp+4]`, where the pointer local split off `aim+4`.
+
+The surviving formals move C2's symbol counter by about seven 32-id chunks
+(first pointer class 1179; the first value-numbering owner goes from #5353 to
+#5574). Three operand orders keyed by those ids flip:
+
+| Site | Needs | Now |
+|---|---|---|
+| move lanes: stored turn (CSE temp) after `move_speed`'s field owner | turn id 166..767 mod 1024, owner 3 mod 4 | 874, owner 2 |
+| mode-1 turn products: held `turn_speed` before `frame_dt` | heading temp id ≥ 20 mod 1024 | 8 |
+| aim-4 length: `pad.x²` before `scalar²` | pool-B ids of `pad` and `scalar` | flipped |
+
+That is why raw falls while every masked view rises:
+93.91% → 92.70% raw (the flips and the demo tail add 9 instructions and shift labels), labels
+masked 98.88% → 99.30%, structural 98.95% → 99.37%, stack-masked
+99.02% → 99.49%, refs 914/0/0 → 912/0/0, 187/188 frame objects at native
+offsets. Eight no-op parentheses before mode 1 plus a parenthesized
+`(cos * move_speed)` pin the first two ties (raw 94.45%), but they only tune
+ids. The natural source for native's counts is still open; the inflater
+diagnostic shows the counts are whole-function (pool-B chunks), not local.
+
+Remaining besides the ties: auto-target index register (3 lines), the demo
+join-tail clone (4), `normal_fire_ready` in memory (5, its range scores −5),
+`smoke_angle` vs `scalar` (3), and the byte key for `grim_is_key_down` (4).
+
 ## Natural alias-class collapse (2026-09-27)
 
 Native is compiled over C2's 0x400 alias-class budget. The previous source
