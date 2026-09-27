@@ -27,7 +27,6 @@ def build_survival_session(
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
-    finalize_post_render_lifecycle: bool,
     apply_world_dt_steps: bool = True,
 ) -> tuple[DeterministicSession, SurvivalSpawnState]:
     mode_runtime = SurvivalSessionRuntime()
@@ -39,7 +38,6 @@ def build_survival_session(
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
         apply_world_dt_steps=apply_world_dt_steps,
-        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         mode_runtime=mode_runtime,
     )
     return session, mode_runtime.spawn
@@ -51,7 +49,6 @@ def build_rush_session(
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
-    finalize_post_render_lifecycle: bool,
 ) -> tuple[DeterministicSession, RushSpawnState]:
     mode_runtime = RushSessionRuntime(world=world)
     session = DeterministicSession(
@@ -61,7 +58,6 @@ def build_rush_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
-        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         elapsed_uses_raw_dt=True,
         mode_runtime=mode_runtime,
     )
@@ -76,7 +72,6 @@ def build_quest_session(
     game_tune_started: bool,
     demo_mode_active: bool,
     apply_world_dt_steps: bool,
-    finalize_post_render_lifecycle: bool,
     spawn_entries: tuple[SpawnEntry, ...],
     quest_level: QuestLevel | None,
     start_weapon_id: WeaponId | None,
@@ -98,7 +93,6 @@ def build_quest_session(
         game_tune_started=game_tune_started,
         demo_mode_active=demo_mode_active,
         apply_world_dt_steps=apply_world_dt_steps,
-        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         mode_runtime=mode_runtime,
     )
     return session, quest_state
@@ -110,7 +104,6 @@ def build_typo_session(
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
-    finalize_post_render_lifecycle: bool,
     dictionary_words: tuple[str, ...] = (),
     highscore_names: tuple[str, ...] = (),
 ) -> DeterministicSession:
@@ -127,7 +120,6 @@ def build_typo_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
-        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         mode_runtime=TypoSessionRuntime(world=world),
     )
 
@@ -138,7 +130,6 @@ def build_tutorial_session(
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
-    finalize_post_render_lifecycle: bool,
     demo_mode_active: bool,
 ) -> DeterministicSession:
     weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
@@ -154,7 +145,6 @@ def build_tutorial_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         game_tune_started=game_tune_started,
-        finalize_post_render_lifecycle=finalize_post_render_lifecycle,
         demo_mode_active=demo_mode_active,
         mode_runtime=TutorialSessionRuntime(world=world),
     )

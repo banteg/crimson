@@ -56,7 +56,6 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
-        finalize_post_render_lifecycle=False,
     )
     spawn.spawn_cooldown_ms = 1000.0
 
@@ -131,7 +130,6 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
-        finalize_post_render_lifecycle=False,
     )
 
     dt_sim = f32(f32(0.09) * f32(0.3))

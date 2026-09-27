@@ -77,13 +77,13 @@ def initialize_run(
         case GameMode.SURVIVAL:
             session, _ = build_survival_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-                game_tune_started=False, finalize_post_render_lifecycle=True, apply_world_dt_steps=apply_world_dt_steps,
+                game_tune_started=False, apply_world_dt_steps=apply_world_dt_steps,
             )
         case GameMode.RUSH:
             enforce_rush_loadout(world)
             session, _ = build_rush_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-                game_tune_started=False, finalize_post_render_lifecycle=True,
+                game_tune_started=False,
             )
         case GameMode.QUESTS:
             assert quest is not None
@@ -98,7 +98,7 @@ def initialize_run(
             ))
             session, _ = build_quest_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-                game_tune_started=False, finalize_post_render_lifecycle=True, apply_world_dt_steps=apply_world_dt_steps,
+                game_tune_started=False, apply_world_dt_steps=apply_world_dt_steps,
                 demo_mode_active=spec.demo, quest_level=quest.level,
                 start_weapon_id=quest.start_weapon_id if start_weapon_id is None else start_weapon_id,
                 spawn_entries=generated_entries if spawn_entries is None else spawn_entries,
@@ -109,12 +109,12 @@ def initialize_run(
         case GameMode.TYPO:
             session = build_typo_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled, game_tune_started=False,
-                finalize_post_render_lifecycle=True, dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
+                dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
             )
         case GameMode.TUTORIAL:
             session = build_tutorial_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled, game_tune_started=False,
-                finalize_post_render_lifecycle=True, demo_mode_active=spec.demo,
+                demo_mode_active=spec.demo,
             )
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")

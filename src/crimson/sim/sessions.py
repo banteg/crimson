@@ -386,7 +386,6 @@ class DeterministicSession(msgspec.Struct):
     game_tune_started: bool = False
     demo_mode_active: bool = False
     apply_world_dt_steps: bool = True
-    finalize_post_render_lifecycle: bool = False
     elapsed_uses_raw_dt: bool = False
     # Reject perk commands the live UI cannot issue (they would otherwise no-op
     # or reroll perk choices). Original-capture playback replays native menu
@@ -616,8 +615,7 @@ class DeterministicSession(msgspec.Struct):
 
         creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
 
-        if self.finalize_post_render_lifecycle:
-            self.world.creatures.finalize_post_render_lifecycle()
+        self.world.creatures.finalize_post_render_lifecycle()
 
         dt_elapsed = dt_raw_ms if self.elapsed_uses_raw_dt else dt_sim_ms
         self.elapsed_ms = elapsed_before_ms + dt_elapsed

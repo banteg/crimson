@@ -80,7 +80,6 @@ def test_quest_audio_requests_survive_render_partitions(
         game_tune_started=False,
         demo_mode_active=False,
         apply_world_dt_steps=True,
-        finalize_post_render_lifecycle=True,
         spawn_entries=(),
         quest_level=None,
         start_weapon_id=None,

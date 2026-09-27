@@ -196,7 +196,6 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
         mode_runtime=SurvivalSessionRuntime(),
-        finalize_post_render_lifecycle=True,
     )
 
     _tick = session.step_tick(
@@ -219,7 +218,6 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         perk_progression_enabled=False,
         mode_runtime=RushSessionRuntime(world=world),
         elapsed_uses_raw_dt=True,
-        finalize_post_render_lifecycle=True,
     )
 
     _tick = session.step_tick(
