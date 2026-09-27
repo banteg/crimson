@@ -28,8 +28,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         terrain = advance_unlock_terrain(
             state.rng,
             unlock_index=int(state.status.quest_unlock_index),
-            width=1024,
-            height=1024,
         )
         base, overlay, detail = resolve_terrain_slots(terrain.terrain_slots, resources.texture)
     else:

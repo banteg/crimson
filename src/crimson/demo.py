@@ -117,8 +117,6 @@ class DemoView:
         terrain = advance_explicit_terrain(
             self._runtime.world.state.rng,
             terrain_slots=terrain_slots,
-            width=TERRAIN_SIZE,
-            height=TERRAIN_SIZE,
         )
         self._runtime.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain.terrain_slots,

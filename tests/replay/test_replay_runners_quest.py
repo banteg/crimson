@@ -11,7 +11,6 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_result import RunOutcome
-from crimson.sim.state_types import TERRAIN_SIZE
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
@@ -59,25 +58,18 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     quest = quest_by_level(QuestLevel(1, 3))
     assert quest is not None
 
-    ctx = QuestContext(
-        width=TERRAIN_SIZE,
-        height=TERRAIN_SIZE,
-        player_count=int(replay.run.player_count),
+    ctx = QuestContext(player_count=int(replay.run.player_count),
     )
     rng = Crand(int(replay.run.seed))
     advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
-        width=TERRAIN_SIZE,
-        height=TERRAIN_SIZE,
     )
     # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
     rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
     quest_terrain = advance_explicit_terrain(
         rng,
         terrain_slots=quest.terrain_slots,
-        width=TERRAIN_SIZE,
-        height=TERRAIN_SIZE,
     )
     spawn_entries = tuple(
         build_quest_spawn_table(

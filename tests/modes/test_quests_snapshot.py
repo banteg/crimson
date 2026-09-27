@@ -31,7 +31,7 @@ def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, obje
 
 
 def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
-    ctx = QuestContext(width=1024, height=1024, player_count=1)
+    ctx = QuestContext(player_count=1)
     matcher = cast(PropertyMatcher, _round_matcher)
     for quest in all_quests():
         payload = {

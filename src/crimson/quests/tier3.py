@@ -7,10 +7,10 @@ from ..creatures.spawn import SpawnId
 from ..math_parity import f32, x87_pc24_add, x87_pc24_mul
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
+from ..sim.state_types import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
-    center_point,
     edge_midpoints,
     radial_points,
     random_angle,
@@ -29,8 +29,8 @@ from .types import QuestContext, SpawnEntry
     unlock_perk_id=PerkId.TOXIC_AVENGER,
 )
 def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    edges = edge_midpoints(ctx.width)
-    edges_wide = edge_midpoints(ctx.width, offset=128.0)
+    edges = edge_midpoints()
+    edges_wide = edge_midpoints(offset=128.0)
     entries = [
         spawn(
             edges_wide.right,
@@ -219,7 +219,7 @@ def build_3_3_the_killing(
     rng: CrandLike,
     full_version: bool = True,
 ) -> list[SpawnEntry]:
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
@@ -315,7 +315,7 @@ def build_3_3_the_killing(
     unlock_weapon_id=WeaponId.SEEKER_ROCKETS,
 )
 def build_3_4_hidden_evil(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    edges = edge_midpoints(ctx.width, ctx.height)
+    edges = edge_midpoints()
     return [
         spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_1_21, trigger_ms=500, count=50),
         spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_2_22, trigger_ms=15000, count=30),
@@ -411,7 +411,7 @@ def build_3_5_surrounded_by_reptiles(
 )
 def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     for wave in range(10):
         count = wave + 6
@@ -436,7 +436,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_versio
         if wave == 4:
             entries.append(
                 spawn(
-                    Vec2(ctx.width + 128.0, edges.right.y),
+                    Vec2(TERRAIN_SIZE + 128.0, edges.right.y),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B,
                     trigger_ms=1500,
@@ -455,8 +455,8 @@ def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_versio
     unlock_perk_id=PerkId.NINJA,
 )
 def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    edges = edge_midpoints(ctx.width)
-    center = center_point(ctx.width, ctx.height)
+    edges = edge_midpoints()
+    center = NATIVE_CENTER
     entries = [
         spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, trigger_ms=500, count=1),
         spawn(
@@ -505,7 +505,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
 )
 def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     while trigger < 91500:
         entries.append(

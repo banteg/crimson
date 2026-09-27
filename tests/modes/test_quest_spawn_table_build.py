@@ -10,21 +10,12 @@ from crimson.quests.runtime import (
 from crimson.quests.tier1 import (
     build_1_3_target_practice,
     build_1_6_the_random_factor,
-    build_1_8_alien_squads,
 )
 from crimson.quests.tier2 import (
-    build_2_1_everred_pastures,
     build_2_5_sweep_stakes,
-    build_2_7_survival_of_the_fastest,
 )
-from crimson.quests.tier3 import build_3_1_the_blighting, build_3_3_the_killing, build_3_9_deja_vu
+from crimson.quests.tier3 import build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.tier4 import build_4_10_the_end_of_all
-from crimson.quests.tier5 import (
-    build_5_3_the_fortress,
-    build_5_4_the_gang_wars,
-    build_5_9_nagolipoli,
-    build_5_10_the_gathering,
-)
 from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
@@ -34,142 +25,15 @@ from grim.rand import Crand, CrandLike
 from tests.support.helpers import ScriptedCrand
 
 
-def test_everred_bonus_bottom_y_is_native_constant() -> None:
-    ctx = QuestContext(width=2048, height=2048, player_count=1)
-
-    entries = build_2_1_everred_pastures(ctx, rng=Crand(0), full_version=True)
-
-    assert len(entries) == 34
-    assert entries[16].pos == Vec2(1024.0, -64.0)
-    assert entries[17].pos == Vec2(1024.0, 1088.0)
-
-
-def test_gang_wars_uses_native_half_height_and_fixed_chain_positions() -> None:
-    ctx = QuestContext(width=2048, height=2049, player_count=1)
-
-    entries = build_5_4_the_gang_wars(ctx, rng=Crand(0), full_version=True)
-
-    assert len(entries) == 24
-    assert entries[0].pos == Vec2(-150.0, 1024.5)
-    assert entries[12].pos == Vec2(512.0, 1152.0)
-    assert entries[13].pos == Vec2(-150.0, 1024.5)
-    assert entries[23].pos == Vec2(512.0, 1152.0)
-
-
-def test_fortress_uses_native_half_height() -> None:
-    ctx = QuestContext(width=2048, height=2049, player_count=1)
-
-    entries = build_5_3_the_fortress(ctx, rng=Crand(0), full_version=True)
-
-    assert len(entries) == 42
-    assert entries[0].pos == Vec2(-50.0, 1024.5)
-    assert entries[8].pos == Vec2(320.0, 448.0)
-    # Native rounds `(float)(row * 0x180) * 0.16666667f` before `512.0f - ...` (oracle-checked).
-    assert entries[13].pos == Vec2(320.0, 128.0)
-
-
-def test_alien_squads_far_corner_stays_at_native_fixed_coordinate() -> None:
-    ctx = QuestContext(width=2048, height=2048, player_count=1)
-
-    entries = build_1_8_alien_squads(ctx, rng=Crand(0), full_version=True)
-
-    assert len(entries) == 60
-    assert entries[8].pos == Vec2(-64.0, -64.0)
-    assert entries[9].pos == Vec2(1088.0, 1088.0)
-    assert entries[59].pos == Vec2(1088.0, 1088.0)
-
-
-def test_blighting_corners_and_red_right_waves_stay_at_native_coordinates() -> None:
-    ctx = QuestContext(width=2048, height=3072, player_count=1)
-
-    entries = build_3_1_the_blighting(ctx, rng=Crand(0), full_version=True)
-
-    assert len(entries) == 17
-    assert entries[0].pos == Vec2(2176.0, 1024.0)
-    assert [entry.pos for entry in entries[2:6]] == [
-        Vec2(896.0, 128.0),
-        Vec2(128.0, 128.0),
-        Vec2(128.0, 896.0),
-        Vec2(896.0, 896.0),
-    ]
-    assert entries[10].pos == Vec2(1152.0, 1024.0)
-    assert entries[13].pos == Vec2(1152.0, 1024.0)
-
-
-def test_end_of_all_stays_in_native_fixed_coordinate_space() -> None:
-    ctx = QuestContext(width=2048, height=3072, player_count=1)
-
-    entries = build_4_10_the_end_of_all(ctx, rng=Crand(0), full_version=True)
-
-    assert len(entries) == 25
-    assert [entry.pos for entry in entries[:4]] == [
-        Vec2(128.0, 128.0),
-        Vec2(896.0, 128.0),
-        Vec2(128.0, 896.0),
-        Vec2(896.0, 896.0),
-    ]
-    assert entries[4].pos == Vec2(592.0, 512.0)
-    assert entries[10].pos == Vec2(512.0, 512.0)
-    assert [entry.pos for entry in entries[11:15]] == [
-        Vec2(-128.0, 256.0),
-        Vec2(1152.0, 384.0),
-        Vec2(-128.0, 512.0),
-        Vec2(1152.0, 640.0),
-    ]
-
-    hardcore_entries = build_4_10_the_end_of_all(
-        QuestContext(width=2048, height=3072, player_count=1, hardcore=True),
+def test_end_of_all_hardcore_ring_keeps_native_float32_positions() -> None:
+    entries = build_4_10_the_end_of_all(
+        QuestContext(player_count=1, hardcore=True),
         rng=Crand(0),
         full_version=True,
     )
     # Native float32 ring positions, untruncated (oracle-checked).
-    assert hardcore_entries[26].pos == Vec2(332.0, 511.9999694824219)
-    assert hardcore_entries[31].pos == Vec2(667.8845825195312, 422.00006103515625)
-
-
-def test_gathering_edges_stay_at_native_fixed_coordinates() -> None:
-    entries = build_5_10_the_gathering(
-        QuestContext(width=2048, height=3072, player_count=1),
-        rng=Crand(0),
-        full_version=True,
-    )
-
-    assert len(entries) == 13
-    assert entries[10].pos == Vec2(-128.0, 512.0)
-    assert entries[11].pos == Vec2(1152.0, 512.0)
-    assert entries[12].pos == Vec2(1152.0, 512.0)
-
-
-def test_survival_of_the_fastest_corners_stay_at_native_coordinates() -> None:
-    entries = build_2_7_survival_of_the_fastest(
-        QuestContext(width=2048, height=3072, player_count=1),
-        rng=Crand(0),
-        full_version=True,
-    )
-
-    assert len(entries) == 26
-    assert [entry.pos for entry in entries[22:]] == [
-        Vec2(128.0, 128.0),
-        Vec2(896.0, 128.0),
-        Vec2(128.0, 896.0),
-        Vec2(896.0, 896.0),
-    ]
-
-
-def test_nagolipoli_stays_in_native_fixed_coordinate_space() -> None:
-    entries = build_5_9_nagolipoli(
-        QuestContext(width=2048, height=3072, player_count=1),
-        rng=Crand(0),
-        full_version=True,
-    )
-
-    assert len(entries) == 164
-    assert entries[0].pos == Vec2(640.0, 512.0)
-    assert entries[8].pos == Vec2(690.0, 512.0)
-    assert entries[148].pos == Vec2(64.0, 256.0)
-    assert entries[154].pos == Vec2(960.0, 256.0)
-    assert entries[162].pos == Vec2(512.0, 1088.0)
-    assert entries[163].pos == Vec2(512.0, -64.0)
+    assert entries[26].pos == Vec2(332.0, 511.9999694824219)
+    assert entries[31].pos == Vec2(667.8845825195312, 422.00006103515625)
 
 
 def test_apply_hardcore_spawn_table_adjustment() -> None:
@@ -207,7 +71,7 @@ def test_apply_hardcore_spawn_table_adjustment() -> None:
 
 
 def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
-    ctx = QuestContext(width=1024, height=1024, player_count=1)
+    ctx = QuestContext(player_count=1)
     cases = (
         (QuestLevel(2, 10), 3, 6),
         (QuestLevel(4, 7), 68, 92),
@@ -268,7 +132,7 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
         start_weapon_id=WeaponId.NONE,
         terrain_slots=DEFAULT_TERRAIN_SLOTS,
     )
-    ctx = QuestContext(width=1024, height=1024, player_count=1)
+    ctx = QuestContext(player_count=1)
 
     full_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), hardcore=False, full_version=True)
     demo_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), hardcore=False, full_version=False)
@@ -285,7 +149,7 @@ def test_build_3_3_the_killing_discards_pick_rolls_and_cycles_by_wave_index() ->
     on the wave counter, so templates cycle wave % 3, edges cycle wave % 5,
     and the random-spawner batches always land on waves 4 and 9."""
 
-    ctx = QuestContext(width=1024, height=1024, player_count=1)
+    ctx = QuestContext(player_count=1)
     # Pick rolls of 4 would make every wave a spawner wave if the rolls were
     # used; spawner coordinate rolls are real (y before x, like native).
     rng = ScriptedCrand(
@@ -346,7 +210,7 @@ def test_build_3_3_the_killing_discards_pick_rolls_and_cycles_by_wave_index() ->
 
 
 def test_quest_rng_builders_use_exact_native_callers() -> None:
-    ctx = QuestContext(width=1024, height=1024, player_count=1)
+    ctx = QuestContext(player_count=1)
 
     target_practice_rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     build_1_3_target_practice(ctx, rng=target_practice_rng, full_version=True)

@@ -91,7 +91,7 @@ def _live_runtime_checkpoints(
 def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
     quest = quest_by_level(QuestLevel.parse(level))
     assert quest is not None
-    ctx = QuestContext(width=1024, height=1024, player_count=int(player_count))
+    ctx = QuestContext(player_count=int(player_count))
     return tuple(
         build_quest_spawn_table(
             quest,

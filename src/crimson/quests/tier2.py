@@ -6,7 +6,6 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
@@ -29,7 +28,7 @@ from .types import QuestContext, SpawnEntry
     unlock_perk_id=PerkId.BONUS_ECONOMIST,
 )
 def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     entries: list[SpawnEntry] = []
     for wave in range(1, 9):
         trigger = (wave - 1) * 13000 + 1500
@@ -240,7 +239,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version:
 )
 def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     for wave in range(40):
         trigger_a = wave * 2000 + 1000
         trigger_b = (wave * 5 + 5) * 400
@@ -353,7 +352,7 @@ def build_2_6_evil_zombies_at_large(
     full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     count = 4
     while count <= 13:
@@ -514,14 +513,13 @@ def build_2_8_land_of_lizards(ctx: QuestContext, *, rng: CrandLike, full_version
 )
 def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width, ctx.width, offset=128.0)
-    fixed_right_x = edge_midpoints(TERRAIN_SIZE, offset=128.0).right.x
+    edges = edge_midpoints(offset=128.0)
     entries.append(
         spawn(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
     )
     trigger = 2500
     for i in range(12):
-        x = edges.left.x if i % 2 == 0 else fixed_right_x
+        x = edges.left.x if i % 2 == 0 else edges.right.x
         entries.append(
             spawn(
                 Vec2(x, edges.left.y),

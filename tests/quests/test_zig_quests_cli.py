@@ -20,14 +20,12 @@ from grim.rand import Crand
 def test_zig_quests_json_matches_python_spawn_table() -> None:
     level = QuestLevel(2, 5)
     seed = 0x1234
-    width = 1600
-    height = 900
     player_count = 3
     quest = quest_by_level(level)
     assert quest is not None
     expected_entries = build_quest_spawn_table(
         quest,
-        QuestContext(width=width, height=height, player_count=player_count),
+        QuestContext(player_count=player_count),
         rng=Crand(seed),
         hardcore=False,
         full_version=True,
@@ -43,10 +41,6 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
             level.text,
             "--format",
             "json",
-            "--width",
-            str(width),
-            "--height",
-            str(height),
             "--player-count",
             str(player_count),
             "--seed",
@@ -67,14 +61,14 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
     assert _payload_entries(payload_entries) == _expected_entries(expected_entries)
 
 
-# (seed, player count, terrain width, terrain height, hardcore)
+# (seed, player count, hardcore)
 _EXACT_CASES = (
-    (0, 1, 1024, 1024, False),
-    (3, 4, 1024, 1024, False),
-    (0xBEEF, 1, 1024, 1024, True),
-    (0x1337, 2, 2048, 2048, False),
-    (0xDEADBEEF, 3, 512, 512, True),
-    (0x1234, 2, 1600, 900, False),
+    (0, 1, False),
+    (3, 4, False),
+    (0xBEEF, 1, True),
+    (0x1337, 2, False),
+    (0xDEADBEEF, 3, True),
+    (0x1234, 2, False),
 )
 
 
@@ -88,10 +82,10 @@ def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
 
-    for seed, player_count, width, height, hardcore in _EXACT_CASES:
+    for seed, player_count, hardcore in _EXACT_CASES:
         rng = Crand(seed)
         expected_entries = quest.builder(
-            QuestContext(width=width, height=height, player_count=player_count, hardcore=hardcore),
+            QuestContext(player_count=player_count, hardcore=hardcore),
             rng=rng,
             full_version=True,
         )
@@ -102,10 +96,6 @@ def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None
                 level.text,
                 "--format",
                 "json",
-                "--width",
-                str(width),
-                "--height",
-                str(height),
                 "--player-count",
                 str(player_count),
                 "--seed",
@@ -116,7 +106,7 @@ def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None
         )
 
         assert result.returncode == 0, dbg_record._command_detail(result)
-        case = (seed, player_count, width, height, hardcore)
+        case = (seed, player_count, hardcore)
         payload_entries = cast("list[dict[str, Any]]", json.loads(result.stdout)["entries"])
         assert _payload_entries(payload_entries) == _expected_entries(expected_entries), case
 
@@ -140,7 +130,7 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
     assert quest is not None
     expected_entries = build_quest_spawn_table(
         quest,
-        QuestContext(width=1024, height=1024, player_count=1),
+        QuestContext(player_count=1),
         rng=Crand(0),
         hardcore=False,
         full_version=True,

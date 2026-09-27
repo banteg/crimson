@@ -18,11 +18,10 @@ from ..math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
+from ..sim.state_types import TERRAIN_SIZE
 from .types import SpawnEntry
 
-# Most builders bake the 1024x1024 quest terrain into float literals (1088.0 for
-# `1024 + 64`, 512.0 for the center) instead of reading `terrain_texture_width`.
-NATIVE_CENTER = Vec2(512.0, 512.0)
+NATIVE_CENTER = Vec2(TERRAIN_SIZE * 0.5, TERRAIN_SIZE * 0.5)
 
 # `(float)(crt_rand() % 612) * 0.01f`: random quest angles in [0, 6.11].
 _RANDOM_ANGLE_SCALE = f32(0.01)
@@ -35,32 +34,21 @@ class EdgePoints(msgspec.Struct, frozen=True):
     bottom: Vec2
 
 
-def center_point(width: float, height: float | None = None) -> Vec2:
-    if height is None:
-        height = width
-    return Vec2(float(width) * 0.5, float(height) * 0.5)
-
-
-def edge_midpoints(width: float, height: float | None = None, offset: float = 64.0) -> EdgePoints:
-    if height is None:
-        height = width
-    center = center_point(width, height)
+def edge_midpoints(offset: float = 64.0) -> EdgePoints:
     return EdgePoints(
-        left=Vec2(-offset, center.y),
-        right=Vec2(float(width) + offset, center.y),
-        top=Vec2(center.x, -offset),
-        bottom=Vec2(center.x, float(height) + offset),
+        left=Vec2(-offset, NATIVE_CENTER.y),
+        right=Vec2(TERRAIN_SIZE + offset, NATIVE_CENTER.y),
+        top=Vec2(NATIVE_CENTER.x, -offset),
+        bottom=Vec2(NATIVE_CENTER.x, TERRAIN_SIZE + offset),
     )
 
 
-def corner_points(width: float, height: float | None = None, offset: float = 64.0) -> tuple[Vec2, ...]:
-    if height is None:
-        height = width
+def corner_points(offset: float = 64.0) -> tuple[Vec2, ...]:
     return (
         Vec2(-offset, -offset),
-        Vec2(float(width) + offset, -offset),
-        Vec2(-offset, float(height) + offset),
-        Vec2(float(width) + offset, float(height) + offset),
+        Vec2(TERRAIN_SIZE + offset, -offset),
+        Vec2(-offset, TERRAIN_SIZE + offset),
+        Vec2(TERRAIN_SIZE + offset, TERRAIN_SIZE + offset),
     )
 
 

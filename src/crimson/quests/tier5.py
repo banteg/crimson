@@ -8,6 +8,7 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ..perks import PerkId
+from ..sim.state_types import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
@@ -32,7 +33,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     entries: list[SpawnEntry] = [
         spawn(Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
         spawn(
-            Vec2(ctx.width + 32.0, float(ctx.height // 2)),
+            Vec2(TERRAIN_SIZE + 32.0, float(TERRAIN_SIZE // 2)),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
             trigger_ms=8000,
@@ -45,7 +46,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     for _ in range(8):
         entries.append(
             spawn(
-                Vec2(float(ctx.width + x_offset), float(ctx.height // 2)),
+                Vec2(float(TERRAIN_SIZE + x_offset), float(TERRAIN_SIZE // 2)),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
                 trigger_ms=trigger,
@@ -57,7 +58,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
 
     entries.append(
         spawn(
-            Vec2(-32.0, float(ctx.height // 2)),
+            Vec2(-32.0, float(TERRAIN_SIZE // 2)),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
             trigger_ms=18000,
@@ -70,7 +71,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     for _ in range(8):
         entries.append(
             spawn(
-                Vec2(float(x), float(ctx.height // 2)),
+                Vec2(float(x), float(TERRAIN_SIZE // 2)),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
                 trigger_ms=trigger,
@@ -85,7 +86,7 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     for _ in range(6):
         entries.append(
             spawn(
-                Vec2(float(ctx.width // 2), float(y)),
+                Vec2(float(TERRAIN_SIZE // 2), float(y)),
                 heading=0.0,
                 spawn_id=SpawnId.ALIEN_GHOST_0F,
                 trigger_ms=trigger,
@@ -96,11 +97,11 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike, full_version: bo
         y -= 42
 
     trigger = 40000
-    y = ctx.width + 0x2C
+    y = TERRAIN_SIZE + 0x2C
     for _ in range(6):
         entries.append(
             spawn(
-                Vec2(float(ctx.width // 2), float(y)),
+                Vec2(float(TERRAIN_SIZE // 2), float(y)),
                 heading=0.0,
                 spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
@@ -179,7 +180,7 @@ def build_5_2_the_spanking_of_the_dead(
     unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
 )
 def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    half_height = float(ctx.height) * 0.5
+    half_height = TERRAIN_SIZE * 0.5
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(-50.0, half_height),
@@ -239,7 +240,7 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike, full_version: b
     unlock_weapon_id=WeaponId.GAUSS_SHOTGUN,
 )
 def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    half_height = float(ctx.height) * 0.5
+    half_height = TERRAIN_SIZE * 0.5
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(-150.0, half_height),
@@ -320,7 +321,7 @@ def build_5_5_knee_deep_in_the_dead(
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
-            Vec2(-50.0, float(ctx.height * 0.5)),
+            Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
             heading=0.0,
             spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
             trigger_ms=100,
@@ -334,7 +335,7 @@ def build_5_5_knee_deep_in_the_dead(
         if wave % 8 == 0:
             entries.append(
                 spawn(
-                    Vec2(-50.0, float(ctx.height * 0.5)),
+                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
                     trigger_ms=trigger - 2,
@@ -344,7 +345,7 @@ def build_5_5_knee_deep_in_the_dead(
         count = 2 if wave > 0x20 else 1
         entries.append(
             spawn(
-                Vec2(-50.0, float(ctx.height * 0.5)),
+                Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
@@ -354,7 +355,7 @@ def build_5_5_knee_deep_in_the_dead(
         if trigger > 0x30D4:
             entries.append(
                 spawn(
-                    Vec2(-50.0, float(ctx.height * 0.5 + 158.0)),
+                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 + 158.0)),
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger + 500,
@@ -364,7 +365,7 @@ def build_5_5_knee_deep_in_the_dead(
         if trigger > 0x5FB4:
             entries.append(
                 spawn(
-                    Vec2(-50.0, float(ctx.height * 0.5 - 158.0)),
+                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 - 158.0)),
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger + 1000,
@@ -374,7 +375,7 @@ def build_5_5_knee_deep_in_the_dead(
         if trigger > 0x8E94:
             entries.append(
                 spawn(
-                    Vec2(-50.0, float(ctx.height * 0.5 - 258.0)),
+                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 - 258.0)),
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
                     trigger_ms=trigger + 0x514,
@@ -384,7 +385,7 @@ def build_5_5_knee_deep_in_the_dead(
         if trigger > 0xBD74:
             entries.append(
                 spawn(
-                    Vec2(-50.0, float(ctx.height * 0.5 + 258.0)),
+                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 + 258.0)),
                     heading=0.0,
                     spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
                     trigger_ms=trigger + 300,
@@ -407,7 +408,7 @@ def build_5_5_knee_deep_in_the_dead(
 def build_5_6_cross_fire(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     return [
         spawn(
-            Vec2(1074.0, float(ctx.height * 0.5)),
+            Vec2(1074.0, float(TERRAIN_SIZE * 0.5)),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
             trigger_ms=100,
@@ -550,14 +551,14 @@ def build_5_7_army_of_three(ctx: QuestContext, *, rng: CrandLike, full_version: 
 def build_5_8_monster_blues(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
-            Vec2(-50.0, float(ctx.height * 0.5)),
+            Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
             heading=0.0,
             spawn_id=SpawnId.LIZARD_RANDOM_04,
             trigger_ms=500,
             count=10,
         ),
         spawn(
-            Vec2(1074.0, float(ctx.height * 0.5)),
+            Vec2(1074.0, float(TERRAIN_SIZE * 0.5)),
             heading=0.0,
             spawn_id=SpawnId.ALIEN_RANDOM_06,
             trigger_ms=7500,

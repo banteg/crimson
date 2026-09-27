@@ -56,8 +56,6 @@ def test_demo_apply_terrain_setup_uses_runtime_rng_and_explicit_terrain_seed(mak
     expected_terrain = advance_explicit_terrain(
         expected_rng,
         terrain_slots=Q2_TERRAIN_SLOTS,
-        width=1024,
-        height=1024,
     )
 
     view._apply_terrain_setup(terrain_slots=Q2_TERRAIN_SLOTS)

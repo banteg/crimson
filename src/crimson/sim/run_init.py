@@ -22,7 +22,6 @@ from .session_builders import (
     build_typo_session,
 )
 from .sessions import DeterministicSession, enforce_rush_loadout
-from .state_types import TERRAIN_SIZE
 from .world_reset import CreatureSlotResidue, apply_creature_pool_residue, reset_world_players
 from .world_state import WorldState
 
@@ -71,7 +70,7 @@ def initialize_run(
         path=Path("run://status"), data=spec.status.as_status_data(), dirty=False,
     )
     terrain = advance_unlock_terrain(
-        world.state.rng, unlock_index=spec.status.quest_unlock_index, width=TERRAIN_SIZE, height=TERRAIN_SIZE,
+        world.state.rng, unlock_index=spec.status.quest_unlock_index,
     )
     highscore_tag = 0
     match spec.game_mode_id:
@@ -91,10 +90,10 @@ def initialize_run(
             # Native burns the score tag between generic and quest terrain setup.
             highscore_tag = world.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
             terrain = advance_explicit_terrain(
-                world.state.rng, terrain_slots=quest.terrain_slots, width=TERRAIN_SIZE, height=TERRAIN_SIZE,
+                world.state.rng, terrain_slots=quest.terrain_slots,
             )
             generated_entries = tuple(build_quest_spawn_table(
-                quest, QuestContext(width=TERRAIN_SIZE, height=TERRAIN_SIZE, player_count=spec.player_count),
+                quest, QuestContext(player_count=spec.player_count),
                 rng=world.state.rng, hardcore=spec.hardcore, full_version=not spec.demo,
             ))
             session, _ = build_quest_session(

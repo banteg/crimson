@@ -184,8 +184,6 @@ def test_regenerate_menu_ground_uses_mutated_app_rng_and_schedules_terrain_seed(
     expected_terrain = advance_unlock_terrain(
         expected_rng,
         unlock_index=int(state.status.quest_unlock_index),
-        width=1024,
-        height=1024,
     )
 
     ground = ensure_menu_ground(state, regenerate=True)

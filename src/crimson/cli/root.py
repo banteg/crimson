@@ -127,8 +127,6 @@ def _format_meta(quest: QuestDefinition) -> list[str]:
 @app.command("quests")
 def cmd_quests(
     level: str = typer.Argument(..., help="quest level, e.g. 1.1"),
-    width: int = typer.Option(1024, help="terrain width"),
-    height: int = typer.Option(1024, help="terrain height"),
     player_count: int = typer.Option(1, help="player count"),
     seed: int | None = typer.Option(None, help="seed for randomized quests"),
     sort: bool = typer.Option(False, help="sort output by trigger time"),
@@ -145,7 +143,7 @@ def cmd_quests(
         raise typer.Exit(code=1)
     builder = quest.builder
     title = quest.title
-    ctx = QuestContext(width=width, height=height, player_count=player_count)
+    ctx = QuestContext(player_count=player_count)
     rng = Crand(seed) if seed is not None else Crand()
     entries = builder(ctx, rng=rng, full_version=True)
     if sort:

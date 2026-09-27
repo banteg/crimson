@@ -17,6 +17,7 @@ import pytest
 
 from crimson.quests import all_quests
 from crimson.quests.types import QuestContext, QuestDefinition
+from crimson.sim.state_types import TERRAIN_SIZE
 from grim.rand import CrtRand
 
 from ._support import Mismatch, compare_fields, mismatch_report
@@ -33,17 +34,14 @@ _ENTRY_LAYOUT: dict[str, tuple[int, str]] = {
 }
 _ENTRY_CAPACITY = 0x400
 _SEEDS = (0, 1, 1337, 0xBEEF, 0x7FFF_FFFF, 0xDEADBEEF, *random.Random(0x437A00).choices(range(1 << 32), k=26))
-# (terrain width, terrain height, player count, hardcore): the builders read
-# `terrain_texture_width`, `terrain_texture_height`, `config_player_count` and
-# `config_hardcore`.
+# (player count, hardcore): the builders read `config_player_count` and
+# `config_hardcore`; the terrain globals stay at the native 1024.
 _ENVIRONMENTS = (
-    (1024, 1024, 1, False),
-    (1024, 1024, 3, False),
-    (1024, 1024, 1, True),
-    (1024, 1024, 4, True),
-    (512, 512, 1, False),
-    (2048, 2048, 2, True),
-    (1600, 900, 2, False),
+    (1, False),
+    (2, True),
+    (3, False),
+    (1, True),
+    (4, True),
 )
 
 
@@ -60,20 +58,20 @@ def test_quest_builder_matches_native(oracle, quest: QuestDefinition) -> None:
 
     mismatches: list[Mismatch] = []
     cases = 0
-    for width, height, player_count, hardcore in _ENVIRONMENTS:
+    for player_count, hardcore in _ENVIRONMENTS:
         for seed in _SEEDS:
             cases += 1
-            case = f"{quest.level.text} {width}x{height} players={player_count} hardcore={hardcore} seed=0x{seed:08x}"
+            case = f"{quest.level.text} players={player_count} hardcore={hardcore} seed=0x{seed:08x}"
             oracle.restore(pristine)
-            oracle.write_u32("terrain_texture_width", width)
-            oracle.write_u32("terrain_texture_height", height)
+            oracle.write_u32("terrain_texture_width", TERRAIN_SIZE)
+            oracle.write_u32("terrain_texture_height", TERRAIN_SIZE)
             oracle.write_u32("config_player_count", player_count)
             oracle.write_u8("config_hardcore", int(hardcore))
             oracle.rand_state = seed
             oracle.call(builder, entries, count_ptr)
 
             rng = CrtRand(seed)
-            ctx = QuestContext(width=width, height=height, player_count=player_count, hardcore=hardcore)
+            ctx = QuestContext(player_count=player_count, hardcore=hardcore)
             python_entries = quest.builder(ctx, rng=rng, full_version=True)
 
             native_count = oracle.read_i32(count_ptr)

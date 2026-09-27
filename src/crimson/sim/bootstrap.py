@@ -11,6 +11,7 @@ from ..terrain_slots import (
     TerrainSlotTriplet,
     choose_unlock_terrain_slots,
 )
+from .state_types import TERRAIN_SIZE
 
 # Terrain stamping RNG consumption mirrors `grim/terrain_render.py` + `docs/crimsonland-exe/terrain.md`.
 TERRAIN_RANDOM_PRELUDE_DRAWS = 3
@@ -71,20 +72,6 @@ _EXPLICIT_TERRAIN_STAMP_CALLERS: tuple[TerrainStampCallerTriplet, ...] = (
 )
 
 
-def terrain_stamping_draws(*, width: int, height: int) -> int:
-    """Return the number of `rand()` draws consumed by the procedural terrain stamps."""
-
-    w = max(0, width)
-    h = max(0, height)
-    area = w * h
-    stamps = (
-        ((area * TERRAIN_DENSITY_BASE) >> TERRAIN_DENSITY_SHIFT)
-        + ((area * TERRAIN_DENSITY_OVERLAY) >> TERRAIN_DENSITY_SHIFT)
-        + ((area * TERRAIN_DENSITY_DETAIL) >> TERRAIN_DENSITY_SHIFT)
-    )
-
-    return stamps * TERRAIN_RAND_DRAWS_PER_STAMP
-
 
 class TerrainSetup(msgspec.Struct, frozen=True):
     terrain_slots: TerrainSlotTriplet
@@ -103,11 +90,9 @@ def _advance_random_terrain_prelude_rng(rng: CrandLike) -> None:
 def _advance_terrain_stamping_rng(
     rng: CrandLike,
     *,
-    width: int,
-    height: int,
     generation_kind: TerrainGenerationKind,
 ) -> None:
-    area = max(0, width) * max(0, height)
+    area = TERRAIN_SIZE * TERRAIN_SIZE
     caller_sets = (
         _UNLOCK_RANDOM_TERRAIN_STAMP_CALLERS
         if generation_kind is TerrainGenerationKind.UNLOCK_RANDOM
@@ -129,8 +114,6 @@ def advance_unlock_terrain(
     rng: CrandLike,
     *,
     unlock_index: int,
-    width: int,
-    height: int,
 ) -> TerrainSetup:
     """Advance RNG through the shared unlock-driven terrain startup window.
 
@@ -144,8 +127,6 @@ def advance_unlock_terrain(
     terrain_seed = rng.state
     _advance_terrain_stamping_rng(
         rng,
-        width=width,
-        height=height,
         generation_kind=TerrainGenerationKind.UNLOCK_RANDOM,
     )
     return TerrainSetup(
@@ -159,16 +140,12 @@ def advance_explicit_terrain(
     rng: CrandLike,
     *,
     terrain_slots: TerrainSlotTriplet,
-    width: int,
-    height: int,
 ) -> TerrainSetup:
     """Advance RNG through explicit terrain generation when slots are fixed."""
 
     terrain_seed = rng.state
     _advance_terrain_stamping_rng(
         rng,
-        width=width,
-        height=height,
         generation_kind=TerrainGenerationKind.EXPLICIT,
     )
     return TerrainSetup(

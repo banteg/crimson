@@ -29,7 +29,7 @@ from .types import QuestContext, SpawnEntry
 )
 def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(TERRAIN_SIZE)
+    edges = edge_midpoints()
     trigger = 4000
     for offset in range(0, 0x5DC, 0xF):
         entries.append(
@@ -65,7 +65,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
 )
 def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     while trigger < 0x17CDC:
         entries.append(
@@ -99,7 +99,7 @@ def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bo
 )
 def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     wave = 0
     while trigger < 0x1BB5C:
@@ -155,8 +155,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
 )
 def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
-    top = edge_midpoints(TERRAIN_SIZE).top
+    edges = edge_midpoints()
     trigger = 1500
     wave = 0
     while trigger < 0x2B55C:
@@ -190,7 +189,7 @@ def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_versi
         )
         entries.append(
             spawn(
-                top,
+                edges.top,
                 heading=0.0,
                 spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
@@ -211,8 +210,8 @@ def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_versi
 )
 def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width)
-    edges_wide = edge_midpoints(ctx.width, offset=128.0)
+    edges = edge_midpoints()
+    edges_wide = edge_midpoints(offset=128.0)
     trigger = 1500
     wave = 0
     while trigger < 0x1656C:
@@ -418,7 +417,7 @@ def _gauntlet_ring(radius: float, count: int) -> list[Vec2]:
 def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if ctx.hardcore else 0)
-    edges = edge_midpoints(ctx.width)
+    edges = edge_midpoints()
 
     ring_count = player_count + 9
     if ring_count > 0:
@@ -539,7 +538,7 @@ def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike, full_version: 
 )
 def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    half_w = ctx.width // 2
+    half_w = TERRAIN_SIZE // 2
     entries.append(
         spawn(
             Vec2(128.0, float(half_w)),

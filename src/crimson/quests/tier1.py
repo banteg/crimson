@@ -10,7 +10,6 @@ from ..sim.state_types import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
-    center_point,
     corner_points,
     edge_midpoints,
     heading_from_center,
@@ -30,8 +29,8 @@ from .types import QuestContext, SpawnEntry
     unlock_weapon_id=WeaponId.ASSAULT_RIFLE,
 )
 def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    edges = edge_midpoints(ctx.width, ctx.height)
-    top_left, top_right, bottom_left, _bottom_right = corner_points(TERRAIN_SIZE)
+    edges = edge_midpoints()
+    top_left, top_right, bottom_left, _bottom_right = corner_points()
     return [
         spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=500, count=1),
         spawn(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=2500, count=2),
@@ -48,8 +47,8 @@ def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: b
     unlock_weapon_id=WeaponId.SHOTGUN,
 )
 def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    center = center_point(ctx.width, ctx.height)
-    edges = edge_midpoints(ctx.width, ctx.height)
+    center = NATIVE_CENTER
+    edges = edge_midpoints()
     entries = [
         spawn(
             Vec2(256.0, 256.0),
@@ -162,10 +161,8 @@ def build_1_3_target_practice(
 )
 def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(TERRAIN_SIZE)
-    # Only the bottom lane's x reads `terrain_texture_width`.
-    bottom = Vec2(float(ctx.width // 2), edges.bottom.y)
-    top_left, top_right, _bottom_left, _bottom_right = corner_points(TERRAIN_SIZE)
+    edges = edge_midpoints()
+    top_left, top_right, _bottom_left, _bottom_right = corner_points()
     step = 2500
     for i in range(2, 22):
         if i < 5:
@@ -177,7 +174,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
         trigger = i * step - 5000
         entries.append(
             spawn(
-                bottom,
+                edges.bottom,
                 heading=0.0,
                 spawn_id=spawn_id,
                 trigger_ms=trigger,
@@ -289,7 +286,7 @@ def build_1_6_the_random_factor(
     full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width, ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     while trigger < 101500:
         entries.append(
@@ -339,7 +336,7 @@ def build_1_6_the_random_factor(
 )
 def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(ctx.width, ctx.width)
+    edges = edge_midpoints()
     trigger = 1500
     while trigger < 100500:
         entries.append(
@@ -453,8 +450,8 @@ def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: b
     unlock_perk_id=PerkId.HOT_TEMPERED,
 )
 def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-    center = center_point(ctx.width, ctx.height)
-    edges = edge_midpoints(ctx.width, ctx.height)
+    center = NATIVE_CENTER
+    edges = edge_midpoints()
     return [
         spawn(
             Vec2(center.x, edges.bottom.y),
@@ -553,14 +550,14 @@ def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version
 def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         spawn(
-            Vec2(float(ctx.width - 256), float(ctx.width // 2)),
+            Vec2(float(TERRAIN_SIZE - 256), float(TERRAIN_SIZE // 2)),
             heading=0.0,
             spawn_id=SpawnId.SPIDER_BOSS_3A,
             trigger_ms=1000,
             count=1,
         ),
     ]
-    top_left, top_right, bottom_left, bottom_right = corner_points(TERRAIN_SIZE, offset=25.0)
+    top_left, top_right, bottom_left, bottom_right = corner_points(offset=25.0)
     trigger = 6000
     while trigger < 36800:
         entries.append(

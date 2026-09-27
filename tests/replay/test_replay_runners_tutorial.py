@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.run_result import RunOutcome
-from crimson.sim.state_types import TERRAIN_SIZE
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import _blank_tutorial_replay, _run_verify_playback, finish_replay
 
@@ -17,8 +16,6 @@ def test_tutorial_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
-        width=TERRAIN_SIZE,
-        height=TERRAIN_SIZE,
     )
 
     terrain_setup = driver.terrain_setup
