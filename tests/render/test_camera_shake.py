@@ -18,12 +18,12 @@ from crimson.sim.sessions import (
     RushSessionRuntime,
     SurvivalSessionRuntime,
 )
-from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
+from tests.support.factories import make_step_runtime, place_creatures
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -126,23 +126,30 @@ def test_camera_shake_update_clears_offsets_one_frame_after_last_pulse() -> None
 
 
 def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    creatures = [_creature(pos=Vec2(100.0, 100.0), hp=100.0), _creature(pos=Vec2(500.0, 500.0), hp=100.0)]
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    creatures = place_creatures(
+        world,
+        [_creature(pos=Vec2(100.0, 100.0), hp=100.0), _creature(pos=Vec2(500.0, 500.0), hp=100.0)],
+    )
+    step_runtime = make_step_runtime(world)
 
     bonus_apply(
         state,
         player,
         BonusId.NUKE,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        step_runtime=step_runtime,
         origin=player.pos,
         creatures=creatures,
-        players=[player],
+        players=world.players,
     )
 
     assert state.camera_shake_pulses == 0x14
     assert_float_close(state.camera_shake_timer, NUKE_CAMERA_SHAKE_TIMER)
     assert creatures[0].hp <= 0.0
+    assert [death.index for death in step_runtime.deaths] == [0]
     assert creatures[1].hp == 100.0
 
 

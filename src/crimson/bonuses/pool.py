@@ -7,7 +7,6 @@ import msgspec
 
 from grim.geom import Vec2
 
-from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..game_modes import GameMode
 from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ..rng_caller_static import RngCallerStatic
@@ -22,6 +21,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ..creatures.runtime import CreatureState
+    from ..sim.world_state import WorldStepRuntime
 
 BONUS_POOL_SIZE = 16
 BONUS_SPAWN_MARGIN = 32.0
@@ -407,7 +407,7 @@ class BonusPool:
         players: list[PlayerState],
         creatures: Sequence[CreatureState],
         detail_preset: int = 5,
-        creature_damage_runtime: CreatureDamageRuntime,
+        step_runtime: WorldStepRuntime,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -449,7 +449,7 @@ class BonusPool:
                         creatures=creatures,
                         players=players,
                         detail_preset=int(detail_preset),
-                        creature_damage_runtime=creature_damage_runtime,
+                        step_runtime=step_runtime,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER

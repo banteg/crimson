@@ -50,8 +50,9 @@ from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
-from tests.support.factories import RecordingCreatureDamageRuntime, make_projectile_update_options
+from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
+from tests.support.factories import make_projectile_update_options, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -1716,27 +1717,28 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
 
 
 def test_bonus_apply_registers_hud_slot_and_expires() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
 
     bonus_apply(
         state,
         player,
         BonusId.WEAPON_POWER_UP,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        step_runtime=make_step_runtime(world),
         amount=3,
         origin=player.pos,
-        creatures=[],
-        players=[player],
+        creatures=world.creatures.entries,
+        players=world.players,
     )
     for _ in range(40):
-        bonus_hud_update(state, [player], dt=1.0 / 60.0)
+        bonus_hud_update(state, world.players, dt=1.0 / 60.0)
 
     assert any(slot.active and slot.bonus_id == BonusId.WEAPON_POWER_UP for slot in state.bonus_hud.slots)
 
     state.bonuses.weapon_power_up = 0.0
     for _ in range(60):
-        bonus_hud_update(state, [player], dt=1.0 / 60.0)
+        bonus_hud_update(state, world.players, dt=1.0 / 60.0)
     assert not any(slot.active and slot.bonus_id == BonusId.WEAPON_POWER_UP for slot in state.bonus_hud.slots)
 
 
@@ -1745,8 +1747,8 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     [BonusId.WEAPON_POWER_UP, BonusId.REFLEX_BOOST, BonusId.FIRE_BULLETS],
 )
 def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
+    world = make_world()
+    player = world.players[0]
     player.weapon.clip_size = 8
     player.weapon.ammo = 3.0
     player.weapon.reload_active = True
@@ -1754,13 +1756,13 @@ def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) 
     player.weapon.reload_timer_max = f32(1.2)
 
     bonus_apply(
-        state,
+        world.state,
         player,
         bonus_id,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
+        step_runtime=make_step_runtime(world),
         origin=player.pos,
-        creatures=[],
-        players=[player],
+        creatures=world.creatures.entries,
+        players=world.players,
     )
 
     assert player.weapon.ammo == 8.0
@@ -1770,59 +1772,45 @@ def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) 
 
 
 def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
-    pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2())
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+    player = world.players[0]
     far_y = math.sqrt(100.0 * 100.0 - 50.0 * 50.0)
-    creatures = [
-        _creature(pos=Vec2(50.0, 0.0), hp=100.0),
-        _creature(pos=Vec2(80.0, 0.0), hp=100.0),
-        _creature(pos=Vec2(100.0, far_y), hp=100.0),
-    ]
+    creatures = place_creatures(
+        world,
+        [
+            _creature(pos=player.pos + Vec2(50.0, 0.0), hp=100.0),
+            _creature(pos=player.pos + Vec2(80.0, 0.0), hp=100.0),
+            _creature(pos=player.pos + Vec2(100.0, far_y), hp=100.0),
+        ],
+    )
+    step_runtime = make_step_runtime(world)
 
     state.bonus_spawn_guard = True
     bonus_apply(
         state,
         player,
         BonusId.SHOCK_CHAIN,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        step_runtime=step_runtime,
         origin=player.pos,
         creatures=creatures,
-        players=[player],
+        players=world.players,
     )
     assert state.shock_chain_links_left == 0x20
     first_proj = state.shock_chain_projectile_id
     assert first_proj >= 0
     assert not state.bonus_spawn_guard
 
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.1,
-            creatures=creatures,
-            options=make_projectile_update_options(
-                creatures=creatures,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-                runtime_state=state,
-            ),
-        ),
-    )
+    options = make_projectile_update_options(world, step_runtime=step_runtime)
+    pool.step(PrimaryStepCtx(dt=0.1, creatures=creatures, options=options))
 
     assert state.shock_chain_links_left == 0x20
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
 
     state.bonus_spawn_guard = True
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.1,
-            creatures=creatures,
-            options=make_projectile_update_options(
-                creatures=creatures,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-                runtime_state=state,
-            ),
-        ),
-    )
+    pool.step(PrimaryStepCtx(dt=0.1, creatures=creatures, options=options))
 
     assert state.shock_chain_links_left == 0x1F
     assert state.shock_chain_projectile_id != first_proj
@@ -1832,6 +1820,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     # Native stores (float)(atan2(dy, dx) - 1.5707964 - 3.1415927).
     expected_angle = float(f32(math.atan2(far_y, 50.0) - NATIVE_HALF_PI - NATIVE_PI))
     assert_float_close(chained.angle, expected_angle)
+    assert [death.index for death in step_runtime.deaths] == [0]
 
 
 def test_player_update_held_reload_key_starts_reload_without_edge() -> None:

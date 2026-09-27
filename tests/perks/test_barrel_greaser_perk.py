@@ -6,11 +6,11 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
+from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
 from tests.support.factories import make_projectile_update_options
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -38,31 +38,25 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
 
 
 def _step_pistol_projectile(*, barrel_greaser: bool) -> float:
-    pool = ProjectilePool(size=1)
-    pool.spawn(
+    world = make_world()
+    world.state.perks[int(PerkId.BARREL_GREASER)] = int(barrel_greaser)
+    pool = world.state.projectiles
+    proj_idx = pool.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
     )
 
-    state = GameplayState()
-    state.perks[int(PerkId.BARREL_GREASER)] = int(barrel_greaser)
-
     pool.step(
         PrimaryStepCtx(
             dt=0.016,
-            creatures=[],
-            options=make_projectile_update_options(
-                creatures=[],
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-                runtime_state=state,
-                players=[PlayerState(index=0, pos=Vec2())],
-            ),
+            creatures=world.creatures.entries,
+            options=make_projectile_update_options(world),
         ),
     )
 
-    return float(pool.entries[0].pos.x)
+    return float(pool.entries[proj_idx].pos.x)
 
 
 def test_barrel_greaser_doubles_projectile_speed_steps() -> None:

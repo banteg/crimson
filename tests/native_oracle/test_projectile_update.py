@@ -20,7 +20,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
-from crimson.sim.world_state import WorldState, _WorldStepRuntime
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 
 from ._support import (
@@ -48,8 +48,8 @@ def _python_world(seed: int) -> WorldState:
     return world
 
 
-def _step_runtime(world: WorldState, dt: float) -> _WorldStepRuntime:
-    return _WorldStepRuntime(
+def _step_runtime(world: WorldState, dt: float) -> WorldStepRuntime:
+    return WorldStepRuntime(
         world=world,
         dt=dt,
         detail_preset=5,
@@ -183,7 +183,7 @@ def _step_secondary(oracle, world: WorldState, dt: float) -> None:
             runtime_state=world.state,
             fx_queue=runtime.fx_queue,
             detail_preset=5,
-            creature_damage_runtime=runtime,
+            step_runtime=runtime,
         ),
     )
 
@@ -375,8 +375,7 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
                     rng=state.rng,
                     runtime_state=state,
                     players=world.players,
-                    hit_runtime=runtime,
-                    creature_damage_runtime=runtime,
+                    step_runtime=runtime,
                 ),
             ),
         )
@@ -447,7 +446,7 @@ def test_shock_chain_bonus_matches_native(oracle) -> None:
             state,
             world.players[0],
             BonusId.SHOCK_CHAIN,
-            creature_damage_runtime=_step_runtime(world, 0.0),
+            step_runtime=_step_runtime(world, 0.0),
             origin=origin,
             creatures=world.creatures.entries,
             players=world.players,

@@ -240,9 +240,9 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
-        creature_damage_runtime = ctx.options.creature_damage_runtime
-        assert creature_damage_runtime is not None
-        creature_damage_runtime.apply_creature_damage(
+        step_runtime = ctx.options.step_runtime
+        assert step_runtime is not None
+        step_runtime.apply_creature_damage(
             0,
             1000.0,
             CreatureDamageType.BULLET,
@@ -429,9 +429,9 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
-        creature_damage_runtime = ctx.options.creature_damage_runtime
-        assert creature_damage_runtime is not None
-        creature_damage_runtime.apply_creature_damage(
+        step_runtime = ctx.options.step_runtime
+        assert step_runtime is not None
+        step_runtime.apply_creature_damage(
             0,
             1000.0,
             CreatureDamageType.BULLET,
@@ -531,9 +531,9 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = kwargs
         ctx = cast("PrimaryStepCtx", args[0])
-        creature_damage_runtime = ctx.options.creature_damage_runtime
-        if creature_damage_runtime is not None:
-            creature_damage_runtime.apply_creature_damage(
+        step_runtime = ctx.options.step_runtime
+        if step_runtime is not None:
+            step_runtime.apply_creature_damage(
                 0,
                 1000.0,
                 CreatureDamageType.BULLET,
@@ -649,16 +649,16 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
 
     def _fake_projectile_step(*args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", args[0])
-        hit_runtime = ctx.options.hit_runtime
+        step_runtime = ctx.options.step_runtime
         hit = ProjectileHit(
             type_id=ProjectileTemplateId.PISTOL,
             origin=Vec2(0.0, 0.0),
             hit=Vec2(1.0, 1.0),
             target=Vec2(1.0, 1.0),
         )
-        post_ctx = hit_runtime.begin_hit_presentation(hit)
+        post_ctx = step_runtime.begin_hit_presentation(hit)
         assert post_ctx is not None
-        hit_runtime.finish_hit_presentation(hit, post_ctx)
+        step_runtime.finish_hit_presentation(hit, post_ctx)
         return [hit]
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)

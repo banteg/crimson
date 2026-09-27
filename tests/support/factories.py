@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 
-import msgspec
-
-from crimson.creatures.damage_runtime import CreatureDamageRuntime
 from crimson.creatures.runtime import CreatureState, CreatureUpdateOptions
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import ProjectileHitRuntime, ProjectileUpdateOptions
+from crimson.game_modes import GameMode
+from crimson.projectiles.runtime import ProjectileUpdateOptions
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 from grim.rand import CrandLike
-from grim.sfx_map import SfxId
 
 
 def make_creature_state(
@@ -72,86 +69,48 @@ def make_creature_update_options(
     )
 
 
-class RecordingProjectileHitRuntime(ProjectileHitRuntime):
-    players: Sequence[PlayerState] = ()
-    player_damage_calls: list[tuple[int, float]] = msgspec.field(default_factory=list)
+def make_step_runtime(
+    world: WorldState,
+    *,
+    dt: float = 0.1,
+    detail_preset: int = 5,
+    violence_disabled: int = 0,
+    game_mode: GameMode = GameMode.SURVIVAL,
+    fx_queue: FxQueue | None = None,
+) -> WorldStepRuntime:
+    """The per-tick world context `WorldState.step` builds, for driving one subsystem directly."""
 
-    def apply_player_damage(self, player_index: int, damage: float) -> None:
-        idx = int(player_index)
-        damage_value = float(damage)
-        self.player_damage_calls.append((idx, damage_value))
-        if not (0 <= idx < len(self.players)):
-            return
-        player = self.players[idx]
-        if float(player.shield_timer) <= 0.0:
-            player.health -= damage_value
+    return WorldStepRuntime(
+        world=world,
+        dt=float(dt),
+        detail_preset=int(detail_preset),
+        violence_disabled=int(violence_disabled),
+        fx_queue=FxQueue() if fx_queue is None else fx_queue,
+        game_mode=game_mode,
+        hit_audio_game_tune_started=True,
+        deaths=[],
+        sfx=[],
+    )
 
 
-class RecordingCreatureDamageRuntime(msgspec.Struct):
-    creatures: Sequence[CreatureState] = ()
-    bubble_sfx: list[tuple[int, int]] = msgspec.field(default_factory=list)
-    lethal_calls: list[int] = msgspec.field(default_factory=list)
-    lethal_sfx: list[SfxId] = msgspec.field(default_factory=list)
-    calls: list[tuple[int, float, int, Vec2, OwnerRef]] = msgspec.field(default_factory=list)
-    kills: list[tuple[int, OwnerRef]] = msgspec.field(default_factory=list)
-    detonation_kills: list[int] = msgspec.field(default_factory=list)
-    apply_damage: bool = True
+def place_creatures(world: WorldState, creatures: Sequence[CreatureState]) -> list[CreatureState]:
+    """Put `creatures` into the first pool slots, so pool indices match list indices."""
 
-    def apply_creature_damage(
-        self,
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        _ = owner
-        idx = int(creature_index)
-        damage_value = float(damage)
-        self.calls.append((idx, damage_value, int(damage_type), impulse, owner))
-        if not bool(self.apply_damage):
-            return
-        if damage_value > 0.0:
-            self.creatures[idx].hp -= damage_value
-
-    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
-        self.kills.append((int(creature_index), owner))
-        creature = self.creatures[creature_index]
-        creature.hp = -1.0
-        creature.active = False
-
-    def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
-        self.bubble_sfx.append((creature_index, sound_slot))
-
-    def on_secondary_detonation_kill(self, creature_index: int) -> None:
-        self.detonation_kills.append(int(creature_index))
-
-    def on_creature_lethal(self, creature_index: int, resolve_damage_followup: Callable[[], tuple[SfxId, ...]]) -> None:
-        self.lethal_calls.append(creature_index)
-        self.lethal_sfx.extend(resolve_damage_followup())
+    for idx, creature in enumerate(creatures):
+        world.creatures.entries[idx] = creature
+    return world.creatures.entries
 
 
 def make_projectile_update_options(
+    world: WorldState,
     *,
-    creatures: Sequence[CreatureState],
-    ion_aoe_scale: float = 1.0,
+    step_runtime: WorldStepRuntime | None = None,
     detail_preset: int = 5,
-    rng: CrandLike | None = None,
-    runtime_state: GameplayState | None = None,
-    players: Sequence[PlayerState] | None = None,
-    hit_runtime: ProjectileHitRuntime | None = None,
-    creature_damage_runtime: CreatureDamageRuntime | None = None,
 ) -> ProjectileUpdateOptions:
-    state = GameplayState() if runtime_state is None else runtime_state
-    player_seq: Sequence[PlayerState] = () if players is None else players
     return ProjectileUpdateOptions(
-        rng=state.rng if rng is None else rng,
-        runtime_state=state,
-        players=player_seq,
-        hit_runtime=RecordingProjectileHitRuntime(players=player_seq) if hit_runtime is None else hit_runtime,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures)
-        if creature_damage_runtime is None
-        else creature_damage_runtime,
-        ion_aoe_scale=float(ion_aoe_scale),
+        rng=world.state.rng,
+        runtime_state=world.state,
+        players=world.players,
+        step_runtime=make_step_runtime(world, detail_preset=detail_preset) if step_runtime is None else step_runtime,
         detail_preset=int(detail_preset),
     )

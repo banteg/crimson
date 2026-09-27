@@ -10,7 +10,7 @@ from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
-from crimson.sim.world_state import WorldState, _WorldStepRuntime
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 
@@ -44,7 +44,7 @@ def observe(case):
                 shield_timer=item["shield"],
             ),
         )
-    runtime = _WorldStepRuntime(
+    runtime = WorldStepRuntime(
         world=world,
         dt=case["dt"],
         detail_preset=5,
@@ -71,8 +71,7 @@ def observe(case):
                     rng=rng,
                     runtime_state=state,
                     players=world.players,
-                    hit_runtime=runtime,
-                    creature_damage_runtime=runtime,
+                    step_runtime=runtime,
                 ),
             ),
         )

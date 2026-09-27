@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import math
 
-from crimson.creatures.runtime import CreatureState
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId, SpriteEffectPool
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
+from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from grim.color import RGBA
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -263,12 +264,13 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
 
 def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     pool = ParticlePool(size=2, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    step_runtime = make_step_runtime(make_world())
 
     # Style 0 persists until intensity <= 0.0.
     idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
     p0 = pool.entries[idx0]
     p0.render_flag = False
-    pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
+    pool.update(1.0, step_runtime=step_runtime)
     assert p0.active
     assert p0.intensity == 0.10000002384185791  # Native subtracts the f32 0.9 literal.
 
@@ -277,14 +279,14 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     p1 = pool.entries[idx1]
     p1.render_flag = False
     p1.style_id = ParticleStyleId.BLOW_TORCH
-    pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
+    pool.update(1.0, step_runtime=step_runtime)
     assert not p1.active
 
     # Style 8 decays slowly and also uses the 0.8 cutoff.
     idx2 = pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
     p2 = pool.entries[idx2]
     p2.render_flag = False
-    pool.update(1.0, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
+    pool.update(1.0, step_runtime=step_runtime)
     assert p2.active
     assert_float_close(p2.intensity, f32(0.89))
 
@@ -309,19 +311,16 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     )
     particle = pool.entries[particle_id]
 
-    creature = CreatureState()
-    creature.active = True
-    creature.hp = 100.0
-    creature.pos = Vec2()
-    creature.size = 50.0
-    creature.lifecycle_stage = 16.0
+    world = make_world()
+    creature = make_creature_state(pos=Vec2())
     creature.tint = RGBA(0.9, 0.6, 0.2, 0.8)
+    creatures = place_creatures(world, [creature])
 
     dt = 0.016
     pool.update(
         dt,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[creature]),
-        creatures=[creature],
+        step_runtime=make_step_runtime(world, dt=dt),
+        creatures=creatures,
         fx_queue=fx_queue,
         sprite_effects=sprite_effects,
     )
@@ -378,7 +377,7 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     alt.style_id = ParticleStyleId.BLOW_TORCH
 
     before = rng.calls
-    pool.update(0.016, creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
+    pool.update(0.016, step_runtime=make_step_runtime(make_world(), dt=0.016))
 
     assert flame.render_flag
     assert alt.render_flag
@@ -390,35 +389,18 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     ]
 
 
-def test_particle_update_uses_explicit_damage_applier() -> None:
-    def _spawn_hit_particle(pool: ParticlePool) -> None:
-        pool.spawn_particle(
-            pos=Vec2(),
-            angle=0.0,
-            intensity=1.0,
-            owner=OwnerRef.from_player(0),
-        )
-
-    def _new_creature() -> CreatureState:
-        creature = CreatureState()
-        creature.active = True
-        creature.hp = 100.0
-        creature.pos = Vec2()
-        creature.size = 50.0
-        creature.lifecycle_stage = 16.0
-        return creature
-
+def test_particle_hit_applies_owner_fire_damage() -> None:
+    world = make_world()
+    world.state.perks[int(PerkId.PYROMANIAC)] = 1
+    creatures = place_creatures(world, [make_creature_state(pos=Vec2())])
     pool = ParticlePool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    creature = _new_creature()
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=[creature], apply_damage=False)
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner=OwnerRef.from_player(0))
 
-    _spawn_hit_particle(pool)
-    pool.update(0.016, creatures=[creature], creature_damage_runtime=damage_runtime)
-    assert len(damage_runtime.calls) == 1
-    assert damage_runtime.calls[0][0] == 0
-    assert damage_runtime.calls[0][2] == 4
-    assert damage_runtime.calls[0][4] == OwnerRef.from_player(0)
-    assert_float_close(creature.hp, 100.0)
+    pool.update(0.016, creatures=creatures, step_runtime=make_step_runtime(world, dt=0.016))
+
+    # intensity (1 - 0.016 * 0.9) * 10 fire damage, scaled x1.5 by Pyromaniac.
+    assert_float_close(creatures[0].hp, f32(85.216))
+    assert creatures[0].last_hit_owner == OwnerRef.from_player(0)
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:

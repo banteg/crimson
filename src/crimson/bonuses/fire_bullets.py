@@ -2,19 +2,12 @@
 
 from __future__ import annotations
 
-import msgspec
-
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
-from ..effects import FxQueue
+from ..effects import EffectPool, FxQueue
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
-
-
-class LargeHitDecalRuntime(msgspec.Struct):
-    def spawn_freeze_shard(self, pos: Vec2, angle: float) -> None:
-        _ = pos, angle
 
 
 def queue_large_hit_decal_streak(
@@ -23,8 +16,8 @@ def queue_large_hit_decal_streak(
     base_angle: float,
     fx_queue: FxQueue,
     rng: CrandLike,
-    freeze_origin: Vec2 | None = None,
-    runtime: LargeHitDecalRuntime | None = None,
+    freeze_effects: EffectPool | None,
+    detail_preset: int,
 ) -> None:
     """Queue the large decal streak used by Fire Bullets impact hits."""
     direction = Vec2.from_angle(base_angle)
@@ -37,13 +30,17 @@ def queue_large_hit_decal_streak(
         # Native `projectile_update` consumes one unconditional draw per loop
         # before the freeze branch (`crt_rand` @ 0x0042184c).
         rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_BURN)
-        if runtime is not None and freeze_origin is not None:
-            freeze_pos = freeze_origin + direction * (dist * 20.0)
+        if freeze_effects is not None:
             freeze_angle = (
                 float(base_angle)
                 + float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE) % 100) * 0.01
             )
-            runtime.spawn_freeze_shard(freeze_pos, freeze_angle)
+            freeze_effects.spawn_freeze_shard(
+                pos=hit.hit + direction * (dist * 20.0),
+                angle=freeze_angle,
+                rng=rng,
+                detail_preset=detail_preset,
+            )
         fx_queue.add_random(
             pos=hit.target + direction * (dist * 20.0),
             rng=rng,

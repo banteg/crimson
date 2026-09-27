@@ -15,10 +15,13 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
+from tests.support.builders.session import make_world
 from tests.support.factories import (
-    RecordingProjectileHitRuntime,
+    make_creature_state,
     make_creature_update_options,
     make_projectile_update_options,
+    make_step_runtime,
+    place_creatures,
 )
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -133,10 +136,11 @@ def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
 
 
 def test_ranged_projectile_can_damage_player() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(4.0, 0.0))
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(4.0, 0.0)
 
-    state.projectiles.spawn(
+    world.state.projectiles.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
@@ -144,42 +148,32 @@ def test_ranged_projectile_can_damage_player() -> None:
         hits_players=True,
     )
 
-    hit_runtime = RecordingProjectileHitRuntime(players=[player])
-
-    state.projectiles.step(
+    world.state.projectiles.step(
         PrimaryStepCtx(
             dt=0.001,
-            creatures=[],
-            options=make_projectile_update_options(
-                creatures=[],
-                rng=state.rng,
-                runtime_state=state,
-                players=[player],
-                hit_runtime=hit_runtime,
-            ),
+            creatures=world.creatures.entries,
+            options=make_projectile_update_options(world),
         ),
     )
 
-    assert hit_runtime.player_damage_calls == [(0, 10.0)]
-    assert player.health < 100.0
+    # Creature projectiles subtract a flat 10 from an unshielded player.
+    assert player.health == 90.0
 
 
 def test_ranged_projectile_can_damage_creature_before_player() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(4.0, 0.0))
+    world = make_world()
+    player = world.players[0]
+    player.pos = Vec2(4.0, 0.0)
+    target = place_creatures(
+        world,
+        [
+            make_creature_state(pos=Vec2(-200.0, -200.0), hp=10.0),
+            make_creature_state(pos=Vec2(4.0, 0.0), hp=100.0),
+        ],
+    )[1]
+    step_runtime = make_step_runtime(world, dt=0.1)
 
-    pool = CreaturePool()
-    shooter = pool.entries[0]
-    shooter.active = True
-    shooter.hp = 10.0
-    shooter.pos = Vec2(-200.0, -200.0)
-
-    target = pool.entries[1]
-    target.active = True
-    target.hp = 100.0
-    target.pos = Vec2(4.0, 0.0)
-
-    state.projectiles.spawn(
+    world.state.projectiles.spawn(
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
@@ -187,22 +181,14 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         hits_players=True,
     )
 
-    hit_runtime = RecordingProjectileHitRuntime(players=[player])
-
-    state.projectiles.step(
+    world.state.projectiles.step(
         PrimaryStepCtx(
             dt=0.1,
-            creatures=pool.entries[:2],
-            options=make_projectile_update_options(
-                creatures=pool.entries[:2],
-                rng=state.rng,
-                runtime_state=state,
-                players=[player],
-                hit_runtime=hit_runtime,
-            ),
+            creatures=world.creatures.entries,
+            options=make_projectile_update_options(world, step_runtime=step_runtime),
         ),
     )
 
-    assert target.hp < 100.0
-    assert hit_runtime.player_damage_calls == []
+    assert target.hp <= 0.0
+    assert [death.index for death in step_runtime.deaths] == [1]
     assert player.health == 100.0

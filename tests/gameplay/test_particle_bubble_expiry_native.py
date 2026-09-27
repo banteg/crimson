@@ -9,7 +9,7 @@ from crimson.effects import FxQueue, ParticlePool, ParticleStyleId
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.sim.state_types import PlayerState
-from crimson.sim.world_state import WorldState, _WorldStepRuntime
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 
@@ -43,7 +43,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         particle.style_id = ParticleStyleId.BUBBLEGUN
         particle.target_id = item["target"]
         particle.owner = OwnerRef.from_player(0)
-    runtime = _WorldStepRuntime(
+    runtime = WorldStepRuntime(
         world=world,
         dt=case["dt"],
         detail_preset=5,
@@ -54,7 +54,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         deaths=[],
         sfx=[],
     )
-    expired = state.particles.update(case["dt"], creatures=world.creatures.entries, creature_damage_runtime=runtime)
+    expired = state.particles.update(case["dt"], creatures=world.creatures.entries, step_runtime=runtime)
     assert expired == [item["index"] for item in case["particles"]]
     assert state.survival_recent_death_count == witness["history_count"]
     assert state.survival_reward_fire_seen == bool(witness["fire_seen"])

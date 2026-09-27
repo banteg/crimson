@@ -2,16 +2,13 @@
 
 import struct
 
-from crimson.creatures.damage import creature_apply_damage
-from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue, ParticlePool, ParticleStyleId, SpriteEffectPool
 from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
-from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 
 
 def _check_fields(index, owner, expected, actual):
@@ -41,9 +38,10 @@ def compare(witness):
     particle.scale_x = particle.scale_y = particle.scale_z = particle.age = 0.0
     for key in ("intensity", "angle", "spin"):
         setattr(particle, key, f32(item[key]))
-    creatures = [CreatureState() for _ in range(384)]
+    world = make_world()
+    world.state.rng = rng
     target = case["creatures"][0]
-    creature = creatures[target["index"]]
+    creature = world.creatures.entries[target["index"]]
     creature.active = True
     creature.pos = Vec2(f32(target["x"]), f32(target["y"]))
     creature.hp = f32(target["health"])
@@ -51,35 +49,16 @@ def compare(witness):
     creature.size = f32(target["size"])
     creature.lifecycle_stage = f32(target["lifecycle"])
     creature.tint = RGBA(*(f32(target[key]) for key in ("r", "g", "b", "a")))
-    players = [PlayerState(index=0, pos=Vec2())]
-    perks = PerkCounts()
     for perk in case.get("perks", []):
-        perks[perk] = 1
+        world.state.perks[perk] = 1
 
-    class ImpactDamageRuntime(RecordingCreatureDamageRuntime):
-        def apply_creature_damage(
-            self,
-            creature_index: int,
-            damage: float,
-            damage_type: int,
-            impulse: Vec2,
-            owner: OwnerRef,
-        ) -> None:
-            super().apply_creature_damage(creature_index, damage, damage_type, impulse, owner)
-            creature_apply_damage(
-                self.creatures[creature_index],
-                damage_amount=damage,
-                damage_type=damage_type,
-                impulse=impulse,
-                owner=owner,
-                dt=case["dt"],
-                players=players,
-                perks=perks,
-                rng=rng,
-            )
-
-    runtime = ImpactDamageRuntime(creatures=creatures, apply_damage=False)
-    pool.update(case["dt"], creatures=creatures, creature_damage_runtime=runtime, sprite_effects=sprites, fx_queue=fx)
+    pool.update(
+        case["dt"],
+        creatures=world.creatures.entries,
+        step_runtime=make_step_runtime(world, dt=case["dt"], fx_queue=fx),
+        sprite_effects=sprites,
+        fx_queue=fx,
+    )
     _check_fields(
         witness["index"],
         "particle",
@@ -164,12 +143,6 @@ def compare(witness):
                 "a": decal.color.a,
             },
         )
-    assert len(runtime.calls) == len(witness["damage_calls"]), witness["index"]
-    for actual, native in zip(runtime.calls, witness["damage_calls"], strict=True):
-        target_id, damage, kind, impulse, _owner = actual
-        assert target_id == native[0] and kind == native[2], witness["index"]
-        assert struct.unpack("<I", struct.pack("<f", damage))[0] == native[1], witness["index"]
-        assert [struct.unpack("<I", struct.pack("<f", value))[0] for value in (impulse.x, impulse.y)] == native[3]
     assert rng.state == witness["rng_state"], witness["index"]
     assert [record.value for record in rng.records] == witness["draws"], witness["index"]
     assert [record.caller for record in rng.records] == witness["rng_callers"], witness["index"]

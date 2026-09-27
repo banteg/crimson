@@ -1,48 +1,64 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
+from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import EffectPool
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.effects import _spawn_ion_hit_effects
-from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
+from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
+from grim.rand import RecordingCrand
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
-from tests.support.factories import make_projectile_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import make_projectile_update_options, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
+
+_SHRINKIFIER_HIT_CALLERS = [
+    RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
+    RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
+    RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
+    RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+] * 4
+
+
+def _world_with_creature(creature: CreatureState) -> tuple[WorldState, RecordingCrand]:
+    world = make_world()
+    rng = RecordingCrand(world.state.rng)
+    world.state.rng = rng
+    place_creatures(world, [creature])
+    return world, rng
+
+
+def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> WorldStepRuntime:
+    world.state.projectiles.spawn(
+        pos=Vec2(),
+        angle=0.0,
+        type_id=type_id,
+        owner=OwnerRef.from_local_player(0),
+    )
+    step_runtime = make_step_runtime(world, dt=0.016)
+    world.state.projectiles.step(
+        PrimaryStepCtx(
+            dt=0.016,
+            creatures=world.creatures.entries,
+            options=make_projectile_update_options(world, step_runtime=step_runtime),
+        ),
+    )
+    return step_runtime
 
 
 def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
-    pool = ProjectilePool(size=64)
-    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
-    runtime_state = GameplayState()
+    world, _rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
+    runtime_state = world.state
     runtime_state.bonus_spawn_guard = True
 
-    pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.PLASMA_CANNON,
-        owner=OwnerRef.from_local_player(0),
-    )
-
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                detail_preset=5,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-                runtime_state=runtime_state,
-            ),
-        ),
-    )
+    _fire_at_creature(world, ProjectileTemplateId.PLASMA_CANNON)
 
     assert sfx_ids(runtime_state.sfx_queue) == [SfxId.EXPLOSION_MEDIUM, SfxId.SHOCKWAVE]
     assert not runtime_state.bonus_spawn_guard
@@ -52,43 +68,26 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
     for actual, expected in zip(sorted(float(entry.scale_step) for entry in rings), (45.0, 67.5), strict=True):
         assert_float_close(actual, expected)
 
-    spawned = [p for p in pool.entries if p.active and int(p.type_id) == int(ProjectileTemplateId.PLASMA_RIFLE)]
+    spawned = [
+        p
+        for p in runtime_state.projectiles.entries
+        if p.active and int(p.type_id) == int(ProjectileTemplateId.PLASMA_RIFLE)
+    ]
     assert len(spawned) == 12
 
 
 def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
-    pool = ProjectilePool(size=64)
-    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
-    runtime_state = GameplayState()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world, rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
 
-    pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.SPLITTER_GUN,
-        owner=OwnerRef.from_local_player(0),
-    )
+    _fire_at_creature(world, ProjectileTemplateId.SPLITTER_GUN)
 
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                detail_preset=5,
-                rng=rng,
-                runtime_state=runtime_state,
-            ),
-        ),
-    )
-
-    sparks = [entry for entry in runtime_state.effects.iter_active() if int(entry.effect_id) == 0]
+    sparks = [entry for entry in world.state.effects.iter_active() if int(entry.effect_id) == 0]
     assert len(sparks) == 3
     assert all(int(entry.flags) == 0x19 for entry in sparks)
 
     split = [
         p
-        for p in pool.entries
+        for p in world.state.projectiles.entries
         if p.active
         and int(p.type_id) == int(ProjectileTemplateId.SPLITTER_GUN)
         and p.owner == OwnerRef.from_creature(0)
@@ -109,60 +108,22 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
 
 
 def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
-    pool = ProjectilePool(size=64)
-    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
-    player = PlayerState(index=0, pos=Vec2())
+    world, _rng = _world_with_creature(CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0))
+    player = world.players[0]
+    player.pos = Vec2()
 
-    pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.SPLITTER_GUN,
-        owner=OwnerRef.from_local_player(0),
-    )
-
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                detail_preset=5,
-                rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-                players=[player],
-            ),
-        ),
-    )
+    _fire_at_creature(world, ProjectileTemplateId.SPLITTER_GUN)
 
     assert float(player.health) < 100.0
 
 
 def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
-    pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
-    runtime_state = GameplayState()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world, rng = _world_with_creature(creature)
 
-    pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.SHRINKIFIER,
-        owner=OwnerRef.from_local_player(0),
-    )
+    _fire_at_creature(world, ProjectileTemplateId.SHRINKIFIER)
 
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                detail_preset=5,
-                rng=rng,
-                runtime_state=runtime_state,
-            ),
-        ),
-    )
-
-    effects = runtime_state.effects.iter_active()
+    effects = world.state.effects.iter_active()
     rings = [entry for entry in effects if int(entry.effect_id) == 1]
     bursts = [entry for entry in effects if int(entry.effect_id) == 0]
 
@@ -175,24 +136,13 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     assert_float_close(float(ring.half_width), 36.0)
 
     assert_float_close(float(creature.size), 32.5)
-    assert [record.caller for record in rng.records_since()] == [
+    # The hit effects run between the stop-on-hit jitter and the damage call.
+    callers = [record.caller for record in rng.records_since()]
+    start = callers.index(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER)
+    assert callers[start : start + 18] == [
         RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER,
-        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
-        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
-        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
-        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
-        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
-        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
-        RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_X,
-        RngCallerStatic.SHRINKIFIER_HIT_VEL_Y,
-        RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP,
+        *_SHRINKIFIER_HIT_CALLERS,
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER,
     ]
 
 
@@ -228,89 +178,17 @@ def test_ion_hit_effects_tag_exact_native_callers() -> None:
     ]
 
 
-def test_non_gauss_freeze_hit_pool_step_leaves_shard_to_presentation(mocker) -> None:
-    pool = ProjectilePool(size=64)
-    creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=50.0)
-    runtime_state = GameplayState()
-    runtime_state.bonuses.freeze = 1.0
-    spawn_freeze_shard = mocker.patch.object(
-        runtime_state.effects,
-        "spawn_freeze_shard",
-        wraps=runtime_state.effects.spawn_freeze_shard,
-    )
+def test_non_gauss_freeze_hit_draws_burn_then_single_default_shard() -> None:
+    world, rng = _world_with_creature(CreatureState(active=True, hp=1000.0, pos=Vec2(), size=50.0))
+    world.state.bonuses.freeze = 1.0
 
-    pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
-    )
-
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                detail_preset=5,
-                rng=rng,
-                runtime_state=runtime_state,
-            ),
-        ),
-    )
+    _fire_at_creature(world, ProjectileTemplateId.PISTOL)
 
     # Native spawns the default freeze shard in the post-hit decal branch,
     # after the burn draw (see queue_projectile_decals_post_hit).
-    assert spawn_freeze_shard.call_count == 0
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER,
-    ]
-
-
-def test_non_gauss_freeze_hit_presentation_draws_burn_then_single_shard(mocker) -> None:
-    from crimson.effects import FxQueue
-    from crimson.projectiles.types import ProjectileHit
-    from crimson.sim.presentation_step import (
-        queue_projectile_decals_post_hit,
-        queue_projectile_decals_pre_hit,
-    )
-
-    state = GameplayState()
-    state.bonuses.freeze = 1.0
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    spawn_freeze_shard = mocker.patch.object(
-        state.effects,
-        "spawn_freeze_shard",
-        wraps=state.effects.spawn_freeze_shard,
-    )
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    hit = ProjectileHit(
-        type_id=ProjectileTemplateId.PISTOL,
-        origin=Vec2(90.0, 90.0),
-        hit=Vec2(100.0, 100.0),
-        target=Vec2(100.0, 100.0),
-    )
-    fx_queue = FxQueue()
-
-    post_ctx = queue_projectile_decals_pre_hit(
-        state=state,
-        players=[player],
-        fx_queue=fx_queue,
-        hit=hit,
-        rng=state.rng,
-        detail_preset=5,
-        violence_disabled=0,
-    )
-    queue_projectile_decals_post_hit(
-        fx_queue=fx_queue,
-        post_ctx=post_ctx,
-        rng=state.rng,
-    )
-
-    assert spawn_freeze_shard.call_count == 1
-    assert [record.caller for record in state.rng.records_since()] == [
+        RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER,
         RngCallerStatic.PROJECTILE_UPDATE_POST_HIT_DECAL_BURN,
         RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE,
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME,
@@ -319,59 +197,25 @@ def test_non_gauss_freeze_hit_presentation_draws_burn_then_single_shard(mocker) 
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP,
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP,
         RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID,
+        RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
     ]
 
 
 def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
-    from collections.abc import Callable
-
-    from crimson.creatures.spawn import CreatureFlags
-    from tests.support.factories import RecordingCreatureDamageRuntime
-
-    pool = ProjectilePool(size=64)
     creature = CreatureState(active=True, hp=100.0, pos=Vec2(), size=20.0, flags=CreatureFlags(0))
-    runtime_state = GameplayState()
-    lethal_calls: list[int] = []
+    world, rng = _world_with_creature(creature)
 
-    class _Runtime(RecordingCreatureDamageRuntime):
-        def on_creature_lethal(
-            self,
-            creature_index: int,
-            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-        ) -> None:
-            lethal_calls.append(int(creature_index))
-            # Native shrink-death goes straight to creature_handle_death with
-            # no death-SFX or shock-burst draws.
-            assert resolve_damage_followup() == ()
+    step_runtime = _fire_at_creature(world, ProjectileTemplateId.SHRINKIFIER)
 
-    pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.SHRINKIFIER,
-        owner=OwnerRef.from_local_player(0),
-    )
-
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                detail_preset=5,
-                rng=rng,
-                runtime_state=runtime_state,
-                creature_damage_runtime=_Runtime(creatures=[creature]),
-            ),
-        ),
-    )
-
-    assert lethal_calls == [0]
+    assert [death.index for death in step_runtime.deaths] == [0]
+    # Native shrink-death goes straight to creature_handle_death with no
+    # death-SFX or shock-burst draws.
+    assert step_runtime.sfx == []
+    assert RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX not in {record.caller for record in rng.records_since()}
     assert_float_close(creature.size, 13.0)
     # The generic chip damage still applies after the direct shrink-death;
     # native leaves hp positive when entering it.
     assert creature.hp < 100.0
-    assert RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX not in {record.caller for record in rng.records_since()}
 
 
 def test_secondary_homing_acquires_targets_beyond_1000_units() -> None:

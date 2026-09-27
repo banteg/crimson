@@ -9,19 +9,21 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, x87_pc24_sub
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
-    ProjectilePool,
     SecondaryProjectilePool,
     SecondarySpawnSpec,
     SecondaryStepCtx,
 )
 from crimson.projectiles.types import SecondaryProjectileTypeId
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
-from tests.support.factories import RecordingCreatureDamageRuntime, make_creature_state, make_projectile_update_options
-from tests.support.helpers import ScriptedCrand
+from tests.support.builders.session import make_world
+from tests.support.factories import (
+    make_creature_state,
+    make_projectile_update_options,
+    make_step_runtime,
+    place_creatures,
+)
 
 
 @pytest.mark.parametrize(
@@ -38,19 +40,20 @@ def test_shock_chain_initial_target_miss_handling(
     expected_links_left: int,
     expected_sfx: list[str],
 ) -> None:
-    pool = ProjectilePool(size=4)
-    state = GameplayState(projectiles=pool, preserve_bugs=preserve_bugs)
-    player = PlayerState(index=0, pos=Vec2())
-    creatures = [make_creature_state(pos=Vec2(50.0, 0.0), active=False)]
+    world = make_world(preserve_bugs=preserve_bugs)
+    state, pool = world.state, world.state.projectiles
+    player = world.players[0]
+    player.pos = Vec2()
+    creatures = place_creatures(world, [make_creature_state(pos=Vec2(50.0, 0.0), active=False)])
 
     bonus_apply(
         state,
         player,
         BonusId.SHOCK_CHAIN,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        step_runtime=make_step_runtime(world),
         origin=player.pos,
         creatures=creatures,
-        players=[player],
+        players=world.players,
     )
 
     assert state.shock_chain_links_left == expected_links_left
@@ -63,23 +66,27 @@ def test_shock_chain_initial_target_miss_handling(
 
 
 def test_shock_chain_uses_native_f32_nearest_ordering() -> None:
-    pool = ProjectilePool(size=4)
-    state = GameplayState(projectiles=pool)
-    player = PlayerState(index=0, pos=Vec2())
+    world = make_world()
+    state, pool = world.state, world.state.projectiles
+    player = world.players[0]
+    player.pos = Vec2()
     first_pos = Vec2(-1727.156494140625, -1351.4605712890625)
-    creatures = [
-        make_creature_state(pos=first_pos, hp=100.0),
-        make_creature_state(pos=Vec2(1722.1292724609375, -1357.8604736328125), hp=100.0),
-    ]
+    creatures = place_creatures(
+        world,
+        [
+            make_creature_state(pos=first_pos, hp=100.0),
+            make_creature_state(pos=Vec2(1722.1292724609375, -1357.8604736328125), hp=100.0),
+        ],
+    )
 
     bonus_apply(
         state,
         player,
         BonusId.SHOCK_CHAIN,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        step_runtime=make_step_runtime(world),
         origin=player.pos,
         creatures=creatures,
-        players=[player],
+        players=world.players,
     )
 
     projectile = pool.entries[state.shock_chain_projectile_id]
@@ -97,22 +104,27 @@ def test_shock_chain_uses_native_f32_nearest_ordering() -> None:
     ids=["default-stops-chain-without-next-target", "preserve-bugs-retargets-to-slot0"],
 )
 def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segment: bool) -> None:
-    pool = ProjectilePool(size=8)
-    state = GameplayState(projectiles=pool, preserve_bugs=preserve_bugs)
-    player = PlayerState(index=0, pos=Vec2())
-    creatures = [
-        make_creature_state(pos=Vec2(200.0, 0.0), active=False),
-        make_creature_state(pos=Vec2(50.0, 0.0), hp=100.0),
-    ]
+    world = make_world(preserve_bugs=preserve_bugs)
+    state, pool = world.state, world.state.projectiles
+    player = world.players[0]
+    player.pos = Vec2()
+    creatures = place_creatures(
+        world,
+        [
+            make_creature_state(pos=Vec2(200.0, 0.0), active=False),
+            make_creature_state(pos=Vec2(50.0, 0.0), hp=100.0),
+        ],
+    )
+    step_runtime = make_step_runtime(world)
 
     bonus_apply(
         state,
         player,
         BonusId.SHOCK_CHAIN,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+        step_runtime=step_runtime,
         origin=player.pos,
         creatures=creatures,
-        players=[player],
+        players=world.players,
     )
     first_proj = int(state.shock_chain_projectile_id)
     assert first_proj >= 0
@@ -122,11 +134,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
             PrimaryStepCtx(
                 dt=0.1,
                 creatures=creatures,
-                options=make_projectile_update_options(
-                    creatures=creatures,
-                    rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-                    runtime_state=state,
-                ),
+                options=make_projectile_update_options(world, step_runtime=step_runtime),
             ),
         )
 
@@ -173,9 +181,9 @@ def test_seeker_spawn_target_miss_handling(preserve_bugs: bool, expected_target_
     ids=["default-keeps-no-target-sentinel", "preserve-bugs-reuses-slot0"],
 )
 def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: int) -> None:
-    pool = SecondaryProjectilePool(size=1)
-    creatures = [make_creature_state(pos=Vec2(100.0, 0.0), active=False)]
-    state = GameplayState(secondary_projectiles=pool, preserve_bugs=preserve_bugs)
+    world = make_world(preserve_bugs=preserve_bugs)
+    state, pool = world.state, world.state.secondary_projectiles
+    creatures = place_creatures(world, [make_creature_state(pos=Vec2(100.0, 0.0), active=False)])
 
     idx = pool.spawn_from_spec(
         SecondarySpawnSpec(
@@ -188,7 +196,7 @@ def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: 
 
     pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            step_runtime=make_step_runtime(world),
             dt=0.01,
             creatures=creatures,
             runtime_state=state,

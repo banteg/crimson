@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Callable
+
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -12,10 +14,13 @@ from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PerkCounts, PlayerState
-from .damage_runtime import CreatureLethalHandler
 from .damage_types import CreatureDamageType
 from .runtime import CreatureState
 from .spawn import CreatureFlags, CreatureTypeId
+
+# The callback must handle death synchronously, then invoke the supplied
+# follow-up before returning: native impulse/SFX/shock RNG runs in that order.
+type CreatureLethalHandler = Callable[[int, Callable[[], tuple[SfxId, ...]]], None]
 
 _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[SfxId, ...]] = {
     CreatureTypeId.ZOMBIE: (

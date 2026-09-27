@@ -10,7 +10,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
-from crimson.sim.world_state import WorldState, _WorldStepRuntime
+from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
@@ -51,7 +51,7 @@ def observe(case):
     creature.size = target["size"]
     creature.lifecycle_stage = target["lifecycle"]
     creature.tint = RGBA(0, 0, 0, 0)
-    runtime = _WorldStepRuntime(
+    runtime = WorldStepRuntime(
         world=world,
         dt=case["dt"],
         detail_preset=5,
@@ -79,7 +79,7 @@ def observe(case):
         splatters.append([[bits(kwargs["pos"].x), bits(kwargs["pos"].y)], bits(kwargs["angle"]), bits(kwargs["age"])])
         return spawn_blood(self, **kwargs)
 
-    apply_damage = _WorldStepRuntime.apply_creature_damage
+    apply_damage = WorldStepRuntime.apply_creature_damage
 
     def record_damage(self, creature_index, damage, damage_type, impulse, owner):
         damage_calls.append([creature_index, bits(damage), damage_type, [bits(impulse.x), bits(impulse.y)]])
@@ -88,7 +88,7 @@ def observe(case):
     with (
         patch.object(FxQueue, "add_random", record_random),
         patch.object(EffectPool, "spawn_blood_splatter", record_blood),
-        patch.object(_WorldStepRuntime, "apply_creature_damage", record_damage),
+        patch.object(WorldStepRuntime, "apply_creature_damage", record_damage),
     ):
         hits = state.projectiles.step(
             PrimaryStepCtx(
@@ -98,8 +98,7 @@ def observe(case):
                     rng=rng,
                     runtime_state=state,
                     players=world.players,
-                    hit_runtime=runtime,
-                    creature_damage_runtime=runtime,
+                    step_runtime=runtime,
                 ),
             ),
         )

@@ -12,7 +12,6 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, Crand, CrandLike
 
-from .creatures.damage_runtime import CreatureDamageRuntime
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import (
@@ -33,6 +32,7 @@ from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
     from .creatures.runtime import CreatureState
+    from .sim.world_state import WorldStepRuntime
 
 __all__ = [
     "EFFECT_POOL_SIZE",
@@ -206,7 +206,7 @@ class ParticlePool:
         dt: float,
         *,
         creatures: Sequence[CreatureState] | None = None,
-        creature_damage_runtime: CreatureDamageRuntime,
+        step_runtime: WorldStepRuntime,
         fx_queue: FxQueue | None = None,
         sprite_effects: SpriteEffectPool | None = None,
     ) -> list[int]:
@@ -290,9 +290,9 @@ class ParticlePool:
                             sound_slot = int(
                                 rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX) % 3,
                             )
-                            creature_damage_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
+                            step_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
                         # Death history and forced bonuses precede the native active check.
-                        creature_damage_runtime.kill_creature_no_corpse(target_id, entry.owner)
+                        step_runtime.kill_creature_no_corpse(target_id, entry.owner)
                 continue
 
             if entry.render_flag:
@@ -366,7 +366,7 @@ class ParticlePool:
 
                         damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
                         if damage > 0.0:
-                            creature_damage_runtime.apply_creature_damage(
+                            step_runtime.apply_creature_damage(
                                 int(hit_idx),
                                 float(damage),
                                 4,

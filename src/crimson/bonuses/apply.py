@@ -8,7 +8,6 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..math_parity import (
     f32,
     native_chain_angle_from_delta,
@@ -33,6 +32,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ..creatures.runtime import CreatureState
+    from ..sim.world_state import WorldStepRuntime
 
 # `bonus_apply` (crimsonland.exe @ 0x00409890) starts the Nuke screen shake.
 NUKE_CAMERA_SHAKE_PULSES = 0x14
@@ -57,7 +57,7 @@ def bonus_apply(
     creatures: Sequence[CreatureState],
     players: list[PlayerState],
     detail_preset: int = 5,
-    creature_damage_runtime: CreatureDamageRuntime,
+    step_runtime: WorldStepRuntime,
 ) -> None:
     """Port of `bonus_apply` (0x00409890)."""
 
@@ -236,7 +236,7 @@ def bonus_apply(
                 distance = x87_pc24_sqrt(x87_pc24_add(x87_pc24_mul(dx, dx), x87_pc24_mul(dy, dy)))
                 damage_base = x87_pc24_sub(256.0, distance)
                 if damage_base > 0.0:
-                    creature_damage_runtime.apply_creature_damage(
+                    step_runtime.apply_creature_damage(
                         int(idx),
                         float(x87_pc24_mul(damage_base, 5.0)),
                         3,

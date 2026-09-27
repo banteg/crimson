@@ -157,28 +157,25 @@
     }),
   })
 # ---
-# name: test_secondary_projectile_impulse_callbacks_snapshot
-  list([
-    dict({
-      'damage': 595.0,
-      'damage_type': 3,
-      'idx': 0,
-      'impulse': list([
-        -5.1e-05,
-        -1169.999878,
-      ]),
-      'owner': dict({
-        'index': 0,
-        'kind': 1,
-        'local_host': True,
-      }),
+# name: test_secondary_projectile_direct_hit_snapshot
+  dict({
+    'hp': 405.0,
+    'last_hit_owner': dict({
+      'index': 0,
+      'kind': 1,
+      'local_host': True,
     }),
-  ])
+    'vel': list([
+      5.1e-05,
+      1169.999878,
+    ]),
+  })
 # ---
 # name: test_secondary_projectile_kill_followup_snapshot
   dict({
     'creature_hp': -50.0,
-    'followup_calls': list([
+    'deaths': list([
+      0,
       0,
     ]),
     'fx_count': 2,

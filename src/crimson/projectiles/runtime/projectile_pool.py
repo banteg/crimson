@@ -10,7 +10,6 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_types import SfxRequest
 
-from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
@@ -50,28 +49,13 @@ if TYPE_CHECKING:
 
     from ...creatures.runtime import CreatureState
     from ...sim.state_types import PlayerState
-
-type ProjectileHitPresentation = object
-
-
-class ProjectileHitRuntime(msgspec.Struct):
-    def apply_player_damage(self, player_index: int, damage: float) -> None:
-        _ = player_index, damage
-
-    def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileHitPresentation | None:
-        _ = hit
-        return None
-
-    def finish_hit_presentation(self, hit: ProjectileHit, presentation: ProjectileHitPresentation) -> None:
-        _ = hit, presentation
-
+    from ...sim.world_state import WorldStepRuntime
 
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
     rng: CrandLike
     runtime_state: GameplayState
     players: Sequence[PlayerState]
-    hit_runtime: ProjectileHitRuntime
-    creature_damage_runtime: CreatureDamageRuntime
+    step_runtime: WorldStepRuntime
     ion_aoe_scale: float = 1.0
     detail_preset: int = 5
 
@@ -198,8 +182,7 @@ class ProjectilePool:
         rng = options.rng
         runtime_state = options.runtime_state
         players = options.players
-        hit_runtime = options.hit_runtime
-        creature_damage_runtime = options.creature_damage_runtime
+        step_runtime = options.step_runtime
 
         if dt <= 0.0:
             return []
@@ -248,7 +231,7 @@ class ProjectilePool:
             runtime_state=runtime_state,
             effects=effects,
             sfx_queue=sfx_queue,
-            creature_damage_runtime=creature_damage_runtime,
+            step_runtime=step_runtime,
             sync_creature_index=creature_spatial.sync_index,
         )
 
@@ -383,7 +366,7 @@ class ProjectilePool:
                                 continue
 
                             proj.life_timer = 0.25
-                            hit_runtime.apply_player_damage(int(hit_player_idx), 10.0)
+                            step_runtime.apply_player_damage(int(hit_player_idx), 10.0)
 
                             step += 3
                             continue
@@ -422,7 +405,7 @@ class ProjectilePool:
                         angle=proj.angle,
                     )
                     hits.append(hit)
-                    hit_presentation = hit_runtime.begin_hit_presentation(hit)
+                    hit_presentation = step_runtime.begin_hit_presentation(hit)
 
                     if proj.life_timer != 0.25 and rule.stop_on_hit:
                         proj.life_timer = 0.25
@@ -469,7 +452,7 @@ class ProjectilePool:
                                 damage_type=damage_type,
                                 impulse=impulse,
                                 owner=proj.owner,
-                                creature_damage_runtime=creature_damage_runtime,
+                                step_runtime=step_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))
                             if proj.life_timer != 0.25:
@@ -482,7 +465,7 @@ class ProjectilePool:
                                 damage_type=damage_type,
                                 impulse=impulse,
                                 owner=proj.owner,
-                                creature_damage_runtime=creature_damage_runtime,
+                                step_runtime=step_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))
                             proj.damage_pool = x87_pc24_sub(proj.damage_pool, creature.hp)
@@ -505,16 +488,16 @@ class ProjectilePool:
                     post_hit = msgspec.structs.replace(hit, hit=proj.pos, target=creatures[hit_idx].pos)
                     if proj.life_timer == 0.25 and rule.stop_on_hit:
                         if hit_presentation is not None:
-                            hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
+                            step_runtime.finish_hit_presentation(post_hit, hit_presentation)
                         break
 
                     if proj.damage_pool <= 0.0:
                         if hit_presentation is not None:
-                            hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
+                            step_runtime.finish_hit_presentation(post_hit, hit_presentation)
                         break
 
                     if hit_presentation is not None:
-                        hit_runtime.finish_hit_presentation(post_hit, hit_presentation)
+                        step_runtime.finish_hit_presentation(post_hit, hit_presentation)
 
                 step += 3
 

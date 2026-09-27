@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from functools import partial
 
+from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime import (
     WeaponFireCtx,
     fire_weapon,
@@ -16,14 +18,22 @@ from crimson.weapon_runtime import (
 from crimson.weapon_runtime.spawn import projectile_spawn
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime, make_creature_state, make_projectile_update_options
+from tests.support.builders.session import make_world
+from tests.support.factories import (
+    make_creature_state,
+    make_projectile_update_options,
+    make_step_runtime,
+    place_creatures,
+)
 
 _creature = partial(make_creature_state, size=200.0)
 
 
-def test_shots_fired_and_hit_increment() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
+def _fire_pistol_right() -> WorldState:
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2()
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
@@ -36,53 +46,55 @@ def test_shots_fired_and_hit_increment() -> None:
             state=state,
         ),
     )
+    return world
+
+
+def _step_rocket_into(creature: CreatureState) -> GameplayState:
+    world = make_world()
+    state = world.state
+    state.secondary_projectiles.spawn_from_spec(
+        SecondarySpawnSpec(
+            pos=Vec2(),
+            angle=0.0,
+            type_id=SecondaryProjectileTypeId.ROCKET,
+            owner=OwnerRef.from_local_player(0),
+        ),
+    )
+    creatures = place_creatures(world, [creature])
+
+    state.secondary_projectiles.step(
+        SecondaryStepCtx(
+            step_runtime=make_step_runtime(world),
+            dt=0.1,
+            creatures=creatures,
+            runtime_state=state,
+        ),
+    )
+    return state
+
+
+def test_shots_fired_and_hit_increment() -> None:
+    world = _fire_pistol_right()
+    state = world.state
 
     assert state.shots_fired[0] == 1
     assert state.shots_hit[0] == 0
 
-    creature = _creature(pos=Vec2(22.0, 0.0))
+    creatures = place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(
-            dt=0.1,
-            creatures=[creature],
-            options=make_projectile_update_options(
-                creatures=[creature],
-                rng=state.rng,
-                runtime_state=state,
-            ),
-        ),
+        PrimaryStepCtx(dt=0.1, creatures=creatures, options=make_projectile_update_options(world)),
     )
     assert hits
     assert state.shots_hit[0] == 1
 
 
 def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
-    weapon_assign_player(player, WeaponId.PISTOL, state=state)
-    player.spread_heat = 0.0
-    player.aim_dir = Vec2(1.0, 0.0)
+    world = _fire_pistol_right()
+    state = world.state
 
-    fire_weapon(
-        WeaponFireCtx(
-            player=player,
-            input_state=PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)),
-            dt=0.016,
-            state=state,
-        ),
-    )
-
-    corpse = _creature(pos=Vec2(22.0, 0.0), lifecycle_stage=8.0)
+    creatures = place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, lifecycle_stage=8.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(
-            dt=0.1,
-            creatures=[corpse],
-            options=make_projectile_update_options(
-                creatures=[corpse],
-                rng=state.rng,
-                runtime_state=state,
-            ),
-        ),
+        PrimaryStepCtx(dt=0.1, creatures=creatures, options=make_projectile_update_options(world)),
     )
 
     assert hits
@@ -90,49 +102,13 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
 
 
 def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets() -> None:
-    state = GameplayState()
-    state.secondary_projectiles.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.ROCKET,
-            owner=OwnerRef.from_local_player(0),
-        ),
-    )
-    creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0)]
-
-    state.secondary_projectiles.step(
-        SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
-            dt=0.1,
-            creatures=creatures,
-            runtime_state=state,
-        ),
-    )
+    state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0))
 
     assert state.shots_hit[0] == 1
 
 
 def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit() -> None:
-    state = GameplayState()
-    state.secondary_projectiles.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.ROCKET,
-            owner=OwnerRef.from_local_player(0),
-        ),
-    )
-    creatures = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0)]
-
-    state.secondary_projectiles.step(
-        SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
-            dt=0.1,
-            creatures=creatures,
-            runtime_state=state,
-        ),
-    )
+    state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0))
 
     assert state.shots_hit[0] == 0
 

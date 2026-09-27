@@ -5,8 +5,9 @@ from crimson.projectiles.runtime import SecondaryProjectilePool, SecondarySpawnS
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
+from tests.support.factories import make_step_runtime, place_creatures
 
 
 def _is_collidable(creature: CreatureState) -> bool:
@@ -53,16 +54,19 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
             time_to_live=2.0,
         ),
     )
-    creatures: list[CreatureState] = [
-        _creature(pos=Vec2(130.0, -9.0), hp=1000.0, size=500.0),
-        _creature(pos=Vec2(70.0, -9.0), hp=1000.0, size=500.0),
-    ]
+    world = make_world()
+    creatures = place_creatures(
+        world,
+        [
+            _creature(pos=Vec2(130.0, -9.0), hp=1000.0, size=500.0),
+            _creature(pos=Vec2(70.0, -9.0), hp=1000.0, size=500.0),
+        ],
+    )
 
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, step_runtime=make_step_runtime(world)))
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
-
-    assert [call[0] for call in damage_runtime.calls] == [0]
+    assert creatures[0].hp < 1000.0
+    assert creatures[1].hp == 1000.0
 
 
 def test_same_cell_size_growth_updates_query_margin() -> None:
@@ -76,11 +80,9 @@ def test_same_cell_size_growth_updates_query_margin() -> None:
 
 def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     from crimson.creatures.spawn_ids import CreatureFlags
-    from crimson.effects import FxQueue
-    from crimson.game_modes import GameMode
     from crimson.projectiles.runtime.secondary_pool import _step_detonation
     from crimson.projectiles.types import SecondaryProjectile
-    from crimson.sim.world_state import WorldState, _WorldStepRuntime
+    from crimson.sim.world_state import WorldState
 
     world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
     parent = world.creatures.entries[0]
@@ -90,13 +92,10 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     parent.hp = 1.0
     parent.max_hp = 400.0
     parent.size = 40.0
-    fx_queue = FxQueue()
-    damage_runtime = _WorldStepRuntime(world=world, dt=0.1, detail_preset=5,
-                                      violence_disabled=0, fx_queue=fx_queue, game_mode=GameMode.SURVIVAL,
-                                      hit_audio_game_tune_started=True, deaths=[], sfx=[])
+    step_runtime = make_step_runtime(world)
     spatial = CreatureSpatialHash(creatures=world.creatures.entries, is_collidable=_is_collidable)
     explosion = SecondaryProjectile(active=True, pos=parent.pos, detonation_scale=1.0)
-    ctx = SecondaryStepCtx(creature_damage_runtime=damage_runtime, dt=0.1, creatures=world.creatures.entries)
+    ctx = SecondaryStepCtx(step_runtime=step_runtime, dt=0.1, creatures=world.creatures.entries)
     _step_detonation(explosion, ctx, dt=0.1, creature_spatial=spatial, rng=world.state.rng)
     children = [c for c in world.creatures.entries[1:] if c.active]
     assert len(children) >= 2

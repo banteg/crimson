@@ -4,7 +4,6 @@ from .collision import _within_native_find_radius
 from .primary_rules import PRIMARY_PROJECTILE_RULE_BY_TYPE_ID, PrimaryProjectileRule, primary_rule_for_type_id
 from .projectile_pool import (
     PrimaryStepCtx,
-    ProjectileHitRuntime,
     ProjectilePool,
     ProjectileUpdateOptions,
     projectile_collision_profile,
@@ -17,7 +16,6 @@ __all__ = [
     "SECONDARY_RULE_BY_TYPE_ID",
     "PrimaryProjectileRule",
     "PrimaryStepCtx",
-    "ProjectileHitRuntime",
     "ProjectilePool",
     "ProjectileUpdateOptions",
     "SecondaryProjectilePool",

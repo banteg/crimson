@@ -6,7 +6,8 @@ from crimson.effects import ParticlePool, ParticleStyleId
 from crimson.math_parity import f32
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 from tests.support.helpers import ScriptedCrand
 
 
@@ -30,7 +31,7 @@ def compare(witness):
         entry.scale_x = entry.scale_y = entry.scale_z = entry.age = 0.0
         for key in ("intensity", "angle", "spin"):
             setattr(entry, key, f32(item[key]))
-    pool.update(case["dt"], creatures=(), creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=()))
+    pool.update(case["dt"], creatures=(), step_runtime=make_step_runtime(make_world(), dt=case["dt"]))
     for native in witness["particles"]:
         entry = pool.entries[native["index"]]
         values = {

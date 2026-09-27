@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from typing import cast
 
 import msgspec
 
@@ -28,7 +27,7 @@ from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
 from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from ..perks.runtime.effects import perks_update_effects
 from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
-from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
+from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 from .input import PlayerInput
@@ -58,7 +57,7 @@ class WorldMidStepRuntime(msgspec.Struct):
         return None
 
 
-class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
+class WorldStepRuntime(PlayerDeathRuntime):
     world: WorldState
     dt: float
     detail_preset: int
@@ -150,11 +149,13 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             violence_disabled=int(self.violence_disabled),
         )
 
-    def finish_hit_presentation(self, hit: ProjectileHit, presentation: object) -> None:
+    def finish_hit_presentation(self, hit: ProjectileHit, presentation: ProjectileDecalPostCtx) -> None:
         queue_projectile_decals_post_hit(
+            state=self.world.state,
             fx_queue=self.fx_queue,
-            post_ctx=msgspec.structs.replace(cast("ProjectileDecalPostCtx", presentation), hit=hit),
+            post_ctx=msgspec.structs.replace(presentation, hit=hit),
             rng=self.world.state.rng,
+            detail_preset=int(self.detail_preset),
         )
         hit_trigger, keys = plan_hit_sfx(
             [hit],
@@ -313,7 +314,7 @@ class WorldState(msgspec.Struct):
                 violence_disabled=int(violence_disabled),
             ),
         )
-        step_runtime = _WorldStepRuntime(
+        step_runtime = WorldStepRuntime(
             world=self,
             dt=float(dt),
             detail_preset=int(detail_preset),
@@ -333,8 +334,7 @@ class WorldState(msgspec.Struct):
                     rng=self.state.rng,
                     runtime_state=self.state,
                     players=self.players,
-                    hit_runtime=step_runtime,
-                    creature_damage_runtime=step_runtime,
+                    step_runtime=step_runtime,
                 ),
             ),
         )
@@ -345,7 +345,7 @@ class WorldState(msgspec.Struct):
                 runtime_state=self.state,
                 fx_queue=fx_queue,
                 detail_preset=int(detail_preset),
-                creature_damage_runtime=step_runtime,
+                step_runtime=step_runtime,
                 play_rocket_hit_audio=step_runtime.play_secondary_rocket_hit_audio,
             ),
         )
@@ -355,7 +355,7 @@ class WorldState(msgspec.Struct):
         self.state.particles.update(
             dt,
             creatures=self.creatures.entries,
-            creature_damage_runtime=step_runtime,
+            step_runtime=step_runtime,
             fx_queue=fx_queue,
             sprite_effects=self.state.sprite_effects,
         )
@@ -401,7 +401,7 @@ class WorldState(msgspec.Struct):
             creatures=self.creatures.entries,
             update_hud=True,
             detail_preset=int(detail_preset),
-            creature_damage_runtime=step_runtime,
+            step_runtime=step_runtime,
         )
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)

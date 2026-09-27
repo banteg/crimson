@@ -8,12 +8,12 @@ from crimson.gameplay import player_update
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 
 
 def _signature(pool: ProjectilePool) -> Counter[int]:
@@ -21,37 +21,34 @@ def _signature(pool: ProjectilePool) -> Counter[int]:
 
 
 def test_spawn_signature_phase1_perks_and_bonuses() -> None:
-    pool = ProjectilePool(size=64)
-    state = GameplayState(projectiles=pool)
+    world = make_world()
+    state = world.state
+    pool = state.projectiles
+
+    def _fireblast(player: PlayerState) -> None:
+        bonus_apply(
+            state,
+            player,
+            BonusId.FIREBLAST,
+            step_runtime=make_step_runtime(world),
+            origin=player.pos,
+            creatures=world.creatures.entries,
+            players=world.players,
+        )
 
     # Fireblast.
     state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    bonus_apply(
-        state,
-        player,
-        BonusId.FIREBLAST,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        origin=player.pos,
-        creatures=[],
-        players=[player],
-    )
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    _fireblast(player)
     assert _signature(pool) == Counter({int(ProjectileTemplateId.PLASMA_RIFLE): 16})
     assert not state.bonus_spawn_guard
 
     pool.reset()
 
     # Fireblast should NOT convert to Fire Bullets because it sets bonus_spawn_guard.
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
-    bonus_apply(
-        state,
-        player,
-        BonusId.FIREBLAST,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        origin=player.pos,
-        creatures=[],
-        players=[player],
-    )
+    player.fire_bullets_timer = 1.0
+    _fireblast(player)
     assert _signature(pool) == Counter({int(ProjectileTemplateId.PLASMA_RIFLE): 16})
 
     pool.reset()

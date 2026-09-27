@@ -10,7 +10,7 @@ from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..bonuses.fire_bullets import LargeHitDecalRuntime, queue_large_hit_decal_streak
+from ..bonuses.fire_bullets import queue_large_hit_decal_streak
 from ..camera import CameraUpdate
 from ..effects import FxQueue
 from ..game_modes import GameMode
@@ -136,21 +136,6 @@ class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
     base_angle: float
     type_id: int
     freeze_active: bool
-    large_hit_decal_runtime: LargeHitDecalRuntime | None = None
-
-
-class _ProjectileFreezeShardRuntime(LargeHitDecalRuntime):
-    state: GameplayState
-    rng: CrandLike
-    detail_preset: int
-
-    def spawn_freeze_shard(self, pos: Vec2, angle: float) -> None:
-        self.state.effects.spawn_freeze_shard(
-            pos=pos,
-            angle=float(angle),
-            rng=self.rng,
-            detail_preset=int(self.detail_preset),
-        )
 
 
 def queue_projectile_decals(
@@ -174,9 +159,11 @@ def queue_projectile_decals(
             violence_disabled=violence_disabled,
         )
         queue_projectile_decals_post_hit(
+            state=state,
             fx_queue=fx_queue,
             post_ctx=post_ctx,
             rng=rng,
+            detail_preset=detail_preset,
         )
 
 
@@ -192,13 +179,6 @@ def queue_projectile_decals_pre_hit(
 ) -> ProjectileDecalPostCtx:
     freeze_active = float(state.bonuses.freeze) > 0.0
     bloody = bool(players) and PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks
-    large_hit_decal_runtime: LargeHitDecalRuntime | None = None
-    if freeze_active:
-        large_hit_decal_runtime = _ProjectileFreezeShardRuntime(
-            state=state,
-            rng=rng,
-            detail_preset=int(detail_preset),
-        )
 
     type_id = hit.type_id
 
@@ -294,15 +274,16 @@ def queue_projectile_decals_pre_hit(
         base_angle=float(base_angle),
         type_id=int(type_id),
         freeze_active=bool(freeze_active),
-        large_hit_decal_runtime=large_hit_decal_runtime,
     )
 
 
 def queue_projectile_decals_post_hit(
     *,
+    state: GameplayState,
     fx_queue: FxQueue,
     post_ctx: ProjectileDecalPostCtx,
     rng: CrandLike,
+    detail_preset: int,
 ) -> None:
     hit = post_ctx.hit
     base_angle = float(post_ctx.base_angle)
@@ -317,24 +298,22 @@ def queue_projectile_decals_post_hit(
             base_angle=float(base_angle),
             fx_queue=fx_queue,
             rng=rng,
-            freeze_origin=hit.hit if bool(post_ctx.freeze_active) else None,
-            runtime=post_ctx.large_hit_decal_runtime,
+            freeze_effects=state.effects if post_ctx.freeze_active else None,
+            detail_preset=detail_preset,
         )
         return
 
     if bool(post_ctx.freeze_active):
         # Native: with Freeze active, default hits spawn one freeze shard here,
         # after the burn draw, instead of the streak decal loop.
-        runtime = post_ctx.large_hit_decal_runtime
-        if runtime is not None:
-            shard_angle = x87_pc24_add(
-                base_angle,
-                x87_pc24_mul(
-                    float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100),
-                    f32(0.01),
-                ),
-            )
-            runtime.spawn_freeze_shard(hit.hit, float(shard_angle))
+        shard_angle = x87_pc24_add(
+            base_angle,
+            x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_DEFAULT_FREEZE_SHARD_ANGLE) % 100),
+                f32(0.01),
+            ),
+        )
+        state.effects.spawn_freeze_shard(pos=hit.hit, angle=shard_angle, rng=rng, detail_preset=detail_preset)
         return
 
     for _ in range(3):

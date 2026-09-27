@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..math_parity import f32, x87_pc24_sub
 from ..sim.state_types import BonusPickupEvent, PlayerState
 from ..sim.timing import ftol_ms_i32
@@ -16,6 +15,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ..creatures.runtime import CreatureState
+    from ..sim.world_state import WorldStepRuntime
 
 
 def bonus_telekinetic_update(
@@ -25,7 +25,7 @@ def bonus_telekinetic_update(
     *,
     creatures: Sequence[CreatureState],
     detail_preset: int = 5,
-    creature_damage_runtime: CreatureDamageRuntime,
+    step_runtime: WorldStepRuntime,
 ) -> list[BonusPickupEvent]:
     """Allow Telekinetic perk owners to pick up bonuses by aiming at them."""
     from ..perks import PerkId
@@ -67,7 +67,7 @@ def bonus_telekinetic_update(
             creatures=creatures,
             players=players,
             detail_preset=int(detail_preset),
-            creature_damage_runtime=creature_damage_runtime,
+            step_runtime=step_runtime,
         )
         entry.picked = True
         entry.time_left = BONUS_PICKUP_LINGER
@@ -96,7 +96,7 @@ def bonus_update(
     creatures: Sequence[CreatureState],
     update_hud: bool = True,
     detail_preset: int = 5,
-    creature_damage_runtime: CreatureDamageRuntime,
+    step_runtime: WorldStepRuntime,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (`bonus_update`).
 
@@ -109,7 +109,7 @@ def bonus_update(
         dt,
         creatures=creatures,
         detail_preset=int(detail_preset),
-        creature_damage_runtime=creature_damage_runtime,
+        step_runtime=step_runtime,
     )
     pickups.extend(
         state.bonus_pool.update(
@@ -118,7 +118,7 @@ def bonus_update(
             players=players,
             creatures=creatures,
             detail_preset=int(detail_preset),
-            creature_damage_runtime=creature_damage_runtime,
+            step_runtime=step_runtime,
         ),
     )
 

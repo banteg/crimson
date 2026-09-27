@@ -7,12 +7,12 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
 from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.sim.world_state import WorldEvents, WorldState
 from grim.geom import Vec2
 from grim.rand import Crand
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 from tests.support.world_runtime import WorldRuntimeHost
 
 _PICKUP_BURST = [
@@ -129,50 +129,46 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     assert {effect.effect_id for effect in active} == {0}
 
 
+def _update_bonus_pool(world: WorldState, dt: float) -> list[BonusPickupEvent]:
+    return world.state.bonus_pool.update(
+        dt,
+        step_runtime=make_step_runtime(world, dt=dt),
+        state=world.state,
+        players=world.players,
+        creatures=world.creatures.entries,
+    )
+
+
 def test_bonus_lifetime_decrement_stores_native_f32_result() -> None:
-    state = GameplayState()
-    entry = state.bonus_pool.spawn_at(
+    world = make_world()
+    entry = world.state.bonus_pool.spawn_at(
         pos=Vec2(100.0, 100.0),
         bonus_id=BonusId.POINTS,
-        state=state,
+        state=world.state,
         emit_burst=False,
     )
     assert entry is not None
     entry.time_left = 9.85200023651123
 
-    state.bonus_pool.update(
-        0.04400000348687172,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2(500.0, 500.0))],
-        creatures=[],
-    )
+    _update_bonus_pool(world, 0.04400000348687172)
 
     assert entry.time_left == 9.808000564575195
 
 
 def test_bonus_pickup_uses_native_pc24_radius_boundary() -> None:
-    state = GameplayState()
-    entry = state.bonus_pool.entries[0]
+    world = make_world()
+    entry = world.state.bonus_pool.entries[0]
     entry.bonus_id = BonusId.SHIELD
     entry.time_left = 1.0
     entry.time_max = 1.0
     entry.pos = Vec2()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(25.999998092651367, 0.009600000455975533),
-    )
+    player = world.players[0]
+    player.pos = Vec2(25.999998092651367, 0.009600000455975533)
 
     # Double squared distance falls just below 26^2, but native PC24 rounds
     # the sum and hypotenuse to exactly 676 and 26, which fails strict `< 26`.
     assert Vec2.distance_sq(entry.pos, player.pos) < 26.0 * 26.0
-    pickups = state.bonus_pool.update(
-        0.01,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        state=state,
-        players=[player],
-        creatures=[],
-    )
+    pickups = _update_bonus_pool(world, 0.01)
 
     assert pickups == []
     assert entry.picked is False
@@ -180,26 +176,19 @@ def test_bonus_pickup_uses_native_pc24_radius_boundary() -> None:
 
 
 def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
-    state = GameplayState()
-    entry = state.bonus_pool.spawn_at(
+    world = make_world(player_count=2)
+    entry = world.state.bonus_pool.spawn_at(
         pos=Vec2(500.0, 500.0),
         bonus_id=BonusId.SHIELD,
-        state=state,
+        state=world.state,
         emit_burst=False,
     )
     assert entry is not None
 
-    players = [
-        PlayerState(index=0, pos=Vec2(500.0, 500.0)),
-        PlayerState(index=1, pos=Vec2(510.0, 500.0)),
-    ]
-    pickups = state.bonus_pool.update(
-        0.016,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        state=state,
-        players=players,
-        creatures=[],
-    )
+    players = world.players
+    players[0].pos = Vec2(500.0, 500.0)
+    players[1].pos = Vec2(510.0, 500.0)
+    pickups = _update_bonus_pool(world, 0.016)
 
     # Native's pickup loop has no break: both in-range players apply the bonus.
     assert [pickup.player_index for pickup in pickups] == [0, 1]

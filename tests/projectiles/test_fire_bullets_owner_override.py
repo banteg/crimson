@@ -11,7 +11,8 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.weapon_runtime.spawn import projectile_spawn
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_step_runtime
 
 
 def _spawn_type(
@@ -36,6 +37,28 @@ def _spawn_type(
 
 def _active_type_ids(state: GameplayState) -> list[int]:
     return [int(entry.type_id) for entry in state.projectiles.entries if bool(entry.active)]
+
+
+def _nuke_type_ids(*, preserve_bugs: bool, fire_bullets_timers: tuple[float, float]) -> list[int]:
+    """Player 1 picks up a nuke; return the projectile types its burst spawned."""
+
+    world = make_world(player_count=2, preserve_bugs=preserve_bugs)
+    for player, pos, timer in zip(world.players, (Vec2(100.0, 100.0), Vec2(120.0, 100.0)), fire_bullets_timers, strict=True):
+        player.pos = pos
+        player.fire_bullets_timer = timer
+    player1 = world.players[1]
+
+    bonus_apply(
+        world.state,
+        player1,
+        BonusId.NUKE,
+        step_runtime=make_step_runtime(world),
+        origin=player1.pos,
+        creatures=world.creatures.entries,
+        players=world.players,
+        detail_preset=5,
+    )
+    return _active_type_ids(world.state)
 
 
 def test_projectile_spawn_fire_bullets_default_uses_owner_timer() -> None:
@@ -114,42 +137,12 @@ def test_projectile_spawn_preserve_bugs_keeps_native_owner_window() -> None:
 
 
 def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner() -> None:
-    state = GameplayState(preserve_bugs=False)
-    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
-    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
-    players = [player0, player1]
-
-    bonus_apply(
-        state,
-        player1,
-        BonusId.NUKE,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        origin=player1.pos,
-        creatures=[],
-        players=players,
-        detail_preset=5,
-    )
-    non_owner_types = _active_type_ids(state)
+    non_owner_types = _nuke_type_ids(preserve_bugs=False, fire_bullets_timers=(1.0, 0.0))
 
     assert int(ProjectileTemplateId.FIRE_BULLETS) not in non_owner_types
     assert set(non_owner_types) <= {int(ProjectileTemplateId.PISTOL), int(ProjectileTemplateId.GAUSS_GUN)}
 
-    state = GameplayState(preserve_bugs=False)
-    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
-    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0)
-    players = [player0, player1]
-
-    bonus_apply(
-        state,
-        player1,
-        BonusId.NUKE,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        origin=player1.pos,
-        creatures=[],
-        players=players,
-        detail_preset=5,
-    )
-    owner_types = _active_type_ids(state)
+    owner_types = _nuke_type_ids(preserve_bugs=False, fire_bullets_timers=(0.0, 1.0))
 
     assert owner_types
     assert set(owner_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}
@@ -200,22 +193,7 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
 
 
 def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> None:
-    state = GameplayState(preserve_bugs=True)
-    player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
-    player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0)
-    players = [player0, player1]
-
-    bonus_apply(
-        state,
-        player1,
-        BonusId.NUKE,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=[]),
-        origin=player1.pos,
-        creatures=[],
-        players=players,
-        detail_preset=5,
-    )
-    nuke_types = _active_type_ids(state)
+    nuke_types = _nuke_type_ids(preserve_bugs=True, fire_bullets_timers=(1.0, 0.0))
     assert nuke_types
     assert set(nuke_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}
 

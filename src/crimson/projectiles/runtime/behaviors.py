@@ -10,7 +10,6 @@ from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import EffectPool
@@ -44,6 +43,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ...creatures.runtime import CreatureState
+    from ...sim.world_state import WorldStepRuntime
     from .projectile_pool import ProjectilePool
 
 
@@ -57,7 +57,7 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     runtime_state: GameplayState | None
     effects: EffectPool | None
     sfx_queue: MutableSequence[SfxRequest] | None
-    creature_damage_runtime: CreatureDamageRuntime
+    step_runtime: WorldStepRuntime
     sync_creature_index: Callable[[int], None] | None = None
 
 
@@ -113,7 +113,7 @@ def _linger_ion_aoe(
                 damage_type=CreatureDamageType.ION,
                 impulse=Vec2(),
                 owner=proj.owner,
-                creature_damage_runtime=ctx.creature_damage_runtime,
+                step_runtime=ctx.step_runtime,
             )
 
 
@@ -285,7 +285,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
         # Native calls creature_handle_death directly: no damage pipeline, so no
         # heading-jitter or death-SFX rand draws, and hp stays positive so the
         # generic chip damage after this hook still applies.
-        ctx.creature_damage_runtime.on_creature_lethal(int(hit.hit_idx), _no_death_sfx)
+        ctx.step_runtime.on_creature_lethal(int(hit.hit_idx), _no_death_sfx)
     hit.proj.life_timer = 0.25
 
 

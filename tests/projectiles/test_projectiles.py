@@ -9,7 +9,7 @@ import crimson.projectiles.runtime.projectile_pool as projectile_pool_runtime
 from crimson.collision_math import native_find_size_margin
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
-from crimson.math_parity import NATIVE_HALF_PI, f32
+from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
@@ -28,14 +28,25 @@ from crimson.projectiles.types import (
 )
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime, make_projectile_update_options
+from grim.rand import RecordingCrand
+from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.factories import make_projectile_update_options, make_step_runtime, place_creatures
+from tests.support.helpers import assert_float_close
 
 
-def _fixed_rng(value: int) -> ScriptedCrand:
-    return ScriptedCrand(value, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+def _world_with(creatures: list[CreatureState], *, seed: int = 0xBEEF) -> WorldState:
+    world = make_world(seed=seed)
+    place_creatures(world, creatures)
+    return world
+
+
+def _recording_rng(world: WorldState) -> RecordingCrand:
+    rng = RecordingCrand(world.state.rng)
+    world.state.rng = rng
+    return rng
 
 
 def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> None:
@@ -82,7 +93,7 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
         PrimaryStepCtx(
             dt=0.06000000238418579,
             creatures=(),
-            options=make_projectile_update_options(creatures=()),
+            options=make_projectile_update_options(_world_with([])),
         ),
     )
 
@@ -103,7 +114,7 @@ def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
         PrimaryStepCtx(
             dt=0.08000000566244125,
             creatures=(),
-            options=make_projectile_update_options(creatures=()),
+            options=make_projectile_update_options(_world_with([])),
         ),
     )
 
@@ -120,13 +131,14 @@ def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
     )
     pool.entries[idx].life_timer = 0.39
     creature = _creature(pos=Vec2(), hp=12.0)
+    world = _world_with([creature])
     dt = f32(0.0950000062584877)
 
     pool.step(
         PrimaryStepCtx(
             dt=dt,
-            creatures=[creature],
-            options=make_projectile_update_options(creatures=[creature]),
+            creatures=world.creatures.entries,
+            options=make_projectile_update_options(world, step_runtime=make_step_runtime(world, dt=dt)),
         ),
     )
 
@@ -300,6 +312,7 @@ def test_primary_spawn_uses_collision_profile_defaults() -> None:
 
 
 def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None:
+    # World seeds pick the stop-on-hit jitter draw: the default seed 3 lands on 0, seed 1 on 2.
     cases: list[dict[str, Any]] = [
         {
             "name": "pistol_near_hit",
@@ -307,7 +320,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             "creatures": [
                 _creature(pos=Vec2(41.1428575, 0.0), hp=100.0),
             ],
-            "rng": None,
         },
         {
             "name": "pistol_rng_jitter",
@@ -315,7 +327,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             "creatures": [
                 _creature(pos=Vec2(71.1428574, 0.0), hp=100.0),
             ],
-            "rng": _fixed_rng(2),
+            "seed": 1,
         },
         {
             "name": "rocket_no_splash_type_0x0b",
@@ -325,7 +337,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                 _creature(pos=Vec2(100.0, 0.0), hp=100.0),
                 _creature(pos=Vec2(160.0, 0.0), hp=100.0),
             ],
-            "rng": _fixed_rng(0),
         },
         {
             "name": "ion_minigun_linger",
@@ -333,7 +344,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             "creatures": [
                 _creature(pos=Vec2(40.0, 0.0), hp=200.0),
             ],
-            "rng": None,
             "double_update": True,
         },
     ]
@@ -347,28 +357,15 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             owner=OwnerRef.from_local_player(0),
         )
         creatures = case["creatures"]
-        hits = pool.step(
-            PrimaryStepCtx(
-                dt=0.1,
-                creatures=creatures,
-                options=make_projectile_update_options(
-                    creatures=creatures,
-                    rng=case.get("rng"),
-                ),
-            ),
+        world = _world_with(creatures, seed=int(case.get("seed", 3)))
+        step_ctx = PrimaryStepCtx(
+            dt=0.1,
+            creatures=world.creatures.entries,
+            options=make_projectile_update_options(world),
         )
+        hits = pool.step(step_ctx)
         if case.get("double_update", False):
-            more_hits = pool.step(
-                PrimaryStepCtx(
-                    dt=0.1,
-                    creatures=creatures,
-                    options=make_projectile_update_options(
-                        creatures=creatures,
-                            rng=case.get("rng"),
-                    ),
-                ),
-            )
-            hits = [*hits, *more_hits]
+            hits = [*hits, *pool.step(step_ctx)]
 
         snapshot(name=str(case["name"])).assert_match(_normalize_primary_pool(pool, idx, creatures, hits))
 
@@ -395,6 +392,7 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
         _creature(pos=Vec2(100.0, 0.0), hp=100.0),
         _creature(pos=Vec2(1000.0, 0.0), hp=100.0),
     ]
+    world = _world_with(creatures)
     idx = pool.spawn_from_spec(
         SecondarySpawnSpec(
             pos=Vec2(),
@@ -406,13 +404,15 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
     )
     pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures), dt=0.01, creatures=creatures,
+            step_runtime=make_step_runtime(world, dt=0.01), dt=0.01, creatures=world.creatures.entries,
         ),
     )
     snapshot(name="seek_target").assert_match(_normalize_secondary_pool(pool, idx, creatures))
 
     # Type 3: detonation pass + runtime side effects
-    runtime_state = GameplayState()
+    detonation_creatures: list[CreatureState] = [_creature(pos=Vec2(3.0, 4.0), hp=1000.0)]
+    detonation_world = _world_with(detonation_creatures)
+    runtime_state = detonation_world.state
     fx_queue = FxQueue()
     detonation_pool = SecondaryProjectilePool(size=1)
     detonation_idx = detonation_pool.spawn_from_spec(
@@ -423,12 +423,11 @@ def test_secondary_projectile_pool_snapshot(snapshot: SnapshotAssertion) -> None
             time_to_live=1.0,
         ),
     )
-    detonation_creatures: list[CreatureState] = [_creature(pos=Vec2(3.0, 4.0), hp=1000.0)]
     detonation_pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=detonation_creatures),
+            step_runtime=make_step_runtime(detonation_world, fx_queue=fx_queue),
             dt=0.1,
-            creatures=detonation_creatures,
+            creatures=detonation_world.creatures.entries,
             runtime_state=runtime_state,
             fx_queue=fx_queue,
             detail_preset=5,
@@ -488,20 +487,20 @@ def test_homing_rocket_steering_rounds_each_x87_operation() -> None:
     projectile.vel = Vec2(254.46153259277344, 234.05662536621094)
     projectile.target_id = 0
     projectile.trail_timer = 1.0
-    creatures = [_creature(pos=Vec2(202.13153076171875, 991.8573608398438), hp=1000.0)]
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+    creature = _creature(pos=Vec2(202.13153076171875, 991.8573608398438), hp=1000.0)
+    world = _world_with([creature])
 
     hit_count = pool.step(
         SecondaryStepCtx(
             dt=0.05700000375509262,
-            creatures=creatures,
-            creature_damage_runtime=damage_runtime,
+            creatures=world.creatures.entries,
+            step_runtime=make_step_runtime(world, dt=0.05700000375509262),
         ),
     )
 
     assert hit_count == 1
-    impulse = damage_runtime.calls[0][3]
-    assert impulse == Vec2(3916.34716796875, 4689.19384765625)
+    # The hit impulse is subtracted from the creature's (zero) velocity.
+    assert creature.vel == Vec2(-3916.34716796875, -4689.19384765625)
 
 
 def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
@@ -517,40 +516,35 @@ def test_homing_rocket_trail_decay_rounds_each_x87_operation() -> None:
     projectile.vel = Vec2(-65.83425903320312, -83.56523895263672)
     projectile.target_id = 0
     projectile.trail_timer = f32(0.06)
-    creatures = [_creature(pos=Vec2(813.2255859375, 819.3178100585938), hp=1000.0)]
+    world = _world_with([_creature(pos=Vec2(813.2255859375, 819.3178100585938), hp=1000.0)])
 
     pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            step_runtime=make_step_runtime(world, dt=0.06200000271201134),
             dt=0.06200000271201134,
-            creatures=creatures,
+            creatures=world.creatures.entries,
         ),
     )
 
     assert projectile.trail_timer == 0.009637407958507538
 
 
-def test_secondary_projectile_impulse_callbacks_snapshot(snapshot: SnapshotAssertion) -> None:
+def test_secondary_projectile_direct_hit_snapshot(snapshot: SnapshotAssertion) -> None:
     pool = SecondaryProjectilePool(size=1)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET, time_to_live=2.0),
     )
-    creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+    creature = _creature(pos=Vec2(0.0, -9.0), hp=1000.0)
+    world = _world_with([creature])
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=world.creatures.entries, step_runtime=make_step_runtime(world)))
 
     snapshot.assert_match(
-        [
-            {
-                "idx": int(call[0]),
-                "damage": round(float(call[1]), 6),
-                "damage_type": int(call[2]),
-                "impulse": _normalize_vec2(call[3]),
-                "owner": _normalize_owner(call[4]),
-            }
-            for call in damage_runtime.calls
-        ],
+        {
+            "hp": round(float(creature.hp), 6),
+            "vel": _normalize_vec2(creature.vel),
+            "last_hit_owner": _normalize_owner(creature.last_hit_owner),
+        },
     )
 
 
@@ -559,23 +553,24 @@ def test_secondary_projectile_kill_followup_snapshot(snapshot: SnapshotAssertion
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.DETONATION, time_to_live=1.0),
     )
-    creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, 0.0), hp=20.0)]
+    creature = _creature(pos=Vec2(0.0, 0.0), hp=20.0)
+    world = _world_with([creature])
     fx_queue = FxQueue()
+    step_runtime = make_step_runtime(world, fx_queue=fx_queue)
 
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures)
     pool.step(
         SecondaryStepCtx(
             dt=0.1,
-            creatures=creatures,
+            creatures=world.creatures.entries,
             fx_queue=fx_queue,
-            creature_damage_runtime=damage_runtime,
+            step_runtime=step_runtime,
         ),
     )
 
     snapshot.assert_match(
         {
-            "creature_hp": round(float(creatures[0].hp), 6),
-            "followup_calls": list(damage_runtime.detonation_kills),
+            "creature_hp": round(float(creature.hp), 6),
+            "deaths": [death.index for death in step_runtime.deaths],
             "fx_count": int(fx_queue.count),
         },
     )
@@ -593,18 +588,19 @@ def test_secondary_detonation_damage_rounds_each_x87_operation() -> None:
             time_to_live=0.5,
         ),
     )
-    creatures = [_creature(pos=Vec2(), hp=1000.0)]
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+    creature = _creature(pos=Vec2(), hp=1000.0)
+    world = _world_with([creature])
 
     pool.step(
         SecondaryStepCtx(
             dt=0.06100000441074371,
-            creatures=creatures,
-            creature_damage_runtime=damage_runtime,
+            creatures=world.creatures.entries,
+            step_runtime=make_step_runtime(world, dt=0.06100000441074371),
         ),
     )
 
-    assert damage_runtime.calls[0][1] == 21.35000228881836
+    # f32(f32(dt * scale) * 700) == 21.35000228881836, subtracted at PC24.
+    assert creature.hp == x87_pc24_sub(1000.0, 21.35000228881836)
 
 
 def test_secondary_detonation_impulse_uses_native_safe_normalization() -> None:
@@ -617,18 +613,19 @@ def test_secondary_detonation_impulse_uses_native_safe_normalization() -> None:
             time_to_live=0.5,
         ),
     )
-    creatures = [_creature(pos=Vec2(1.0, 0.0001), hp=1000.0)]
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+    creature = _creature(pos=Vec2(1.0, 0.0001), hp=1000.0)
+    world = _world_with([creature])
 
     pool.step(
         SecondaryStepCtx(
             dt=0.1,
-            creatures=creatures,
-            creature_damage_runtime=damage_runtime,
+            creatures=world.creatures.entries,
+            step_runtime=make_step_runtime(world),
         ),
     )
 
-    assert damage_runtime.calls[0][3] == Vec2(0.10000000149011612, 9.999999747378752e-06)
+    # The blast impulse is subtracted from the creature's (zero) velocity.
+    assert creature.vel == Vec2(-0.10000000149011612, -9.999999747378752e-06)
 
 
 def test_secondary_detonation_damages_positive_health_corpses() -> None:
@@ -647,33 +644,34 @@ def test_secondary_detonation_damages_positive_health_corpses() -> None:
         _creature(pos=Vec2(10.0, 0.0), hp=100.0, lifecycle_stage=3.0),
         _creature(pos=Vec2(0.0, 10.0), hp=0.0, lifecycle_stage=3.0),
     ]
-    damage_runtime = RecordingCreatureDamageRuntime(creatures=creatures, apply_damage=False)
+    world = _world_with(creatures)
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, creature_damage_runtime=damage_runtime))
+    pool.step(SecondaryStepCtx(dt=0.1, creatures=world.creatures.entries, step_runtime=make_step_runtime(world)))
 
-    assert [call[0] for call in damage_runtime.calls] == [0]
+    assert creatures[0].hp < 100.0
+    assert creatures[1].hp == 0.0
+    assert creatures[1].lifecycle_stage == 3.0
 
 
-def _secondary_callers(rng: ScriptedCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
+def _secondary_callers(rng: RecordingCrand, allowed: set[RngCallerStatic]) -> list[RngCallerStatic]:
     return [RngCallerStatic(record.caller) for record in rng.records_since() if record.caller in allowed]
 
 
 def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
     pool = SecondaryProjectilePool(size=1)
-    runtime_state = GameplayState()
+    world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
+    runtime_state = world.state
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    runtime_state.rng = rng
+    rng = _recording_rng(world)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET, time_to_live=2.0),
     )
-    creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     hit_count = pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            step_runtime=make_step_runtime(world, fx_queue=fx_queue),
             dt=0.1,
-            creatures=creatures,
+            creatures=world.creatures.entries,
             runtime_state=runtime_state,
             fx_queue=fx_queue,
         ),
@@ -720,20 +718,19 @@ def test_secondary_rocket_hit_tags_exact_non_freeze_callers() -> None:
 
 def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
     pool = SecondaryProjectilePool(size=1)
-    runtime_state = GameplayState()
+    world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
+    runtime_state = world.state
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    runtime_state.rng = rng
+    rng = _recording_rng(world)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.HOMING_ROCKET, time_to_live=2.0),
     )
-    creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     hit_count = pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            step_runtime=make_step_runtime(world, fx_queue=fx_queue),
             dt=0.1,
-            creatures=creatures,
+            creatures=world.creatures.entries,
             runtime_state=runtime_state,
             fx_queue=fx_queue,
         ),
@@ -766,20 +763,19 @@ def test_secondary_homing_rocket_hit_tags_exact_non_freeze_callers() -> None:
 
 def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
     pool = SecondaryProjectilePool(size=1)
-    runtime_state = GameplayState()
+    world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
+    runtime_state = world.state
     fx_queue = FxQueue()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    runtime_state.rng = rng
+    rng = _recording_rng(world)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN, time_to_live=2.0),
     )
-    creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            step_runtime=make_step_runtime(world, fx_queue=fx_queue),
             dt=0.1,
-            creatures=creatures,
+            creatures=world.creatures.entries,
             runtime_state=runtime_state,
             fx_queue=fx_queue,
         ),
@@ -806,20 +802,19 @@ def test_secondary_rocket_minigun_hit_tags_exact_non_freeze_callers() -> None:
 
 def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
     pool = SecondaryProjectilePool(size=1)
-    runtime_state = GameplayState()
+    world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
+    runtime_state = world.state
     runtime_state.bonuses.freeze = 1.0
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    runtime_state.rng = rng
+    rng = _recording_rng(world)
     pool.spawn_from_spec(
         SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.HOMING_ROCKET, time_to_live=2.0),
     )
-    creatures: list[CreatureState] = [_creature(pos=Vec2(0.0, -9.0), hp=1000.0)]
 
     pool.step(
         SecondaryStepCtx(
-            creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=creatures),
+            step_runtime=make_step_runtime(world),
             dt=0.1,
-            creatures=creatures,
+            creatures=world.creatures.entries,
             runtime_state=runtime_state,
         ),
     )

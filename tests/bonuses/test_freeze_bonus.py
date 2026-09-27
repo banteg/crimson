@@ -2,29 +2,25 @@ from __future__ import annotations
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from tests.support.factories import RecordingCreatureDamageRuntime
+from tests.support.builders.session import make_world
+from tests.support.factories import make_creature_state as _creature
+from tests.support.factories import make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand
 
 
 def test_freeze_pickup_shatters_existing_corpses() -> None:
-    state = GameplayState()
+    world = make_world()
+    state = world.state
     state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-
-    pool = CreaturePool()
-    corpse = pool.entries[0]
-    corpse.active = True
-    corpse.hp = 0.0
-    corpse.pos = Vec2(100.0, 200.0)
+    player = world.players[0]
+    corpse = place_creatures(world, [_creature(pos=Vec2(100.0, 200.0), hp=0.0)])[0]
 
     assert corpse.active
     assert not state.effects.iter_active()
@@ -33,11 +29,11 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
         state,
         player,
         BonusId.FREEZE,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=pool.entries),
+        step_runtime=make_step_runtime(world),
         amount=1,
         origin=player.pos,
-        creatures=pool.entries,
-        players=[player],
+        creatures=world.creatures.entries,
+        players=world.players,
         detail_preset=5,
     )
 
@@ -63,26 +59,22 @@ def test_freeze_pickup_shatters_existing_corpses() -> None:
 
 
 def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2())
-    pool = CreaturePool()
-    corpse = pool.entries[0]
-    corpse.active = True
-    corpse.hp = -1.0
-    corpse.lifecycle_stage = -100.0
+    world = make_world()
+    player = world.players[0]
+    corpse = place_creatures(world, [_creature(pos=Vec2(), hp=-1.0, lifecycle_stage=-100.0)])[0]
     bonus_apply(
-        state,
+        world.state,
         player,
         BonusId.FREEZE,
-        creature_damage_runtime=RecordingCreatureDamageRuntime(creatures=pool.entries),
+        step_runtime=make_step_runtime(world),
         origin=player.pos,
-        creatures=pool.entries,
-        players=[player],
+        creatures=world.creatures.entries,
+        players=world.players,
         detail_preset=5,
     )
     assert not corpse.active
     freeze_effects = [
-        entry for entry in state.effects.iter_active() if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
+        entry for entry in world.state.effects.iter_active() if int(entry.effect_id) in (0x08, 0x09, 0x0A, 0x0E)
     ]
     assert len(freeze_effects) == 16
 
@@ -92,7 +84,6 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     from crimson.projectiles.types import ProjectileTemplateId
     from crimson.sim.input import PlayerInput
     from crimson.sim.sessions import DeterministicSession
-    from tests.support.builders.session import make_world
 
     world = make_world(preserve_bugs=True)
     world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)

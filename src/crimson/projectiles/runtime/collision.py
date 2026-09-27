@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...collision_math import native_find_size_margin, within_native_find_radius
-from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ...owner_ref import OwnerRef
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
+    from ...sim.world_state import WorldStepRuntime
 
 def _hit_radius_for(creature: CreatureState) -> float:
     """Return the native size term used by the radius predicates.
@@ -103,14 +103,14 @@ def _apply_damage_to_creature(
     damage_type: int,
     impulse: Vec2,
     owner: OwnerRef,
-    creature_damage_runtime: CreatureDamageRuntime,
+    step_runtime: WorldStepRuntime,
 ) -> None:
     if damage <= 0.0:
         return
     idx = int(creature_index)
     if not (0 <= idx < len(creatures)):
         return
-    creature_damage_runtime.apply_creature_damage(
+    step_runtime.apply_creature_damage(
         idx,
         float(damage),
         int(damage_type),

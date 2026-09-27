@@ -12,7 +12,6 @@ from grim.rand import Crand, CrandLike
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ...creatures.damage_runtime import CreatureDamageRuntime
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import EffectPool, FxQueue, SpriteEffectPool
@@ -49,6 +48,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ...creatures.runtime import CreatureState
+    from ...sim.world_state import WorldStepRuntime
 
 
 _SECONDARY_PRE_HIT_DECAL_CALLERS = (
@@ -83,7 +83,7 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
 
 
 class SecondaryStepCtx(msgspec.Struct, frozen=True):
-    creature_damage_runtime: CreatureDamageRuntime
+    step_runtime: WorldStepRuntime
     dt: float
     creatures: Sequence[CreatureState]
     runtime_state: GameplayState | None = None
@@ -110,7 +110,7 @@ def _step_detonation(
     rng: CrandLike,
 ) -> None:
     runtime_state, creatures = ctx.runtime_state, ctx.creatures
-    fx_queue, creature_damage_runtime = ctx.fx_queue, ctx.creature_damage_runtime
+    fx_queue, step_runtime = ctx.fx_queue, ctx.step_runtime
     if runtime_state is not None:
         runtime_state.camera_shake_pulses = 4
 
@@ -156,7 +156,7 @@ def _step_detonation(
                 creature_idx,
                 damage,
                 damage_type=CreatureDamageType.EXPLOSION,
-                creature_damage_runtime=creature_damage_runtime,
+                step_runtime=step_runtime,
                 owner=entry.owner,
                 impulse=impulse,
             )
@@ -167,7 +167,7 @@ def _step_detonation(
                 if fx_queue is not None:
                     fx_queue.add_random(pos=creature.pos, rng=rng)
                     fx_queue.add_random(pos=creature.pos, rng=rng)
-                creature_damage_runtime.on_secondary_detonation_kill(int(creature_idx))
+                step_runtime.on_secondary_detonation_kill(int(creature_idx))
 
 
 def _move_rocket(
@@ -402,7 +402,7 @@ class SecondaryProjectilePool:
         runtime_state = ctx.runtime_state
         fx_queue = ctx.fx_queue
         detail_preset = int(ctx.detail_preset)
-        creature_damage_runtime = ctx.creature_damage_runtime
+        step_runtime = ctx.step_runtime
 
         if dt <= 0.0:
             return 0
@@ -421,7 +421,7 @@ class SecondaryProjectilePool:
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
                 owner=owner,
-                creature_damage_runtime=creature_damage_runtime,
+                step_runtime=step_runtime,
             )
 
         rng = Crand(0)
