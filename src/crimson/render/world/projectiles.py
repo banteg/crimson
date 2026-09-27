@@ -127,8 +127,6 @@ def draw_sharpshooter_laser_sight(
     bullet_trail_texture = render_ctx.frame.resources.texture(TextureId.BULLET_TRAIL)
 
     players = render_ctx.frame.players
-    if not players:
-        return
 
     alpha = f32(alpha)
     # Grim truncates each scaled float channel; the far slots are black.

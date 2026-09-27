@@ -123,7 +123,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
         survival_elapsed_ms=ctx.elapsed_before_ms,
     )
 
-    player_level = ctx.world.players[0].level if ctx.world.players else 1
+    player_level = ctx.world.players[0].level
     stage, milestone_calls = advance_survival_spawn_stage(spawn.stage, player_level=int(player_level))
     spawn.stage = stage
     for call in milestone_calls:
@@ -135,7 +135,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             detail_preset=ctx.detail_preset,
         )
 
-    player_xp = ctx.world.players[0].experience if ctx.world.players else 0
+    player_xp = ctx.world.players[0].experience
     cooldown, wave_spawns = tick_survival_wave_spawns(
         spawn.spawn_cooldown_ms,
         ctx.dt_sim_ms,

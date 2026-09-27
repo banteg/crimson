@@ -6,8 +6,6 @@ from ..runtime.effects_context import PerksUpdateEffectsCtx
 
 
 def update_death_clock(ctx: PerksUpdateEffectsCtx) -> None:
-    if not ctx.players:
-        return
     if PerkId.DEATH_CLOCK not in ctx.state.perks:
         return
 

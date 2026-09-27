@@ -85,8 +85,6 @@ def _all_carried_weapon_ids(players: Sequence[PlayerState]) -> set[WeaponId]:
 
 
 def _native_force_drop_has_pistol(players: Sequence[PlayerState]) -> bool:
-    if not players:
-        return False
     if players[0].weapon.weapon_id == WeaponId.PISTOL:
         return True
     return len(players) == 2 and players[1].weapon.weapon_id == WeaponId.PISTOL
@@ -313,7 +311,7 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == WeaponId.PISTOL or (players and PerkId.MY_FAVOURITE_WEAPON in state.perks):
+                if entry.amount == WeaponId.PISTOL or PerkId.MY_FAVOURITE_WEAPON in state.perks:
                     self._clear_entry(entry)
                     return None
 
@@ -325,16 +323,14 @@ class BonusPool:
         base_roll = rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BASE_GATE)
         if base_roll % 9 != 1:
             allow_without_magnet = False
-            if players:
-                has_pistol = False
-                if bool(state.preserve_bugs):
-                    has_pistol = players[0].weapon.weapon_id == WeaponId.PISTOL
-                else:
-                    has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
-                if has_pistol:
-                    allow_without_magnet = (
-                        rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET) % 5 == 1
-                    )
+            if bool(state.preserve_bugs):
+                has_pistol = players[0].weapon.weapon_id == WeaponId.PISTOL
+            else:
+                has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)
+            if has_pistol:
+                allow_without_magnet = (
+                    rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_PISTOL_ALLOW_WITHOUT_MAGNET) % 5 == 1
+                )
 
             if not allow_without_magnet:
                 if PerkId.BONUS_MAGNET not in state.perks:
@@ -349,15 +345,13 @@ class BonusPool:
         )
 
         if entry.bonus_id == BonusId.WEAPON:
-            near_player = False
-            if players:
-                if bool(state.preserve_bugs):
-                    # Native checks player 1 position only.
-                    near_player = _within_native_radius(pos, players[0].pos, BONUS_WEAPON_NEAR_RADIUS)
-                else:
-                    near_player = any(
-                        _within_native_radius(pos, player.pos, BONUS_WEAPON_NEAR_RADIUS) for player in players
-                    )
+            if bool(state.preserve_bugs):
+                # Native checks player 1 position only.
+                near_player = _within_native_radius(pos, players[0].pos, BONUS_WEAPON_NEAR_RADIUS)
+            else:
+                near_player = any(
+                    _within_native_radius(pos, player.pos, BONUS_WEAPON_NEAR_RADIUS) for player in players
+                )
             if near_player:
                 entry.bonus_id = BonusId.POINTS
                 entry.amount = 100
@@ -368,19 +362,18 @@ class BonusPool:
                 self._clear_entry(entry)
                 return None
 
-        if players:
-            if bool(state.preserve_bugs):
-                weapon_id = players[0].weapon.weapon_id
-                suppression_weapon_id = _weapon_id_from_native_amount(entry.amount)
-                if suppression_weapon_id == weapon_id:
-                    self._clear_entry(entry)
-                    return None
-            else:
-                carried_weapon_ids = _all_carried_weapon_ids(players)
-                bonus_weapon_id = _weapon_id_from_weapon_entry(entry)
-                if entry.bonus_id == BonusId.WEAPON and bonus_weapon_id in carried_weapon_ids:
-                    self._clear_entry(entry)
-                    return None
+        if bool(state.preserve_bugs):
+            weapon_id = players[0].weapon.weapon_id
+            suppression_weapon_id = _weapon_id_from_native_amount(entry.amount)
+            if suppression_weapon_id == weapon_id:
+                self._clear_entry(entry)
+                return None
+        else:
+            carried_weapon_ids = _all_carried_weapon_ids(players)
+            bonus_weapon_id = _weapon_id_from_weapon_entry(entry)
+            if entry.bonus_id == BonusId.WEAPON and bonus_weapon_id in carried_weapon_ids:
+                self._clear_entry(entry)
+                return None
 
         if self._is_sentinel_entry(entry):
             return None

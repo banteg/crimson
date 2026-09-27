@@ -402,8 +402,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
 
     # Native double-pays the eat kill: a direct `exp += reward` store here,
     # plus creature_handle_death's own award below.
-    if ctx.players:
-        _award_experience_once_from_reward(ctx.players[0], float(creature.reward_value))
+    _award_experience_once_from_reward(ctx.players[0], float(creature.reward_value))
 
     ctx.state.effects.spawn_burst(
         pos=creature.pos,
@@ -987,23 +986,22 @@ class CreaturePool:
         # Native's targeting block runs before the alive/dead split:
         # fading corpses still switch their target player and feed the
         # auto-target comparison.
-        if players:
-            target_resolution = self._resolve_target_player(creature, players)
-            if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
-                self._update_player_auto_target(
-                    players=players,
-                    preserve_bugs=bool(state.preserve_bugs),
-                    player_index=int(
-                        target_resolution.auto_target_player
-                        if state.preserve_bugs
-                        else target_resolution.target_player,
-                    ),
-                    creature_index=int(idx),
-                    creature=creature,
-                    native_candidate_distance=target_resolution.native_auto_target_distance,
-                )
-            if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
-                creature.target_player = 1
+        target_resolution = self._resolve_target_player(creature, players)
+        if (self._update_tick % _TARGET_REEVAL_PERIOD) != 0:
+            self._update_player_auto_target(
+                players=players,
+                preserve_bugs=bool(state.preserve_bugs),
+                player_index=int(
+                    target_resolution.auto_target_player
+                    if state.preserve_bugs
+                    else target_resolution.target_player,
+                ),
+                creature_index=int(idx),
+                creature=creature,
+                native_candidate_distance=target_resolution.native_auto_target_distance,
+            )
+        if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
+            creature.target_player = 1
         if dt > 0.0:
             self._tick_dead(
                 creature,
@@ -1045,25 +1043,24 @@ class CreaturePool:
             single_player_dormant_target = self._single_player_dormant_target
 
         evil_targets: set[int] = set()
-        if players:
-            if bool(state.preserve_bugs):
-                # Native `creature_update_all` reads one global
-                # `evil_eyes_target_creature` slot (player-0 storage), even in
-                # multiplayer runs.
-                if PerkId.EVIL_EYES in state.perks:
-                    evil_target = int(players[0].evil_eyes_target_creature)
-                    if evil_target >= 0:
-                        evil_targets.add(int(evil_target))
-            else:
-                # Bug-fixed path: apply all alive Evil Eyes owners.
-                for player in players:
-                    if float(player.health) <= 0.0:
-                        continue
-                    if PerkId.EVIL_EYES not in state.perks:
-                        continue
-                    evil_target = int(player.evil_eyes_target_creature)
-                    if evil_target >= 0:
-                        evil_targets.add(int(evil_target))
+        if bool(state.preserve_bugs):
+            # Native `creature_update_all` reads one global
+            # `evil_eyes_target_creature` slot (player-0 storage), even in
+            # multiplayer runs.
+            if PerkId.EVIL_EYES in state.perks:
+                evil_target = int(players[0].evil_eyes_target_creature)
+                if evil_target >= 0:
+                    evil_targets.add(int(evil_target))
+        else:
+            # Bug-fixed path: apply all alive Evil Eyes owners.
+            for player in players:
+                if float(player.health) <= 0.0:
+                    continue
+                if PerkId.EVIL_EYES not in state.perks:
+                    continue
+                evil_target = int(player.evil_eyes_target_creature)
+                if evil_target >= 0:
+                    evil_targets.add(int(evil_target))
 
         # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
         # even when `players` is empty so debug views remain deterministic.
@@ -1106,7 +1103,7 @@ class CreaturePool:
                 )
                 continue
 
-            if dt <= 0.0 or not players:
+            if dt <= 0.0:
                 continue
 
             poison_killed = self._apply_self_damage_tick(
@@ -1827,29 +1824,24 @@ class CreaturePool:
                 detail_preset=int(detail_preset),
             )
 
-        killer: PlayerState | None = None
-        if players:
-            player_index = 0
-            if not bool(state.preserve_bugs):
-                player_index = _owner_to_player_index(creature.last_hit_owner)
-                if player_index is None or not (0 <= player_index < len(players)):
-                    player_index = 0
-            killer = players[player_index]
+        player_index = 0
+        if not bool(state.preserve_bugs):
+            player_index = _owner_to_player_index(creature.last_hit_owner)
+            if player_index is None or not (0 <= player_index < len(players)):
+                player_index = 0
+        killer = players[player_index]
 
-        xp_awarded = 0
-        if killer is not None:
-            if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
-                xp_awarded = award_experience(state, killer, quick_learner_kill_xp(creature.reward_value))
-            else:
-                xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
+        if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
+            xp_awarded = award_experience(state, killer, quick_learner_kill_xp(creature.reward_value))
+        else:
+            xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
 
-        if players:
-            state.bonus_pool.try_spawn_on_kill(
-                pos=creature.pos,
-                state=state,
-                players=players,
-                detail_preset=detail_preset,
-            )
+        state.bonus_pool.try_spawn_on_kill(
+            pos=creature.pos,
+            state=state,
+            players=players,
+            detail_preset=detail_preset,
+        )
 
         return CreatureDeath(
             index=int(idx),

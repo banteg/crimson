@@ -5,8 +5,8 @@ from crimson.game_modes import GameMode
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import plan_world_presentation_step, queue_projectile_decals
-from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
@@ -46,12 +46,7 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
 
 
 def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
-    world = WorldState.build(
-        demo_mode_active=False,
-        hardcore=False,
-        quest_fail_retry_count=0,
-        preserve_bugs=False,
-    )
+    world = make_world()
     fx_queue = FxQueue()
     fx_queue_rotated = FxQueueRotated()
     events = world.step(

@@ -205,8 +205,6 @@ def _perk_selection_prepare_if_needed(
     game_mode: GameMode,
     player_count: int | None = None,
 ) -> list[PerkId]:
-    if not players:
-        return []
     if player_count is None:
         player_count = len(players)
     if perk_state.choices_dirty or not perk_state.choices:

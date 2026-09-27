@@ -5,12 +5,15 @@ from crimson.creatures.spawn import CreatureFlags
 from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand
 
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
     state = GameplayState()
+    # Kill drops are out of scope here; the guard skips them before any draw.
+    state.bonus_spawn_guard = True
     rng = ScriptedCrand([0x111, 0x123, 0x222, 0x456], fallback=ScriptedCrand.Fallback.ZERO)
 
     pool = CreaturePool()
@@ -30,7 +33,7 @@ def test_split_on_death_spawns_two_smaller_children() -> None:
     pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=rng,
         fx_queue=None,
     )

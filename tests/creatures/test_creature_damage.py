@@ -180,7 +180,7 @@ def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
         impulse=Vec2(),
         owner=OwnerRef.from_player(0),
         dt=0.016,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         perks=PerkCounts(),
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
@@ -199,7 +199,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
         impulse=Vec2(),
         owner=OwnerRef.from_creature(0),
         dt=0.016,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         perks=PerkCounts(),
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
@@ -246,7 +246,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         impulse=Vec2(1.0, 2.0),
         owner=OwnerRef.from_creature(0),
         dt=0.016,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         perks=state.perks,
         rng=rng,
         effects=state.effects,
@@ -270,6 +270,8 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
 
 def test_split_children_inherit_only_initial_damage_impulse() -> None:
     state = GameplayState()
+    # Kill drops are out of scope here; the guard skips them before any draw.
+    state.bonus_spawn_guard = True
     pool = CreaturePool()
     creature = pool.entries[0]
     creature.active = True
@@ -290,7 +292,7 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
             pool.handle_death(
                 creature_index,
                 state=state,
-                players=[],
+                players=[PlayerState(index=0, pos=Vec2())],
                 rng=rng,
                 dt=0.016,
                 fx_queue=None,
@@ -313,7 +315,7 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
         impulse=Vec2(1.0, 2.0),
         owner=OwnerRef.from_player(0),
         dt=0.016,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         perks=state.perks,
         rng=rng,
         effects=state.effects,
@@ -357,7 +359,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
         impulse=Vec2(),
         owner=OwnerRef.from_creature(0),
         dt=0.016,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         perks=state.perks,
         rng=rng,
         effects=state.effects,

@@ -44,7 +44,7 @@ def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> in
 def _shots_fired_player_index(
     *,
     state: GameplayState,
-    players: list[PlayerState] | None,
+    players: list[PlayerState],
     owner: OwnerRef,
     owner_player_index: int | None,
 ) -> int | None:
@@ -58,7 +58,7 @@ def _shots_fired_player_index(
         if 0 <= player_index < len(state.shots_fired):
             return int(player_index)
 
-    if owner.local_host and owner.index == 0 and players and len(players) == 1:
+    if owner.local_host and owner.index == 0 and len(players) == 1:
         player_index = int(players[0].index)
         if 0 <= player_index < len(state.shots_fired):
             return int(player_index)
@@ -67,15 +67,12 @@ def _shots_fired_player_index(
 
 
 def _fire_bullets_active(
-    players: list[PlayerState] | None,
+    players: list[PlayerState],
     *,
     state: GameplayState,
     owner: OwnerRef,
     owner_player_index: int | None,
 ) -> bool:
-    if not players:
-        return False
-
     # Native `projectile_spawn` checks player-1/player-2 Fire Bullets timers
     # globally, regardless of projectile ownership.
     if bool(state.preserve_bugs):
@@ -101,7 +98,7 @@ def _fire_bullets_active(
 def projectile_spawn(
     state: GameplayState,
     *,
-    players: list[PlayerState] | None,
+    players: list[PlayerState],
     pos: Vec2,
     angle: float,
     type_id: ProjectileTemplateId,
@@ -153,7 +150,7 @@ def spawn_projectile_ring(
     type_id: ProjectileTemplateId,
     owner: OwnerRef,
     owner_player_index: int | None = None,
-    players: list[PlayerState] | None = None,
+    players: list[PlayerState],
 ) -> None:
     if count <= 0:
         return

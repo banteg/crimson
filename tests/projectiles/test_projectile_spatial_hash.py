@@ -82,9 +82,8 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     from crimson.creatures.spawn_ids import CreatureFlags
     from crimson.projectiles.runtime.secondary_pool import _step_detonation
     from crimson.projectiles.types import SecondaryProjectile
-    from crimson.sim.world_state import WorldState
 
-    world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world = make_world()
     parent = world.creatures.entries[0]
     parent.active = True
     parent.flags = CreatureFlags.SPLIT_ON_DEATH

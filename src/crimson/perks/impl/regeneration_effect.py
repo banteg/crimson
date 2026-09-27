@@ -7,8 +7,6 @@ from ..runtime.effects_context import PerksUpdateEffectsCtx
 
 
 def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
-    if not ctx.players:
-        return
     if PerkId.REGENERATION not in ctx.state.perks:
         return
     if (

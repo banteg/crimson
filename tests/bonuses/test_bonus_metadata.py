@@ -5,6 +5,7 @@ import pytest
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 
 
@@ -62,7 +63,7 @@ def test_bonus_spawn_spacing_uses_native_pc24_hypotenuse_boundary() -> None:
     spawned = pool.spawn_at_pos(
         Vec2(123.16073417663574, 122.08122253417969),
         state=GameplayState(),
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
     )
 
     # Double-precision dx²+dy² is just below 32², but native PC=24 math

@@ -1378,6 +1378,8 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
     state = GameplayState()
     stub_rand = _StubRand([0] * 20)
     state.rng = stub_rand
+    # Kill drops are out of scope here; the guard skips them before any draw.
+    state.bonus_spawn_guard = True
     pool = CreaturePool()
 
     creature = pool.entries[0]
@@ -1389,7 +1391,7 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
     pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=state.rng,
         fx_queue=None,
     )
@@ -1542,14 +1544,14 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
     death = pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=state.rng,
         fx_queue=None,
     )
     pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=state.rng,
         fx_queue=None,
     )
@@ -1586,14 +1588,14 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
     pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=state.rng,
         fx_queue=None,
     )
     pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=state.rng,
         fx_queue=None,
     )
@@ -2465,7 +2467,7 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
     pool.handle_death(
         0,
         state=state,
-        players=[],
+        players=[PlayerState(index=0, pos=Vec2())],
         rng=state.rng,
         fx_queue=None,
     )

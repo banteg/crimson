@@ -12,9 +12,6 @@ def update_lean_mean_exp_machine(ctx: PerksUpdateEffectsCtx) -> None:
     )
     if ctx.state.lean_mean_exp_timer < 0.0:
         ctx.state.lean_mean_exp_timer = f32(0.25)
-        if not ctx.players:
-            return
-
         # Native `perks_update_effects` uses global `perk_count_get` and awards the
         # periodic XP tick only to player 0 (`player_experience[0]`).
         player0 = ctx.players[0]

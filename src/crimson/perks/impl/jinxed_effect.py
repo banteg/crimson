@@ -34,8 +34,6 @@ def update_jinxed_timer(ctx: PerksUpdateEffectsCtx) -> None:
 def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
     if ctx.state.jinxed_timer >= 0.0:
         return
-    if not ctx.players:
-        return
     if PerkId.JINXED not in ctx.state.perks:
         return
 

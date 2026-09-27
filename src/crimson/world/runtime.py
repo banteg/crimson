@@ -142,8 +142,6 @@ class WorldRuntime:
     def update_camera(self, update: CameraUpdate | None = None) -> None:
         if update is None:
             update = camera_update_for_players(self.world.players, self.world.state.camera_shake_offset)
-        if update is None:
-            return
 
         screen_size = viewport.camera_screen_size(
             config=self.config,

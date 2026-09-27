@@ -5,8 +5,6 @@ from ..runtime.effects_context import PerksUpdateEffectsCtx
 
 
 def update_evil_eyes_target(ctx: PerksUpdateEffectsCtx) -> None:
-    if not ctx.players:
-        return
 
     if ctx.state.preserve_bugs:
         player0 = ctx.players[0]

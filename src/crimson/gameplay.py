@@ -191,8 +191,6 @@ def survival_progression_update(
 ) -> None:
     """Advance survival level/perk progression."""
 
-    if not players:
-        return
     survival_check_level_up(players[0], state.perk_selection)
 
 
@@ -303,8 +301,6 @@ def gameplay_accumulate_weapon_usage_time(
 ) -> None:
     """Accumulate native high-score weapon time for the fixed player-0 slot."""
 
-    if not players:
-        return
     weapon_id = int(players[0].weapon.weapon_id)
     if not 0 <= weapon_id < len(state.weapon_usage_time):
         return
@@ -797,7 +793,7 @@ def _player_move(
 def _player_tick_reload(
     player: PlayerState, input_state: PlayerInput,
     state: GameplayState, dt: float, prev_pos: Vec2, move_mode: MovementControlType,
-    players: list[PlayerState] | None,
+    players: list[PlayerState],
 ) -> bool:
     move_delta = player.pos - prev_pos
     reload_stationary = move_delta.x == 0.0 and move_delta.y == 0.0
@@ -874,7 +870,7 @@ def _player_tick_reload(
         player.weapon.reload_timer = 0.0
 
     has_alt_weapon_perk = PerkId.ALTERNATE_WEAPON in state.perks
-    single_player_mode = (len(players) == 1) if players is not None else True
+    single_player_mode = len(players) == 1
     # Native gates on `grim_is_key_active` (key held), so holding reload chains
     # reloads back-to-back as each one completes.
     manual_reload_allowed = (

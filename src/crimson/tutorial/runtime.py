@@ -73,11 +73,10 @@ def tutorial_post_step(ctx) -> None:
     state.tutorial_overlay = _tutorial_overlay_from_actions(actions)
 
     players = ctx.world.players
-    if players:
-        players[0].health = float(actions.force_player_health)
-        if actions.force_player_experience is not None:
-            players[0].experience = int(actions.force_player_experience)
-            survival_check_level_up(players[0], state.perk_selection)
+    players[0].health = float(actions.force_player_health)
+    if actions.force_player_experience is not None:
+        players[0].experience = int(actions.force_player_experience)
+        survival_check_level_up(players[0], state.perk_selection)
 
     if actions.play_levelup_sfx:
         state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))

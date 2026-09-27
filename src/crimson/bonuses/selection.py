@@ -40,10 +40,9 @@ def _bonus_pick_suppressed(
         return True
     if bonus_id == BonusId.WEAPON and has_fire_bullets_drop:
         return True
-    primary_player = players[0] if players else None
+    primary_player = players[0]
     if (
         bonus_id == BonusId.WEAPON
-        and primary_player is not None
         and PerkId.MY_FAVOURITE_WEAPON in state.perks
     ):
         return True
