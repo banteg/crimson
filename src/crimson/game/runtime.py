@@ -312,9 +312,11 @@ def run_game(config: GameConfig) -> None:
         console.log.log(f"cvars: {len(console.cvars)} registered")
         console.exec_line("exec autoexec.txt")
         console.log.flush()
-        config_flags = 0
+        window_state = 0
         if not cfg.display.windowed:
-            config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
+            # Borderless keeps the desktop video mode and HiDPI scaling; raylib 6
+            # exclusive fullscreen on macOS renders into a quarter of the framebuffer.
+            window_state |= rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE
         view = GameLoopView(state)
         run_view(
             view,
@@ -322,7 +324,7 @@ def run_game(config: GameConfig) -> None:
             height=height,
             title="Crimsonland",
             fps=config.fps,
-            config_flags=config_flags,
+            window_state=window_state,
             exit_key=rl.KeyboardKey.KEY_NULL,
             hooks=RunViewHooks(
                 should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request,

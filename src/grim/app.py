@@ -42,13 +42,16 @@ def run_view(
     height: int = 720,
     title: str = "Crimsonland",
     fps: int = 60,
-    config_flags: int = 0,
+    window_state: int = 0,
     exit_key: int | None = None,
     hooks: RunViewHooks | None = None,
 ) -> None:
     """Run a Raylib window with a pluggable debug view."""
-    rl.set_config_flags(config_flags | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
+    rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
     rl.init_window(width, height, title)
+    if window_state:
+        # Borderless windowed only applies to an open window, so it can't go through set_config_flags.
+        rl.set_window_state(window_state)
     if exit_key is not None:
         rl.set_exit_key(exit_key)
     rl.set_target_fps(fps)
