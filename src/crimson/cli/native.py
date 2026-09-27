@@ -6,7 +6,7 @@ from typing import Literal
 import typer
 
 from .. import match as matchlib
-from .. import native_link
+from .. import native_link, native_providers
 
 native_app = typer.Typer(add_completion=False)
 
@@ -233,6 +233,7 @@ def cmd_native_link(
             audit,
             native_link.DEFAULT_NATIVE_ANALYSIS_ROOT / image,
         )
+        rebuilt_provider = native_providers.ensure_recovered_provider(audit)
         config = native_link.load_native_provider_config(
             config_path,
             image=image,
@@ -253,6 +254,8 @@ def cmd_native_link(
         placeholder_summary = (
             f"{retained_placeholders}/{summary['placeholder_symbols']}"
         )
+    if rebuilt_provider is not None:
+        typer.echo(f"rebuilt_provider={rebuilt_provider}")
     typer.echo(f"image={image} mode={manifest['mode']} status={manifest['status']}")
     typer.echo(
         f"providers={len(manifest['providers'])} "

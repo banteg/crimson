@@ -206,9 +206,8 @@ the linker selects and prunes their members. These are modeled as
 `link-dependency` providers, not counted as closure coverage. The exact
 `grim_window_proc` callback is retained through this boundary together with a
 weak alias from its matcher-only `grim_noop_value` spelling to the native
-`grim_noop`. Its archive recipe preserves the compiled object under the one
-documented scale-one SIB base/index equivalence; every other recovered-platform
-member remains raw-byte exact. `/OPT:REF` retains 59 link-dependency imports in
+`grim_noop`. Every recovered-platform member, including that callback, is
+raw-byte exact. `/OPT:REF` retains 59 link-dependency imports in
 the output and discards `FindResourceW`; every retained output import is
 required to exist in the pinned reference PE table. Every provider group cites
 repository evidence.
@@ -239,7 +238,19 @@ documented one-byte Windows `boolean` ABI, normalizes archive and COFF
 timestamps, and requires exact matches for 18 libjpeg functions plus zlib's
 `uncompress` entry before publishing either archive.
 
-The link command rebuilds the canonical audit, rejects archive drift,
+The recovered platform archives (`grim-platform.lib` and
+`crimsonland-platform.lib`) need no manual step. They are built from the exact
+platform scratches by `src/crimson/native_providers.py`, together with a data
+object for the globals only those functions reference. That data object
+depends on which globals the audit's own data object already defines, so
+`crimson native link` rebuilds an archive from its fresh audit whenever the
+local copy is missing or does not match its pin. If the rebuilt archive still
+misses its pin, its recovered sources changed: update the derived-artifact row
+in `analysis/library_provenance.json` and the archive entry in
+`tools/native/providers/<image>.json`.
+
+The link command rebuilds the canonical audit and any stale recovered platform
+archive, rejects other archive drift,
 synthesizes the five remaining closure imports and 24 D3DX link dependencies
 with the recorded VC6 tools, emits deterministic weak COFF aliases where
 compiler decoration differs from the reference export name, and creates an

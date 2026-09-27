@@ -130,6 +130,10 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
         lambda *args, **kwargs: None,
     )
     monkeypatch.setattr(
+        "crimson.cli.native.native_providers.ensure_recovered_provider",
+        lambda *args, **kwargs: None,
+    )
+    monkeypatch.setattr(
         "crimson.cli.native.native_link.load_native_provider_config",
         lambda *args, **kwargs: config,
     )

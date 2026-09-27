@@ -758,10 +758,6 @@ def test_default_grim_provider_config_covers_current_non_game_closure() -> None:
     ]
     assert len(config.archives) == 7
     archives = {archive.id: archive for archive in config.archives}
-    assert archives["grim-recovered-platform-vc6"].size == 110932
-    assert archives["grim-recovered-platform-vc6"].sha256 == (
-        "5d7326c1a4d3da692a03ec984de89855f5716d78ec34b01bbc7fb6b886241a22"
-    )
     assert (
         archives["grim-recovered-platform-vc6"].provenance.derived_artifact
         == "grim-recovered-platform-vc6-provider"
@@ -828,10 +824,6 @@ def test_default_crimsonland_provider_config_covers_current_non_game_closure() -
     ]
     assert len(config.archives) == 3
     archives = {archive.id: archive for archive in config.archives}
-    assert archives["crimsonland-recovered-platform-vc6"].size == 15334
-    assert archives["crimsonland-recovered-platform-vc6"].sha256 == (
-        "8b2cc07c8c4fbbcc7728b34674221593112dfbe5ec41a159acebd56869131fb3"
-    )
     assert (
         archives["crimsonland-recovered-platform-vc6"].provenance.derived_artifact
         == "crimsonland-recovered-platform-vc6-provider"

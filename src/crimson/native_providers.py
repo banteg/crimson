@@ -1,6 +1,15 @@
+"""Recovered platform provider archives for the native link.
+
+Platform-replaced functions link from a small archive built from their exact
+scratches. The archive also carries a data object for the globals that only
+those functions reference, so its bytes depend on which symbols the native
+audit's own data object already defines. `crimson native link` rebuilds the
+archive from the audit it has just made whenever the local copy is missing or
+does not match its provenance pin.
+"""
+
 from __future__ import annotations
 
-import argparse
 import hashlib
 import json
 import os
@@ -11,13 +20,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
-from crimson import match as matchlib
-from crimson import native_link
-from crimson.library_match import match_coff_archive
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-PROVENANCE_PATH = REPO_ROOT / "analysis/library_provenance.json"
-MATCH_ROOT = REPO_ROOT / "tools/match"
+from . import match as matchlib
+from . import native_link
+from .library_match import match_coff_archive
+from .library_provenance import DEFAULT_PROVENANCE_PATH
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,7 +118,7 @@ def _sha256(path: Path) -> str:
 
 
 def _derived_row(derived_id: str) -> dict[str, Any]:
-    payload = json.loads(PROVENANCE_PATH.read_text(encoding="utf-8"))
+    payload = json.loads(DEFAULT_PROVENANCE_PATH.read_text(encoding="utf-8"))
     rows = payload.get("derived_artifacts")
     if not isinstance(rows, list):
         raise TypeError("derived_artifacts must be an array")
@@ -122,15 +128,20 @@ def _derived_row(derived_id: str) -> dict[str, Any]:
     return cast(dict[str, Any], matches[0])
 
 
-def _verify_file(path: Path, row: dict[str, Any], derived_id: str) -> None:
-    expected_size = int(row["size"])
-    expected_sha256 = str(row["sha256"])
-    actual_size = path.stat().st_size
-    actual_sha256 = _sha256(path)
-    if actual_size != expected_size or actual_sha256 != expected_sha256:
-        raise ValueError(
-            f"{derived_id} mismatch: size={actual_size}/{expected_size} sha256={actual_sha256}/{expected_sha256}",
-        )
+def _matches_pin(path: Path, row: dict[str, Any]) -> bool:
+    return path.stat().st_size == int(row["size"]) and _sha256(path) == str(row["sha256"])
+
+
+def _verify_pin(path: Path, row: dict[str, Any], recipe: RecoveredProviderRecipe) -> None:
+    if _matches_pin(path, row):
+        return
+    raise ValueError(
+        f"rebuilt {recipe.output.name} does not match its provenance pin: "
+        f"size={path.stat().st_size}/{row['size']} sha256={_sha256(path)}/{row['sha256']}; "
+        "if its recovered sources changed on purpose, update the "
+        f"{recipe.derived_id} row in analysis/library_provenance.json and the "
+        f"archive entry in tools/native/providers/{recipe.image}.json",
+    )
 
 
 def _run(argv: list[str], *, cwd: Path) -> None:
@@ -154,10 +165,11 @@ def _run(argv: list[str], *, cwd: Path) -> None:
 def _toolchain(
     derived: dict[str, Any],
     derived_id: str,
+    match_root: Path,
 ) -> tuple[Path, Path]:
-    compiler_root = MATCH_ROOT / "compilers/msvc6.5"
+    compiler_root = match_root / "compilers/msvc6.5"
     library_tool = compiler_root / "Bin/LIB.EXE"
-    wibo = MATCH_ROOT / "bin/wibo"
+    wibo = match_root / "bin/wibo"
     if not library_tool.is_file() or not wibo.is_file():
         raise FileNotFoundError("MSVC 6.5 LIB.EXE and wibo are required")
     tools = derived.get("tools")
@@ -177,12 +189,13 @@ def _compile_exact_scratch(
     recipe: RecoveredProviderRecipe,
     name: str,
     config: matchlib.ScratchConfig,
+    match_root: Path,
 ) -> Path:
     if config.image != recipe.image:
         raise ValueError(
             f"{name}: targets {config.image!r}, expected {recipe.image!r}",
         )
-    object_path = matchlib.compile_scratch(config, MATCH_ROOT, force=True)
+    object_path = matchlib.compile_scratch(config, match_root, force=True)
     result = matchlib.run_match(
         obj_path=object_path,
         function=config.function,
@@ -207,18 +220,14 @@ def _compile_exact_scratch(
 
 def _build_provider_data_object(
     recipe: RecoveredProviderRecipe,
+    audit: native_link.NativeAudit,
     object_paths: dict[str, Path],
     temporary: Path,
 ) -> Path | None:
-    primary_data_path = native_link.default_native_data_object_path(recipe.image)
-    if not primary_data_path.is_file():
-        raise FileNotFoundError(
-            f"{primary_data_path}: run the native audit before building providers",
-        )
-    primary_data = matchlib.parse_coff_object(primary_data_path.read_bytes())
     primary_definitions = {
         symbol.name
-        for symbol in primary_data.symbols
+        for record in audit.objects.data_records
+        for symbol in record.coff.symbols
         if symbol.storage_class == matchlib.IMAGE_SYM_CLASS_EXTERNAL and symbol.section_number > 0
     }
 
@@ -331,31 +340,35 @@ def _require_archive_match(
 
 def build_recovered_provider(
     recipe: RecoveredProviderRecipe,
-    output_root: Path,
+    audit: native_link.NativeAudit,
+    output_root: Path = native_link.DEFAULT_PROVIDER_BUILD_ROOT,
 ) -> Path:
+    """Build `recipe`'s archive against `audit` and verify it against its provenance pin."""
+    match_root = audit.objects.match_root
     derived = _derived_row(recipe.derived_id)
-    library_tool, wibo = _toolchain(derived, recipe.derived_id)
+    library_tool, wibo = _toolchain(derived, recipe.derived_id, match_root)
     with tempfile.TemporaryDirectory(
         prefix="crimson-recovered-providers-",
     ) as raw_temp:
         temporary = Path(raw_temp)
         object_names: list[str] = []
         object_paths: dict[str, Path] = {}
-        configs = {name: matchlib.load_scratch_config(MATCH_ROOT / "scratches" / name) for name in recipe.scratches}
+        configs = {name: matchlib.load_scratch_config(match_root / "scratches" / name) for name in recipe.scratches}
         for relative_directory in recipe.supplemental_scratches:
-            directory = REPO_ROOT / relative_directory
+            directory = matchlib.REPO_ROOT / relative_directory
             name = directory.name
             if name in configs:
                 raise ValueError(f"{recipe.image}: duplicate provider object {name!r}")
             configs[name] = matchlib.load_scratch_config(directory)
         for name, config in configs.items():
-            source = _compile_exact_scratch(recipe, name, config)
+            source = _compile_exact_scratch(recipe, name, config, match_root)
             destination = temporary / f"{name}.obj"
             destination.write_bytes(source.read_bytes())
             object_names.append(destination.name)
             object_paths[name] = destination
         if data_object := _build_provider_data_object(
             recipe,
+            audit,
             object_paths,
             temporary,
         ):
@@ -385,7 +398,7 @@ def build_recovered_provider(
                 object_paths[name],
                 config,
             )
-        _verify_file(archive, derived, recipe.derived_id)
+        _verify_pin(archive, derived, recipe)
 
         output = output_root / recipe.output
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -395,44 +408,18 @@ def build_recovered_provider(
     return output
 
 
-def build_recovered_providers(
-    output_root: Path,
-    images: tuple[str, ...] | None = None,
-) -> tuple[Path, ...]:
-    selected = images or tuple(RECIPES)
-    return tuple(build_recovered_provider(RECIPES[image], output_root) for image in selected)
+def ensure_recovered_provider(
+    audit: native_link.NativeAudit,
+    output_root: Path = native_link.DEFAULT_PROVIDER_BUILD_ROOT,
+) -> Path | None:
+    """Rebuild the audited image's provider when its archive is missing or off its pin.
 
-
-def main() -> None:
-    parser = argparse.ArgumentParser(
-        description=("Build byte-proven recovered platform-provider archives."),
-    )
-    parser.add_argument(
-        "--output-root",
-        type=Path,
-        default=REPO_ROOT / "tools/native/providers/build",
-        help="provider build directory",
-    )
-    parser.add_argument(
-        "--image",
-        action="append",
-        choices=tuple(RECIPES),
-        help="provider image to build (repeatable; defaults to all)",
-    )
-    args = parser.parse_args()
-    outputs = build_recovered_providers(
-        args.output_root.resolve(),
-        tuple(args.image) if args.image else None,
-    )
-    for output in outputs:
-        try:
-            label = output.relative_to(REPO_ROOT)
-        except ValueError:
-            label = output
-        print(
-            f"{label} size={output.stat().st_size} sha256={_sha256(output)}",
-        )
-
-
-if __name__ == "__main__":
-    main()
+    Returns the archive path when it was rebuilt.
+    """
+    recipe = RECIPES.get(audit.objects.image)
+    if recipe is None:
+        return None
+    output = output_root / recipe.output
+    if output.is_file() and _matches_pin(output, _derived_row(recipe.derived_id)):
+        return None
+    return build_recovered_provider(recipe, audit, output_root)
