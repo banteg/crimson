@@ -25,3 +25,12 @@ The destination remains a `float *` in the final HLIL assignment as the
 current explicit-output model. It is not evidence of an original C++ return
 type. The controls do not justify changing the canonical exact source or
 promoting a shared vector class or translation unit.
+
+## By-value member (2026-09-27)
+
+`player_update`'s recovered Fire Cough heading calls this function as
+`VEC2_Angle(position->vec2_sub(target))`, a member returning `vec2_t` by
+value; its hidden return temporary is native's frame object. The scratch now
+uses that signature, `vec2_t vec2_t::vec2_sub(const vec2_t &v)` returning
+`vec2_t(x - v.x, y - v.y)`, so both objects agree on the decorated symbol.
+It stays byte-exact (9/9).

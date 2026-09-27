@@ -2,6 +2,64 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Natural alias-class collapse (2026-09-27)
+
+Native is compiled over C2's 0x400 alias-class budget. The previous source
+reached it only through wrappers (`pu_perk_count`, `pu_key_active`) that gave
+about 110 classes but put every perk id and key load on the wrong /Ot rotation
+slot. With direct `perk_count_get` and `grim_is_key_active` calls the rotation
+matches native, and the classes come back from 2003 SDK `vec2_t` spellings
+instead:
+
+- `&(muzzle_offset + *player_position)` passed straight to `fx_spawn_sprite`,
+  `projectile_spawn` and friends (63 sites);
+- `VEC2_Length`/`VEC2_Angle` of vector differences in auto-target and mode 4;
+- two-float constructors for the offsets, the smoke drift and the plain
+  velocities;
+- the aim arms as `vec2_t direction(cosf(h - 1.5707964f), sinf(h - 1.5707964f));
+  aim = direction * 60.0f + *player_position;` (native keeps the angle as a
+  CSE temporary in memory and spills only the sine);
+- aim 3 `stick * 30.0f + vec2_t(200.0f, 200.0f)`, aim 4
+  `pad * distance + *player_position`, mode 4
+  `aim_screen - camera_offset`.
+
+The first pointer class is 1027, so every root collapses without any
+diagnostic inflater. Other recoveries in this pass:
+
+- `speed_scale` is read before the zeroed movement copy;
+- the reload section uses its own `reload_scale` and aim 4 its own
+  `distance`; the shared `scalar` kept the Angry Reloader ring owner and the
+  smoke angle out of native's 0x10 slot (constant float stores become integer
+  part stores, which do not kill liveness);
+- the Fire Bullets sprite gets its own block like the other weapon arms;
+- the Fire Cough velocity is written lane by lane. Together with the rest of
+  the upstream code this puts the `move_speed` address owner on 3 mod 4, so the
+  movement lanes multiply in native's order (`pu-factor-order.md`).
+
+`vec2_sub` is now the by-value member `vec2_t vec2_t::vec2_sub(const vec2_t &)`,
+which the `vec2_sub` scratch matches byte for byte as well.
+
+78.30% to **93.91%** (labels masked 98.88%, structural 98.95%, stack-masked
+99.02%); references 861/0/0 to **914/0/0**; 4204 of 4206 instructions; frame
+0x48; 187 of 188 frame objects at native offsets (all but `smoke_angle`).
+
+Remaining residuals:
+
+| Lines | What |
+|---|---|
+| ~41 | The seven pellet loops copy the position pointer (`mov eax,esi`) before the operator+ lanes |
+| 9 | Auto-aim keeps `aim+4` in ebp instead of `aim` (`[ebp+4]`) |
+| 5 | `normal_fire_ready` stays in memory: its live range scores −3, native gives it `bl` |
+| 4 | Demo `> 300` arm: block mover loop 2 clones the ≤ 20-byte `VEC2_Angle` join tail |
+| 3 | `smoke_angle` still conflicts with the aim/fire `scalar` |
+| 3 | Auto-target index register (native eax, ours ecx) |
+| 4 | The mode-1 alternate keys: native loads a byte key for `grim_is_key_down` |
+
+Declaring `grim_is_key_down(unsigned char key)` returning `unsigned char` in
+`grim2d_cpp.h`, with the grim input sources taking byte keys, gives 94.01% and
+918/0/0 while the grim functions and all eight game callers stay exact. It
+waits on refreshing the recovered grim provider archive's provenance.
+
 ## Shared sixteen-byte storage controls (2026-09-26)
 
 [Thirteen reproducible controls](../../evidence/remaining-storage-controls-2026-09-26/README.md#player_update-controls)

@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "9c9f7bb7280be5b5f5febe9d988be4057a67fa7ad20f1276abd53abe6540da29",
+  "audit_digest": "7b8c83e16b50547593ff9a5cc8e4c04a0cb9d2a1a530bbf5b6d3b82a45e7d09c",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -18946,7 +18946,7 @@
       "zero COFF TimeDateStamp bytes 4..7"
     ]
   },
-  "object_list_sha256": "bb21def562b3658fcf05188cfdc5bb0207fbbc6fab6b0676cf60db0a39d7da26",
+  "object_list_sha256": "a0518f01cd0a9ea52035b4d03ce6443c6137b5f7b03dd598d7e0ceaa3e7a2ccf",
   "object_order": "ascending-minimum-reference-address-then-generated-data-then-linker-aliases",
   "objects": [
     {
@@ -39429,12 +39429,12 @@
         {
           "path": "tools/match/scratches/player_update/scratch.cpp",
           "repository_relative": true,
-          "sha256": "866e2d13737cc45cbd0ef4c8dafc42ca480a895f0294ba29f986f98cd8f411e7"
+          "sha256": "054ea4a6f333c4c9a0bf8f8b88dbc0ad80fe27962fdfc4ace4f8c1911ed8a633"
         },
         {
           "path": "tools/match/scratches/player_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9"
+          "sha256": "12af279bcbd35ae0576d16fcdc1c31e0b247a78508cce1f7fa24b0ff1da203c3"
         },
         {
           "path": "tools/match/cl.sh",
@@ -39474,7 +39474,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/player_update/scratch.conf",
-      "config_sha256": "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9",
+      "config_sha256": "12af279bcbd35ae0576d16fcdc1c31e0b247a78508cce1f7fa24b0ff1da203c3",
       "effective_end": 4290097,
       "end": 4290097,
       "function": "player_update",
@@ -39482,26 +39482,26 @@
         {
           "address": 4273840,
           "canonical_config": "tools/match/scratches/player_update/scratch.conf",
-          "canonical_config_sha256": "6a8b569fcfb249107dfb19274ab88044e0ba0a48c370bca1e0ac19920caeb8f9",
+          "canonical_config_sha256": "12af279bcbd35ae0576d16fcdc1c31e0b247a78508cce1f7fa24b0ff1da203c3",
           "canonical_scratch": "tools/match/scratches/player_update",
           "canonical_source": "tools/match/scratches/player_update/scratch.cpp",
-          "canonical_source_sha256": "866e2d13737cc45cbd0ef4c8dafc42ca480a895f0294ba29f986f98cd8f411e7",
+          "canonical_source_sha256": "054ea4a6f333c4c9a0bf8f8b88dbc0ad80fe27962fdfc4ace4f8c1911ed8a633",
           "effective_end": 4290097,
           "end": 4290097,
-          "experiment_epoch": "88a9674698bf44ce2b02e91b4d35f32a8d1012059a62bd38272e6bc5e930a007",
+          "experiment_epoch": "eca2db9d6c8afa72a79ed1176a748bca8759d7d8b63972793b11b2cfd8dd0d75",
           "function": "player_update",
           "match": {
             "body_byte_exact": false,
-            "candidate_instructions": 4144,
+            "candidate_instructions": 4204,
             "masked_mismatches": 0,
-            "masked_ok": 861,
+            "masked_ok": 914,
             "masked_unresolved": 0,
             "padding_bytes": {
               "candidate": 0,
               "target": 0
             },
             "prefix_instructions": 7,
-            "ratio": 0.7829940119760479,
+            "ratio": 0.9391200951248514,
             "state": "wip",
             "target_instructions": 4206
           },
@@ -39511,25 +39511,25 @@
       ],
       "match": {
         "body_byte_exact": false,
-        "candidate_instructions": 4144,
+        "candidate_instructions": 4204,
         "masked_mismatches": 0,
-        "masked_ok": 861,
+        "masked_ok": 914,
         "masked_unresolved": 0,
         "padding_bytes": {
           "candidate": 0,
           "target": 0
         },
         "prefix_instructions": 7,
-        "ratio": 0.7829940119760479,
+        "ratio": 0.9391200951248514,
         "state": "wip",
         "target_instructions": 4206
       },
       "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
       "object_function_symbol": "_player_update",
-      "object_sha256": "732c7f238243ed473f405b92dab441c323cbe981245eb87bcdc6cda4e162ddc4",
+      "object_sha256": "fa1802beec62525e59c0121e3a5b33f98397cb7871a8c7382f7396d912a17bf2",
       "scratch": "tools/match/scratches/player_update",
       "source": "tools/match/scratches/player_update/scratch.cpp",
-      "source_sha256": "866e2d13737cc45cbd0ef4c8dafc42ca480a895f0294ba29f986f98cd8f411e7",
+      "source_sha256": "054ea4a6f333c4c9a0bf8f8b88dbc0ad80fe27962fdfc4ace4f8c1911ed8a633",
       "target_size": 16257,
       "translation_unit": {
         "kind": "isolated",
@@ -39557,12 +39557,12 @@
         {
           "path": "tools/match/scratches/vec2_sub/scratch.cpp",
           "repository_relative": true,
-          "sha256": "126f8be371d86a42c410b886084dc0af56753f4ba039ff9e1a8ffd043c06f7a7"
+          "sha256": "a119885ac75c1dff6913eba77b3c8e7fb6f7bc5876f4847c73caa57af40e725b"
         },
         {
           "path": "tools/match/scratches/vec2_sub/scratch.conf",
           "repository_relative": true,
-          "sha256": "eeaf9ed3b63aac006d1212fd9f619ab877a3e653d6bb95a4ba05970daae7cc56"
+          "sha256": "fe89ed7a7457488292db0e01d4d167491531c79a7e56742976014184d7d6ea40"
         },
         {
           "path": "tools/match/cl.sh",
@@ -39577,7 +39577,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/vec2_sub/scratch.conf",
-      "config_sha256": "eeaf9ed3b63aac006d1212fd9f619ab877a3e653d6bb95a4ba05970daae7cc56",
+      "config_sha256": "fe89ed7a7457488292db0e01d4d167491531c79a7e56742976014184d7d6ea40",
       "effective_end": 4290138,
       "end": 4290138,
       "function": "vec2_sub",
@@ -39585,13 +39585,13 @@
         {
           "address": 4290112,
           "canonical_config": "tools/match/scratches/vec2_sub/scratch.conf",
-          "canonical_config_sha256": "eeaf9ed3b63aac006d1212fd9f619ab877a3e653d6bb95a4ba05970daae7cc56",
+          "canonical_config_sha256": "fe89ed7a7457488292db0e01d4d167491531c79a7e56742976014184d7d6ea40",
           "canonical_scratch": "tools/match/scratches/vec2_sub",
           "canonical_source": "tools/match/scratches/vec2_sub/scratch.cpp",
-          "canonical_source_sha256": "126f8be371d86a42c410b886084dc0af56753f4ba039ff9e1a8ffd043c06f7a7",
+          "canonical_source_sha256": "a119885ac75c1dff6913eba77b3c8e7fb6f7bc5876f4847c73caa57af40e725b",
           "effective_end": 4290138,
           "end": 4290138,
-          "experiment_epoch": "3be8e8bfe3228a1e689c09835c179660717acf640f95e883a616b7d1906c36e0",
+          "experiment_epoch": "201e00e75e75a1d8b6014abae828b29dfdb750bd1ad6a066abd7c2d17660bc25",
           "function": "vec2_sub",
           "match": {
             "body_byte_exact": true,
@@ -39608,7 +39608,7 @@
             "state": "match",
             "target_instructions": 9
           },
-          "object_function_symbol": "?vec2_sub@vec2_t@@QAEPAMPAM0@Z",
+          "object_function_symbol": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z",
           "target_size": 26
         }
       ],
@@ -39627,12 +39627,12 @@
         "state": "match",
         "target_instructions": 9
       },
-      "object": "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj",
-      "object_function_symbol": "?vec2_sub@vec2_t@@QAEPAMPAM0@Z",
-      "object_sha256": "9e4bdc6b729f6ecce1c1e3f582f21dcdacf7e29b4cb44ca612d179bf6d8c032a",
+      "object": "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj",
+      "object_function_symbol": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z",
+      "object_sha256": "bf1a9a4218bca2a08c8a79830cafd16aebb1fc282c23ec18ba6a30ae18625641",
       "scratch": "tools/match/scratches/vec2_sub",
       "source": "tools/match/scratches/vec2_sub/scratch.cpp",
-      "source_sha256": "126f8be371d86a42c410b886084dc0af56753f4ba039ff9e1a8ffd043c06f7a7",
+      "source_sha256": "a119885ac75c1dff6913eba77b3c8e7fb6f7bc5876f4847c73caa57af40e725b",
       "target_size": 26,
       "translation_unit": {
         "kind": "isolated",

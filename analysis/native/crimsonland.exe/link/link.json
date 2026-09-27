@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         }
       }
     },
@@ -44,14 +44,14 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
       }
     }
   ],
-  "audit_digest": "9c9f7bb7280be5b5f5febe9d988be4057a67fa7ad20f1276abd53abe6540da29",
+  "audit_digest": "7b8c83e16b50547593ff9a5cc8e4c04a0cb9d2a1a530bbf5b6d3b82a45e7d09c",
   "entry": {
     "aliases": {
       "object": {
@@ -76,7 +76,7 @@
     "pe": {
       "characteristics": 271,
       "dll": false,
-      "entry_point_rva": 326366,
+      "entry_point_rva": 326510,
       "image_base": 4194304,
       "image_size": 876544,
       "machine": 332,
@@ -86,7 +86,7 @@
       "timestamp": 0
     },
     "repository_relative": true,
-    "sha256": "ff87cfc674ec7f1aff6c291ea60035cf2ef4d644da60f08f0b4c755547459978"
+    "sha256": "ade7f3ffdf09e44a1591747ec411c527e6d4c857f2d3de7da4824fb8718538f1"
   },
   "placeholder_object": {
     "discarded_symbols": [
@@ -264,7 +264,7 @@
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         }
       ],
       "kind": "static-library",
@@ -339,7 +339,7 @@
           "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "51c9cfc20d474162763c4c0cb314b9981cadd73644e1a30d6ff1a3988b173c9e"
+          "sha256": "64f86a799f848d8b458a768dbb9d35c5544387e1ef7a917469a0bf09b6d5edc8"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
@@ -1086,7 +1086,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         }
       ],
       "import_library": {
@@ -1394,7 +1394,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive defines __snprintf and _tolower.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         }
       ],
       "kind": "static-library",
@@ -1448,7 +1448,7 @@
           "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         }
       ],
       "import_library": {
@@ -1724,7 +1724,7 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         },
         {
           "note": "The final missing DirectX member is an exact 1,014-instruction match with all 61 references aligned.",
@@ -1762,7 +1762,7 @@
           "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
+          "sha256": "88402fa0f8e3d0177a96cbabf1613d29b9e5729b684f52da5d098e15457f18ce"
         },
         {
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",

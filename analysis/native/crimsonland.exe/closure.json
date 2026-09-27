@@ -1,5 +1,5 @@
 {
-  "audit_digest": "9c9f7bb7280be5b5f5febe9d988be4057a67fa7ad20f1276abd53abe6540da29",
+  "audit_digest": "7b8c83e16b50547593ff9a5cc8e4c04a0cb9d2a1a530bbf5b6d3b82a45e7d09c",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -31073,7 +31073,7 @@
         "tools/match/scratches/vec2_add_inplace/build/msvc6.5/af39379e66e40ad5/scratch.obj",
         "tools/match/scratches/vec2_add_out/build/msvc6.5/5ef88946428358d2/scratch.obj",
         "tools/match/scratches/vec2_length/build/msvc6.5/08b9273b3f083c9e/scratch.obj",
-        "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj",
+        "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj",
         "tools/match/scratches/vorbis_mem_close/build/msvc6.5/d6fab1c1847d6e25/scratch.obj",
         "tools/match/scratches/vorbis_mem_close_callback/build/msvc6.5/33b45dbe48024851/scratch.obj",
         "tools/match/scratches/vorbis_mem_open/build/msvc6.5/eac93e322300741f/scratch.obj",
@@ -31648,7 +31648,7 @@
         "tools/match/scratches/vec2_add_inplace/build/msvc6.5/af39379e66e40ad5/scratch.obj",
         "tools/match/scratches/vec2_add_out/build/msvc6.5/5ef88946428358d2/scratch.obj",
         "tools/match/scratches/vec2_length/build/msvc6.5/08b9273b3f083c9e/scratch.obj",
-        "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj",
+        "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj",
         "tools/match/scratches/vorbis_mem_close/build/msvc6.5/d6fab1c1847d6e25/scratch.obj",
         "tools/match/scratches/vorbis_mem_close_callback/build/msvc6.5/33b45dbe48024851/scratch.obj",
         "tools/match/scratches/vorbis_mem_open/build/msvc6.5/eac93e322300741f/scratch.obj",
@@ -64902,6 +64902,60 @@
     {
       "definitions": [
         {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?pu_swap@@YAXAAE0@Z",
+          "comdat_selection": 2,
+          "function": "player_update",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?pu_swap@@YAXAAE0@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?pu_swap@@YAXAAH0@Z",
+          "comdat_selection": 2,
+          "function": "player_update",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?pu_swap@@YAXAAH0@Z"
+    },
+    {
+      "definitions": [
+        {
+          "comdat": true,
+          "comdat_associative_section": null,
+          "comdat_key": "?pu_swap@@YAXAAM0@Z",
+          "comdat_selection": 2,
+          "function": "player_update",
+          "kind": "section",
+          "logical_section_size": 32,
+          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "section": ".text",
+          "size": null,
+          "weak": false
+        }
+      ],
+      "name": "?pu_swap@@YAXAAM0@Z"
+    },
+    {
+      "definitions": [
+        {
           "comdat": false,
           "comdat_associative_section": null,
           "comdat_key": null,
@@ -65535,18 +65589,18 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "?vec2_sub@vec2_t@@QAEPAMPAM0@Z",
+          "comdat_key": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z",
           "comdat_selection": 1,
           "function": "vec2_sub",
           "kind": "section",
           "logical_section_size": 32,
-          "object": "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj",
+          "object": "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
         }
       ],
-      "name": "?vec2_sub@vec2_t@@QAEPAMPAM0@Z"
+      "name": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z"
     },
     {
       "definitions": [
@@ -102990,7 +103044,7 @@
           "comdat_selection": 1,
           "function": "player_update",
           "kind": "section",
-          "logical_section_size": 16128,
+          "logical_section_size": 16272,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
@@ -118279,7 +118333,7 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj"
+      "object": "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj"
     },
     {
       "directives": [
@@ -124068,18 +124122,18 @@
         {
           "comdat": true,
           "comdat_associative_section": null,
-          "comdat_key": "?vec2_sub@vec2_t@@QAEPAMPAM0@Z",
+          "comdat_key": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z",
           "comdat_selection": 1,
           "function": "vec2_sub",
           "kind": "section",
           "logical_section_size": 32,
-          "object": "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj",
+          "object": "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj",
           "section": ".text",
           "size": null,
           "weak": false
         }
       ],
-      "name": "?vec2_sub@vec2_t@@QAEPAMPAM0@Z",
+      "name": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z",
       "referenced_by": [
         {
           "function": "player_update",
@@ -150768,7 +150822,7 @@
           "comdat_selection": 1,
           "function": "player_update",
           "kind": "section",
-          "logical_section_size": 16128,
+          "logical_section_size": 16272,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
@@ -171578,7 +171632,7 @@
   "summary": {
     "all_references_closed": false,
     "coalescible_definition_symbols": 453,
-    "defined_symbols": 2961,
+    "defined_symbols": 2964,
     "function_closure": true,
     "function_count": 671,
     "game_function_debt": {},
@@ -173618,7 +173672,7 @@
         },
         {
           "function": "vec2_sub",
-          "object": "tools/match/scratches/vec2_sub/build/msvc6.5/cdf43e671498f5bf/scratch.obj",
+          "object": "tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj",
           "weak": false
         },
         {
