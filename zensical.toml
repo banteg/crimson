@@ -10,6 +10,7 @@ extra_javascript = [
     "https://cdn.jsdelivr.net/npm/vega-lite@6",
     "https://cdn.jsdelivr.net/npm/vega-embed@7",
     "javascripts/weapons-widgets.js",
+    "javascripts/survival-compare-widgets.js",
 ]
 
 nav = [
@@ -18,6 +19,7 @@ nav = [
     { "Overview" = "mechanics/index.md" },
     { "Modes" = [
       { "Survival" = "mechanics/modes/survival.md" },
+      { "Survival in the remake" = "mechanics/modes/remake-survival.md" },
       { "Rush" = "mechanics/modes/rush.md" },
       { "Quests" = "mechanics/modes/quests.md" },
       { "Typ-o-Shooter" = "mechanics/modes/typo-shooter.md" },

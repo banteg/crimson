@@ -3,8 +3,9 @@
   width: auto;
 }
 
-/* Weapon widgets */
-.weapon-widget {
+/* Weapon and chart widgets */
+.weapon-widget,
+.chart-widget {
   border: 1px solid var(--md-default-fg-color--lightest);
   border-radius: 0.4rem;
   padding: 1rem;
@@ -29,7 +30,8 @@
 }
 
 /* Damage falloff chart */
-.damage-chart {
+.damage-chart,
+.chart-widget-plot {
   width: 100%;
   display: block;
 }
