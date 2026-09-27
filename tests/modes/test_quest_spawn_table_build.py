@@ -16,12 +16,10 @@ from crimson.quests.tier2 import (
 )
 from crimson.quests.tier3 import build_3_3_the_killing, build_3_9_deja_vu
 from crimson.quests.tier4 import build_4_10_the_end_of_all
-from crimson.quests.types import QuestContext, QuestDefinition, SpawnEntry
+from crimson.quests.types import QuestContext, SpawnEntry
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
-from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import Crand
 from tests.support.helpers import ScriptedCrand
 
 
@@ -29,8 +27,7 @@ def test_end_of_all_hardcore_ring_keeps_native_float32_positions() -> None:
     entries = build_4_10_the_end_of_all(
         QuestContext(player_count=1, hardcore=True),
         rng=Crand(0),
-        full_version=True,
-    )
+        )
     # Native float32 ring positions, untruncated (oracle-checked).
     assert entries[26].pos == Vec2(332.0, 511.9999694824219)
     assert entries[31].pos == Vec2(667.8845825195312, 422.00006103515625)
@@ -87,59 +84,21 @@ def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
             quest,
             ctx,
             rng=Crand(0),
-            full_version=True,
-        )
+            )
         demo = build_quest_spawn_table(
             quest,
             ctx,
             rng=Crand(0),
-            full_version=False,
-        )
+            )
         hardcore = build_quest_spawn_table(
             quest,
             hardcore_ctx,
             rng=Crand(0),
-            full_version=True,
-        )
+            )
 
         assert len(normal) == normal_count
         assert len(demo) == normal_count
         assert len(hardcore) == hardcore_count
-
-
-def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
-    def builder(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
-        del ctx
-        trigger = int(rng.rand() % 10_000)
-        count = 1 if full_version else 2
-        return [
-            SpawnEntry(
-                pos=Vec2(1.0, 2.0),
-                heading=0.0,
-                spawn_id=SpawnId.ALIEN_SMALL_GRAY_26,
-                trigger_ms=trigger,
-                count=count,
-            ),
-        ]
-
-    quest = QuestDefinition(
-        level=QuestLevel(1, 1),
-        title="dummy",
-        builder=builder,
-        time_limit_ms=1000,
-        start_weapon_id=WeaponId.NONE,
-        terrain_slots=DEFAULT_TERRAIN_SLOTS,
-    )
-    ctx = QuestContext(player_count=1)
-
-    full_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), full_version=True)
-    demo_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), full_version=False)
-
-    assert len(full_entries) == 1
-    assert len(demo_entries) == 1
-    assert full_entries[0].trigger_ms == demo_entries[0].trigger_ms
-    assert full_entries[0].count == 1
-    assert demo_entries[0].count == 2
 
 
 def test_build_3_3_the_killing_discards_pick_rolls_and_cycles_by_wave_index() -> None:
@@ -159,7 +118,7 @@ def test_build_3_3_the_killing_discards_pick_rolls_and_cycles_by_wave_index() ->
         ],
     )
 
-    entries = build_3_3_the_killing(ctx, rng=rng, full_version=True)
+    entries = build_3_3_the_killing(ctx, rng=rng)
 
     assert [(entry.spawn_id, entry.trigger_ms) for entry in entries] == [
         (SpawnId.AI1_ALIEN_BLUE_TINT_1A, 2000),
@@ -211,26 +170,26 @@ def test_quest_rng_builders_use_exact_native_callers() -> None:
     ctx = QuestContext(player_count=1)
 
     target_practice_rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    build_1_3_target_practice(ctx, rng=target_practice_rng, full_version=True)
+    build_1_3_target_practice(ctx, rng=target_practice_rng)
     assert [record.caller for record in target_practice_rng.records_since()] == [
         RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_ANGLE,
         RngCallerStatic.QUEST_BUILD_TARGET_PRACTICE_RADIUS,
     ] * 30
 
     random_factor_rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    build_1_6_the_random_factor(ctx, rng=random_factor_rng, full_version=True)
+    build_1_6_the_random_factor(ctx, rng=random_factor_rng)
     assert [record.caller for record in random_factor_rng.records_since()] == [
         RngCallerStatic.QUEST_BUILD_THE_RANDOM_FACTOR_ALIEN_BIG_GRAY_GATE,
     ] * 10
 
     sweep_stakes_rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    build_2_5_sweep_stakes(ctx, rng=sweep_stakes_rng, full_version=True)
+    build_2_5_sweep_stakes(ctx, rng=sweep_stakes_rng)
     assert [record.caller for record in sweep_stakes_rng.records_since()] == [
         RngCallerStatic.QUEST_BUILD_SWEEP_STAKES_ANGLE,
     ] * 16
 
     deja_vu_rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    build_3_9_deja_vu(ctx, rng=deja_vu_rng, full_version=True)
+    build_3_9_deja_vu(ctx, rng=deja_vu_rng)
     assert [record.caller for record in deja_vu_rng.records_since()] == [
         RngCallerStatic.QUEST_BUILD_DEJA_VU_ANGLE,
     ] * 18

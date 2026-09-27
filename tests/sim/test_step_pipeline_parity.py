@@ -95,8 +95,7 @@ def _quest_spawn_entries(*, level: str, player_count: int, seed: int) -> tuple:
             quest,
             ctx,
             rng=Crand(int(seed)),
-            full_version=True,
-        ),
+            ),
     )
 
 

@@ -112,7 +112,7 @@ pub fn buildReplaySession(
     options: BuildReplaySessionOptions,
 ) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
     const config = runtime_session.SessionConfig.fromRunSpec(run);
-    var session = switch (run.game_mode) {
+    const session = switch (run.game_mode) {
         .quests => return buildQuestReplaySession(run, config, options),
         .tutorial => return buildTutorialSession(config, .{}),
         .survival => try buildSurvivalSession(config, .{}),
@@ -122,9 +122,6 @@ pub fn buildReplaySession(
             .highscore_names = run.typo_highscore_names,
         }),
     };
-    // Only quest and tutorial sessions carry a run's demo flag into gameplay
-    // state; the creature spawn environment keeps it in every mode.
-    session.state.demo_mode_active = false;
     return session;
 }
 
@@ -172,17 +169,6 @@ fn testConfig(game_mode: game_ids.GameModeId) runtime_session.SessionConfig {
         .world_size = 1024.0,
         .tick_rate = 60,
     };
-}
-
-test "only quest and tutorial replay sessions keep the demo flag in gameplay state" {
-    const survival = try buildReplaySession(.{ .game_mode = .survival, .seed = 1, .demo = true }, .{});
-    try std.testing.expect(!survival.state.demo_mode_active);
-    try std.testing.expect(survival.creatures.demo_mode_active);
-
-    const tutorial = try buildReplaySession(.{ .game_mode = .tutorial, .seed = 1, .demo = true }, .{});
-    try std.testing.expect(tutorial.state.demo_mode_active);
-    const quest = try buildReplaySession(.{ .game_mode = .quests, .seed = 1, .quest_level = .{ .major = 1, .minor = 1 }, .demo = true }, .{});
-    try std.testing.expect(quest.state.demo_mode_active);
 }
 
 test "build tutorial session primes the same pistol for live play and replay" {

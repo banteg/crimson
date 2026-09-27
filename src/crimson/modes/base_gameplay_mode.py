@@ -86,7 +86,6 @@ class BaseGameplayMode:
         ctx: ViewContext,
         *,
         default_game_mode_id: GameMode,
-        shareware_demo: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
         config: CrimsonConfig,
@@ -117,8 +116,6 @@ class BaseGameplayMode:
         )
 
         self.assets_dir = ctx.assets_dir
-        # Shareware build (`game_is_full_version() == 0`); runs are never attract mode.
-        self.shareware_demo = bool(shareware_demo)
         self.audio = audio
         self.audio_rng = audio_rng
         self.rtx_mode = RtxRenderMode.CLASSIC
@@ -609,7 +606,6 @@ class BaseGameplayMode:
             player_count=self._runtime_player_count(),
             hardcore=self.hardcore,
             preserve_bugs=self.state.preserve_bugs,
-            demo=self.shareware_demo,
             quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,
@@ -709,10 +705,6 @@ class BaseGameplayMode:
 
     def console_elapsed_ms(self) -> float:
         return float(self._world_runtime.presentation_elapsed_ms)
-
-    def prepare_demo_trial_overlay_frame(self) -> None:
-        self._world_runtime.update_camera()
-        self._sync_audio()
 
     def regenerate_terrain_for_console(self) -> None:
         if self.render_resources.ground is None:

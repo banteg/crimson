@@ -16,7 +16,7 @@ The demo loop is useful for reimplementation because it exercises:
 - A deterministic set of setup variants (`demo_setup_variant_*`).
 - A self-contained “upsell” overlay + purchase screen (`demo_purchase_screen_update`)
   that drives its own timer and can transition back to menu state `0`.
-  **Rewrite note:** we implement this screen for parity (the purchase URL is legacy).
+  **Rewrite note:** the port ships only the full version and omits this screen.
 
 ## Entry points
 
@@ -65,9 +65,8 @@ This is why the demo cycle includes a “purchase interstitial” variant: it fl
 `demo_purchase_screen_active` to suppress gameplay and show only the upsell
 screen for a fixed time.
 
-**Rewrite note:** the Python rewrite matches the modulo-6 sequencing, including
-the automatic “variant 5” purchase interstitial. The purchase screen can also be
-triggered on input (LMB / Esc / Space), matching the original shareware behavior.
+**Rewrite note:** the port omits the purchase interstitial, so its demo view
+cycles the five gameplay slots (0–4) and any input exits to the menu.
 
 ### Timing: `quest_spawn_timeline` + `demo_time_limit_ms`
 
@@ -174,13 +173,11 @@ The variants are small, deterministic setup functions that:
 - `demo_time_limit_ms = 10000`
 - `demo_purchase_screen_active = 1` (suppresses gameplay and renders the full-screen purchase UI)
 
-**Rewrite note:** the Python rewrite implements the purchase UI and auto-enters
-this interstitial variant.
+**Rewrite note:** omitted in the port (shareware only).
 
 ## Upsell overlay (`demo_purchase_screen_update` / `0x0040b740`)
 
-**Rewrite note:** implemented in `src/crimson/demo.py` for parity. The purchase
-URL is legacy; we open it best-effort.
+**Rewrite note:** omitted in the port (shareware only).
 
 This runs whenever `demo_mode_active != 0`:
 

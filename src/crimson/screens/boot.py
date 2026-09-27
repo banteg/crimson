@@ -121,15 +121,14 @@ class BootView:
     def take_action(self) -> Route | None:
         if not self._theme_started:
             return None
-        return Route.DEMO if self.state.demo_enabled else Route.MENU
+        return Route.MENU
 
     def _start_theme(self) -> None:
         if self._theme_started:
             return
         if self.state.audio is not None:
             stop_music(self.state.audio)
-            theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
-            play_music(self.state.audio, theme)
+            play_music(self.state.audio, "crimson_theme")
         self._theme_started = True
 
     def is_theme_started(self) -> bool:

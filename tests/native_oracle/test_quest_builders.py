@@ -72,7 +72,7 @@ def test_quest_builder_matches_native(oracle, quest: QuestDefinition) -> None:
 
             rng = CrtRand(seed)
             ctx = QuestContext(player_count=player_count, hardcore=hardcore)
-            python_entries = quest.builder(ctx, rng=rng, full_version=True)
+            python_entries = quest.builder(ctx, rng=rng)
 
             native_count = oracle.read_i32(count_ptr)
             if native_count != len(python_entries):

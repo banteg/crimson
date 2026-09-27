@@ -75,8 +75,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
             quest,
             ctx,
             rng=rng,
-            full_version=True,
-        ),
+            ),
     )
     expected_rng_state = int(rng.state)
 

@@ -27,7 +27,7 @@ from .types import QuestContext, SpawnEntry
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BONUS_ECONOMIST,
 )
-def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     edges = edge_midpoints()
     entries: list[SpawnEntry] = []
     for wave in range(1, 9):
@@ -98,7 +98,7 @@ def build_2_1_everred_pastures(ctx: QuestContext, *, rng: CrandLike, full_versio
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PLASMA_RIFLE,
 )
-def build_2_2_spider_spawns(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_2_spider_spawns(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     return [
         spawn(
             Vec2(128.0, 128.0),
@@ -187,7 +187,7 @@ def build_2_2_spider_spawns(ctx: QuestContext, *, rng: CrandLike, full_version: 
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.THICK_SKINNED,
 )
-def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     if ctx.player_count + 4 >= 0:
         trigger = 500
@@ -237,7 +237,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext, *, rng: CrandLike, full_version:
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_RIFLE,
 )
-def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_4_two_fronts(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     for wave in range(40):
@@ -315,7 +315,6 @@ def build_2_5_sweep_stakes(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 2000
@@ -349,7 +348,6 @@ def build_2_6_evil_zombies_at_large(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
@@ -408,7 +406,6 @@ def build_2_7_survival_of_the_fastest(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry | None] = [None] * 26
 
@@ -471,7 +468,7 @@ def build_2_7_survival_of_the_fastest(
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SAWED_OFF_SHOTGUN,
 )
-def build_2_8_land_of_lizards(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_8_land_of_lizards(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     return [
         spawn(
             Vec2(256.0, 256.0),
@@ -511,7 +508,7 @@ def build_2_8_land_of_lizards(ctx: QuestContext, *, rng: CrandLike, full_version
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.VEINS_OF_POISON,
 )
-def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(offset=128.0)
     entries.append(
@@ -560,7 +557,7 @@ def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: 
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PLASMA_MINIGUN,
 )
-def build_2_10_spideroids(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_2_10_spideroids(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(1088.0, 512.0),

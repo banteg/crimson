@@ -29,31 +29,28 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
 
 
 @pytest.mark.parametrize(
-    ("demo_enabled", "is_gameplay", "dt", "start_value", "expected_value"),
+    ("is_gameplay", "dt", "start_value", "expected_value"),
     [
-        (False, True, 0.0169, 10, 26),
-        (False, True, 0.016, 0xFFFFFFFF, 15),
-        (False, True, 0.0289999999, 0, 29),
-        (False, False, 0.5, 123, 123),
-        (True, True, 0.5, 123, 123),
+        (True, 0.0169, 10, 26),
+        (True, 0.016, 0xFFFFFFFF, 15),
+        (True, 0.0289999999, 0, 29),
+        (False, 0.5, 123, 123),
     ],
     ids=[
-        "accumulates-for-non-demo-gameplay",
+        "accumulates-for-gameplay",
         "wraps-native-u32-counter",
         "rounds-frame-time-to-f32-before-truncation",
         "skips-non-gameplay-views",
-        "skips-demo-builds",
     ],
 )
 def test_tick_statistics_playtime_behavior(
     make_game_state,
-    demo_enabled: bool,
     is_gameplay: bool,
     dt: float,
     start_value: int,
     expected_value: int,
 ) -> None:
-    state = make_game_state(demo_enabled=demo_enabled)
+    state = make_game_state()
     loop = GameLoopView(state)
     active = GameplayScreenStub() if is_gameplay else ScreenStub()
     state.screens.push(ScreenEntry(active, gameplay=active if isinstance(active, GameplayScreenStub) else None))

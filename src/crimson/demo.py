@@ -1,16 +1,10 @@
 from __future__ import annotations
 
 import math
-import webbrowser
 
-from grim import canvas
-from grim.assets import TextureId
 from grim.audio import update_audio
-from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
-from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
-from grim.math import clamp
-from grim.raylib_api import rd, rl
+from grim.raylib_api import rl
 
 from .creatures.spawn import RANDOM_HEADING_SENTINEL, SpawnId
 from .game.types import GameState
@@ -20,45 +14,18 @@ from .quests import quest_by_level
 from .quests.level import QuestLevel
 from .rng_caller_static import RngCallerStatic
 from .screens.actions import Route
-from .screens.assets import require_runtime_resources
 from .sim.bootstrap import advance_explicit_terrain
 from .sim.input import PlayerInput
 from .sim.state_types import TERRAIN_SIZE, PlayerState
 from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
-from .ui.cursor import draw_menu_cursor
-from .ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
 from .weapons import WeaponId, weapon_display_name
 from .world import WorldRuntime
 from .world.standalone_tick_harness import StandaloneTickHarness
 
-DEMO_VARIANT_COUNT = 6
-
-_DEMO_UPSELL_MESSAGES: tuple[str, ...] = (
-    "Want more Levels?",
-    "Want more Weapons?",
-    "Want more Perks?",
-    "Want unlimited Play time?",
-    "Want to post your high scores?",
-)
-
-DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
-DEMO_PURCHASE_SCREEN_LIMIT_MS = 16_000
-DEMO_PURCHASE_INTERSTITIAL_LIMIT_MS = 10_000
-
-_DEMO_PURCHASE_TITLE = "Upgrade to the full version of Crimsonland Today!"
-_DEMO_PURCHASE_FEATURES_TITLE = "Full version features:"
-_DEMO_PURCHASE_FEATURE_LINES: tuple[tuple[str, float], ...] = (
-    ("-Unlimited Play Time in three thrilling Game Modes!", 22.0),
-    ("-The varied weapon arsenal consisting of over 20 unique", 17.0),
-    (" weapons that allow you to deal death with plasma, lead,", 17.0),
-    (" fire and electricity!", 22.0),
-    ("-Over 40 game altering Perks!", 22.0),
-    ("-40 insane Levels that give you", 18.0),
-    (" hours of intense and fun gameplay!", 22.0),
-    ("-The ability to post your high scores online!", 44.0),
-)
-_DEMO_PURCHASE_FOOTER = "Purchasing the game is very easy and secure."
+# Native `demo_mode_start` cycles modulo 6; slot 5 is the shareware purchase
+# interstitial (`demo_purchase_interstitial_begin`), which the port omits.
+DEMO_VARIANT_COUNT = 5
 
 
 class DemoView:
@@ -72,9 +39,8 @@ class DemoView:
       - demo_mode_start       @ 0x00403390
     """
 
-    def __init__(self, state: GameState, *, quit_after: bool = False) -> None:
+    def __init__(self, state: GameState) -> None:
         self.state = state
-        self._quit_after = quit_after
         self._runtime = WorldRuntime(
             assets_dir=state.assets_dir,
             demo_mode_active=True,
@@ -92,12 +58,6 @@ class DemoView:
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
         self._finished = False
-        self._upsell_message_index = 0
-        self._upsell_pulse_ms = 0
-        self._upsell_font: GrimMonoFont | None = None
-        self._purchase_active = False
-        self._purchase_button = UiButtonState("Purchase", force_wide=True)
-        self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._tick_harness = StandaloneTickHarness(
             game_mode=GameMode.DEMO,
             frame_inputs=self._build_demo_inputs,
@@ -144,11 +104,6 @@ class DemoView:
 
     def open(self) -> None:
         self._finished = False
-        self._upsell_message_index = 0
-        self._upsell_pulse_ms = 0
-        self._purchase_active = False
-        self._purchase_button = UiButtonState("Purchase", force_wide=True)
-        self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
         self._variant_index = 0
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
@@ -158,12 +113,10 @@ class DemoView:
 
     def close(self) -> None:
         self._finished = True
-        self._purchase_active = False
         if not self._seed_from_app_state:
             self._commit_live_rng_state_to_app()
         self._tick_harness.reset()
         self._close_world_runtime()
-        self._upsell_font = None
         self._seed_from_app_state = True
 
     def is_finished(self) -> bool:
@@ -172,29 +125,16 @@ class DemoView:
     def take_action(self) -> Route | None:
         if not self._finished:
             return None
-        return Route.QUIT if self._quit_after else Route.MENU
+        return Route.MENU
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
-            update_audio(self.state.audio, dt, advance_sfx=self._purchase_active or self._finished)
+            update_audio(self.state.audio, dt, advance_sfx=self._finished)
         if self._finished:
             return
         frame_dt = min(dt, 0.1)
         frame_dt_ms = int(frame_dt * 1000.0)
         if frame_dt_ms <= 0:
-            return
-
-        if (not self._purchase_active) and self.state.demo_enabled and self._purchase_screen_triggered():
-            self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
-
-        if self._purchase_active:
-            self._upsell_pulse_ms += frame_dt_ms
-            self._update_purchase_screen(frame_dt_ms)
-            self._quest_spawn_timeline_ms += frame_dt_ms
-            if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
-                # demo_purchase_screen_update restarts the demo once the purchase screen
-                # timer exceeds demo_time_limit_ms.
-                self._demo_mode_start()
             return
 
         if self._skip_triggered():
@@ -210,9 +150,6 @@ class DemoView:
     def draw(self) -> None:
         if self._finished:
             return
-        if self._purchase_active:
-            self._draw_purchase_screen()
-            return
         self._draw_world()
         self._draw_overlay()
 
@@ -223,226 +160,26 @@ class DemoView:
             return True
         return bool(rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT))
 
-    def _purchase_screen_triggered(self) -> bool:
-        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            return True
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            return True
-        return bool(rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE))
-
-    def _begin_purchase_screen(self, limit_ms: int, *, reset_timeline: bool) -> None:
-        self._purchase_active = True
-        if reset_timeline:
-            self._quest_spawn_timeline_ms = 0
-        self._demo_time_limit_ms = max(0, int(limit_ms))
-        self._purchase_button = UiButtonState("Purchase", force_wide=True)
-        self._maybe_later_button = UiButtonState("Maybe later", force_wide=True)
-
-    def _purchase_layout_wide_shift(self) -> float:
-        screen_w = self.state.config.display.width
-        if screen_w == 0x320:  # 800
-            return 64.0
-        if screen_w == 0x400:  # 1024
-            return 128.0
-        return 0.0
-
-    def _trigger_purchase(self) -> None:
-        self.state.quit_requested = True
-        try:
-            webbrowser.open(DEMO_PURCHASE_URL)
-        except (OSError, webbrowser.Error):
-            return
-
-    def _update_purchase_screen(self, dt_ms: int) -> None:
-        dt_ms = max(0, int(dt_ms))
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._purchase_active = False
-            self._finished = True
-            return
-
-        resources = require_runtime_resources(self.state)
-
-        w = float(self.state.config.display.width)
-        h = float(self.state.config.display.height)
-        wide_shift = self._purchase_layout_wide_shift()
-        button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
-        button_base_pos = Vec2(w / 2.0 + 128.0, button_base_y + 50.0)
-
-        mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        button_w = button_width(
-            resources,
-            self._purchase_button.label,
-            force_wide=self._purchase_button.force_wide,
-        )
-        purchase_requested = button_update(
-            self._purchase_button,
-            pos=button_base_pos,
-            width=float(button_w),
-            dt_ms=float(dt_ms),
-            mouse=mouse,
-            click=bool(click),
-        )
-
-        if button_update(
-            self._maybe_later_button,
-            pos=button_base_pos.offset(dy=40.0),
-            width=float(button_w),
-            dt_ms=float(dt_ms),
-            mouse=mouse,
-            click=bool(click),
-        ):
-            self._purchase_active = False
-            self._finished = True
-            return
-
-        # Keyboard activation for convenience; original uses UI mouse.
-        purchase_requested = purchase_requested or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-        if purchase_requested:
-            self._trigger_purchase()
-
-    def _draw_purchase_screen(self) -> None:
-        rl.clear_background(rl.BLACK)
-
-        resources = require_runtime_resources(self.state)
-        backplasma = resources.texture(TextureId.BACKPLASMA)
-
-        pulse_phase = float(self._upsell_pulse_ms % 1000)
-        pulse = math.sin(pulse_phase * 6.2831855)
-        pulse = pulse * pulse
-
-        screen_w = float(self.state.config.display.width)
-        screen_h = float(self.state.config.display.height)
-
-        # demo_purchase_screen_update @ 0x0040b985:
-        #   - full-screen quad
-        #   - UV: 0..0.5 (top-left quarter of the backplasma atlas)
-        #   - per-corner color slots, with a sin^2 pulse at bottom-right
-
-        def _to_u8(value: float) -> int:
-            return int(clamp(value, 0.0, 1.0) * 255.0 + 0.5)
-
-        c0 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.0), _to_u8(1.0))
-        c1 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.3), _to_u8(1.0))
-        c2 = rl.Color(
-            _to_u8(0.0),
-            _to_u8(0.4),
-            _to_u8(pulse * 0.55),
-            _to_u8(pulse),
-        )
-        c3 = rl.Color(_to_u8(0.0), _to_u8(0.4), _to_u8(0.4), _to_u8(1.0))
-
-        rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
-        rl.rl_set_texture(backplasma.id)
-        rl.rl_begin(rd.RL_QUADS)
-        # TL
-        rl.rl_color4ub(c0.r, c0.g, c0.b, c0.a)
-        rl.rl_tex_coord2f(0.0, 0.0)
-        rl.rl_vertex2f(0.0, 0.0)
-        # TR
-        rl.rl_color4ub(c1.r, c1.g, c1.b, c1.a)
-        rl.rl_tex_coord2f(0.5, 0.0)
-        rl.rl_vertex2f(screen_w, 0.0)
-        # BR
-        rl.rl_color4ub(c2.r, c2.g, c2.b, c2.a)
-        rl.rl_tex_coord2f(0.5, 0.5)
-        rl.rl_vertex2f(screen_w, screen_h)
-        # BL
-        rl.rl_color4ub(c3.r, c3.g, c3.b, c3.a)
-        rl.rl_tex_coord2f(0.0, 0.5)
-        rl.rl_vertex2f(0.0, screen_h)
-        rl.rl_end()
-        rl.rl_set_texture(0)
-        rl.end_blend_mode()
-
-        wide_shift = self._purchase_layout_wide_shift()
-
-        # Mockup and logo textures.
-        mockup = resources.texture(TextureId.MOCKUP)
-        x = screen_w / 2.0 - 128.0 + wide_shift
-        y = screen_h / 2.0 - 140.0
-        dst = rl.Rectangle(x, y, 512.0, 256.0)
-        src = rl.Rectangle(0.0, 0.0, float(mockup.width), float(mockup.height))
-        rl.draw_texture_pro(mockup, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-
-        cl_logo = resources.texture(TextureId.CL_LOGO)
-        x = screen_w / 2.0 - 256.0
-        y = screen_h / 2.0 - 200.0 - wide_shift * 0.4
-        dst = rl.Rectangle(x, y, 512.0, 64.0)
-        src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
-        rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-
-        x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
-        y = screen_h / 2.0 - 104.0
-        color = rl.Color(255, 255, 255, 255)
-        small = resources.small_font
-        draw_small_text(small, _DEMO_PURCHASE_TITLE, Vec2(x_text, y), color)
-        y += 28.0
-        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, Vec2(x_text, y), color)
-
-        underline_w = measure_small_text_width(small, _DEMO_PURCHASE_FEATURES_TITLE)
-        rl.draw_rectangle_rec(rl.Rectangle(x_text, y + 15.0, underline_w, 2.0), rl.Color(255, 255, 255, 160))
-
-        y += 22.0
-        x_list = x_text + 8.0
-        for line, delta_y in _DEMO_PURCHASE_FEATURE_LINES:
-            draw_small_text(small, line, Vec2(x_list, y), color)
-            y += delta_y
-        draw_small_text(small, _DEMO_PURCHASE_FOOTER, Vec2(x_text, y), color)
-
-        # Buttons on the right.
-        button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
-        button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
-        button_w = button_width(
-            resources,
-            self._purchase_button.label,
-            force_wide=self._purchase_button.force_wide,
-        )
-        button_draw(resources, self._purchase_button, pos=button_base_pos, width=button_w)
-        button_draw(
-            resources,
-            self._maybe_later_button,
-            pos=button_base_pos.offset(dy=40.0),
-            width=button_w,
-        )
-
-        # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.
-        particles = resources.texture(TextureId.PARTICLES)
-        cursor_tex = resources.texture(TextureId.UI_CURSOR)
-        mouse = canvas.mouse_position()
-        pulse_time = float(self._upsell_pulse_ms) * 0.001
-        draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=pulse_time)
-
     def _demo_mode_start(self) -> None:
         index = self._demo_variant_index
         self._demo_variant_index = (index + 1) % DEMO_VARIANT_COUNT
         self._variant_index = index
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
-        self._purchase_active = False
         player_count = 2 if index in (0, 1, 4) else 1
         self._runtime.reset(seed=self._next_demo_reset_seed(), player_count=player_count)
         self._tick_harness.reset()
         self._sync_audio_rng_from_runtime()
         self._runtime.world.state.bonuses.weapon_power_up = 0.0
-        if index == 0:
-            self._setup_variant_0()
-        elif index == 1:
+        if index == 1:
             self._setup_variant_1()
         elif index == 2:
             self._setup_variant_2()
         elif index == 3:
             self._setup_variant_3()
-        elif index == 4:
-            self._setup_variant_0()
         else:
-            # demo_purchase_interstitial_begin
-            self._begin_purchase_screen(DEMO_PURCHASE_INTERSTITIAL_LIMIT_MS, reset_timeline=True)
-
-        # demo_purchase_screen_update increments demo_upsell_message_index when the
-        # timeline resets (quest_spawn_timeline == 0) and the purchase screen is inactive.
-        if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
-            self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
+            # Slots 0 and 4 both run demo_setup_variant_0.
+            self._setup_variant_0()
         self._sync_audio_rng_from_runtime()
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
@@ -596,9 +333,6 @@ class DemoView:
                 self._spawn(SpawnId.ALIEN_SMALL_GREEN_MAN_25, spawn_pos, heading=0.0)
 
     def _draw_overlay(self) -> None:
-        if self.state.demo_enabled:
-            self._draw_demo_upsell_overlay()
-            return
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
@@ -610,61 +344,6 @@ class DemoView:
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
         rl.draw_text(detail, 16, 36, 16, rl.Color(180, 180, 190, 255))
         rl.draw_text(hint, 16, 56, 16, rl.Color(140, 140, 150, 255))
-
-    def _ensure_upsell_font(self) -> GrimMonoFont:
-        if self._upsell_font is not None:
-            return self._upsell_font
-        self._upsell_font = load_grim_mono_font(self.state.assets_dir)
-        return self._upsell_font
-
-    def _draw_demo_upsell_overlay(self) -> None:
-        # Modeled after the shareware "Want more ..." overlay in demo_purchase_screen_update
-        # (crimsonland.exe 0x0040B740), but without the purchase screen.
-        if not _DEMO_UPSELL_MESSAGES:
-            return
-
-        font = self._ensure_upsell_font()
-        msg = _DEMO_UPSELL_MESSAGES[self._upsell_message_index]
-
-        timeline_ms = self._quest_spawn_timeline_ms
-        limit_ms = self._demo_time_limit_ms
-        var_2c = float(timeline_ms) * 0.016
-
-        alpha = 1.0
-        if var_2c < 20.0:
-            alpha = var_2c * 0.05
-        if timeline_ms > limit_ms - 500:
-            alpha = float(limit_ms - timeline_ms) * 0.002
-        alpha = clamp(alpha, 0.0, 1.0)
-
-        scale = 0.8
-        text_w = float(len(msg)) * 12.8
-
-        text_x = 50.0
-        text_y = var_2c + 50.0
-        bg_x = 60.0
-        bg_y = text_y - 4.0
-        bar_x = 64.0
-        bar_y = var_2c + 72.0
-
-        bg_alpha = int(round(clamp(alpha * 0.5, 0.0, 1.0) * 255.0))
-        bar_alpha = int(round(clamp(alpha * 0.8, 0.0, 1.0) * 255.0))
-        txt_alpha = int(round(clamp(alpha, 0.0, 1.0) * 255.0))
-
-        rl.draw_rectangle_rec(
-            rl.Rectangle(bg_x, bg_y, text_w + 12.0, 30.0),
-            rl.Color(0, 0, 0, bg_alpha),
-        )
-
-        progress = 0.0
-        if limit_ms > 0:
-            progress = clamp(float(timeline_ms) / float(limit_ms), 0.0, 1.0)
-        rl.draw_rectangle_rec(
-            rl.Rectangle(bar_x, bar_y, text_w * progress, 3.0),
-            rl.Color(128, 26, 26, bar_alpha),
-        )
-
-        draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
     def _update_world(self, dt: float) -> None:
         if not self._runtime.world.players:

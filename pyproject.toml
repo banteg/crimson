@@ -71,7 +71,7 @@ extend-ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Quest builders share QuestBuilder's signature; most ignore rng and full_version.
+# Quest builders share QuestBuilder's signature; most ignore rng.
 "src/crimson/quests/tier*.py" = ["ARG001"]
 # Fixtures, mock side effects and protocol fakes take arguments they don't use.
 "tests/**" = ["ARG"]

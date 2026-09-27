@@ -83,7 +83,6 @@ def _build_state(tmp_path: Path) -> GameState:
         config=cfg,
         status=save_status.ensure_game_status(tmp_path),
         console=create_console(tmp_path, assets_dir=assets_dir),
-        demo_enabled=False,
         preserve_bugs=False,
         replay_checkpoints=False,
         resources=None,

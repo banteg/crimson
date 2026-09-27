@@ -115,20 +115,6 @@ def test_setgammaramp_rejects_invalid_values_without_changing_gain(make_game_sta
         assert "finite scalar" in state.console.log.lines[-1]
 
 
-def test_trial_timer_commands_reject_nonfinite_values_and_bound_saved_u32(make_game_state) -> None:
-    state = make_game_state()
-    handlers = _boot_command_handlers(state)
-    state.status.play_time_ms = 123
-    state.demo_trial_elapsed_ms = 456
-    for name in ("demoTrialSetPlaytime", "demoTrialSetGrace"):
-        for value in ("nan", "inf", "nonsense"):
-            handlers[name]([value])
-    assert state.status.play_time_ms == 123
-    assert state.demo_trial_elapsed_ms == 456
-    handlers["demoTrialSetPlaytime"](["1e30"])
-    assert state.status.play_time_ms == 0xFFFFFFFF
-
-
 def test_gamma_releases_shader_when_uniform_is_missing(mocker, make_game_state) -> None:
     import pytest
 

@@ -182,7 +182,6 @@ def test_zig_replay_verify_ends_runs_like_python_in_every_mode(tmp_path: Path, z
         assert payload["result"] == _json_result(replay.result), mode
 
 
-# Shareware (`demo=True`) runs are no longer attract mode in Python; the Zig port follows later.
 _RUN_VARIANTS = {
     "survival-hardcore-low-detail": RunSpec(
         game_mode_id=GameMode.SURVIVAL,
@@ -427,9 +426,11 @@ _NON_CANONICAL = {
     "non-minimal-int": (b"\xacplayer_count\x01", b"\xacplayer_count\xd0\x01"),
     "non-minimal-str": (b"\xa4seed", b"\xd9\x04seed"),
     "reordered-keys": (b"\xa8hardcore\xc2\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa8hardcore\xc2"),
-    "duplicate-key": (b"\xa4demo\xc2", b"\xa8hardcore\xc2"),
-    "missing-key": (b"\x8d\xacgame_mode_id\x01", b"\x8c\xacgame_mode_id\x01", b"\xa4demo\xc2", b""),
-    "extra-key": (b"\x8d\xacgame_mode_id\x01", b"\x8e\xacgame_mode_id\x01", b"\xa4demo\xc2", b"\xa4demo\xc2\xa5extra\x00"),
+    "duplicate-key": (b"\xadpreserve_bugs\xc2", b"\xa8hardcore\xc2"),
+    "missing-key": (b"\x8c\xacgame_mode_id\x01", b"\x8b\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b""),
+    "extra-key": (
+        b"\x8c\xacgame_mode_id\x01", b"\x8d\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa5extra\x00",
+    ),
     "reordered-command-keys": (
         b"\xa4type\xa9typo_char\xacplayer_index\x00",
         b"\xacplayer_index\x00\xa4type\xa9typo_char",
@@ -468,7 +469,7 @@ def test_zig_replay_verify_rejects_trailing_payload_bytes(tmp_path: Path, zig_bi
 
 def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path, zig_bin: Path) -> None:
     survival = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x14", b"\xaeformat_version\x13", 1)
+    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x15", b"\xaeformat_version\x14", 1)
     cases = {
         "typo-event": (
             write_current_typo_event_replay(tmp_path, replay=survival, name="typo-event.crd"),
@@ -498,7 +499,7 @@ def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path,
         ),
         "old-format": (
             write_payload_bytes(tmp_path, payload=old_format, name="old-format.crd"),
-            "unsupported replay format version: 19",
+            "unsupported replay format version: 20",
         ),
     }
 

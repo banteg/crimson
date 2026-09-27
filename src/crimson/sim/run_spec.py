@@ -47,9 +47,6 @@ class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     player_count: PlayerCount = 1
     hardcore: bool = False
     preserve_bugs: bool = False
-    # Shareware demo build (`game_is_full_version() == 0`): quest spawns use the demo tables.
-    # A run is never attract mode; `demo_mode_active` stays off.
-    demo: bool = False
     # Mirrors the native quest retry scaling counter (`quest_fail_retry_count`).
     quest_fail_retry_count: NonNegativeInt = 0
     detail_preset: NonNegativeInt = 5

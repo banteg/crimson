@@ -32,7 +32,6 @@ class QuestBuilder(Protocol):
         ctx: QuestContext,
         *,
         rng: CrandLike,
-        full_version: bool = True,
     ) -> list[SpawnEntry]: ...
 
 

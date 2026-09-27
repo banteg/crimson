@@ -276,10 +276,6 @@ panel-state-resolution-reduce glob="artifacts/frida/share/panel_state_resolution
     uv run scripts/panel_state_resolution_capture_reduce.py --glob "{{glob}}" --out-json "{{out_json}}" --out-md "{{out_md}}"
 
 [unix]
-demo-trial-validate log="analysis/frida/raw/demo_trial_overlay_trace.jsonl":
-    uv run scripts/demo_trial_overlay_validate.py {{log}}
-
-[unix]
 demo-idle-summarize log="analysis/frida/raw/demo_idle_threshold_trace.jsonl":
     uv run scripts/demo_idle_threshold_summarize.py {{log}}
 

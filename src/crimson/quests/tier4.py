@@ -27,7 +27,7 @@ from .types import QuestContext, SpawnEntry
     start_weapon_id=WeaponId.ROCKET_MINIGUN,
     unlock_perk_id=PerkId.JINXED,
 )
-def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 4000
@@ -63,7 +63,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_vers
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PULSE_GUN,
 )
-def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 1500
@@ -97,7 +97,7 @@ def build_4_2_zombie_time(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.PERK_MASTER,
 )
-def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 1500
@@ -153,7 +153,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.PLASMA_SHOTGUN,
 )
-def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 1500
@@ -208,7 +208,7 @@ def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_versi
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.REFLEX_BOOSTED,
 )
-def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     edges_wide = edge_midpoints(offset=128.0)
@@ -246,7 +246,7 @@ def build_4_5_the_massacre(ctx: QuestContext, *, rng: CrandLike, full_version: b
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.MINI_ROCKET_SWARMERS,
 )
-def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_6_the_unblitzkrieg(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     def spawn_id_for(toggle: bool) -> SpawnId:
         return SpawnId.DEN_LIZARD_WEAK_SLOWER_0D if toggle else SpawnId.DEN_ALIEN_BASIC_07
 
@@ -414,7 +414,7 @@ def _gauntlet_ring(radius: float, count: int) -> list[Vec2]:
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.GREATER_REGENERATION,
 )
-def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if ctx.hardcore else 0)
     edges = edge_midpoints()
@@ -499,7 +499,7 @@ def build_4_7_gauntlet(ctx: QuestContext, *, rng: CrandLike, full_version: bool 
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_MINIGUN,
 )
-def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if ctx.hardcore else 0)
     outer_seed = 0x14C9
@@ -536,7 +536,7 @@ def build_4_8_syntax_terror(ctx: QuestContext, *, rng: CrandLike, full_version: 
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.BREATHING_ROOM,
 )
-def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = TERRAIN_SIZE // 2
     entries.append(
@@ -594,7 +594,7 @@ def build_4_9_the_annihilation(ctx: QuestContext, *, rng: CrandLike, full_versio
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ION_CANNON,
 )
-def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_4_10_the_end_of_all(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         spawn(
             Vec2(128.0, 128.0),

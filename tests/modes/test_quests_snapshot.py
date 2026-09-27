@@ -16,7 +16,7 @@ def _round_matcher(data: object, **_: object) -> object:
 
 
 def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, object]]:
-    entries = builder(ctx, rng=Crand(seed), full_version=True)
+    entries = builder(ctx, rng=Crand(seed))
     return [
         {
             "x": entry.pos.x,

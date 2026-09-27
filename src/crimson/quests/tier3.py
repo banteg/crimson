@@ -28,7 +28,7 @@ from .types import QuestContext, SpawnEntry
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.TOXIC_AVENGER,
 )
-def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     edges = edge_midpoints()
     edges_wide = edge_midpoints(offset=128.0)
     entries = [
@@ -149,7 +149,7 @@ def build_3_1_the_blighting(ctx: QuestContext, *, rng: CrandLike, full_version: 
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.MULTI_PLASMA,
 )
-def build_3_2_lizard_kings(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_2_lizard_kings(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(1152.0, 512.0),
@@ -217,7 +217,6 @@ def build_3_3_the_killing(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     edges = edge_midpoints()
     entries: list[SpawnEntry] = []
@@ -314,7 +313,7 @@ def build_3_3_the_killing(
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SEEKER_ROCKETS,
 )
-def build_3_4_hidden_evil(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_4_hidden_evil(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     edges = edge_midpoints()
     return [
         spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_HIDDEN_1_21, trigger_ms=500, count=50),
@@ -353,7 +352,6 @@ def build_3_5_surrounded_by_reptiles(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1000
@@ -409,7 +407,7 @@ def build_3_5_surrounded_by_reptiles(
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.BLOW_TORCH,
 )
-def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 1500
@@ -454,7 +452,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext, *, rng: CrandLike, full_versio
     start_weapon_id=WeaponId.PLASMA_MINIGUN,
     unlock_perk_id=PerkId.NINJA,
 )
-def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     edges = edge_midpoints()
     center = NATIVE_CENTER
     entries = [
@@ -503,7 +501,7 @@ def build_3_7_spiders_inc(ctx: QuestContext, *, rng: CrandLike, full_version: bo
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_MINIGUN,
 )
-def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_8_lizard_raze(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 1500
@@ -566,7 +564,6 @@ def build_3_9_deja_vu(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 2000
@@ -595,7 +592,7 @@ def build_3_9_deja_vu(
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.JACKHAMMER,
 )
-def build_3_10_zombie_masters(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_3_10_zombie_masters(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     return [
         spawn(
             Vec2(256.0, 256.0),

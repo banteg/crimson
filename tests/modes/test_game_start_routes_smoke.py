@@ -13,14 +13,6 @@ from crimson.quests.level import QuestLevel
 from crimson.screens.actions import StartRun
 
 
-@pytest.mark.parametrize("mode_id", [GameMode.QUESTS, GameMode.TUTORIAL])
-def test_lazy_demo_modes_construct_shareware_runs_outside_attract_mode(make_game_state, mode_id) -> None:
-    state = make_game_state(demo_enabled=True)
-    mode = GameLoopView(state).navigation._mode(mode_id)
-    assert mode.shareware_demo
-    assert not mode.state.demo_mode_active
-
-
 @pytest.mark.parametrize(
     ("mode_id", "mode_type"),
     [

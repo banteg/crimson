@@ -27,8 +27,7 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
         quest,
         QuestContext(player_count=player_count),
         rng=Crand(seed),
-        full_version=True,
-    )
+        )
 
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
@@ -86,8 +85,7 @@ def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None
         expected_entries = quest.builder(
             QuestContext(player_count=player_count, hardcore=hardcore),
             rng=rng,
-            full_version=True,
-        )
+            )
         result = dbg_record._run_process(
             [
                 str(dbg_record._ZIG_BIN),
@@ -131,8 +129,7 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
         quest,
         QuestContext(player_count=1),
         rng=Crand(0),
-        full_version=True,
-    )
+        )
     env = SpawnEnv(
         demo_mode_active=True,
         hardcore=False,

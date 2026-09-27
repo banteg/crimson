@@ -7,7 +7,7 @@
 const std = @import("std");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 20;
+pub const replay_format_version: i32 = 21;
 pub const tick_rate: i32 = 60;
 /// Every replay tick advances the simulation by this delta.
 pub const tick_dt: f32 = 1.0 / @as(f32, @floatFromInt(tick_rate));
@@ -84,7 +84,6 @@ pub const RunSpec = struct {
     player_count: u8 = 1,
     hardcore: bool = false,
     preserve_bugs: bool = false,
-    demo: bool = false,
     quest_fail_retry_count: i32 = 0,
     detail_preset: i32 = 5,
     violence_disabled: i32 = 0,
@@ -540,10 +539,9 @@ pub fn wrapZstdFilePayload(
 
 const replay_keys = [_][]const u8{ "format_version", "game_version", "run", "result", "ticks" };
 const run_keys = [_][]const u8{
-    "game_mode_id",         "seed",              "quest_level", "player_count",
-    "hardcore",             "preserve_bugs",     "demo",        "quest_fail_retry_count",
-    "detail_preset",        "violence_disabled", "status",      "typo_dictionary_words",
-    "typo_highscore_names",
+    "game_mode_id",      "seed",          "quest_level",            "player_count",
+    "hardcore",          "preserve_bugs", "quest_fail_retry_count", "detail_preset",
+    "violence_disabled", "status",        "typo_dictionary_words",  "typo_highscore_names",
 };
 const quest_level_keys = [_][]const u8{ "major", "minor" };
 const status_keys = [_][]const u8{ "quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts" };
@@ -846,8 +844,6 @@ fn readRun(r: *Reader) DecodeError!RunSpec {
     run.hardcore = try r.boolean();
     try r.key("preserve_bugs", base);
     run.preserve_bugs = try r.boolean();
-    try r.key("demo", base);
-    run.demo = try r.boolean();
     try r.key("quest_fail_retry_count", base);
     run.quest_fail_retry_count = try r.intBetween(0, std.math.maxInt(i32));
     try r.key("detail_preset", base);
@@ -1128,8 +1124,6 @@ pub fn encodePayload(allocator: std.mem.Allocator, replay: Replay) ![]u8 {
     try w.boolean(run.hardcore);
     try w.string("preserve_bugs");
     try w.boolean(run.preserve_bugs);
-    try w.string("demo");
-    try w.boolean(run.demo);
     try w.string("quest_fail_retry_count");
     try w.int(run.quest_fail_retry_count);
     try w.string("detail_preset");
@@ -1337,7 +1331,7 @@ test "reader rejects non-canonical encodings of an otherwise valid replay" {
         // Reordered keys.
         .{ .needle = "\xa8hardcore\xc2\xadpreserve_bugs\xc2", .replacement = "\xadpreserve_bugs\xc2\xa8hardcore\xc2", .message = "run has key `preserve_bugs` where `hardcore` belongs" },
         // Duplicate key in place of another.
-        .{ .needle = "\xa4demo\xc2", .replacement = "\xa8hardcore\xc2", .message = "run has key `hardcore` where `demo` belongs" },
+        .{ .needle = "\xadpreserve_bugs\xc2", .replacement = "\xa8hardcore\xc2", .message = "run has key `hardcore` where `preserve_bugs` belongs" },
         // Command map with an extra key.
         .{ .needle = "\x82\xa4type\xaeperk_menu_open\xacplayer_index\x00", .replacement = "\x83\xa4type\xaeperk_menu_open\xacplayer_index\x00\xa1x\x00", .message = "ticks[0].commands[0] must have exactly the keys type, player_index" },
     };
@@ -1347,11 +1341,11 @@ test "reader rejects non-canonical encodings of an otherwise valid replay" {
         try expectRejected(bad, case.message);
     }
 
-    // Missing key: drop `demo` from the run map.
-    const without_demo = try patched(payload, "\xa4demo\xc2", "");
-    defer testing.allocator.free(without_demo);
-    without_demo[std.mem.indexOf(u8, without_demo, "\xacgame_mode_id").? - 1] = 0x8c;
-    try expectRejected(without_demo, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, demo, quest_fail_retry_count, detail_preset, violence_disabled, status, typo_dictionary_words, typo_highscore_names");
+    // Missing key: drop `preserve_bugs` from the run map.
+    const without_preserve_bugs = try patched(payload, "\xadpreserve_bugs\xc2", "");
+    defer testing.allocator.free(without_preserve_bugs);
+    without_preserve_bugs[std.mem.indexOf(u8, without_preserve_bugs, "\xacgame_mode_id").? - 1] = 0x8b;
+    try expectRejected(without_preserve_bugs, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, quest_fail_retry_count, detail_preset, violence_disabled, status, typo_dictionary_words, typo_highscore_names");
 
     const trailing = try std.mem.concat(testing.allocator, u8, &.{ payload, "\xc0" });
     defer testing.allocator.free(trailing);
@@ -1365,7 +1359,7 @@ test "reader applies the replay validation rules" {
     defer testing.allocator.free(payload);
 
     const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
-        .{ .needle = "\xaeformat_version\x14", .replacement = "\xaeformat_version\x13", .message = "unsupported replay format version: 19" },
+        .{ .needle = "\xaeformat_version\x15", .replacement = "\xaeformat_version\x14", .message = "unsupported replay format version: 20" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x00", .message = "run.game_mode_id 0 is not a replayable mode" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x03", .message = "run.quest_level must be set for quests and only for quests" },
         .{ .needle = "\xaddetail_preset\x05", .replacement = "\xaddetail_preset\x00", .message = "run.detail_preset must be in 1..5" },

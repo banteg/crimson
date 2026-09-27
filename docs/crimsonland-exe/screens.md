@@ -146,9 +146,6 @@ Recovered staged-reveal globals:
 - Browser launch uses `shell_execute_operation_open` (`0x00471b38`) as the
   `ShellExecuteA` operation string (`"open"`).
 
-- **Rewrite note:** implemented in the Python rewrite for parity (the purchase
-  URL is legacy).
-
 ## Demo trial overlay (demo_trial_overlay_render / 0x004047c0)
 
 - Draws the demo warning panel with remaining trial time and upgrade copy.
@@ -173,8 +170,6 @@ Use Frida to log whenever the overlay is actually rendered:
   - Optional (retail): set `CONFIG.forcePlaytimeMs=2400001` (with `forceDemoInGameplayLoop=true`) to trigger the “trial expired” path immediately.
   - Optional: set `CONFIG.minOverlayLogIntervalMs=250` to log at most ~4 events/sec while the overlay is visible.
 - Copy the JSONL log into the repo under `analysis/frida/raw/` and summarize findings in your session notes.
-- Optional: validate the log against the Python model:
-  - `uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl`
 
 ## Mods / plugin runtime (plugin_runtime_update_and_render)
 

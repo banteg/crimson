@@ -6,7 +6,7 @@ from tests.support.helpers import ScriptedCrand
 
 
 def test_demo_view_update_advances_simulation_time(make_game_state) -> None:
-    state = make_game_state(demo_enabled=True)
+    state = make_game_state()
     view = DemoView(state)
     view._demo_variant_index = 0
     view._demo_mode_start()
@@ -20,7 +20,7 @@ def test_demo_view_update_advances_simulation_time(make_game_state) -> None:
 
 
 def test_demo_view_draw_is_noop_after_close(make_game_state) -> None:
-    state = make_game_state(demo_enabled=True)
+    state = make_game_state()
     view = DemoView(state)
 
     view.close()
@@ -28,7 +28,7 @@ def test_demo_view_draw_is_noop_after_close(make_game_state) -> None:
 
 
 def test_demo_variant_rng_setup_uses_exact_native_callers(make_game_state, mocker) -> None:
-    state = make_game_state(demo_enabled=True)
+    state = make_game_state()
     view = DemoView(state)
     rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     view._runtime.world.state.rng = rng

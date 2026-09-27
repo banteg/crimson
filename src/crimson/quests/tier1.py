@@ -28,7 +28,7 @@ from .types import QuestContext, SpawnEntry
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ASSAULT_RIFLE,
 )
-def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     edges = edge_midpoints()
     top_left, top_right, bottom_left, _bottom_right = corner_points()
     return [
@@ -46,7 +46,7 @@ def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: b
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.SHOTGUN,
 )
-def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_2_minor_alien_breach(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     center = NATIVE_CENTER
     edges = edge_midpoints()
     entries = [
@@ -120,7 +120,6 @@ def build_1_3_target_practice(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 2000
@@ -159,7 +158,7 @@ def build_1_3_target_practice(
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.FLAMETHROWER,
 )
-def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     top_left, top_right, _bottom_left, _bottom_right = corner_points()
@@ -232,7 +231,7 @@ def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_versi
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.DOCTOR,
 )
-def build_1_5_alien_dens(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_5_alien_dens(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     return [
         spawn(
             Vec2(256.0, 256.0),
@@ -283,7 +282,6 @@ def build_1_6_the_random_factor(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
@@ -334,7 +332,7 @@ def build_1_6_the_random_factor(
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.MONSTER_VISION,
 )
-def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints()
     trigger = 1500
@@ -359,7 +357,7 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext, *, rng: CrandLike, full_ve
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.GAUSS_GUN,
 )
-def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(-256.0, 256.0),
@@ -449,7 +447,7 @@ def build_1_8_alien_squads(ctx: QuestContext, *, rng: CrandLike, full_version: b
     start_weapon_id=WeaponId.PISTOL,
     unlock_perk_id=PerkId.HOT_TEMPERED,
 )
-def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     center = NATIVE_CENTER
     edges = edge_midpoints()
     return [
@@ -547,7 +545,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext, *, rng: CrandLike, full_version
     start_weapon_id=WeaponId.PISTOL,
     unlock_weapon_id=WeaponId.ROCKET_LAUNCHER,
 )
-def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
+def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
     entries = [
         spawn(
             Vec2(float(TERRAIN_SIZE - 256), float(TERRAIN_SIZE // 2)),

@@ -5,7 +5,7 @@ tags:
   - replay
 ---
 
-# Replay format (v20)
+# Replay format (v21)
 
 A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A
@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `20` |
+| `format_version` | int | `21` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -63,7 +63,6 @@ from that commit (modified or new unignored files) appends `.dirty`.
 | `player_count` | int | 1..4; Typ-o and Tutorial require 1 |
 | `hardcore` | bool | |
 | `preserve_bugs` | bool | Native quirks mode |
-| `demo` | bool | Shareware demo build |
 | `quest_fail_retry_count` | int 0..2³¹−1 | Native retry scaling counter |
 | `detail_preset` | int 1..5 | Presentation detail; native presentation code consumes RNG |
 | `violence_disabled` | int 0..255 | Native config byte; likewise |

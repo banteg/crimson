@@ -134,13 +134,7 @@ class QuestsMenuView:
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                 self._panel_open_sfx_played = True
 
-        config = self.state.config
         status = self.state.status
-
-        # The original forcibly clears hardcore in the demo build.
-        if self.state.demo_enabled and config.gameplay.hardcore:
-            config.gameplay.hardcore = False
-            self._dirty = True
 
         if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
             unlock = 49
@@ -299,8 +293,6 @@ class QuestsMenuView:
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             config.gameplay.hardcore = not hardcore
             self._dirty = True
-            if self.state.demo_enabled:
-                config.gameplay.hardcore = False
             return True
         return False
 

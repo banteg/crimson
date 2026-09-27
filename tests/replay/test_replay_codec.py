@@ -95,7 +95,6 @@ def test_replay_codec_roundtrip_all_command_kinds() -> None:
             seed=0x1234,
             player_count=2,
             hardcore=True,
-            demo=True,
             status=RunStatus(quest_unlock_index=12, quest_unlock_index_full=3),
         ),
         ticks=[
@@ -208,7 +207,7 @@ def _noncanonical_payloads() -> dict[str, bytes]:
     reordered["run"] = dict(reversed(list(wire["run"].items())))
 
     missing = dict(wire)
-    missing["run"] = {key: value for key, value in wire["run"].items() if key != "demo"}
+    missing["run"] = {key: value for key, value in wire["run"].items() if key != "preserve_bugs"}
 
     extra = dict(wire)
     extra["run"] = {**wire["run"], "tick_rate": 60}

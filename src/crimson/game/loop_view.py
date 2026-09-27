@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-import webbrowser
-
 from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
 from grim.raylib_api import rl
 from grim.texture_mode import texture_mode
 
 from ..debug import debug_enabled
-from ..demo_trial import demo_trial_overlay_info, tick_demo_trial_timers
-from ..game_modes import GameMode
 from ..gamepad_profile import PadUpgrade, auto_apply_pad_profiles
 from ..input_codes import input_begin_frame, player_gamepad_index
 from ..modes.quest_mode import QuestMode
@@ -17,7 +13,6 @@ from ..render.rtx.mode import RtxRenderMode, cycle_rtx_render_mode
 from ..screens.actions import Route, ScreenAction, ShowQuestOutcome
 from ..screens.transitions import _update_screen_fade
 from ..sim.timing import ftol_ms_i32
-from ..ui.demo_trial_overlay import DEMO_PURCHASE_URL, DemoTrialOverlayInfo, DemoTrialOverlayUi
 from .navigation import ScreenNavigator
 from .resources import GameResources
 from .types import GameplayScreen, GameState
@@ -75,8 +70,6 @@ class GameLoopView:
         self.state = state
         self.navigation = ScreenNavigator(state)
         self.resources = GameResources(state)
-        self._demo_trial_overlay: DemoTrialOverlayUi | None = None
-        self._demo_trial_info: DemoTrialOverlayInfo | None = None
         self._screenshot_requested = False
         self._gamma_shader: rl.Shader | None = None
         self._gamma_gain_loc = -1
@@ -86,13 +79,6 @@ class GameLoopView:
         rl.hide_cursor()
         self.resources.open()
         self.navigation.open()
-
-    def _demo_trial_overlay_view(self) -> DemoTrialOverlayUi:
-        overlay = self._demo_trial_overlay
-        if overlay is None:
-            overlay = DemoTrialOverlayUi(self.state.assets_dir)
-            self._demo_trial_overlay = overlay
-        return overlay
 
     def should_close(self) -> bool:
         return self.state.quit_requested
@@ -118,10 +104,7 @@ class GameLoopView:
             return
 
         self._apply_gamepad_profiles()
-        self._demo_trial_info = None
         self._tick_statistics_playtime(dt)
-        if gameplay is not None and self._update_demo_trial_overlay(dt):
-            return
 
         active = self.state.screens.active
         active.update(dt)
@@ -156,8 +139,6 @@ class GameLoopView:
     def _tick_statistics_playtime(self, dt: float) -> None:
         # Native `_play_time_ms` advances on gameplay frames only (state 9)
         # and is used by the Statistics "played for ... hours ... minutes" row.
-        if self.state.demo_enabled:
-            return
         if self.state.screens.active_gameplay is None:
             return
         delta_ms = ftol_ms_i32(dt)
@@ -180,74 +161,6 @@ class GameLoopView:
         gameplay = self.state.screens.gameplay
         if gameplay is not None:
             gameplay.regenerate_terrain_for_console()
-
-    def _update_demo_trial_overlay(self, dt: float) -> bool:
-        if not self.state.demo_enabled:
-            return False
-        gameplay = self.state.screens.active_gameplay
-
-        mode_raw = self.state.config.gameplay.mode
-        try:
-            mode_id = GameMode(mode_raw)
-        except ValueError:
-            mode_id = GameMode.DEMO
-        quest_level = None
-        match mode_id:
-            case GameMode.QUESTS:
-                quest_level = self.state.config.gameplay.quest_level
-            case _:
-                pass
-
-        current = demo_trial_overlay_info(
-            demo_build=True,
-            game_mode_id=mode_id,
-            global_playtime_ms=int(self.state.status.play_time_ms),
-            quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_level=quest_level,
-        )
-
-        frame_dt = min(float(dt), 0.1)
-        dt_ms = int(frame_dt * 1000.0)
-        used_ms, grace_ms = tick_demo_trial_timers(
-            demo_build=True,
-            game_mode_id=mode_id,
-            overlay_visible=bool(current.visible),
-            global_playtime_ms=int(self.state.status.play_time_ms),
-            quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            dt_ms=int(dt_ms),
-        )
-        if used_ms != int(self.state.status.play_time_ms):
-            self.state.status.play_time_ms = int(used_ms)
-        self.state.demo_trial_elapsed_ms = int(grace_ms)
-
-        info = demo_trial_overlay_info(
-            demo_build=True,
-            game_mode_id=mode_id,
-            global_playtime_ms=int(self.state.status.play_time_ms),
-            quest_grace_elapsed_ms=int(self.state.demo_trial_elapsed_ms),
-            quest_level=quest_level,
-        )
-        self._demo_trial_info = info
-        if not info.visible:
-            return False
-        if gameplay is not None:
-            gameplay.prepare_demo_trial_overlay_frame()
-
-        action = self._demo_trial_overlay_view().update(dt_ms)
-        if action == "purchase":
-            self.state.quit_requested = True
-            try:
-                webbrowser.open(DEMO_PURCHASE_URL)
-            except (OSError, webbrowser.Error):
-                self.state.console.log.log("demo trial: failed to open purchase URL")
-            return True
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or action == "maybe_later":
-            self.navigation.navigate(Route.MENU)
-            self._demo_trial_info = None
-            return True
-
-        return True
 
     def _resolve_gameplay_action(self, gameplay: GameplayScreen, action: ScreenAction | None) -> ScreenAction | None:
         if isinstance(gameplay, QuestMode):
@@ -284,9 +197,6 @@ class GameLoopView:
 
     def _draw_scene_layers(self) -> None:
         self.state.screens.active.draw()
-        info = self._demo_trial_info
-        if info is not None and bool(info.visible):
-            self._demo_trial_overlay_view().draw(info)
         self.state.console.draw()
         self.state.console.draw_fps_counter()
 
@@ -361,8 +271,6 @@ class GameLoopView:
     def close(self) -> None:
         try:
             self.state.screens.close()
-            if self._demo_trial_overlay is not None:
-                self._demo_trial_overlay.close()
             ground = self.state.menu_ground
             if ground is not None:
                 ground.close()

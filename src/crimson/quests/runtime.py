@@ -39,11 +39,10 @@ def build_quest_spawn_table(
     ctx: QuestContext,
     *,
     rng: CrandLike,
-    full_version: bool = True,
 ) -> tuple[SpawnEntry, ...]:
     """Build the quest spawn script from the active startup RNG state."""
 
-    entries = quest.builder(ctx, rng=rng, full_version=full_version)
+    entries = quest.builder(ctx, rng=rng)
     if ctx.hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)

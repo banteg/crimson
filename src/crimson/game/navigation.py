@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from functools import partial
-
 from crimson.screens.chrome import ensure_menu_ground
 from grim.audio import stop_music
 from grim.view import ViewContext
@@ -63,8 +61,8 @@ class ScreenNavigator:
                 self._main_menu()
             case Route.QUIT:
                 self.state.quit_requested = True
-            case Route.DEMO | Route.QUIT_AFTER_DEMO:
-                screens.reset(ScreenEntry(DemoView(self.state, quit_after=action is Route.QUIT_AFTER_DEMO)))
+            case Route.DEMO:
+                screens.reset(ScreenEntry(DemoView(self.state)))
             case Route.PAUSE:
                 assert screens.active_gameplay is not None
                 screens.push(self._panel(action))
@@ -138,11 +136,11 @@ class ScreenNavigator:
             replay_checkpoints=self.state.replay_checkpoints,
         )
         mode_type = {
-            GameMode.QUESTS: partial(QuestMode, shareware_demo=self.state.demo_enabled),
+            GameMode.QUESTS: QuestMode,
             GameMode.SURVIVAL: SurvivalMode,
             GameMode.RUSH: RushMode,
             GameMode.TYPO: TypoShooterMode,
-            GameMode.TUTORIAL: partial(TutorialMode, shareware_demo=self.state.demo_enabled),
+            GameMode.TUTORIAL: TutorialMode,
         }[mode_id]
         mode = mode_type(
             ctx,

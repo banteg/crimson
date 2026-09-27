@@ -22,13 +22,6 @@ from grim.raylib_api import rl
 
 from ..assets_fetch import download_missing_paqs
 from ..debug import set_debug_enabled
-from ..demo_trial import (
-    DEMO_QUEST_GRACE_TIME_MS,
-    DEMO_TOTAL_PLAY_TIME_MS,
-    demo_trial_overlay_info,
-    format_demo_trial_time,
-)
-from ..game_modes import GameMode
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
@@ -132,69 +125,6 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         else:
             console.log.log("Sound frequency adjustment is now disabled.")
 
-    def cmd_demo_trial_set_playtime(args: list[str]) -> None:
-        if len(args) != 1:
-            console.log.log("demoTrialSetPlaytime <ms>")
-            return
-        try:
-            value = int(float(args[0]))
-        except (ValueError, OverflowError):
-            console.log.log("demoTrialSetPlaytime requires a finite number of milliseconds.")
-            return
-        state.status.play_time_ms = max(0, min(value, 0xFFFFFFFF))
-        state.status.save_if_dirty()
-        console.log.log(f"demo trial: playtime={state.status.play_time_ms}ms (total {DEMO_TOTAL_PLAY_TIME_MS}ms)")
-
-    def cmd_demo_trial_set_grace(args: list[str]) -> None:
-        if len(args) != 1:
-            console.log.log("demoTrialSetGrace <ms>")
-            return
-        try:
-            value = int(float(args[0]))
-        except (ValueError, OverflowError):
-            console.log.log("demoTrialSetGrace requires a finite number of milliseconds.")
-            return
-        state.demo_trial_elapsed_ms = max(0, value)
-        console.log.log(f"demo trial: quest grace={state.demo_trial_elapsed_ms}ms (total {DEMO_QUEST_GRACE_TIME_MS}ms)")
-
-    def cmd_demo_trial_reset(_args: list[str]) -> None:
-        state.status.play_time_ms = 0
-        state.status.save_if_dirty()
-        state.demo_trial_elapsed_ms = 0
-        console.log.log("demo trial: timers reset")
-
-    def cmd_demo_trial_info(_args: list[str]) -> None:
-        mode_raw = state.config.gameplay.mode
-        try:
-            mode_id = GameMode(mode_raw)
-        except ValueError:
-            mode_id = GameMode.DEMO
-        quest_level = None
-        match mode_id:
-            case GameMode.QUESTS:
-                quest_level = state.config.gameplay.quest_level
-            case _:
-                pass
-        info = demo_trial_overlay_info(
-            demo_build=bool(state.demo_enabled),
-            game_mode_id=mode_id,
-            global_playtime_ms=int(state.status.play_time_ms),
-            quest_grace_elapsed_ms=int(state.demo_trial_elapsed_ms),
-            quest_level=quest_level,
-        )
-        remaining = format_demo_trial_time(info.remaining_ms)
-        console.log.log(
-            "demo trial: "
-            f"demo={int(state.demo_enabled)} "
-            f"mode={int(mode_id)} "
-            f"quest={(quest_level.text if quest_level is not None else '0.0')} "
-            f"playtime={int(state.status.play_time_ms)}ms "
-            f"grace={int(state.demo_trial_elapsed_ms)}ms "
-            f"visible={int(info.visible)} "
-            f"kind={info.kind} "
-            f"remaining={remaining}",
-        )
-
     def cmd_render_mode(args: list[str]) -> None:
         if len(args) > 1:
             console.log.log("rendermode <classic|rtx>")
@@ -248,10 +178,6 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
         "loadtexture": cmd_load_texture,
         "openurl": cmd_open_url,
         "sndfreqadjustment": cmd_snd_freq_adjustment,
-        "demoTrialSetPlaytime": cmd_demo_trial_set_playtime,
-        "demoTrialSetGrace": cmd_demo_trial_set_grace,
-        "demoTrialReset": cmd_demo_trial_reset,
-        "demoTrialInfo": cmd_demo_trial_info,
         "rendermode": cmd_render_mode,
         "togglertx": cmd_toggle_rtx,
         "gamepads": cmd_gamepads,
@@ -303,7 +229,6 @@ def run_game(config: GameConfig) -> None:
             config=cfg,
             status=status,
             console=console,
-            demo_enabled=config.demo_enabled,
             preserve_bugs=config.preserve_bugs,
             replay_checkpoints=config.replay_checkpoints,
             skip_intro=config.no_intro,

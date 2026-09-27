@@ -145,7 +145,7 @@ def cmd_quests(
     title = quest.title
     ctx = QuestContext(player_count=player_count)
     rng = Crand(seed) if seed is not None else Crand()
-    entries = builder(ctx, rng=rng, full_version=True)
+    entries = builder(ctx, rng=rng)
     if sort:
         entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.pos.x, e.pos.y))
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")
@@ -256,7 +256,6 @@ def cmd_game(
     ),
     fps: int = typer.Option(60, help="target fps"),
     seed: int | None = typer.Option(None, help="rng seed"),
-    demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
     no_intro: bool = typer.Option(False, "--no-intro", help="skip company splashes and intro music"),
     debug: bool = typer.Option(False, "--debug", help="enable debug cheats and overlays"),
     rtx: bool = typer.Option(False, "--rtx", help="enable non-canonical RTX render mode"),
@@ -290,7 +289,6 @@ def cmd_game(
         windowed=windowed,
         fps=fps,
         seed=seed,
-        demo_enabled=demo,
         no_intro=no_intro,
         debug=debug,
         rtx=bool(rtx),

@@ -122,8 +122,7 @@ def _quest_spawn_entries(level: str = "1.1", *, player_count: int = 1, seed: int
         quest,
         ctx,
         rng=Crand(int(seed)),
-        full_version=True,
-    )
+        )
 
 
 class ReplayRngTraceRecorder(PlaybackWalkObserver):

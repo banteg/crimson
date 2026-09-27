@@ -55,7 +55,6 @@ pub const SessionConfig = struct {
             .quest_fail_retry_count = run.quest_fail_retry_count,
             .status_quest_unlock_index = run.status.quest_unlock_index,
             .status_quest_unlock_index_full = run.status.quest_unlock_index_full,
-            .demo_mode_active = run.demo,
         };
         comptime std.debug.assert(replay_codec.weapon_usage_count <= state_mod.weapon_count_size);
         @memcpy(config.status_weapon_usage_counts[0..replay_codec.weapon_usage_count], &run.status.weapon_usage_counts);

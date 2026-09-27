@@ -46,10 +46,6 @@ from ..game.types import GameState
 from .assets import require_runtime_resources
 from .transitions import _draw_screen_fade
 
-# Measured in the shareware/demo attract loop trace:
-# {"event":"demo_mode_start","dt_since_start_ms":23024,"game_state_id":0,"demo_mode_active":0,...}
-MENU_DEMO_IDLE_START_MS = 23_000
-
 
 class MenuView:
     def __init__(self, state: GameState) -> None:
@@ -60,11 +56,8 @@ class MenuView:
         self._selected_index = 0
         self._focus_timer_ms = 0
         self._hovered_index: int | None = None
-        self._full_version = False
         self._transition = ScreenTransition()
         self._transition.duration_ms = 0
-        self._idle_ms = 0
-        self._last_mouse_pos = Vec2()
         self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
@@ -74,11 +67,7 @@ class MenuView:
         layout_w = float(self.state.config.display.width)
         self._menu_screen_width = int(layout_w)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
-        # Shareware gating is controlled by the --demo flag (see GameState.demo_enabled),
-        # not by a persisted config byte.
-        self._full_version = not self.state.demo_enabled
         self._menu_entries = self._menu_entries_for_flags(
-            full_version=self._full_version,
             mods_available=self._mods_available(),
             other_games=self._other_games_enabled(),
         )
@@ -86,10 +75,7 @@ class MenuView:
         self._focus_timer_ms = 0
         self._hovered_index = None
         self._transition.reset()
-        self._idle_ms = 0
         self._cursor_pulse_time = 0.0
-        mouse = canvas.mouse_position()
-        self._last_mouse_pos = Vec2.from_xy(mouse)
         self._panel_open_sfx_played = False
         self._transition.duration_ms = self._menu_max_timeline_ms(
             mods_available=self._mods_available(),
@@ -97,15 +83,13 @@ class MenuView:
         )
         self._init_ground()
         if self.state.audio is not None:
-            theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
-            if self.state.audio.music.active_track != theme:
+            if self.state.audio.music.active_track != "crimson_theme":
                 stop_music(self.state.audio)
-            play_music(self.state.audio, theme)
+            play_music(self.state.audio, "crimson_theme")
         self._is_open = True
 
     def resume(self) -> None:
         self._transition.reset()
-        self._idle_ms = 0
         self._panel_open_sfx_played = False
 
     def close(self) -> None:
@@ -116,8 +100,7 @@ class MenuView:
         self._assert_open()
         if self.state.audio is not None:
             if not self._transition.closing:
-                theme = "crimsonquest" if self.state.demo_enabled else "crimson_theme"
-                play_music(self.state.audio, theme)
+                play_music(self.state.audio, "crimson_theme")
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
@@ -126,25 +109,6 @@ class MenuView:
         if not self._transition.advance(dt_ms):
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             return
-
-        if dt_ms > 0:
-            mouse = canvas.mouse_position()
-            mouse_pos = Vec2.from_xy(mouse)
-            mouse_moved = mouse_pos != self._last_mouse_pos
-            if mouse_moved:
-                self._last_mouse_pos = mouse_pos
-
-            any_key = rl.get_key_pressed() != 0
-            any_click = (
-                rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-                or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT)
-                or rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_MIDDLE)
-            )
-
-            if any_key or any_click or mouse_moved:
-                self._idle_ms = 0
-            else:
-                self._idle_ms += dt_ms
 
         if dt_ms > 0:
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
@@ -184,13 +148,6 @@ class MenuView:
 
         if activated_index is not None:
             self._activate_menu_entry(activated_index)
-        if (
-            (not self._transition.closing)
-            and self.state.demo_enabled
-            and self._transition.timeline_ms >= self._transition.duration_ms
-            and self._idle_ms >= MENU_DEMO_IDLE_START_MS
-        ):
-            self._begin_close_transition(Route.DEMO)
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
 
@@ -246,20 +203,19 @@ class MenuView:
 
     def _begin_quit_transition(self) -> None:
         self.state.menu_sign_locked = False
-        self._begin_close_transition(Route.QUIT_AFTER_DEMO if self.state.demo_enabled else Route.QUIT)
+        self._begin_close_transition(Route.QUIT)
 
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self.state)
 
     def _menu_entries_for_flags(
         self,
-        full_version: bool,
         mods_available: bool,
         other_games: bool,
     ) -> list[MenuEntry]:
-        rows = self._menu_label_rows(full_version, other_games)
+        rows = self._menu_label_rows(other_games)
         slot_ys = self._menu_slot_ys(other_games, self._widescreen_y_shift)
-        active = self._menu_slot_active(full_version, mods_available, other_games)
+        active = self._menu_slot_active(mods_available, other_games)
         entries: list[MenuEntry] = []
         for slot, (row, y, enabled) in enumerate(zip(rows, slot_ys, active, strict=False)):
             if not enabled:
@@ -268,9 +224,9 @@ class MenuView:
         return entries
 
     @staticmethod
-    def _menu_label_rows(_full_version: bool, other_games: bool) -> list[int]:
+    def _menu_label_rows(other_games: bool) -> list[int]:
         # Label atlas rows in ui_itemTexts.jaz:
-        #   0 BUY NOW (unused in rewrite), 1 PLAY GAME, 2 OPTIONS, 3 STATISTICS, 4 MODS,
+        #   0 BUY NOW (shareware only), 1 PLAY GAME, 2 OPTIONS, 3 STATISTICS, 4 MODS,
         #   5 OTHER GAMES, 6 QUIT, 7 BACK
         top = 4
         if other_games:
@@ -293,7 +249,6 @@ class MenuView:
 
     @staticmethod
     def _menu_slot_active(
-        _full_version: bool,
         mods_available: bool,
         other_games: bool,
     ) -> list[bool]:

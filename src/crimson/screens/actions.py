@@ -32,7 +32,6 @@ class Route(Enum):
     END_NOTE = auto()
     DEMO = auto()
     QUIT = auto()
-    QUIT_AFTER_DEMO = auto()
 
 
 class StartRun(msgspec.Struct, frozen=True):

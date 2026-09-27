@@ -38,7 +38,6 @@ class GameConfig(msgspec.Struct, frozen=True):
     windowed: bool | None = None
     fps: int = 60
     seed: int | None = None
-    demo_enabled: bool = False
     no_intro: bool = False
     debug: bool = False
     rtx: bool = False
@@ -74,8 +73,6 @@ class GameplayScreen(Screen, PauseBackground, Protocol):
 
     def console_elapsed_ms(self) -> float: ...
 
-    def prepare_demo_trial_overlay_frame(self) -> None: ...
-
     def regenerate_terrain_for_console(self) -> None: ...
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None: ...
@@ -89,7 +86,6 @@ class GameState(msgspec.Struct):
     config: CrimsonConfig
     status: GameStatus
     console: ConsoleState
-    demo_enabled: bool
     preserve_bugs: bool
     replay_checkpoints: bool
     resources: RuntimeResources | None
@@ -107,7 +103,6 @@ class GameState(msgspec.Struct):
     quest_fail_retry_count: int = 0
     terrain_regenerate_requested: bool = False
     survival_elapsed_ms: float = 0.0
-    demo_trial_elapsed_ms: int = 0
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False

@@ -198,7 +198,6 @@ class PlayGameMenuView(PanelMenuView):
         if player_count > len(self._PLAYER_COUNT_LABELS):
             player_count = len(self._PLAYER_COUNT_LABELS)
         quest_unlock = int(status.quest_unlock_index)
-        full_version = not self.state.demo_enabled
 
         quests_total = self._quests_total_played()
         rush_total = int(status.mode_play_count_for_mode(GameMode.RUSH))
@@ -211,7 +210,7 @@ class PlayGameMenuView(PanelMenuView):
         y_step = 28.0 if tight_spacing else 32.0
         y_start = 26.0 if tight_spacing else 32.0
 
-        has_typo = tight_spacing and full_version and player_count == 1
+        has_typo = tight_spacing and player_count == 1
         show_tutorial = player_count == 1
 
         entries: list[_PlayGameModeEntry] = []

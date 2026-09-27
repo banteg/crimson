@@ -193,26 +193,6 @@ Outputs:
 - `analysis/frida/player_unknown_offsets.json` — hot unknown player offsets, if tracker ran.
 - `analysis/frida/unmapped_calls.json` — callsites we couldn’t map to functions.
 
-Optional: validate `demo_trial_overlay_trace.jsonl` (or the reduced `facts.jsonl`) against the Python demo trial model:
-
-```bash
-uv run scripts/demo_trial_overlay_validate.py analysis/frida/raw/demo_trial_overlay_trace.jsonl
-```
-
-Note: the validator exits non-zero if the trace captured **zero** `demo_trial_overlay_render` events.
-
-Print representative events:
-
-```bash
-uv run scripts/demo_trial_overlay_validate.py --samples 3 analysis/frida/raw/demo_trial_overlay_trace.jsonl
-```
-
-Shortcut:
-
-```bash
-just demo-trial-validate
-```
-
 Optional: summarize `demo_idle_threshold_trace.jsonl` (or the reduced `facts.jsonl`) to get the idle threshold:
 
 ```bash
