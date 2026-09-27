@@ -146,8 +146,6 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
         full_version=True,
     )
     env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,

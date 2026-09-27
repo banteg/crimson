@@ -5,7 +5,7 @@ import msgspec
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
-from ...terrain_slots import TERRAIN_SIZE
+from ...sim.state_types import TERRAIN_SIZE
 
 
 class ViewTransform(msgspec.Struct, frozen=True):

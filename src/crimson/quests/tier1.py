@@ -6,7 +6,7 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
-from ..terrain_slots import TERRAIN_SIZE
+from ..sim.state_types import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,

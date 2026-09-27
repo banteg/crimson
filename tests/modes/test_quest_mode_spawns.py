@@ -13,7 +13,6 @@ def test_tick_quest_mode_spawns_advances_timeline_when_creatures_active() -> Non
         entries,
         quest_spawn_timeline_ms=1000.0,
         frame_dt_ms=16.0,
-        terrain_width=1024.0,
         creatures_none_active=False,
         no_creatures_timer_ms=123.0,
     )
@@ -39,7 +38,6 @@ def test_tick_quest_mode_spawns_advances_timeline_when_table_not_empty() -> None
         entries,
         quest_spawn_timeline_ms=1000.0,
         frame_dt_ms=16.0,
-        terrain_width=1024.0,
         creatures_none_active=True,
         no_creatures_timer_ms=0.0,
     )
@@ -57,7 +55,6 @@ def test_tick_quest_mode_spawns_freezes_timeline_when_idle_complete() -> None:
         entries,
         quest_spawn_timeline_ms=1000.0,
         frame_dt_ms=16.0,
-        terrain_width=1024.0,
         creatures_none_active=True,
         no_creatures_timer_ms=0.0,
     )
@@ -83,7 +80,6 @@ def test_tick_quest_mode_spawns_can_fire_entries_after_timeline_advance() -> Non
         entries,
         quest_spawn_timeline_ms=999.0,
         frame_dt_ms=2.0,
-        terrain_width=1024.0,
         creatures_none_active=True,
         no_creatures_timer_ms=0.0,
     )

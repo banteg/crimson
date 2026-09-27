@@ -23,8 +23,6 @@ def test_tick_rush_mode_spawns_no_trigger() -> None:
         rng,
         player_count=1,
         survival_elapsed_ms=0,
-        terrain_width=1024.0,
-        terrain_height=1024.0,
     )
 
     assert_float_close(cooldown, 84.0)
@@ -71,8 +69,6 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
         rng,
         player_count=1,
         survival_elapsed_ms=0,
-        terrain_width=1024.0,
-        terrain_height=1024.0,
     )
 
     assert_float_close(cooldown, 249.0)
@@ -126,8 +122,6 @@ def test_tick_rush_mode_spawns_uses_native_upward_rounded_sine_scale() -> None:
         rng,
         player_count=1,
         survival_elapsed_ms=63,
-        terrain_width=1024.0,
-        terrain_height=1024.0,
     )
 
     assert spawns[0].tint is not None
@@ -143,8 +137,6 @@ def test_tick_rush_mode_spawns_uses_exact_native_callers() -> None:
         rng,
         player_count=1,
         survival_elapsed_ms=0,
-        terrain_width=1024.0,
-        terrain_height=1024.0,
     )
 
     assert [record.caller for record in rng.records_since()] == [
@@ -165,8 +157,6 @@ def test_tick_rush_mode_spawns_loops_when_cooldown_is_very_negative() -> None:
         rng,
         player_count=1,
         survival_elapsed_ms=0,
-        terrain_width=1024.0,
-        terrain_height=1024.0,
     )
 
     assert_float_close(cooldown, 249.0)

@@ -109,7 +109,7 @@ def test_rand_survival_spawn_pos_uses_exact_native_callers(
 ) -> None:
     rng = ScriptedCrand([edge_draw, coord_draw])
 
-    pos = rand_survival_spawn_pos(rng, terrain_width=1024, terrain_height=1024, callers=callers)
+    pos = rand_survival_spawn_pos(rng, callers=callers)
 
     assert_float_close(pos.x, expected_pos[0])
     assert_float_close(pos.y, expected_pos[1])
@@ -125,8 +125,6 @@ def test_tick_survival_wave_spawns_no_trigger() -> None:
         player_count=2,
         survival_elapsed_ms=0.0,
         player_experience=0,
-        terrain_width=1024,
-        terrain_height=1024,
     )
 
     assert_float_close(cooldown, 68.0)
@@ -143,8 +141,6 @@ def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
         player_count=1,
         survival_elapsed_ms=0.0,
         player_experience=0,
-        terrain_width=1024,
-        terrain_height=1024,
     )
 
     assert_float_close(cooldown, 499.0)
@@ -168,8 +164,6 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
         player_count=1,
         survival_elapsed_ms=905400.0,  # 500 - (elapsed/0x708) == -3
         player_experience=0,
-        terrain_width=1024,
-        terrain_height=1024,
     )
 
     assert_float_close(cooldown, 0.0)
@@ -195,8 +189,6 @@ def test_tick_survival_wave_spawns_uses_distinct_extra_and_main_position_callers
         player_count=1,
         survival_elapsed_ms=905400.0,
         player_experience=0,
-        terrain_width=1024,
-        terrain_height=1024,
     )
 
     position_callers = [
@@ -229,8 +221,6 @@ def test_tick_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> Non
         player_count=1,
         survival_elapsed_ms=905400.0,  # interval branch resolves to 1ms after extras
         player_experience=0,
-        terrain_width=1024,
-        terrain_height=1024,
     )
 
     # Native loops while cooldown < 0, so -2 with +1 interval runs two iterations.

@@ -101,8 +101,6 @@ class SpawnPlanView:
         spawn_id = self._template_ids[self._index]
         rng = Crand(self._seed)
         env = SpawnEnv(
-            terrain_width=1024.0,
-            terrain_height=1024.0,
             demo_mode_active=self._demo_mode_active,
             hardcore=self._hardcore,
             quest_fail_retry_count=self._quest_fail_retry_count,

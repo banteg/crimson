@@ -17,7 +17,7 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
-from ..terrain_slots import TERRAIN_SIZE
+from ..sim.state_types import TERRAIN_SIZE
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (

@@ -31,7 +31,6 @@ from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
-from ..terrain_slots import TERRAIN_SIZE
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
@@ -256,8 +255,6 @@ class WorldState(msgspec.Struct):
         preserve_bugs: bool = False,
     ) -> WorldState:
         spawn_env = SpawnEnv(
-            terrain_width=TERRAIN_SIZE,
-            terrain_height=TERRAIN_SIZE,
             demo_mode_active=demo_mode_active,
             hardcore=hardcore,
             quest_fail_retry_count=int(quest_fail_retry_count),

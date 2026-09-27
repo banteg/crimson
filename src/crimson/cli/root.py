@@ -156,8 +156,6 @@ def cmd_quests(
     plan_cache: dict[SpawnId, tuple[int, int]] = {}
     if show_plan:
         env = SpawnEnv(
-            terrain_width=float(width),
-            terrain_height=float(height),
             demo_mode_active=True,
             hardcore=False,
             quest_fail_retry_count=0,
@@ -367,8 +365,6 @@ def cmd_spawn_plan(
     seed: str = typer.Option("0xBEEF", help="MSVCRT rand() seed (e.g. 0xBEEF)"),
     pos: str = typer.Option("512,512", help="spawn position as 'x,y'"),
     heading: float = typer.Option(0.0, help="heading (radians)"),
-    terrain_w: float = typer.Option(1024.0, help="terrain width"),
-    terrain_h: float = typer.Option(1024.0, help="terrain height"),
     demo_mode_active: bool = typer.Option(True, help="when true, burst effect is skipped"),
     hardcore: bool = typer.Option(False, help="hardcore mode"),
     quest_fail_retry_count: int = typer.Option(0, help="quest fail retry count"),
@@ -383,8 +379,6 @@ def cmd_spawn_plan(
     rng = Crand(_parse_int_auto(seed))
     spawn_pos = _parse_vec2(pos)
     env = SpawnEnv(
-        terrain_width=terrain_w,
-        terrain_height=terrain_h,
         demo_mode_active=demo_mode_active,
         hardcore=hardcore,
         quest_fail_retry_count=quest_fail_retry_count,
@@ -400,8 +394,6 @@ def cmd_spawn_plan(
             "heading": heading,
             "seed": _parse_int_auto(seed),
             "env": {
-                "terrain_width": terrain_w,
-                "terrain_height": terrain_h,
                 "demo_mode_active": demo_mode_active,
                 "hardcore": hardcore,
                 "quest_fail_retry_count": quest_fail_retry_count,
@@ -424,8 +416,7 @@ def cmd_spawn_plan(
         "env="
         f"demo_mode_active={demo_mode_active} "
         f"hardcore={hardcore} "
-        f"quest_fail_retry_count={quest_fail_retry_count} "
-        f"terrain={terrain_w:.0f}x{terrain_h:.0f}",
+        f"quest_fail_retry_count={quest_fail_retry_count}",
     )
     typer.echo(
         f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}",

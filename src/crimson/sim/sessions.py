@@ -20,7 +20,6 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
-from ..terrain_slots import TERRAIN_SIZE
 from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..weapon_runtime import weapon_assign_player
@@ -142,8 +141,6 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
         player_count=len(ctx.world.players),
         survival_elapsed_ms=ctx.elapsed_before_ms,
         player_experience=int(player_xp),
-        terrain_width=TERRAIN_SIZE,
-        terrain_height=TERRAIN_SIZE,
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(wave_spawns)
@@ -157,8 +154,6 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
         state.rng,
         player_count=len(ctx.world.players),
         survival_elapsed_ms=int(ctx.elapsed_before_ms),
-        terrain_width=TERRAIN_SIZE,
-        terrain_height=TERRAIN_SIZE,
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(spawns)
@@ -177,7 +172,6 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
         spawn.spawn_entries,
         quest_spawn_timeline_ms=spawn.spawn_timeline_ms,
         frame_dt_ms=dt_ms,
-        terrain_width=ctx.world.spawn_env.terrain_width,
         creatures_none_active=creatures_none_active,
         no_creatures_timer_ms=spawn.no_creatures_timer_ms,
     )

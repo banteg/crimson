@@ -32,8 +32,8 @@ from .perks.state import PerkSelectionState
 from .player_damage import PlayerDeathRuntime
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
+from .sim.state_types import TERRAIN_SIZE
 from .sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
-from .terrain_slots import TERRAIN_SIZE
 from .weapon_runtime import (
     WeaponFireCtx as _WeaponFireCtx,
 )

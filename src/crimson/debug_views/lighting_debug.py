@@ -23,7 +23,7 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
-from ..terrain_slots import TERRAIN_SIZE
+from ..sim.state_types import TERRAIN_SIZE
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import WorldRuntime

@@ -11,8 +11,7 @@ from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..game_modes import GameMode
 from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import BonusPickupEvent, PlayerState
-from ..terrain_slots import TERRAIN_SIZE
+from ..sim.state_types import TERRAIN_SIZE, BonusPickupEvent, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply

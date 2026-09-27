@@ -12,11 +12,10 @@ from grim.geom import Vec2
 from ..creatures.runtime import CreatureAiMode, CreatureState, CreatureTypeId
 from ..creatures.spawn_ids import CreatureFlags
 from ..math_parity import f32
-from ..terrain_slots import TERRAIN_SIZE
 from ..weapon_runtime import init_default_alt_weapon
 from ..weapons import WeaponId
 from .gameplay_state import GameplayState
-from .state_types import PerkCounts, PlayerState
+from .state_types import TERRAIN_SIZE, PerkCounts, PlayerState
 
 if TYPE_CHECKING:
     from .world_state import WorldState

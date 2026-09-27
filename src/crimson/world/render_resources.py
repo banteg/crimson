@@ -17,9 +17,8 @@ from ..creatures.runtime import CreaturePool
 from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
-from ..sim.state_types import PlayerState
+from ..sim.state_types import TERRAIN_SIZE, PlayerState
 from ..sim.terrain_fx import TerrainFxBatch
-from ..terrain_slots import TERRAIN_SIZE
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState

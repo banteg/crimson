@@ -10,7 +10,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome
-from crimson.terrain_slots import TERRAIN_SIZE
+from crimson.sim.state_types import TERRAIN_SIZE
 from crimson.weapons import WeaponId
 from grim.rand import CallerStatic, Crand
 from tests.support.replay_runner_helpers import (

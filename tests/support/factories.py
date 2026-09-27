@@ -12,7 +12,6 @@ from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import ProjectileHitRuntime, ProjectileUpdateOptions
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
-from crimson.terrain_slots import TERRAIN_SIZE
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
@@ -56,11 +55,7 @@ def make_creature_update_options(
     fx_queue_rotated: FxQueueRotated | None = None,
     quest_fail_retry_count: int = 0,
 ) -> CreatureUpdateOptions:
-    width = TERRAIN_SIZE
-    height = TERRAIN_SIZE
     default_env = SpawnEnv(
-        terrain_width=width,
-        terrain_height=height,
         demo_mode_active=bool(state.demo_mode_active),
         hardcore=bool(state.hardcore),
         quest_fail_retry_count=int(quest_fail_retry_count),

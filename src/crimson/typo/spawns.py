@@ -10,7 +10,7 @@ from grim.math import clamp01
 
 from ..creatures.spawn import CreatureTypeId
 from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
-from ..terrain_slots import TERRAIN_SIZE
+from ..sim.state_types import TERRAIN_SIZE
 
 
 class TypoSpawnCall(msgspec.Struct, frozen=True):

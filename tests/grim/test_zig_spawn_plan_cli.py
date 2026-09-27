@@ -11,8 +11,6 @@ from grim.rand import Crand
 
 def test_zig_spawn_plan_json_matches_python_summary() -> None:
     env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,

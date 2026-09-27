@@ -27,8 +27,8 @@ from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.types import quantize_f32
 from ..sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from ..sim.run_spec import RunSpec, RunStatus
+from ..sim.state_types import TERRAIN_SIZE
 from ..sim.world_reset import CreatureSlotResidue
-from ..terrain_slots import TERRAIN_SIZE
 from .canonical_channels import (
     EntitySamplesSnapshot,
     GameFrameRngAdvanceOperation,

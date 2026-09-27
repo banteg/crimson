@@ -6,7 +6,7 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
 from ..perks import PerkId
-from ..terrain_slots import TERRAIN_SIZE
+from ..sim.state_types import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,

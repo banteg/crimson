@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.run_result import RunOutcome
-from crimson.terrain_slots import TERRAIN_SIZE
+from crimson.sim.state_types import TERRAIN_SIZE
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import _blank_tutorial_replay, _run_verify_playback, finish_replay
 

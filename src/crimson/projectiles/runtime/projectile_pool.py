@@ -28,7 +28,7 @@ from ...math_parity import (
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
-from ...terrain_slots import TERRAIN_SIZE
+from ...sim.state_types import TERRAIN_SIZE
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,

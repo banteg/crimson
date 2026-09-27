@@ -101,8 +101,6 @@ def test_spawn_template_stats_match_native(oracle) -> None:
         oracle.call("creature_spawn_template", int(template_id), pos_arg, heading)
 
         env = SpawnEnv(
-            terrain_width=float(_TERRAIN_SIZE),
-            terrain_height=float(_TERRAIN_SIZE),
             demo_mode_active=True,
             hardcore=hardcore,
             quest_fail_retry_count=retries,

@@ -21,7 +21,7 @@ from crimson.dbg.trace import load_trace
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
 from crimson.replay.types import quantize_f32
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from crimson.terrain_slots import TERRAIN_SIZE
+from crimson.sim.state_types import TERRAIN_SIZE
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 

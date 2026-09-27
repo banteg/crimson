@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.spawn import CreatureTypeId
 from crimson.math_parity import f32
-from crimson.terrain_slots import TERRAIN_SIZE
+from crimson.sim.state_types import TERRAIN_SIZE
 from crimson.typo.spawns import tick_typo_spawns
 
 

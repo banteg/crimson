@@ -9,6 +9,9 @@ from ..math_parity import f32
 from ..weapons import WeaponId
 
 PERK_COUNT_SIZE = 0x80
+# `terrain_texture_width`/`terrain_texture_height`, set once by `init_audio_and_terrain`;
+# every run plays in this square arena.
+TERRAIN_SIZE = 1024
 
 
 class PerkCounts(msgspec.Struct):

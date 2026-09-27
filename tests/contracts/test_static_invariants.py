@@ -33,8 +33,6 @@ def test_weapon_table_invariants() -> None:
 def test_spawn_template_child_references_exist() -> None:
     template_ids = {entry.spawn_id for entry in SPAWN_TEMPLATES}
     env = SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,

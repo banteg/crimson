@@ -34,6 +34,7 @@ from ..math_parity import (
     x87_pc24_sub,
 )
 from ..rng_caller_static import RngCallerStatic
+from ..sim.state_types import TERRAIN_SIZE
 from .spawn_ids import (
     HAS_SPAWN_SLOT_FLAG,
     RANDOM_HEADING_SENTINEL,
@@ -681,8 +682,6 @@ def spawn_id_label(spawn_id: SpawnId) -> str:
 
 
 class SpawnEnv(msgspec.Struct, kw_only=True):
-    terrain_width: float
-    terrain_height: float
     demo_mode_active: bool
     hardcore: bool
     quest_fail_retry_count: int
@@ -1374,19 +1373,17 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
 def rand_survival_spawn_pos(
     rng: CrandLike,
     *,
-    terrain_width: int,
-    terrain_height: int,
     callers: SurvivalSpawnPosCallers,
 ) -> Vec2:
     match rng.rand_tagged(callers.edge) & 3:
         case 0:
-            return Vec2(float(rng.rand_tagged(callers.top_x) % terrain_width), -40.0)
+            return Vec2(float(rng.rand_tagged(callers.top_x) % TERRAIN_SIZE), -40.0)
         case 1:
-            return Vec2(float(rng.rand_tagged(callers.bottom_x) % terrain_width), float(terrain_height) + 40.0)
+            return Vec2(float(rng.rand_tagged(callers.bottom_x) % TERRAIN_SIZE), TERRAIN_SIZE + 40.0)
         case 2:
-            return Vec2(-40.0, float(rng.rand_tagged(callers.left_y) % terrain_height))
+            return Vec2(-40.0, float(rng.rand_tagged(callers.left_y) % TERRAIN_SIZE))
         case _:
-            return Vec2(float(terrain_width) + 40.0, float(rng.rand_tagged(callers.right_y) % terrain_height))
+            return Vec2(TERRAIN_SIZE + 40.0, float(rng.rand_tagged(callers.right_y) % TERRAIN_SIZE))
 
 
 def tick_survival_wave_spawns(
@@ -1397,8 +1394,6 @@ def tick_survival_wave_spawns(
     player_count: int,
     survival_elapsed_ms: float,
     player_experience: int,
-    terrain_width: int,
-    terrain_height: int,
 ) -> tuple[float, tuple[CreatureInit, ...]]:
     """Advance survival enemy wave spawning, returning updated cooldown + spawned creatures.
 
@@ -1427,8 +1422,6 @@ def tick_survival_wave_spawns(
             for _ in range(int(extra)):
                 pos = rand_survival_spawn_pos(
                     rng,
-                    terrain_width=terrain_width,
-                    terrain_height=terrain_height,
                     callers=SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
                 )
                 spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
@@ -1439,8 +1432,6 @@ def tick_survival_wave_spawns(
 
         pos = rand_survival_spawn_pos(
             rng,
-            terrain_width=terrain_width,
-            terrain_height=terrain_height,
             callers=SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
         )
         spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
@@ -1673,8 +1664,6 @@ def tick_rush_mode_spawns(
     *,
     player_count: int,
     survival_elapsed_ms: int,
-    terrain_width: float,
-    terrain_height: float,
 ) -> tuple[float, tuple[CreatureInit, ...]]:
     """Advance rush-mode edge wave spawning (pure model of `rush_mode_update` / 0x004072b0)."""
     cooldown = f32(f32(spawn_cooldown) - f32(f32(float(player_count)) * f32(frame_dt_ms)))
@@ -1695,13 +1684,11 @@ def tick_rush_mode_spawns(
 
         elapsed_ms = int(survival_elapsed_ms)
         theta = x87_pc24_mul(float(elapsed_ms), f32(0.001))
-        terrain_width_f = f32(terrain_width)
-        terrain_height_f = f32(terrain_height)
         # 0x00407422..0x00407490: fcos/fsin stay wide into the PC24 `* 256.0f`,
         # then add the PC24 `height * 0.5f`.
-        half_height = x87_pc24_mul(terrain_height_f, 0.5)
+        half_height = x87_pc24_mul(TERRAIN_SIZE, 0.5)
         spawn_right = Vec2(
-            x87_pc24_add(terrain_width_f, 64.0),
+            x87_pc24_add(TERRAIN_SIZE, 64.0),
             x87_pc24_add(x87_pc24_cos_mul(theta, 256.0), half_height),
         )
         spawn_left = Vec2(
@@ -1834,7 +1821,7 @@ def apply_tail(
     c = plan_creatures[primary_idx]
 
     # Demo-burst effect (skipped when demo_mode_active != 0).
-    if not env.demo_mode_active and 0.0 < c.pos.x < env.terrain_width and 0.0 < c.pos.y < env.terrain_height:
+    if not env.demo_mode_active and 0.0 < c.pos.x < TERRAIN_SIZE and 0.0 < c.pos.y < TERRAIN_SIZE:
         plan_effects.append(BurstEffect(pos=c.pos, count=8))
 
     if c.health is not None:

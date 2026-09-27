@@ -52,9 +52,8 @@ from ..perks import PerkId
 from ..player_damage import PlayerDeathRuntime, player_take_damage
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import PlayerState
+from ..sim.state_types import TERRAIN_SIZE, PlayerState
 from ..sim.timing import ftol_ms_i32
-from ..terrain_slots import TERRAIN_SIZE
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .anim import CREATURE_ANIM, creature_anim_advance_phase
 from .damage_runtime import CreatureLethalHandler

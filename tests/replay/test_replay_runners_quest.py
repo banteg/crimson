@@ -11,8 +11,8 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_result import RunOutcome
+from crimson.sim.state_types import TERRAIN_SIZE
 from crimson.sim.world_state import WorldState
-from crimson.terrain_slots import TERRAIN_SIZE
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import (

@@ -4,6 +4,7 @@ import msgspec
 
 from ..creatures.spawn import SpawnTemplateCall
 from ..math_parity import f32
+from ..sim.state_types import TERRAIN_SIZE
 from .types import SpawnEntry
 
 
@@ -12,7 +13,6 @@ def tick_quest_spawn_timeline(
     quest_spawn_timeline_ms: float,
     frame_dt_ms: float,
     *,
-    terrain_width: float,
     creatures_none_active: bool,
     no_creatures_timer_ms: float,
 ) -> tuple[tuple[SpawnEntry, ...], bool, float, tuple[SpawnTemplateCall, ...]]:
@@ -52,7 +52,7 @@ def tick_quest_spawn_timeline(
             break
 
         base_pos = entry.pos
-        offscreen_x = base_pos.x < 0.0 or f32(terrain_width) < base_pos.x
+        offscreen_x = base_pos.x < 0.0 or base_pos.x > TERRAIN_SIZE
 
         for spawn_idx in range(int(entry.count)):
             magnitude = f32(float(spawn_idx * 0x28))
@@ -82,7 +82,6 @@ def tick_quest_mode_spawns(
     quest_spawn_timeline_ms: float,
     frame_dt_ms: float,
     *,
-    terrain_width: float,
     creatures_none_active: bool,
     no_creatures_timer_ms: float,
 ) -> tuple[tuple[SpawnEntry, ...], float, bool, float, tuple[SpawnTemplateCall, ...]]:
@@ -106,7 +105,6 @@ def tick_quest_mode_spawns(
         entries,
         quest_spawn_timeline_ms=timeline_ms,
         frame_dt_ms=dt_ms,
-        terrain_width=terrain_width,
         creatures_none_active=creatures_none_active,
         no_creatures_timer_ms=no_creatures_timer_ms,
     )

@@ -14,9 +14,8 @@ import random
 from crimson.creatures.runtime import CreatureState
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.sessions import MidStepContext
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import TERRAIN_SIZE, PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.terrain_slots import TERRAIN_SIZE
 from crimson.typo.runtime import typo_mid_step
 from crimson.typo.state import reset_typo_state
 from grim.geom import Vec2

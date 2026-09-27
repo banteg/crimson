@@ -335,8 +335,6 @@ def default_spawn_env():
     from crimson.creatures.spawn import SpawnEnv
 
     return SpawnEnv(
-        terrain_width=1024.0,
-        terrain_height=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,

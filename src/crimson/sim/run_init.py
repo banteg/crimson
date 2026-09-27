@@ -11,7 +11,6 @@ from ..quests.runtime import build_quest_spawn_table
 from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..rng_caller_static import RngCallerStatic
-from ..terrain_slots import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
 from .run_spec import RunSpec
@@ -23,6 +22,7 @@ from .session_builders import (
     build_typo_session,
 )
 from .sessions import DeterministicSession, enforce_rush_loadout
+from .state_types import TERRAIN_SIZE
 from .world_reset import CreatureSlotResidue, apply_creature_pool_residue, reset_world_players
 from .world_state import WorldState
 

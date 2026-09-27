@@ -11,10 +11,6 @@ from .rng_caller_static import RngCallerStatic
 if TYPE_CHECKING:
     from .quests.level import QuestLevel
 
-# `terrain_texture_width`/`terrain_texture_height`, set once by `init_audio_and_terrain`;
-# every run plays in this square arena.
-TERRAIN_SIZE = 1024
-
 type TerrainSlotTriplet = tuple[int, int, int]
 
 Q1_TERRAIN_SLOTS: TerrainSlotTriplet = (0, 1, 0)

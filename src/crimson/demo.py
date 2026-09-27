@@ -22,8 +22,8 @@ from .screens.actions import Route
 from .screens.assets import require_runtime_resources
 from .sim.bootstrap import advance_explicit_terrain
 from .sim.input import PlayerInput
-from .sim.state_types import PlayerState
-from .terrain_slots import Q2_TERRAIN_SLOTS, TERRAIN_SIZE, TerrainSlotTriplet
+from .sim.state_types import TERRAIN_SIZE, PlayerState
+from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
