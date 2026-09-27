@@ -1,0 +1,2499 @@
+{
+  "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+  "cases": [
+    {
+      "name": "assume_count",
+      "source_sha256": "1190dea484f517f7ba7e55a5edb4e82d025022a9e742e4c2509ffcf8713d933e",
+      "edits": [
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " __assume(entry->count > 0);"
+        }
+      ],
+      "expected_ratio": 0.3574468085106383,
+      "expected_instructions": 120,
+      "expected_references": [
+        8,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "assume_entry",
+      "source_sha256": "072f25c42011e362383171aebc3b57ac6f2c0000cbe1cebf197101ef1f9dec4f",
+      "edits": [
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " __assume(entry != 0);"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "assume_equal",
+      "source_sha256": "a3bd5d419875f648d7c5c21e579e699a76a081e94184549471c6960b3d9377c5",
+      "edits": [
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " __assume(template_id == &entry->template_id);"
+        }
+      ],
+      "expected_ratio": 0.3574468085106383,
+      "expected_instructions": 120,
+      "expected_references": [
+        8,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "assume_pointer",
+      "source_sha256": "608037795b9c62a5bd6735eefbcf3431404d3f1503348071830cd6152178a22a",
+      "edits": [
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " __assume(template_id != 0);"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "count_phi",
+      "source_sha256": "77c36f50883bafd4c5f6d9ee68d9df0f4f53b9d6970d8e428b4215d531d5f4b9",
+      "edits": [
+        {
+          "start": 1789,
+          "end": 1789,
+          "text": "entry->count > 0 ? "
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": " : 0"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "count_phi_field_assignment",
+      "source_sha256": "9919cfcbe690871f9f3f8a4dfe8a0faf7eee3e3e907a7e6da36cf7a472bfa0d8",
+      "edits": [
+        {
+          "start": 1789,
+          "end": 1789,
+          "text": "0; if (entry->count > 0) template_id = "
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "count_phi_inverse_assignment",
+      "source_sha256": "18dc167b43162231ef28a6b4b5fc64e5eda772505a7d0993eadb1251d2433374",
+      "edits": [
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " if (entry->count <= 0) template_id = 0;"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "count_phi_nested",
+      "source_sha256": "14fd3188bf5cf9baf19d3458544e05da8219cefd367accccbd06d287948d16a3",
+      "edits": [
+        {
+          "start": 1789,
+          "end": 1789,
+          "text": "entry->count > spawn_index ? "
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": " : 0"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "count_phi_sibling",
+      "source_sha256": "a59ce20bb8a52288ffb9513cc452acca3b5834ddc950b802ed0dd9ad1f866de1",
+      "edits": [
+        {
+          "start": 1789,
+          "end": 1789,
+          "text": "entry->count > 0 ? "
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": " : &entry->count"
+        }
+      ],
+      "expected_ratio": 0.3574468085106383,
+      "expected_instructions": 120,
+      "expected_references": [
+        8,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "count_phi_zero_first",
+      "source_sha256": "e06726ef44c59d592fd2ed80353b3fbbf27d8a1a93ba19b32a71d174c0055262",
+      "edits": [
+        {
+          "start": 1789,
+          "end": 1789,
+          "text": "entry->count <= 0 ? 0 : "
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "lazy_pointer",
+      "source_sha256": "fbc585aec01e3707c0a23244d5d3648585cfcacf3a7ebda0263d2eb84c1ace3f",
+      "edits": [
+        {
+          "start": 1789,
+          "end": 1808,
+          "text": "0"
+        },
+        {
+          "start": 1875,
+          "end": 1875,
+          "text": "\n                if (!template_id) template_id = &entry->template_id;"
+        }
+      ],
+      "expected_ratio": 0.8362068965517241,
+      "expected_instructions": 117,
+      "expected_references": [
+        12,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_const_local_entry",
+      "source_sha256": "b0b9d67dc91381eda0321201a69c9912ddeea349519f5dd7030dde82c32d63df",
+      "edits": [
+        {
+          "start": 1774,
+          "end": 1774,
+          "text": "quest_spawn_entry_t::*const field = &quest_spawn_entry_t::template_id; int "
+        },
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "("
+        },
+        {
+          "start": 1797,
+          "end": 1798,
+          "text": "*fi"
+        },
+        {
+          "start": 1799,
+          "end": 1801,
+          "text": ""
+        },
+        {
+          "start": 1802,
+          "end": 1807,
+          "text": ""
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_const_local_relative",
+      "source_sha256": "b11986a84eff13a30d81ea22f8280bfc2a97437a5920a15c98f8fac280addda7",
+      "edits": [
+        {
+          "start": 1774,
+          "end": 1774,
+          "text": "quest_spawn_entry_t::*const field = &quest_spawn_entry_t::template_id; int "
+        },
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "("
+        },
+        {
+          "start": 1797,
+          "end": 1798,
+          "text": "*fi"
+        },
+        {
+          "start": 1799,
+          "end": 1801,
+          "text": ""
+        },
+        {
+          "start": 1802,
+          "end": 1807,
+          "text": ""
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_direct_entry",
+      "source_sha256": "b94fcae853e675a848174ea2062a8fb15bb7fc75b18e30937f0c689116e62f1c",
+      "edits": [
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "("
+        },
+        {
+          "start": 1797,
+          "end": 1797,
+          "text": "*&quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_direct_relative",
+      "source_sha256": "805830d1dabcbe422e5f699e30182a9b445083a12eb3409a25dee0cf07ce80f9",
+      "edits": [
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "("
+        },
+        {
+          "start": 1797,
+          "end": 1797,
+          "text": "*&quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_getter_ref_entry",
+      "source_sha256": "ef878ce131711c3dcf14d5a7e61ca229d1d0c58eb911a5a1d4cc93422381dd60",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\nstatic __inline int &field_ref(quest_spawn_entry_t *entry, int quest_spawn_entry_t::*field) { return entry->*field; }"
+        },
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "field_ref("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_getter_ref_relative",
+      "source_sha256": "e5808d1c4a7f90911ff0c4364752cf91dc4d72bd46b71b0cc6d64c94b26aa59b",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\nstatic __inline int &field_ref(quest_spawn_entry_t *entry, int quest_spawn_entry_t::*field) { return entry->*field; }"
+        },
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "field_ref("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_inline_ref_entry",
+      "source_sha256": "19f6530ae93dc66a4f23556d93dbac4e10a8416325424e564fccafd4c76c6737",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\nstatic __inline int *field_address(quest_spawn_entry_t *entry, int quest_spawn_entry_t::*const &field) { return &(entry->*field); }"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "field_address("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_inline_ref_relative",
+      "source_sha256": "071e1011c26b576445f5083e06957699b33bb9e8899ed742c350b92a3507e1fa",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\nstatic __inline int *field_address(quest_spawn_entry_t *entry, int quest_spawn_entry_t::*const &field) { return &(entry->*field); }"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "field_address("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_inline_value_entry",
+      "source_sha256": "1f9deedf44c88d34524ebccccad846675baab60ec6e1a2b0590c28d5d1e94757",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\nstatic __inline int *field_address(quest_spawn_entry_t *entry, int quest_spawn_entry_t::*field) { return &(entry->*field); }"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "field_address("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_inline_value_relative",
+      "source_sha256": "1366f20cd640bcf88d4541f92dcfb43296e11dba3eb853922e649f30fe64b06e",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\nstatic __inline int *field_address(quest_spawn_entry_t *entry, int quest_spawn_entry_t::*field) { return &(entry->*field); }"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "field_address("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_local_entry",
+      "source_sha256": "889f4547ba855b2fba5d53860c1588617493b313024b5fe25fc107d7369ce568",
+      "edits": [
+        {
+          "start": 1774,
+          "end": 1774,
+          "text": "quest_spawn_entry_t::*field = &quest_spawn_entry_t::template_id; int "
+        },
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "("
+        },
+        {
+          "start": 1797,
+          "end": 1798,
+          "text": "*fi"
+        },
+        {
+          "start": 1799,
+          "end": 1801,
+          "text": ""
+        },
+        {
+          "start": 1802,
+          "end": 1807,
+          "text": ""
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_local_relative",
+      "source_sha256": "bd9fa5673d04d18ad2ab06a298f8c74240730a66646b858def9649c2c2846f6f",
+      "edits": [
+        {
+          "start": 1774,
+          "end": 1774,
+          "text": "quest_spawn_entry_t::*field = &quest_spawn_entry_t::template_id; int "
+        },
+        {
+          "start": 1790,
+          "end": 1790,
+          "text": "("
+        },
+        {
+          "start": 1797,
+          "end": 1798,
+          "text": "*fi"
+        },
+        {
+          "start": 1799,
+          "end": 1801,
+          "text": ""
+        },
+        {
+          "start": 1802,
+          "end": 1807,
+          "text": ""
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_scoped_field_entry",
+      "source_sha256": "ddd5a032e2ce0494c74829ebc0a228f24e5f1efd74c9d05bf41727c319d5a409",
+      "edits": [
+        {
+          "start": 1786,
+          "end": 1786,
+          "text": ";"
+        },
+        {
+          "start": 1787,
+          "end": 1788,
+          "text": "{"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "int quest_spawn_"
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": "_t::*field = &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " template_id = &(entry->*field); }"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_scoped_field_relative",
+      "source_sha256": "890dfa61fba5b0a94276191429b4d7db948c63e29d640d2ef81a1e118528b74d",
+      "edits": [
+        {
+          "start": 1786,
+          "end": 1786,
+          "text": ";"
+        },
+        {
+          "start": 1787,
+          "end": 1788,
+          "text": "{"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "int quest_spawn_"
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": "_t::*field = &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1809,
+          "end": 1809,
+          "text": " template_id = &(entry->*field); }"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_typed_template_entry",
+      "source_sha256": "f6f137ca5d12a5cab85cbc7a38a33224dc2e591809768c1747e3f9cfdb171bd9",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\ntemplate<class T> static __inline T *field_address(quest_spawn_entry_t *entry, T quest_spawn_entry_t::*field) { return &(entry->*field); }"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "field_address("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "member_typed_template_relative",
+      "source_sha256": "5cb34bb8a204b9e2df5511cc24683f82b351aacfcf51df151cdd3b220438ab1d",
+      "edits": [
+        {
+          "start": 430,
+          "end": 430,
+          "text": "\ntemplate<class T> static __inline T *field_address(quest_spawn_entry_t *entry, T quest_spawn_entry_t::*field) { return &(entry->*field); }"
+        },
+        {
+          "start": 1789,
+          "end": 1790,
+          "text": "field_address("
+        },
+        {
+          "start": 1795,
+          "end": 1797,
+          "text": ", &quest_spawn_entry_t::"
+        },
+        {
+          "start": 1808,
+          "end": 1808,
+          "text": ")"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_1_entry",
+      "source_sha256": "ce968578273327d9b1971fdec51913c10039e797e88c9f8d92fccd86b7c36a90",
+      "edits": [
+        {
+          "start": 1770,
+          "end": 1770,
+          "text": "register "
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_1_relative",
+      "source_sha256": "7aa217ccc572e86e9fa31a47705948bb3706081176704b0112168f2a7d80694d",
+      "edits": [
+        {
+          "start": 1770,
+          "end": 1770,
+          "text": "register "
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_2_entry",
+      "source_sha256": "e5ac19c2c601617a3a81aec40cac762d5f23c86f30eb7ace4df8ba220fc55f1c",
+      "edits": [
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_2_relative",
+      "source_sha256": "59a191cb84533362281a8c0fdd48514265ad0e92b97d03a8a5be4bb47eb1960e",
+      "edits": [
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_3_entry",
+      "source_sha256": "f4555fe758e173224eb7a80309365c6bb257ad79207e9aba222b9f50826d8dae",
+      "edits": [
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1770,
+          "end": 1770,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_3_relative",
+      "source_sha256": "eefb943f7d0838c25e6777fe1acbdeb512de23e0b8f72d00a1a5b6596badaabb",
+      "edits": [
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1770,
+          "end": 1770,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_4_entry",
+      "source_sha256": "2173862af49bc9eb7c4658aef9d7104111bcda64919348f6c07c7edc49099a0c",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1573,
+          "end": 1573,
+          "text": " register"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_4_relative",
+      "source_sha256": "6f5f952e0a1706931c2a2faaba848cd5d07ed41a933265730041c5dab788ef8a",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1573,
+          "end": 1573,
+          "text": " register"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_5_entry",
+      "source_sha256": "f5e8804a17f25ef69075185c51d4c73e46ea973c8b5724380d0572c79cccbc70",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1574,
+          "end": 1574,
+          "text": "register "
+        },
+        {
+          "start": 1769,
+          "end": 1769,
+          "text": " register"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_5_relative",
+      "source_sha256": "914b693a9fa6cd55296722879c0b2bd75c8b521220f7bea2d59ff0d791bd2cfd",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1574,
+          "end": 1574,
+          "text": "register "
+        },
+        {
+          "start": 1769,
+          "end": 1769,
+          "text": " register"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_6_entry",
+      "source_sha256": "1e728fead6c5985458fbb665c58ba376f365249a46e6bf9b5bda53cf91edcd67",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1574,
+          "end": 1574,
+          "text": "register "
+        },
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_6_relative",
+      "source_sha256": "e65b7dde79194a685c01930d66fcaf859e33cda20df542d481824d0d3dbcee7c",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1574,
+          "end": 1574,
+          "text": "register "
+        },
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_7_entry",
+      "source_sha256": "2ada9de9a538eecf9866a1a0b4c8481fb6f0b7e4c308f5a8af7501796f5141e3",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1574,
+          "end": 1574,
+          "text": "register "
+        },
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1770,
+          "end": 1770,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "register_7_relative",
+      "source_sha256": "db4521450d45758fe68b2e48b0e918b8ed42fe34b660cd0e3fc5f928d2e44196",
+      "edits": [
+        {
+          "start": 967,
+          "end": 967,
+          "text": "register "
+        },
+        {
+          "start": 1574,
+          "end": 1574,
+          "text": "register "
+        },
+        {
+          "start": 1705,
+          "end": 1705,
+          "text": "register "
+        },
+        {
+          "start": 1770,
+          "end": 1770,
+          "text": "register "
+        },
+        {
+          "start": 1821,
+          "end": 1821,
+          "text": " register"
+        },
+        {
+          "start": 2636,
+          "end": 2636,
+          "text": "((float *)t"
+        },
+        {
+          "start": 2637,
+          "end": 2638,
+          "text": "mpla"
+        },
+        {
+          "start": 2639,
+          "end": 2641,
+          "text": "e_id)["
+        },
+        {
+          "start": 2642,
+          "end": 2650,
+          "text": "1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_index_both",
+      "source_sha256": "ed59bb1f17b10add345d692cd62e6704fdbe8e20b202dbf8b5754009364c5328",
+      "edits": [
+        {
+          "start": 157,
+          "end": 157,
+          "text": "union { struct { "
+        },
+        {
+          "start": 164,
+          "end": 164,
+          "text": ", y; }; float values[2]; }"
+        },
+        {
+          "start": 176,
+          "end": 177,
+          "text": "&operator[](int i) { return values[i]"
+        },
+        {
+          "start": 178,
+          "end": 178,
+          "text": " }"
+        },
+        {
+          "start": 1896,
+          "end": 1896,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 1911,
+          "end": 1913,
+          "text": ")[0]"
+        },
+        {
+          "start": 1975,
+          "end": 1975,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 1990,
+          "end": 1992,
+          "text": ")[0]"
+        },
+        {
+          "start": 2022,
+          "end": 2024,
+          "text": "[1]"
+        },
+        {
+          "start": 2115,
+          "end": 2117,
+          "text": "[1]"
+        },
+        {
+          "start": 2127,
+          "end": 2129,
+          "text": "[1]"
+        },
+        {
+          "start": 2204,
+          "end": 2206,
+          "text": "[0]"
+        },
+        {
+          "start": 2297,
+          "end": 2299,
+          "text": "[0]"
+        },
+        {
+          "start": 2309,
+          "end": 2311,
+          "text": "[0]"
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": "[0]"
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2445,
+          "text": ")[0]"
+        },
+        {
+          "start": 2473,
+          "end": 2475,
+          "text": "[1]"
+        },
+        {
+          "start": 2478,
+          "end": 2478,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2493,
+          "end": 2495,
+          "text": ")[1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_index_offset",
+      "source_sha256": "c0c80f9e3df19bbab2a90c086bbb5ab2895500707cd6d909b667137c47be0c03",
+      "edits": [
+        {
+          "start": 157,
+          "end": 157,
+          "text": "union { struct { "
+        },
+        {
+          "start": 164,
+          "end": 164,
+          "text": ", y; }; float values[2]; }"
+        },
+        {
+          "start": 176,
+          "end": 177,
+          "text": "&operator[](int i) { return values[i]"
+        },
+        {
+          "start": 178,
+          "end": 178,
+          "text": " }"
+        },
+        {
+          "start": 2022,
+          "end": 2024,
+          "text": "[1]"
+        },
+        {
+          "start": 2115,
+          "end": 2117,
+          "text": "[1]"
+        },
+        {
+          "start": 2127,
+          "end": 2129,
+          "text": "[1]"
+        },
+        {
+          "start": 2204,
+          "end": 2206,
+          "text": "[0]"
+        },
+        {
+          "start": 2297,
+          "end": 2299,
+          "text": "[0]"
+        },
+        {
+          "start": 2309,
+          "end": 2311,
+          "text": "[0]"
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": "[0]"
+        },
+        {
+          "start": 2473,
+          "end": 2475,
+          "text": "[1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_index_position",
+      "source_sha256": "38602b5b3b98c74812dfba93dfeda8e03c72ac887daf08e529fffb11c214f1cf",
+      "edits": [
+        {
+          "start": 157,
+          "end": 157,
+          "text": "union { struct { "
+        },
+        {
+          "start": 164,
+          "end": 164,
+          "text": ", y; }; float values[2]; }"
+        },
+        {
+          "start": 176,
+          "end": 177,
+          "text": "&operator[](int i) { return values[i]"
+        },
+        {
+          "start": 178,
+          "end": 178,
+          "text": " }"
+        },
+        {
+          "start": 1896,
+          "end": 1896,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 1911,
+          "end": 1913,
+          "text": ")[0]"
+        },
+        {
+          "start": 1975,
+          "end": 1975,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 1990,
+          "end": 1992,
+          "text": ")[0]"
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2445,
+          "text": ")[0]"
+        },
+        {
+          "start": 2478,
+          "end": 2478,
+          "text": "(*(quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2493,
+          "end": 2495,
+          "text": ")[1]"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_0",
+      "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "edits": [],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_1",
+      "source_sha256": "a8ebace7724bd12029210f7e43680e53ad19eee838392cb7d2101e7fbb39b101",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_2",
+      "source_sha256": "3e1a5725e510bf383c1b837ec4279b0e024bd6614193e056691326e6016c17c0",
+      "edits": [
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_3",
+      "source_sha256": "ffdbf167bb543ec3481f527e21d7662afe2ed8fc6c57521a89325bb6380141d3",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_4",
+      "source_sha256": "e08bc2050439bfa574522c11deacab55281b2109b9a89ed48a17a63f08e9d43b",
+      "edits": [
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_5",
+      "source_sha256": "d0ffd2c882a223622801a7e92bcbf0b301add31ee18f0cc8c433d7f7d452f9b0",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_6",
+      "source_sha256": "9cc90816e243b763f75cafd82460c6cf2f330474de2d4285c93c6e369e11f86a",
+      "edits": [
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        },
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_scalar_7",
+      "source_sha256": "10a35cc5013b2ce8daec6665d5d03c21c82b48ac620898588ea630dbeb7a0114",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        },
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_0",
+      "source_sha256": "8d1212d78b6cc042702c87bf5b898b401d3a3728a26448846a192afccb94392f",
+      "edits": [
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_1",
+      "source_sha256": "159b128a17769bac9ad264d20f4eeb7252c7c10de5e01bb8b92eb4fb6a6d2153",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.9122807017543859,
+      "expected_instructions": 113,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_2",
+      "source_sha256": "cec03c1924e03fbc8ac46773ee9ab514d371283b72a610cd70b3fdd31276ed71",
+      "edits": [
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.7672413793103449,
+      "expected_instructions": 117,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_3",
+      "source_sha256": "910f6305037cb786d82ac4ad019a2ae16d39610165275e2f86be1b3e2835f48b",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.7672413793103449,
+      "expected_instructions": 117,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_4",
+      "source_sha256": "208d8a4ba036729c1a3f716123062c1bce24dad6ad210f9de1cc5d56ec39e627",
+      "edits": [
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.8017241379310345,
+      "expected_instructions": 117,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_5",
+      "source_sha256": "42896077665980afdb3c0c4de68bf0586a88060358d6085e3886e52f181605ee",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.8017241379310345,
+      "expected_instructions": 117,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_6",
+      "source_sha256": "72424ba849578b0987edaacc5ae920236e0ff8f7458745df33b8f6fa8a8dbb63",
+      "edits": [
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        },
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.7542372881355932,
+      "expected_instructions": 121,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "vector_boundary_vector_7",
+      "source_sha256": "47a9cfeb9cc26ff101bdf354bb00d9edeb7e5666716efc56a5524cb76705bc2f",
+      "edits": [
+        {
+          "start": 206,
+          "end": 206,
+          "text": "const "
+        },
+        {
+          "start": 212,
+          "end": 212,
+          "text": "&"
+        },
+        {
+          "start": 221,
+          "end": 221,
+          "text": "const "
+        },
+        {
+          "start": 227,
+          "end": 227,
+          "text": "&"
+        },
+        {
+          "start": 309,
+          "end": 315,
+          "text": ""
+        },
+        {
+          "start": 337,
+          "end": 338,
+          "text": ""
+        },
+        {
+          "start": 365,
+          "end": 372,
+          "text": ""
+        },
+        {
+          "start": 392,
+          "end": 392,
+          "text": "t resul"
+        },
+        {
+          "start": 419,
+          "end": 419,
+          "text": "; return result"
+        },
+        {
+          "start": 2395,
+          "end": 2397,
+          "text": ""
+        },
+        {
+          "start": 2398,
+          "end": 2416,
+          "text": "="
+        },
+        {
+          "start": 2423,
+          "end": 2425,
+          "text": ""
+        },
+        {
+          "start": 2428,
+          "end": 2428,
+          "text": "*(const quest_timeline_vec2_t *)&"
+        },
+        {
+          "start": 2443,
+          "end": 2496,
+          "text": ""
+        }
+      ],
+      "expected_ratio": 0.7542372881355932,
+      "expected_instructions": 121,
+      "expected_references": [
+        13,
+        0,
+        0
+      ]
+    }
+  ]
+}

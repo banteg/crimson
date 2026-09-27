@@ -1,0 +1,342 @@
+{
+  "verifier_sha256": "82004f8f9c251d154aa4b77a000f3d8c9ec07dddfc8b20b11ce25305ad28a77c",
+  "images": {
+    "1.9.1": {
+      "package": "CrimsonlandSetup-2003.exe",
+      "package_sha256": "f3f85f1ea647b5173583d49eea80cba28fd449ba84d90736b4e845ff082e6e2b",
+      "loader": {
+        "table_offset": 7240327,
+        "header_offset": 7235704,
+        "offset_delta": 216068
+      },
+      "image_sha256": "4893b64fb1468c08dd2a21e2ab02fd8b3984280e8cde59b4a37921b5f876edc1",
+      "start": "0x430aa0",
+      "size": 368,
+      "body_sha256": "b004a411e24999f933c0c22f9b2de07ff123dcd519f0c69e2e791c9eb4f8dce2",
+      "instruction_count": 115,
+      "address_masked_instruction_sha256": "6dc854b456ac54783b0ff2c62f6cc008f296eeda40f626c490c74a3e14940ba2",
+      "pointer_triplet_offset": 164,
+      "rich_records": [
+        {
+          "product": 25,
+          "build": 9210,
+          "count": 4
+        },
+        {
+          "product": 4,
+          "build": 8447,
+          "count": 2
+        },
+        {
+          "product": 12,
+          "build": 7291,
+          "count": 2
+        },
+        {
+          "product": 11,
+          "build": 8047,
+          "count": 10
+        },
+        {
+          "product": 14,
+          "build": 7299,
+          "count": 31
+        },
+        {
+          "product": 10,
+          "build": 8047,
+          "count": 131
+        },
+        {
+          "product": 29,
+          "build": 9178,
+          "count": 10
+        },
+        {
+          "product": 18,
+          "build": 8444,
+          "count": 1
+        },
+        {
+          "product": 0,
+          "build": 0,
+          "count": 21
+        },
+        {
+          "product": 19,
+          "build": 8034,
+          "count": 9
+        },
+        {
+          "product": 1,
+          "build": 0,
+          "count": 112
+        },
+        {
+          "product": 11,
+          "build": 8966,
+          "count": 23
+        },
+        {
+          "product": 6,
+          "build": 1735,
+          "count": 1
+        }
+      ]
+    },
+    "1.9.8": {
+      "package": "CrimsonlandSetup-2004.exe",
+      "package_sha256": "3be3fc79f2d5611c2bb5820035f29b4bced1e6410d0a2af14ddf73ddbdda8a2d",
+      "loader": {
+        "table_offset": 7220415,
+        "header_offset": 7008530,
+        "offset_delta": 200196
+      },
+      "image_sha256": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
+      "start": "0x4338c0",
+      "size": 367,
+      "body_sha256": "f5070f9c326d692dab60ec137ec703a9cafed26c87fc81514ab32560b9b0d5dc",
+      "instruction_count": 113,
+      "address_masked_instruction_sha256": "714d759d12a9af4b15f15f08aeaa199a468aa1ddd4dad7cb1f119640538624fd",
+      "pointer_triplet_offset": null,
+      "rich_records": [
+        {
+          "product": 25,
+          "build": 9210,
+          "count": 4
+        },
+        {
+          "product": 4,
+          "build": 8447,
+          "count": 2
+        },
+        {
+          "product": 12,
+          "build": 7291,
+          "count": 2
+        },
+        {
+          "product": 11,
+          "build": 8047,
+          "count": 10
+        },
+        {
+          "product": 14,
+          "build": 7299,
+          "count": 32
+        },
+        {
+          "product": 10,
+          "build": 8047,
+          "count": 136
+        },
+        {
+          "product": 29,
+          "build": 9178,
+          "count": 10
+        },
+        {
+          "product": 18,
+          "build": 8444,
+          "count": 1
+        },
+        {
+          "product": 0,
+          "build": 0,
+          "count": 21
+        },
+        {
+          "product": 19,
+          "build": 8022,
+          "count": 4
+        },
+        {
+          "product": 19,
+          "build": 8034,
+          "count": 13
+        },
+        {
+          "product": 1,
+          "build": 0,
+          "count": 119
+        },
+        {
+          "product": 49,
+          "build": 9044,
+          "count": 24
+        },
+        {
+          "product": 6,
+          "build": 1735,
+          "count": 1
+        }
+      ]
+    },
+    "1.9.9": {
+      "package": "cland199.zip",
+      "package_sha256": "deeb915660fdc78df6eeff343aa7a5c894704eac1b04c71a69a44692de401522",
+      "loader": {
+        "table_offset": 234516,
+        "header_offset": 6553730,
+        "offset_delta": 183812
+      },
+      "image_sha256": "8f4c81a2e06f8d75867516d77929510da272b98ad35737da6fcd93ad56d1e0cf",
+      "start": "0x434370",
+      "size": 368,
+      "body_sha256": "821503d39ea3b589ec1c67522e8df2aa7ba73ca26081c4d58a1a0ce1bf989047",
+      "instruction_count": 115,
+      "address_masked_instruction_sha256": "6dc854b456ac54783b0ff2c62f6cc008f296eeda40f626c490c74a3e14940ba2",
+      "pointer_triplet_offset": 164,
+      "rich_records": [
+        {
+          "product": 25,
+          "build": 9210,
+          "count": 4
+        },
+        {
+          "product": 4,
+          "build": 8447,
+          "count": 2
+        },
+        {
+          "product": 12,
+          "build": 7291,
+          "count": 2
+        },
+        {
+          "product": 14,
+          "build": 7299,
+          "count": 32
+        },
+        {
+          "product": 10,
+          "build": 9782,
+          "count": 136
+        },
+        {
+          "product": 29,
+          "build": 9178,
+          "count": 10
+        },
+        {
+          "product": 18,
+          "build": 8444,
+          "count": 1
+        },
+        {
+          "product": 0,
+          "build": 0,
+          "count": 21
+        },
+        {
+          "product": 19,
+          "build": 8022,
+          "count": 4
+        },
+        {
+          "product": 19,
+          "build": 8034,
+          "count": 13
+        },
+        {
+          "product": 1,
+          "build": 0,
+          "count": 121
+        },
+        {
+          "product": 6,
+          "build": 1735,
+          "count": 1
+        },
+        {
+          "product": 11,
+          "build": 9782,
+          "count": 36
+        }
+      ]
+    },
+    "1.9.93": {
+      "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+      "start": "0x434250",
+      "size": 368,
+      "body_sha256": "6b84f0beddbfe368fac092a5faf71d40ed2b1e611f1deb0c600382731bd655a7",
+      "instruction_count": 115,
+      "address_masked_instruction_sha256": "6dc854b456ac54783b0ff2c62f6cc008f296eeda40f626c490c74a3e14940ba2",
+      "pointer_triplet_offset": 164,
+      "rich_records": [
+        {
+          "product": 25,
+          "build": 9210,
+          "count": 4
+        },
+        {
+          "product": 4,
+          "build": 8447,
+          "count": 2
+        },
+        {
+          "product": 12,
+          "build": 7291,
+          "count": 2
+        },
+        {
+          "product": 14,
+          "build": 7299,
+          "count": 32
+        },
+        {
+          "product": 10,
+          "build": 9782,
+          "count": 137
+        },
+        {
+          "product": 29,
+          "build": 9178,
+          "count": 10
+        },
+        {
+          "product": 0,
+          "build": 0,
+          "count": 8
+        },
+        {
+          "product": 18,
+          "build": 8444,
+          "count": 1
+        },
+        {
+          "product": 95,
+          "build": 2190,
+          "count": 1
+        },
+        {
+          "product": 93,
+          "build": 2179,
+          "count": 23
+        },
+        {
+          "product": 1,
+          "build": 0,
+          "count": 139
+        },
+        {
+          "product": 11,
+          "build": 9782,
+          "count": 34
+        },
+        {
+          "product": 6,
+          "build": 1735,
+          "count": 1
+        }
+      ]
+    }
+  },
+  "matching_address_masked_bodies": [
+    "1.9.1",
+    "1.9.9",
+    "1.9.93"
+  ],
+  "scope": "Address-masked instruction comparison and literal pointer-store triplet; external reference identities are not audited.",
+  "negative_control": "Changing the dead store slot from esp+0x10 to esp+0x14 rejects both comparisons."
+}

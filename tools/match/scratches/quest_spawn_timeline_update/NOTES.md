@@ -1,5 +1,20 @@
 # quest_spawn_timeline_update
 
+## Historical bodies and source controls (2026-09-28)
+
+[The historical comparison](../../evidence/quest-history-controls-2026-09-28/README.md)
+finds the same 115-instruction address-masked body, including the pointer-store
+triplet, in versions 1.9.1, 1.9.9 and the 1.9.93 target. Version 1.9.8 has a
+different 113-instruction body without that triplet and carries the 9044
+Processor Pack C++ producer record. This is an instruction-shape comparison,
+not an audit of the older binaries' external reference identities.
+
+Sixty rebuilt controls cover guards, vector value/reference boundaries,
+component indexing, member pointers and register declarations. Fifty reproduce
+the canonical candidate body and ten regress. The vector API changes that
+completed `projectile_render` do not transfer to this function. The canonical
+source remains 91.228070%, 113/115 instructions, prefix 51 and 13/0/0 references.
+
 ## Dead pointer store mechanism (2026-09-26)
 
 crimson-88 proved how each instruction of native's triplet arises
