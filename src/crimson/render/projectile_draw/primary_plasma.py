@@ -23,7 +23,11 @@ _PLASMA_BULLET_CORE_TYPES = frozenset(
 )
 
 
-def plasma_uses_bullet_core(type_id: int) -> bool:
+def plasma_uses_bullet_core(type_id: int, *, preserve_bugs: bool) -> bool:
+    # Original bug #28: native's late bullet pass skips the player plasma types
+    # but misses Spider Plasma, which reuses the Plasma Minigun look.
+    if int(type_id) == 0x1A and not preserve_bugs:
+        return False
     return int(type_id) in _PLASMA_BULLET_CORE_TYPES
 
 
@@ -132,7 +136,7 @@ def draw_plasma_particles(ctx: ProjectileDrawCtx) -> bool:
             rl.draw_texture_pro(particles_texture, src, dst, origin, 0.0, aura_tint)
 
         rl.end_blend_mode()
-        if plasma_uses_bullet_core(type_id):
+        if plasma_uses_bullet_core(type_id, preserve_bugs=renderer.frame.state.preserve_bugs):
             bullet_texture = resources.texture(TextureId.BULLET_I)
             if bullet_texture is not None:
                 size = 4.0 * ctx.scale

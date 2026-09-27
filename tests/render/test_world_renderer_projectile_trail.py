@@ -43,7 +43,7 @@ class _WorldStub:
             config=None,
             camera=Vec2(),
             ground=None,
-            state=cast(Any, object()),
+            state=GameplayState(),
             players=[],
             creatures=cast(Any, object()),
             resources=cast(Any, self.resources),

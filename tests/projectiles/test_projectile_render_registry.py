@@ -68,11 +68,13 @@ def test_plasma_trail_segment_count_clamps_and_rejects_zero_divisor() -> None:
 
 
 def test_plasma_bullet_core_matches_native_late_pass_types() -> None:
-    assert plasma_uses_bullet_core(ProjectileTemplateId.SHRINKIFIER)
-    assert plasma_uses_bullet_core(ProjectileTemplateId.SPIDER_PLASMA)
-    assert plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_CANNON)
-    assert not plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_RIFLE)
-    assert not plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_MINIGUN)
+    assert plasma_uses_bullet_core(ProjectileTemplateId.SHRINKIFIER, preserve_bugs=False)
+    assert plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_CANNON, preserve_bugs=False)
+    assert not plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_RIFLE, preserve_bugs=True)
+    assert not plasma_uses_bullet_core(ProjectileTemplateId.PLASMA_MINIGUN, preserve_bugs=True)
+    # Bug #28: only the original draws a bullet core inside Spider Plasma.
+    assert plasma_uses_bullet_core(ProjectileTemplateId.SPIDER_PLASMA, preserve_bugs=True)
+    assert not plasma_uses_bullet_core(ProjectileTemplateId.SPIDER_PLASMA, preserve_bugs=False)
 
 
 def test_beam_effect_scale_ion_types() -> None:
