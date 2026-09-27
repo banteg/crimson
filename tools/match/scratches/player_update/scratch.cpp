@@ -999,14 +999,13 @@ extern "C" void player_update(void)
             *(vec2_t *)&player->position - *(vec2_t *)&player->aim)
         - 1.5707964f;
 
-    float *shot_cooldown = &player->shot_cooldown;
     normal_fire_ready = false;
     perk_fire_ready = false;
-    if (*shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {
+    if (player->shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {
         normal_fire_ready = true;
         player->reload_active = 0;
     }
-    if (*shot_cooldown <= 0.0f
+    if (player->shot_cooldown <= 0.0f
         && player->experience > 0
         && (perk_count_get(perk_id_regression_bullets) != 0
             || perk_count_get(perk_id_ammunition_within) != 0)) {
@@ -1031,7 +1030,7 @@ extern "C" void player_update(void)
                 weapon_table[player->weapon_id].reload_sfx_id,
                 &player->position,
                 1.0f);
-            *shot_cooldown = *shot_cooldown + 0.1f;
+            player->shot_cooldown = player->shot_cooldown + 0.1f;
             player_alt_weapon_swap_cooldown_ms = 200;
         } else if (!grim_interface_ptr->grim_is_key_active(config_key_reload)) {
             player_alt_weapon_swap_cooldown_ms = 0;

@@ -2,6 +2,40 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## No named cooldown pointer (2026-09-28)
+
+The firing block reads and writes `player->shot_cooldown` directly. The former
+`float *shot_cooldown = &player->shot_cooldown` was a copy of globopt's
+function-wide `player + 0x2d4` CSE temp. The inlined `pu_swap` reference is a
+second copy of that temp, so two address ranges were live across the swap
+block. Colouring the temp's piece (range 664, EBP only) then reached pressure k.
+Its split set included `normal_fire_ready`, and processing the set rescored the
+queue after the auto-target address range was already in ECX. That rescore
+gave the index its LEA-base ECX preference.
+
+With one address range, there is no split and no rescore. The flag stays in BL
+through `0x415741..0x41590e` and the index takes EAX at `0x413e5b`, as in
+native. Raw 94.83% → 94.99%; labels masked 99.80% → 99.95%; structural and
+stack-masked 99.87% → 99.95%; refs 918/0/0; 4210/4206 instructions.
+
+The only residual left is the four-instruction demo-angle clone at `0x414d02`.
+Block-mover loop 2 clones a tail when its real tuples encode to at most 20 bytes
+at mover time. This tail estimates `fld` 3 + `fld` 3 + `fpatan` 2 + `fsub` 6
++ `jmp` 5 = 19: locals still encode as `[ebp+disp8]` then, and the jump as
+rel32. jump_optimize #2's `cross_jump_into_fallthrough` first merged the
+tail's `fst movement_heading` into the then-arm's copy, which is where the
+shared `fst [esp+0x20]` comes from.
+
+Forcing that one tail to count 22 bytes gives an exact object (diagnostic
+only), so the clone is the whole difference. Every uncloned short tail in the
+exact scratches estimates at least 21 bytes: 185 kept tails across 120
+functions, including four game-code tails that also emit 18 bytes. Their
+local loads are always 3 bytes at mover time, so native's tail needed extra
+mover-time tuples that later passes delete. None of about 40 tail spellings
+produced one: casts, parentheses, commutative and identity forms, copy and
+reference temporaries, and by-value or conditional directions. The vec2
+constructor forms reach 21 bytes, but they load x before y and keep an `fxch`.
+
 ## Remaining compiler decisions (2026-09-27)
 
 A further 78 source variants and four compiler-option controls did not produce
