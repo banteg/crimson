@@ -43,9 +43,7 @@ asm-differ = { git = "https://github.com/simonlindholm/asm-differ", rev = "0dd09
 dev = [
     "capstone>=5.0.9",
     "pefile>=2024.8.26",
-    "pylint>=4.0.4",
     "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
     "pytest-mock>=3.15.1",
     "ruff>=0.16.9",
     "syrupy>=5.0.0",
@@ -91,18 +89,4 @@ extend-immutable-calls = [
     "grim.geom.Vec2",
     "typer.Argument",
     "typer.Option",
-]
-
-[tool.coverage.run]
-branch = true
-source = ["crimson"]
-omit = ["tests/*"]
-
-[tool.coverage.report]
-show_missing = true
-skip_covered = true
-exclude_lines = [
-    "pragma: no cover",
-    "if TYPE_CHECKING:",
-    "if __name__ == .__main__.:",
 ]

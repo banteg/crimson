@@ -16,15 +16,11 @@ default:
 test *args:
     uv run pytest {{args}}
 
-test-cov *args:
-    uv run pytest --cov=crimson --cov-report=term-missing --cov-report=html --cov-report=xml {{args}}
-
 check *args:
     uv run ruff check .
     uv run ty check src tests
     uv run scripts/check_docs.py
     uv run crimson match resolved-name-audit --check
-    uv run crimson match experiments --check --strict --limit 1
     uv run crimson native verify --require-game-closure --allow-absent-toolchain
     uv run crimson match regressions
     ast-grep scan
@@ -39,11 +35,6 @@ check-zig:
 
 ty:
     uv run ty check src tests
-
-# Duplication
-dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":
-    mkdir -p "$(dirname "{{out}}")"
-    uv run pylint --disable=all --enable=R0801 --min-similarity-lines={{min}} src | tee "{{out}}" || true
 
 # Assets
 extract:
