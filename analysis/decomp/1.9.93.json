@@ -40155,7 +40155,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3021,
-        "candidate_object_sha256": "e6be38a29239db2bb19c07aa9e1be0e9131d798ec0719ddfbf7b620c01970530",
+        "candidate_object_sha256": "f36ab3ed7e71532398f445d188108c8a825d2eb8aea22af84dc624f15d7cda72",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -111326,6 +111326,8 @@
     "tools/match/evidence/projectile-stack-groups-2026-09-13/primary_homes.py": "9344ec628a90795c22c7610bae482a8804d8054d595b197033132b4a945e67dc",
     "tools/match/evidence/projectile-stack-groups-2026-09-13/verify.py": "3b0c7600c6766fd506a094459ca21714c8af6ec1759a99ea4d6c348af7bcf2e6",
     "tools/match/evidence/projectile-vector-api-2026-09-28/verify.py": "a17bb17300ea1cf048d73a7ed6ebb41839cc95ac65aff4eb96efe421390dbca7",
+    "tools/match/evidence/quest-history-controls-2026-09-28/historical.py": "9d5db2a4767c0eee9d434d624ab91424d3f74aa5569faf5a457408463a330664",
+    "tools/match/evidence/quest-history-controls-2026-09-28/verify_controls.py": "1d693ee09d4e16ae1591c58b8bcc6c6d4310898faad07e693c65d010f7e881a1",
     "tools/match/evidence/rebrew-comparison-2026-09-13/analyze.py": "c8862d0347d9bcd38dc524982702ca953ae5c2c71bc2944996c4eb71d7fa0713",
     "tools/match/evidence/rebrew-comparison-2026-09-13/export.py": "94585983a35e71a744170046a95d5d6db0d790e1e14e7f52411214554a51035a",
     "tools/match/evidence/reference-content-provenance-2026-09-11/verify.py": "f160f7bd62eb6419e48e8a50f50f15efe780652ce2ebd6a0da6a6efbcd0dc7af",
