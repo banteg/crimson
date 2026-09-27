@@ -39,6 +39,12 @@ jobs:
             use_zig: false
             command: ast-grep scan && ast-grep test
             sync_args: ""
+          - task: ruff
+            use_uv: true
+            do_sync: true
+            use_zig: false
+            command: uv run --no-sync ruff check .
+            sync_args: --only-group dev
           - task: ty
             use_uv: true
             do_sync: true
