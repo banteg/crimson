@@ -3,7 +3,8 @@ from __future__ import annotations
 from crimson.replay import Replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import pack_tick
-from crimson.sim.bootstrap import advance_unlock_terrain
+from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.bootstrap import advance_gameplay_reset_rng, advance_unlock_terrain
 from crimson.sim.commands import TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
@@ -48,10 +49,12 @@ def test_typo_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     driver = build_verify_playback_driver(replay)
 
     rng = Crand(int(replay.run.seed))
+    advance_gameplay_reset_rng(rng)
     terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
     )
+    rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
 
     terrain_setup = driver.terrain_setup
     assert terrain_setup is not None

@@ -7,7 +7,7 @@ from crimson.perks import PerkId
 from crimson.replay.driver.playback_driver import PlaybackDriver, build_verify_playback_driver
 from crimson.replay.driver.setup import ReplayRunnerError
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import advance_unlock_terrain
+from crimson.sim.bootstrap import advance_gameplay_reset_rng, advance_unlock_terrain
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome
 from crimson.weapons import WeaponId
@@ -41,10 +41,12 @@ def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     driver = build_verify_playback_driver(replay)
 
     rng = Crand(int(replay.run.seed))
+    advance_gameplay_reset_rng(rng)
     terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
     )
+    rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
 
     terrain_setup = driver.terrain_setup
     assert terrain_setup is not None
@@ -110,7 +112,7 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
     assert tagged_by_tick == {
         0: [
             RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y,
             RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE,
@@ -125,9 +127,10 @@ def test_survival_runner_tick_rng_trace_observer_emits_draw_rows() -> None:
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE,
             RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW,
+            RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED,
         ],
-        1: [],
-        2: [],
+        1: [RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED],
+        2: [RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED],
     }
 
 

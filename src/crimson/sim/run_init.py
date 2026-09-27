@@ -12,7 +12,7 @@ from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WeaponId
-from .bootstrap import TerrainSetup, advance_explicit_terrain, advance_unlock_terrain
+from .bootstrap import TerrainSetup, advance_explicit_terrain, advance_gameplay_reset_rng, advance_unlock_terrain
 from .run_spec import RunSpec
 from .session_builders import (
     build_quest_session,
@@ -69,6 +69,9 @@ def initialize_run(
     world.state.status = status if status is not None else GameStatus.from_data(
         path=Path("run://status"), data=spec.status.as_status_data(), dirty=False,
     )
+    # The seed is the rng entering `gameplay_reset_state()`, which every mode's run start calls.
+    for creature, anim_phase in zip(world.creatures.entries, advance_gameplay_reset_rng(world.state.rng), strict=True):
+        creature.anim_phase = anim_phase
     terrain = advance_unlock_terrain(
         world.state.rng, unlock_index=spec.status.quest_unlock_index,
     )
@@ -116,4 +119,6 @@ def initialize_run(
             )
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")
+    # Run setup happens inside a frame; `game_frame_update` ends it with its discarded draw.
+    world.state.rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
     return PreparedRun(session=session, terrain=terrain, quest=quest, quest_highscore_random_tag=highscore_tag)

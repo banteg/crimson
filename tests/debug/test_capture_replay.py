@@ -23,6 +23,8 @@ from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.persistence.save_status import GameStatusData
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, RngTraceDraw
+from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import PerkMenuOpenCommand
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_spec import RunSpec, RunStatus
@@ -54,7 +56,8 @@ def build_capture(
             CaptureTick(
                 dt=CAPTURE_DT,
                 inputs=[(0.0, 0.0, 512.0, 512.0, 0)],
-                prelude=(prelude or {}).get(index, []),
+                # Native captures start every prelude with the previous frame's end.
+                prelude=(prelude or {}).get(index, [GameFrameRngAdvanceOperation(frames=1)]),
                 postlude=(postlude or {}).get(index, []),
             )
             for index in range(ticks)
@@ -132,14 +135,21 @@ def test_capture_replay_rejects_invalid_contents(change, error: str) -> None:
         dump_capture_replay(change(build_capture()))
 
 
-def test_capture_playback_draws_frame_rng_before_the_tick_trace() -> None:
+def test_capture_playback_draws_extra_frame_rng_before_the_tick_trace() -> None:
     plain = _tick_rng_rows(build_capture(ticks=1))
-    advanced = _tick_rng_rows(build_capture(ticks=1, prelude={0: [GameFrameRngAdvanceOperation(frames=2)]}))
+    advanced = _tick_rng_rows(build_capture(ticks=1, prelude={0: [GameFrameRngAdvanceOperation(frames=3)]}))
 
+    # The session owns the prelude's first frame; the other two draw before the tick.
     state = plain[0][0][0]
     for _ in range(2):
         state = (state * 214013 + 2531011) & 0xFFFFFFFF
     assert advanced[0][0][0] == state
+
+
+def test_capture_playback_rejects_prelude_without_the_previous_frame_end() -> None:
+    capture = build_capture(ticks=1, prelude={0: []})
+    with pytest.raises(ReplayRunnerError, match="previous frame's end"):
+        _tick_rng_rows(capture)
 
 
 def test_capture_playback_opens_postlude_menu_inside_the_tick_trace() -> None:
@@ -149,5 +159,7 @@ def test_capture_playback_opens_postlude_menu_inside_the_tick_trace() -> None:
         perks_pending=1,
     )
 
+    # The choices draw mid-tick, before the frame end that closes it.
     assert len(opened[0]) > len(plain[0])
-    assert opened[0][: len(plain[0])] == plain[0]
+    assert opened[0][: len(plain[0]) - 1] == plain[0][:-1]
+    assert opened[0][-1][3] == plain[0][-1][3] == RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED

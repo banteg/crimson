@@ -8,7 +8,7 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import advance_explicit_terrain, advance_unlock_terrain
+from crimson.sim.bootstrap import advance_explicit_terrain, advance_gameplay_reset_rng, advance_unlock_terrain
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_result import RunOutcome
 from crimson.sim.world_state import WorldState
@@ -60,6 +60,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
 
     ctx = QuestContext(player_count=int(replay.run.player_count), hardcore=bool(replay.run.hardcore))
     rng = Crand(int(replay.run.seed))
+    advance_gameplay_reset_rng(rng)
     advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
@@ -77,6 +78,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
             rng=rng,
             ),
     )
+    rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
     expected_rng_state = int(rng.state)
 
     baseline_driver = build_verify_playback_driver(replay)

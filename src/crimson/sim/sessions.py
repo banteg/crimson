@@ -21,6 +21,7 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
+from ..rng_caller_static import RngCallerStatic
 from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..weapon_runtime import weapon_assign_player
@@ -555,4 +556,8 @@ class DeterministicSession(msgspec.Struct):
             camera=camera_update_for_players(self.world.players, state.camera_shake_offset),
             reflex_boost_timer=float(state.bonuses.reflex_boost),
         )
+        # `game_frame_update` ends every frame with a discarded draw. Frames outside
+        # gameplay (pause, perk menu) draw too in native; they depend on wall-clock
+        # time, so the port fixes them at zero.
+        state.rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
         return step

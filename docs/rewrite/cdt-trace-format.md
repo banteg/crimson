@@ -190,9 +190,9 @@ enclosing `dt_ms_i32`, and its `mode_fn` identifies
 
 The intended comparison set is:
 
-1. Frida capture format 28 finalized into CDT v2/schema 19.
-2. Python CRD v22 replay recording.
-3. Zig CRD v22 replay recording.
+1. Frida capture format 29 finalized into CDT v2/schema 19.
+2. Python CRD v23 replay recording.
+3. Zig CRD v23 replay recording.
 
 All emit the same durable channel semantics. A producer may keep additional
 diagnostics before finalization, but it may not add aliases or optional channel

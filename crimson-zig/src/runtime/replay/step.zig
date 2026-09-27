@@ -651,6 +651,10 @@ pub fn stepTick(
     } else {
         context.elapsed_ms_sim = elapsed_after_ms;
     }
+    // `game_frame_update` ends every frame with a discarded draw. Frames outside
+    // gameplay (pause, perk menu) draw too in native; they depend on wall-clock
+    // time, so the port fixes them at zero.
+    _ = context.state.rng.randTagged(rng_callers.game_frame_update_discarded);
 
     const result: StepResult = .{
         .tick_index = tick_index,

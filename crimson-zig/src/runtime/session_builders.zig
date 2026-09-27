@@ -112,9 +112,9 @@ pub fn buildReplaySession(
     options: BuildReplaySessionOptions,
 ) runtime_session.DeterministicSessionError!runtime_session.DeterministicSession {
     const config = runtime_session.SessionConfig.fromRunSpec(run);
-    const session = switch (run.game_mode) {
-        .quests => return buildQuestReplaySession(run, config, options),
-        .tutorial => return buildTutorialSession(config, .{}),
+    var session = switch (run.game_mode) {
+        .quests => try buildQuestReplaySession(run, config, options),
+        .tutorial => try buildTutorialSession(config, .{}),
         .survival => try buildSurvivalSession(config, .{}),
         .rush => try buildRushSession(config, .{}),
         .typo => try buildTypoSession(config, .{
@@ -122,6 +122,7 @@ pub fn buildReplaySession(
             .highscore_names = run.typo_highscore_names,
         }),
     };
+    session.finishRunSetup();
     return session;
 }
 

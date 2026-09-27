@@ -8,7 +8,7 @@ tags:
 # Gameplay differential capture
 
 `scripts/frida/gameplay_diff_capture.js` records the original executable using
-raw capture format 28. The host finalizes each completed run into the same
+raw capture format 29. The host finalizes each completed run into the same
 formats used by the rewrite debugger:
 
 - CDT container 2, schema 19

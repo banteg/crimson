@@ -2,6 +2,7 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 
+const creatures_mod = @import("creatures.zig");
 const player_runtime = @import("player.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
@@ -107,6 +108,17 @@ pub fn enforceRushLoadout(players: []state_mod.PlayerState) void {
         }
         player.weapon.ammo = rush_forced_ammo;
     }
+}
+
+/// Advance RNG through `gameplay_reset_state()` up to `terrain_generate_random()`:
+/// the score tag, one `anim_phase` per creature slot, then the score tag again.
+pub fn advanceGameplayResetRng(rng: *spawn_mod.Crand, creatures: []creatures_mod.CreatureState) void {
+    std.debug.assert(creatures.len == creatures_mod.max_creatures);
+    _ = rng.randTagged(rng_callers.gameplay_reset_state_random_tag);
+    for (creatures) |*creature| {
+        creature.anim_phase = @floatFromInt(rng.randTagged(rng_callers.gameplay_reset_state_creature_anim_phase) % 31);
+    }
+    _ = rng.randTagged(rng_callers.gameplay_reset_state_highscore_random_tag);
 }
 
 pub fn advanceReplayBootstrapRng(

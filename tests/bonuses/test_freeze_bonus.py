@@ -114,7 +114,7 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     callers = [r.caller for r in rng.records_since(tick_start)]
     assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) == 8
     assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) == 1
-    assert len(callers) == 212
+    assert len(callers) == 212 + 1  # plus the frame-end draw
     assert not creature.active
 
 

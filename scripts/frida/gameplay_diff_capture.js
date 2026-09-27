@@ -20,7 +20,7 @@ const DEFAULT_OUT_NAME = "gameplay_diff_capture.jsonl";
 const DEFAULT_TRACKED_STATES = "6,7,8,9,10,12,14,18";
 const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
-const CAPTURE_FORMAT_VERSION = 28;
+const CAPTURE_FORMAT_VERSION = 29;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
 // Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
@@ -75,7 +75,10 @@ const CAPTURE_FIELD_SETS = {
 // First rng caller of native run setup (terrain_generate prelude roll 1). The
 // rand state observed before this draw is the state a replay must seed from to
 // reproduce the run's setup draws (terrain stamps, quest build) value-for-value.
-const RUN_SETUP_FIRST_RNG_CALLER_STATIC = "0x004181cc";
+// gameplay_reset_state's first draw opens run setup; terrain_generate_random's first
+// draw follows the reset, once the pool holds the residue the run inherits.
+const RUN_SETUP_FIRST_RNG_CALLER_STATIC = "0x00413279";
+const RUN_TERRAIN_FIRST_RNG_CALLER_STATIC = "0x004181cc";
 const FRAME_DISCARDED_RNG_CALLER_STATIC = "0x0040cac7";
 const PERK_SELECTION_APPLY_RETURN_STATIC = 0x004060fa;
 const LINK_BASE = ptr("0x00400000");
@@ -4824,21 +4827,26 @@ function registerRngRoll(value, callerStaticHex, callerLabel, stateBeforeRealU32
     rollRow.caller_static === RUN_SETUP_FIRST_RNG_CALLER_STATIC &&
     rollRow.state_before_u32 != null
   ) {
-    resetEntityUidStates();
-    // Terrain generation begins a fresh run setup; the latest latch before
+    // gameplay_reset_state begins a fresh run setup; the latest latch before
     // run_start wins so restarts and quest retries re-latch naturally.
     outState.pendingRunSetupRng = {
       state_before_u32: rollRow.state_before_u32 >>> 0,
       state_after_u32: null,
       calls: 0,
     };
-    // The replay seed is latched before this setup sequence, so terrain/setup
-    // draws are reproduced by normal run initialization and must not become
-    // frame-advance operations on the first gameplay tick.
+    // The replay seed is latched before this setup sequence, so reset/terrain/
+    // setup draws are reproduced by normal run initialization and must not
+    // become frame-advance operations on the first gameplay tick.
     outState.runSetupRngActive = true;
     outState.pendingReplayPrelude = [];
+  }
+  if (
+    outState.runSetupRngActive &&
+    rollRow.caller_static === RUN_TERRAIN_FIRST_RNG_CALLER_STATIC
+  ) {
+    resetEntityUidStates();
     // The pool is stable between creature_reset_all and the run's first tick;
-    // snapshot the residue the run will inherit alongside the rng latch.
+    // snapshot the residue the run will inherit once the reset has run.
     outState.pendingRunPoolResidue = readCreaturePoolResidue();
   }
 

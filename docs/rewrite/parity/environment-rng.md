@@ -26,6 +26,7 @@ recorded in the replay and pinned for ranked runs. Add newly found gates here.
 | Detail preset (1..5) | effect spawns draw per preset | recorded in `RunSpec.detail_preset` | recorded |
 | Violence disabled | blood and particle paths draw or skip | recorded in `RunSpec.violence_disabled` | recorded |
 | Attract mode | `demo_mode_active` skips the game tune | removed: runs are never attract mode | not captured |
+| Frames outside gameplay | one discarded draw per frame | fixed: none | prelude frame counts |
 
 ## Audio
 
@@ -64,6 +65,14 @@ Both are recorded run inputs, so replays verify under any value. Ranked runs wit
 different values still play out differently. The ranked profile calls for full
 detail, but nothing enforces it yet. Pinning both for ranked runs would treat them
 like audio.
+
+## Frames outside gameplay
+
+`game_frame_update` ends every frame with a discarded `crt_rand()`, whatever the
+state. Each port tick carries its gameplay frame's draw. Pause, the perk menu and
+the menu's slide-in and slide-out frames draw too, and their count depends on
+wall-clock time and frame rate, so waiting in a menu changes the stream. The port
+fixes those frames at zero. Captures keep them as prelude frame counts.
 
 ## Original captures
 

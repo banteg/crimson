@@ -14,6 +14,7 @@ from ..math_parity import f32
 from ..persistence.save_status import GameStatusData
 from ..replay import PackedTickInputs, inflate_replay_payload
 from ..replay.driver.playback_driver import SessionPlaybackDriver
+from ..replay.driver.setup import ReplayRunnerError
 from ..replay.input_codec import unpack_tick_inputs
 from ..replay.types import input_flags_validation_error
 from ..rng_caller_static import RngCallerStatic
@@ -186,9 +187,13 @@ class CapturePlaybackDriver(SessionPlaybackDriver):
     def before_tick(self, tick_index: int) -> list[SfxId]:
         tick = self.capture.ticks[tick_index]
         post_apply_sfx: list[SfxId] = []
-        for operation in tick.prelude:
+        # The session already drew the frame end that closed the previous tick (or
+        # run setup); native captures start every prelude with it.
+        if not (tick.prelude and isinstance(tick.prelude[0], GameFrameRngAdvanceOperation)):
+            raise ReplayRunnerError(f"tick {tick_index}: prelude must start with the previous frame's end")
+        for index, operation in enumerate(tick.prelude):
             if isinstance(operation, GameFrameRngAdvanceOperation):
-                for _ in range(operation.frames):
+                for _ in range(operation.frames - (index == 0)):
                     self.world.state.rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
                 continue
             sfx = self.session.apply_command(operation, dt=tick.dt)

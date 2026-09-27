@@ -5,7 +5,7 @@ tags:
   - replay
 ---
 
-# Replay format (v22)
+# Replay format (v23)
 
 A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A
@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `22` |
+| `format_version` | int | `23` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -58,7 +58,7 @@ from that commit (modified or new unignored files) appends `.dirty`.
 | Key | Type | Meaning |
 |---|---|---|
 | `game_mode_id` | int | 1 Survival, 2 Rush, 3 Quests, 4 Typ-o, 8 Tutorial |
-| `seed` | u32 | CRT RNG state before the run's first terrain draw |
+| `seed` | u32 | CRT RNG state entering `gameplay_reset_state()` at run start |
 | `quest_level` | `{major, minor}` map or nil | Required for quests only; 1..5 / 1..10 |
 | `player_count` | int | 1..4; Typ-o and Tutorial require 1 |
 | `hardcore` | bool | |
@@ -100,7 +100,8 @@ Every tick advances the simulation by `float32(1/60)` seconds in the native
 timing is derived; a perk menu open generates its choices after the tick's
 level-up check and before `bonus_update`, where native opens the menu; Typ-o
 commands apply after the mode's pre-step hook, as in live play. Typ-o fires and reloads only through typed words: the input fire
-and reload flags have no effect there.
+and reload flags have no effect there. Each tick ends with native `game_frame_update`'s
+discarded RNG draw, and so does run setup; frames outside gameplay add none.
 
 ### RunResult
 
@@ -165,7 +166,7 @@ perk prompt stays closed while a pick is waiting for the next tick.
 ## Original captures
 
 Frida captures of the original executable need per-tick native frame deltas,
-top-level RNG draws made between gameplay ticks, and creature-slot residue left
+the RNG draws of frames outside gameplay, and creature-slot residue left
 by earlier runs. None of these
 exist in port play, so they live in a debug-only capture container under
 `crimson.dbg`, replayed by a Python debug driver. Replays never carry them.

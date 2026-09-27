@@ -469,7 +469,7 @@ def test_zig_replay_verify_rejects_trailing_payload_bytes(tmp_path: Path, zig_bi
 
 def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path, zig_bin: Path) -> None:
     survival = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x16", b"\xaeformat_version\x15", 1)
+    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x17", b"\xaeformat_version\x16", 1)
     cases = {
         "typo-event": (
             write_current_typo_event_replay(tmp_path, replay=survival, name="typo-event.crd"),
@@ -499,7 +499,7 @@ def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path,
         ),
         "old-format": (
             write_payload_bytes(tmp_path, payload=old_format, name="old-format.crd"),
-            "unsupported replay format version: 21",
+            "unsupported replay format version: 22",
         ),
     }
 

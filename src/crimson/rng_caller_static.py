@@ -389,6 +389,9 @@ class RngCallerStatic(IntEnum):
     WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK = 0x00452CFA
 
     GAME_FRAME_UPDATE_DISCARDED = 0x0040CAC7
+    GAMEPLAY_RESET_STATE_RANDOM_TAG = 0x00413279
+    GAMEPLAY_RESET_STATE_CREATURE_ANIM_PHASE = 0x00413373
+    GAMEPLAY_RESET_STATE_HIGHSCORE_RANDOM_TAG = 0x00413412
 
     # Synthetic caller ids reserve the high range so they cannot be
     # mistaken for native return addresses from the main executable.

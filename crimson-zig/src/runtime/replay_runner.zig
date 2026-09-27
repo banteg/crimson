@@ -620,7 +620,7 @@ test "typo run spawns creatures after creature update phase" {
     const inputs = [_]replay_codec.PlayerInput{.{}};
     const playback = try playThrough(testReplay(.{ .game_mode = .typo, .seed = 0xBEEF }, &inputs, &commands, &.{1}), .{});
     try testing.expect(playback.session.creatures.activeCount() > 0);
-    try testing.expectEqual(@as(u32, 436623559), playback.session.state.rng.state);
+    try testing.expectEqual(@as(u32, 2659290939), playback.session.state.rng.state);
 }
 
 test "typo input fire and reload flags have no effect" {
@@ -636,7 +636,7 @@ test "rush run enforces the assault rifle and advances spawns in integer millise
     const playback = try playThrough(testReplay(.{ .game_mode = .rush, .seed = 0xBEEF }, &([_]replay_codec.PlayerInput{.{}} ** 16), &.{}, zero_command_ends[0..16]), .{});
     try testing.expectEqual(game_ids.WeaponId.assault_rifle, playback.session.playersConst()[0].weapon.weapon_id);
     try testing.expectEqual(@as(usize, 4), playback.session.creatures.activeCount());
-    try testing.expectEqual(@as(u32, 2055104443), playback.session.state.rng.state);
+    try testing.expectEqual(@as(u32, 4079169964), playback.session.state.rng.state);
 }
 
 test "survival and rush runs support player counts 1 through 4" {

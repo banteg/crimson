@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 const replay_codec = @import("../replay_codec.zig");
 
 const bonus_runtime = @import("bonuses.zig");
+const rng_callers = @import("../rng_caller_static.zig");
 const runtime_bootstrap = @import("bootstrap.zig");
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
@@ -200,6 +201,8 @@ pub const DeterministicSession = struct {
             runtime_bootstrap.enforceRushLoadout(session.players());
         }
 
+        // The seed is the rng entering `gameplay_reset_state()`, which every mode's run start calls.
+        runtime_bootstrap.advanceGameplayResetRng(&session.state.rng, session.creatures.entries[0..]);
         runtime_bootstrap.advanceReplayBootstrapRng(
             &session.state.rng,
             config.game_mode,
@@ -213,6 +216,12 @@ pub const DeterministicSession = struct {
         }
 
         return session;
+    }
+
+    /// Run setup happens inside a frame; `game_frame_update` ends it with its
+    /// discarded draw. Call once the mode's setup is complete.
+    pub fn finishRunSetup(self: *DeterministicSession) void {
+        _ = self.state.rng.randTagged(rng_callers.game_frame_update_discarded);
     }
 
     pub fn questSpawnEntries(self: *DeterministicSession) []spawn_mod.QuestSpawnEntry {
@@ -362,7 +371,7 @@ test "deterministic session init advances survival terrain bootstrap rng" {
 
     const session = try DeterministicSession.init(config, .{});
 
-    try std.testing.expectEqual(@as(u32, 623756981), session.state.rng.state);
+    try std.testing.expectEqual(@as(u32, 4015931991), session.state.rng.state);
 }
 
 test "deterministic session init round robins native creature targets" {

@@ -7,7 +7,7 @@
 const std = @import("std");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 22;
+pub const replay_format_version: i32 = 23;
 pub const tick_rate: i32 = 60;
 /// Every replay tick advances the simulation by this delta.
 pub const tick_dt: f32 = 1.0 / @as(f32, @floatFromInt(tick_rate));
@@ -1359,7 +1359,7 @@ test "reader applies the replay validation rules" {
     defer testing.allocator.free(payload);
 
     const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
-        .{ .needle = "\xaeformat_version\x16", .replacement = "\xaeformat_version\x15", .message = "unsupported replay format version: 21" },
+        .{ .needle = "\xaeformat_version\x17", .replacement = "\xaeformat_version\x16", .message = "unsupported replay format version: 22" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x00", .message = "run.game_mode_id 0 is not a replayable mode" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x03", .message = "run.quest_level must be set for quests and only for quests" },
         .{ .needle = "\xaddetail_preset\x05", .replacement = "\xaddetail_preset\x00", .message = "run.detail_preset must be in 1..5" },

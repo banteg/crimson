@@ -179,7 +179,7 @@ pub const LiveRunner = struct {
         var terrain_setup: runtime_bootstrap.TerrainSetup = undefined;
         var quest_level_key: ?i32 = null;
         var quest_spawn_entries_storage: [runtime_session.max_sim_quest_spawn_entries]spawn_mod.QuestSpawnEntry = undefined;
-        const session = switch (config.game_mode) {
+        var session = switch (config.game_mode) {
             .survival => blk: {
                 terrain_setup = runtime_bootstrap.previewUnlockTerrain(
                     config.seed,
@@ -274,6 +274,7 @@ pub const LiveRunner = struct {
                 break :blk try session_builders.buildTutorialSession(base_config, .{});
             },
         };
+        session.finishRunSetup();
 
         return .{
             .seed = config.seed,

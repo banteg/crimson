@@ -14,8 +14,8 @@ run boundary instead of trying to reconstruct earlier menu history.
 For original captures that boundary, stored in the debug-only capture replay
 (`.ccr`), is:
 
-- the CRT RNG state immediately before the run's first terrain draw
-- the creature-pool residue present at that point
+- the CRT RNG state entering `gameplay_reset_state()`, the run seed
+- the creature-pool residue left once that reset has run
 - the mode, quest level, complete status blob, retry/hardcore/detail/violence
   settings, tick rate, and world size
 
@@ -58,17 +58,33 @@ Relevant native evidence is address-keyed:
 - `quest_start_selected` at `0x0043a790`
 - `game_state_set` at `0x004461c0`
 
-## Why the replay boundary is later
+## The run boundary
 
 Replaying the whole process from a stale session seed would require recording
 and reproducing unrelated menu and startup draws. It would also hide the real
 question when a run diverges: whether the same run-setup state produces the
 same gameplay behavior.
 
-The current boundary is the state latched just before the first run terrain
-draw. For native captures, creature slots can still contain reset-relevant
-residue at that point, so the raw `run_start.pool_residue` is copied into the
-capture replay. Port replays carry no residue and start from a fresh pool.
+Every mode's run starts in `game_state_set` with `gameplay_reset_state()`, so
+the seed is the RNG state entering it. Run setup then replays native exactly:
+
+1. the reset's draws: the score tag, one `anim_phase` per creature slot, the
+   score tag again
+2. `terrain_generate_random()`
+3. the mode's own setup (Quests: `quest_start_selected()`)
+4. the frame's end: `game_frame_update` ends every frame with a discarded
+   `crt_rand()`, and run setup happens inside a frame
+
+Each tick is one native gameplay frame: the gameplay update, then that same
+end-of-frame draw. Native frames outside gameplay (pause, the perk menu and its
+transitions) draw it too, but how many there are depends on wall-clock time, so
+the port fixes them at zero; see [settings that steer the RNG](parity/environment-rng.md).
+
+For native captures, creature slots can still contain residue once the reset
+has run, so the raw `run_start.pool_residue` is copied into the capture replay.
+Port replays carry no residue and start from a fresh pool. A capture tick's
+prelude starts with the end of the previous frame, which the session already
+drew; capture playback draws only the frames after it.
 
 ```mermaid
 flowchart LR
