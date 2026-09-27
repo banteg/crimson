@@ -26,8 +26,8 @@ from ..quests import quest_by_level
 from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
-from ..sim.run_result import death_transition_ready
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick, QuestSessionRuntime, QuestSpawnState
+from ..sim.run_result import RunOutcome
+from ..sim.sessions import DeterministicSession, QuestSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.quest_run import (
@@ -175,45 +175,8 @@ class QuestMode(BaseGameplayMode):
         base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
         return f"quest_{level}_{stamp}_{kind}_t{base_time_ms}"
 
-    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
-        spawn_state = self._quest_spawn_state
-
-        if tick.quest_completed:
-            if self._outcome is None:
-                assert self._quest_level is not None, "quest outcome requires active quest level"
-                fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
-                most_used_weapon_id = most_used_weapon_id_for_player(
-                    self.state,
-                    fallback_weapon_id=self.player.weapon.weapon_id,
-                )
-                player_health_values = tuple(float(player.health) for player in self.world.players)
-                player2_health = None
-                if len(player_health_values) >= 2:
-                    player2_health = float(player_health_values[1])
-                self._outcome = QuestRunOutcome(
-                    kind="completed",
-                    level=self._quest_level,
-                    base_time_ms=int(spawn_state.spawn_timeline_ms),
-                    player_health=float(player_health_values[0] if player_health_values else self.player.health),
-                    player2_health=player2_health,
-                    player_health_values=player_health_values,
-                    pending_perk_count=int(self.state.perk_selection.pending_count),
-                    experience=int(self.state.highscore_score_xp),
-                    kill_count=int(self.creatures.kill_count),
-                    weapon_id=self.player.weapon.weapon_id,
-                    shots_fired=fired,
-                    shots_hit=hit,
-                    most_used_weapon_id=most_used_weapon_id,
-                    highscore_random_tag=int(self._quest_highscore_random_tag),
-                )
-            self._save_replay()
-            self.close_requested = True
-            return False
-
-        if self._death_transition_ready():
-            self._close_failed_run()
-            return False
-        return True
+    def _finish_run(self, outcome: RunOutcome) -> None:
+        self._close_run("completed" if outcome == RunOutcome.QUEST_COMPLETED else "failed")
 
     def consume_outcome(self) -> QuestRunOutcome | None:
         outcome = self._outcome
@@ -250,13 +213,13 @@ class QuestMode(BaseGameplayMode):
         self.bind_status(status)
         prepared = self._initialize_run(GameMode.QUESTS, quest_level=quest.level)
         self._sim_session = prepared.session
-        mode_runtime = prepared.session.mode_runtime
-        assert isinstance(mode_runtime, QuestSessionRuntime)
-        self._quest_spawn_state = mode_runtime.spawn
+        spawn_state = prepared.session.mode_state
+        assert isinstance(spawn_state, QuestSpawnState)
+        self._quest_spawn_state = spawn_state
         self._quest_highscore_random_tag = prepared.quest_highscore_random_tag & UNI_NUM_MASK
         self._quest_def = prepared.quest
         self._quest_level = quest.level
-        self._quest_total_spawn_count = sum(entry.count for entry in mode_runtime.spawn.spawn_entries)
+        self._quest_total_spawn_count = sum(entry.count for entry in spawn_state.spawn_entries)
         self._reset_gameplay_frame_clock()
 
     def _handle_input(self) -> None:
@@ -303,9 +266,6 @@ class QuestMode(BaseGameplayMode):
         weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
-    def _death_transition_ready(self) -> bool:
-        return death_transition_ready(self.world.players)
-
     def _tick_death_timers(self, dt: float, *, rate: float = 20.0) -> None:
         delta = float(dt) * float(rate)
         if delta <= 0.0:
@@ -317,7 +277,7 @@ class QuestMode(BaseGameplayMode):
                 continue
             player.death_timer = float(player.death_timer) - delta
 
-    def _close_failed_run(self) -> None:
+    def _close_run(self, kind: str) -> None:
         if self._outcome is None:
             assert self._quest_level is not None, "quest outcome requires active quest level"
             fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
@@ -330,7 +290,7 @@ class QuestMode(BaseGameplayMode):
             if len(player_health_values) >= 2:
                 player2_health = float(player_health_values[1])
             self._outcome = QuestRunOutcome(
-                kind="failed",
+                kind=kind,
                 level=self._quest_level,
                 base_time_ms=int(self._quest_spawn_state.spawn_timeline_ms),
                 player_health=float(player_health_values[0] if player_health_values else self.player.health),
@@ -364,13 +324,9 @@ class QuestMode(BaseGameplayMode):
             # Match legacy transition behavior: keep countdown moving, but at
             # real-time pace while perk-menu transition is holding world ticks.
             self._tick_death_timers(float(frame.dt), rate=1.0)
-            if self._death_transition_ready():
-                self._close_failed_run()
+            self._finish_run_if_over()
             return
         if session is None:
-            self._tick_death_timers(float(sim_dt))
-            if self._death_transition_ready():
-                self._close_failed_run()
             return
 
         self._run_deterministic_session_ticks(

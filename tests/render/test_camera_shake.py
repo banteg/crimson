@@ -14,8 +14,8 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
-    RushSessionRuntime,
-    SurvivalSessionRuntime,
+    RushSpawnState,
+    SurvivalSpawnState,
 )
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
@@ -202,7 +202,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         world=world,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
-        mode_runtime=SurvivalSessionRuntime(),
+        mode_state=SurvivalSpawnState(),
     )
 
     _tick = session.step_tick(
@@ -223,7 +223,7 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         world=world,
         game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
-        mode_runtime=RushSessionRuntime(world=world),
+        mode_state=RushSpawnState(),
         elapsed_uses_raw_dt=True,
     )
 

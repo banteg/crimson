@@ -20,8 +20,7 @@ from ..gameplay import survival_check_level_up
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
-from ..sim.run_result import death_transition_ready
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSessionRuntime, SurvivalSpawnState
+from ..sim.sessions import DeterministicSession, DeterministicSessionTick, SurvivalSpawnState
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS
@@ -30,7 +29,6 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
-from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuController
 from .components.perk_prompt_controller import PerkPromptState
 
@@ -139,9 +137,9 @@ class SurvivalMode(BaseGameplayMode):
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.SURVIVAL)
         self._sim_session = prepared.session
-        mode_runtime = prepared.session.mode_runtime
-        assert isinstance(mode_runtime, SurvivalSessionRuntime)
-        self._spawn_state = mode_runtime.spawn
+        spawn_state = prepared.session.mode_state
+        assert isinstance(spawn_state, SurvivalSpawnState)
+        self._spawn_state = spawn_state
         self._hud_fade_ms = PERK_MENU_TRANSITION_MS
 
     def close(self) -> None:
@@ -201,37 +199,14 @@ class SurvivalMode(BaseGameplayMode):
         weapon_id = WeaponId(weapon_ids[(idx + int(delta)) % len(weapon_ids)])
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
-    def _death_transition_ready(self) -> bool:
-        return death_transition_ready(self.world.players)
-
     def _enter_game_over(self) -> None:
-        if self._game_over_active:
-            return
-        game_mode_id = GameMode(self.config.gameplay.mode)
-        record = build_highscore_record_for_game_over(
-            state=self.state,
-            player=self.player,
-            survival_elapsed_ms=int(self._session_elapsed_ms()),
-            creature_kill_count=int(self.creatures.kill_count),
-            game_mode_id=game_mode_id,
-            hardcore=bool(self.hardcore),
-        )
-        self._game_over_record = record
-        self._game_over_ui.open()
-        self._game_over_active = True
         self._perk_menu.close()
-        self._save_replay()
+        super()._enter_game_over()
 
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
-        _ = tick
-
         if self._perk_menu.active:
             return False
-
-        if self._death_transition_ready():
-            self._enter_game_over()
-            return False
-        return True
+        return super()._on_tick_applied(tick)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -257,8 +232,7 @@ class SurvivalMode(BaseGameplayMode):
         session = self._sim_session
         if sim_dt <= 0.0:
             self._reset_gameplay_frame_clock()
-            if self._death_transition_ready():
-                self._enter_game_over()
+            self._finish_run_if_over()
             return
         if session is None:
             return

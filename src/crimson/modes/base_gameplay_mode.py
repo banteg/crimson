@@ -47,12 +47,13 @@ from ..sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from ..sim.input import PlayerInput
 from ..sim.presentation_step import DeterministicPresentationPlan
 from ..sim.run_init import PreparedRun, initialize_run
-from ..sim.run_result import RunResult, build_run_result
+from ..sim.run_result import RunOutcome, RunResult, build_run_result
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.hud import HudState, draw_target_health_bar
 from ..world.runtime import WorldRuntime
+from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
 
 if TYPE_CHECKING:
@@ -644,7 +645,33 @@ class BaseGameplayMode:
         return action
 
     def _enter_game_over(self) -> None:
-        raise NotImplementedError
+        if self._game_over_active:
+            return
+        self._game_over_record = build_highscore_record_for_game_over(
+            state=self.state,
+            player=self.player,
+            survival_elapsed_ms=int(self._session_elapsed_ms()),
+            creature_kill_count=int(self.creatures.kill_count),
+        )
+        self._game_over_ui.open()
+        self._game_over_active = True
+        self._save_replay()
+
+    def _finish_run(self, outcome: RunOutcome) -> None:
+        """React to the session ending the run; survival, rush and Typ-o show game over."""
+
+        _ = outcome
+        self._enter_game_over()
+
+    def _finish_run_if_over(self) -> bool:
+        """Between ticks: finish the run if the session's rules say it is over."""
+
+        session = self._sim_session
+        outcome = session.terminal_outcome() if session is not None else None
+        if outcome is None:
+            return False
+        self._finish_run(outcome)
+        return True
 
     def _update_game_over_ui(self, dt: float) -> None:
         if self.audio is not None and not self._game_over_ui.closing:
@@ -751,7 +778,11 @@ class BaseGameplayMode:
         self._replay_result = None
 
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
-        _ = tick
+        """Return False to stop running ticks this frame."""
+
+        if tick.outcome is not None:
+            self._finish_run(tick.outcome)
+            return False
         return True
 
     def _sync_audio(self) -> None:

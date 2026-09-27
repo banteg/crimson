@@ -51,11 +51,6 @@ class WorldEvents(msgspec.Struct):
     hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
 
 
-class WorldMidStepRuntime(msgspec.Struct):
-    def run_mid_step(self) -> None:
-        return None
-
-
 class WorldStepRuntime(msgspec.Struct):
     world: WorldState
     dt: float
@@ -267,7 +262,7 @@ class WorldState(msgspec.Struct):
         self,
         dt: float,
         *,
-        mid_step_runtime: WorldMidStepRuntime | None,
+        mode_update: Callable[[], None] | None,
         inputs: Sequence[PlayerInput] | None,
         detail_preset: int,
         violence_disabled: int,
@@ -321,8 +316,9 @@ class WorldState(msgspec.Struct):
                 reload_active_any=bool(reload_active_any),
             )
         dt = float(player_dt)
-        if mid_step_runtime is not None:
-            mid_step_runtime.run_mid_step()
+        if mode_update is not None:
+            # The mode's native update (survival/rush/quest/typo) runs here.
+            mode_update()
         self.state.highscore_score_xp = int(self.players[0].experience)
         camera_shake_update(self.state, dt)
         # Native level-up/perk-pending check runs before `bonus_update` in

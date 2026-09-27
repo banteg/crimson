@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from functools import partial
 
 import msgspec
 
@@ -42,7 +43,7 @@ from .step_pipeline import (
 )
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming, reflex_boost_time_scale_factor
-from .world_state import WorldMidStepRuntime, WorldState
+from .world_state import WorldState
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 RUSH_FORCED_AMMO = 30.0
@@ -214,137 +215,8 @@ def rush_input_transform(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
     return [msgspec.structs.replace(inp, reload_pressed=False) if inp.reload_pressed else inp for inp in inputs]
 
 
-class SessionModeRuntime(msgspec.Struct):
-    def before_step(self) -> None:
-        return None
-
-    def needs_mid_step(self) -> bool:
-        return False
-
-    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
-        return inputs
-
-    def mid_step(self, ctx: MidStepContext) -> None:
-        _ = ctx
-
-    def post_step(self, ctx: PostStepContext) -> None:
-        _ = ctx
-
-    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
-        """Outcome when this tick ends the run in live play, else None."""
-
-        _ = world
-        return None
-
-    def end_outcome(self, world: WorldState) -> RunOutcome:
-        """Outcome of a run whose recording stops after the current tick."""
-
-        return self.terminal_outcome(world) or RunOutcome.INCOMPLETE
-
-
-class SurvivalSessionRuntime(SessionModeRuntime):
-    spawn: SurvivalSpawnState = msgspec.field(default_factory=SurvivalSpawnState)
-
-    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
-        return RunOutcome.DEATH if death_transition_ready(world.players) else None
-
-    def needs_mid_step(self) -> bool:
-        return True
-
-    def mid_step(self, ctx: MidStepContext) -> None:
-        survival_mid_step(ctx, self.spawn)
-
-
-class RushSessionRuntime(SessionModeRuntime):
-    world: WorldState
-    spawn: RushSpawnState = msgspec.field(default_factory=RushSpawnState)
-
-    def before_step(self) -> None:
-        enforce_rush_loadout(self.world)
-
-    def needs_mid_step(self) -> bool:
-        return True
-
-    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
-        return rush_input_transform(inputs)
-
-    def mid_step(self, ctx: MidStepContext) -> None:
-        rush_mid_step(ctx, self.spawn)
-
-    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
-        # Rush ends as soon as nobody is alive; there is no death animation hold.
-        return RunOutcome.DEATH if all_players_dead(world.players) else None
-
-
-class QuestSessionRuntime(SessionModeRuntime):
-    spawn: QuestSpawnState
-
-    def needs_mid_step(self) -> bool:
-        return True
-
-    def mid_step(self, ctx: MidStepContext) -> None:
-        quest_mid_step(ctx, self.spawn)
-
-    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
-        if self.spawn.completed:
-            return RunOutcome.QUEST_COMPLETED
-        return RunOutcome.DEATH if death_transition_ready(world.players) else None
-
-    def end_outcome(self, world: WorldState) -> RunOutcome:
-        # The failed-quest countdown keeps running while paused, so a failed
-        # run may close between ticks before the death animation finishes.
-        outcome = self.terminal_outcome(world)
-        if outcome is not None:
-            return outcome
-        return RunOutcome.DEATH if all_players_dead(world.players) else RunOutcome.INCOMPLETE
-
-
-class TypoSessionRuntime(SessionModeRuntime):
-    world: WorldState
-
-    def before_step(self) -> None:
-        typo_before_step(self.world)
-
-    def needs_mid_step(self) -> bool:
-        return True
-
-    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
-        return typo_input_transform(self.world, inputs)
-
-    def mid_step(self, ctx: MidStepContext) -> None:
-        typo_mid_step(ctx)
-
-    def post_step(self, ctx: PostStepContext) -> None:
-        typo_post_step(ctx)
-
-    def terminal_outcome(self, world: WorldState) -> RunOutcome | None:
-        # Typ-o stops simulating on death; the death animation plays outside ticks.
-        return RunOutcome.DEATH if all_players_dead(world.players) else None
-
-
-class TutorialSessionRuntime(SessionModeRuntime):
-    world: WorldState
-
-    def before_step(self) -> None:
-        tutorial_before_step(self.world)
-
-    def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
-        return tutorial_input_transform(self.world, inputs)
-
-    def post_step(self, ctx: PostStepContext) -> None:
-        tutorial_post_step(ctx)
-
-    def end_outcome(self, world: WorldState) -> RunOutcome:
-        # The tutorial has no terminal tick: players leave it from the UI.
-        return RunOutcome.TUTORIAL_COMPLETED if int(world.state.tutorial.stage_index) >= 8 else RunOutcome.INCOMPLETE
-
-
-class _SessionWorldMidStepRuntime(WorldMidStepRuntime):
-    mode_runtime: SessionModeRuntime
-    ctx: MidStepContext
-
-    def run_mid_step(self) -> None:
-        self.mode_runtime.mid_step(self.ctx)
+# Per-mode spawn state. Typ-o and tutorial keep theirs in the gameplay state.
+type ModeState = SurvivalSpawnState | RushSpawnState | QuestSpawnState | None
 
 
 # ---------------------------------------------------------------------------
@@ -395,7 +267,7 @@ class DeterministicSession(msgspec.Struct):
     elapsed_ms: float = 0.0
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
 
-    mode_runtime: SessionModeRuntime = msgspec.field(default_factory=SessionModeRuntime)
+    mode_state: ModeState = None
 
     def __post_init__(self) -> None:
         state = self.world.state
@@ -414,16 +286,84 @@ class DeterministicSession(msgspec.Struct):
     def run_elapsed_ms(self) -> float:
         """Elapsed run time as scored: the spawn timeline for quests, session time otherwise."""
 
-        mode_runtime = self.mode_runtime
-        if isinstance(mode_runtime, QuestSessionRuntime):
-            return float(mode_runtime.spawn.spawn_timeline_ms)
+        if isinstance(self.mode_state, QuestSpawnState):
+            return float(self.mode_state.spawn_timeline_ms)
         return float(self.elapsed_ms)
 
     def terminal_outcome(self) -> RunOutcome | None:
-        return self.mode_runtime.terminal_outcome(self.world)
+        """Outcome when this tick ends the run in live play, else None."""
+
+        players = self.world.players
+        match self.game_mode:
+            case GameMode.SURVIVAL:
+                return RunOutcome.DEATH if death_transition_ready(players) else None
+            case GameMode.QUESTS:
+                if isinstance(self.mode_state, QuestSpawnState) and self.mode_state.completed:
+                    return RunOutcome.QUEST_COMPLETED
+                return RunOutcome.DEATH if death_transition_ready(players) else None
+            case GameMode.RUSH | GameMode.TYPO:
+                # No death-animation hold: Rush and Typ-o stop simulating on death.
+                return RunOutcome.DEATH if all_players_dead(players) else None
+            case _:
+                return None
 
     def end_outcome(self) -> RunOutcome:
-        return self.mode_runtime.end_outcome(self.world)
+        """Outcome of a run whose recording stops after the current tick."""
+
+        match self.game_mode:
+            case GameMode.QUESTS:
+                # The failed-quest countdown keeps running while paused, so a
+                # failed run may close between ticks before the death animation ends.
+                outcome = self.terminal_outcome()
+                if outcome is not None:
+                    return outcome
+                return RunOutcome.DEATH if all_players_dead(self.world.players) else RunOutcome.INCOMPLETE
+            case GameMode.TUTORIAL:
+                # The tutorial has no terminal tick: players leave it from the UI.
+                stage_index = int(self.world.state.tutorial.stage_index)
+                return RunOutcome.TUTORIAL_COMPLETED if stage_index >= 8 else RunOutcome.INCOMPLETE
+            case _:
+                return self.terminal_outcome() or RunOutcome.INCOMPLETE
+
+    def _mode_before_step(self) -> None:
+        match self.game_mode:
+            case GameMode.RUSH:
+                enforce_rush_loadout(self.world)
+            case GameMode.TYPO:
+                typo_before_step(self.world)
+            case GameMode.TUTORIAL:
+                tutorial_before_step(self.world)
+
+    def _mode_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
+        match self.game_mode:
+            case GameMode.RUSH:
+                return rush_input_transform(inputs)
+            case GameMode.TYPO:
+                return typo_input_transform(self.world, inputs)
+            case GameMode.TUTORIAL:
+                return tutorial_input_transform(self.world, inputs)
+            case _:
+                return inputs
+
+    def _mode_update(self, ctx: MidStepContext) -> None:
+        """The mode's native update, run inside the world step after player updates."""
+
+        match self.mode_state:
+            case SurvivalSpawnState():
+                survival_mid_step(ctx, self.mode_state)
+            case RushSpawnState():
+                rush_mid_step(ctx, self.mode_state)
+            case QuestSpawnState():
+                quest_mid_step(ctx, self.mode_state)
+            case None if self.game_mode == GameMode.TYPO:
+                typo_mid_step(ctx)
+
+    def _mode_after_step(self, ctx: PostStepContext) -> None:
+        match self.game_mode:
+            case GameMode.TYPO:
+                typo_post_step(ctx)
+            case GameMode.TUTORIAL:
+                tutorial_post_step(ctx)
 
     def _require_perk_command_allowed(self, name: str) -> None:
         # The perk prompt only offers the menu while a perk is pending and a
@@ -487,22 +427,21 @@ class DeterministicSession(msgspec.Struct):
         # Perk commands belong to the between-tick prelude. Typ-o input belongs
         # inside the tick, after its loadout enforcement (and reload sound).
         timing = self.timing_for_dt(dt)
-        mode_runtime = self.mode_runtime
-        mode_runtime.before_step()
+        self._mode_before_step()
         for command in tick_commands:
             self.apply_command(command, dt=dt)
 
         tick_inputs = inputs
         if tick_inputs is not None:
-            tick_inputs = mode_runtime.transform_inputs(tick_inputs)
+            tick_inputs = self._mode_inputs(tick_inputs)
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
         dt_raw_ms = float(timing.dt_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
-        mid_step_runtime = None
-        if mode_runtime.needs_mid_step():
+        mode_update = None
+        if self.mode_state is not None or self.game_mode == GameMode.TYPO:
             ctx = MidStepContext(
                 world=self.world,
                 elapsed_before_ms=elapsed_before_ms,
@@ -510,10 +449,7 @@ class DeterministicSession(msgspec.Struct):
                 dt_raw_ms=dt_raw_ms,
                 detail_preset=self.detail_preset,
             )
-            mid_step_runtime = _SessionWorldMidStepRuntime(
-                mode_runtime=mode_runtime,
-                ctx=ctx,
-            )
+            mode_update = partial(self._mode_update, ctx)
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
@@ -525,7 +461,6 @@ class DeterministicSession(msgspec.Struct):
         else:
             presentation_rng = state.rng
 
-
         prev_audio = [
             (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players
         ]
@@ -533,7 +468,7 @@ class DeterministicSession(msgspec.Struct):
 
         events = self.world.step(
             timing.dt_sim,
-            mid_step_runtime=mid_step_runtime,
+            mode_update=mode_update,
             inputs=tick_inputs,
             detail_preset=self.detail_preset,
             violence_disabled=self.violence_disabled,
@@ -566,7 +501,7 @@ class DeterministicSession(msgspec.Struct):
         if recording_rng is not None:
             presentation_trace.draws_total = int(recording_rng.calls)
 
-        quest_spawn = mode_runtime.spawn if isinstance(mode_runtime, QuestSessionRuntime) else None
+        quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
             post_apply_sfx.append(SfxId.QUESTHIT)
         presentation = msgspec.structs.replace(
@@ -586,7 +521,7 @@ class DeterministicSession(msgspec.Struct):
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
 
-        mode_runtime.post_step(
+        self._mode_after_step(
             PostStepContext(
                 world=self.world,
                 step_result=step,

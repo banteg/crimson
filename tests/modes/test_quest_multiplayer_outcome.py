@@ -7,6 +7,7 @@ import pytest
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
+from crimson.sim.run_result import RunOutcome
 from crimson.weapons import WEAPON_BY_ID
 from grim.config import ensure_crimson_cfg
 from grim.rand import Crand
@@ -26,9 +27,10 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     health_values = (91.2, 50.6, 10.4, 0.49)
     for idx, health in enumerate(health_values):
         mode.world.players[idx].health = float(health)
-    mode._close_failed_run()
+    mode._finish_run(RunOutcome.DEATH)
     outcome = mode.consume_outcome()
     assert outcome is not None
+    assert outcome.kind == "failed"
     assert outcome.player_health_values == health_values
     assert outcome.player_health == health_values[0]
     assert outcome.player2_health == health_values[1]

@@ -51,7 +51,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
     fx_queue_rotated = FxQueueRotated()
     events = world.step(
         1.0 / 60.0,
-        mid_step_runtime=None,
+        mode_update=None,
         inputs=[],
         detail_preset=5,
         violence_disabled=0,

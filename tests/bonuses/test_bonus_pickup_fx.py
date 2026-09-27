@@ -40,7 +40,7 @@ def _step_world_over_bonuses(
     )
     events = world.step(
         0.016,
-        mid_step_runtime=None,
+        mode_update=None,
         inputs=None,
         detail_preset=5,
         violence_disabled=0,

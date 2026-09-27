@@ -58,7 +58,7 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -74,7 +74,7 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -106,7 +106,7 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -124,7 +124,7 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -156,7 +156,7 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -173,7 +173,7 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -213,7 +213,7 @@ def test_projectile_kill_awards_xp_same_step() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -279,7 +279,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -322,7 +322,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
             fx_queue_rotated=FxQueueRotated(),
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
-            mid_step_runtime=None,
+            mode_update=None,
             violence_disabled=0,
             game_tune_started=False,
         )
@@ -364,7 +364,7 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -418,7 +418,7 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -479,7 +479,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -524,7 +524,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -583,7 +583,7 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -649,7 +649,7 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -707,7 +707,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )
@@ -760,7 +760,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
             fx_queue_rotated=FxQueueRotated(),
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
-            mid_step_runtime=None,
+            mode_update=None,
             violence_disabled=0,
             game_tune_started=False,
         )
@@ -805,7 +805,7 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        mid_step_runtime=None,
+        mode_update=None,
         violence_disabled=0,
         game_tune_started=False,
     )

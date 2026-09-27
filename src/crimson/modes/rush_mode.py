@@ -16,8 +16,6 @@ from ..input_codes import PadCode, pad_nav_pressed
 from ..replay import Replay, ReplayRecorder
 from ..sim.sessions import (
     DeterministicSession,
-    DeterministicSessionTick,
-    RushSessionRuntime,
     RushSpawnState,
 )
 from ..ui.cursor import draw_menu_cursor
@@ -25,7 +23,6 @@ from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
-from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
@@ -61,9 +58,9 @@ class RushMode(BaseGameplayMode):
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.RUSH)
         self._sim_session = prepared.session
-        mode_runtime = prepared.session.mode_runtime
-        assert isinstance(mode_runtime, RushSessionRuntime)
-        self._spawn_state = mode_runtime.spawn
+        spawn_state = prepared.session.mode_state
+        assert isinstance(spawn_state, RushSpawnState)
+        self._spawn_state = spawn_state
 
     def close(self) -> None:
         self._sim_session = None
@@ -83,25 +80,6 @@ class RushMode(BaseGameplayMode):
             self._action = Route.PAUSE
             return
 
-    def _enter_game_over(self) -> None:
-        if self._game_over_active:
-            return
-
-        game_mode_id = GameMode(self.config.gameplay.mode)
-        record = build_highscore_record_for_game_over(
-            state=self.state,
-            player=self.player,
-            survival_elapsed_ms=int(self._session_elapsed_ms()),
-            creature_kill_count=int(self.creatures.kill_count),
-            game_mode_id=game_mode_id,
-            hardcore=bool(self.hardcore),
-        )
-
-        self._game_over_record = record
-        self._game_over_ui.open()
-        self._game_over_active = True
-        self._save_replay()
-
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()
 
@@ -109,13 +87,6 @@ class RushMode(BaseGameplayMode):
         _ = replay
         kills = int(self.creatures.kill_count)
         return f"rush_{stamp}_kills{kills}"
-
-    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
-        _ = tick
-        if not self._any_player_alive():
-            self._enter_game_over()
-            return False
-        return True
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
@@ -132,8 +103,7 @@ class RushMode(BaseGameplayMode):
 
         if sim_dt <= 0.0:
             self._reset_gameplay_frame_clock()
-            if not any_alive:
-                self._enter_game_over()
+            self._finish_run_if_over()
             return
         if session is None:
             return

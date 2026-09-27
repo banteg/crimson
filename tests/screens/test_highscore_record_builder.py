@@ -35,13 +35,13 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     state.weapon_usage_time[2] = 10
     state.shots_fired[0] = 20
     state.shots_hit[0] = 15
+    state.game_mode = GameMode.SURVIVAL
 
     record = build_highscore_record_for_game_over(
         state=state,
         player=player,
         survival_elapsed_ms=5000,
         creature_kill_count=7,
-        game_mode_id=GameMode.SURVIVAL,
     )
 
     assert record.score_xp == 1234
@@ -55,19 +55,18 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     assert record.uni_num == (Crand(0xBEEF).rand() & UNI_NUM_MASK)
 
 
-def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
+def test_build_highscore_record_for_game_over_keeps_typo_counts_unclamped() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
+    state.game_mode = GameMode.TYPO
+    state.typo.typing.submit_count = 3
+    state.typo.typing.match_count = 5
 
     record = build_highscore_record_for_game_over(
         state=state,
         player=player,
         survival_elapsed_ms=0,
         creature_kill_count=0,
-        game_mode_id=GameMode.TYPO,
-        shots_fired=3,
-        shots_hit=5,
-        clamp_shots_hit=False,
     )
 
     assert record.shots_fired == 3
@@ -77,14 +76,15 @@ def test_build_highscore_record_for_game_over_can_skip_clamp() -> None:
 def test_build_highscore_record_for_game_over_marks_hardcore() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
+    state.game_mode = GameMode.QUESTS
+    state.hardcore = True
 
     record = build_highscore_record_for_game_over(
         state=state,
         player=player,
         survival_elapsed_ms=0,
         creature_kill_count=0,
-        game_mode_id=GameMode.QUESTS,
-        hardcore=True,
     )
 
+    assert record.game_mode_id == GameMode.QUESTS
     assert record.hardcore_marker == 0x75

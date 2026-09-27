@@ -10,14 +10,9 @@ from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .sessions import (
     DeterministicSession,
-    QuestSessionRuntime,
     QuestSpawnState,
-    RushSessionRuntime,
     RushSpawnState,
-    SurvivalSessionRuntime,
     SurvivalSpawnState,
-    TutorialSessionRuntime,
-    TypoSessionRuntime,
 )
 
 
@@ -28,7 +23,7 @@ def build_survival_session(
     violence_disabled: int,
     apply_world_dt_steps: bool = True,
 ) -> tuple[DeterministicSession, SurvivalSpawnState]:
-    mode_runtime = SurvivalSessionRuntime()
+    spawn = SurvivalSpawnState()
     session = DeterministicSession(
         world=world,
         game_mode=GameMode.SURVIVAL,
@@ -36,9 +31,9 @@ def build_survival_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         apply_world_dt_steps=apply_world_dt_steps,
-        mode_runtime=mode_runtime,
+        mode_state=spawn,
     )
-    return session, mode_runtime.spawn
+    return session, spawn
 
 
 def build_rush_session(
@@ -47,7 +42,7 @@ def build_rush_session(
     detail_preset: int,
     violence_disabled: int,
 ) -> tuple[DeterministicSession, RushSpawnState]:
-    mode_runtime = RushSessionRuntime(world=world)
+    spawn = RushSpawnState()
     session = DeterministicSession(
         world=world,
         game_mode=GameMode.RUSH,
@@ -55,9 +50,9 @@ def build_rush_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         elapsed_uses_raw_dt=True,
-        mode_runtime=mode_runtime,
+        mode_state=spawn,
     )
-    return session, mode_runtime.spawn
+    return session, spawn
 
 
 def build_quest_session(
@@ -77,7 +72,6 @@ def build_quest_session(
         weapon_assign_player(player, weapon_id, state=world.state)
 
     quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
-    mode_runtime = QuestSessionRuntime(spawn=quest_state)
     session = DeterministicSession(
         world=world,
         game_mode=GameMode.QUESTS,
@@ -85,7 +79,7 @@ def build_quest_session(
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
         apply_world_dt_steps=apply_world_dt_steps,
-        mode_runtime=mode_runtime,
+        mode_state=quest_state,
     )
     return session, quest_state
 
@@ -110,7 +104,6 @@ def build_typo_session(
         perk_progression_enabled=False,
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
-        mode_runtime=TypoSessionRuntime(world=world),
     )
 
 
@@ -131,5 +124,4 @@ def build_tutorial_session(
         perk_progression_enabled=True,
         detail_preset=detail_preset,
         violence_disabled=violence_disabled,
-        mode_runtime=TutorialSessionRuntime(world=world),
     )

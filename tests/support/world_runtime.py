@@ -9,7 +9,6 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
     DeterministicSessionTick,
-    SurvivalSessionRuntime,
     SurvivalSpawnState,
 )
 from crimson.sim.world_state import WorldState
@@ -109,7 +108,7 @@ class WorldRuntimeHost(WorldRuntime):
             detail_preset=detail_preset,
             violence_disabled=violence_disabled,
             game_tune_started=self.game_tune_started,
-            mode_runtime=SurvivalSessionRuntime(spawn=self._survival_test_spawn_state),
+            mode_state=self._survival_test_spawn_state,
         )
         session.elapsed_ms = float(self._survival_test_elapsed_ms)
 

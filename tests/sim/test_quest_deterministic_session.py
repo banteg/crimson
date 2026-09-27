@@ -8,7 +8,7 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import DeterministicSession, QuestSessionRuntime, QuestSpawnState
+from crimson.sim.sessions import DeterministicSession, QuestSpawnState
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.world_runtime import WorldRuntimeHost
@@ -32,7 +32,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
         world=runtime.world,
         game_mode=GameMode.QUESTS,
         perk_progression_enabled=True,
-        mode_runtime=QuestSessionRuntime(spawn=spawn_state),
+        mode_state=spawn_state,
     )
     return session, spawn_state
 

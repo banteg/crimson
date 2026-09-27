@@ -8,7 +8,7 @@ from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import DeterministicSession, MidStepContext, SessionModeRuntime
+from crimson.sim.sessions import DeterministicSession, MidStepContext
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from crimson.typo.names import CreatureNameTable
@@ -61,7 +61,7 @@ def test_typing_buffer_submit_counts_reload_as_submit_only() -> None:
     assert buf.match_count == 0
 
 
-def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
+def test_typo_commands_apply_before_input_transform(make_world_state, monkeypatch: pytest.MonkeyPatch) -> None:
     world = make_world_state()
     reset_typo_state(
         world.state.typo,
@@ -69,31 +69,22 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
     )
     seen_typing_text: list[str] = []
 
-    class _StopAfterTransform(RuntimeError):
-        pass
+    def observe_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
+        seen_typing_text.append(str(world.state.typo.typing.text))
+        return typo_input_transform(world, inputs)
 
-    class _TransformObserver(SessionModeRuntime):
-        world: WorldState
-        seen_typing_text: list[str]
-
-        def transform_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
-            _ = inputs
-            self.seen_typing_text.append(str(self.world.state.typo.typing.text))
-            raise _StopAfterTransform
+    monkeypatch.setattr("crimson.sim.sessions.typo_input_transform", observe_transform)
 
     session = DeterministicSession(
         world=world,
         game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
-        mode_runtime=_TransformObserver(world=world, seen_typing_text=seen_typing_text),
     )
-
-    with pytest.raises(_StopAfterTransform):
-        session.step_tick(
-            dt=1.0 / 60.0,
-            inputs=[PlayerInput()],
-            commands=[TypoCharCommand(player_index=0, ch="a")],
-        )
+    session.step_tick(
+        dt=1.0 / 60.0,
+        inputs=[PlayerInput()],
+        commands=[TypoCharCommand(player_index=0, ch="a")],
+    )
 
     assert seen_typing_text == ["a"]
 

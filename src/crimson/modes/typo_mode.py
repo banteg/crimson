@@ -17,12 +17,10 @@ from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
-from ..typo.state import typo_shot_counts
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
-from .components.highscore_record_builder import build_highscore_record_for_game_over
 
 
 class TypoShooterMode(BaseGameplayMode):
@@ -106,28 +104,6 @@ class TypoShooterMode(BaseGameplayMode):
                     ch = ""
                 if ch:
                     self.enqueue_input_command(TypoCharCommand(player_index=0, ch=ch[0]))
-
-    def _enter_game_over(self) -> None:
-        if self._game_over_active:
-            return
-
-        shots_fired, shots_hit = typo_shot_counts(self.state.typo)
-        record = build_highscore_record_for_game_over(
-            state=self.state,
-            player=self.player,
-            survival_elapsed_ms=int(self._session_elapsed_ms()),
-            creature_kill_count=int(self.creatures.kill_count),
-            game_mode_id=GameMode.TYPO,
-            shots_fired=int(shots_fired),
-            shots_hit=int(shots_hit),
-            clamp_shots_hit=False,
-            hardcore=bool(self.hardcore),
-        )
-
-        self._game_over_record = record
-        self._game_over_ui.open()
-        self._game_over_active = True
-        self._save_replay()
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()

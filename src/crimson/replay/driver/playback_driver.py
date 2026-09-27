@@ -23,7 +23,6 @@ from ...sim.run_spec import RunSpec
 from ...sim.sessions import (
     DeterministicSessionTick,
     IllegalCommandError,
-    QuestSessionRuntime,
     QuestSpawnState,
 )
 from ...sim.world_reset import CreatureSlotResidue
@@ -142,8 +141,8 @@ class SessionPlaybackDriver:
         self.world = self.session.world
         self._terrain_setup = prepared.terrain
         self._quest_definition = prepared.quest
-        mode_runtime = self.session.mode_runtime
-        self._quest_spawn_state = mode_runtime.spawn if isinstance(mode_runtime, QuestSessionRuntime) else None
+        mode_state = self.session.mode_state
+        self._quest_spawn_state = mode_state if isinstance(mode_state, QuestSpawnState) else None
         self._quest_total_spawn_count = (
             sum(entry.count for entry in self._quest_spawn_state.spawn_entries) if self._quest_spawn_state is not None else 0
         )
