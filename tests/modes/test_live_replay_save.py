@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.modes import base_gameplay_mode, rush_mode, survival_mode
+from crimson.modes import rush_mode, survival_mode
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -14,7 +14,6 @@ from crimson.perks import PerkId
 from crimson.replay import load_replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import unpack_player_input
-from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome
@@ -24,12 +23,13 @@ from grim.raylib_api import rl
 from grim.view import ViewContext
 from tests.support.replay_runner_helpers import unverified_replay
 
+pytestmark = pytest.mark.usefixtures("headless_resources")
+
 
 def _open_mode[ModeT: BaseGameplayMode](
     mode_cls: Callable[..., ModeT],
     game_mode: GameMode,
     *,
-    mocker,
     make_mode_config,
     assets_dir: Path,
     replay_checkpoints: bool = False,
@@ -39,13 +39,7 @@ def _open_mode[ModeT: BaseGameplayMode](
         config=make_mode_config(game_mode=game_mode),
         audio_rng=Crand(1),
     )
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mode.open()
-    mocker.patch.object(mode, "_sync_audio_and_ground")
-    mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput(aim=Vec2(600.0, 512.0))])
-    mocker.patch.object(base_gameplay_mode, "apply_presentation_plans")
     return mode
 
 
@@ -66,8 +60,7 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
     assets_dir,
     tmp_path,
 ) -> None:
-    mode = _open_mode(RushMode, GameMode.RUSH, mocker=mocker, make_mode_config=make_mode_config, assets_dir=assets_dir)
-    mocker.patch.object(GameOverUi, "open")
+    mode = _open_mode(RushMode, GameMode.RUSH, make_mode_config=make_mode_config, assets_dir=assets_dir)
     rng_before_record: list[int] = []
     build_record = rush_mode.build_highscore_record_for_game_over
 
@@ -97,7 +90,6 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
 
 @pytest.mark.parametrize("replay_checkpoints", [False, True])
 def test_saved_live_replay_round_trips_and_verifies(
-    mocker,
     make_mode_config,
     assets_dir,
     tmp_path,
@@ -106,7 +98,6 @@ def test_saved_live_replay_round_trips_and_verifies(
     mode = _open_mode(
         SurvivalMode,
         GameMode.SURVIVAL,
-        mocker=mocker,
         make_mode_config=make_mode_config,
         assets_dir=assets_dir,
         replay_checkpoints=replay_checkpoints,
@@ -123,11 +114,10 @@ def test_saved_live_replay_round_trips_and_verifies(
     assert build_verify_playback_driver(replay).run() == replay.result
 
 
-def test_run_left_before_first_tick_saves_no_replay(mocker, make_mode_config, assets_dir, tmp_path) -> None:
+def test_run_left_before_first_tick_saves_no_replay(make_mode_config, assets_dir, tmp_path) -> None:
     mode = _open_mode(
         SurvivalMode,
         GameMode.SURVIVAL,
-        mocker=mocker,
         make_mode_config=make_mode_config,
         assets_dir=assets_dir,
     )
@@ -142,7 +132,6 @@ def test_debug_cheat_stops_recording(mocker, make_mode_config, assets_dir, tmp_p
     mode = _open_mode(
         SurvivalMode,
         GameMode.SURVIVAL,
-        mocker=mocker,
         make_mode_config=make_mode_config,
         assets_dir=assets_dir,
     )
@@ -159,11 +148,10 @@ def test_debug_cheat_stops_recording(mocker, make_mode_config, assets_dir, tmp_p
     assert _saved_files(tmp_path) == []
 
 
-def test_perk_prompt_stays_closed_while_a_pick_is_queued(mocker, make_mode_config, assets_dir) -> None:
+def test_perk_prompt_stays_closed_while_a_pick_is_queued(make_mode_config, assets_dir) -> None:
     mode = _open_mode(
         SurvivalMode,
         GameMode.SURVIVAL,
-        mocker=mocker,
         make_mode_config=make_mode_config,
         assets_dir=assets_dir,
     )
@@ -195,7 +183,7 @@ def test_perk_prompt_stays_closed_while_a_pick_is_queued(mocker, make_mode_confi
 
 
 def test_live_sim_consumes_the_inputs_the_replay_records(mocker, make_mode_config, assets_dir) -> None:
-    mode = _open_mode(SurvivalMode, GameMode.SURVIVAL, mocker=mocker, make_mode_config=make_mode_config, assets_dir=assets_dir)
+    mode = _open_mode(SurvivalMode, GameMode.SURVIVAL, make_mode_config=make_mode_config, assets_dir=assets_dir)
     # Stick and mouse aim math produces f64 points that f32 cannot represent.
     live = PlayerInput(aim=Vec2(600.1, 512.3), move=Vec2(0.3, -0.7), fire_down=True)
     mocker.patch.object(mode, "_build_local_inputs", return_value=[live])

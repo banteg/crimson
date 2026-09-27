@@ -72,7 +72,6 @@ class StandaloneTickHarness:
 
         if not runtime.sim_world.players:
             return 0
-        runtime.terrain_runtime.process_pending()
         session = self._ensure_session(runtime)
         session.demo_mode_active = bool(runtime.demo_mode_active)
         self.ticks.poll(self.frame_inputs(float(dt)))

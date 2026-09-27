@@ -159,6 +159,16 @@ jobs:
           f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2  game_bins/crimsonland/1.9.93-gog/vorbisfile.dll
           EOF
 
+      - name: Download runtime assets
+        if: ${{ matrix.task == 'pytest' }}
+        run: |
+          mkdir -p artifacts/assets
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output artifacts/assets/crimson.paq "https://paq.crimson.banteg.xyz/v1.9.93/crimson.paq"
+          sha256sum --check <<'EOF'
+          52ae564a2cb86de9f11be261338af942377b4340595a0df2a5ae41f468042547  artifacts/assets/crimson.paq
+          EOF
+
       - name: Run check
         env:
           MATCH_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}

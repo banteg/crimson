@@ -152,20 +152,13 @@ class RenderResources(msgspec.Struct):
     def consume_terrain_fx_batch(
         self,
         batch: TerrainFxBatch,
-        *,
-        corpse_frame_for_type: Callable[[int], int] = creature_corpse_frame_for_type,
     ) -> None:
         if batch.is_empty():
             return
         ground = self.ground
         if ground is None or ground.texture_failed or self.fx_textures is None:
             return
-        if ground.render_target_ready():
-            self._bake_terrain_fx_batch(
-                batch,
-                corpse_frame_for_type=corpse_frame_for_type,
-            )
-            return
+        # Baking draws into the ground render target; it happens on the draw path.
         self._pending_terrain_fx_batches.append(batch)
 
     def build_render_frame(

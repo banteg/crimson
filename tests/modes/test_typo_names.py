@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 
-import crimson.world.render_resources as render_resources_module
+import pytest
+
 from crimson.game_modes import GameMode
-from crimson.modes import base_gameplay_mode
 from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
 from crimson.rng_caller_static import RngCallerStatic
@@ -13,10 +12,6 @@ from crimson.typo.names import NAME_MAX_CHARS, CreatureNameTable, load_typo_high
 from grim.rand import Crand
 from grim.view import ViewContext
 from tests.support.helpers import ScriptedCrand
-
-
-def _assets_dir() -> Path:
-    return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
 def test_creature_name_table_assign_random_unique_and_bounded() -> None:
@@ -182,7 +177,12 @@ def test_load_typo_highscore_names_filters_and_deduplicates(tmp_path: Path) -> N
     assert load_typo_highscore_names(path) == ["Alpha", "Beta.Test"]
 
 
-def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(mocker, make_mode_config, tmp_path: Path) -> None:
+@pytest.mark.usefixtures("headless_resources")
+def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(
+    make_mode_config,
+    assets_dir: Path,
+    tmp_path: Path,
+) -> None:
     path = scores_path_for_mode(tmp_path, GameMode.TYPO)
     records = []
     for value in ("Alpha", "Beta.Test"):
@@ -193,12 +193,7 @@ def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(mocke
     write_highscore_records(path, records)
 
     config = make_mode_config(game_mode=GameMode.TYPO, base_dir=tmp_path)
-    mode = TypoShooterMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
-    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
-    resources = SimpleNamespace(texture=lambda _texture_id: object())
-    small_font = SimpleNamespace(cell_size=10)
-    mocker.patch.object(render_resources_module, "runtime_resources_for", return_value=resources)
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=small_font)
+    mode = TypoShooterMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
 
     mode.open()
 

@@ -11,13 +11,14 @@ from __future__ import annotations
 import math
 from pathlib import Path
 
+import pytest
+
 from crimson import local_input
 from crimson.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.gamepad_profile import apply_pad_profile
 from crimson.input_codes import PadCode
 from crimson.math_parity import f32
-from crimson.modes import base_gameplay_mode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import load_replay
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
@@ -37,15 +38,12 @@ def _axis(value: float) -> float:
     return float(f32(max(-1.0, min(1.0, value))))
 
 
+@pytest.mark.usefixtures("headless_resources")
 def test_live_run_replays_to_identical_session_state(mocker, make_mode_config, assets_dir: Path, tmp_path: Path) -> None:
     config = make_mode_config(game_mode=GameMode.SURVIVAL)
     apply_pad_profile(config.controls, 0)
     mode = SurvivalMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(1))
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mode.open()
-    mocker.patch.object(mode, "_sync_audio_and_ground")
 
     frame = [0]
 

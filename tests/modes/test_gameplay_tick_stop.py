@@ -1,24 +1,22 @@
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
 from crimson.replay import ReplayRecorder
-from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
 from grim.rand import Crand
 from grim.view import ViewContext
+
+pytestmark = pytest.mark.usefixtures("headless_resources")
 
 
 def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_mode_config, assets_dir) -> None:
     mode = RushMode(
         ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(1),
     )
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mode.open()
-    mocker.patch.object(mode, "_sync_audio_and_ground")
-    mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput()])
-    present = mocker.patch.object(base_gameplay_mode, "apply_presentation_plans")
+    present = mocker.spy(base_gameplay_mode, "apply_presentation_plans")
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.RUSH, seed=1))
     def check_finished_recording() -> None:
         assert recorder.tick_index == 1
@@ -43,17 +41,11 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
     assert len(present.call_args.kwargs["plans"]) == 1
 
 
-def test_live_settings_change_does_not_change_recorded_session_settings(mocker, make_mode_config, assets_dir) -> None:
+def test_live_settings_change_does_not_change_recorded_session_settings(make_mode_config, assets_dir) -> None:
     mode = RushMode(ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(1))
     mode.config.display.detail_preset = 5
     mode.config.display.violence_disabled = 0
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mode.open()
-    mocker.patch.object(mode, "_sync_audio_and_ground")
-    mocker.patch.object(mode, "_build_local_inputs", return_value=[PlayerInput()])
-    mocker.patch.object(base_gameplay_mode, "apply_presentation_plans")
     session = mode._sim_session
     assert session is not None
     mode.config.display.detail_preset = 1

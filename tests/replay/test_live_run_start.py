@@ -4,7 +4,6 @@ import pytest
 
 from crimson.dbg.state_digest import session_state_bytes
 from crimson.game_modes import GameMode
-from crimson.modes import base_gameplay_mode, quest_mode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
@@ -22,6 +21,7 @@ from grim.view import ViewContext
 from tests.support.replay_runner_helpers import unverified_replay
 
 
+@pytest.mark.usefixtures("headless_resources")
 @pytest.mark.parametrize(("game_mode", "mode_type"), [
     (GameMode.SURVIVAL, SurvivalMode), (GameMode.RUSH, RushMode), (GameMode.QUESTS, QuestMode),
     (GameMode.TUTORIAL, TutorialMode), (GameMode.TYPO, TypoShooterMode),
@@ -38,10 +38,6 @@ def test_live_start_and_first_ticks_match_complete_replay_state(
     )
     status = GameStatus.from_data(path=tmp_path / "status.dat", data=GameStatusData(quest_unlock_index=15), dirty=False)
     mode.bind_status(status)
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
-    mocker.patch.object(quest_mode, "load_grim_mono_font", return_value=None)
     mode.open()
     if isinstance(mode, QuestMode):
         mode.start_run(QuestLevel(1, 1), status=status)

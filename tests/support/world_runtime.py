@@ -103,7 +103,6 @@ class WorldRuntimeHost(WorldRuntime):
         apply_audio: bool = True,
     ) -> DeterministicSessionTick:
         self.sync_audio_bridge_state()
-        self.terrain_runtime.process_pending()
 
         detail_preset = 5
         violence_disabled = 0

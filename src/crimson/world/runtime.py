@@ -159,6 +159,7 @@ class WorldRuntime:
         draw_aim_indicators: bool = True,
         entity_alpha: float = 1.0,
     ) -> None:
+        self.render_resources.process_ground_pending()
         draw_world(
             WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform()),
             draw_aim_indicators=draw_aim_indicators,

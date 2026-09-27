@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-from types import SimpleNamespace
+import pytest
 
-import crimson.modes.tutorial_mode as tutorial_mode_module
-import crimson.world.render_resources as render_resources_module
 from crimson.game_modes import GameMode
-from crimson.modes import base_gameplay_mode
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.perks import PerkId
 from crimson.replay.driver.playback_driver import PlaybackDriver
@@ -15,30 +11,22 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
 from grim.view import ViewContext
 from tests.support.replay_runner_helpers import unverified_replay
 
-
-def _assets_dir() -> Path:
-    return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+pytestmark = pytest.mark.usefixtures("headless_resources")
 
 
-def test_tutorial_constructor_starts_without_placeholder_session(make_mode_config) -> None:
+def test_tutorial_constructor_starts_without_placeholder_session(make_mode_config, assets_dir) -> None:
     config = make_mode_config(game_mode=GameMode.TUTORIAL)
-    mode = TutorialMode(ViewContext(assets_dir=_assets_dir()), config=config, audio_rng=Crand(0xBEEF))
+    mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
     assert mode._sim_session is None
 
 
-def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config) -> None:
+def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config, assets_dir) -> None:
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL, updates={"player_count": 4})
-    mode = TutorialMode(ViewContext(assets_dir=_assets_dir()), config=cfg, audio_rng=Crand(0xBEEF))
-    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
-    resources = SimpleNamespace(texture=lambda _texture_id: object())
-    small_font = SimpleNamespace(cell_size=10)
-    mocker.patch.object(render_resources_module, "runtime_resources_for", return_value=resources)
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=small_font)
-    reset_runtime = mocker.patch.object(mode._world_runtime, "reset", wraps=mode._world_runtime.reset)
+    mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
+    reset_runtime = mocker.spy(mode._world_runtime, "reset")
     mode.open()
 
     assert int(mode.config.gameplay.player_count) == 4
@@ -49,15 +37,12 @@ def test_tutorial_open_creates_session_and_recorder(mocker, make_mode_config) ->
     assert int(mode._replay_recorder.run.player_count) == 1
 
 
-def test_tutorial_recorded_first_shot_replays_the_live_startup(mocker, make_mode_config) -> None:
+def test_tutorial_recorded_first_shot_replays_the_live_startup(make_mode_config, assets_dir) -> None:
     mode = TutorialMode(
-        ViewContext(assets_dir=_assets_dir()),
+        ViewContext(assets_dir=assets_dir),
         config=make_mode_config(game_mode=GameMode.TUTORIAL),
         audio_rng=Crand(0xBEEF),
     )
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mode.open()
     session = mode._sim_session
     recorder = mode._replay_recorder
@@ -76,21 +61,9 @@ def test_tutorial_recorded_first_shot_replays_the_live_startup(mocker, make_mode
     assert live_tick.presentation == replay_tick.presentation
 
 
-def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_mode_config) -> None:
+def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_mode_config, assets_dir) -> None:
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL)
-    mode = TutorialMode(ViewContext(assets_dir=_assets_dir()), config=cfg, audio_rng=Crand(0xBEEF))
-    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
-    resources = SimpleNamespace(texture=lambda _texture_id: object())
-    small_font = SimpleNamespace(cell_size=10, widths=[8] * 256)
-    mocker.patch.object(render_resources_module, "runtime_resources_for", return_value=resources)
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=small_font)
-    mocker.patch.object(base_gameplay_mode.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
-    mocker.patch.object(base_gameplay_mode.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(tutorial_mode_module.rl, "is_key_pressed", side_effect=lambda _key: False)
-    mocker.patch.object(tutorial_mode_module.rl, "is_mouse_button_pressed", side_effect=lambda _button: False)
-    mocker.patch.object(mode, "_update_prompt_buttons", return_value=None)
-    mocker.patch.object(mode, "_build_input", return_value=SimpleNamespace())
+    mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
     mode.open()
 
     mode.state.tutorial.stage_index = 6
@@ -147,14 +120,9 @@ def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_
     assert open_calls == 2
 
 
-def test_open_perk_menu_ignores_reopen_while_menu_active(mocker, make_mode_config) -> None:
+def test_open_perk_menu_ignores_reopen_while_menu_active(mocker, make_mode_config, assets_dir) -> None:
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL)
-    mode = TutorialMode(ViewContext(assets_dir=_assets_dir()), config=cfg, audio_rng=Crand(0xBEEF))
-    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
-    resources = SimpleNamespace(texture=lambda _texture_id: object())
-    small_font = SimpleNamespace(cell_size=10, widths=[8] * 256)
-    mocker.patch.object(render_resources_module, "runtime_resources_for", return_value=resources)
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=small_font)
+    mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
     mode.open()
 
     mode._perk_menu.open = True

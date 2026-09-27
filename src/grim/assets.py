@@ -290,6 +290,14 @@ def _load_texture_asset_from_bytes(rel_path: str, data: bytes | None) -> rl.Text
     return texture
 
 
+def _texture_asset_size(rel_path: str, data: bytes | None) -> tuple[int, int]:
+    if data is None:
+        raise FileNotFoundError(f"Missing asset data: {rel_path}")
+    if rel_path.lower().endswith(".jaz"):
+        return jaz.jaz_size(data)
+    return Image.open(io.BytesIO(data)).size
+
+
 def _build_small_font(textures: dict[TextureId, rl.Texture], widths_data: bytes) -> SmallFontData:
     from grim.fonts.small import SmallFontData
 
@@ -299,7 +307,13 @@ def _build_small_font(textures: dict[TextureId, rl.Texture], widths_data: bytes)
     )
 
 
-def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
+def load_runtime_resources(assets_dir: Path, *, upload: bool = True) -> RuntimeResources:
+    """Load and register the runtime textures and small font.
+
+    With `upload=False` nothing touches the GPU: each texture keeps its real
+    size with id 0, so simulation, input and layout code can run without a
+    window. Such resources can't be drawn.
+    """
     entries = load_paq_entries(Path(assets_dir))
     widths_data = entries.get("load/smallFnt.dat")
     if widths_data is None:
@@ -310,6 +324,10 @@ def load_runtime_resources(assets_dir: Path) -> RuntimeResources:
         textures: dict[TextureId, rl.Texture] = {}
         for texture_id, spec in TEXTURE_SPECS.items():
             asset_path, payload = _select_texture_asset(entries, spec.rel_path)
+            if not upload:
+                width, height = _texture_asset_size(asset_path, payload)
+                textures[texture_id] = rl.Texture(0, width, height, 1, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8)
+                continue
             texture = _load_texture_asset_from_bytes(asset_path, payload)
             if texture is None:
                 raise FileNotFoundError(f"Missing runtime texture: {spec.rel_path}")

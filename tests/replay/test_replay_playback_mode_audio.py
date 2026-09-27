@@ -16,8 +16,6 @@ from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.world.sim_world_state import SimWorldState
-from crimson.world.terrain_runtime import TerrainRuntime
-from grim.assets import RuntimeResources
 from grim.color import RGBA
 from grim.console import ConsoleState
 from grim.geom import Vec2
@@ -30,22 +28,20 @@ def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value
     setattr(view, name, value)
 
 
+@pytest.mark.usefixtures("headless_resources")
 @pytest.mark.parametrize("recorded_gore", [0, 1])
 def test_replay_render_uses_recorded_gore_setting(mocker, replay_playback_view, recorded_gore) -> None:
     view, _console = replay_playback_view
     viewer_config = view._config
     viewer_config.display.violence_disabled = 1 - recorded_gore
+    viewer_config.audio.music_disabled = True
+    viewer_config.audio.sound_disabled = True
     replay = idle_replay(0, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0, violence_disabled=recorded_gore))
     mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
-    mocker.patch.object(replay_playback_mode, "load_small_font", return_value=None)
-    mocker.patch.object(replay_playback_mode, "init_audio_state", return_value=None)
-    mocker.patch.object(replay_playback_mode.WorldRuntime, "open_runtime")
-    mocker.patch.object(TerrainRuntime, "apply_terrain_setup")
 
     view.open()
 
     assert view._runtime is not None
-    view._runtime.render_resources.resources = mocker.Mock(spec=RuntimeResources)
     frame = view._runtime.build_render_frame()
     assert frame.config is not None
     assert frame.config.display.violence_disabled == recorded_gore
@@ -276,7 +272,7 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback
     assert bool(audio_bridge.sfx_enabled)
 
 
-def test_skip_forward_consumes_terrain_fx_each_tick_when_render_ready(replay_playback_view) -> None:
+def test_skip_forward_consumes_terrain_fx_each_tick(replay_playback_view) -> None:
     view, _console = replay_playback_view
     replay_inputs = [0, 0, 0, 0]
 
@@ -298,41 +294,6 @@ def test_skip_forward_consumes_terrain_fx_each_tick_when_render_ready(replay_pla
         _RuntimeStub(
             audio_bridge=_AudioBridgeStub(),
             render_resources=render_resources,
-        ),
-    )
-    view._tick_rate = 60
-    view._tick_index = 0
-    view._finished = False
-    view._dt = 1.0 / 60.0
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs), terrain_fx=_terrain_batch()))
-    view._max_ticks = None
-
-    view._skip_forward_seconds(3.0 / 60.0)
-
-    assert consume_calls == 3
-
-
-def test_skip_forward_consumes_terrain_fx_each_tick_when_render_not_ready(replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    replay_inputs = [0, 0, 0, 0]
-
-    consume_calls = 0
-
-    def _consume_terrain_fx(_batch: TerrainFxBatch) -> None:
-        nonlocal consume_calls
-        consume_calls += 1
-
-    _set_private(view, "_replay", idle_replay(len(replay_inputs)))
-    _set_private(
-        view,
-        "_runtime",
-        _RuntimeStub(
-            audio_bridge=_AudioBridgeStub(),
-            render_resources=_RenderResourcesStub(
-                ground=None,
-                fx_textures=None,
-                consume_terrain_fx_hook=_consume_terrain_fx,
-            ),
         ),
     )
     view._tick_rate = 60

@@ -525,13 +525,6 @@ class ReplayPlaybackMode:
         if self._audio is not None:
             update_audio(self._audio, float(dt), advance_sfx=self._paused or self._finished)
 
-        # Runtime open schedules terrain generation, but replay advances
-        # deterministic world ticks directly, so we must process pending ground
-        # work explicitly.
-        if self._runtime is not None:
-            ground = self._runtime.render_resources.ground
-            if ground is not None:
-                ground.process_pending()
 
     def _draw_quest_title(self) -> None:
         replay = self._replay

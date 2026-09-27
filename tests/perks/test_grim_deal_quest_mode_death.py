@@ -1,51 +1,28 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
-from typing import cast
 
-import crimson.modes.base_gameplay_mode as base_gameplay_mode_module
-import crimson.modes.quest_mode as quest_mode_module
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.runtime.apply import perk_apply
 from crimson.quests.level import QuestLevel
-from grim.assets import RuntimeResources, TextureId, register_runtime_resources
-from grim.fonts.small import SmallFontData
 from grim.rand import Crand
-from grim.raylib_api import rl
 from grim.view import ViewContext
 
 
-def _register_runtime_resources_stub(assets_dir: Path) -> None:
-    tex = cast("rl.Texture", SimpleNamespace(width=1, height=1, id=1))
-    register_runtime_resources(
-        RuntimeResources(
-            assets_dir=assets_dir,
-            textures=dict.fromkeys(TextureId, tex),
-            small_font=cast(SmallFontData, SimpleNamespace(cell_size=10, widths=[8] * 256)),
-        ),
-    )
-
-
-def _make_quest_mode(mocker, *, config) -> QuestMode:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    _register_runtime_resources_stub(assets_dir)
-    ctx = ViewContext(assets_dir=assets_dir)
-    mode = QuestMode(ctx, config=config, audio_rng=Crand(0xBEEF))
-    mocker.patch.object(quest_mode_module, "load_grim_mono_font", return_value=SimpleNamespace())
+def _make_quest_mode(mocker, *, config, assets_dir: Path) -> QuestMode:
+    mode = QuestMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
     mode.open()
-    mocker.patch.object(mode, "_sync_audio_and_ground", return_value=None)
-    mocker.patch.object(mode, "apply_terrain_setup", return_value=None)
     mode.start_run(QuestLevel(1, 1), status=None)
-    mode.render_resources.ground = None
     return mode
 
 
-def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker, make_mode_config) -> None:
-    mode = _make_quest_mode(mocker, config=make_mode_config(game_mode=GameMode.QUESTS))
+@pytest.mark.usefixtures("headless_resources")
+def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_transition(mocker, make_mode_config, assets_dir: Path) -> None:
+    mode = _make_quest_mode(mocker, config=make_mode_config(game_mode=GameMode.QUESTS), assets_dir=assets_dir)
 
     # Simulate picking Grim Deal while the perk menu is visible and in transition.
     # The perk kills the player immediately, but QuestMode must still close the run
@@ -61,11 +38,6 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
         mode._perk_menu.close()
 
     mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_apply_grim_deal_and_close)
-
-    mocker.patch.object(base_gameplay_mode_module.rl, "get_mouse_position", side_effect=lambda: rl.Vector2(0.0, 0.0))
-    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_width", side_effect=lambda: 640)
-    mocker.patch.object(base_gameplay_mode_module.rl, "get_screen_height", side_effect=lambda: 480)
-    mocker.patch.object(quest_mode_module.rl, "is_key_pressed", side_effect=lambda _key: False)
 
     mode.update(1.0 / 60.0)
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib
 import sys
 import time
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 
@@ -96,6 +96,7 @@ if TYPE_CHECKING:
     from crimson.modes import replay_playback_mode
     from crimson.persistence.save_status import GameStatus
     from crimson.sim.world_state import WorldState
+    from grim.assets import RuntimeResources
     from grim.audio import AudioState
     from grim.config import CrimsonConfig
     from grim.console import ConsoleState
@@ -198,6 +199,20 @@ def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple[replay_playb
 @pytest.fixture
 def assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
+
+
+@pytest.fixture(scope="session")
+def headless_resources() -> Iterator[RuntimeResources]:
+    """Real runtime textures and font decoded from crimson.paq without a GPU context.
+
+    Registered for the tests' assets directory, so gameplay modes open and update
+    headlessly; the textures keep real sizes but can't be drawn.
+    """
+    from grim.assets import load_runtime_resources, unload_runtime_resources
+
+    resources = load_runtime_resources(Path(__file__).resolve().parents[1] / "artifacts" / "assets", upload=False)
+    yield resources
+    unload_runtime_resources(resources)
 
 
 @pytest.fixture

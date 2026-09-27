@@ -705,7 +705,7 @@ class BaseGameplayMode:
 
     def prepare_demo_trial_overlay_frame(self) -> None:
         self._world_runtime.update_camera()
-        self._sync_audio_and_ground()
+        self._sync_audio()
 
     def regenerate_terrain_for_console(self) -> None:
         if self.render_resources.ground is None:
@@ -755,10 +755,8 @@ class BaseGameplayMode:
         _ = tick
         return True
 
-    def _sync_audio_and_ground(self) -> None:
+    def _sync_audio(self) -> None:
         self._world_runtime.sync_audio_bridge_state()
-        if self.render_resources.ground is not None:
-            self.render_resources.ground.process_pending()
 
     def _run_deterministic_session_ticks(
         self,
@@ -775,7 +773,7 @@ class BaseGameplayMode:
 
         if float(dt_frame) <= 0.0:
             return
-        self._sync_audio_and_ground()
+        self._sync_audio()
         self._live_ticks.poll(self._build_local_inputs(dt=float(dt_frame)))
         plans: list[DeterministicPresentationPlan] = []
         for _ in range(self._tick_clock.advance(float(dt_frame))):

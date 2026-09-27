@@ -11,7 +11,6 @@ from grim.raylib_api import rl
 GRIM_MONO_ADVANCE = 16.0
 GRIM_MONO_DRAW_SIZE = 32.0
 GRIM_MONO_LINE_HEIGHT = 28.0
-GRIM_MONO_TEXTURE_FILTER = rl.TextureFilter.TEXTURE_FILTER_BILINEAR
 
 
 class GrimMonoFont(msgspec.Struct, frozen=True):
@@ -45,7 +44,6 @@ def _draw_mono_glyph(
 
 def load_grim_mono_font(assets_root: Path) -> GrimMonoFont:
     texture = runtime_resources_for(assets_root).texture(TextureId.DEFAULT_FONT_COURIER)
-    rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16
     cell_width = texture.width / grid
     cell_height = texture.height / grid

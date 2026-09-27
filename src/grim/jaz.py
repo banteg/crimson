@@ -83,7 +83,7 @@ def decode_alpha_rle(data: bytes, expected: int) -> bytes:
     return bytes(out)
 
 
-def decode_jaz_bytes(data: bytes) -> JazImage:
+def _parse_jaz_payload(data: bytes):
     parsed = JAZ_FILE.parse(data)
     header = parsed.header
     if header.method != 1:
@@ -91,7 +91,16 @@ def decode_jaz_bytes(data: bytes) -> JazImage:
     raw = zlib.decompress(parsed.compressed)
     if len(raw) != header.raw_size:
         raise ValueError(f"raw size mismatch: {len(raw)} != {header.raw_size}")
-    payload = jaz_payload(header.raw_size).parse(raw)
+    return jaz_payload(header.raw_size).parse(raw)
+
+
+def jaz_size(data: bytes) -> tuple[int, int]:
+    """Return (width, height) from the embedded JPEG header without decoding pixels."""
+    return Image.open(io.BytesIO(_parse_jaz_payload(data).jpeg)).size
+
+
+def decode_jaz_bytes(data: bytes) -> JazImage:
+    payload = _parse_jaz_payload(data)
     img = Image.open(io.BytesIO(payload.jpeg))
     width, height = img.size
     alpha = decode_alpha_rle(payload.alpha_rle, width * height)

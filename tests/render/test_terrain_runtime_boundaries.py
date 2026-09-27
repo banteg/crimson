@@ -122,7 +122,7 @@ def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path
     assert int(world.render_resources.ground.height) == 2048
 
 
-def test_consume_terrain_fx_batch_bakes_immediately_when_ground_ready(assets_dir: Path, mocker) -> None:
+def test_consume_terrain_fx_batch_defers_baking_to_draw_even_when_ground_ready(assets_dir: Path, mocker) -> None:
     world = _build_world(assets_dir)
     texture = rl.Texture()
     ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
@@ -146,9 +146,8 @@ def test_consume_terrain_fx_batch_bakes_immediately_when_ground_ready(assets_dir
 
     world.render_resources.consume_terrain_fx_batch(batch)
 
-    bake_terrain_fx_batch.assert_called_once()
-    assert bake_terrain_fx_batch.call_args.kwargs["batch"] == batch
-    assert world.render_resources._pending_terrain_fx_batches == []
+    bake_terrain_fx_batch.assert_not_called()
+    assert world.render_resources._pending_terrain_fx_batches == [batch]
 
 
 def test_process_ground_pending_flushes_buffered_terrain_fx_batches(assets_dir: Path, mocker) -> None:

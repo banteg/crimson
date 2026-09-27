@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
@@ -11,16 +13,14 @@ from grim.rand import Crand
 from grim.view import ViewContext
 from tests.support.audio import sfx_ids
 
+pytestmark = pytest.mark.usefixtures("headless_resources")
 
-def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
 
+def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, assets_dir: Path) -> None:
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.gameplay.player_count = 4
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.start_run(QuestLevel(1, 1), status=None)
     health_values = (91.2, 50.6, 10.4, 0.49)
@@ -34,15 +34,11 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     assert outcome.player2_health == health_values[1]
 
 
-def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-
+def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, assets_dir: Path) -> None:
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.gameplay.player_count = 2
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
     mode.start_run(QuestLevel(1, 1), status=None)
 
@@ -53,14 +49,10 @@ def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, mocker) -> Non
     assert sfx_ids(mode.state.sfx_queue) == [reload_sfx] * len(mode.sim_world.players)
 
 
-def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, mocker) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-
+def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: Path, assets_dir: Path, mocker) -> None:
     cfg = ensure_crimson_cfg(tmp_path)
     ctx = ViewContext(assets_dir=assets_dir)
 
-    mocker.patch.object(QuestMode, "apply_terrain_setup", return_value=None)
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
 
     seed_before_run = 0xCAFE

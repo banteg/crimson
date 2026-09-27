@@ -379,10 +379,6 @@ class QuestMode(BaseGameplayMode):
                 self._close_failed_run()
             return
 
-        self._world_runtime.sync_audio_bridge_state()
-        if self.render_resources.ground is not None:
-            self.render_resources.ground.process_pending()
-
         self._run_deterministic_session_ticks(
             dt_frame=float(sim_dt),
             session=session,
