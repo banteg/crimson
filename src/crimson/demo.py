@@ -462,6 +462,7 @@ class DemoView:
             pos,
             float(heading),
             rng,
+            detail_preset=self.state.config.display.detail_preset,
         )
 
     def _setup_variant_0(self) -> None:

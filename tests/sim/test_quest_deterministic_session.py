@@ -120,3 +120,17 @@ def test_quest_timing_does_not_zero_dt_for_pending_perk_prompt() -> None:
     timing = session.timing_for_dt(1.0 / 60.0)
 
     assert timing.dt_sim > 0.0
+
+
+def _effects_after_first_spawn(*, detail_preset: int) -> int:
+    session, _spawn_state = _build_session(seed=101, level="1.3")
+    session.detail_preset = detail_preset
+    creatures = session.world.creatures.entries
+    while not any(creature.active for creature in creatures):
+        session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(aim=Vec2(512.0, 512.0))])
+    return len(session.world.state.effects.iter_active())
+
+
+def test_quest_spawn_bursts_follow_the_session_detail_preset() -> None:
+    # Native effect_spawn skips every other effect below detail preset 3.
+    assert _effects_after_first_spawn(detail_preset=1) * 2 == _effects_after_first_spawn(detail_preset=5)

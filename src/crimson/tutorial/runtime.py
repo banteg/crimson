@@ -104,6 +104,7 @@ def tutorial_post_step(ctx) -> None:
             call.pos,
             float(call.heading),
             state.rng,
+            detail_preset=int(ctx.detail_preset),
         )
         _ = mapping
         if primary is None or actions.stage5_bonus_carrier_drop is None:

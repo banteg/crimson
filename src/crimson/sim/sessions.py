@@ -76,6 +76,7 @@ class MidStepContext(msgspec.Struct, frozen=True):
     elapsed_before_ms: float
     dt_sim_ms: float
     dt_raw_ms: float
+    detail_preset: int
 
 
 class PostStepContext(msgspec.Struct, frozen=True):
@@ -131,6 +132,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             call.pos,
             float(call.heading),
             state.rng,
+            detail_preset=ctx.detail_preset,
         )
 
     player_xp = ctx.world.players[0].experience if ctx.world.players else 0
@@ -190,6 +192,7 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
             call.pos,
             float(call.heading),
             state.rng,
+            detail_preset=ctx.detail_preset,
         )
 
     # Native quest_mode_update has no player-alive gate on the completion
@@ -518,6 +521,7 @@ class DeterministicSession(msgspec.Struct):
                 elapsed_before_ms=elapsed_before_ms,
                 dt_sim_ms=dt_sim_ms,
                 dt_raw_ms=dt_raw_ms,
+                detail_preset=self.detail_preset,
             )
             mid_step_runtime = _SessionWorldMidStepRuntime(
                 mode_runtime=mode_runtime,

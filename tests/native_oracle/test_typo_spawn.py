@@ -72,6 +72,7 @@ def _python_step(seed: int, *, elapsed_ms: int, dt_ms: int, cooldown_ms: int) ->
             elapsed_before_ms=float(elapsed_ms),
             dt_sim_ms=float(dt_ms),
             dt_raw_ms=float(dt_ms),
+            detail_preset=5,
         ),
     )
     return world, alloc_states
