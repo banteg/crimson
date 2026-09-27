@@ -78,7 +78,7 @@ def main():
     if not args.reuse:
         if args.scratch is None:
             parser.error("scratch is required unless --reuse")
-        c2, iv = stage.load_modules(False, None)
+        c2, iv = stage.load_modules()
         stage.trace(c2, iv, args.scratch, args.out, "xjump")
     events = stage.decode((args.out / "observed/phases.bin").read_bytes(), stage.result_profile(args.out))
     report(events, set(args.jump))

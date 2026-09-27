@@ -91,7 +91,7 @@ def main() -> None:
     else:
         if args.scratch is None or args.out is None:
             parser.error("scratch and --out are required")
-        c2, iv = stage.load_modules(False, None)
+        c2, iv = stage.load_modules()
         result = stage.trace(c2, iv, args.scratch, args.out, "sort")
         print("metrics:", result["metrics"])
         out = args.out
