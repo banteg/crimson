@@ -11,7 +11,7 @@ from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
@@ -203,7 +203,7 @@ class GameOverUi(msgspec.Struct):
         record: HighScoreRecord,
         player_name_default: str,
         play_sfx: Callable[[SfxId], None] | None = None,
-        rng: CrandLike | None = None,
+        rng: CrandLike,
         mouse: rl.Vector2 | None = None,
     ) -> ResultAction | None:
         self._dt = float(min(dt, 0.1))
@@ -211,8 +211,6 @@ class GameOverUi(msgspec.Struct):
         self._cursor_pulse_time += self._dt * 1.1
         if mouse is None:
             mouse = rl.get_mouse_position()
-        if rng is None:
-            rng = Crand(0)
 
         resources = runtime_resources_for(self.assets_root)
 

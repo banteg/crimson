@@ -16,6 +16,7 @@ from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, WORLD_FADE_SPAN_MS
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand
@@ -228,11 +229,11 @@ def test_quest_results_name_entry_waits_for_controls_release(tmp_path: Path, moc
     poll_text = mocker.patch.object(text_input_module, "poll_text_input", return_value="ww")
     mocker.patch.object(quest_results_module, "gameplay_controls_held", side_effect=[True, False])
 
-    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "banteg"
     assert ui._defer_name_input_until_controls_released is True
 
-    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "banteg"
     assert ui._defer_name_input_until_controls_released is False
     assert poll_text.call_count == 0
@@ -269,12 +270,12 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(tmp_path: Path, m
     mocker.patch.object(quest_results_module.rl, "is_mouse_button_pressed", return_value=False)
     mocker.patch.object(quest_results_module.rl, "is_key_pressed", return_value=False)
     failed_save = mocker.patch.object(quest_results_module, "upsert_highscore_record", side_effect=OSError("disk full"))
-    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.phase == 1
     assert not ui._saved
     assert ui.save_error is not None
     failed_save.side_effect = upsert_highscore_record
-    ui.update(0.0, mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.phase == 2
     assert ui._saved
     assert ui.save_error is None

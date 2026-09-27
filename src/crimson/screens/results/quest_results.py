@@ -12,7 +12,7 @@ from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
@@ -351,7 +351,7 @@ class QuestResultsUi(msgspec.Struct):
         dt: float,
         *,
         play_sfx: Callable[[SfxId], None] | None = None,
-        rng: CrandLike | None = None,
+        rng: CrandLike,
         mouse: rl.Vector2 | None = None,
     ) -> ResultAction | None:
         dt_s = float(min(dt, 0.1))
@@ -359,8 +359,6 @@ class QuestResultsUi(msgspec.Struct):
         self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
             mouse = rl.get_mouse_position()
-        if rng is None:
-            rng = Crand(0)
 
         if self.record is None or self.breakdown is None:
             return None

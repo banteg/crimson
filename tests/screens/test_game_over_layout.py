@@ -17,6 +17,7 @@ from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand
@@ -92,6 +93,7 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
 
     ui.update(
         0.0,
+        rng=Crand(0),
         record=HighScoreRecord.blank(),
         player_name_default="",
         mouse=rl.Vector2(0.0, 0.0),
@@ -135,6 +137,7 @@ def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_ray
 
     ui.update(
         0.0,
+        rng=Crand(0),
         record=record,
         player_name_default="player",
         mouse=rl.Vector2(0.0, 0.0),
@@ -163,15 +166,15 @@ def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tm
     record = HighScoreRecord.blank()
     record.game_mode_id = GameMode.SURVIVAL
 
-    ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "user"
     assert ui._defer_name_input_until_controls_released is True
 
-    ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "user"
     assert ui._defer_name_input_until_controls_released is False
 
-    ui.update(0.0, record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
+    ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
     assert ui.input_text == "userww"
     assert poll_text.call_count == 1
 

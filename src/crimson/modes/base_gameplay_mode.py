@@ -657,7 +657,7 @@ class BaseGameplayMode:
             record=record,
             player_name_default=self._player_name_default(),
             play_sfx=self.audio_bridge.play_sfx,
-            rng=None,
+            rng=self.audio_rng,
             mouse=self._ui_mouse_pos(),
         )
         if action == ResultAction.PLAY_AGAIN:
