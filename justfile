@@ -26,16 +26,10 @@ check *args:
     uv run crimson match experiments --check --strict --limit 1
     uv run crimson native verify --require-game-closure --allow-absent-toolchain
     uv run crimson match regressions
-    sg scan
-    sg test
+    ast-grep scan
+    ast-grep test
     uv run pytest --no-cov {{args}}
     just check-zig
-
-ast-grep-all:
-    sg scan
-    sg test
-    sg scan -c sgconfig.local.yml
-    sg test -c sgconfig.local.yml
 
 check-zig:
     cd crimson-zig && zig build test --summary all
@@ -47,11 +41,6 @@ ty:
 
 ty-tests:
     uv run ty check tests
-
-# Lint
-zig-z004-fix:
-    sg run -c sgconfig.local.yml -l zig -p 'const _NAME = _TYPE{};' -r 'const $NAME: $TYPE = .{};' crimson-zig/src -U
-    sg run -c sgconfig.local.yml -l zig -p 'var _NAME = _TYPE{};' -r 'var $NAME: $TYPE = .{};' crimson-zig/src -U
 
 # Duplication
 dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":

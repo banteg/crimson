@@ -9,7 +9,7 @@ tags:
 ## Environment
 
 - Python 3.13+ with [uv](https://docs.astral.sh/uv/)
-- `just` task runner, ast-grep (`sg`), and the Zig toolchain required by `crimson-zig/`
+- `just` task runner, ast-grep, and the Zig toolchain required by `crimson-zig/`
 
 ## First run
 

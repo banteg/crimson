@@ -2,5 +2,3 @@ ruleDirs:
   - tools/ast-grep/rules
 testConfigs:
   - testDir: tools/ast-grep/tests
-utilDirs:
-  - tools/ast-grep/utils
