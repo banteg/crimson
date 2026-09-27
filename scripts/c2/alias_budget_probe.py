@@ -72,7 +72,7 @@ def main() -> None:
     function = re.search(r"^FUNCTION=(.+)$", (args.scratch / "scratch.conf").read_text(), re.MULTILINE).group(1).strip()
     for count in args.expansions:
         scratch = variant(args.scratch.resolve(), args.out.resolve(), count)
-        manifest, data = field_records.run(scratch, scratch.parent / "trace", None)
+        manifest, data = field_records.run(scratch, scratch.parent / "trace")
         classes, first_pointer, collapsed = summary(field_records.decode(data), function)
         print(
             f"N={count:<4} ratio {manifest['metrics']['ratio']:.4%}  classes {classes:#x}"
