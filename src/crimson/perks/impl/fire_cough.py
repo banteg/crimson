@@ -13,13 +13,12 @@ from ...math_parity import (
 )
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
-from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
-    if not perk_active(ctx.perk_player, PerkId.FIRE_CAUGH):
+    if PerkId.FIRE_CAUGH not in ctx.state.perks:
         ctx.player.fire_cough_timer = 0.0
         return
 

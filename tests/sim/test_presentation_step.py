@@ -262,7 +262,7 @@ def test_queue_projectile_decals_blade_gun_spawns_native_pre_branch_splatter(moc
 def test_queue_projectile_decals_bloody_mess_tags_exact_pre_hit_callers() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    player.perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
+    state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
     fx_queue = FxQueue()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 

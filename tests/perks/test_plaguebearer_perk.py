@@ -81,7 +81,7 @@ def test_plaguebearer_infection_tick_deals_damage_on_timer_wrap() -> None:
 def test_plaguebearer_spreads_between_nearby_creatures() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(500.0, 500.0))
-    player.perk_counts[int(PerkId.PLAGUEBEARER)] = 1
+    state.perks[int(PerkId.PLAGUEBEARER)] = 1
 
     pool = CreaturePool()
     infected = pool.entries[0]

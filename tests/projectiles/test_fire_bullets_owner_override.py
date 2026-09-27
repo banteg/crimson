@@ -159,7 +159,7 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     state = GameplayState(preserve_bugs=False)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, hot_tempered_timer=1.95)
-    player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    state.perks[int(PerkId.HOT_TEMPERED)] = 1
     player_update(
         state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1],
     )
@@ -169,7 +169,7 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     state = GameplayState(preserve_bugs=False)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0, hot_tempered_timer=1.95)
-    player1.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    state.perks[int(PerkId.HOT_TEMPERED)] = 1
     player_update(
         state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1],
     )
@@ -180,7 +180,7 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     state = GameplayState(preserve_bugs=False)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, man_bomb_timer=3.9)
-    player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
     player_update(
         state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1],
     )
@@ -190,7 +190,7 @@ def test_hot_tempered_and_man_bomb_fire_bullets_default_are_owner_scoped() -> No
     state = GameplayState(preserve_bugs=False)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=0.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=1.0, man_bomb_timer=3.9)
-    player1.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
     player_update(
         state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1],
     )
@@ -222,7 +222,7 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     state = GameplayState(preserve_bugs=True)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, hot_tempered_timer=1.95)
-    player0.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    state.perks[int(PerkId.HOT_TEMPERED)] = 1
     player_update(
         state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.1, players=[player0, player1],
     )
@@ -233,7 +233,7 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     state = GameplayState(preserve_bugs=True)
     player0 = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_bullets_timer=1.0)
     player1 = PlayerState(index=1, pos=Vec2(120.0, 100.0), fire_bullets_timer=0.0, man_bomb_timer=3.9)
-    player0.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
     player_update(
         state=state, player=player1, input_state=PlayerInput(aim=Vec2(121.0, 100.0)), dt=0.2, players=[player0, player1],
     )

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from ...math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from ...rng_caller_static import RngCallerStatic
-from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 
@@ -12,7 +11,7 @@ def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
 
     players = ctx.players[:1] if ctx.state.preserve_bugs else ctx.players
     for player in players:
-        if not perk_active(player, PerkId.PYROKINETIC):
+        if PerkId.PYROKINETIC not in ctx.state.perks:
             continue
         if (not ctx.state.preserve_bugs) and float(player.health) <= 0.0:
             continue

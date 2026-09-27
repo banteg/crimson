@@ -6,13 +6,12 @@ from grim.sfx_types import SfxRequest
 from ...math_parity import NATIVE_QUARTER_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
-from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_man_bomb(ctx: PlayerPerkTickCtx) -> None:
-    if not perk_active(ctx.perk_player, PerkId.MAN_BOMB):
+    if PerkId.MAN_BOMB not in ctx.state.perks:
         ctx.player.man_bomb_timer = 0.0
         return
 

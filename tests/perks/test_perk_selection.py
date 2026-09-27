@@ -34,7 +34,7 @@ def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
     assert picked == PerkId.INSTANT_WINNER
     assert perk_state.pending_count == 0
     assert perk_state.choices_dirty is True
-    assert player.perk_counts[int(PerkId.INSTANT_WINNER)] == 1
+    assert state.perks[int(PerkId.INSTANT_WINNER)] == 1
     assert player.experience == 2500
 
 
@@ -117,14 +117,14 @@ def test_perk_selection_open_choices_keeps_hidden_internal_entries(mocker) -> No
 
 
 def test_perk_selection_prepared_choices_is_pure_when_dirty() -> None:
-    player = PlayerState(index=0, pos=Vec2())
+    state = GameplayState()
     perk_state = PerkSelectionState(
         pending_count=1,
         choices=[PerkId.SHARPSHOOTER],
         choices_dirty=True,
     )
 
-    visible = perk_selection_prepared_choices([player], perk_state)
+    visible = perk_selection_prepared_choices(state, perk_state)
 
     assert visible == []
     assert perk_state.choices == [PerkId.SHARPSHOOTER]
@@ -156,7 +156,7 @@ def test_perk_selection_open_choices_generates_then_prepared_reads_without_regen
         game_mode=GameMode.SURVIVAL,
         player_count=1,
     )
-    visible = perk_selection_prepared_choices([player], perk_state)
+    visible = perk_selection_prepared_choices(state, perk_state)
 
     assert prepared == visible
     assert generate_choices.call_count == 1
@@ -201,7 +201,7 @@ def test_perk_selection_pick_prepares_choices_when_dirty(mocker) -> None:
     )
 
     assert picked == PerkId.INSTANT_WINNER
-    assert player.perk_counts[int(PerkId.INSTANT_WINNER)] == 1
+    assert state.perks[int(PerkId.INSTANT_WINNER)] == 1
 
 
 def test_perk_selection_pick_can_refresh_choices_to_preserve_rng_behavior(mocker) -> None:
@@ -237,7 +237,7 @@ def test_perk_selection_pick_can_refresh_choices_to_preserve_rng_behavior(mocker
     assert generate_choices.call_count == 2
 
 
-def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
+def test_perk_selection_pick_thick_skinned_scales_every_player_health() -> None:
     state = GameplayState()
     p1 = PlayerState(index=0, pos=Vec2(), health=90.0)
     p2 = PlayerState(index=1, pos=Vec2(), health=60.0)
@@ -250,7 +250,6 @@ def test_perk_selection_pick_syncs_perk_counts_across_players() -> None:
     picked = perk_selection_pick(state, [p1, p2], perk_state, 0, game_mode=GameMode.QUESTS, player_count=2)
 
     assert picked == PerkId.THICK_SKINNED
-    assert p1.perk_counts[int(PerkId.THICK_SKINNED)] == 1
-    assert p2.perk_counts[int(PerkId.THICK_SKINNED)] == 1
+    assert state.perks[int(PerkId.THICK_SKINNED)] == 1
     assert_float_close(p1.health, 60.0)
     assert_float_close(p2.health, 40.0)

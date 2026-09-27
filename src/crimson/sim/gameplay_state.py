@@ -18,7 +18,7 @@ from ..quests.level import QuestLevel
 from ..tutorial.state import TutorialOverlayState, TutorialState
 from ..typo.state import TypoState
 from ..weapons import WEAPON_TABLE, WeaponId
-from .state_types import PERK_COUNT_SIZE
+from .state_types import PERK_COUNT_SIZE, PerkCounts
 
 if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
@@ -49,6 +49,7 @@ class GameplayState(msgspec.Struct):
     lean_mean_exp_timer: float = 0.25
     jinxed_timer: float = 0.0
     plaguebearer_infection_count: int = 0
+    perks: PerkCounts = msgspec.field(default_factory=PerkCounts)
     perk_selection: PerkSelectionState = msgspec.field(default_factory=PerkSelectionState)
     sfx_queue: list[SfxRequest] = msgspec.field(default_factory=list)
     game_mode: GameMode = GameMode.SURVIVAL

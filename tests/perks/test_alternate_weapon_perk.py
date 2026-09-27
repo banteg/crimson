@@ -35,9 +35,9 @@ def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     weapon_assign_player(player, WeaponId.PLASMA_MINIGUN, state=state)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
-    player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = int(regression)
-    player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = int(ammunition)
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.REGRESSION_BULLETS)] = int(regression)
+    state.perks[int(PerkId.AMMUNITION_WITHIN)] = int(ammunition)
     player.experience = 1000
     player.weapon.shot_cooldown = 0.0
     player.weapon.reload_timer = 1.0
@@ -64,14 +64,14 @@ def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon
 
 
 def test_alternate_weapon_slows_movement() -> None:
-    state = GameplayState()
     move_heading = Vec2(1.0, 0.0).to_heading()
     base = PlayerState(index=0, pos=Vec2(), move_speed=2.0, heading=move_heading)
     perk = PlayerState(index=0, pos=Vec2(), move_speed=2.0, heading=move_heading)
-    perk.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    perk_state = GameplayState()
+    perk_state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
 
-    player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
-    player_update(perk, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=state)
+    player_update(base, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=GameplayState())
+    player_update(perk, PlayerInput(move=Vec2(1.0, 0.0)), dt=1.0, state=perk_state)
 
     # player_apply_move_with_spawn_avoidance scales the delta by 0.8f at PC24.
     assert base.pos.x == pytest.approx(100.0, abs=1e-4)
@@ -98,7 +98,7 @@ def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> N
     players: list[PlayerState] = []
     reset_players(players, state=state, world_size=1024.0, player_count=1)
     player = players[0]
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
 
     bonus_apply(
         state,
@@ -123,7 +123,7 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(
         state,
         player,
@@ -154,7 +154,7 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_point_click_mode() -> No
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(
         state,
         player,
@@ -186,7 +186,7 @@ def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(
         state,
         player,
@@ -219,7 +219,7 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.SPLITTER_GUN, state=state)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     player.weapon.ammo = 2.0
     player.weapon.reload_timer = 0.0
     player.weapon.reload_active = False
@@ -253,7 +253,7 @@ def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(
         state,
         player,
@@ -285,7 +285,7 @@ def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     init_default_alt_weapon(player)
-    player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     bonus_apply(
         state,
         player,
@@ -313,11 +313,11 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
     player0 = PlayerState(index=0, pos=Vec2())
     player1 = PlayerState(index=1, pos=Vec2())
     players = [player0, player1]
+    state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
 
     for player in players:
         weapon_assign_player(player, WeaponId.PISTOL, state=state)
         init_default_alt_weapon(player)
-        player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
         bonus_apply(
             state,
             player,

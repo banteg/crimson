@@ -14,7 +14,6 @@ from ...effects import FxQueue
 from ...math_parity import x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from ...owner_ref import OwnerRef
 from ...sim.state_types import PlayerState
-from ..helpers import perk_active
 from ..ids import PerkId
 
 if TYPE_CHECKING:
@@ -71,8 +70,7 @@ def apply_final_revenge_on_player_death(
     """Apply Final Revenge perk behavior when a player dies."""
     from ...creatures.damage import creature_apply_damage_with_lethal_followup
 
-    perk_player = players[0] if state.preserve_bugs and players else player
-    if not perk_active(perk_player, PerkId.FINAL_REVENGE):
+    if PerkId.FINAL_REVENGE not in state.perks:
         return
 
     player_pos = player.pos
@@ -117,6 +115,7 @@ def apply_final_revenge_on_player_death(
             owner=OwnerRef.from_player(int(player.index)),
             dt=float(dt),
             players=players,
+            perks=state.perks,
             rng=state.rng,
             preserve_bugs=bool(state.preserve_bugs),
             effects=state.effects,

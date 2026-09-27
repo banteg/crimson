@@ -742,7 +742,7 @@ def test_radioactive_timer_keeps_native_stored_cadence() -> None:
     state = GameplayState()
     pool = CreaturePool()
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
-    player.perk_counts[int(PerkId.RADIOACTIVE)] = 1
+    state.perks[int(PerkId.RADIOACTIVE)] = 1
     creature = pool.entries[0]
     creature.active = True
     creature.hp = 100.0
@@ -1393,7 +1393,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     ("preserve_bugs", "expected_experience"),
     [
         (True, (13, 0)),
-        (False, (0, 10)),
+        (False, (0, 13)),
     ],
     ids=["native-player-zero", "corrected-last-hit-owner"],
 )
@@ -1407,7 +1407,7 @@ def test_death_award_player_source_policy(
         PlayerState(index=0, pos=Vec2()),
         PlayerState(index=1, pos=Vec2()),
     ]
-    players[0].perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
+    state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
     pool = CreaturePool()
     pool.entries[0].active = True
     pool.entries[0].hp = 0.0
@@ -2275,7 +2275,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
 def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
     pool = CreaturePool()
 
@@ -2458,7 +2458,7 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
 def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
     pool = CreaturePool()
 
@@ -2491,7 +2491,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
 def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player.evil_eyes_target_creature = 0
     pool = CreaturePool()
 
@@ -2518,7 +2518,7 @@ def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
 def test_evil_eyes_target_still_reevaluates_target_player() -> None:
     state = GameplayState(rng=Crand(0xBEEF))
     player0 = PlayerState(index=0, pos=Vec2(500.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player0.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player0.evil_eyes_target_creature = 0
     player1 = PlayerState(index=1, pos=Vec2(110.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     pool = CreaturePool()
@@ -2544,11 +2544,11 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     state = GameplayState(rng=Crand(0xBEEF), preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player0.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player0.evil_eyes_target_creature = 0
 
     player1 = PlayerState(index=1, pos=Vec2(520.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player1.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player1.evil_eyes_target_creature = 1
 
     pool = CreaturePool()

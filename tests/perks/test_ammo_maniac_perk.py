@@ -31,4 +31,4 @@ def test_ammo_maniac_reassigns_weapons_and_increases_clip_size() -> None:
     extra_other = max(1, int(float(base_other) * 0.25))
     assert other.weapon.clip_size == base_other + extra_other
     assert other.weapon.ammo == other.weapon.clip_size
-    assert other.perk_counts[int(PerkId.AMMO_MANIAC)] == 1
+    assert state.perks[int(PerkId.AMMO_MANIAC)] == 1

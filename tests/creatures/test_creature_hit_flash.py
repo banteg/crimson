@@ -9,7 +9,7 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags
 from crimson.owner_ref import OwnerRef
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.factories import make_creature_state, make_creature_update_options
@@ -69,6 +69,7 @@ def test_damage_hit_flash_matches_native_witnesses() -> None:
             owner=OwnerRef.from_player(0),
             dt=case["dt"],
             players=[PlayerState(index=0, pos=Vec2(), health=100)] if case["players"] else [],
+            perks=PerkCounts(),
             rng=Crand(case["rng_seed"]),
         )
         assert bits(creature.hit_flash_timer) == witness["timer_bits"], case["name"]

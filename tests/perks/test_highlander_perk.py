@@ -25,8 +25,8 @@ def test_player_take_damage_highlander_behavior(
 ) -> None:
     state = GameplayState(rng=ScriptedCrand(rand_val, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
-    player.perk_counts[int(PerkId.HIGHLANDER)] = 1
-    player.perk_counts[int(PerkId.UNSTOPPABLE)] = 1
+    state.perks[int(PerkId.HIGHLANDER)] = 1
+    state.perks[int(PerkId.UNSTOPPABLE)] = 1
 
     applied = player_take_damage(state, player, 10.0)
 

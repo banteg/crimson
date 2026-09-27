@@ -6,7 +6,7 @@ from typing import cast
 import crimson.modes.components.perk_prompt_controller as perk_prompt_controller_module
 from crimson.modes.components.perk_menu_controller import PerkMenuUiContext
 from crimson.modes.components.perk_prompt_controller import PerkPromptState
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.assets import RuntimeResources
 from grim.config import default_crimson_cfg
 from grim.fonts.small import SmallFontData
@@ -40,15 +40,10 @@ def _resources() -> RuntimeResources:
     )
 
 
-def _player() -> PlayerState:
-    player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts = [0] * 128
-    return player
-
-
 def _ctx() -> PerkMenuUiContext:
     return PerkMenuUiContext(
-        player=_player(),
+        player=PlayerState(index=0, pos=Vec2()),
+        perks=PerkCounts(),
         violence_disabled=0,
         resources=_resources(),
         mouse=rl.Vector2(0.0, 0.0),

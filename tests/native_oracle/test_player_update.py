@@ -35,7 +35,7 @@ from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from crimson.sim.timing import reflex_boost_time_scale_factor
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
@@ -209,7 +209,7 @@ def test_relative_forward_velocity_matches_native(oracle) -> None:
     """Relative-scheme forward block (0x00414750..0x00414838): accelerate, cap, `* 25.0f` chain."""
 
     def step(player: PlayerState, dt: float, scalar: float) -> Vec2:
-        _player_accelerate_move_speed(player, player, dt)
+        _player_accelerate_move_speed(player, PerkCounts(), dt)
         _player_apply_move_speed_caps(player)
         velocity = _player_heading_velocity(player, speed_multiplier=scalar, speed_scale=25.0)
         return _park_velocity(player, velocity, dt)
@@ -221,7 +221,7 @@ def test_relative_backward_velocity_matches_native(oracle) -> None:
     """Relative-scheme backward block (0x0041467b..0x0041474b): `* -25.0f`, no speed cap."""
 
     def step(player: PlayerState, dt: float, scalar: float) -> Vec2:
-        _player_accelerate_move_speed(player, player, dt)
+        _player_accelerate_move_speed(player, PerkCounts(), dt)
         velocity = _player_heading_velocity(player, speed_multiplier=scalar, speed_scale=-25.0)
         return _park_velocity(player, velocity, dt)
 
@@ -263,7 +263,7 @@ def test_turn_aligned_velocity_matches_native(oracle) -> None:
         )
         delta = _player_move_toward_heading(
             player,
-            player,
+            PerkCounts(),
             target_heading=target,
             movement_dt=dt,
             speed_multiplier=scalar,
@@ -391,7 +391,6 @@ def test_relative_turn_matches_native(oracle) -> None:
         state = GameplayState()
         _player_move(
             player,
-            player,
             PlayerInput(
                 move_mode=MovementControlType.RELATIVE,
                 turn_left_pressed=left,
@@ -438,8 +437,8 @@ def _spawn_avoidance_case(
     native = oracle.read_fields(harness.player, _PLAYER_LAYOUT)
 
     player = _python_player(pos=pos, size=size)
-    if alt_weapon:
-        player.perk_counts[int(PerkId.ALTERNATE_WEAPON)] = 1
+    perks = PerkCounts()
+    perks[PerkId.ALTERNATE_WEAPON] = int(alt_weapon)
     creatures = [CreatureState(pos=owner_pos, size=owner_size) for owner_pos, owner_size in owners]
     slots = [
         SpawnSlotInit(owner_creature=index, timer=0.0, count=0, limit=0, interval=0.0, child_template_id=SpawnId(0))
@@ -447,7 +446,7 @@ def _spawn_avoidance_case(
     ]
     _player_apply_move_with_spawn_avoidance(
         player,
-        perk_player=player,
+        perks=perks,
         delta=delta,
         spawn_slots=slots,
         creatures=creatures,
@@ -527,10 +526,11 @@ def test_angry_reloader_ring_matches_native(oracle, mocker: MockerFixture) -> No
         harness.run(0x00415162, 0x004151C1, _Frame().i32(0x20, -100))
 
         player = _python_player()
-        player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
+        state = GameplayState()
+        state.perks[PerkId.ANGRY_RELOADER] = 1
         player.weapon.reload_timer_max = reload_timer_max
         player.weapon.reload_timer = f32(reload_timer_max * 0.5 + 0.001)
-        player_update(player, PlayerInput(aim=Vec2(1.0, 0.0)), 0.05, GameplayState())
+        player_update(player, PlayerInput(aim=Vec2(1.0, 0.0)), 0.05, state)
         python_angles = [call.kwargs["angle"] for call in python_spawn.call_args_list]
 
         case = f"reload_timer_max={reload_timer_max!r}"

@@ -59,17 +59,6 @@ def _active_type_ids(pool: ProjectilePool) -> list[int]:
     return [entry.type_id for entry in pool.entries if entry.active]
 
 
-def test_preserve_mode_uses_player_zero_timed_perk_for_player_one() -> None:
-    state = GameplayState(preserve_bugs=True)
-    player0 = PlayerState(index=0, pos=Vec2())
-    player0.perk_counts[int(PerkId.LIVING_FORTRESS)] = 1
-    player1 = PlayerState(index=1, pos=Vec2())
-
-    player_update(player1, PlayerInput(), 0.1, state, players=[player0, player1])
-
-    assert_float_close(player1.living_fortress_timer, f32(0.1))
-
-
 def test_dead_player_update_only_advances_native_death_timer() -> None:
     state = GameplayState(player_spread_damping_scalar=0.5)
     player = PlayerState(
@@ -247,7 +236,7 @@ def test_player_update_stationary_reloader_tripples_reload_decay() -> None:
             reload_timer_max=1.0,
         ),
     )
-    player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
+    state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(51.0, 50.0)), 0.1, state)
 
@@ -268,7 +257,7 @@ def test_player_update_stationary_reload_keeps_native_completion_frame() -> None
             reload_timer_max=1.5,
         ),
     )
-    player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
+    state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
     input_state = PlayerInput(aim=Vec2(51.0, 50.0))
 
     for _ in range(19):
@@ -459,7 +448,7 @@ def test_player_update_tops_up_when_stationary_reload_finishes_same_tick() -> No
             shot_cooldown=0.5,
         ),
     )
-    player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
+    state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
 
     player_update(
         player,
@@ -488,7 +477,7 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
             shot_cooldown=0.5,
         ),
     )
-    player.perk_counts[int(PerkId.STATIONARY_RELOADER)] = 1
+    state.perks[int(PerkId.STATIONARY_RELOADER)] = 1
 
     player_update(
         player,
@@ -611,7 +600,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
             reload_timer_max=2.0,
         ),
     )
-    player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
+    state.perks[int(PerkId.ANGRY_RELOADER)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
 
@@ -627,7 +616,7 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     state = GameplayState(projectiles=pool, rng=rng)
     state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
-    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.2, state)
 
@@ -654,8 +643,8 @@ def test_player_update_perk_timers_keep_native_stored_cadence() -> None:
     pool = ProjectilePool(size=32)
     state = GameplayState(projectiles=pool)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
-    player.perk_counts[int(PerkId.LIVING_FORTRESS)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.LIVING_FORTRESS)] = 1
     input_state = PlayerInput(aim=Vec2(101.0, 100.0))
 
     for _ in range(240):
@@ -677,7 +666,7 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
-    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
 
     player_update(player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0)), 4.2, state)
 
@@ -703,7 +692,7 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_cough_timer=1.95)
-    player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
+    state.perks[int(PerkId.FIRE_CAUGH)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state)
 
@@ -732,7 +721,7 @@ def test_player_update_fire_cough_uses_native_spread_angle() -> None:
         spread_heat=0.2,
         fire_cough_timer=1.95,
     )
-    player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
+    state.perks[int(PerkId.FIRE_CAUGH)] = 1
 
     player_update(player, PlayerInput(aim=player.aim), 0.1, state)
 
@@ -751,7 +740,7 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
         aim_heading=0.0,
         fire_cough_timer=1.95,
     )
-    player.perk_counts[int(PerkId.FIRE_CAUGH)] = 1
+    state.perks[int(PerkId.FIRE_CAUGH)] = 1
 
     before_pos = Vec2(float(player.pos.x), float(player.pos.y))
     player_update(
@@ -1653,7 +1642,7 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.35)
-    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    state.perks[int(PerkId.HOT_TEMPERED)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.08400000631809235, state)
 
@@ -1684,7 +1673,7 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
-    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    state.perks[int(PerkId.HOT_TEMPERED)] = 1
 
     player_update(
         player,
@@ -1712,7 +1701,7 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     state = GameplayState(projectiles=pool, rng=rng)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95, fire_bullets_timer=1.0)
-    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    state.perks[int(PerkId.HOT_TEMPERED)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(101.0, 100.0)), 0.1, state, players=[player])
 
@@ -1879,7 +1868,7 @@ def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
 def test_man_bomb_stores_native_pc24_angles(jitter: int, expected_bits: list[int]) -> None:
     state = GameplayState(rng=ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(100, 100), man_bomb_timer=3.9)
-    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    state.perks[int(PerkId.MAN_BOMB)] = 1
     player_update(player, PlayerInput(aim=Vec2(101, 100)), 0.2, state)
     assert [
         struct.unpack("<I", struct.pack("<f", p.angle))[0] for p in state.projectiles.iter_active()

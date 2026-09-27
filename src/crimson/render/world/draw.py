@@ -15,7 +15,6 @@ from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
-from ...perks.helpers import perk_active
 from ...projectiles.types import ProjectileTemplateId
 from ...sim.world_defs import CREATURE_ASSET
 from ...ui.cursor import draw_aim_cursor
@@ -162,7 +161,7 @@ def build_draw_context(
     trooper_texture = _creature_texture(resources, trooper_asset)
     particles_texture = resources.texture(TextureId.PARTICLES)
 
-    monster_vision = bool(frame.players) and perk_active(frame.players[0], PerkId.MONSTER_VISION)
+    monster_vision = PerkId.MONSTER_VISION in frame.state.perks
     monster_vision_src = None
     if monster_vision:
         monster_vision_src = effect_src_rect(particles_texture, EffectId.AURA)
@@ -284,7 +283,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
 
     resources = frame.resources
     shadows_enabled = frame.config.display.shadows_enabled if frame.config is not None else True
-    shadow_pass = shadows_enabled and (not frame.players or not perk_active(frame.players[0], PerkId.MONSTER_VISION))
+    shadow_pass = shadows_enabled and (not frame.players or PerkId.MONSTER_VISION not in frame.state.perks)
     for type_id in _NATIVE_CREATURE_SPRITE_DRAW_ORDER:
         # Native batches every shadow before drawing any body of this species.
         for shadow in (True, False) if shadow_pass else (False,):

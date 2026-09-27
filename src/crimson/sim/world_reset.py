@@ -14,7 +14,7 @@ from ..math_parity import f32
 from ..weapon_runtime import init_default_alt_weapon
 from ..weapons import WeaponId
 from .gameplay_state import GameplayState
-from .state_types import PlayerState
+from .state_types import PerkCounts, PlayerState
 
 
 class CreatureSlotResidue(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -140,6 +140,8 @@ def reset_world_players(
 ) -> None:
     previous_players = tuple(players)
     players.clear()
+    # `player_reset_all` clears player one's struct, which holds the perk table.
+    state.perks = PerkCounts()
 
     if spawn_pos is None:
         center = f32(float(world_size) * 0.5)
@@ -173,7 +175,6 @@ def reset_world_players(
         player.experience = 0
         player.level = 1
         player.spread_heat = 0.0
-        player.perk_counts = [0] * len(player.perk_counts)
         player.plaguebearer_active = False
         player.speed_bonus_timer = 0.0
         player.shield_timer = 0.0

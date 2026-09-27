@@ -35,4 +35,4 @@ def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slo
 
     effects_spawned = sum(1 for entry in state.effects.entries if entry.flags)
     assert effects_spawned == 8
-    assert player.perk_counts[int(PerkId.LIFELINE_50_50)] == 1
+    assert state.perks[int(PerkId.LIFELINE_50_50)] == 1

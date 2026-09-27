@@ -4,7 +4,7 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -13,7 +13,8 @@ def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
 
     player0 = PlayerState(index=0, pos=Vec2())
-    player0.perk_counts[int(PerkId.LIVING_FORTRESS)] = 1
+    perks = PerkCounts()
+    perks[PerkId.LIVING_FORTRESS] = 1
     player0.living_fortress_timer = 10.0  # 1.5x
 
     player1 = PlayerState(index=1, pos=Vec2())
@@ -27,6 +28,7 @@ def test_living_fortress_scales_bullet_damage_by_stationary_timers() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player0, player1],
+        perks=perks,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 

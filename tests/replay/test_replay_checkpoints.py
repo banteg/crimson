@@ -40,7 +40,7 @@ def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
     player = world.players[0]
     player.experience = 123
     player.level = 2
-    player.perk_counts[1] = 1
+    world.state.perks[1] = 1
     world.state.perk_selection.pending_count = 1
     world.state.perk_selection.choices_dirty = False
     world.state.perk_selection.choices = [
@@ -77,7 +77,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
         PerkId.PLAGUEBEARER,
         PerkId.POISON_BULLETS,
     ]
-    world.players[0].perk_counts[7] = 2
+    world.state.perks[7] = 2
 
     ckpt = build_checkpoint(
         tick_index=15,

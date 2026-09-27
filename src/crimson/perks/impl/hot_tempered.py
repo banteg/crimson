@@ -7,13 +7,12 @@ from ...math_parity import NATIVE_QUARTER_PI, x87_pc24_add, x87_pc24_mul, x87_pc
 from ...owner_ref import OwnerRef
 from ...projectiles.types import ProjectileTemplateId
 from ...rng_caller_static import RngCallerStatic
-from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.player_tick_context import PlayerPerkTickCtx
 
 
 def tick_hot_tempered(ctx: PlayerPerkTickCtx) -> None:
-    if not perk_active(ctx.perk_player, PerkId.HOT_TEMPERED):
+    if PerkId.HOT_TEMPERED not in ctx.state.perks:
         ctx.player.hot_tempered_timer = 0.0
         return
 

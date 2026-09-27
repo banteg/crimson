@@ -282,14 +282,11 @@ def build_checkpoint(
         str(BonusId.FREEZE): _bonus_timer_ms(state.bonuses.freeze),
     }
 
-    perk_counts: list[list[list[int]]] = []
-    for player in players:
-        nonzero: list[list[int]] = []
-        for perk_id, count in enumerate(player.perk_counts):
-            count_i = int(count)
-            if count_i != 0:
-                nonzero.append([int(perk_id), count_i])
-        perk_counts.append(nonzero)
+    # The perk table lives in player one's struct natively; other players' tables stay zero.
+    perk_counts: list[list[list[int]]] = [
+        [[perk_id, count] for perk_id, count in enumerate(state.perks.counts) if count] if index == 0 else []
+        for index in range(len(players))
+    ]
 
     perk_choices = [int(perk_id) for perk_id in state.perk_selection.choices]
     if len(perk_choices) > 7:

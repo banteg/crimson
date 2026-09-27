@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..perks import PerkId
-from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
 from .ids import BONUS_BY_ID, BonusId
 
@@ -45,10 +44,10 @@ def _bonus_pick_suppressed(
     if (
         bonus_id == BonusId.WEAPON
         and primary_player is not None
-        and perk_active(primary_player, PerkId.MY_FAVOURITE_WEAPON)
+        and PerkId.MY_FAVOURITE_WEAPON in state.perks
     ):
         return True
-    if bonus_id == BonusId.MEDIKIT and primary_player is not None and perk_active(primary_player, PerkId.DEATH_CLOCK):
+    if bonus_id == BonusId.MEDIKIT and primary_player is not None and PerkId.DEATH_CLOCK in state.perks:
         return True
     level = state.quest_level
     if state.game_mode != GameMode.QUESTS or level is None or level.minor != 10:

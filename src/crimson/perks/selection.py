@@ -6,10 +6,9 @@ from typing import TYPE_CHECKING
 from ..game_modes import GameMode
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import PlayerState
+from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WeaponId
 from .availability import perk_can_offer
-from .helpers import perk_active
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 from .runtime.apply import perk_apply
 from .state import PerkSelectionState
@@ -47,10 +46,10 @@ _PERK_RARITY_GATE: frozenset[PerkId] = frozenset(
 )
 
 
-def perk_choice_count(player: PlayerState) -> int:
-    if perk_active(player, PerkId.PERK_MASTER):
+def perk_choice_count(perks: PerkCounts) -> int:
+    if PerkId.PERK_MASTER in perks:
         return 7
-    if perk_active(player, PerkId.PERK_EXPERT):
+    if PerkId.PERK_EXPERT in perks:
         return 6
     return 5
 
@@ -106,7 +105,7 @@ def perk_generate_choices(
     """Generate a unique list of perk choices for the current selection."""
 
     if count is None:
-        count = perk_choice_count(player)
+        count = perk_choice_count(state.perks)
 
     offerable_mask = _perk_offerable_mask(
         state,
@@ -114,9 +113,9 @@ def perk_generate_choices(
         game_mode=game_mode,
         player_count=player_count,
     )
-    player_perk_counts = player.perk_counts
+    perks = state.perks
     player_weapon_id = player.weapon.weapon_id
-    death_clock_active = int(player_perk_counts[int(PerkId.DEATH_CLOCK)]) > 0
+    death_clock_active = PerkId.DEATH_CLOCK in perks
     flamethrower_id = WeaponId.FLAMETHROWER
 
     pyromaniac_allowed = player_weapon_id == flamethrower_id
@@ -145,7 +144,7 @@ def perk_generate_choices(
 
     # Native `quest_monster_vision_meta` points to quest 3-4 (Hidden Evil):
     # force Monster Vision as the first choice if not owned.
-    if state.quest_level == QuestLevel(3, 4) and int(player_perk_counts[int(PerkId.MONSTER_VISION)]) == 0:
+    if state.quest_level == QuestLevel(3, 4) and PerkId.MONSTER_VISION not in perks:
         choices[0] = PerkId.MONSTER_VISION
         choice_index = 1
 
@@ -180,7 +179,7 @@ def perk_generate_choices(
             if perk_id in choices[:choice_index]:
                 continue
 
-            if stackable or int(player_perk_counts[int(perk_id)]) < 1 or attempts > 29_999:
+            if stackable or perk_id not in perks or attempts > 29_999:
                 break
 
         choices[choice_index] = perk_id
@@ -226,16 +225,14 @@ def _perk_selection_prepare_if_needed(
 
 
 def perk_selection_prepared_choices(
-    players: list[PlayerState],
+    state: GameplayState,
     perk_state: PerkSelectionState,
 ) -> list[PerkId]:
     """Return already-prepared visible choices without mutating state."""
 
-    if not players:
-        return []
     if perk_state.choices_dirty or not perk_state.choices:
         return []
-    visible_count = max(1, int(perk_choice_count(players[0])))
+    visible_count = max(1, int(perk_choice_count(state.perks)))
     return perk_state.choices[:visible_count]
 
 
@@ -260,7 +257,7 @@ def perk_selection_open_choices(
         game_mode=game_mode,
         player_count=player_count,
     )
-    return perk_selection_prepared_choices(players, perk_state)
+    return perk_selection_prepared_choices(state, perk_state)
 
 
 def perk_selection_pick(
@@ -290,7 +287,7 @@ def perk_selection_pick(
         game_mode=game_mode,
         player_count=player_count,
     )
-    choices = perk_selection_prepared_choices(players, perk_state)
+    choices = perk_selection_prepared_choices(state, perk_state)
     if not choices:
         return None
     idx = int(choice_index)

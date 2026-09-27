@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -28,7 +26,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     )
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.5)
-    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    world.state.perks[int(PerkId.FINAL_REVENGE)] = 1
     world.players.append(player)
 
     creature = world.creatures.entries[0]
@@ -71,8 +69,8 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     )
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1, weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
-    player.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
+    world.state.perks[int(PerkId.FINAL_REVENGE)] = 1
+    world.state.perks[int(PerkId.AMMUNITION_WITHIN)] = 1
     player.experience = 100
     player.weapon.reload_active = True
     player.weapon.reload_timer = 1.0
@@ -106,7 +104,7 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
     )
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.5)
-    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    world.state.perks[int(PerkId.FINAL_REVENGE)] = 1
     world.players.append(player)
 
     attacker = world.creatures.entries[0]
@@ -158,8 +156,8 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
     )
 
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=0.1)
-    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
-    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    world.state.perks[int(PerkId.DEATH_CLOCK)] = 1
+    world.state.perks[int(PerkId.FINAL_REVENGE)] = 1
     world.players.append(player)
 
     events = world.step(
@@ -182,7 +180,7 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
 def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    state.perks[int(PerkId.FINAL_REVENGE)] = 1
 
     pool = CreaturePool(size=4)
     active_dead = pool.entries[0]
@@ -230,7 +228,7 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
     state = GameplayState()
     state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.FINAL_REVENGE)] = 1
+    state.perks[int(PerkId.FINAL_REVENGE)] = 1
 
     pool = CreaturePool(size=1)
     creature = pool.entries[0]
@@ -262,40 +260,3 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
 
     assert damage_amounts == [890.364990234375]
     assert not state.bonus_spawn_guard
-
-
-@pytest.mark.parametrize(
-    ("preserve_bugs", "player1_has_perk", "target_has_perk", "expected_trigger"),
-    [
-        (True, True, False, True),
-        (True, False, True, False),
-        (False, False, True, True),
-    ],
-    ids=["native-player1-source", "native-ignores-target-perk", "corrected-target-source"],
-)
-def test_final_revenge_perk_source(
-    preserve_bugs: bool,
-    player1_has_perk: bool,
-    target_has_perk: bool,
-    expected_trigger: bool,
-) -> None:
-    state = GameplayState(preserve_bugs=preserve_bugs)
-    player1 = PlayerState(index=0, pos=Vec2())
-    target = PlayerState(index=1, pos=Vec2())
-    player1.perk_counts[int(PerkId.FINAL_REVENGE)] = int(player1_has_perk)
-    target.perk_counts[int(PerkId.FINAL_REVENGE)] = int(target_has_perk)
-
-    apply_final_revenge_on_player_death(
-        state=state,
-        creatures=CreaturePool(size=0),
-        players=[player1, target],
-        player=target,
-        dt=0.1,
-        world_size=1024.0,
-        detail_preset=0,
-        fx_queue=None,
-        deaths=[],
-    )
-
-    expected_sfx = [SfxId.EXPLOSION_LARGE, SfxId.SHOCKWAVE] if expected_trigger else []
-    assert sfx_ids(state.sfx_queue) == expected_sfx

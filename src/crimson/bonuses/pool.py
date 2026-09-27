@@ -10,7 +10,6 @@ from grim.geom import Vec2
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..game_modes import GameMode
 from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
-from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
@@ -322,7 +321,7 @@ class BonusPool:
                     self._clear_entry(entry)
                     return None
 
-                if entry.amount == WeaponId.PISTOL or (players and perk_active(players[0], PerkId.MY_FAVOURITE_WEAPON)):
+                if entry.amount == WeaponId.PISTOL or (players and PerkId.MY_FAVOURITE_WEAPON in state.perks):
                     self._clear_entry(entry)
                     return None
 
@@ -346,13 +345,7 @@ class BonusPool:
                     )
 
             if not allow_without_magnet:
-                has_bonus_magnet = False
-                if players:
-                    if bool(state.preserve_bugs):
-                        has_bonus_magnet = perk_active(players[0], PerkId.BONUS_MAGNET)
-                    else:
-                        has_bonus_magnet = any(perk_active(player, PerkId.BONUS_MAGNET) for player in players)
-                if not has_bonus_magnet:
+                if PerkId.BONUS_MAGNET not in state.perks:
                     return None
                 if rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BONUS_MAGNET) % 10 != 2:
                     return None

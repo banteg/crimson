@@ -79,7 +79,7 @@ def test_projectile_decals_bloody_mess_keeps_decal_loop_when_violence_disabled()
     state = GameplayState()
     state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    player.perk_counts[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
+    state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
     hit = ProjectileHit(
         type_id=ProjectileTemplateId.PISTOL,
         origin=Vec2(90.0, 90.0),

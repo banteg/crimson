@@ -12,7 +12,7 @@ from ...perks.ids import PerkId, perk_display_name
 from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.commands import PerkMenuOpenCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ...sim.hooks import TickResult
-from ...sim.state_types import BonusPickupEvent, PlayerState
+from ...sim.state_types import BonusPickupEvent, PerkCounts, PlayerState
 from ...weapons import WeaponId, weapon_display_name
 from .playback_driver import PlaybackDriver, PlaybackWalkObserver
 from .setup import ReplayRunnerError
@@ -75,7 +75,8 @@ class _PlayerSnapshot(msgspec.Struct, frozen=True):
     perk_counts: tuple[int, ...]
 
 
-def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
+def _capture_snapshots(players: list[PlayerState], perks: PerkCounts) -> list[_PlayerSnapshot]:
+    # Perk picks are attributed to player one, whose struct holds the perk table.
     snapshots: list[_PlayerSnapshot] = []
     for player in players:
         snapshots.append(
@@ -84,7 +85,7 @@ def _capture_snapshots(players: list[PlayerState]) -> list[_PlayerSnapshot]:
                 level=player.level,
                 experience=player.experience,
                 weapon_id=player.weapon.weapon_id,
-                perk_counts=tuple(player.perk_counts),
+                perk_counts=tuple(perks.counts) if player.index == 0 else (),
             ),
         )
     return snapshots
@@ -378,11 +379,12 @@ def collect_replay_info(
         tick_result: TickResult,
         *,
         after_players: list[PlayerState],
+        perks: PerkCounts,
         before: list[_PlayerSnapshot],
     ) -> None:
         tick_index = int(tick_result.tick_index)
         tick = tick_result.payload
-        after = _capture_snapshots(after_players)
+        after = _capture_snapshots(after_players, perks)
 
         elapsed_ms = int(tick.elapsed_ms)
         _append_extra_replay_commands(
@@ -432,12 +434,12 @@ def collect_replay_info(
 
         def before_tick(self, tick_index: int, world, dt_tick: float) -> None:
             _ = tick_index, dt_tick
-            self.before = _capture_snapshots(world.players)
+            self.before = _capture_snapshots(world.players, world.state.perks)
 
         def after_tick(self, tick_result: TickResult, world) -> None:
             before_snapshot = self.before
             assert before_snapshot is not None, "missing pre-step replay snapshot"
-            _append_tick(tick_result, after_players=world.players, before=before_snapshot)
+            _append_tick(tick_result, after_players=world.players, perks=world.state.perks, before=before_snapshot)
 
     walk_result = driver.walk_ticks(
         observer=_ReplayInfoWalkObserver(),

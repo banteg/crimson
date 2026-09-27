@@ -7,7 +7,6 @@ from ..persistence.save_status import GameStatus
 from ..quests import all_quests
 from ..quests.level import QuestLevel
 from ..sim.state_types import PERK_COUNT_SIZE, PlayerState
-from .helpers import perk_count_get
 from .ids import PERK_BY_ID, PerkFlags, PerkId
 
 if TYPE_CHECKING:
@@ -85,4 +84,4 @@ def perk_can_offer(
     if player_count == 2 and (flags & PerkFlags.MULTIPLAYER_ALLOWED) == 0:
         return False
 
-    return not (meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq))
+    return not (meta.prereq and any(state.perks[req] <= 0 for req in meta.prereq))

@@ -13,7 +13,7 @@ def test_tough_reloader_halves_damage_while_reloading() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     player.weapon.reload_active = True
-    player.perk_counts[int(PerkId.TOUGH_RELOADER)] = 1
+    state.perks[int(PerkId.TOUGH_RELOADER)] = 1
 
     applied = player_take_damage(state, player, 10.0, dt=0.1)
 
@@ -25,8 +25,8 @@ def test_tough_reloader_sets_spread_heat_from_post_reload_damage_before_thick_sk
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), health=100.0, spread_heat=0.1)
     player.weapon.reload_active = True
-    player.perk_counts[int(PerkId.TOUGH_RELOADER)] = 1
-    player.perk_counts[int(PerkId.THICK_SKINNED)] = 1
+    state.perks[int(PerkId.TOUGH_RELOADER)] = 1
+    state.perks[int(PerkId.THICK_SKINNED)] = 1
 
     _ = player_take_damage(state, player, 10.0, dt=0.1)
 

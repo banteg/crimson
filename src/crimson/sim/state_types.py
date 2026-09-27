@@ -11,6 +11,21 @@ from ..weapons import WeaponId
 PERK_COUNT_SIZE = 0x80
 
 
+class PerkCounts(msgspec.Struct):
+    """The perk table. Native stores it in player one's struct and every query reads it there."""
+
+    counts: list[int] = msgspec.field(default_factory=lambda: [0] * PERK_COUNT_SIZE)
+
+    def __getitem__(self, perk_id: int) -> int:
+        return self.counts[perk_id]
+
+    def __setitem__(self, perk_id: int, count: int) -> None:
+        self.counts[perk_id] = count
+
+    def __contains__(self, perk_id: int) -> bool:
+        return self.counts[perk_id] > 0
+
+
 class WeaponSlot(msgspec.Struct):
     weapon_id: WeaponId
     clip_size: int = 0
@@ -55,7 +70,6 @@ class PlayerState(msgspec.Struct):
     experience: int = 0
     level: int = 1
 
-    perk_counts: list[int] = msgspec.field(default_factory=lambda: [0] * PERK_COUNT_SIZE)
     plaguebearer_active: bool = False
     hot_tempered_timer: float = 0.0
     man_bomb_timer: float = 0.0

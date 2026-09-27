@@ -48,7 +48,6 @@ from ..math_parity import (
 )
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
-from ..perks.helpers import perk_active
 from ..player_damage import PlayerDeathRuntime, player_take_damage
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
@@ -533,11 +532,8 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             ),
         )
 
-    # Native's perk_count_get helper always reads player slot zero, even though
-    # the surrounding contact path targets and damages the selected player.
-    perk_player = ctx.players[0] if ctx.state.preserve_bugs and ctx.players else ctx.player
 
-    if perk_active(perk_player, PerkId.MR_MELEE):
+    if PerkId.MR_MELEE in ctx.state.perks:
         from .damage import creature_apply_damage_with_lethal_followup
 
         creature_apply_damage_with_lethal_followup(
@@ -549,6 +545,7 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             owner=OwnerRef.from_player(int(ctx.player.index)),
             dt=ctx.dt,
             players=ctx.players,
+            perks=ctx.state.perks,
             rng=ctx.rng,
             preserve_bugs=bool(ctx.state.preserve_bugs),
             effects=ctx.state.effects,
@@ -557,9 +554,9 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
-        if perk_active(perk_player, PerkId.TOXIC_AVENGER):
+        if PerkId.TOXIC_AVENGER in ctx.state.perks:
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
-        elif perk_active(perk_player, PerkId.VEINS_OF_POISON):
+        elif PerkId.VEINS_OF_POISON in ctx.state.perks:
             creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
     player_take_damage(
@@ -1030,6 +1027,7 @@ class CreaturePool:
             owner=creature.last_hit_owner,
             dt=dt,
             players=players,
+            perks=state.perks,
             rng=rng,
             preserve_bugs=bool(state.preserve_bugs),
             effects=state.effects,
@@ -1142,7 +1140,7 @@ class CreaturePool:
                 # Native `creature_update_all` reads one global
                 # `evil_eyes_target_creature` slot (player-0 storage), even in
                 # multiplayer runs.
-                if perk_active(players[0], PerkId.EVIL_EYES):
+                if PerkId.EVIL_EYES in state.perks:
                     evil_target = int(players[0].evil_eyes_target_creature)
                     if evil_target >= 0:
                         evil_targets.add(int(evil_target))
@@ -1151,7 +1149,7 @@ class CreaturePool:
                 for player in players:
                     if float(player.health) <= 0.0:
                         continue
-                    if not perk_active(player, PerkId.EVIL_EYES):
+                    if PerkId.EVIL_EYES not in state.perks:
                         continue
                     evil_target = int(player.evil_eyes_target_creature)
                     if evil_target >= 0:
@@ -1336,6 +1334,7 @@ class CreaturePool:
                     owner=creature.last_hit_owner,
                     dt=float(dt),
                     players=players,
+                    perks=state.perks,
                     rng=rng,
                     preserve_bugs=bool(state.preserve_bugs),
                     effects=state.effects,
@@ -1409,7 +1408,7 @@ class CreaturePool:
 
             if (
                 players
-                and perk_active(players[0], PerkId.PLAGUEBEARER)
+                and PerkId.PLAGUEBEARER in state.perks
                 and int(state.plaguebearer_infection_count) < 0x3C
             ):
                 self._plaguebearer_spread_infection(int(idx))
@@ -1444,12 +1443,7 @@ class CreaturePool:
             # to the creature's target player, the perk gate reads player slot
             # zero, the kill XP is credited to player 1, and the timer-fire
             # requires the creature to still be alive (hp > 0).
-            radioactive_active = bool(players) and (
-                perk_active(players[0], PerkId.RADIOACTIVE)
-                if state.preserve_bugs
-                else any(perk_active(p, PerkId.RADIOACTIVE) for p in players)
-            )
-            if radioactive_active and target_dist < 100.0:
+            if PerkId.RADIOACTIVE in state.perks and target_dist < 100.0:
                 pulse_timer_step = x87_pc24_mul(float(dt), f32(1.5))
                 creature.collision_timer = x87_pc24_sub(
                     float(creature.collision_timer),
@@ -1931,7 +1925,7 @@ class CreaturePool:
 
         xp_awarded = 0
         if killer is not None:
-            if perk_active(killer, PerkId.BLOODY_MESS_QUICK_LEARNER):
+            if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
                 xp_awarded = award_experience(state, killer, quick_learner_kill_xp(creature.reward_value))
             else:
                 xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))

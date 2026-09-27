@@ -9,6 +9,7 @@ from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import primary_beam
 from crimson.render.projectile_draw.types import ProjectileDrawCtx
 from crimson.render.rtx.mode import RtxRenderMode
+from crimson.sim.gameplay_state import GameplayState
 from grim.assets import TextureId
 from grim.geom import Vec2
 
@@ -55,6 +56,7 @@ class _FrameStub:
     creatures: _CreaturesStub = field(default_factory=_CreaturesStub)
     elapsed_ms: float = 0.0
     config: object | None = None
+    state: GameplayState = field(default_factory=GameplayState)
 
 
 @dataclass(slots=True)

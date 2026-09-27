@@ -6,7 +6,6 @@ from grim.sfx_types import SfxRequest
 from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import PlayerState
-from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 
@@ -37,7 +36,7 @@ def update_jinxed(ctx: PerksUpdateEffectsCtx) -> None:
         return
     if not ctx.players:
         return
-    if not perk_active(ctx.players[0], PerkId.JINXED):
+    if PerkId.JINXED not in ctx.state.perks:
         return
 
     if ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_JINXED_ACCIDENT_GATE) % 10 == 3:

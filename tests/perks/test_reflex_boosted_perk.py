@@ -27,7 +27,7 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
     player = PlayerState(index=0, pos=Vec2())
     player.move_speed = 2.0
     player.heading = Vec2(1.0, 0.0).to_heading()
-    player.perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+    world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)
 
     world.step(
@@ -54,7 +54,7 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
         quest_fail_retry_count=0,
     )
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+    world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)
     session, spawn = build_survival_session(
         world=world,

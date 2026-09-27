@@ -7,6 +7,7 @@ from unittest.mock import patch
 import msgspec
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
+from crimson.perks import PerkId
 from crimson.render.world import draw as world_draw
 from grim.color import RGBA
 from grim.config import default_crimson_cfg
@@ -39,6 +40,7 @@ def capture_creature_draws(case, *, module=world_draw, texture_size=512, include
     config.display.shadows_enabled = case["shadows"]
     render_ctx = _render_ctx_for_creatures(creatures)
     render_ctx.frame.state.bonuses.energizer = case["energizer"]
+    render_ctx.frame.state.perks[PerkId.MONSTER_VISION] = int(case["monster_vision"])
     render_ctx = msgspec.structs.replace(
         render_ctx,
         frame=msgspec.structs.replace(render_ctx.frame, config=config, players=cast(Any, [SimpleNamespace()])),
@@ -87,7 +89,6 @@ def capture_creature_draws(case, *, module=world_draw, texture_size=512, include
 
     with (
         patch.object(module, "draw_creature_overlays"),
-        patch.object(module, "perk_active", return_value=bool(case["monster_vision"])),
         patch.object(module, "_creature_texture", return_value=_TextureStub(texture_size, texture_size)),
         patch.object(module, "draw_creature_sprite", side_effect=draw_sprite),
         patch.object(module.rl, "draw_texture_pro", side_effect=draw_texture),

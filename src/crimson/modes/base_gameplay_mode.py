@@ -21,7 +21,6 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter
 from ..perks import PerkId
-from ..perks.helpers import perk_count_get
 from ..perks.runtime.effects_context import creature_find_in_radius
 from ..perks.selection import perk_selection_open_choices
 from ..persistence.highscores import HighScoreRecord
@@ -241,7 +240,7 @@ class BaseGameplayMode:
         for target_player in target_players:
             if not self.state.preserve_bugs and float(target_player.health) <= 0.0:
                 continue
-            if perk_count_get(target_player, PerkId.DOCTOR) <= 0:
+            if self.state.perks[PerkId.DOCTOR] <= 0:
                 continue
             target_idx = creature_find_in_radius(
                 creatures,
@@ -346,6 +345,7 @@ class BaseGameplayMode:
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
             player=self.player,
+            perks=self.state.perks,
             violence_disabled=self.config.display.violence_disabled,
             shadows_enabled=self.config.display.shadows_enabled,
             resources=self.render_resources.resources,

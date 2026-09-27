@@ -23,7 +23,7 @@ def test_bonus_magnet_allows_bonus_spawn_on_secondary_roll() -> None:
     perk_state.rng = ScriptedCrand([0, 2, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
     perk_state.bonus_pool = BonusPool()
     perk_player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    perk_player.perk_counts[int(PerkId.BONUS_MAGNET)] = 1
+    perk_state.perks[int(PerkId.BONUS_MAGNET)] = 1
 
     assert (
         perk_state.bonus_pool.try_spawn_on_kill(pos=Vec2(100.0, 100.0), state=perk_state, players=[perk_player])

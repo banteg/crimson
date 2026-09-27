@@ -22,7 +22,6 @@ type OwnerRefForPlayerProjectilesFn = Callable[[GameplayState, int], OwnerRef]
 class PlayerPerkTickCtx(msgspec.Struct):
     state: GameplayState
     player: PlayerState
-    perk_player: PlayerState
     player_pos_before_move: Vec2
     players: list[PlayerState] | None
     dt: float

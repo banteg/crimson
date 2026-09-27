@@ -199,28 +199,29 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     world.audio_rng = Crand(0)
 
     player = world.sim_world.players[0]
+    perks = world.sim_world.state.perks
     aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
 
     play_sfx.reset_mock()
-    player.perk_counts[int(PerkId.MAN_BOMB)] = 1
+    perks[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
     world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
     play_sfx.reset_mock()
-    player.perk_counts[int(PerkId.MAN_BOMB)] = 0
+    perks[int(PerkId.MAN_BOMB)] = 0
     player.man_bomb_timer = 0.0
-    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 1
+    perks[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
     world.step_survival_frame(0.1, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
     play_sfx.reset_mock()
-    player.perk_counts[int(PerkId.HOT_TEMPERED)] = 0
+    perks[int(PerkId.HOT_TEMPERED)] = 0
     player.hot_tempered_timer = 0.0
-    player.perk_counts[int(PerkId.ANGRY_RELOADER)] = 1
+    perks[int(PerkId.ANGRY_RELOADER)] = 1
     player.weapon.reload_active = True
     player.weapon.reload_timer = 1.1
     player.weapon.reload_timer_max = 2.0

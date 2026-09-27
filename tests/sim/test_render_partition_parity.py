@@ -19,7 +19,7 @@ from tests.support.builders.session import make_session
 def _run_render_partition(render_hz: int) -> list[tuple[ReplayCheckpoint, DeterministicPresentationPlan, PlayerInput]]:
     session, sim = make_session(seed=123)
     player = sim.players[0]
-    player.perk_counts[int(PerkId.ANXIOUS_LOADER)] = 1
+    sim.state.perks[int(PerkId.ANXIOUS_LOADER)] = 1
     player.weapon.reload_timer = 0.09
     player.weapon.reload_active = True
     player.weapon.ammo = 0.0

@@ -21,13 +21,12 @@ from ..math_parity import (
     x87_pc24_sub,
 )
 from ..perks import PerkId
-from ..perks.helpers import perk_active
 from ..player_damage import PlayerDeathRuntime
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
-from ..sim.state_types import PlayerState
+from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
 from .fire_recipes import (
@@ -100,14 +99,14 @@ class WeaponFireGate(msgspec.Struct, frozen=True):
     perk_ready: bool
 
 
-def capture_fire_gate(player: PlayerState, perk_player: PlayerState) -> WeaponFireGate:
+def capture_fire_gate(player: PlayerState, perks: PerkCounts) -> WeaponFireGate:
     """Snapshot native firing readiness before Alternate Weapon exchanges slots."""
     cooldown_ready = player.weapon.shot_cooldown <= 0.0
     return WeaponFireGate(
         normal_ready=cooldown_ready and player.weapon.reload_timer == 0.0,
         perk_ready=cooldown_ready and player.experience > 0 and (
-            perk_active(perk_player, PerkId.REGRESSION_BULLETS)
-            or perk_active(perk_player, PerkId.AMMUNITION_WITHIN)
+            PerkId.REGRESSION_BULLETS in perks
+            or PerkId.AMMUNITION_WITHIN in perks
         ),
     )
 
@@ -221,8 +220,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     creatures = ctx.creatures
     players = ctx.players
     player_death_runtime = ctx.player_death_runtime
-    perk_player = players[0] if state.preserve_bugs and players else player
-    fire_gate = ctx.fire_gate if ctx.fire_gate is not None else capture_fire_gate(player, perk_player)
+    fire_gate = ctx.fire_gate if ctx.fire_gate is not None else capture_fire_gate(player, state.perks)
 
     weapon_id = player.weapon.weapon_id
     weapon = weapon_entry(weapon_id)
@@ -237,11 +235,8 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     use_regression_bullets = False
     use_ammunition_within = False
     if perk_fire_ready:
-        use_regression_bullets = perk_active(perk_player, PerkId.REGRESSION_BULLETS)
-        use_ammunition_within = (not use_regression_bullets) and perk_active(
-            perk_player,
-            PerkId.AMMUNITION_WITHIN,
-        )
+        use_regression_bullets = PerkId.REGRESSION_BULLETS in state.perks
+        use_ammunition_within = (not use_regression_bullets) and PerkId.AMMUNITION_WITHIN in state.perks
 
     # Native writes this after the ready/input gates, but before charging the
     # reload-bypass perk and dispatching the shot.
@@ -293,9 +288,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = x87_pc24_mul(spread_heat_base, f32(1.3))
 
-    if perk_active(perk_player, PerkId.FASTSHOT):
+    if PerkId.FASTSHOT in state.perks:
         shot_cooldown = float(f32(float(shot_cooldown) * 0.88))
-    if perk_active(perk_player, PerkId.SHARPSHOOTER):
+    if PerkId.SHARPSHOOTER in state.perks:
         shot_cooldown = float(f32(float(shot_cooldown) * 1.05))
     player.weapon.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
 
@@ -517,7 +512,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             fire_bullets_active=bool(is_fire_bullets),
         )
 
-    if not perk_active(perk_player, PerkId.SHARPSHOOTER):
+    if PerkId.SHARPSHOOTER not in state.perks:
         player.spread_heat = min(f32(0.48), max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))
 
     muzzle_inc = weapon_spread_heat

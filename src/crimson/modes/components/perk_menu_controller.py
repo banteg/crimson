@@ -12,7 +12,7 @@ from grim.sfx_map import SfxId
 
 from ...input_codes import PadCode, pad_nav_pressed
 from ...perks import PerkId, perk_display_description, perk_display_name
-from ...sim.state_types import PlayerState
+from ...sim.state_types import PerkCounts, PlayerState
 from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
@@ -43,6 +43,7 @@ class PerkMenuRuntime(msgspec.Struct):
 
 class PerkMenuUiContext(msgspec.Struct, frozen=True):
     player: PlayerState
+    perks: PerkCounts
     violence_disabled: int
     resources: RuntimeResources
     mouse: rl.Vector2
@@ -203,8 +204,8 @@ class PerkMenuController:
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
-        master_owned = int(ctx.player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(ctx.player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
+        master_owned = PerkId.PERK_MASTER in ctx.perks
+        expert_owned = PerkId.PERK_EXPERT in ctx.perks
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
@@ -275,8 +276,8 @@ class PerkMenuController:
         origin = ui_origin(screen_w, screen_h, scale)
         slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
-        master_owned = int(ctx.player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(ctx.player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
+        master_owned = PerkId.PERK_MASTER in ctx.perks
+        expert_owned = PerkId.PERK_EXPERT in ctx.perks
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,

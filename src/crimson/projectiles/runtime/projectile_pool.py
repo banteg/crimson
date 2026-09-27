@@ -207,25 +207,11 @@ class ProjectilePool:
         if dt <= 0.0:
             return []
 
-        barrel_greaser_active = False
-        ion_gun_master_active = False
-        poison_bullets_active = False
+        perks = runtime_state.perks
+        barrel_greaser_active = PerkId.BARREL_GREASER in perks
+        ion_gun_master_active = PerkId.ION_GUN_MASTER in perks
+        poison_bullets_active = PerkId.POISON_BULLETS in perks
         ion_scale = float(ion_aoe_scale)
-        poison_idx = int(PerkId.POISON_BULLETS)
-        barrel_idx = int(PerkId.BARREL_GREASER)
-        ion_idx = int(PerkId.ION_GUN_MASTER)
-        # Native's perk_count_get helper always reads player slot zero. Keep the
-        # generalized any-player behavior available outside bug-compatible mode.
-        perk_players = players[:1] if runtime_state.preserve_bugs else players
-        for player in perk_players:
-            perk_counts = player.perk_counts
-
-            if 0 <= barrel_idx < len(perk_counts) and int(perk_counts[barrel_idx]) > 0:
-                barrel_greaser_active = True
-            if 0 <= ion_idx < len(perk_counts) and int(perk_counts[ion_idx]) > 0:
-                ion_gun_master_active = True
-            if 0 <= poison_idx < len(perk_counts) and int(perk_counts[poison_idx]) > 0:
-                poison_bullets_active = True
 
         if ion_scale == 1.0 and ion_gun_master_active:
             ion_scale = 1.2

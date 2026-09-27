@@ -8,7 +8,6 @@ from grim.geom import Vec2
 
 from ..creatures.damage_runtime import CreatureDamageRuntime
 from ..perks import PerkId
-from ..perks.helpers import perk_count_get
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from .apply_context import BonusApplyCtx, BonusApplyHandler
@@ -70,11 +69,7 @@ def bonus_apply(
         return
     if amount is None:
         amount = int(meta.native_amount or 0)
-
-    # Native perk_count_get always reads player slot zero, even when player one
-    # is the pickup owner. Corrected mode keeps intuitive per-player ownership.
-    perk_player = players[0] if state.preserve_bugs and players else player
-    economist_multiplier = 1.5 if perk_count_get(perk_player, PerkId.BONUS_ECONOMIST) != 0 else 1.0
+    economist_multiplier = 1.5 if state.perks[PerkId.BONUS_ECONOMIST] != 0 else 1.0
     icon_id = int(meta.icon_id) if meta.icon_id is not None else -1
     label = meta.name
     ctx = BonusApplyCtx(

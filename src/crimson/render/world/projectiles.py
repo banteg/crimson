@@ -9,7 +9,6 @@ from grim.raylib_api import rd, rl
 
 from ...math_parity import NATIVE_HALF_PI, f32, f32_vec2, sin_f32, x87_pc24_cos_mul, x87_pc24_sin_mul
 from ...perks import PerkId
-from ...perks.helpers import perk_active
 from ...projectiles.types import ProjectileTemplateId
 from ...sim.world_defs import KNOWN_PROJ_FRAMES
 from ..projectile_draw import (
@@ -145,9 +144,7 @@ def draw_sharpshooter_laser_sight(
     for player in players:
         if float(player.health) <= 0.0:
             continue
-        # Native 0x422ea8 reads player zero even when drawing another player.
-        perk_owner = players[0] if render_ctx.frame.state.preserve_bugs else player
-        if not perk_active(perk_owner, PerkId.SHARPSHOOTER):
+        if PerkId.SHARPSHOOTER not in render_ctx.frame.state.perks:
             continue
         corners = _sharpshooter_laser_corners(player.pos, player.aim_heading, camera=camera)
         p0, p1, p2, p3 = (point.mul_components(view_scale) for point in corners)

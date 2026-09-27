@@ -68,12 +68,8 @@ def test_fire_bullets_shortcut_native_witnesses_through_replay(preserve_bugs: bo
             reload_timer=row.reload_timer,
             reload_active=row.reload_active,
         )
-        if row.regression_bullets:
-            for entry in players:
-                entry.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
-        if row.ammunition_within:
-            for entry in players:
-                entry.perk_counts[int(PerkId.AMMUNITION_WITHIN)] = 1
+        state.perks[int(PerkId.REGRESSION_BULLETS)] = int(row.regression_bullets)
+        state.perks[int(PerkId.AMMUNITION_WITHIN)] = int(row.ammunition_within)
         live = PlayerInput(
             aim=Vec2(200.0, 100.0),
             move_mode=MovementControlType.STATIC,

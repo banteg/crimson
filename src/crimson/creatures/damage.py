@@ -14,23 +14,12 @@ from ..effects_atlas import EffectId
 from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
-from ..perks.helpers import perk_active
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import PlayerState
+from ..sim.state_types import PerkCounts, PlayerState
 from .damage_runtime import CreatureLethalHandler
 from .damage_types import CreatureDamageType
 from .runtime import CreatureState
 from .spawn import CreatureFlags, CreatureTypeId
-
-
-def _any_player_has_perk(players: list[PlayerState], perk_id: PerkId) -> bool:
-    return any(perk_active(player, perk_id) for player in players)
-
-
-def _damage_perk_active(ctx: _CreatureDamageCtx, perk_id: PerkId) -> bool:
-    if ctx.preserve_bugs:
-        return bool(ctx.players) and perk_active(ctx.players[0], perk_id)
-    return _any_player_has_perk(ctx.players, perk_id)
 
 
 class _CreatureDamageCtx(msgspec.Struct):
@@ -41,6 +30,7 @@ class _CreatureDamageCtx(msgspec.Struct):
     owner: OwnerRef
     dt: float
     players: list[PlayerState]
+    perks: PerkCounts
     rng: CrandLike
     preserve_bugs: bool
 
@@ -106,13 +96,13 @@ def creature_death_sfx_for_slot(type_id: CreatureTypeId, sound_slot: int) -> Sfx
 
 
 def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
-    if not _damage_perk_active(ctx, PerkId.URANIUM_FILLED_BULLETS):
+    if PerkId.URANIUM_FILLED_BULLETS not in ctx.perks:
         return
     ctx.damage = x87_pc24_add(ctx.damage, ctx.damage)
 
 
 def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
-    if not _damage_perk_active(ctx, PerkId.LIVING_FORTRESS):
+    if PerkId.LIVING_FORTRESS not in ctx.perks:
         return
     for player in ctx.players:
         if float(player.health) <= 0.0:
@@ -124,13 +114,13 @@ def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type1_barrel_greaser(ctx: _CreatureDamageCtx) -> None:
-    if not _damage_perk_active(ctx, PerkId.BARREL_GREASER):
+    if PerkId.BARREL_GREASER not in ctx.perks:
         return
     ctx.damage = x87_pc24_mul(ctx.damage, f32(1.4))
 
 
 def _damage_type1_doctor(ctx: _CreatureDamageCtx) -> None:
-    if not _damage_perk_active(ctx, PerkId.DOCTOR):
+    if PerkId.DOCTOR not in ctx.perks:
         return
     ctx.damage = x87_pc24_mul(ctx.damage, f32(1.2))
 
@@ -151,12 +141,12 @@ def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
 
 
 def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:
-    if _damage_perk_active(ctx, PerkId.ION_GUN_MASTER):
+    if PerkId.ION_GUN_MASTER in ctx.perks:
         ctx.damage = x87_pc24_mul(ctx.damage, f32(1.2))
 
 
 def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
-    if not _damage_perk_active(ctx, PerkId.PYROMANIAC):
+    if PerkId.PYROMANIAC not in ctx.perks:
         return
     ctx.damage = x87_pc24_mul(ctx.damage, f32(1.5))
     ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
@@ -256,6 +246,7 @@ def creature_apply_damage(
     owner: OwnerRef,
     dt: float,
     players: list[PlayerState],
+    perks: PerkCounts,
     rng: CrandLike,
     preserve_bugs: bool = False,
 ) -> bool:
@@ -278,6 +269,7 @@ def creature_apply_damage(
         owner=owner,
         dt=f32(dt),
         players=players,
+        perks=perks,
         rng=rng,
         preserve_bugs=bool(preserve_bugs),
     )
@@ -327,6 +319,7 @@ def creature_apply_damage_with_lethal_followup(
     owner: OwnerRef,
     dt: float,
     players: list[PlayerState],
+    perks: PerkCounts,
     rng: CrandLike,
     preserve_bugs: bool = False,
     effects: EffectPool | None = None,
@@ -352,6 +345,7 @@ def creature_apply_damage_with_lethal_followup(
         owner=owner,
         dt=float(dt),
         players=players,
+        perks=perks,
         rng=rng,
         preserve_bugs=bool(preserve_bugs),
     )

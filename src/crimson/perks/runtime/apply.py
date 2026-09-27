@@ -8,7 +8,6 @@ from ..ids import PerkId
 from ..state import PerkSelectionState
 from .apply_context import PerkApplyCtx
 from .apply_handlers import PERK_APPLY_HANDLERS
-from .counts import adjust_perk_count
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -29,23 +28,17 @@ def perk_apply(
 
     if not players:
         return
-    owner = players[0]
-    try:
-        adjust_perk_count(owner, perk_id)
-        handler = PERK_APPLY_HANDLERS.get(perk_id)
-        if handler is not None:
-            handler(
-                PerkApplyCtx(
-                    state=state,
-                    players=players,
-                    owner=owner,
-                    perk_id=perk_id,
-                    perk_state=perk_state,
-                    dt=dt,
-                    creatures=creatures,
-                ),
-            )
-    finally:
-        if len(players) > 1:
-            for player in players[1:]:
-                player.perk_counts[:] = owner.perk_counts
+    state.perks[perk_id] += 1
+    handler = PERK_APPLY_HANDLERS.get(perk_id)
+    if handler is not None:
+        handler(
+            PerkApplyCtx(
+                state=state,
+                players=players,
+                owner=players[0],
+                perk_id=perk_id,
+                perk_state=perk_state,
+                dt=dt,
+                creatures=creatures,
+            ),
+        )

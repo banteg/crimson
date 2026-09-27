@@ -7,7 +7,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue, ParticlePool, ParticleStyleId, SpriteEffectPool
 from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
@@ -52,8 +52,9 @@ def compare(witness):
     creature.lifecycle_stage = f32(target["lifecycle"])
     creature.tint = RGBA(*(f32(target[key]) for key in ("r", "g", "b", "a")))
     players = [PlayerState(index=0, pos=Vec2())]
+    perks = PerkCounts()
     for perk in case.get("perks", []):
-        players[0].perk_counts[perk] = 1
+        perks[perk] = 1
 
     class ImpactDamageRuntime(RecordingCreatureDamageRuntime):
         def apply_creature_damage(
@@ -73,6 +74,7 @@ def compare(witness):
                 owner=owner,
                 dt=case["dt"],
                 players=players,
+                perks=perks,
                 rng=rng,
             )
 

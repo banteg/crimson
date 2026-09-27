@@ -20,7 +20,7 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 def test_regression_bullets_fires_during_reload_and_costs_experience(experience: int, remaining: int) -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=experience)
-    player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
+    state.perks[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
     player.weapon.reload_active = True
@@ -46,7 +46,7 @@ def test_regression_bullets_fires_during_reload_and_costs_experience(experience:
 def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=1000)
-    player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
+    state.perks[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 5
     player.weapon.reload_active = True
@@ -70,7 +70,7 @@ def test_regression_bullets_fires_during_manual_reload_when_ammo_remaining() -> 
 def test_regression_bullets_blocks_fire_when_experience_is_zero() -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=0)
-    player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
+    state.perks[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.PISTOL
     player.weapon.ammo = 0
     player.weapon.reload_active = True
@@ -95,7 +95,7 @@ def test_regression_bullets_fire_weapon_fires_during_manual_reload_and_spends_am
 ) -> None:
     state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     player = PlayerState(index=0, pos=Vec2(), experience=experience)
-    player.perk_counts[int(PerkId.REGRESSION_BULLETS)] = 1
+    state.perks[int(PerkId.REGRESSION_BULLETS)] = 1
     player.weapon.weapon_id = WeaponId.FLAMETHROWER
     player.weapon.ammo = 5
     player.weapon.reload_active = True

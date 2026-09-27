@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.perks import PerkId
-from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
@@ -102,7 +102,7 @@ def test_reset_world_players_preserves_native_unwritten_residue() -> None:
         shield_timer=6.25,
         fire_bullets_timer=7.25,
     )
-    player.perk_counts[int(PerkId.LONG_DISTANCE_RUNNER)] = 1
+    world.state.perks[int(PerkId.LONG_DISTANCE_RUNNER)] = 1
     world.players.append(player)
 
     reset_world_players(
@@ -119,7 +119,7 @@ def test_reset_world_players_preserves_native_unwritten_residue() -> None:
     assert reset.move_speed == 0.0
     assert reset.heading == 0.0
     assert reset.death_timer == 16.0
-    assert reset.perk_counts == [0] * len(reset.perk_counts)
+    assert world.state.perks == PerkCounts()
     assert reset.plaguebearer_active is False
     assert reset.speed_bonus_timer == 0.0
     assert reset.shield_timer == 0.0

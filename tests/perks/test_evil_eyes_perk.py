@@ -22,7 +22,7 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         quest_fail_retry_count=0,
     )
     player = PlayerState(index=0, pos=Vec2(300.0, 100.0))
-    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    world.state.perks[int(PerkId.EVIL_EYES)] = 1
     world.players.append(player)
 
     creature = world.creatures.entries[0]
@@ -61,7 +61,7 @@ def test_perks_update_effects_evil_eyes_defaults_to_alive_player_target_slot() -
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
     player1 = PlayerState(index=1, pos=Vec2())
-    player1.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player1.aim = Vec2(100.0, 200.0)
 
     creature = CreatureState()
@@ -81,7 +81,7 @@ def test_perks_update_effects_evil_eyes_preserve_bugs_keeps_player0_only_targeti
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
     player1 = PlayerState(index=1, pos=Vec2())
-    player1.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player1.aim = Vec2(100.0, 200.0)
 
     creature = CreatureState()
@@ -100,8 +100,7 @@ def test_perks_update_effects_evil_eyes_default_targets_each_alive_player() -> N
 
     player0 = PlayerState(index=0, pos=Vec2())
     player1 = PlayerState(index=1, pos=Vec2())
-    player0.perk_counts[int(PerkId.EVIL_EYES)] = 1
-    player1.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player0.aim = Vec2(100.0, 200.0)
     player1.aim = Vec2(140.0, 200.0)
 
@@ -126,7 +125,7 @@ def test_perks_update_effects_evil_eyes_default_targets_each_alive_player() -> N
 def test_perks_update_effects_evil_eyes_rejects_native_radius_equality() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.EVIL_EYES)] = 1
+    state.perks[int(PerkId.EVIL_EYES)] = 1
     player.aim = Vec2()
 
     creature = CreatureState()

@@ -33,7 +33,7 @@ def test_perk_apply_breathing_room_reduces_health_and_starts_creature_death_stag
     assert_float_close(creatures[1].lifecycle_stage, 123.0)
     assert_float_close(creatures[2].lifecycle_stage, -5.0 - dt)
     assert state.bonus_spawn_guard is False
-    assert player.perk_counts[int(PerkId.BREATHING_ROOM)] == 1
+    assert state.perks[int(PerkId.BREATHING_ROOM)] == 1
 
 
 def test_perk_apply_breathing_room_rounds_each_native_float_operation() -> None:

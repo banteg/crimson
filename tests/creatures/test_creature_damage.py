@@ -17,7 +17,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
@@ -38,6 +38,7 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
         owner=OwnerRef.from_creature(38),
         dt=0.016,
         players=[player],
+        perks=PerkCounts(),
         rng=rng,
     )
 
@@ -73,6 +74,7 @@ def test_damage_type1_heading_jitter_rounds_each_x87_operation() -> None:
         owner=OwnerRef.from_player(0),
         dt=0.09600000083446503,
         players=[PlayerState(index=0, pos=Vec2())],
+        perks=PerkCounts(),
         rng=ScriptedCrand(2932),
     )
 
@@ -101,6 +103,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
         owner=OwnerRef.from_creature(38),
         dt=0.016,
         players=[player],
+        perks=PerkCounts(),
         rng=rng,
     )
 
@@ -119,8 +122,9 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
 def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     creature = CreatureState(active=True, hp=74.0413, size=50.0, flags=CreatureFlags(0), heading=0.0)
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.URANIUM_FILLED_BULLETS)] = 1
-    player.perk_counts[int(PerkId.BARREL_GREASER)] = 1
+    perks = PerkCounts()
+    perks[PerkId.URANIUM_FILLED_BULLETS] = 1
+    perks[PerkId.BARREL_GREASER] = 1
 
     killed = creature_apply_damage(
         creature,
@@ -130,48 +134,12 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
         owner=OwnerRef.from_creature(10),
         dt=0.016,
         players=[player],
+        perks=perks,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
     assert killed is True
     assert creature.hp == -131.92474365234375
-
-
-def test_damage_perks_use_player_zero_only_when_preserving_native_bugs() -> None:
-    player0 = PlayerState(index=0, pos=Vec2())
-    player1 = PlayerState(index=1, pos=Vec2())
-    player1.perk_counts[int(PerkId.URANIUM_FILLED_BULLETS)] = 1
-
-    corrected_creature = CreatureState(active=True, hp=100.0, size=50.0, flags=CreatureFlags(0))
-    native_creature = CreatureState(active=True, hp=100.0, size=50.0, flags=CreatureFlags(0))
-
-    corrected_killed = creature_apply_damage(
-        corrected_creature,
-        damage_amount=10.0,
-        damage_type=CreatureDamageType.BULLET,
-        impulse=Vec2(),
-        owner=OwnerRef.from_player(1),
-        dt=0.016,
-        players=[player0, player1],
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        preserve_bugs=False,
-    )
-    native_killed = creature_apply_damage(
-        native_creature,
-        damage_amount=10.0,
-        damage_type=CreatureDamageType.BULLET,
-        impulse=Vec2(),
-        owner=OwnerRef.from_player(1),
-        dt=0.016,
-        players=[player0, player1],
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        preserve_bugs=True,
-    )
-
-    assert corrected_killed is False
-    assert native_killed is False
-    assert_float_close(corrected_creature.hp, 80.0)
-    assert_float_close(native_creature.hp, 90.0)
 
 
 def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
@@ -182,8 +150,9 @@ def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
         flags=CreatureFlags.ANIM_PING_PONG,
     )
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.BARREL_GREASER)] = 1
-    player.perk_counts[int(PerkId.DOCTOR)] = 1
+    perks = PerkCounts()
+    perks[PerkId.BARREL_GREASER] = 1
+    perks[PerkId.DOCTOR] = 1
 
     killed = creature_apply_damage(
         creature,
@@ -193,6 +162,7 @@ def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
         owner=OwnerRef.from_player(0),
         dt=0.016,
         players=[player],
+        perks=perks,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
@@ -211,6 +181,7 @@ def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
         owner=OwnerRef.from_player(0),
         dt=0.016,
         players=[],
+        perks=PerkCounts(),
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
@@ -229,6 +200,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
+        perks=PerkCounts(),
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 
@@ -275,6 +247,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
+        perks=state.perks,
         rng=rng,
         effects=state.effects,
         detail_preset=5,
@@ -343,6 +316,7 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
         owner=OwnerRef.from_player(0),
         dt=0.016,
         players=[],
+        perks=state.perks,
         rng=rng,
         effects=state.effects,
         on_lethal=_Runtime().on_creature_lethal,
@@ -386,6 +360,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
         owner=OwnerRef.from_creature(0),
         dt=0.016,
         players=[],
+        perks=state.perks,
         rng=rng,
         effects=state.effects,
         detail_preset=5,
@@ -446,6 +421,7 @@ def test_lethal_followup_gates_on_entry_health_not_lifecycle() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[PlayerState(index=0, pos=Vec2())],
+        perks=PerkCounts(),
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         on_lethal=lambda index, _followup: lethal.append(index),
     )

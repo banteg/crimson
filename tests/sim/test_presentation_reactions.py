@@ -283,7 +283,7 @@ def test_sound_cooldowns_use_frame_time_before_reflex_slow_motion() -> None:
     from crimson.perks import PerkId
 
     session, sim_world = make_session()
-    sim_world.players[0].perk_counts[int(PerkId.REFLEX_BOOSTED)] = 1
+    sim_world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
     sim_world.state.bonuses.reflex_boost = 2.0
     sim_world.state.time_scale_active = True
     step = session.step_tick(dt=0.1, inputs=(PlayerInput(),))

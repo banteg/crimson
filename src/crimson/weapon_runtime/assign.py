@@ -7,8 +7,7 @@ from grim.sfx_types import SfxRequest
 
 from ..math_parity import f32, x87_pc24_mul
 from ..perks import PerkId
-from ..perks.helpers import perk_active
-from ..sim.state_types import PlayerState, WeaponSlot
+from ..sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
 from ..weapons import WEAPON_BY_ID, Weapon, WeaponId
 
@@ -20,11 +19,11 @@ def weapon_entry(weapon_id: WeaponId) -> Weapon:
     return WEAPON_BY_ID[weapon_id]
 
 
-def _clip_size_with_perks(player: PlayerState, clip_size: int) -> int:
+def _clip_size_with_perks(perks: PerkCounts, clip_size: int) -> int:
     clip_size = max(0, clip_size)
-    if perk_active(player, PerkId.AMMO_MANIAC):
+    if PerkId.AMMO_MANIAC in perks:
         clip_size += max(1, int(float(clip_size) * 0.25))
-    if perk_active(player, PerkId.MY_FAVOURITE_WEAPON):
+    if PerkId.MY_FAVOURITE_WEAPON in perks:
         clip_size += 2
     return clip_size
 
@@ -55,7 +54,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id
 
-    player.weapon.clip_size = _clip_size_with_perks(player, int(weapon.clip_size))
+    player.weapon.clip_size = _clip_size_with_perks(state.perks, int(weapon.clip_size))
     player.weapon.ammo = float(player.weapon.clip_size)
     player.weapon_reset_latch = 0
     # Native resets only ammo, the reset latch, shot cooldown, reload timer,
@@ -113,13 +112,9 @@ def player_start_reload(
 ) -> None:
     """Start or refresh a reload timer (`player_start_reload` @ 0x00413430)."""
 
-    # Native queries the global perk table through `perk_count_get` (and reads
-    # Fastloader directly from slot zero) even while mutating another overlay
-    # player. Corrected mode keeps the intuitive per-player policy.
-    perk_player = players[0] if state.preserve_bugs and players else player
 
     if player.weapon.reload_active and (
-        perk_active(perk_player, PerkId.AMMUNITION_WITHIN) or perk_active(perk_player, PerkId.REGRESSION_BULLETS)
+        PerkId.AMMUNITION_WITHIN in state.perks or PerkId.REGRESSION_BULLETS in state.perks
     ):
         return
 
@@ -130,7 +125,7 @@ def player_start_reload(
         player.weapon.reload_active = True
 
     player.weapon.reload_timer = reload_time
-    if perk_active(perk_player, PerkId.FASTLOADER):
+    if PerkId.FASTLOADER in state.perks:
         player.weapon.reload_timer = x87_pc24_mul(reload_time, f32(0.7))
     if state.bonuses.weapon_power_up > 0.0:
         player.weapon.reload_timer = x87_pc24_mul(player.weapon.reload_timer, f32(0.6))

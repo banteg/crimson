@@ -27,7 +27,6 @@ from .math_parity import (
 )
 from .movement_controls import MovementControlType
 from .perks import PerkId
-from .perks.helpers import perk_active
 from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.state import PerkSelectionState
 from .player_damage import PlayerDeathRuntime
@@ -75,7 +74,7 @@ if TYPE_CHECKING:
     from .creatures.runtime import CreatureState
     from .creatures.spawn import SpawnSlotInit
     from .sim.input import PlayerInput
-    from .sim.state_types import PlayerState
+    from .sim.state_types import PerkCounts, PlayerState
 
 
 _RELATIVE_MOVE_HEADING_NONE = -1.0
@@ -325,7 +324,7 @@ _SPAWN_AVOIDANCE_RADIUS_SCALE = f32(0.33333334)
 def _player_apply_move_with_spawn_avoidance(
     player: PlayerState,
     *,
-    perk_player: PlayerState,
+    perks: PerkCounts,
     delta: Vec2,
     spawn_slots: Sequence[SpawnSlotInit] | None,
     creatures: Sequence[CreatureState] | None,
@@ -334,7 +333,7 @@ def _player_apply_move_with_spawn_avoidance(
 
     dx = float(delta.x)
     dy = float(delta.y)
-    if perk_active(perk_player, PerkId.ALTERNATE_WEAPON):
+    if PerkId.ALTERNATE_WEAPON in perks:
         dx = x87_pc24_mul(dx, _ALT_WEAPON_MOVE_SCALE)
         dy = x87_pc24_mul(dy, _ALT_WEAPON_MOVE_SCALE)
 
@@ -416,9 +415,9 @@ def _resolve_aim_scheme_for_update(input_state: PlayerInput, state: GameplayStat
     return AimScheme.MOUSE
 
 
-def _player_accelerate_move_speed(player: PlayerState, perk_player: PlayerState, dt: float) -> None:
+def _player_accelerate_move_speed(player: PlayerState, perks: PerkCounts, dt: float) -> None:
     dt = float(f32(float(dt)))
-    if perk_active(perk_player, PerkId.LONG_DISTANCE_RUNNER):
+    if PerkId.LONG_DISTANCE_RUNNER in perks:
         if player.move_speed < 2.0:
             acceleration = f32(float(dt) * 4.0)
             player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
@@ -622,7 +621,7 @@ def _native_move_target_heading(move: Vec2, *, normalize: bool, wrap: bool) -> f
 
 def _player_move_toward_heading(
     player: PlayerState,
-    perk_player: PlayerState,
+    perks: PerkCounts,
     *,
     target_heading: float | None,
     movement_dt: float,
@@ -632,7 +631,7 @@ def _player_move_toward_heading(
 
     if target_heading is not None and target_heading != _RELATIVE_MOVE_HEADING_NONE:
         angle_diff = _player_heading_approach_target(player, target_heading, movement_dt)
-        _player_accelerate_move_speed(player, perk_player, movement_dt)
+        _player_accelerate_move_speed(player, perks, movement_dt)
         _player_apply_move_speed_caps(player)
         velocity = _player_turn_aligned_velocity_native(
             direction=_direction_from_heading_native(float(player.heading)),
@@ -647,7 +646,7 @@ def _player_move_toward_heading(
 
 
 def _player_move(
-    player: PlayerState, perk_player: PlayerState, input_state: PlayerInput,
+    player: PlayerState, input_state: PlayerInput,
     state: GameplayState, movement_dt: float, move_mode: MovementControlType,
     speed_multiplier: float, spawn_slots: Sequence[SpawnSlotInit] | None,
     creatures: Sequence[CreatureState] | None,
@@ -680,11 +679,11 @@ def _player_move(
             turned = True
 
         if moving_forward:
-            _player_accelerate_move_speed(player, perk_player, movement_dt)
+            _player_accelerate_move_speed(player, state.perks, movement_dt)
             _player_apply_move_speed_caps(player)
             speed_scale = 25.0
         elif moving_backward:
-            _player_accelerate_move_speed(player, perk_player, movement_dt)
+            _player_accelerate_move_speed(player, state.perks, movement_dt)
             phase_sign = -1.0
             speed_scale = -25.0
         else:
@@ -751,7 +750,7 @@ def _player_move(
                 float(movement_dt),
             )
             player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
-            _player_accelerate_move_speed(player, perk_player, movement_dt)
+            _player_accelerate_move_speed(player, state.perks, movement_dt)
             _player_apply_move_speed_caps(player)
             velocity = _player_turn_aligned_velocity_native(
                 direction=_direction_from_heading_native(float(player.heading)),
@@ -774,7 +773,7 @@ def _player_move(
             target_heading = _native_move_target_heading(raw_move, normalize=True, wrap=True)
         move_delta = _player_move_toward_heading(
             player,
-            perk_player,
+            state.perks,
             target_heading=target_heading,
             movement_dt=movement_dt,
             speed_multiplier=speed_multiplier,
@@ -782,7 +781,7 @@ def _player_move(
 
     _player_apply_move_with_spawn_avoidance(
         player,
-        perk_player=perk_player,
+        perks=state.perks,
         delta=move_delta,
         spawn_slots=spawn_slots,
         creatures=creatures,
@@ -795,7 +794,7 @@ def _player_move(
 
 
 def _player_tick_reload(
-    player: PlayerState, perk_player: PlayerState, input_state: PlayerInput,
+    player: PlayerState, input_state: PlayerInput,
     state: GameplayState, dt: float, prev_pos: Vec2, move_mode: MovementControlType,
     players: list[PlayerState] | None,
 ) -> bool:
@@ -806,12 +805,12 @@ def _player_tick_reload(
         player.man_bomb_timer = 0.0
         player.living_fortress_timer = 0.0
     reload_scale = 1.0
-    if reload_stationary and perk_active(perk_player, PerkId.STATIONARY_RELOADER):
+    if reload_stationary and PerkId.STATIONARY_RELOADER in state.perks:
         reload_scale = 3.0
 
     # Reload + reload perks.
     if (
-        perk_active(perk_player, PerkId.ANXIOUS_LOADER)
+        PerkId.ANXIOUS_LOADER in state.perks
         and input_state.fire_pressed
         and player.weapon.reload_timer > 0.0
     ):
@@ -842,7 +841,7 @@ def _player_tick_reload(
 
     if player.weapon.reload_timer > 0.0:
         if (
-            perk_active(perk_player, PerkId.ANGRY_RELOADER)
+            PerkId.ANGRY_RELOADER in state.perks
             and player.weapon.reload_timer_max > 0.5
             and x87_pc24_mul(player.weapon.reload_timer_max, f32(0.5)) < player.weapon.reload_timer
         ):
@@ -873,7 +872,7 @@ def _player_tick_reload(
     if player.weapon.reload_timer < 0.0:
         player.weapon.reload_timer = 0.0
 
-    has_alt_weapon_perk = perk_active(perk_player, PerkId.ALTERNATE_WEAPON)
+    has_alt_weapon_perk = PerkId.ALTERNATE_WEAPON in state.perks
     single_player_mode = (len(players) == 1) if players is not None else True
     # Native gates on `grim_is_key_active` (key held), so holding reload chains
     # reloads back-to-back as each one completes.
@@ -924,10 +923,6 @@ def player_update(
             x87_pc24_mul(dt, f32(20.0)),
         )
         return dt
-
-    # Native's player_update perk queries all read the global slot-zero table,
-    # even while the overlay-selected player's fields are being updated.
-    perk_player = players[0] if state.preserve_bugs and players else player
 
     _player_tick_low_health(player, state, dt, detail_preset, violence_disabled)
 
@@ -985,7 +980,7 @@ def player_update(
     )
 
     _player_move(
-        player, perk_player, input_state, state, movement_dt, move_mode,
+        player, input_state, state, movement_dt, move_mode,
         speed_multiplier, spawn_slots, creatures,
     )
 
@@ -995,7 +990,7 @@ def player_update(
         frame_dt = _player_reflex_restored_dt(movement_dt, time_scale_factor)
 
     has_alt_weapon_perk = _player_tick_reload(
-        player, perk_player, input_state, state, frame_dt, prev_pos, move_mode, players,
+        player, input_state, state, frame_dt, prev_pos, move_mode, players,
     )
 
     _player_update_aim_by_scheme(
@@ -1010,7 +1005,7 @@ def player_update(
     # Native cools spread after perk timers/movement but before weapon fire.
     # Keeping this below `apply_player_perk_ticks` preserves Fire Cough spread
     # sampling order while still applying cooldown before `player_fire_weapon`.
-    if perk_active(perk_player, PerkId.SHARPSHOOTER):
+    if PerkId.SHARPSHOOTER in state.perks:
         player.spread_heat = f32(0.02)
     else:
         player.spread_heat = max(
@@ -1020,7 +1015,7 @@ def player_update(
 
     # Native latches both normal and perk readiness before exchanging weapon
     # slots; the old normal flag also decides whether the incoming shot costs XP/HP.
-    fire_gate = _capture_fire_gate(player, perk_player)
+    fire_gate = _capture_fire_gate(player, state.perks)
 
     # Native clears `reload_active` whenever the cooldown/timer gates are open,
     # even if ammo is empty and perk firing paths can still proceed.

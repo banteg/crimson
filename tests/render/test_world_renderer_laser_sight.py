@@ -85,23 +85,25 @@ def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _Native
     ):
         calls[name] = mocker.patch.object(world_projectiles.rl, name)
     case = native.case
+    state = GameplayState(preserve_bugs=True)
+    state.perks[int(PerkId.SHARPSHOOTER)] = case["players"][0]["sharpshooter"]
     players = []
     for row in case["players"][: case["player_count"]]:
-        player = PlayerState(
-            index=row["index"],
-            pos=Vec2(*row["position"]),
-            health=row["health"],
-            aim_heading=row["heading"],
+        players.append(
+            PlayerState(
+                index=row["index"],
+                pos=Vec2(*row["position"]),
+                health=row["health"],
+                aim_heading=row["heading"],
+            ),
         )
-        player.perk_counts[int(PerkId.SHARPSHOOTER)] = row["sharpshooter"]
-        players.append(player)
     frame = RenderFrame(
         world_size=1024.0,
         demo_mode_active=False,
         config=None,
         camera=Vec2(),
         ground=None,
-        state=GameplayState(preserve_bugs=True),
+        state=state,
         players=players,
         creatures=cast("Any", object()),
         resources=cast("Any", _ResourcesStub()),

@@ -4,7 +4,7 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
@@ -12,7 +12,8 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 def test_doctor_increases_bullet_damage_by_20_percent() -> None:
     creature = CreatureState(active=True, hp=100.0, size=50.0)
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.DOCTOR)] = 1
+    perks = PerkCounts()
+    perks[PerkId.DOCTOR] = 1
 
     killed = creature_apply_damage(
         creature,
@@ -22,6 +23,7 @@ def test_doctor_increases_bullet_damage_by_20_percent() -> None:
         owner=OwnerRef.from_local_player(0),
         dt=0.016,
         players=[player],
+        perks=perks,
         rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
 

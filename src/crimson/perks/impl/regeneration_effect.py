@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from ...math_parity import f32, x87_pc24_add, x87_pc24_mul
 from ...rng_caller_static import RngCallerStatic
-from ..helpers import perk_active
 from ..ids import PerkId
 from ..runtime.effects_context import PerksUpdateEffectsCtx
 
@@ -10,7 +9,7 @@ from ..runtime.effects_context import PerksUpdateEffectsCtx
 def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
     if not ctx.players:
         return
-    if not perk_active(ctx.players[0], PerkId.REGENERATION):
+    if PerkId.REGENERATION not in ctx.state.perks:
         return
     if (
         ctx.state.rng.rand_tagged(RngCallerStatic.PERKS_UPDATE_EFFECTS_REGENERATION_GATE)
@@ -36,7 +35,7 @@ def update_regeneration(ctx: PerksUpdateEffectsCtx) -> None:
     # intended upgrade and keep the no-op behind `--preserve-bugs`.
     if (
         not ctx.state.preserve_bugs
-        and perk_active(ctx.players[0], PerkId.GREATER_REGENERATION)
+        and PerkId.GREATER_REGENERATION in ctx.state.perks
     ):
         heal_amount = x87_pc24_mul(dt, f32(2.0))
 

@@ -21,4 +21,3 @@ class PerkSelectionState(msgspec.Struct):
     pending_count: int = 0
     choices: list[PerkId] = msgspec.field(default_factory=list)
     choices_dirty: bool = True
-    capture_player_perk_counts_known: bool = True

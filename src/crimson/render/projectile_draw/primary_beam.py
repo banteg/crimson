@@ -9,7 +9,6 @@ from grim.raylib_api import rd, rl
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
-from ...perks.helpers import perk_active
 from ...projectiles.types import ProjectileTemplateId
 from ...render.rtx.beam import draw_beam_fast_stamped_body, draw_beam_fast_stamped_head
 from ...render.rtx.mode import RtxRenderMode
@@ -82,7 +81,7 @@ def draw_beam_effect(ctx: ProjectileDrawCtx) -> bool:
 
     # In the native renderer, Ion Gun Master increases the chain effect thickness and reach.
     perk_scale = 1.0
-    if any(perk_active(player, PerkId.ION_GUN_MASTER) for player in render_frame.players):
+    if PerkId.ION_GUN_MASTER in render_frame.state.perks:
         perk_scale = 1.2
 
     effect_scale = beam_effect_scale(type_id)

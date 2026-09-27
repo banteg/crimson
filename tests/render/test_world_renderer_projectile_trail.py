@@ -317,24 +317,18 @@ def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_si
 
 
 @pytest.mark.parametrize(
-    ("preserve_bugs", "perk_counts", "health", "expected_centers"),
+    ("sharpshooter", "health", "expected_centers"),
     [
-        (True, (1, 0), (100.0, 100.0), [100.0, 220.0]),
-        (True, (0, 1), (100.0, 100.0), []),
-        (False, (1, 0), (100.0, 100.0), [100.0]),
-        (False, (0, 1), (100.0, 100.0), [220.0]),
-        (True, (1, 0), (0.0, 100.0), [220.0]),
-        (False, (1, 0), (0.0, 100.0), []),
-        (True, (1, 0), (100.0, 0.0), [100.0]),
-        (True, (1, 1), (0.0, 0.0), []),
-        (True, (0, 0), (100.0, 100.0), []),
-        (False, (1, 1), (100.0, 100.0), [100.0, 220.0]),
+        (1, (100.0, 100.0), [100.0, 220.0]),
+        (1, (0.0, 100.0), [220.0]),
+        (1, (100.0, 0.0), [100.0]),
+        (1, (0.0, 0.0), []),
+        (0, (100.0, 100.0), []),
     ],
 )
-def test_sharpshooter_laser_preserves_native_player_zero_owner(
+def test_sharpshooter_laser_draws_for_each_living_player(
     mocker,
-    preserve_bugs,
-    perk_counts,
+    sharpshooter,
     health,
     expected_centers,
 ) -> None:
@@ -353,13 +347,9 @@ def test_sharpshooter_laser_preserves_native_player_zero_owner(
         PlayerState(index=0, pos=Vec2(100.0, 150.0), health=health[0]),
         PlayerState(index=1, pos=Vec2(220.0, 210.0), health=health[1]),
     ]
-    for player, count in zip(players, perk_counts, strict=True):
-        player.perk_counts[int(PerkId.SHARPSHOOTER)] = count
-    frame = structs.replace(
-        _WorldStub().build_render_frame(),
-        state=GameplayState(preserve_bugs=preserve_bugs),
-        players=players,
-    )
+    state = GameplayState()
+    state.perks[int(PerkId.SHARPSHOOTER)] = sharpshooter
+    frame = structs.replace(_WorldStub().build_render_frame(), state=state, players=players)
     ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(world_size=frame.world_size, config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),

@@ -8,6 +8,7 @@ import crimson.render.projectile_draw.primary_plasma as primary_plasma_mod
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.render.projectile_draw import ProjectileDrawCtx, draw_projectile_from_registry
 from crimson.render.rtx.mode import RtxRenderMode
+from crimson.sim.gameplay_state import GameplayState
 from grim.assets import TextureId
 from grim.geom import Vec2
 
@@ -96,6 +97,7 @@ class _FrameStub:
     rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC
     creatures: object = field(default_factory=lambda: type("_Creatures", (), {"entries": []})())
     elapsed_ms: float = 0.0
+    state: GameplayState = field(default_factory=GameplayState)
 
 
 def _renderer(

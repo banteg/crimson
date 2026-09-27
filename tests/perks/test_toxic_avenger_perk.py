@@ -13,7 +13,7 @@ from tests.support.factories import make_creature_update_options
 def test_toxic_avenger_sets_strong_self_damage_flags_on_contact_hit() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    player.perk_counts[int(PerkId.TOXIC_AVENGER)] = 1
+    state.perks[int(PerkId.TOXIC_AVENGER)] = 1
 
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -52,7 +52,7 @@ def test_toxic_avenger_strong_tick_overrides_weak_tick() -> None:
 def test_toxic_avenger_skips_when_player_shielded() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), shield_timer=1.0)
-    player.perk_counts[int(PerkId.TOXIC_AVENGER)] = 1
+    state.perks[int(PerkId.TOXIC_AVENGER)] = 1
 
     pool = CreaturePool()
     creature = pool.entries[0]

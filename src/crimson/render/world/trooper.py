@@ -10,7 +10,6 @@ from grim.raylib_api import rl
 
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...perks import PerkId
-from ...perks.helpers import perk_active
 from ...weapons import WEAPON_BY_ID
 from . import viewport
 from .constants import _RAD_TO_DEG
@@ -52,7 +51,7 @@ def draw_player_trooper_sprite(
     base_scale = base_size / cell
 
 
-    if perk_active(player, PerkId.RADIOACTIVE) and alpha > 1e-3:
+    if PerkId.RADIOACTIVE in render_frame.state.perks and alpha > 1e-3:
         atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.AURA))
         if atlas is not None:
             aura_grid = SIZE_CODE_GRID.get(int(atlas.size_code))

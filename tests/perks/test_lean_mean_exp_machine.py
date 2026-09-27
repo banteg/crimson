@@ -15,7 +15,7 @@ def test_perks_update_effects_lean_mean_exp_machine_ticks_xp_without_double_xp()
     state.bonuses.double_experience = 5.0
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0))
-    player.perk_counts[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 2
+    state.perks[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 2
 
     perks_update_effects(state, [player], 0.2, creatures=CreaturePool().entries, fx_queue=FxQueue())
     assert player.experience == 0
@@ -31,8 +31,7 @@ def test_lean_mean_exp_machine_tick_awards_only_player0_in_multiplayer() -> None
 
     player0 = PlayerState(index=0, pos=Vec2(10.0, 20.0))
     player1 = PlayerState(index=1, pos=Vec2(30.0, 40.0))
-    player0.perk_counts[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 2
-    player1.perk_counts[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 2
+    state.perks[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 2
 
     perks_update_effects(state, [player0, player1], 0.1, creatures=CreaturePool().entries, fx_queue=FxQueue())
 
@@ -49,7 +48,7 @@ def test_perk_effect_timers_keep_native_36hz_cadence() -> None:
         fire_bullets_timer=0.25,
         speed_bonus_timer=0.25,
     )
-    player.perk_counts[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 1
+    state.perks[int(PerkId.LEAN_MEAN_EXP_MACHINE)] = 1
 
     for _ in range(9):
         perks_update_effects(state, [player], 1.0 / 36.0, creatures=CreaturePool().entries, fx_queue=FxQueue())

@@ -73,16 +73,6 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
     assert choices and choices[0] == PerkId.MONSTER_VISION
 
 
-def test_perk_generate_choices_inserts_monster_vision_when_capture_counts_unknown() -> None:
-    state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
-    state.quest_level = QuestLevel(3, 4)
-    state.perk_selection.capture_player_perk_counts_known = False
-    player = PlayerState(index=0, pos=Vec2())
-
-    choices = perk_generate_choices(state, player, game_mode=GameMode.QUESTS, player_count=1)
-    assert choices and choices[0] == PerkId.MONSTER_VISION
-
-
 def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order() -> None:
     # Capture quest_3_4 focus tick 25380 draws:
     #   7x perk_select_random (0x0042fbdc), 2x rarity gate (0x004046d4).
@@ -199,7 +189,7 @@ def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
     state.perk_available[int(PerkId.JINXED)] = True
 
     player = PlayerState(index=0, pos=Vec2())
-    player.perk_counts[int(PerkId.DEATH_CLOCK)] = 1
+    state.perks[int(PerkId.DEATH_CLOCK)] = 1
 
     choices = perk_generate_choices(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
     assert PerkId.JINXED not in choices
@@ -253,8 +243,8 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     prepare_perk_availability(state)
 
     player = PlayerState(index=0, pos=Vec2())
-    for idx in range(len(player.perk_counts)):
-        player.perk_counts[idx] = 1
+    for idx in range(len(state.perks.counts)):
+        state.perks[idx] = 1
 
     before_calls = rng.calls
     before_state = rng.state
@@ -288,8 +278,8 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
     prepare_perk_availability(state)
 
     player = PlayerState(index=0, pos=Vec2())
-    for idx in range(len(player.perk_counts)):
-        player.perk_counts[idx] = 1
+    for idx in range(len(state.perks.counts)):
+        state.perks[idx] = 1
 
     original = selection_mod.perk_can_offer
     calls = 0

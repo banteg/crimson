@@ -26,7 +26,6 @@ from ..math_parity import (
     x87_pc24_sub,
 )
 from ..perks import PerkId
-from ..perks.helpers import perk_active
 from ..projectiles.types import ProjectileHit, ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
@@ -197,7 +196,7 @@ def queue_projectile_decals_pre_hit(
     violence_disabled: int,
 ) -> ProjectileDecalPostCtx:
     freeze_active = freeze_bonus_active(state=state)
-    bloody = bool(players) and perk_active(players[0], PerkId.BLOODY_MESS_QUICK_LEARNER)
+    bloody = bool(players) and PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks
     large_hit_decal_runtime: LargeHitDecalRuntime | None = None
     if freeze_active:
         large_hit_decal_runtime = _ProjectileFreezeShardRuntime(

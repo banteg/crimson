@@ -104,6 +104,7 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             owner=owner,
             dt=float(self.dt),
             players=self.world.players,
+            perks=self.world.state.perks,
             rng=self.world.state.rng,
             preserve_bugs=bool(self.world.state.preserve_bugs),
             effects=self.world.state.effects,
@@ -286,7 +287,7 @@ class WorldState(msgspec.Struct):
         )
 
     def world_dt_after_perk_steps(self, dt: float) -> float:
-        return float(apply_reflex_boosted_dt(dt=float(dt), players=self.players))
+        return float(apply_reflex_boosted_dt(dt=float(dt), perks=self.state.perks))
 
     def step(
         self,

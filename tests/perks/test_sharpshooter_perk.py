@@ -20,7 +20,7 @@ def test_sharpshooter_forces_spread_heat_and_slows_firing() -> None:
     player = PlayerState(index=0,
     pos=Vec2(100.0, 100.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE, clip_size=10, ammo=10),
     spread_heat=0.48,)
-    player.perk_counts[int(PerkId.SHARPSHOOTER)] = 1
+    state.perks[int(PerkId.SHARPSHOOTER)] = 1
 
     player_update(player, PlayerInput(aim=Vec2(200.0, 100.0)), 0.1, state)
     assert_float_close(player.spread_heat, 0.02)

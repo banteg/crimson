@@ -28,7 +28,7 @@ def observe(case):
     state.rng = rng
     world.players.append(PlayerState(index=0, pos=Vec2()))
     for perk in case.get("perks", []):
-        world.players[0].perk_counts[perk] = 1
+        state.perks[perk] = 1
     item = case["primary"][0]
     projectile = state.projectiles.entries[item["index"]]
     projectile.active = True

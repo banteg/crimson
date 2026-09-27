@@ -104,7 +104,7 @@ class SurvivalMode(BaseGameplayMode):
         perk_ctx = self._perk_menu_ui_context()
         pending_count = self._ui_pending_perk_count()
         any_alive = self._any_player_alive()
-        choices = perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection)
+        choices = perk_selection_prepared_choices(self.state, self.state.perk_selection)
         self._perk_prompt.begin_frame()
         if self._perk_menu.open and allow_input:
             choice_index = self._perk_menu.handle_input(
@@ -382,7 +382,7 @@ class SurvivalMode(BaseGameplayMode):
             )
             self._perk_menu.draw(
                 self._perk_menu_ui_context(),
-                perk_selection_prepared_choices(self.sim_world.players, self.state.perk_selection),
+                perk_selection_prepared_choices(self.state, self.state.perk_selection),
             )
         if (not self._game_over_active) and perk_menu_active:
             self._draw_game_cursor()
