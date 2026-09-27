@@ -239,6 +239,13 @@ LRESULT CALLBACK grim_window_proc(
             }
             return 0;
 
+        case WM_MOUSEMOVE:
+            if (grim_config_values[13]) {
+                grim_mouse_x_cached = (float)(short)LOWORD(lparam);
+                grim_mouse_y_cached = (float)(short)HIWORD(lparam);
+            }
+            break;
+
         case WM_CHAR:
             if ((unsigned char)wparam != 0xa7 &&
                 (unsigned char)wparam != 9) {
@@ -287,13 +294,6 @@ LRESULT CALLBACK grim_window_proc(
         case WM_SYSKEYDOWN:
         case WM_SYSKEYUP:
             return 1;
-
-        case WM_MOUSEMOVE:
-            if (grim_config_values[13]) {
-                grim_mouse_x_cached = (float)(short)LOWORD(lparam);
-                grim_mouse_y_cached = (float)(short)HIWORD(lparam);
-            }
-            break;
 
         case WM_LBUTTONDOWN:
             if (grim_config_values[13]) {

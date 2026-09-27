@@ -476,7 +476,7 @@
       "id": "grim-recovered-platform-vc6-provider",
       "path": "tools/native/providers/build/grim-platform/grim-platform.lib",
       "size": 110932,
-      "sha256": "c5e9ccaeeefeb835dbebe1af75fc8a6a3107b1286868b3a3173cd8c14a964e60",
+      "sha256": "5d7326c1a4d3da692a03ec984de89855f5716d78ec34b01bbc7fb6b886241a22",
       "recipe": "scripts/build_native_recovered_providers.py",
       "source_artifacts": [
         "visual-cpp-6-sp6-media"
@@ -525,7 +525,7 @@
         "tools/native/recovered/grim/window/window_proc.cpp",
         "tools/native/data_definitions/grim.dll.json"
       ],
-      "validation": "Every function member must remain an exact all-scope instruction and reference match; every member is raw-byte exact except grim_window_proc's documented scale-one SIB base/index equivalence, whose archived bytes must equal the verified compiled object; provider-only data dependencies must be fully specified and disjoint from the primary native data object.",
+      "validation": "Every function member must remain an exact all-scope instruction and reference match and be raw-byte exact; provider-only data dependencies must be fully specified and disjoint from the primary native data object.",
       "normalization": [
         "zero archive member timestamps",
         "zero COFF TimeDateStamp fields"

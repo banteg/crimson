@@ -78,8 +78,11 @@ the helpers can. Single-use float locals remain acceptable FROUND owners.
   were `extern "C"` functions. They are now `IGrim2D_cpp` methods like their
   siblings, and the vtable initializer names the method symbols.
 
-`grim_window_proc` stays normalized-exact with the same two SIB byte
-differences it had before; every other rewrite is byte-exact.
+Every rewrite is byte-exact. `grim_window_proc` became byte-exact in a
+follow-up: `case WM_MOUSEMOVE:` placed before `case WM_CHAR:` gives its
+`WM_CHAR` buffer stores native's SIB order, because C2 numbers globals by
+first reference ([sib-operand-order.md](c2/compiler/sib-operand-order.md)
+§4).
 
 ## Retained, with native evidence
 

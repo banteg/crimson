@@ -1,8 +1,33 @@
 # `grim_window_proc` recovery notes
 
+## Byte-exact (2026-09-27)
+
+The callback is now raw-byte exact. The last two differences were SIB
+base/index swaps in the `WM_CHAR` terminator stores
+`grim_key_char_buffer[*grim_key_char_buffer_count] = 0`: native encodes the
+buffer as the base, and the earlier source encoded the count.
+
+The cause is C2's commutative operand sort
+([sib-operand-order.md](../../c2/compiler/sib-operand-order.md) §4). The
+address is `grim_key_char_buffer + *grim_key_char_buffer_count`. The buffer is
+a global leaf with hash `id << 5`. The count is a load through a global
+pointer, whose hash keeps only the low byte of that pointer's own hash:
+`((id << 5) & 0xff) << 8 | 7`. C2 numbers global symbols in first-reference
+order, in 32-id chunks. With `WM_CHAR` directly after `WM_ACTIVATE`, the count
+pointer is the 30th global (id 61), so its load outranks the buffer
+(0xa007 against 0x07c0). Native needs three more globals referenced first, so
+that the count pointer opens the next chunk (id 256, hash 0x0007).
+
+`case WM_MOUSEMOVE:` placed before `case WM_CHAR:` supplies exactly those
+three: the `grim_config_values[13]` test (one element record),
+`grim_mouse_x_cached` and `grim_mouse_y_cached`. The sparse-switch layout does not depend on that case's
+source position, so every other byte is unchanged. The append store keeps the
+count as the base in both builds, because there the count is a CSE temporary
+carried over from the capacity test.
+
 ## Plausibility pass (2026-09-27)
 
-The quit path assigns both DC flags and then calls `PostQuitMessage(0)` instead of passing the chained assignment as the argument. Normalized exactness, all 148 references, and the two documented SIB byte differences are unchanged. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
+The quit path assigns both DC flags and then calls `PostQuitMessage(0)` instead of passing the chained assignment as the argument. Normalized exactness and all 148 references are unchanged; the two SIB byte differences were removed later by the case order above. See [the Grim audit](../../PLAUSIBILITY-AUDIT-GRIM-2026-09-27.md). Any older description below of the replaced spelling is historical.
 
 Target: `grim.dll` `grim_window_proc @ 0x100033b0`, 1,671 bytes and 472
 normalized instructions.
@@ -28,6 +53,8 @@ filtering, native mouse input, and shutdown.
   `WM_EXITSIZEMOVE`, `WM_CREATE`, `WM_SIZE`, `WM_ACTIVATEAPP`, then
   `WM_ACTIVATE`. That order recovers the native sparse-switch partitions and
   shared tails.
+  `WM_MOUSEMOVE` then precedes `WM_CHAR`, which gives the `WM_CHAR` buffer
+  stores native's SIB order (see above).
 - D3D activation uses paired active/inactive branches. The inactive paths
   preserve the native device-loss, input-unacquire, timing, and readiness
   write order; the active paths preserve the native restore callback split.
@@ -35,9 +62,10 @@ filtering, native mouse input, and shutdown.
   Backspace decrements the count before terminating; append writes the
   character, increments the count, then writes the new terminator.
 
-## Final instruction diagnosis
+## Final instruction diagnosis (superseded)
 
-Before bounded SIB canonicalization, the retained source was already at
+This section predates the byte-exact case order above. Before bounded SIB
+canonicalization, the retained source was already at
 99.79% with all 148 references proven. Its only raw-encoding difference was:
 
 ```text
@@ -59,7 +87,9 @@ the later mouse-coordinate coloring (`98.52%`, refs `147/0/0`). Helpers,
 pointer-owner wrappers, volatile aliases, commuted expressions, scaled
 identities, and translation-unit padding all fell into the same two allocation
 states. The useful stopping rule was the instruction-level proof that the last
-difference was architecturally interchangeable, not the collapsed score.
+difference was architecturally interchangeable, not the collapsed score. The
+sort trace later showed that the choice depends only on global symbol ids, and
+that a plain case order fixes it.
 
 ## Toolchain and provenance
 

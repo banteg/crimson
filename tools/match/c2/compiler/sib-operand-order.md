@@ -79,6 +79,27 @@ one per nonzero base (+0x28) or index (+0x2c). It has to accept kinds 1 and 6 as
 loads as `load/leaf` or `load/expr` from the base's kind and def, and re-derive the leaf hash. Sums whose
 ranked keys are 0 or out of order are stale (§2).
 
+## 4. Global symbol ids follow first reference, in 32-id chunks
+
+Globals, string literals and element records of global arrays (class 7) get their C2 symbol ids in the order
+the function's IL first references them, not in declaration order [verified: `il_stage_trace.py` dumps of
+`grim_window_proc`]. They fill 32-id chunks. In `grim_window_proc` the first chunk is 32–63, and the 33rd
+global takes the shared chunk counter's current value, 256. Some field records get their ids later than
+their first reference: the bool view of `grim_config_values[13]` is #266, although the element reference
+takes a slot in the first chunk.
+
+A global leaf hashes `id << 5`. A load through a global pointer keeps only the low byte of that hash:
+`((id << 5) & 0xff) << 8 | 7`, so only `id mod 8` matters. For `buf[*count]` with two globals, the count's
+load therefore sorts first and becomes the SIB base unless the count pointer's id is ≡ 0 (mod 8), which
+gives hash 7, or the buffer's id is large enough to outrank it [verified: `grim_window_proc` WM_CHAR
+stores, native byte-exact after this change].
+
+Any earlier first reference moves a later global's id. In `grim_window_proc`, `case WM_MOUSEMOVE:` placed
+before `case WM_CHAR:` adds three ids (the `grim_config_values[13]` element and the two cached mouse
+coordinates). That puts `grim_key_char_buffer_count` at 256 and flips its terminator stores to native's
+buffer base. The sparse-switch layout ignores that case's source position, so no other byte changes. When a
+SIB order depends on a global, count the distinct globals first-referenced before it in the dump.
+
 ## Open questions
 
 - The code that builds the stale-key sums (strength reduction or address folding) and which order it keeps.

@@ -47,7 +47,7 @@ compiler traces unless a section says so. Each detailed note states its confiden
 | [pu-factor-order.md](pu-factor-order.md) | Why a field factor's position in a float product depends on its value-number owner id mod 4, and paren/setter spellings that pin it |
 | [scale-operand-rank.md](scale-operand-rank.md) | Why a lane of an inlined vector scale loads the field or the scale first: symbol part-record creation order, and the lockstep address records a field read creates |
 | [pu-firecough-heading.md](pu-firecough-heading.md) | What the single-use propagation pass really refuses (registration, kills, range checks), and how storing a value into a call's output vector keeps it computed early |
-| [sib-operand-order.md](sib-operand-order.md) | Which address-sum operand becomes the SIB base, how loads through CSE'd vs fresh addresses rank, and what source kills the address CSE |
+| [sib-operand-order.md](sib-operand-order.md) | Which address-sum operand becomes the SIB base, how loads through CSE'd vs fresh addresses rank, what source kills the address CSE, and how first-reference order numbers globals |
 | [cse-slot-count.md](cse-slot-count.md) | Where CSE temp ids come from, why a first `this->f = v` takes two slots, and phantom-slot interventions that test which id shift a sort order needs |
 | [cse-id-push.md](cse-id-push.md) | Why C0 (the first CSE id) moves only in 32-id blocks set by the whole function's IL size, measured block costs of natural constructs, and single-slot vs whole-function id shifts |
 | [pr-spill-order.md](pr-spill-order.md) | Why a loop pointer used after its loop survives forward substitution and gets a stack home, how reference weights decide 4-byte slot grouping, and a packer what-if tool |
