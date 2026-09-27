@@ -476,9 +476,9 @@ extern "C" void player_update(void)
                         player_accelerate_move_speed(player);
                         player_apply_move_speed_cap(player);
 
-                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                        player->move_dx = cosf(player->heading - 1.5707964f) * player->move_speed
                             * (3.1415927f - angle_step) * speed_scale * 7.957747f;
-                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
+                        player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                             * (3.1415927f - angle_step) * speed_scale * 7.957747f;
                         vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                         player_apply_move_with_spawn_avoidance(
@@ -530,9 +530,9 @@ extern "C" void player_update(void)
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
 
-                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                player->move_dx = cosf(player->heading - 1.5707964f) * player->move_speed
                     * (3.1415927f - angle_step) * speed_scale * 7.957747f;
-                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
+                player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                     * (3.1415927f - angle_step) * speed_scale * 7.957747f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
@@ -569,10 +569,9 @@ extern "C" void player_update(void)
                     player->input.turn_key_left)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_down(player_alt_turn_key_left))) {
-                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;
-                player->turn_speed = current_turn_speed;
+                player->turn_speed = player->turn_speed + frame_dt * 10.0f;
                 player->heading = player->heading
-                    - current_turn_speed * frame_dt * 0.5f;
+                    - player->turn_speed * frame_dt * 0.5f;
                 player->aim_heading = player->aim_heading
                     - player->turn_speed * frame_dt * 0.5f;
                 turned = true;
@@ -580,10 +579,9 @@ extern "C" void player_update(void)
                            player->input.turn_key_right)
                 || (config_player_count == 1
                     && grim_interface_ptr->grim_is_key_down(player_alt_turn_key_right))) {
-                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;
-                player->turn_speed = current_turn_speed;
+                player->turn_speed = player->turn_speed + frame_dt * 10.0f;
                 player->heading = player->heading
-                    + current_turn_speed * frame_dt * 0.5f;
+                    + player->turn_speed * frame_dt * 0.5f;
                 player->aim_heading = player->aim_heading
                     + player->turn_speed * frame_dt * 0.5f;
                 turned = true;
@@ -713,9 +711,9 @@ extern "C" void player_update(void)
                 player_accelerate_move_speed(player);
                 player_apply_move_speed_cap(player);
 
-                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+                player->move_dx = cosf(player->heading - 1.5707964f) * player->move_speed
                     * (3.1415927f - angle_step) * speed_scale * 7.957747f;
-                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
+                player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                     * (3.1415927f - angle_step) * speed_scale * 7.957747f;
                 vec2_t move = frame_dt * *(vec2_t *)&player->movement;
                 player_apply_move_with_spawn_avoidance(
@@ -762,9 +760,9 @@ extern "C" void player_update(void)
             player_accelerate_move_speed(player);
             player_apply_move_speed_cap(player);
 
-            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)
+            player->move_dx = cosf(player->heading - 1.5707964f) * player->move_speed
                 * (3.1415927f - angle_step) * speed_scale * 7.957747f;
-            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)
+            player->move_dy = sinf(player->heading - 1.5707964f) * player->move_speed
                 * (3.1415927f - angle_step) * speed_scale * 7.957747f;
             vec2_t move = frame_dt * *(vec2_t *)&player->movement;
             player_apply_move_with_spawn_avoidance(
@@ -1072,7 +1070,7 @@ extern "C" void player_update(void)
 
         if ((weapon_table[player->weapon_id].flags & 1) != 0) {
             effect_color_t smoke_color;
-            scalar = (float)(crt_rand() & 0x3f) * 0.01f
+            float smoke_angle = (float)(crt_rand() & 0x3f) * 0.01f
                 + fire_heading;
             float smoke_speed = (float)(crt_rand() & 0x3f) * 0.022727273f + 1.0f;
             smoke_color.r = 1.0f;
@@ -1083,7 +1081,7 @@ extern "C" void player_update(void)
             effect_template.color = smoke_color;
             effect_template.lifetime = 0.15f;
             effect_template.age = 0.0f;
-            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);
+            vec2_t drift(cosf(smoke_angle) * smoke_speed, sinf(smoke_angle) * smoke_speed);
             effect_template.rotation =
                 (float)((crt_rand() & 0x3f) - 0x20) * 0.1f;
             effect_template.half_extent.y = 2.0f;

@@ -1,0 +1,2101 @@
+{
+  "regions": [
+    {
+      "name": "movement-4140d8",
+      "native_start": 4276440,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4276440,
+          "candidate_offset": 2600,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4276443,
+          "candidate_offset": 2603,
+          "instruction": "fmul dword [esp+0x20]",
+          "masked_bytes": "d84c2420",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4276447,
+          "candidate_offset": 2607,
+          "instruction": "fmul dword [esp+0x1c]",
+          "masked_bytes": "d84c241c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4276451,
+          "candidate_offset": 2611,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4276457,
+          "candidate_offset": 2617,
+          "instruction": "fstp dword [edi+0x1c]",
+          "masked_bytes": "d95f1c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-4140f7",
+      "native_start": 4276471,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4276471,
+          "candidate_offset": 2631,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4276474,
+          "candidate_offset": 2634,
+          "instruction": "fmul dword [esp+0x20]",
+          "masked_bytes": "d84c2420",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4276478,
+          "candidate_offset": 2638,
+          "instruction": "fmul dword [esp+0x1c]",
+          "masked_bytes": "d84c241c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4276482,
+          "candidate_offset": 2642,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4276488,
+          "candidate_offset": 2648,
+          "instruction": "fstp dword [edi+0x20]",
+          "masked_bytes": "d95f20",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-414339",
+      "native_start": 4277049,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4277049,
+          "candidate_offset": 3209,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277052,
+          "candidate_offset": 3212,
+          "instruction": "fmul dword [esp+0x28]",
+          "masked_bytes": "d84c2428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277056,
+          "candidate_offset": 3216,
+          "instruction": "fmul dword [esp+0x24]",
+          "masked_bytes": "d84c2424",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277060,
+          "candidate_offset": 3220,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277066,
+          "candidate_offset": 3226,
+          "instruction": "fstp dword [edi+0x1c]",
+          "masked_bytes": "d95f1c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-414358",
+      "native_start": 4277080,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4277080,
+          "candidate_offset": 3240,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277083,
+          "candidate_offset": 3243,
+          "instruction": "fmul dword [esp+0x28]",
+          "masked_bytes": "d84c2428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277087,
+          "candidate_offset": 3247,
+          "instruction": "fmul dword [esp+0x24]",
+          "masked_bytes": "d84c2424",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277091,
+          "candidate_offset": 3251,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277097,
+          "candidate_offset": 3257,
+          "instruction": "fstp dword [edi+0x20]",
+          "masked_bytes": "d95f20",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-414b80",
+      "native_start": 4279168,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4279168,
+          "candidate_offset": 5328,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279171,
+          "candidate_offset": 5331,
+          "instruction": "fmul dword [esp+0x28]",
+          "masked_bytes": "d84c2428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279175,
+          "candidate_offset": 5335,
+          "instruction": "fmul dword [esp+0x24]",
+          "masked_bytes": "d84c2424",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279179,
+          "candidate_offset": 5339,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4279185,
+          "candidate_offset": 5345,
+          "instruction": "fstp dword [edi+0x1c]",
+          "masked_bytes": "d95f1c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-414b9f",
+      "native_start": 4279199,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4279199,
+          "candidate_offset": 5359,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279202,
+          "candidate_offset": 5362,
+          "instruction": "fmul dword [esp+0x28]",
+          "masked_bytes": "d84c2428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279206,
+          "candidate_offset": 5366,
+          "instruction": "fmul dword [esp+0x24]",
+          "masked_bytes": "d84c2424",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279210,
+          "candidate_offset": 5370,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4279216,
+          "candidate_offset": 5376,
+          "instruction": "fstp dword [edi+0x20]",
+          "masked_bytes": "d95f20",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-414e45",
+      "native_start": 4279877,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4279877,
+          "candidate_offset": 6053,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279880,
+          "candidate_offset": 6056,
+          "instruction": "fmul dword [esp+0x28]",
+          "masked_bytes": "d84c2428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279884,
+          "candidate_offset": 6060,
+          "instruction": "fmul dword [esp+0x24]",
+          "masked_bytes": "d84c2424",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279888,
+          "candidate_offset": 6064,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4279894,
+          "candidate_offset": 6070,
+          "instruction": "fstp dword [edi+0x1c]",
+          "masked_bytes": "d95f1c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "movement-414e64",
+      "native_start": 4279908,
+      "instructions": 5,
+      "bytes": 20,
+      "relocations": 1,
+      "rows": [
+        {
+          "native_address": 4279908,
+          "candidate_offset": 6084,
+          "instruction": "fmul dword [edi+0x68]",
+          "masked_bytes": "d84f68",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279911,
+          "candidate_offset": 6087,
+          "instruction": "fmul dword [esp+0x28]",
+          "masked_bytes": "d84c2428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279915,
+          "candidate_offset": 6091,
+          "instruction": "fmul dword [esp+0x24]",
+          "masked_bytes": "d84c2424",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4279919,
+          "candidate_offset": 6095,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4001fea5dd0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650264,
+              "text": "0x0046f518",
+              "keys": [
+                "address:0x0046f518",
+                "local:+0x5be68",
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4001fea5dd0000000000",
+              "keys": [
+                "bytes4:dda5fe40"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4279925,
+          "candidate_offset": 6101,
+          "instruction": "fstp dword [edi+0x20]",
+          "masked_bytes": "d95f20",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "keyboard-turn-right",
+      "native_start": 4277468,
+      "instructions": 12,
+      "bytes": 66,
+      "relocations": 6,
+      "rows": [
+        {
+          "native_address": 4277468,
+          "candidate_offset": 3628,
+          "instruction": "fld dword [ADDR]",
+          "masked_bytes": "d90500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_frame_dt",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4720704,
+              "text": "frame_dt",
+              "keys": [
+                "address:0x00480840",
+                "name:frame_dt",
+                "local:+0x6d190"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_frame_dt",
+              "keys": [
+                "name:frame_dt",
+                "address:0x00480840"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277474,
+          "candidate_offset": 3634,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4002a000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649568,
+              "text": "0x0046f260",
+              "keys": [
+                "address:0x0046f260",
+                "local:+0x5bbb0",
+                "bytes4:00002041"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4002a000000000000000",
+              "keys": [
+                "bytes4:00002041"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277480,
+          "candidate_offset": 3640,
+          "instruction": "fadd dword [edi+0x304]",
+          "masked_bytes": "d88704030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277486,
+          "candidate_offset": 3646,
+          "instruction": "fst dword [edi+0x304]",
+          "masked_bytes": "d99704030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277492,
+          "candidate_offset": 3652,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_frame_dt",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4720704,
+              "text": "frame_dt",
+              "keys": [
+                "address:0x00480840",
+                "name:frame_dt",
+                "local:+0x6d190"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_frame_dt",
+              "keys": [
+                "name:frame_dt",
+                "address:0x00480840"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277498,
+          "candidate_offset": 3658,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3ffe8000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649548,
+              "text": "0x0046f24c",
+              "keys": [
+                "address:0x0046f24c",
+                "local:+0x5bb9c",
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3ffe8000000000000000",
+              "keys": [
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277504,
+          "candidate_offset": 3664,
+          "instruction": "fadd dword [edi+0x2c]",
+          "masked_bytes": "d8472c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277507,
+          "candidate_offset": 3667,
+          "instruction": "fstp dword [edi+0x2c]",
+          "masked_bytes": "d95f2c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277510,
+          "candidate_offset": 3670,
+          "instruction": "fld dword [ADDR]",
+          "masked_bytes": "d90500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_frame_dt",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4720704,
+              "text": "frame_dt",
+              "keys": [
+                "address:0x00480840",
+                "name:frame_dt",
+                "local:+0x6d190"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_frame_dt",
+              "keys": [
+                "name:frame_dt",
+                "address:0x00480840"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277516,
+          "candidate_offset": 3676,
+          "instruction": "fmul dword [edi+0x304]",
+          "masked_bytes": "d88f04030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277522,
+          "candidate_offset": 3682,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3ffe8000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649548,
+              "text": "0x0046f24c",
+              "keys": [
+                "address:0x0046f24c",
+                "local:+0x5bb9c",
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3ffe8000000000000000",
+              "keys": [
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277528,
+          "candidate_offset": 3688,
+          "instruction": "fadd dword [edi+0x300]",
+          "masked_bytes": "d88700030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "keyboard-turn-left",
+      "native_start": 4277536,
+      "instructions": 13,
+      "bytes": 72,
+      "relocations": 6,
+      "rows": [
+        {
+          "native_address": 4277536,
+          "candidate_offset": 3696,
+          "instruction": "fld dword [ADDR]",
+          "masked_bytes": "d90500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_frame_dt",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4720704,
+              "text": "frame_dt",
+              "keys": [
+                "address:0x00480840",
+                "name:frame_dt",
+                "local:+0x6d190"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_frame_dt",
+              "keys": [
+                "name:frame_dt",
+                "address:0x00480840"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277542,
+          "candidate_offset": 3702,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@4002a000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649568,
+              "text": "0x0046f260",
+              "keys": [
+                "address:0x0046f260",
+                "local:+0x5bbb0",
+                "bytes4:00002041"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@4002a000000000000000",
+              "keys": [
+                "bytes4:00002041"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277548,
+          "candidate_offset": 3708,
+          "instruction": "fadd dword [edi+0x304]",
+          "masked_bytes": "d88704030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277554,
+          "candidate_offset": 3714,
+          "instruction": "fst dword [edi+0x304]",
+          "masked_bytes": "d99704030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277560,
+          "candidate_offset": 3720,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_frame_dt",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4720704,
+              "text": "frame_dt",
+              "keys": [
+                "address:0x00480840",
+                "name:frame_dt",
+                "local:+0x6d190"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_frame_dt",
+              "keys": [
+                "name:frame_dt",
+                "address:0x00480840"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277566,
+          "candidate_offset": 3726,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3ffe8000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649548,
+              "text": "0x0046f24c",
+              "keys": [
+                "address:0x0046f24c",
+                "local:+0x5bb9c",
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3ffe8000000000000000",
+              "keys": [
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277572,
+          "candidate_offset": 3732,
+          "instruction": "fsubr dword [edi+0x2c]",
+          "masked_bytes": "d86f2c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277575,
+          "candidate_offset": 3735,
+          "instruction": "fstp dword [edi+0x2c]",
+          "masked_bytes": "d95f2c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277578,
+          "candidate_offset": 3738,
+          "instruction": "fld dword [ADDR]",
+          "masked_bytes": "d90500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_frame_dt",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4720704,
+              "text": "frame_dt",
+              "keys": [
+                "address:0x00480840",
+                "name:frame_dt",
+                "local:+0x6d190"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_frame_dt",
+              "keys": [
+                "name:frame_dt",
+                "address:0x00480840"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277584,
+          "candidate_offset": 3744,
+          "instruction": "fmul dword [edi+0x304]",
+          "masked_bytes": "d88f04030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277590,
+          "candidate_offset": 3750,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3ffe8000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649548,
+              "text": "0x0046f24c",
+              "keys": [
+                "address:0x0046f24c",
+                "local:+0x5bb9c",
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3ffe8000000000000000",
+              "keys": [
+                "bytes4:0000003f"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4277596,
+          "candidate_offset": 3756,
+          "instruction": "fsubr dword [edi+0x300]",
+          "masked_bytes": "d8af00030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4277602,
+          "candidate_offset": 3762,
+          "instruction": "fstp dword [edi+0x300]",
+          "masked_bytes": "d99f00030000",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    },
+    {
+      "name": "smoke-angle",
+      "native_start": 4282984,
+      "instructions": 37,
+      "bytes": 185,
+      "relocations": 12,
+      "rows": [
+        {
+          "native_address": 4282984,
+          "candidate_offset": 9171,
+          "instruction": "call ADDR",
+          "masked_bytes": "e800000000",
+          "relocations": [
+            {
+              "offset": 1,
+              "symbol": "_crt_rand",
+              "type": 20,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "imm",
+              "source": "image",
+              "value": 4593478,
+              "text": "crt_rand|rand",
+              "keys": [
+                "address:0x00461746",
+                "name:crt_rand",
+                "name:rand",
+                "local:+0x4e096"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "imm",
+              "source": "reloc",
+              "value": null,
+              "text": "_crt_rand",
+              "keys": [
+                "name:crt_rand",
+                "address:0x00461746"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4282989,
+          "candidate_offset": 9176,
+          "instruction": "and eax, 0x3f",
+          "masked_bytes": "83e03f",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4282992,
+          "candidate_offset": 9179,
+          "instruction": "mov dword [esp+0x28], eax",
+          "masked_bytes": "89442428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4282996,
+          "candidate_offset": 9183,
+          "instruction": "fild dword [esp+0x28]",
+          "masked_bytes": "db442428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283000,
+          "candidate_offset": 9187,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3ff8a3d70a0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649728,
+              "text": "0x0046f300",
+              "keys": [
+                "address:0x0046f300",
+                "local:+0x5bc50",
+                "bytes4:0ad7233c"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3ff8a3d70a0000000000",
+              "keys": [
+                "bytes4:0ad7233c"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283006,
+          "candidate_offset": 9193,
+          "instruction": "fadd dword [esp+0x1c]",
+          "masked_bytes": "d844241c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283010,
+          "candidate_offset": 9197,
+          "instruction": "fstp dword [esp+0x20]",
+          "masked_bytes": "d95c2420",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283014,
+          "candidate_offset": 9201,
+          "instruction": "call ADDR",
+          "masked_bytes": "e800000000",
+          "relocations": [
+            {
+              "offset": 1,
+              "symbol": "_crt_rand",
+              "type": 20,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "imm",
+              "source": "image",
+              "value": 4593478,
+              "text": "crt_rand|rand",
+              "keys": [
+                "address:0x00461746",
+                "name:crt_rand",
+                "name:rand",
+                "local:+0x4e096"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "imm",
+              "source": "reloc",
+              "value": null,
+              "text": "_crt_rand",
+              "keys": [
+                "name:crt_rand",
+                "address:0x00461746"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283019,
+          "candidate_offset": 9206,
+          "instruction": "and eax, 0x3f",
+          "masked_bytes": "83e03f",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283022,
+          "candidate_offset": 9209,
+          "instruction": "mov dword [esp+0x48], 0x3f800000",
+          "masked_bytes": "c74424480000803f",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283030,
+          "candidate_offset": 9217,
+          "instruction": "mov dword [esp+0x28], eax",
+          "masked_bytes": "89442428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283034,
+          "candidate_offset": 9221,
+          "instruction": "mov edx, dword [esp+0x48]",
+          "masked_bytes": "8b542448",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283038,
+          "candidate_offset": 9225,
+          "instruction": "fild dword [esp+0x28]",
+          "masked_bytes": "db442428",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283042,
+          "candidate_offset": 9229,
+          "instruction": "mov dword [esp+0x4c], 0x3f800000",
+          "masked_bytes": "c744244c0000803f",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283050,
+          "candidate_offset": 9237,
+          "instruction": "mov eax, dword [esp+0x4c]",
+          "masked_bytes": "8b44244c",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283054,
+          "candidate_offset": 9241,
+          "instruction": "mov dword [esp+0x50], 0x3f800000",
+          "masked_bytes": "c74424500000803f",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283062,
+          "candidate_offset": 9249,
+          "instruction": "mov ecx, dword [esp+0x50]",
+          "masked_bytes": "8b4c2450",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283066,
+          "candidate_offset": 9253,
+          "instruction": "fmul dword [ADDR]",
+          "masked_bytes": "d80d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3ff9ba2e8c0000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4650240,
+              "text": "0x0046f500",
+              "keys": [
+                "address:0x0046f500",
+                "local:+0x5be50",
+                "bytes4:8c2eba3c"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3ff9ba2e8c0000000000",
+              "keys": [
+                "bytes4:8c2eba3c"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283072,
+          "candidate_offset": 9259,
+          "instruction": "mov dword [esp+0x54], 0x3f19999a",
+          "masked_bytes": "c74424549a99193f",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283080,
+          "candidate_offset": 9267,
+          "instruction": "mov dword [ADDR], edx",
+          "masked_bytes": "891500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 36
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895200,
+              "text": "effect_template_color_r",
+              "keys": [
+                "address:0x004ab1e0",
+                "name:effect_template_color_r",
+                "local:+0x97b30"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x24",
+                "address:0x004ab1e0"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283086,
+          "candidate_offset": 9273,
+          "instruction": "mov edx, dword [esp+0x54]",
+          "masked_bytes": "8b542454",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283090,
+          "candidate_offset": 9277,
+          "instruction": "mov dword [ADDR], 0x1c5",
+          "masked_bytes": "c70500000000c5010000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 32
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895196,
+              "text": "effect_template_flags",
+              "keys": [
+                "address:0x004ab1dc",
+                "name:effect_template_flags",
+                "local:+0x97b2c"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x20",
+                "address:0x004ab1dc"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283100,
+          "candidate_offset": 9287,
+          "instruction": "fadd dword [ADDR]",
+          "masked_bytes": "d80500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "__real@4@3fff8000000000000000",
+              "type": 6,
+              "addend": 0
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4649508,
+              "text": "0x0046f224",
+              "keys": [
+                "address:0x0046f224",
+                "local:+0x5bb74",
+                "bytes4:0000803f"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "__real@4@3fff8000000000000000",
+              "keys": [
+                "bytes4:0000803f"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283106,
+          "candidate_offset": 9293,
+          "instruction": "fld dword [esp+0x20]",
+          "masked_bytes": "d9442420",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283110,
+          "candidate_offset": 9297,
+          "instruction": "fcos",
+          "masked_bytes": "d9ff",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283112,
+          "candidate_offset": 9299,
+          "instruction": "mov dword [ADDR], eax",
+          "masked_bytes": "a300000000",
+          "relocations": [
+            {
+              "offset": 1,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 40
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895204,
+              "text": "effect_template_color_g",
+              "keys": [
+                "address:0x004ab1e4",
+                "name:effect_template_color_g",
+                "local:+0x97b34"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x28",
+                "address:0x004ab1e4"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283117,
+          "candidate_offset": 9304,
+          "instruction": "mov dword [ADDR], ecx",
+          "masked_bytes": "890d00000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 44
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895208,
+              "text": "effect_template_color_b",
+              "keys": [
+                "address:0x004ab1e8",
+                "name:effect_template_color_b",
+                "local:+0x97b38"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x2c",
+                "address:0x004ab1e8"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283123,
+          "candidate_offset": 9310,
+          "instruction": "mov dword [ADDR], edx",
+          "masked_bytes": "891500000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 48
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895212,
+              "text": "effect_template_color_a",
+              "keys": [
+                "address:0x004ab1ec",
+                "name:effect_template_color_a",
+                "local:+0x97b3c"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x30",
+                "address:0x004ab1ec"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283129,
+          "candidate_offset": 9316,
+          "instruction": "mov dword [ADDR], 0x3e19999a",
+          "masked_bytes": "c705000000009a99193e",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 28
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895192,
+              "text": "effect_template_lifetime",
+              "keys": [
+                "address:0x004ab1d8",
+                "name:effect_template_lifetime",
+                "local:+0x97b28"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x1c",
+                "address:0x004ab1d8"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283139,
+          "candidate_offset": 9326,
+          "instruction": "mov dword [ADDR], 0x0",
+          "masked_bytes": "c7050000000000000000",
+          "relocations": [
+            {
+              "offset": 2,
+              "symbol": "_effect_template",
+              "type": 6,
+              "addend": 24
+            }
+          ],
+          "native_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "image",
+              "value": 4895188,
+              "text": "effect_template_age",
+              "keys": [
+                "address:0x004ab1d4",
+                "name:effect_template_age",
+                "local:+0x97b24"
+              ],
+              "explained": true
+            }
+          ],
+          "candidate_references": [
+            {
+              "operand_index": 0,
+              "kind": "disp",
+              "source": "reloc",
+              "value": null,
+              "text": "_effect_template",
+              "keys": [
+                "name:effect_template+0x18",
+                "address:0x004ab1d4"
+              ],
+              "explained": true
+            }
+          ]
+        },
+        {
+          "native_address": 4283149,
+          "candidate_offset": 9336,
+          "instruction": "fmul st(1)",
+          "masked_bytes": "d8c9",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283151,
+          "candidate_offset": 9338,
+          "instruction": "fstp dword [esp+0x40]",
+          "masked_bytes": "d95c2440",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283155,
+          "candidate_offset": 9342,
+          "instruction": "fld dword [esp+0x20]",
+          "masked_bytes": "d9442420",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283159,
+          "candidate_offset": 9346,
+          "instruction": "fsin",
+          "masked_bytes": "d9fe",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283161,
+          "candidate_offset": 9348,
+          "instruction": "fmul st(1)",
+          "masked_bytes": "d8c9",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283163,
+          "candidate_offset": 9350,
+          "instruction": "fstp dword [esp+0x44]",
+          "masked_bytes": "d95c2444",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        },
+        {
+          "native_address": 4283167,
+          "candidate_offset": 9354,
+          "instruction": "fstp st(0)",
+          "masked_bytes": "ddd8",
+          "relocations": [],
+          "native_references": [],
+          "candidate_references": []
+        }
+      ]
+    }
+  ],
+  "rejecting_controls": {
+    "wrong-opcode": true,
+    "wrong-reference": true,
+    "without-movement-groups": true,
+    "without-turn-temporary": true,
+    "without-smoke-reuse": true
+  }
+}

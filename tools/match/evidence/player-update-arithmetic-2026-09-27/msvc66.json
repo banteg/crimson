@@ -1,0 +1,106 @@
+{
+  "baseline": {
+    "address": 4273840,
+    "archive": null,
+    "archive_member": null,
+    "archive_sha256": null,
+    "body_byte_exact": false,
+    "candidate_instructions": 4215,
+    "cflags": "/O2 /GB /W3 /GR-",
+    "compiler": "msvc6.6",
+    "error": null,
+    "first_mismatch": {
+      "candidate_offset": 15,
+      "target_offset": 15
+    },
+    "function": "player_update",
+    "fuzzy_gap_bytes": 1171.8322052012827,
+    "fuzzy_weighted_bytes": 15085.167794798717,
+    "image": "crimsonland.exe",
+    "import_thunk": null,
+    "match_ratio": 0.9279182994893718,
+    "note": "core-player-simulation",
+    "padding_bytes": {
+      "candidate": 0,
+      "target": 0
+    },
+    "prefix_instructions": 7,
+    "recovery": "semantic-complete",
+    "references": {
+      "mismatch": 0,
+      "ok": 916,
+      "unresolved": 0
+    },
+    "residuals": [
+      "compiler",
+      "references"
+    ],
+    "scratch": "/Users/banteg/dev/banteg/crimson/tools/match/scratches/player_update",
+    "state": "wip",
+    "target_bytes": 16257,
+    "target_instructions": 4206
+  },
+  "delta": {
+    "candidate_instructions": 0,
+    "fuzzy_weighted_bytes": 0.0,
+    "match_ratio": 0.0,
+    "prefix_instructions": 0,
+    "references": {
+      "mismatch": 0,
+      "ok": 0,
+      "unresolved": 0
+    }
+  },
+  "label": "sp6-provenance-control",
+  "probe": {
+    "address": 4273840,
+    "archive": null,
+    "archive_member": null,
+    "archive_sha256": null,
+    "body_byte_exact": false,
+    "candidate_instructions": 4215,
+    "cflags": "/O2 /GB /W3 /GR-",
+    "compiler": "msvc6.6",
+    "error": null,
+    "first_mismatch": {
+      "candidate_offset": 15,
+      "target_offset": 15
+    },
+    "function": "player_update",
+    "fuzzy_gap_bytes": 1171.8322052012827,
+    "fuzzy_weighted_bytes": 15085.167794798717,
+    "image": "crimsonland.exe",
+    "import_thunk": null,
+    "match_ratio": 0.9279182994893718,
+    "note": "core-player-simulation",
+    "padding_bytes": {
+      "candidate": 0,
+      "target": 0
+    },
+    "prefix_instructions": 7,
+    "recovery": "semantic-complete",
+    "references": {
+      "mismatch": 0,
+      "ok": 916,
+      "unresolved": 0
+    },
+    "residuals": [
+      "compiler",
+      "references"
+    ],
+    "scratch": "<shadow>",
+    "state": "wip",
+    "target_bytes": 16257,
+    "target_instructions": 4206
+  },
+  "source_dependencies": [
+    "match/include/crimsonland_console.h",
+    "match/include/crimsonland_gameplay.h",
+    "match/include/crimsonland_terrain_owner.h",
+    "match/include/grim2d_cpp.h",
+    "repo/third_party/headers/crimsonland_types.h"
+  ],
+  "source_sha256": "2e7b41bf5aaf3cd2f9c364496fe97da2c0e727e034afdaef40eae7521c2dd8d8",
+  "source_tree_sha256": "092030fe2eb685c4e5cc9c7f4e854d02a0764b00634bb0a408ddccc826140956",
+  "tradeoffs": []
+}

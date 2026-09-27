@@ -1,0 +1,5424 @@
+{
+  "baseline_sha256": "2e7b41bf5aaf3cd2f9c364496fe97da2c0e727e034afdaef40eae7521c2dd8d8",
+  "line_indexing": "zero-based, end exclusive; apply edits in reverse order",
+  "controls": [
+    {
+      "name": "aim_component_length",
+      "sha256": "a09d0a56e37578de91c4f7d9dbe99b954317bfd03bf297c212a499a2429f2719",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 905,
+          "end": 908,
+          "replacement": [
+            "            float length = sqrtf(pad.x * pad.x + pad.y * pad.y);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "aim_distance_split",
+      "sha256": "762db9b17ccc7619cce00676ff0c5b67b7251bcc1e3f04ff7a9e4e62ca653355",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 176,
+          "end": 176,
+          "replacement": [
+            "    float aim_distance;\n"
+          ]
+        },
+        {
+          "start": 978,
+          "end": 980,
+          "replacement": [
+            "        aim_distance = VEC2_Length(aim_delta);\n",
+            "        if (!(aim_distance >= 4.0f)) {\n"
+          ]
+        },
+        {
+          "start": 983,
+          "end": 984,
+          "replacement": [
+            "            angle_step = (aim_distance * 6.0f) * frame_dt;\n"
+          ]
+        },
+        {
+          "start": 989,
+          "end": 990,
+          "replacement": [
+            "        if (aim_distance < 128.0f && creature_pool[player->auto_target].health > 0.0f) {\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "aim_vector_length",
+      "sha256": "287495423e107cd1e3064615a745c8ab3188d8960f8add447db7a01ccb336c17",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 905,
+          "end": 908,
+          "replacement": [
+            "            float length = VEC2_Length(pad);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ammo_cost_split",
+      "sha256": "0ea96edc1e4d93f1cfe070896e051556b30f756a2027500e5c248a0022319fde",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 176,
+          "end": 176,
+          "replacement": [
+            "    float ammo_cost;\n"
+          ]
+        },
+        {
+          "start": 909,
+          "end": 910,
+          "replacement": [
+            "                ammo_cost = 1.0f;\n"
+          ]
+        },
+        {
+          "start": 911,
+          "end": 912,
+          "replacement": [
+            "                ammo_cost = length;\n"
+          ]
+        },
+        {
+          "start": 914,
+          "end": 915,
+          "replacement": [
+            "            float distance = ammo_cost * cv_padAimDistMul->value + 42.0f;\n"
+          ]
+        },
+        {
+          "start": 978,
+          "end": 980,
+          "replacement": [
+            "        ammo_cost = VEC2_Length(aim_delta);\n",
+            "        if (!(ammo_cost >= 4.0f)) {\n"
+          ]
+        },
+        {
+          "start": 983,
+          "end": 984,
+          "replacement": [
+            "            angle_step = (ammo_cost * 6.0f) * frame_dt;\n"
+          ]
+        },
+        {
+          "start": 989,
+          "end": 990,
+          "replacement": [
+            "        if (ammo_cost < 128.0f && creature_pool[player->auto_target].health > 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1100,
+          "end": 1101,
+          "replacement": [
+            "        ammo_cost = 1.0f;\n"
+          ]
+        },
+        {
+          "start": 1384,
+          "end": 1385,
+          "replacement": [
+            "                ammo_cost = 0.1f;\n"
+          ]
+        },
+        {
+          "start": 1396,
+          "end": 1397,
+          "replacement": [
+            "                ammo_cost = 0.1f;\n"
+          ]
+        },
+        {
+          "start": 1408,
+          "end": 1409,
+          "replacement": [
+            "                ammo_cost = 0.05f;\n"
+          ]
+        },
+        {
+          "start": 1689,
+          "end": 1690,
+          "replacement": [
+            "                ammo_cost = player->ammo;\n"
+          ]
+        },
+        {
+          "start": 1773,
+          "end": 1774,
+          "replacement": [
+            "                ammo_cost = 0.15f;\n"
+          ]
+        },
+        {
+          "start": 1781,
+          "end": 1782,
+          "replacement": [
+            "                player->ammo = player->ammo - ammo_cost;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "combined",
+      "sha256": "32acad8ac4ebfa7c6af8f1cff460357473135696ed0c91435ba3493973efcd1c",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_angle_direct",
+      "sha256": "aa051296ef4dcc842ea2dec72380859086c9c2a1020a9989b1139d2584e6ba8d",
+      "scores": {
+        "raw": 0.9283933024581403,
+        "labels": 0.9944187151169694,
+        "structural": 0.9951312195701223,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            movement_heading = atan2f(direction.y, direction.x) - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_angle_local",
+      "sha256": "4794d6ace44656020b3372c5c2d0dbd0dfa880fdf334fae839398a9440871218",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            float direction_angle = VEC2_Angle(direction);\n",
+            "            movement_heading = direction_angle - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_angle_parentheses",
+      "sha256": "f35ad9a7bb838b882f6c247dd8888f4b211491ab27fa219d473c4364275c759b",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            movement_heading = (VEC2_Angle(direction)) - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_angle_split",
+      "sha256": "9d87cf950b733384a19bbbed21ebd06d2d19e92693e8bb22ef7507a11bad4520",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            movement_heading = VEC2_Angle(direction);\n",
+            "            movement_heading -= 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_atan_local_double",
+      "sha256": "87a3109d62c5e8151d8f545b3b11ad301a3cf771004b151abc85921f875fda5d",
+      "scores": {
+        "raw": 0.928155800973756,
+        "labels": 0.9941812136325852,
+        "structural": 0.994893718085738,
+        "stack": 0.9956062225388909
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            double direction_angle = atan2(direction.y, direction.x);\n",
+            "            movement_heading = direction_angle - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_direction_init",
+      "sha256": "b4b51f1f1a6ca7135f091f9ed982863d1be148247c7610d33b1986091abce2b5",
+      "scores": {
+        "raw": 0.924777183600713,
+        "labels": 0.9908496732026144,
+        "structural": 0.9927510398098633,
+        "stack": 0.9951277480689246
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        913,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 746,
+          "end": 753,
+          "replacement": [
+            "            vec2_t direction = VEC2_Length(*(vec2_t *)&player->position - center) > 300.0f\n",
+            "                ? *(vec2_t *)&player->position - center\n",
+            "                : *(vec2_t *)&player->position - *(vec2_t *)&creature_pool[player->auto_target].position;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_double_atan",
+      "sha256": "845161974d400cb0a1e06befe3a945feb9e60676f3f59d087f78989dfe891879",
+      "scores": {
+        "raw": 0.928155800973756,
+        "labels": 0.9941812136325852,
+        "structural": 0.994893718085738,
+        "stack": 0.9956062225388909
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        915,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            movement_heading = atan2(direction.y, direction.x) - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_float_atan",
+      "sha256": "8a18015498e626ced33c39f1158361049abb9bfa68912861de6166a522294a56",
+      "scores": {
+        "raw": 0.9283933024581403,
+        "labels": 0.9944187151169694,
+        "structural": 0.9951312195701223,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 753,
+          "end": 754,
+          "replacement": [
+            "            movement_heading = (float)atan2(direction.y, direction.x) - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_operand_conditional",
+      "sha256": "669a618701143504c4df63c519ac662fa6f12f9be7192c8b4e34423db389615e",
+      "scores": {
+        "raw": 0.9247798143299214,
+        "labels": 0.9911925731968579,
+        "structural": 0.9921447274458463,
+        "stack": 0.9928588431325874
+      },
+      "instructions": [
+        4206,
+        4196
+      ],
+      "refs": [
+        911,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 746,
+          "end": 754,
+          "replacement": [
+            "            movement_heading = VEC2_Angle(\n",
+            "                *(vec2_t *)&player->position -\n",
+            "                (VEC2_Length(*(vec2_t *)&player->position - center) > 300.0f\n",
+            "                    ? center : *(vec2_t *)&creature_pool[player->auto_target].position))\n",
+            "                - 1.5707964f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_valid_first",
+      "sha256": "d1595b04e93b0b8b6fe2ffd59b9b29c196a302ef0b76ee3327539e18fe355a45",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 741,
+          "end": 746,
+          "replacement": [
+            "        if (player->auto_target >= 0\n",
+            "            && !(creature_pool[player->auto_target].health <= 0.0f)) {\n"
+          ]
+        },
+        {
+          "start": 754,
+          "end": 754,
+          "replacement": [
+            "        } else {\n",
+            "            movement_heading =\n",
+            "                VEC2_Angle(*(vec2_t *)&player->position - center) + 3.1415927f;\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "demo_valid_negated",
+      "sha256": "fa3e8078bed92df826a89c9a2ebc146d22012ac4e88349b38906d102dd57b032",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 741,
+          "end": 746,
+          "replacement": [
+            "        if (!(player->auto_target < 0\n",
+            "            || creature_pool[player->auto_target].health <= 0.0f)) {\n"
+          ]
+        },
+        {
+          "start": 754,
+          "end": 754,
+          "replacement": [
+            "        } else {\n",
+            "            movement_heading =\n",
+            "                VEC2_Angle(*(vec2_t *)&player->position - center) + 3.1415927f;\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "expand_accelerate_move_speed",
+      "sha256": "a7c3de23969d2811f73021bf46c1d804a97522f4941e44af2d999049b16a8904",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 475,
+          "end": 476,
+          "replacement": [
+            "                        {\n",
+            "                            if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                                if (player->move_speed < 2.0f) {\n",
+            "                                    player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                                }\n",
+            "                                player->move_speed = player->move_speed + frame_dt;\n",
+            "                                if (player->move_speed > 2.8f) {\n",
+            "                                    player->move_speed = 2.8f;\n",
+            "                                }\n",
+            "                            } else {\n",
+            "                                player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                                if (player->move_speed > 2.0f) {\n",
+            "                                    player->move_speed = 2.0f;\n",
+            "                                }\n",
+            "                            }\n",
+            "                        }\n"
+          ]
+        },
+        {
+          "start": 529,
+          "end": 530,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 594,
+          "end": 595,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 611,
+          "end": 612,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 710,
+          "end": 711,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 759,
+          "end": 760,
+          "replacement": [
+            "            {\n",
+            "                if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                    if (player->move_speed < 2.0f) {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                    }\n",
+            "                    player->move_speed = player->move_speed + frame_dt;\n",
+            "                    if (player->move_speed > 2.8f) {\n",
+            "                        player->move_speed = 2.8f;\n",
+            "                    }\n",
+            "                } else {\n",
+            "                    player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                    if (player->move_speed > 2.0f) {\n",
+            "                        player->move_speed = 2.0f;\n",
+            "                    }\n",
+            "                }\n",
+            "            }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "expand_all_move_helpers",
+      "sha256": "0c2980f56c3a18e80ff53978484c4883b8191f08646f6742b2f3d1774702064e",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 475,
+          "end": 477,
+          "replacement": [
+            "                        {\n",
+            "                            if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                                if (player->move_speed < 2.0f) {\n",
+            "                                    player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                                }\n",
+            "                                player->move_speed = player->move_speed + frame_dt;\n",
+            "                                if (player->move_speed > 2.8f) {\n",
+            "                                    player->move_speed = 2.8f;\n",
+            "                                }\n",
+            "                            } else {\n",
+            "                                player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                                if (player->move_speed > 2.0f) {\n",
+            "                                    player->move_speed = 2.0f;\n",
+            "                                }\n",
+            "                            }\n",
+            "                        }\n",
+            "                        {\n",
+            "                            if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                                player->move_speed = 0.8f;\n",
+            "                            }\n",
+            "                        }\n"
+          ]
+        },
+        {
+          "start": 493,
+          "end": 494,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 529,
+          "end": 531,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n",
+            "                {\n",
+            "                    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                        player->move_speed = 0.8f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 542,
+          "end": 543,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 594,
+          "end": 596,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n",
+            "                {\n",
+            "                    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                        player->move_speed = 0.8f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 611,
+          "end": 612,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 628,
+          "end": 629,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 710,
+          "end": 712,
+          "replacement": [
+            "                {\n",
+            "                    if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                        if (player->move_speed < 2.0f) {\n",
+            "                            player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                        }\n",
+            "                        player->move_speed = player->move_speed + frame_dt;\n",
+            "                        if (player->move_speed > 2.8f) {\n",
+            "                            player->move_speed = 2.8f;\n",
+            "                        }\n",
+            "                    } else {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                        if (player->move_speed > 2.0f) {\n",
+            "                            player->move_speed = 2.0f;\n",
+            "                        }\n",
+            "                    }\n",
+            "                }\n",
+            "                {\n",
+            "                    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                        player->move_speed = 0.8f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 723,
+          "end": 724,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 759,
+          "end": 761,
+          "replacement": [
+            "            {\n",
+            "                if (pu_perk_level(perk_id_long_distance_runner) > 0) {\n",
+            "                    if (player->move_speed < 2.0f) {\n",
+            "                        player->move_speed = player->move_speed + frame_dt * 4.0f;\n",
+            "                    }\n",
+            "                    player->move_speed = player->move_speed + frame_dt;\n",
+            "                    if (player->move_speed > 2.8f) {\n",
+            "                        player->move_speed = 2.8f;\n",
+            "                    }\n",
+            "                } else {\n",
+            "                    player->move_speed = player->move_speed + frame_dt * 5.0f;\n",
+            "                    if (player->move_speed > 2.0f) {\n",
+            "                        player->move_speed = 2.0f;\n",
+            "                    }\n",
+            "                }\n",
+            "            }\n",
+            "            {\n",
+            "                if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                    player->move_speed = 0.8f;\n",
+            "                }\n",
+            "            }\n"
+          ]
+        },
+        {
+          "start": 772,
+          "end": 773,
+          "replacement": [
+            "            {\n",
+            "                player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                if (player->move_speed < 0.0f) {\n",
+            "                    player->move_speed = 0.0f;\n",
+            "                }\n",
+            "            }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "expand_apply_move_speed_cap",
+      "sha256": "c7c109780a98f1e44e3d7a7543d078197ea5699ae050b37c264c2550183003c5",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 476,
+          "end": 477,
+          "replacement": [
+            "                        {\n",
+            "                            if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                                player->move_speed = 0.8f;\n",
+            "                            }\n",
+            "                        }\n"
+          ]
+        },
+        {
+          "start": 530,
+          "end": 531,
+          "replacement": [
+            "                {\n",
+            "                    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                        player->move_speed = 0.8f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 595,
+          "end": 596,
+          "replacement": [
+            "                {\n",
+            "                    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                        player->move_speed = 0.8f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 711,
+          "end": 712,
+          "replacement": [
+            "                {\n",
+            "                    if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                        player->move_speed = 0.8f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 760,
+          "end": 761,
+          "replacement": [
+            "            {\n",
+            "                if (player->weapon_id == 7 && player->move_speed > 0.8f) {\n",
+            "                    player->move_speed = 0.8f;\n",
+            "                }\n",
+            "            }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "expand_decelerate_move_speed",
+      "sha256": "d8e428440a98d68a98d4dc60859aca2110aad52118fb903e4c49b5a735768067",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 493,
+          "end": 494,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 542,
+          "end": 543,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 628,
+          "end": 629,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 723,
+          "end": 724,
+          "replacement": [
+            "                {\n",
+            "                    player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                    if (player->move_speed < 0.0f) {\n",
+            "                        player->move_speed = 0.0f;\n",
+            "                    }\n",
+            "                }\n"
+          ]
+        },
+        {
+          "start": 772,
+          "end": 773,
+          "replacement": [
+            "            {\n",
+            "                player->move_speed = player->move_speed - frame_dt * 15.0f;\n",
+            "                if (player->move_speed < 0.0f) {\n",
+            "                    player->move_speed = 0.0f;\n",
+            "                }\n",
+            "            }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final_aim_component_fields",
+      "sha256": "a0a601544304b925e03de6dd1363b82e94250753422f1c0569918758a9410716",
+      "scores": {
+        "raw": 0.815914489311164,
+        "labels": 0.8655581947743468,
+        "structural": 0.8669833729216152,
+        "stack": 0.9954869358669833
+      },
+      "instructions": [
+        4206,
+        4214
+      ],
+      "refs": [
+        915,
+        0,
+        1
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 994,
+          "end": 998,
+          "replacement": [
+            "    player->aim_heading = atan2f(player->position.y - player->aim.y,\n",
+            "        player->position.x - player->aim.x) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final_aim_direction_reference",
+      "sha256": "b33313b313047005e09c6485c836c93d0a77fae7f394cc9fb3975c8c4682eedd",
+      "scores": {
+        "raw": 0.9475935828877006,
+        "labels": 0.9972667855020796,
+        "structural": 0.997979797979798,
+        "stack": 0.997979797979798
+      },
+      "instructions": [
+        4206,
+        4209
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 994,
+          "end": 998,
+          "replacement": [
+            "    const vec2_t &aim_direction = *(vec2_t *)&player->position - *(vec2_t *)&player->aim;\n",
+            "    player->aim_heading = VEC2_Angle(aim_direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final_aim_field_reference",
+      "sha256": "c1744b8e982312241e46d67b608147c4ecc327e9827cd321e1891ec7917013e5",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 994,
+          "end": 997,
+          "replacement": [
+            "    float &aim_heading = player->aim_heading;\n",
+            "    aim_heading = VEC2_Angle(*(vec2_t *)&player->position - *(vec2_t *)&player->aim)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "final_aim_local_vector",
+      "sha256": "ac1fae40fe6a0f0208e062684c2f23ae1a5cb60a04533f97b744372d28738bf1",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 994,
+          "end": 998,
+          "replacement": [
+            "    vec2_t aim_direction = *(vec2_t *)&player->position - *(vec2_t *)&player->aim;\n",
+            "    player->aim_heading = VEC2_Angle(aim_direction) - 1.5707964f;\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flag_before_heading_only",
+      "sha256": "6fefdb25d8011774e83912b8cc311c6e3386e9320d3a70da185d365360a5e8a8",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 994,
+          "end": 994,
+          "replacement": [
+            "    normal_fire_ready = false;\n",
+            "\n"
+          ]
+        },
+        {
+          "start": 1000,
+          "end": 1001,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "flag_chain_init",
+      "sha256": "dc0f914bdb441279ec4859cc7f52cc5029ad5da1256798cf2fe925afa2fcaab7",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1000,
+          "end": 1002,
+          "replacement": [
+            "    normal_fire_ready = perk_fire_ready = false;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flag_char",
+      "sha256": "42149011e54262b173869ebec6cb7e26a085714572404fa1dac38130d84ce29a",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 181,
+          "replacement": [
+            "    char normal_fire_ready;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flag_int",
+      "sha256": "3202358d4893523ff72dbb082664f13eb1959155577c1aa24e40f50bc64e5c6f",
+      "scores": {
+        "raw": 0.9274432965206032,
+        "labels": 0.9934687091794324,
+        "structural": 0.9941812136325852,
+        "stack": 0.9953687210545066
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 181,
+          "replacement": [
+            "    int normal_fire_ready;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flag_register_bool",
+      "sha256": "3000afcfaaac4e2ee167af3120ccba0e29ce285e79b45e7a778bcd7c7f53bc76",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 181,
+          "replacement": [
+            "    register bool normal_fire_ready;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flag_ternary_init",
+      "sha256": "62abc483bad000811c95bfc3c2ff6cf7c23180df8213bf25f1d39762b71fe4fd",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1002,
+          "end": 1005,
+          "replacement": [
+            "    if (*shot_cooldown <= 0.0f) {\n",
+            "        if (player->reload_timer == 0.0f) {\n",
+            "            normal_fire_ready = true;\n",
+            "            player->reload_active = 0;\n",
+            "        }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flag_unsigned_char",
+      "sha256": "1bd2c8600285eedbfdae0e837e76ce25f41bad59695abb3dfc72b6b76830b88d",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 181,
+          "replacement": [
+            "    unsigned char normal_fire_ready;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flags_after_cooldown_pointer",
+      "sha256": "f925680ae2de03dc66ba5aee4c0fb08b57c4cb2f584b3ed6144e395b79695e4b",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 999,
+          "end": 1000,
+          "replacement": []
+        },
+        {
+          "start": 1002,
+          "end": 1002,
+          "replacement": [
+            "    float *shot_cooldown = &player->shot_cooldown;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "flags_before_heading",
+      "sha256": "3362de69d0ac22e5d7e6e36483e6ede4549220605804c2e5a7a3211f1506c32c",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 994,
+          "end": 994,
+          "replacement": [
+            "    normal_fire_ready = false;\n",
+            "    perk_fire_ready = false;\n",
+            "\n"
+          ]
+        },
+        {
+          "start": 1000,
+          "end": 1002,
+          "replacement": []
+        }
+      ]
+    },
+    {
+      "name": "move_product_group",
+      "sha256": "62f1aa9d6c7af863d2055a6e3a86f118c7560c1f2352a6b24999402612c46d73",
+      "scores": {
+        "raw": 0.929818311364446,
+        "labels": 0.9958437240232751,
+        "structural": 0.996556228476428,
+        "stack": 0.9977437358983494
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normal_else",
+      "sha256": "bb8e140bf3e5c7e7c1c456e269e62e570f75d4c962bcb82dd40c3c64627102fe",
+      "scores": {
+        "raw": 0.9278081215863215,
+        "labels": 0.9938256946093564,
+        "structural": 0.994538114462123,
+        "stack": 0.9957254808834006
+      },
+      "instructions": [
+        4206,
+        4216
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1000,
+          "end": 1001,
+          "replacement": []
+        },
+        {
+          "start": 1005,
+          "end": 1005,
+          "replacement": [
+            "    } else {\n",
+            "        normal_fire_ready = false;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "normal_expression",
+      "sha256": "ead4056cec12943dbc5221e54ecee6fac5efe3b4a6da6e7538c688f6d1055db2",
+      "scores": {
+        "raw": 0.9281899109792285,
+        "labels": 0.9941839762611276,
+        "structural": 0.9941839762611276,
+        "stack": 0.9953709198813057
+      },
+      "instructions": [
+        4206,
+        4219
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1000,
+          "end": 1001,
+          "replacement": [
+            "    normal_fire_ready = *shot_cooldown <= 0.0f && player->reload_timer == 0.0f;\n"
+          ]
+        },
+        {
+          "start": 1002,
+          "end": 1004,
+          "replacement": [
+            "    if (normal_fire_ready) {\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ready_local_declarations",
+      "sha256": "75e4dbeddae990cd63ac4b264c27ff424344d6e7f8394322c61d0ad4259557cc",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 182,
+          "replacement": []
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1000,
+          "end": 1002,
+          "replacement": [
+            "    bool normal_fire_ready = false;\n",
+            "    bool perk_fire_ready = false;\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ready_ref_reload_timer",
+      "sha256": "85c2e78000bce94226c55ef600bdddf32907ba9f00a51953e2fb548755bd29ab",
+      "scores": {
+        "raw": 0.9431223227034745,
+        "labels": 0.9935744883388863,
+        "structural": 0.9935744883388863,
+        "stack": 0.9945264159923846
+      },
+      "instructions": [
+        4206,
+        4198
+      ],
+      "refs": [
+        913,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 999,
+          "end": 999,
+          "replacement": [
+            "    float &current_reload_timer = player->reload_timer;\n"
+          ]
+        },
+        {
+          "start": 1002,
+          "end": 1003,
+          "replacement": [
+            "    if (*shot_cooldown <= 0.0f && current_reload_timer == 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1023,
+          "end": 1024,
+          "replacement": [
+            "            pu_swap(player->alt_reload_timer, current_reload_timer);\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ready_ref_shot_cooldown",
+      "sha256": "46679ac0c70f8c991d5ee5a77cb67e12c7e360c26a979d30f1400079f6139c80",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 999,
+          "end": 1000,
+          "replacement": [
+            "    float &shot_cooldown = player->shot_cooldown;\n"
+          ]
+        },
+        {
+          "start": 1002,
+          "end": 1003,
+          "replacement": [
+            "    if (shot_cooldown <= 0.0f && player->reload_timer == 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 1006,
+          "end": 1007,
+          "replacement": [
+            "    if (shot_cooldown <= 0.0f\n"
+          ]
+        },
+        {
+          "start": 1031,
+          "end": 1032,
+          "replacement": [
+            "            shot_cooldown = shot_cooldown + 0.1f;\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ready_ref_weapon_id",
+      "sha256": "f5424d12bee35bb5b7f21092c691efac996747b69da7c59fb058a88cdb76a263",
+      "scores": {
+        "raw": 0.8882290058201686,
+        "labels": 0.9725620620026132,
+        "structural": 0.9796887991447916,
+        "stack": 0.9799263570495308
+      },
+      "instructions": [
+        4206,
+        4213
+      ],
+      "refs": [
+        912,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 999,
+          "end": 999,
+          "replacement": [
+            "    int &current_weapon_id = player->weapon_id;\n"
+          ]
+        },
+        {
+          "start": 1019,
+          "end": 1020,
+          "replacement": [
+            "            pu_swap(player->alt_weapon_id, current_weapon_id);\n"
+          ]
+        },
+        {
+          "start": 1028,
+          "end": 1029,
+          "replacement": [
+            "                weapon_table[current_weapon_id].reload_sfx_id,\n"
+          ]
+        },
+        {
+          "start": 1047,
+          "end": 1048,
+          "replacement": [
+            "                if (weapon_ammo_class[current_weapon_id].ammo_class == 1) {\n"
+          ]
+        },
+        {
+          "start": 1049,
+          "end": 1050,
+          "replacement": [
+            "                        - weapon_table[current_weapon_id].reload_time * 4.0f;\n"
+          ]
+        },
+        {
+          "start": 1052,
+          "end": 1053,
+          "replacement": [
+            "                        - weapon_table[current_weapon_id].reload_time * 200.0f;\n"
+          ]
+        },
+        {
+          "start": 1055,
+          "end": 1056,
+          "replacement": [
+            "                if (weapon_ammo_class[current_weapon_id].ammo_class == 1) {\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reuse_moving_to_target",
+      "sha256": "5fc54f83b1f1d0322c6f1868ee068ff15ad464e3cfef6634eaff18bd5a331679",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 181,
+          "replacement": [
+            "    bool moving_to_target;\n"
+          ]
+        },
+        {
+          "start": 464,
+          "end": 465,
+          "replacement": [
+            "            moving_to_target = false;\n"
+          ]
+        },
+        {
+          "start": 1000,
+          "end": 1001,
+          "replacement": [
+            "    moving_to_target = false;\n"
+          ]
+        },
+        {
+          "start": 1003,
+          "end": 1004,
+          "replacement": [
+            "        moving_to_target = true;\n"
+          ]
+        },
+        {
+          "start": 1038,
+          "end": 1039,
+          "replacement": [
+            "    if ((moving_to_target || perk_fire_ready)\n"
+          ]
+        },
+        {
+          "start": 1045,
+          "end": 1046,
+          "replacement": [
+            "        if (!moving_to_target) {\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "reuse_turned",
+      "sha256": "543f52af1c24007c83a80b1553074cadecc2503a3f87da36aa3cff58f044eef8",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 180,
+          "end": 181,
+          "replacement": [
+            "    bool turned;\n"
+          ]
+        },
+        {
+          "start": 559,
+          "end": 560,
+          "replacement": [
+            "            turned = false;\n"
+          ]
+        },
+        {
+          "start": 1000,
+          "end": 1001,
+          "replacement": [
+            "    turned = false;\n"
+          ]
+        },
+        {
+          "start": 1003,
+          "end": 1004,
+          "replacement": [
+            "        turned = true;\n"
+          ]
+        },
+        {
+          "start": 1038,
+          "end": 1039,
+          "replacement": [
+            "    if ((turned || perk_fire_ready)\n"
+          ]
+        },
+        {
+          "start": 1045,
+          "end": 1046,
+          "replacement": [
+            "        if (!turned) {\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "smoke_reuse_scalar",
+      "sha256": "2f5060f54a7449297c9c29d7561b4a2cfc36b3f10664cbd1a92d2bcbf6c16281",
+      "scores": {
+        "raw": 0.9286308039425246,
+        "labels": 0.9946562166013537,
+        "structural": 0.9953687210545066,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap_distinct",
+      "sha256": "333263f754c8e6e3e36cf8e795c87bf1dc50c15fda35b8155cb264b3e90de4bd",
+      "scores": {
+        "raw": 0.9358212502971238,
+        "labels": 0.9869265509864511,
+        "structural": 0.9921559305918707,
+        "stack": 0.9933444259567388
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1019,
+          "end": 1026,
+          "replacement": [
+            "            int swap_weapon_id = player->alt_weapon_id;\n",
+            "            player->alt_weapon_id = player->weapon_id;\n",
+            "            player->weapon_id = swap_weapon_id;\n",
+            "            float swap_clip_size = player->alt_clip_size;\n",
+            "            player->alt_clip_size = player->clip_size;\n",
+            "            player->clip_size = swap_clip_size;\n",
+            "            unsigned char swap_reload_active = player->alt_reload_active;\n",
+            "            player->alt_reload_active = player->reload_active;\n",
+            "            player->reload_active = swap_reload_active;\n",
+            "            float swap_ammo = player->alt_ammo;\n",
+            "            player->alt_ammo = player->ammo;\n",
+            "            player->ammo = swap_ammo;\n",
+            "            float swap_reload_timer = player->alt_reload_timer;\n",
+            "            player->alt_reload_timer = player->reload_timer;\n",
+            "            player->reload_timer = swap_reload_timer;\n",
+            "            float swap_shot_cooldown = player->alt_shot_cooldown;\n",
+            "            player->alt_shot_cooldown = player->shot_cooldown;\n",
+            "            player->shot_cooldown = swap_shot_cooldown;\n",
+            "            float swap_reload_timer_max = player->alt_reload_timer_max;\n",
+            "            player->alt_reload_timer_max = player->reload_timer_max;\n",
+            "            player->reload_timer_max = swap_reload_timer_max;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap_reverse_helper",
+      "sha256": "7fb1ea328e207959b9c3ec514e0426cb66dfda467e27d8c50cba435024f69fb4",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 125,
+          "end": 128,
+          "replacement": [
+            "    T t = b;\n",
+            "    b = a;\n",
+            "    a = t;\n"
+          ]
+        },
+        {
+          "start": 1019,
+          "end": 1026,
+          "replacement": [
+            "            pu_swap(player->weapon_id, player->alt_weapon_id);\n",
+            "            pu_swap(player->clip_size, player->alt_clip_size);\n",
+            "            pu_swap(player->reload_active, player->alt_reload_active);\n",
+            "            pu_swap(player->ammo, player->alt_ammo);\n",
+            "            pu_swap(player->reload_timer, player->alt_reload_timer);\n",
+            "            pu_swap(player->shot_cooldown, player->alt_shot_cooldown);\n",
+            "            pu_swap(player->reload_timer_max, player->alt_reload_timer_max);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap_scoped",
+      "sha256": "19114acde008c8334cd82aad553e7570468db41d0adcfbe302194bb33399cccd",
+      "scores": {
+        "raw": 0.9358212502971238,
+        "labels": 0.9869265509864511,
+        "structural": 0.9921559305918707,
+        "stack": 0.9933444259567388
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1019,
+          "end": 1026,
+          "replacement": [
+            "            {\n",
+            "                int swap_weapon_id = player->alt_weapon_id;\n",
+            "                player->alt_weapon_id = player->weapon_id;\n",
+            "                player->weapon_id = swap_weapon_id;\n",
+            "            }\n",
+            "            {\n",
+            "                float swap_clip_size = player->alt_clip_size;\n",
+            "                player->alt_clip_size = player->clip_size;\n",
+            "                player->clip_size = swap_clip_size;\n",
+            "            }\n",
+            "            {\n",
+            "                unsigned char swap_reload_active = player->alt_reload_active;\n",
+            "                player->alt_reload_active = player->reload_active;\n",
+            "                player->reload_active = swap_reload_active;\n",
+            "            }\n",
+            "            {\n",
+            "                float swap_ammo = player->alt_ammo;\n",
+            "                player->alt_ammo = player->ammo;\n",
+            "                player->ammo = swap_ammo;\n",
+            "            }\n",
+            "            {\n",
+            "                float swap_reload_timer = player->alt_reload_timer;\n",
+            "                player->alt_reload_timer = player->reload_timer;\n",
+            "                player->reload_timer = swap_reload_timer;\n",
+            "            }\n",
+            "            {\n",
+            "                float swap_shot_cooldown = player->alt_shot_cooldown;\n",
+            "                player->alt_shot_cooldown = player->shot_cooldown;\n",
+            "                player->shot_cooldown = swap_shot_cooldown;\n",
+            "            }\n",
+            "            {\n",
+            "                float swap_reload_timer_max = player->alt_reload_timer_max;\n",
+            "                player->alt_reload_timer_max = player->reload_timer_max;\n",
+            "                player->reload_timer_max = swap_reload_timer_max;\n",
+            "            }\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "swap_shared",
+      "sha256": "e2200db2e1aa994029b2c2eacdc9b2b296bd9a18ff4ba6e6ee7e13eefc57bcac",
+      "scores": {
+        "raw": 0.9358212502971238,
+        "labels": 0.9869265509864511,
+        "structural": 0.9921559305918707,
+        "stack": 0.9933444259567388
+      },
+      "instructions": [
+        4206,
+        4208
+      ],
+      "refs": [
+        914,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 1019,
+          "end": 1026,
+          "replacement": [
+            "            int weapon_swap;\n",
+            "            unsigned char reload_swap;\n",
+            "            float float_swap;\n",
+            "            weapon_swap = player->alt_weapon_id;\n",
+            "            player->alt_weapon_id = player->weapon_id;\n",
+            "            player->weapon_id = weapon_swap;\n",
+            "            float_swap = player->alt_clip_size;\n",
+            "            player->alt_clip_size = player->clip_size;\n",
+            "            player->clip_size = float_swap;\n",
+            "            reload_swap = player->alt_reload_active;\n",
+            "            player->alt_reload_active = player->reload_active;\n",
+            "            player->reload_active = reload_swap;\n",
+            "            float_swap = player->alt_ammo;\n",
+            "            player->alt_ammo = player->ammo;\n",
+            "            player->ammo = float_swap;\n",
+            "            float_swap = player->alt_reload_timer;\n",
+            "            player->alt_reload_timer = player->reload_timer;\n",
+            "            player->reload_timer = float_swap;\n",
+            "            float_swap = player->alt_shot_cooldown;\n",
+            "            player->alt_shot_cooldown = player->shot_cooldown;\n",
+            "            player->shot_cooldown = float_swap;\n",
+            "            float_swap = player->alt_reload_timer_max;\n",
+            "            player->alt_reload_timer_max = player->reload_timer_max;\n",
+            "            player->reload_timer_max = float_swap;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_const_int",
+      "sha256": "6c729fb91db0d23d19b92492d65c6ed62ea794bf2d66624067f5dc9311203304",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        const int target_index = player->auto_target;\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_direct_fields",
+      "sha256": "78be7c409217f59e7a62dabc45177b31f838bab2d5f44f3781a464d703804d4d",
+      "scores": {
+        "raw": 0.9478436497564453,
+        "labels": 0.9975050493049781,
+        "structural": 0.9982178923606986,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": []
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!creature_pool[player->auto_target].active\n",
+            "            || creature_pool[player->auto_target].health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&creature_pool[player->auto_target].position);\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_early_distance_init",
+      "sha256": "1870293c2963259488138d43988f0cbd06d352328c2cc4af828f91517e52dd8a",
+      "scores": {
+        "raw": 0.9473684210526315,
+        "labels": 0.9975050493049781,
+        "structural": 0.9982178923606986,
+        "stack": 0.9982178923606986
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        917,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 429,
+          "end": 434,
+          "replacement": [
+            "        float nearest_distance = 100000.0f;\n",
+            "        if (creature_pool[target_index].active\n",
+            "            && !(creature_pool[target_index].health <= 0.0f)) {\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_field_pointer",
+      "sha256": "cd42110a65c56cb17ef862a0ad30453c699c2a66d58585124386b23c95d6ede6",
+      "scores": {
+        "raw": 0.9341730038022814,
+        "labels": 0.9938212927756654,
+        "structural": 0.9945342205323194,
+        "stack": 0.9945342205323194
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        917,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        const int *target_id = &player->auto_target;\n",
+            "        int target_index = *target_id;\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_local_clamp",
+      "sha256": "7f04f53bccbf6c92cee8fe9699d1175a17f3f33b3ecad636ce56e1278839e854",
+      "scores": {
+        "raw": 0.9224189141024118,
+        "labels": 0.9982178923606986,
+        "structural": 0.9982178923606986,
+        "stack": 0.9982178923606986
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 424,
+          "end": 426,
+          "replacement": [
+            "        int target_index = player->auto_target;\n",
+            "        if (target_index < 0) {\n",
+            "            target_index = 0;\n",
+            "            player->auto_target = target_index;\n"
+          ]
+        },
+        {
+          "start": 427,
+          "end": 429,
+          "replacement": []
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_long",
+      "sha256": "971e65b2356af5abedf8d4e0b816e79f38bf861e0647c9bcb33a6ec24b17607c",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        long target_index = player->auto_target;\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_record_ref",
+      "sha256": "dfbadec660ee261c451ce25f8d6cc61ff2afbb10e62c65aa8764c828a622044c",
+      "scores": {
+        "raw": 0.8139783668132652,
+        "labels": 0.8605729228574824,
+        "structural": 0.9925115892071794,
+        "stack": 0.9960774991085225
+      },
+      "instructions": [
+        4206,
+        4207
+      ],
+      "refs": [
+        763,
+        0,
+        3
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        creature_t &target = creature_pool[player->auto_target];\n"
+          ]
+        },
+        {
+          "start": 430,
+          "end": 432,
+          "replacement": [
+            "        if (!target.active\n",
+            "            || target.health <= 0.0f) {\n"
+          ]
+        },
+        {
+          "start": 435,
+          "end": 436,
+          "replacement": [
+            "                - *(vec2_t *)&target.position);\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "target_unsigned_int",
+      "sha256": "e8eb975f28a8736b01f315039ee6b8ff1297b346c21b758c9ca3f924b2e95bbb",
+      "scores": {
+        "raw": 0.948318878460259,
+        "labels": 0.9979802780087917,
+        "structural": 0.9986931210645122,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 428,
+          "end": 429,
+          "replacement": [
+            "        unsigned int target_index = player->auto_target;\n"
+          ]
+        },
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_angle_step",
+      "sha256": "3a841dc72a349166ec67215cdb6beaa9ec90d32481e068c8319858127f83b746",
+      "scores": {
+        "raw": 0.919966702342728,
+        "labels": 0.9913188250683791,
+        "structural": 0.9920323462956356,
+        "stack": 0.9932215483410631
+      },
+      "instructions": [
+        4206,
+        4203
+      ],
+      "refs": [
+        911,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 478,
+          "replacement": [
+            "                        angle_step = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 479,
+          "end": 480,
+          "replacement": [
+            "                            * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 481,
+          "end": 482,
+          "replacement": [
+            "                            * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 532,
+          "replacement": [
+            "                angle_step = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 533,
+          "end": 534,
+          "replacement": [
+            "                    * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 535,
+          "end": 536,
+          "replacement": [
+            "                    * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 713,
+          "replacement": [
+            "                angle_step = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 714,
+          "end": 715,
+          "replacement": [
+            "                    * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "replacement": [
+            "                    * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 762,
+          "replacement": [
+            "            angle_step = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 763,
+          "end": 764,
+          "replacement": [
+            "                * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 765,
+          "end": 766,
+          "replacement": [
+            "                * angle_step * speed_scale * 7.957747f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_assignment_speed",
+      "sha256": "bb6f42b3ab6d7672a488038437a9a7fee233188dca96ea281ad160c3464369b3",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": []
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - (player->turn_speed = player->turn_speed + frame_dt * 10.0f) * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": []
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + (player->turn_speed = player->turn_speed + frame_dt * 10.0f) * frame_dt * 0.5f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_compound_speed",
+      "sha256": "218577207803dc00b54d228257f37ec82cccd546cd05c7f5184f8733fa6653e3",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": []
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - (player->turn_speed += frame_dt * 10.0f) * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": []
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + (player->turn_speed += frame_dt * 10.0f) * frame_dt * 0.5f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_first_local",
+      "sha256": "e138cf61032804fd906a5202eb181e4a4a35ac9f814ab73ef8c5d08a288ca58c",
+      "scores": {
+        "raw": 0.9457051205892836,
+        "labels": 0.9953665201378163,
+        "structural": 0.9960793631935368,
+        "stack": 0.9967922062492575
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_local",
+      "sha256": "eb69723fd64b86c1c93c5970d7bcec17aaaae000ea69fcbf4cab05cc25a84933",
+      "scores": {
+        "raw": 0.920442383160899,
+        "labels": 0.9917945058865502,
+        "structural": 0.9925080271138066,
+        "stack": 0.9932215483410631
+      },
+      "instructions": [
+        4206,
+        4203
+      ],
+      "refs": [
+        911,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 478,
+          "replacement": [
+            "                        float turn_scale = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 479,
+          "end": 480,
+          "replacement": [
+            "                            * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 481,
+          "end": 482,
+          "replacement": [
+            "                            * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 532,
+          "replacement": [
+            "                float turn_scale = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 533,
+          "end": 534,
+          "replacement": [
+            "                    * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 535,
+          "end": 536,
+          "replacement": [
+            "                    * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 713,
+          "replacement": [
+            "                float turn_scale = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 714,
+          "end": 715,
+          "replacement": [
+            "                    * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "replacement": [
+            "                    * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 762,
+          "replacement": [
+            "            float turn_scale = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 763,
+          "end": 764,
+          "replacement": [
+            "                * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 765,
+          "end": 766,
+          "replacement": [
+            "                * turn_scale * speed_scale * 7.957747f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_product_delta",
+      "sha256": "803ce128d8e3378d338a155d893f7a423560f4ee779d5ad27c73e65ac4083dba",
+      "scores": {
+        "raw": 0.9211026615969582,
+        "labels": 0.9935836501901141,
+        "structural": 0.9942965779467681,
+        "stack": 0.9950095057034221
+      },
+      "instructions": [
+        4206,
+        4210
+      ],
+      "refs": [
+        905,
+        0,
+        1
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 572,
+          "end": 572,
+          "replacement": [
+            "                float turn_delta = player->turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - turn_delta;\n"
+          ]
+        },
+        {
+          "start": 575,
+          "end": 576,
+          "replacement": [
+            "                    - turn_delta;\n"
+          ]
+        },
+        {
+          "start": 582,
+          "end": 582,
+          "replacement": [
+            "                float turn_delta = player->turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + turn_delta;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 586,
+          "replacement": [
+            "                    + turn_delta;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_product_group",
+      "sha256": "a36fd760672543e8e3d98a810a22bfbe426557ed9e34d6294d22dbe0f6960bf2",
+      "scores": {
+        "raw": 0.9279182994893718,
+        "labels": 0.9939437121482009,
+        "structural": 0.9946562166013537,
+        "stack": 0.9958437240232751
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - (player->turn_speed * frame_dt) * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 575,
+          "end": 576,
+          "replacement": [
+            "                    - (player->turn_speed * frame_dt) * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + (player->turn_speed * frame_dt) * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 586,
+          "replacement": [
+            "                    + (player->turn_speed * frame_dt) * 0.5f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_product_speed_copy",
+      "sha256": "fc95181194cc7532ca7b8b59117546661d7d5da611571520f46f50c6f1f34cea",
+      "scores": {
+        "raw": 0.9278840441962695,
+        "labels": 0.9944160627301889,
+        "structural": 0.9951289057859095,
+        "stack": 0.99584174884163
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 572,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 575,
+          "end": 576,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 582,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 586,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_product_speed_updated",
+      "sha256": "b568a6c7d0fd08cf0dcbe768a7d9f32cbb4fe863f35290d62e59d6caf1294673",
+      "scores": {
+        "raw": 0.9278840441962695,
+        "labels": 0.9944160627301889,
+        "structural": 0.9951289057859095,
+        "stack": 0.99584174884163
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 575,
+          "end": 576,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 585,
+          "end": 586,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "turn_turn_angle",
+      "sha256": "7c8ca362964a5730c869ed3ce388e25993df34104f6380b28ac9068a16bacd3e",
+      "scores": {
+        "raw": 0.920442383160899,
+        "labels": 0.9917945058865502,
+        "structural": 0.9925080271138066,
+        "stack": 0.9932215483410631
+      },
+      "instructions": [
+        4206,
+        4203
+      ],
+      "refs": [
+        911,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 478,
+          "replacement": [
+            "                        turn_angle = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 479,
+          "end": 480,
+          "replacement": [
+            "                            * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 481,
+          "end": 482,
+          "replacement": [
+            "                            * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 532,
+          "replacement": [
+            "                turn_angle = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 533,
+          "end": 534,
+          "replacement": [
+            "                    * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 535,
+          "end": 536,
+          "replacement": [
+            "                    * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 713,
+          "replacement": [
+            "                turn_angle = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 714,
+          "end": 715,
+          "replacement": [
+            "                    * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 716,
+          "end": 717,
+          "replacement": [
+            "                    * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 762,
+          "replacement": [
+            "            turn_angle = 3.1415927f - angle_step;\n"
+          ]
+        },
+        {
+          "start": 763,
+          "end": 764,
+          "replacement": [
+            "                * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        },
+        {
+          "start": 765,
+          "end": 766,
+          "replacement": [
+            "                * turn_angle * speed_scale * 7.957747f;\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "without_movement_groups",
+      "sha256": "6989c7e9cf4f76fbc54dd794228f0e9441ea93e05685afa6ea6fed8bd50933f8",
+      "scores": {
+        "raw": 0.9464179636450042,
+        "labels": 0.9960793631935368,
+        "structural": 0.9967922062492575,
+        "stack": 0.9967922062492575
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "without_smoke_reuse",
+      "sha256": "f4ad89abc3bccbb4044ce6a82acae2c3fd2c8993ea5dde582300f1feb2778394",
+      "scores": {
+        "raw": 0.9476060354045385,
+        "labels": 0.9972674349530711,
+        "structural": 0.9979802780087917,
+        "stack": 0.9986931210645122
+      },
+      "instructions": [
+        4206,
+        4211
+      ],
+      "refs": [
+        918,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 571,
+          "end": 572,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 573,
+          "end": 574,
+          "replacement": [
+            "                    - current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 581,
+          "end": 582,
+          "replacement": [
+            "                float current_turn_speed = player->turn_speed + frame_dt * 10.0f;\n",
+            "                player->turn_speed = current_turn_speed;\n"
+          ]
+        },
+        {
+          "start": 583,
+          "end": 584,
+          "replacement": [
+            "                    + current_turn_speed * frame_dt * 0.5f;\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "without_turn_temporary",
+      "sha256": "192efb92d0bc14efe1afc6e416f8551783f78baef1897f4e65d2e7ed49ff52ce",
+      "scores": {
+        "raw": 0.9305308158175989,
+        "labels": 0.996556228476428,
+        "structural": 0.9972687329295808,
+        "stack": 0.9977437358983494
+      },
+      "instructions": [
+        4206,
+        4215
+      ],
+      "refs": [
+        916,
+        0,
+        0
+      ],
+      "exact": false,
+      "edits": [
+        {
+          "start": 478,
+          "end": 479,
+          "replacement": [
+            "                        player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 480,
+          "end": 481,
+          "replacement": [
+            "                        player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 532,
+          "end": 533,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 534,
+          "end": 535,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 713,
+          "end": 714,
+          "replacement": [
+            "                player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 715,
+          "end": 716,
+          "replacement": [
+            "                player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 762,
+          "end": 763,
+          "replacement": [
+            "            player->move_dx = (cosf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 764,
+          "end": 765,
+          "replacement": [
+            "            player->move_dy = (sinf(player->heading - 1.5707964f) * player->move_speed)\n"
+          ]
+        },
+        {
+          "start": 1072,
+          "end": 1073,
+          "replacement": [
+            "            scalar = (float)(crt_rand() & 0x3f) * 0.01f\n"
+          ]
+        },
+        {
+          "start": 1083,
+          "end": 1084,
+          "replacement": [
+            "            vec2_t drift(cosf(scalar) * smoke_speed, sinf(scalar) * smoke_speed);\n"
+          ]
+        }
+      ]
+    }
+  ]
+}

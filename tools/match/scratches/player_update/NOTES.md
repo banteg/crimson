@@ -2,6 +2,31 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Arithmetic grouping, turn lifetime and smoke storage (2026-09-27)
+
+Raw match is now **94.8319%** (from 92.7918%); labels masked **99.7980%**,
+structural/stack masked **99.8693%**, refs **918/0/0**, candidate/native
+instructions **4211/4206**, frame **0x48**. Both exactness flags remain false.
+
+The eight accelerated movement lanes group `(cosf/sinf(...) * move_speed)`
+before turn attenuation, preserving native's multiplication order. Each
+keyboard-turn branch retains the just-computed `current_turn_speed` for the
+body heading, then reloads the field for the aim heading. Smoke construction
+reuses the dead `scalar` home at frame-bottom `+0x10`.
+
+The [evidence package](../../evidence/player-update-arithmetic-2026-09-27/README.md)
+records 3,827 native execution fixtures, 11 relocation-aware encoded regions,
+three source ablations, 68 source-control builds and preserving C2 traces.
+The selected source agrees on every fixture; the starting source differed on
+364. No dummy ID inflation or modified compiler is retained.
+
+Three residuals remain: auto-target index EAX/ECX choice at `0x413e5b`,
+the four-instruction demo-angle clone at `0x414d02`, and
+`normal_fire_ready` spilling instead of staying in BL at `0x415741..0x41590e`.
+The demo mover estimates 19 bytes and clones below its 20-byte threshold;
+the flag's initial register priority is -5. The source cause of native's
+different choices remains open. Earlier measurements below are historical.
+
 ## Byte key for `grim_is_key_down` (2026-09-27)
 
 `grim2d_cpp.h` declares `grim_is_key_down(unsigned char key)`, and the recovered
