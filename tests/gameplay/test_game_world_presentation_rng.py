@@ -12,12 +12,12 @@ from tests.support.world_runtime import WorldRuntimeHost
 
 def test_projectile_decals_consume_authoritative_rng() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
-    world.sim_world.state.rng.srand(0x1234)
-    sim_before = int(world.sim_world.state.rng.state)
+    runtime.world.state.rng.srand(0x1234)
+    sim_before = int(runtime.world.state.rng.state)
 
-    player = world.sim_world.players[0]
+    player = runtime.world.players[0]
     fx_queue = FxQueue()
     hit = ProjectileHit(
         type_id=ProjectileTemplateId.PISTOL,
@@ -26,16 +26,16 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
         target=player.pos,
     )
     queue_projectile_decals(
-        state=world.sim_world.state,
-        players=world.sim_world.players,
+        state=runtime.world.state,
+        players=runtime.world.players,
         fx_queue=fx_queue,
         hits=[hit],
-        rng=world.sim_world.state.rng,
+        rng=runtime.world.state.rng,
         detail_preset=5,
         violence_disabled=0,
     )
 
-    assert int(world.sim_world.state.rng.state) != sim_before
+    assert int(runtime.world.state.rng.state) != sim_before
     assert fx_queue.count > 0
 
 

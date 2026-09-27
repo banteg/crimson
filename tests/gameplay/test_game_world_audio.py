@@ -6,7 +6,7 @@ import crimson.world.audio_bridge as audio_bridge_module
 from crimson.bonuses import BonusId
 from crimson.gameplay import player_update
 from crimson.perks import PerkId
-from crimson.sim.batch_apply import apply_presentation_plans, apply_tick_to_sim
+from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
 from crimson.sim.presentation_step import DeterministicPresentationPlan, plan_player_audio_sfx
 from crimson.weapons import WeaponId
@@ -32,13 +32,13 @@ def _audio_state_stub() -> AudioState:
 
 def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
-    world.sync_audio_bridge_state()
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
+    runtime.sync_audio_bridge_state()
 
-    player = world.sim_world.players[0]
+    player = runtime.world.players[0]
 
     # Setup: reload is about to finish and the player is holding fire.
     player.weapon.weapon_id = WeaponId.PISTOL
@@ -57,7 +57,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, world.sim_world.state, world_size=float(world.world_size))
+    player_update(player, input_state, 0.05, runtime.world.state, world_size=float(runtime.world_size))
 
     sounds = plan_player_audio_sfx(
         player,
@@ -65,7 +65,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         prev_reload_active=prev_reload_active,
         prev_reload_timer=prev_reload_timer,
     )
-    world.audio_bridge.apply_plan(plan=DeterministicPresentationPlan(sfx=tuple(sounds)))
+    runtime.audio_bridge.apply_plan(plan=DeterministicPresentationPlan(sfx=tuple(sounds)))
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.PISTOL_FIRE
@@ -73,13 +73,13 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
 
 def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
-    world.sync_audio_bridge_state()
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
+    runtime.sync_audio_bridge_state()
 
-    player = world.sim_world.players[0]
+    player = runtime.world.players[0]
 
     player.weapon.weapon_id = WeaponId.SHOTGUN  # Shotgun
     player.weapon.clip_size = 12
@@ -98,7 +98,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, world.sim_world.state, world_size=float(world.world_size))
+    player_update(player, input_state, 0.05, runtime.world.state, world_size=float(runtime.world_size))
 
     sounds = plan_player_audio_sfx(
         player,
@@ -106,7 +106,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         prev_reload_active=prev_reload_active,
         prev_reload_timer=prev_reload_timer,
     )
-    world.audio_bridge.apply_plan(plan=DeterministicPresentationPlan(sfx=tuple(sounds)))
+    runtime.audio_bridge.apply_plan(plan=DeterministicPresentationPlan(sfx=tuple(sounds)))
 
     assert play_sfx.call_count == 2
     assert {call.args[1] for call in play_sfx.call_args_list} == {SfxId.AUTORIFLE_FIRE, SfxId.PLASMAMINIGUN_FIRE}
@@ -114,15 +114,15 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
 
 def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
 
-    player = world.sim_world.players[0]
+    player = runtime.world.players[0]
     player.experience = 10_000
 
-    world.step_survival_frame(
+    runtime.step_survival_frame(
         0.05,
         inputs=[PlayerInput()],
         perk_progression_enabled=True,
@@ -134,20 +134,20 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
 
 def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
 
-    player = world.sim_world.players[0]
-    entry = world.sim_world.state.bonus_pool.spawn_at(
+    player = runtime.world.players[0]
+    entry = runtime.world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.POINTS,
-        state=world.sim_world.state,
+        state=runtime.world.state,
     )
     assert entry is not None
 
-    world.step_survival_frame(0.016, perk_progression_enabled=False)
+    runtime.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     play_sfx.assert_called_once()
@@ -156,20 +156,20 @@ def test_bonus_pickup_plays_bonus_sfx(mocker) -> None:
 
 def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
 
-    player = world.sim_world.players[0]
-    entry = world.sim_world.state.bonus_pool.spawn_at(
+    player = runtime.world.players[0]
+    entry = runtime.world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.FIREBLAST,
-        state=world.sim_world.state,
+        state=runtime.world.state,
     )
     assert entry is not None
 
-    world.step_survival_frame(0.016, perk_progression_enabled=False)
+    runtime.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     assert play_sfx.call_count == 2
@@ -178,14 +178,13 @@ def test_fireblast_pickup_plays_explosion_medium_sfx(mocker) -> None:
 
 def test_presentation_apply_plays_post_apply_bonus_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
     step = make_tick_payload(post_apply_sfx=(SfxRequest(SfxId.UI_BONUS),))
 
-    apply_tick_to_sim(sim_world=world.sim_world, step=step, game_tune_started=False)
-    apply_presentation_plans(plans=[step.presentation], runtime=world, apply_audio=True)
+    apply_presentation_plans(plans=[step.presentation], runtime=runtime, apply_audio=True)
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.UI_BONUS
@@ -193,19 +192,19 @@ def test_presentation_apply_plays_post_apply_bonus_sfx(mocker) -> None:
 
 def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
 
-    player = world.sim_world.players[0]
-    perks = world.sim_world.state.perks
+    player = runtime.world.players[0]
+    perks = runtime.world.state.perks
     aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
 
     play_sfx.reset_mock()
     perks[int(PerkId.MAN_BOMB)] = 1
     player.man_bomb_timer = 3.9
-    world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
+    runtime.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
@@ -214,7 +213,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.man_bomb_timer = 0.0
     perks[int(PerkId.HOT_TEMPERED)] = 1
     player.hot_tempered_timer = 1.95
-    world.step_survival_frame(0.1, inputs=[aim], perk_progression_enabled=False)
+    runtime.step_survival_frame(0.1, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
@@ -227,21 +226,21 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
     player.weapon.reload_timer_max = 2.0
     player.weapon.clip_size = 10
     player.weapon.ammo = 0
-    world.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
+    runtime.step_survival_frame(0.2, inputs=[aim], perk_progression_enabled=False)
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.EXPLOSION_SMALL
 
 
 def test_audio_bridge_forwards_live_reflex_timer(mocker) -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
-    world.audio = _audio_state_stub()
-    world.audio_rng = Crand(0)
-    world.sync_audio_bridge_state()
+    runtime.audio = _audio_state_stub()
+    runtime.audio_rng = Crand(0)
+    runtime.sync_audio_bridge_state()
 
-    world.sim_world.state.bonuses.reflex_boost = 0.75
-    world.audio_bridge.play_sfx(SfxId.PISTOL_FIRE)
+    runtime.world.state.bonuses.reflex_boost = 0.75
+    runtime.audio_bridge.play_sfx(SfxId.PISTOL_FIRE)
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.PISTOL_FIRE

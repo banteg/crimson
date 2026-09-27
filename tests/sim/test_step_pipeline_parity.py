@@ -56,7 +56,7 @@ def _live_runtime_checkpoints(
     start_weapon_id=None,
 ) -> list[ReplayCheckpoint]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
     driver = build_runtime_playback_driver(
         replay,
         max_ticks=None,
@@ -64,26 +64,21 @@ def _live_runtime_checkpoints(
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )
-    world.load_world_state(driver.world)
+    runtime.load_world_state(driver.world)
 
     checkpoints: list[ReplayCheckpoint] = []
     for tick_index in range(len(replay.ticks)):
         tick = driver.step_tick(tick_index)
         step = tick.payload
-        world.sim_world.apply_step_metadata(
-            events=step.events,
-            presentation=step.presentation,
-            dt_sim=float(step.dt_sim),
-            game_tune_started=bool(driver.session.game_tune_started),
-        )
-        world.sync_audio_bridge_state()
-        world.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
-        world.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
+        runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=bool(driver.session.game_tune_started))
+        runtime.sync_audio_bridge_state()
+        runtime.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
+        runtime.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
 
         checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=world.sim_world.world_state,
+                world=runtime.world,
                 elapsed_ms=float(driver.elapsed_ms),
                 deaths=step.events.deaths,
                 events=step.events,

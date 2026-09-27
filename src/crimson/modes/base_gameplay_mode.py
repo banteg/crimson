@@ -40,7 +40,7 @@ from ..replay.checkpoints import (
 )
 from ..replay.ticks import LiveTickSource, step_replay_tick
 from ..screens.results.game_over import GameOverUi
-from ..sim.batch_apply import apply_presentation_plans, apply_tick_to_sim
+from ..sim.batch_apply import apply_presentation_plans
 from ..sim.clock import FixedStepClock
 from ..sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand
 from ..sim.input import PlayerInput
@@ -61,7 +61,7 @@ if TYPE_CHECKING:
     from ..game.types import GameState
     from ..persistence.save_status import GameStatus
     from ..sim.state_types import PlayerState
-    from ..sim.world_state import WorldEvents
+    from ..sim.world_state import WorldEvents, WorldState
 
 
 class _ModePerkMenuRuntime(PerkMenuRuntime):
@@ -137,7 +137,6 @@ class BaseGameplayMode:
             audio_rng=self.audio_rng,
             rtx_mode=self.rtx_mode,
         )
-        self.sim_world = self._world_runtime.sim_world
         self.render_resources = self._world_runtime.render_resources
         self.audio_bridge = self._world_runtime.audio_bridge
         self.terrain_runtime = self._world_runtime.terrain_runtime
@@ -171,6 +170,10 @@ class BaseGameplayMode:
     @property
     def world_runtime(self) -> WorldRuntime:
         return self._world_runtime
+
+    @property
+    def world(self) -> WorldState:
+        return self._world_runtime.world
 
     @property
     def camera(self) -> Vec2:
@@ -236,7 +239,7 @@ class BaseGameplayMode:
             return
 
         target_indices: list[int] = []
-        target_players = self.sim_world.players[:1] if self.state.preserve_bugs else self.sim_world.players
+        target_players = self.world.players[:1] if self.state.preserve_bugs else self.world.players
         for target_player in target_players:
             if not self.state.preserve_bugs and float(target_player.health) <= 0.0:
                 continue
@@ -277,9 +280,9 @@ class BaseGameplayMode:
             draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha)
 
     def _bind_world(self) -> None:
-        self.state: GameplayState = self.sim_world.state
-        self.creatures: CreaturePool = self.sim_world.creatures
-        self.player: PlayerState = self.sim_world.players[0]
+        self.state: GameplayState = self.world.state
+        self.creatures: CreaturePool = self.world.creatures
+        self.player: PlayerState = self.world.players[0]
         preserve_bugs = self.state.preserve_bugs
         self._local_input.set_preserve_bugs(preserve_bugs)
         self._hud_state.preserve_bugs = preserve_bugs
@@ -287,7 +290,7 @@ class BaseGameplayMode:
         self.state.status = self._status_sim
 
     def _any_player_alive(self) -> bool:
-        return any(player.health > 0.0 for player in self.sim_world.players)
+        return any(player.health > 0.0 for player in self.world.players)
 
     @property
     def save_status(self) -> GameStatus | None:
@@ -457,7 +460,7 @@ class BaseGameplayMode:
         return float(session.elapsed_ms)
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
-        return float(self.sim_world.presentation_elapsed_ms)
+        return float(self._world_runtime.presentation_elapsed_ms)
 
     def _replay_output_basename(self, *, stamp: str, replay: Replay) -> str:
         _ = replay
@@ -484,7 +487,7 @@ class BaseGameplayMode:
         self._replay_checkpoints.append(
             build_checkpoint(
                 tick_index=int(tick_index),
-                world=self.sim_world.world_state,
+                world=self.world,
                 elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
                 deaths=deaths,
                 events=events,
@@ -579,7 +582,7 @@ class BaseGameplayMode:
         self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
         self._world_runtime.open_runtime()
         self._bind_world()
-        self._local_input.reset(players=self.sim_world.players)
+        self._local_input.reset(players=self.world.players)
         self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=False)
 
@@ -611,10 +614,10 @@ class BaseGameplayMode:
             typo_highscore_names=highscore_names,
         )
         prepared = initialize_run(spec, status=status)
-        self.sim_world.load_world_state(prepared.session.world)
+        self._world_runtime.load_world_state(prepared.session.world)
         self._status_sim = prepared.session.world.state.status
         self._bind_world()
-        self._local_input.reset(players=self.sim_world.players)
+        self._local_input.reset(players=self.world.players)
         self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
         self._reset_live_ticks()
         self._replay_recorder = ReplayRecorder(spec)
@@ -701,7 +704,7 @@ class BaseGameplayMode:
         return self.camera
 
     def console_elapsed_ms(self) -> float:
-        return float(self.sim_world.presentation_elapsed_ms)
+        return float(self._world_runtime.presentation_elapsed_ms)
 
     def prepare_demo_trial_overlay_frame(self) -> None:
         self._world_runtime.update_camera()
@@ -726,7 +729,7 @@ class BaseGameplayMode:
 
     def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
-            players=self.sim_world.players,
+            players=self.world.players,
             config=self.config,
             mouse_screen=self._ui_mouse,
             screen_to_world=self.screen_to_world,
@@ -780,7 +783,10 @@ class BaseGameplayMode:
             tick = self._live_ticks.next_tick()
             tick_index = recorder.record(tick) if recorder is not None else None
             step = step_replay_tick(session, tick)
-            apply_tick_to_sim(sim_world=self.sim_world, step=step, game_tune_started=session.game_tune_started)
+            self._world_runtime.advance_presentation_clock(
+                dt_sim=step.dt_sim,
+                game_tune_started=session.game_tune_started,
+            )
             plans.append(step.presentation)
             if tick_index is not None:
                 self._record_replay_checkpoint(tick_index, deaths=step.events.deaths, events=step.events)

@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..replay.ticks import LiveTickSource, step_replay_tick
-from ..sim.batch_apply import apply_presentation_plans, apply_tick_to_sim
+from ..sim.batch_apply import apply_presentation_plans
 from ..sim.clock import FixedStepClock
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
+from ..weapons import build_damage_scale_by_type
 
 if TYPE_CHECKING:
     from .runtime import WorldRuntime
@@ -36,8 +37,8 @@ class StandaloneTickHarness:
         self.clock = FixedStepClock()
 
     def _ensure_session(self, runtime: WorldRuntime) -> DeterministicSession:
-        world_state = runtime.sim_world.world_state
-        player_count = len(runtime.sim_world.players)
+        world_state = runtime.world
+        player_count = len(runtime.world.players)
         session = self.session
         if session is not None and self.world_state is world_state and int(self.player_count) == int(player_count):
             return session
@@ -53,11 +54,11 @@ class StandaloneTickHarness:
         session = DeterministicSession(
             world=world_state,
             world_size=float(runtime.world_size),
-            damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
+            damage_scale_by_type=build_damage_scale_by_type(),
             game_mode=self.game_mode,
             detail_preset=int(detail_preset),
             violence_disabled=int(violence_disabled),
-            game_tune_started=bool(runtime.sim_world.game_tune_started),
+            game_tune_started=bool(runtime.game_tune_started),
             demo_mode_active=bool(runtime.demo_mode_active),
             perk_progression_enabled=False,
             apply_world_dt_steps=True,
@@ -70,7 +71,7 @@ class StandaloneTickHarness:
     def advance_frame(self, runtime: WorldRuntime, dt: float) -> int:
         """Run the ticks this frame's time covers; returns how many ran."""
 
-        if not runtime.sim_world.players:
+        if not runtime.world.players:
             return 0
         session = self._ensure_session(runtime)
         session.demo_mode_active = bool(runtime.demo_mode_active)
@@ -78,7 +79,7 @@ class StandaloneTickHarness:
         plans = []
         for _ in range(self.clock.advance(float(dt))):
             step = step_replay_tick(session, self.ticks.next_tick())
-            apply_tick_to_sim(sim_world=runtime.sim_world, step=step, game_tune_started=session.game_tune_started)
+            runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=session.game_tune_started)
             plans.append(step.presentation)
         apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
         return len(plans)

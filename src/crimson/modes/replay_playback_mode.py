@@ -339,7 +339,6 @@ class ReplayPlaybackMode:
         )
         runtime.open_runtime()
 
-        sim_world = runtime.sim_world
         try:
             self._driver = build_runtime_playback_driver(
                 replay,
@@ -347,11 +346,11 @@ class ReplayPlaybackMode:
                 trace_rng=bool(self._trace_rng),
             )
             driver = self._driver
-            sim_world.load_world_state(driver.world)
+            runtime.load_world_state(driver.world)
         except ReplayRunnerError as exc:  # pragma: no cover
             raise ValueError(f"unsupported replay game_mode_id: {int(replay.run.game_mode_id)}") from exc
 
-        self._hud_state.preserve_bugs = bool(sim_world.state.preserve_bugs)
+        self._hud_state.preserve_bugs = bool(runtime.world.state.preserve_bugs)
 
         driver = self._driver
         assert driver is not None, "Replay driver must be initialized before replay view setup"
@@ -434,7 +433,7 @@ class ReplayPlaybackMode:
         frame_dt = float(dt_seconds)
         advance = advance_playback_frame(
             driver=driver,
-            sim_world=runtime.sim_world,
+            runtime=runtime,
             clock=self._clock,
             start_tick=int(self._tick_index),
             dt_seconds=float(frame_dt),
@@ -566,8 +565,8 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before Typ-o replay draw"
         draw_typo_name_labels(
-            creatures=runtime.sim_world.creatures.entries,
-            names=runtime.sim_world.state.typo.names.names,
+            creatures=runtime.world.creatures.entries,
+            names=runtime.world.state.typo.names.names,
             world_to_screen=runtime.world_to_screen,
             draw_text=self._draw_ui_text,
             measure_text_width=self._measure_ui_text_width,
@@ -580,7 +579,7 @@ class ReplayPlaybackMode:
         cursor_pulse_time = 0.0 if driver is None else float(driver.elapsed_ms) * 0.001
         draw_typing_box(
             runtime.render_resources.resources.texture(TextureId.UI_IND_PANEL),
-            text=runtime.sim_world.state.typo.typing.text,
+            text=runtime.world.state.typo.typing.text,
             cursor_pulse_time=float(cursor_pulse_time),
             draw_text=self._draw_ui_text,
             measure_text_width=self._measure_ui_text_width,
@@ -590,7 +589,7 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before tutorial replay draw"
         draw_tutorial_overlay_panels(
-            runtime.sim_world.state.tutorial_overlay,
+            runtime.world.state.tutorial_overlay,
             draw_text=self._draw_ui_text,
             measure_text_width=self._measure_ui_text_width,
             measure_line_height=lambda: int(
@@ -603,19 +602,19 @@ class ReplayPlaybackMode:
         assert runtime is not None, "World runtime must be open before replay draw"
         replay = self._replay
         assert replay is not None, "Replay must be loaded before replay draw"
-        sim_world = runtime.sim_world
-        players = sim_world.players
+        world = runtime.world
+        players = world.players
         assert players, "Replay runtime must have at least one player before draw"
         self._draw_world(draw_aim_indicators=True)
         mode_id = replay.run.game_mode_id
         show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
         hud_flags = hud_flags_for_game_mode(mode_id)
         quest_progress_ratio: float | None = None
-        elapsed_ms = float(sim_world.presentation_elapsed_ms)
+        elapsed_ms = float(runtime.presentation_elapsed_ms)
         match mode_id:
             case GameMode.QUESTS:
                 total = int(self._quest_total_spawn_count)
-                kills = int(sim_world.creatures.kill_count)
+                kills = int(world.creatures.kill_count)
                 quest_progress_ratio = float(kills) / float(total) if total > 0 else None
                 driver = self._driver
                 if driver is not None:
@@ -640,7 +639,7 @@ class ReplayPlaybackMode:
             ),
             player=players[0],
             players=players,
-            bonus_hud=sim_world.state.bonus_hud,
+            bonus_hud=world.state.bonus_hud,
             elapsed_ms=elapsed_ms,
             frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
             quest_progress_ratio=quest_progress_ratio,

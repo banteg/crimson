@@ -18,7 +18,7 @@ def test_lazy_demo_modes_construct_the_world_with_demo_settings(make_game_state,
     state = make_game_state(demo_enabled=True)
     mode = GameLoopView(state).navigation._mode(mode_id)
     assert mode.demo_mode_active
-    assert mode.sim_world.spawn_env.demo_mode_active
+    assert mode.world.spawn_env.demo_mode_active
     assert mode.state.demo_mode_active
 
 
@@ -59,6 +59,6 @@ def test_quest_retry_counter_flows_through_persistent_mode(make_game_state, mock
     loop.navigation.navigate(StartRun.from_config(state.config, GameMode.QUESTS, quest_level=QuestLevel(1, 1)))
     assert mode.quest_fail_retry_count == 3
     start_run.assert_called_once_with(QuestLevel(1, 1), status=state.status)
-    mode.sim_world.spawn_env.quest_fail_retry_count = 0
+    mode.world.spawn_env.quest_fail_retry_count = 0
     assert loop._resolve_gameplay_action(mode, None) is None
     assert state.quest_fail_retry_count == 0

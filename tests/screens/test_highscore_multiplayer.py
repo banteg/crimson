@@ -24,7 +24,7 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker, ma
     mode.open()
     mocker.patch.object(GameOverUi, "open", return_value=None)
 
-    player0, player1 = mode.sim_world.players[:2]
+    player0, player1 = mode.world.players[:2]
     player0.experience = 1234
     player1.experience = 9999
     mode.state.highscore_score_xp = 1234

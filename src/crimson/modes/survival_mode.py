@@ -85,9 +85,9 @@ class SurvivalMode(BaseGameplayMode):
     def _try_open_perk_menu(self) -> None:
         self._open_perk_menu_ui(
             menu=self._perk_menu,
-            players=self.sim_world.players,
+            players=self.world.players,
             game_mode=GameMode.SURVIVAL,
-            player_count=max(1, len(self.sim_world.players)),
+            player_count=max(1, len(self.world.players)),
         )
 
     def _perk_menu_closed(self) -> None:
@@ -117,7 +117,7 @@ class SurvivalMode(BaseGameplayMode):
             ctx=perk_ctx,
             config=self.config,
             pending_count=pending_count,
-            player_count=max(1, len(self.sim_world.players)),
+            player_count=max(1, len(self.world.players)),
             any_alive=any_alive,
             paused=self._paused,
             menu_active=self._perk_menu.active,
@@ -207,7 +207,7 @@ class SurvivalMode(BaseGameplayMode):
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
-        return death_transition_ready(self.sim_world.players)
+        return death_transition_ready(self.world.players)
 
     def _enter_game_over(self) -> None:
         if self._game_over_active:
@@ -311,7 +311,7 @@ class SurvivalMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.sim_world.players,
+                players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=self._session_elapsed_ms(),
                 score=self.player.experience,

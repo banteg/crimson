@@ -40,15 +40,10 @@ class _StateStub:
     effects: _EffectPoolStub
 
 
-@dataclass(slots=True)
-class _SimWorldStub:
-    state: _StateStub
-
-
 class _WorldStub:
     def __init__(self, entries: list[EffectEntry]) -> None:
         self.resources = _ResourcesStub()
-        self.sim_world = _SimWorldStub(state=_StateStub(effects=_EffectPoolStub(entries=entries)))
+        self.state = _StateStub(effects=_EffectPoolStub(entries=entries))
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
@@ -57,7 +52,7 @@ class _WorldStub:
             config=None,
             camera=Vec2(),
             ground=None,
-            state=cast(Any, self.sim_world.state),
+            state=cast(Any, self.state),
             players=[],
             creatures=cast(Any, SimpleNamespace(entries=[])),
             resources=cast(Any, self.resources),

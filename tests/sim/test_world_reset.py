@@ -1,34 +1,31 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from crimson.perks import PerkId
 from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
-from crimson.world.sim_world_state import SimWorldState
+from crimson.world import WorldRuntime
 from grim.geom import Vec2
+from grim.rand import Crand
 
 
-def test_world_children_follow_the_authoritative_world_across_load_and_reset() -> None:
-    sim = SimWorldState()
-    first = sim.world_state
+def test_runtime_reset_replaces_a_loaded_world_without_touching_it(tmp_path: Path) -> None:
+    runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1))
+    first = runtime.world
     replacement = WorldState.build(world_size=1024.0, demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
     replacement.players.append(PlayerState(index=0, pos=Vec2(10.0, 20.0), health=17.0))
-    sim.load_world_state(replacement)
-    assert sim.state is replacement.state
-    assert sim.players is replacement.players
-    assert sim.creatures is replacement.creatures
-    assert sim.spawn_env is replacement.spawn_env
-    assert sim.players[0].health == 17.0
+    runtime.load_world_state(replacement)
+    assert runtime.world is replacement
+    runtime.advance_presentation_clock(dt_sim=0.5, game_tune_started=True)
 
-    sim.reset(seed=123, player_count=2)
-    assert sim.world_state is not first and sim.world_state is not replacement
-    assert sim.state is sim.world_state.state
-    assert sim.players is sim.world_state.players
-    assert sim.creatures is sim.world_state.creatures
-    assert sim.spawn_env is sim.world_state.spawn_env
-    assert sim.state.rng.state == 123
-    assert len(sim.players) == 2
+    runtime.reset(seed=123, player_count=2)
+    assert (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase, runtime.game_tune_started) == (0.0, 0.0, False)
+    assert runtime.world is not first and runtime.world is not replacement
+    assert runtime.world.state.rng.state == 123
+    assert len(runtime.world.players) == 2
     assert replacement.players[0].health == 17.0
 
 
@@ -55,12 +52,12 @@ def test_reset_world_players_uses_native_alternating_layout() -> None:
     assert world.players[1].spread_heat == 0.0
 
 
-def test_world_reset_round_robins_native_creature_targets() -> None:
-    world = SimWorldState()
+def test_world_reset_round_robins_native_creature_targets(tmp_path: Path) -> None:
+    runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1))
 
-    world.reset(seed=0xBEEF, player_count=2)
+    runtime.reset(seed=0xBEEF, player_count=2)
 
-    assert [creature.target_player for creature in world.creatures.entries[:6]] == [0, 1, 0, 1, 0, 1]
+    assert [creature.target_player for creature in runtime.world.creatures.entries[:6]] == [0, 1, 0, 1, 0, 1]
 
 
 def test_reset_world_players_preserves_native_unwritten_residue() -> None:

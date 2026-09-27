@@ -129,9 +129,9 @@ class QuestMode(BaseGameplayMode):
     def _try_open_perk_menu(self) -> None:
         self._open_perk_menu_ui(
             menu=self._perk_menu,
-            players=self.sim_world.players,
+            players=self.world.players,
             game_mode=GameMode.QUESTS,
-            player_count=max(1, len(self.sim_world.players)),
+            player_count=max(1, len(self.world.players)),
         )
 
     def _perk_menu_closed(self) -> None:
@@ -154,7 +154,7 @@ class QuestMode(BaseGameplayMode):
             ctx=perk_ctx,
             config=self.config,
             pending_count=pending_count,
-            player_count=max(1, len(self.sim_world.players)),
+            player_count=max(1, len(self.world.players)),
             any_alive=self._any_player_alive(),
             paused=self._paused,
             menu_active=self._perk_menu.active,
@@ -192,7 +192,7 @@ class QuestMode(BaseGameplayMode):
                     self.state,
                     fallback_weapon_id=self.player.weapon.weapon_id,
                 )
-                player_health_values = tuple(float(player.health) for player in self.sim_world.players)
+                player_health_values = tuple(float(player.health) for player in self.world.players)
                 player2_health = None
                 if len(player_health_values) >= 2:
                     player2_health = float(player_health_values[1])
@@ -252,7 +252,7 @@ class QuestMode(BaseGameplayMode):
         self._sync_world_runtime_config()
         self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
         self._bind_world()
-        self._local_input.reset(players=self.sim_world.players)
+        self._local_input.reset(players=self.world.players)
         self.bind_status(status)
         prepared = self._initialize_run(GameMode.QUESTS, quest_level=quest.level)
         self._sim_session = prepared.session
@@ -310,13 +310,13 @@ class QuestMode(BaseGameplayMode):
         weapon_assign_player(self.player, weapon_id, state=self.state)
 
     def _death_transition_ready(self) -> bool:
-        return death_transition_ready(self.sim_world.players)
+        return death_transition_ready(self.world.players)
 
     def _tick_death_timers(self, dt: float, *, rate: float = 20.0) -> None:
         delta = float(dt) * float(rate)
         if delta <= 0.0:
             return
-        for player in self.sim_world.players:
+        for player in self.world.players:
             if float(player.health) > 0.0:
                 continue
             if float(player.death_timer) < 0.0:
@@ -331,7 +331,7 @@ class QuestMode(BaseGameplayMode):
                 self.state,
                 fallback_weapon_id=self.player.weapon.weapon_id,
             )
-            player_health_values = tuple(float(player.health) for player in self.sim_world.players)
+            player_health_values = tuple(float(player.health) for player in self.world.players)
             player2_health = None
             if len(player_health_values) >= 2:
                 player2_health = float(player_health_values[1])
@@ -414,7 +414,7 @@ class QuestMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.sim_world.players,
+                players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._quest_spawn_state.spawn_timeline_ms),
                 frame_dt_ms=self._last_dt_ms,

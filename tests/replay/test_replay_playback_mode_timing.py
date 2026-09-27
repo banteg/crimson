@@ -1,14 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from pathlib import Path
-from types import SimpleNamespace
 
 from crimson.modes import replay_playback_mode
-from crimson.render.world.viewport import ViewTransform
-from crimson.world.render_resources import RenderResources
-from crimson.world.sim_world_state import SimWorldState
-from grim.geom import Vec2
+from crimson.world import WorldRuntime
+from grim.rand import Crand
 from tests.support.builders import FakePlaybackDriver
 from tests.support.replay_runner_helpers import idle_replay
 
@@ -17,31 +13,8 @@ def _assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
-@dataclass
-class _StubReplayRuntime:
-    """Minimal stub for ``view._runtime`` in replay timing tests."""
-
-    sim_world: SimWorldState = field(default_factory=SimWorldState)
-    render_resources: RenderResources = field(
-        default_factory=lambda: RenderResources(assets_dir=_assets_dir()),
-    )
-    audio_bridge: object = field(
-        default_factory=lambda: SimpleNamespace(
-            apply_plan=lambda **_kwargs: None,
-            apply_post_plan=lambda **_kwargs: None,
-            router=SimpleNamespace(play_sfx=lambda _key: None),
-        ),
-    )
-
-    def sync_audio_bridge_state(self) -> None:
-        return None
-
-    def view_transform(self) -> ViewTransform:
-        return ViewTransform(Vec2(), Vec2(1, 1), Vec2(1024, 768), Vec2(1024, 768))
-
-    def update_camera(self, _dt: float) -> None:
-        return None
-
+def _runtime() -> WorldRuntime:
+    return WorldRuntime(assets_dir=_assets_dir(), audio_rng=Crand(0))
 
 
 def _capture_applied_plans(mocker, driver: FakePlaybackDriver, captured_ticks: list[int]) -> None:
@@ -69,7 +42,7 @@ def test_replay_playback_mode_tick_loop_decrements_accum(mocker, replay_playback
 
     mocker.patch.object(replay_playback_mode.rl, "is_key_pressed", return_value=False)
     view._replay = idle_replay(16)
-    view._runtime = _StubReplayRuntime()
+    view._runtime = _runtime()
     view._finished = False
     view._paused = False
     view._tick_index = 0
@@ -91,7 +64,7 @@ def test_replay_runner_advance_does_not_stop_on_player_death(replay_playback_vie
     view, _console = replay_playback_view
 
     view._replay = idle_replay(2)
-    view._runtime = _StubReplayRuntime()
+    view._runtime = _runtime()
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False
@@ -110,7 +83,7 @@ def test_replay_runner_eos_applies_partial_completed_results(mocker, replay_play
     view, _console = replay_playback_view
 
     view._replay = idle_replay(2)
-    view._runtime = _StubReplayRuntime()
+    view._runtime = _runtime()
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False
@@ -132,23 +105,7 @@ def test_replay_runner_preserves_tick_complete_order_for_mixed_payload_batches(m
     view, _console = replay_playback_view
 
     view._replay = idle_replay(2)
-    view._runtime = SimpleNamespace(
-        sim_world=SimpleNamespace(apply_step_metadata=lambda **_kwargs: None),
-        audio_bridge=SimpleNamespace(
-            apply_plan=lambda **_kwargs: None,
-            apply_post_plan=lambda **_kwargs: None,
-            router=SimpleNamespace(play_sfx=lambda _key: None),
-        ),
-        sync_audio_bridge_state=lambda: None,
-        update_camera=lambda _dt: None,
-        render_resources=SimpleNamespace(
-            ground=None,
-            fx_textures=None,
-            fx_queue=[],
-            fx_queue_rotated=[],
-            consume_terrain_fx_batch=lambda _batch: None,
-        ),
-    )
+    view._runtime = _runtime()
     view._max_ticks = None
     view._tick_index = 0
     view._finished = False

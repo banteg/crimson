@@ -238,7 +238,7 @@ class TypoShooterMode(BaseGameplayMode):
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
-                players=self.sim_world.players,
+                players=self.world.players,
                 bonus_hud=self.state.bonus_hud,
                 elapsed_ms=float(self._session_elapsed_ms()),
                 frame_dt_ms=self._last_dt_ms,

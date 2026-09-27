@@ -9,6 +9,7 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession, QuestSessionRuntime, QuestSpawnState
+from crimson.weapons import build_damage_scale_by_type
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.world_runtime import WorldRuntimeHost
@@ -16,8 +17,8 @@ from tests.support.world_runtime import WorldRuntimeHost
 
 def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[DeterministicSession, QuestSpawnState]:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    world.reset(seed=int(seed), player_count=1)
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime.reset(seed=int(seed), player_count=1)
     quest = quest_by_level(QuestLevel.parse(level))
     assert quest is not None
     entries = tuple(
@@ -31,9 +32,9 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
     )
     spawn_state = QuestSpawnState(spawn_entries=entries)
     session = DeterministicSession(
-        world=world.sim_world.world_state,
-        world_size=float(world.world_size),
-        damage_scale_by_type=world.sim_world.damage_scale_by_type,
+        world=runtime.world,
+        world_size=float(runtime.world_size),
+        damage_scale_by_type=build_damage_scale_by_type(),
         game_mode=GameMode.QUESTS,
         perk_progression_enabled=True,
         mode_runtime=QuestSessionRuntime(spawn=spawn_state),

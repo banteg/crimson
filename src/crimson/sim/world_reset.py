@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import struct
 from collections.abc import Sequence
+from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -15,6 +16,9 @@ from ..weapon_runtime import init_default_alt_weapon
 from ..weapons import WeaponId
 from .gameplay_state import GameplayState
 from .state_types import PerkCounts, PlayerState
+
+if TYPE_CHECKING:
+    from .world_state import WorldState
 
 
 class CreatureSlotResidue(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -190,3 +194,34 @@ def reset_world_players(
         players.append(player)
 
 
+def build_reset_world(
+    *,
+    world_size: float,
+    seed: int,
+    player_count: int,
+    spawn_pos: Vec2 | None = None,
+    demo_mode_active: bool = False,
+    hardcore: bool = False,
+    quest_fail_retry_count: int = 0,
+    preserve_bugs: bool = False,
+) -> WorldState:
+    """Build a fresh world, seed its rng and place the players, as a run reset does."""
+    from .world_state import WorldState
+
+    world = WorldState.build(
+        world_size=float(world_size),
+        demo_mode_active=bool(demo_mode_active),
+        hardcore=bool(hardcore),
+        quest_fail_retry_count=int(quest_fail_retry_count),
+        preserve_bugs=bool(preserve_bugs),
+    )
+    world.state.rng.srand(int(seed))
+    reset_world_players(
+        world.players,
+        state=world.state,
+        world_size=float(world_size),
+        player_count=int(player_count),
+        spawn_pos=spawn_pos,
+    )
+    world.creatures.apply_gameplay_reset_target_players(len(world.players))
+    return world

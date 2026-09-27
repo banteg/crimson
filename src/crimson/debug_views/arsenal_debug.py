@@ -100,7 +100,7 @@ class ArsenalDebugView:
         )
         self._runtime.reset(player_count=1)
 
-        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
+        self._player = self._runtime.world.players[0] if self._runtime.world.players else None
         self._aim_texture: rl.Texture | None = None
         self._audio: AudioState | None = None
         self._console: ConsoleState | None = None
@@ -145,24 +145,24 @@ class ArsenalDebugView:
     def _apply_weapon(self) -> None:
         if self._player is None:
             return
-        weapon_assign_player(self._player, self._selected_weapon_id(), state=self._runtime.sim_world.state)
+        weapon_assign_player(self._player, self._selected_weapon_id(), state=self._runtime.world.state)
 
     def _reset_scene(self) -> None:
         self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
         self._tick_harness.reset()
-        self._player = self._runtime.sim_world.players[0] if self._runtime.sim_world.players else None
+        self._player = self._runtime.world.players[0] if self._runtime.world.players else None
         self._apply_weapon()
         self._reset_creatures()
         self._runtime.update_camera()
 
     def _reset_creatures(self) -> None:
-        self._runtime.sim_world.creatures.reset()
-        self._runtime.sim_world.state.projectiles.reset()
-        self._runtime.sim_world.state.secondary_projectiles.reset()
-        self._runtime.sim_world.state.particles.reset()
-        self._runtime.sim_world.state.sprite_effects.reset()
-        self._runtime.sim_world.state.effects.reset()
-        self._runtime.sim_world.state.bonus_pool.reset()
+        self._runtime.world.creatures.reset()
+        self._runtime.world.state.projectiles.reset()
+        self._runtime.world.state.secondary_projectiles.reset()
+        self._runtime.world.state.particles.reset()
+        self._runtime.world.state.sprite_effects.reset()
+        self._runtime.world.state.effects.reset()
+        self._runtime.world.state.bonus_pool.reset()
         self._runtime.render_resources.clear_pending_terrain_fx()
 
         player = self._player
@@ -181,11 +181,11 @@ class ArsenalDebugView:
                 WORLD_SIZE - 48.0,
             )
             heading = angle + math.pi
-            self._runtime.sim_world.creatures.spawn_template(
+            self._runtime.world.creatures.spawn_template(
                 spawn_id,
                 spawn_pos,
                 heading,
-                self._runtime.sim_world.state.rng,
+                self._runtime.world.state.rng,
             )
 
     def _spawn_all_bonuses(self) -> None:
@@ -193,14 +193,14 @@ class ArsenalDebugView:
         if player is None:
             return
 
-        bonus_pool = self._runtime.sim_world.state.bonus_pool
+        bonus_pool = self._runtime.world.state.bonus_pool
         bonus_pool.reset()
 
         bonus_ids = [entry.bonus_id for entry in BONUS_TABLE if entry.bonus_id != BonusId.UNUSED]
         count = max(1, len(bonus_ids))
 
         player_pos = player.pos
-        rng = self._runtime.sim_world.state.rng.rand
+        rng = self._runtime.world.state.rng.rand
         current_weapon_id = player.weapon.weapon_id
 
         for idx, bonus_id in enumerate(bonus_ids):
@@ -220,7 +220,7 @@ class ArsenalDebugView:
                 pos=pos,
                 bonus_id=bonus_id,
                 duration_override=int(amount_override),
-                state=self._runtime.sim_world.state,
+                state=self._runtime.world.state,
                 world_width=float(WORLD_SIZE),
                 world_height=float(WORLD_SIZE),
             )
@@ -396,8 +396,8 @@ class ArsenalDebugView:
             y += line
 
         if self._player is not None:
-            alive = sum(1 for c in self._runtime.sim_world.creatures.entries if c.active and c.hp > 0.0)
-            total = sum(1 for c in self._runtime.sim_world.creatures.entries if c.active)
+            alive = sum(1 for c in self._runtime.world.creatures.entries if c.active and c.hp > 0.0)
+            total = sum(1 for c in self._runtime.world.creatures.entries if c.active)
             draw_ui_text(self._small, f"creatures alive {alive}/{total}", Vec2(x, y), color=UI_TEXT)
             y += line
 

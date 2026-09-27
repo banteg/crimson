@@ -12,11 +12,11 @@ def test_demo_view_update_advances_simulation_time(make_game_state) -> None:
     view._demo_mode_start()
 
     runtime = view._runtime
-    assert runtime.sim_world.presentation_elapsed_ms == 0.0
+    assert runtime.presentation_elapsed_ms == 0.0
 
     view.update(1.0 / 60.0)
 
-    assert runtime.sim_world.presentation_elapsed_ms > 0.0
+    assert runtime.presentation_elapsed_ms > 0.0
 
 
 def test_demo_view_draw_is_noop_after_close(make_game_state) -> None:
@@ -31,7 +31,7 @@ def test_demo_variant_rng_setup_uses_exact_native_callers(make_game_state, mocke
     state = make_game_state(demo_enabled=True)
     view = DemoView(state)
     rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    view._runtime.sim_world.state.rng = rng
+    view._runtime.world.state.rng = rng
 
     mocker.patch.object(view, "_setup_world_players")
     mocker.patch.object(view, "_apply_terrain_setup")

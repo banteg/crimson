@@ -7,9 +7,9 @@ from crimson.sim.input import PlayerInput
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.session_builders import build_quest_session
 from crimson.sim.sessions import IllegalCommandError
+from crimson.weapons import build_damage_scale_by_type
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
-from crimson.world.sim_world_state import SimWorldState
 from grim.audio import AudioState
 from grim.music import init_music_state
 from grim.rand import Crand
@@ -17,12 +17,12 @@ from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
-from tests.support.builders.session import make_session
+from tests.support.builders.session import make_session, make_world
 
 
 def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() -> None:
-    session, sim_world = make_session()
-    sim_world.state.perk_selection.pending_count = 1
+    session, world = make_session()
+    world.state.perk_selection.pending_count = 1
 
     tick = session.step_tick(
         dt=1.0 / 60.0,
@@ -36,7 +36,7 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
 
 
 def test_session_step_tick_rejects_stale_perk_pick() -> None:
-    session, _sim_world = make_session()
+    session, _world = make_session()
 
     with pytest.raises(IllegalCommandError, match="perk_pick without a pending perk"):
         session.step_tick(
@@ -47,7 +47,7 @@ def test_session_step_tick_rejects_stale_perk_pick() -> None:
 
 
 def test_session_step_tick_skips_bonus_post_apply_sfx_for_lenient_stale_perk_pick() -> None:
-    session, _sim_world = make_session()
+    session, _world = make_session()
     session.strict_commands = False
 
     tick = session.step_tick(
@@ -74,11 +74,10 @@ def test_quest_audio_requests_survive_render_partitions(
     expected_music,
     ticks_per_frame,
 ) -> None:
-    sim = SimWorldState()
     session, spawn = build_quest_session(
-        world=sim.world_state,
+        world=make_world(),
         world_size=1024.0,
-        damage_scale_by_type=sim.damage_scale_by_type,
+        damage_scale_by_type=build_damage_scale_by_type(),
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
@@ -174,14 +173,14 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
             sfx=make_sfx_state(*SfxId),
         )
         runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1), audio=audio)
-        world = runtime.sim_world.world_state
+        world = runtime.world
         world.state.bonuses.reflex_boost = f32(0.025)
         world.players[0].weapon.shot_cooldown = 0
         world.state.camera_shake_timer = 10.0
         session = DeterministicSession(
             world=world,
             world_size=1024,
-            damage_scale_by_type=runtime.sim_world.damage_scale_by_type,
+            damage_scale_by_type=build_damage_scale_by_type(),
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
         )
@@ -282,10 +281,10 @@ def test_sound_cooldowns_use_frame_time_before_reflex_slow_motion() -> None:
     from crimson.math_parity import f32
     from crimson.perks import PerkId
 
-    session, sim_world = make_session()
-    sim_world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
-    sim_world.state.bonuses.reflex_boost = 2.0
-    sim_world.state.time_scale_active = True
+    session, world = make_session()
+    world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
+    world.state.bonuses.reflex_boost = 2.0
+    world.state.time_scale_active = True
     step = session.step_tick(dt=0.1, inputs=(PlayerInput(),))
     assert step.presentation.sfx_dt == f32(f32(0.1) * f32(0.9))
     assert step.dt_sim == f32(step.presentation.sfx_dt * f32(0.3))

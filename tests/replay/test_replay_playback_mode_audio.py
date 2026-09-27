@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 from types import SimpleNamespace
-from typing import Protocol
 from unittest.mock import call
 
 import pytest
@@ -11,16 +10,19 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
 from crimson.quests.level import QuestLevel
-from crimson.render.world.viewport import ViewTransform
 from crimson.sim.run_spec import RunSpec
 from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
-from crimson.world.sim_world_state import SimWorldState
+from crimson.tutorial.state import TutorialOverlayState
+from crimson.world import WorldRuntime
+from crimson.world.render_resources import RenderResources
 from grim.color import RGBA
 from grim.console import ConsoleState
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.raylib_api import rl
 from tests.support.builders import FakePlaybackDriver
+from tests.support.builders.session import make_world
 from tests.support.replay_runner_helpers import idle_replay
 
 
@@ -56,57 +58,8 @@ class _AudioStub:
     music: object = field(default_factory=object)
 
 
-@dataclass
-class _AudioBridgeStub:
-    sfx_enabled: bool = True
-
-    def apply_plan(self, **_kwargs) -> None:
-        return None
-
-    def apply_post_plan(self, **_kwargs) -> None:
-        return None
-
-
-class _Clearable(Protocol):
-    def clear(self) -> None: ...
-
-
-@dataclass
-class _RenderResourcesStub:
-    ground: object | None = None
-    fx_textures: object | None = None
-    fx_queue: _Clearable = field(default_factory=list)
-    fx_queue_rotated: _Clearable = field(default_factory=list)
-    consume_terrain_fx_hook: Callable[[TerrainFxBatch], None] | None = None
-
-    def consume_terrain_fx_batch(self, batch: TerrainFxBatch) -> None:
-        hook = self.consume_terrain_fx_hook
-        if hook is not None:
-            hook(batch)
-
-
-@dataclass
-class _RuntimeStub:
-    def view_transform(self) -> ViewTransform:
-        return ViewTransform(Vec2(), Vec2(1, 1), Vec2(1024, 768), Vec2(1024, 768))
-
-    audio_bridge: _AudioBridgeStub
-    render_resources: _RenderResourcesStub
-    sim_world: SimWorldState = field(default_factory=SimWorldState)
-
-    def sync_audio_bridge_state(self) -> None:
-        return None
-
-    def update_camera(self, _dt: float) -> None:
-        return None
-
-
-class _CountingQueue:
-    def __init__(self) -> None:
-        self.clear_calls = 0
-
-    def clear(self) -> None:
-        self.clear_calls += 1
+def _runtime(assets_dir: Path) -> WorldRuntime:
+    return WorldRuntime(assets_dir=assets_dir, audio_rng=Crand(0))
 
 
 def _terrain_batch() -> TerrainFxBatch:
@@ -192,23 +145,12 @@ def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, repl
     assert width == 42.0
 
 
-def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> None:
+def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view, assets_dir: Path) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", idle_replay(5))
-    audio_bridge = _AudioBridgeStub()
-    _set_private(
-        view,
-        "_runtime",
-        _RuntimeStub(
-            audio_bridge=audio_bridge,
-            render_resources=_RenderResourcesStub(
-                ground=None,
-                fx_textures=None,
-                fx_queue=[],
-                fx_queue_rotated=[],
-            ),
-        ),
-    )
+    runtime = _runtime(assets_dir)
+    audio_bridge = runtime.audio_bridge
+    _set_private(view, "_runtime", runtime)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -233,23 +175,12 @@ def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view) -> 
     assert view._dt_accum == 0.0
 
 
-def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback_view) -> None:
+def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback_view, assets_dir: Path) -> None:
     view, _console = replay_playback_view
     _set_private(view, "_replay", idle_replay(3))
-    audio_bridge = _AudioBridgeStub()
-    _set_private(
-        view,
-        "_runtime",
-        _RuntimeStub(
-            audio_bridge=audio_bridge,
-            render_resources=_RenderResourcesStub(
-                ground=None,
-                fx_textures=None,
-                fx_queue=[],
-                fx_queue_rotated=[],
-            ),
-        ),
-    )
+    runtime = _runtime(assets_dir)
+    audio_bridge = runtime.audio_bridge
+    _set_private(view, "_runtime", runtime)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -272,30 +203,14 @@ def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback
     assert bool(audio_bridge.sfx_enabled)
 
 
-def test_skip_forward_consumes_terrain_fx_each_tick(replay_playback_view) -> None:
+def test_skip_forward_consumes_terrain_fx_each_tick(mocker, replay_playback_view, assets_dir: Path) -> None:
     view, _console = replay_playback_view
     replay_inputs = [0, 0, 0, 0]
 
-    consume_calls = 0
-
-    def _consume_terrain_fx(_batch: TerrainFxBatch) -> None:
-        nonlocal consume_calls
-        consume_calls += 1
-
-    render_resources = _RenderResourcesStub(
-        ground=object(),
-        fx_textures=object(),
-        consume_terrain_fx_hook=_consume_terrain_fx,
-    )
+    runtime = _runtime(assets_dir)
+    consume = mocker.patch.object(RenderResources, "consume_terrain_fx_batch")
     _set_private(view, "_replay", idle_replay(len(replay_inputs)))
-    _set_private(
-        view,
-        "_runtime",
-        _RuntimeStub(
-            audio_bridge=_AudioBridgeStub(),
-            render_resources=render_resources,
-        ),
-    )
+    _set_private(view, "_runtime", runtime)
     view._tick_rate = 60
     view._tick_index = 0
     view._finished = False
@@ -305,7 +220,7 @@ def test_skip_forward_consumes_terrain_fx_each_tick(replay_playback_view) -> Non
 
     view._skip_forward_seconds(3.0 / 60.0)
 
-    assert consume_calls == 3
+    assert consume.call_count == 3
 
 
 def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
@@ -370,6 +285,8 @@ def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_pl
 def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
     texture = object()
+    world = make_world()
+    world.state.typo.typing.text = "reload"
     _set_private(
         view,
         "_runtime",
@@ -377,13 +294,7 @@ def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker
             render_resources=SimpleNamespace(
                 resources=SimpleNamespace(texture=lambda _texture_id: texture),
             ),
-            sim_world=SimpleNamespace(
-                state=SimpleNamespace(
-                    typo=SimpleNamespace(
-                        typing=SimpleNamespace(text="reload"),
-                    ),
-                ),
-            ),
+            world=world,
         ),
     )
     _set_private(view, "_driver", FakePlaybackDriver(tick_limit=1, elapsed_ms=250.0))
@@ -400,21 +311,10 @@ def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker
 
 def test_draw_tutorial_overlays_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
     view, _console = replay_playback_view
-    overlay = SimpleNamespace(
-        prompt_text="move",
-        prompt_alpha=1.0,
-        hint_text="shoot",
-        hint_alpha=0.5,
-    )
-    _set_private(
-        view,
-        "_runtime",
-        SimpleNamespace(
-            sim_world=SimpleNamespace(
-                state=SimpleNamespace(tutorial_overlay=overlay),
-            ),
-        ),
-    )
+    world = make_world()
+    overlay = TutorialOverlayState(prompt_text="move", prompt_alpha=1.0, hint_text="shoot", hint_alpha=0.5)
+    world.state.tutorial_overlay = overlay
+    _set_private(view, "_runtime", SimpleNamespace(world=world))
 
     draw_overlay = mocker.patch.object(replay_playback_mode, "draw_tutorial_overlay_panels")
 

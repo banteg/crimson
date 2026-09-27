@@ -14,14 +14,20 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
 from ..render.world.context import WorldRenderCtx
 from ..render.world.draw import draw_world
+from ..sim.world_reset import build_reset_world
+from ..sim.world_state import WorldState
 from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
-from .sim_world_state import SimWorldState
 from .terrain_runtime import TerrainRuntime
 
 
 class WorldRuntime:
-    """Composition container owning the 4 world components and shared lifecycle methods."""
+    """Binds the simulated world to camera, terrain, audio and render resources."""
+
+    world: WorldState
+    presentation_elapsed_ms: float
+    bonus_anim_phase: float
+    game_tune_started: bool
 
     def __init__(
         self,
@@ -48,13 +54,8 @@ class WorldRuntime:
         self.audio_rng = audio_rng
         self.rtx_mode = rtx_mode
 
-        self.sim_world = SimWorldState(
-            world_size=float(self.world_size),
-            demo_mode_active=bool(self.demo_mode_active),
-            hardcore=bool(self.hardcore),
-            quest_fail_retry_count=int(self.quest_fail_retry_count),
-            preserve_bugs=bool(self.preserve_bugs),
-        )
+        self._reset_world(seed=0xBEEF, player_count=1, spawn_pos=None)
+
         render_resources = RenderResources(
             assets_dir=self.assets_dir,
             world_size=float(self.world_size),
@@ -62,7 +63,7 @@ class WorldRuntime:
         )
         self.render_resources = render_resources
         self.audio_bridge = AudioBridge(
-            reflex_boost_timer=lambda: float(self.sim_world.state.bonuses.reflex_boost),
+            reflex_boost_timer=lambda: float(self.world.state.bonuses.reflex_boost),
             audio=self.audio,
             audio_rng=self.audio_rng,
         )
@@ -85,7 +86,6 @@ class WorldRuntime:
 
     def _sync_world_size_ownership(self) -> None:
         world_size = float(self.world_size)
-        self.sim_world.world_size = world_size
         self.render_resources.world_size = world_size
         self.terrain_runtime.world_size = world_size
 
@@ -103,29 +103,47 @@ class WorldRuntime:
         spawn_pos: Vec2 | None = None,
     ) -> None:
         self._sync_world_size_ownership()
-        self.sim_world.demo_mode_active = bool(self.demo_mode_active)
-        self.sim_world.hardcore = bool(self.hardcore)
-        self.sim_world.quest_fail_retry_count = int(self.quest_fail_retry_count)
-        self.sim_world.preserve_bugs = bool(self.preserve_bugs)
-        self.sim_world.reset(
-            seed=int(seed),
-            player_count=int(player_count),
-            spawn_pos=spawn_pos,
-        )
+        self._reset_world(seed=int(seed), player_count=int(player_count), spawn_pos=spawn_pos)
         self.render_resources.clear_pending_terrain_fx()
         self.camera = Vec2(-1.0, -1.0)
 
         if self.render_resources.ground is not None:
-            terrain_seed = self.sim_world.state.rng.state
+            terrain_seed = self.world.state.rng.state
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
+
+    def _reset_world(self, *, seed: int, player_count: int, spawn_pos: Vec2 | None) -> None:
+        self.world = build_reset_world(
+            world_size=self.world_size,
+            seed=seed,
+            player_count=player_count,
+            spawn_pos=spawn_pos,
+            demo_mode_active=self.demo_mode_active,
+            hardcore=self.hardcore,
+            quest_fail_retry_count=self.quest_fail_retry_count,
+            preserve_bugs=self.preserve_bugs,
+        )
+        self.presentation_elapsed_ms = 0.0
+        self.bonus_anim_phase = 0.0
+        self.game_tune_started = False
+
+    def load_world_state(self, world: WorldState) -> None:
+        self.world = world
+
+    def advance_presentation_clock(self, *, dt_sim: float, game_tune_started: bool) -> None:
+        """Advance the render-only clocks by one simulated tick."""
+
+        if float(dt_sim) > 0.0:
+            self.presentation_elapsed_ms += float(dt_sim) * 1000.0
+            self.bonus_anim_phase += float(dt_sim) * 1.3
+        self.game_tune_started = bool(game_tune_started)
 
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
-        self.render_resources.open(terrain_seed=self.sim_world.state.rng.state)
+        self.render_resources.open(terrain_seed=self.world.state.rng.state)
 
     def close_runtime(self) -> None:
         self.render_resources.close()
-        self.sim_world.close_session()
+        self.game_tune_started = False
 
     def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(
@@ -135,7 +153,7 @@ class WorldRuntime:
 
     def update_camera(self, update: CameraUpdate | None = None) -> None:
         if update is None:
-            update = camera_update_for_players(self.sim_world.players, self.sim_world.state.camera_shake_offset)
+            update = camera_update_for_players(self.world.players, self.world.state.camera_shake_offset)
         if update is None:
             return
 
@@ -180,12 +198,12 @@ class WorldRuntime:
 
     def build_render_frame(self) -> RenderFrame:
         return self.render_resources.build_render_frame(
-            state=self.sim_world.state,
-            players=self.sim_world.players,
-            creatures=self.sim_world.creatures,
+            state=self.world.state,
+            players=self.world.players,
+            creatures=self.world.creatures,
             camera=self.camera,
             demo_mode_active=bool(self.demo_mode_active),
-            elapsed_ms=float(self.sim_world.presentation_elapsed_ms),
-            bonus_anim_phase=float(self.sim_world.bonus_anim_phase),
+            elapsed_ms=float(self.presentation_elapsed_ms),
+            bonus_anim_phase=float(self.bonus_anim_phase),
             rtx_mode=self.rtx_mode,
         )

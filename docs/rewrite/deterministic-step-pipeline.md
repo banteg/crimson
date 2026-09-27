@@ -42,8 +42,8 @@ flowchart LR
 
 ## Step and application order
 
-For each live tick, the mode builds the tick, records it, steps it, applies
-metadata, records the checkpoint, and evaluates the mode callback before
+For each live tick, the mode builds the tick, records it, steps it, advances
+the presentation clock, records the checkpoint, and evaluates the mode callback before
 advancing another tick. A terminal callback ends the frame immediately. The
 final tick is recorded before a callback can save the finished replay.
 
@@ -86,7 +86,7 @@ Movement fields named `*_pressed` represent held controls in the existing format
 
 Survival and rush time belongs to `DeterministicSession.elapsed_ms`; quest time
 belongs to `QuestSpawnState.spawn_timeline_ms`. Render/HUD animation time is a
-separate `SimWorldState.presentation_elapsed_ms` cache.
+separate `WorldRuntime.presentation_elapsed_ms` clock.
 
 Custom network play has been removed; see [Netplay](netplay.md) for the deferred
 scope and requirements for any future implementation.

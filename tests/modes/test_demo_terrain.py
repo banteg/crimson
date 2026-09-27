@@ -50,7 +50,7 @@ def test_demo_apply_terrain_setup_uses_runtime_rng_and_explicit_terrain_seed(mak
     state = make_game_state()
     view = DemoView(state)
     runtime_rng = Crand(0x1234)
-    view._runtime.sim_world.state.rng = runtime_rng
+    view._runtime.world.state.rng = runtime_rng
     sync_audio_rng = mocker.spy(view, "_sync_audio_rng_from_runtime")
     expected_rng = Crand(0x1234)
     expected_terrain = advance_explicit_terrain(
@@ -66,4 +66,4 @@ def test_demo_apply_terrain_setup_uses_runtime_rng_and_explicit_terrain_seed(mak
     ground = view._runtime.render_resources.ground
     assert ground is not None
     assert int(ground._scheduled_seed or -1) == int(expected_terrain.terrain_seed)
-    assert int(view._runtime.sim_world.state.rng.state) == int(expected_rng.state)
+    assert int(view._runtime.world.state.rng.state) == int(expected_rng.state)

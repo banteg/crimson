@@ -117,7 +117,7 @@ class DemoView:
         terrain_slots: TerrainSlotTriplet,
     ) -> None:
         terrain = advance_explicit_terrain(
-            self._runtime.sim_world.state.rng,
+            self._runtime.world.state.rng,
             terrain_slots=terrain_slots,
             width=int(WORLD_SIZE),
             height=int(WORLD_SIZE),
@@ -129,18 +129,18 @@ class DemoView:
         self._sync_audio_rng_from_runtime()
 
     def _sync_audio_rng_from_runtime(self) -> None:
-        live_rng = self._runtime.sim_world.state.rng
+        live_rng = self._runtime.world.state.rng
         self._runtime.audio_rng = live_rng
         self._runtime.sync_audio_bridge_state()
 
     def _commit_live_rng_state_to_app(self) -> None:
-        self.state.rng.srand(int(self._runtime.sim_world.state.rng.state))
+        self.state.rng.srand(int(self._runtime.world.state.rng.state))
 
     def _next_demo_reset_seed(self) -> int:
         if self._seed_from_app_state:
             self._seed_from_app_state = False
             return int(self.state.rng.state)
-        return int(self._runtime.sim_world.state.rng.state)
+        return int(self._runtime.world.state.rng.state)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
@@ -427,7 +427,7 @@ class DemoView:
         self._runtime.reset(seed=self._next_demo_reset_seed(), player_count=player_count)
         self._tick_harness.reset()
         self._sync_audio_rng_from_runtime()
-        self._runtime.sim_world.state.bonuses.weapon_power_up = 0.0
+        self._runtime.world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._setup_variant_0()
         elif index == 1:
@@ -450,18 +450,18 @@ class DemoView:
 
     def _setup_world_players(self, specs: list[tuple[Vec2, int]]) -> None:
         for idx, (pos, weapon_id) in enumerate(specs):
-            if idx >= len(self._runtime.sim_world.players):
+            if idx >= len(self._runtime.world.players):
                 continue
-            player = self._runtime.sim_world.players[idx]
+            player = self._runtime.world.players[idx]
             player.pos = pos
             # Keep aim anchored to the spawn position so demo aim starts stable.
             player.aim = pos
-            weapon_assign_player(player, WeaponId(weapon_id), state=self._runtime.sim_world.state)
-        self._demo_targets = [None] * len(self._runtime.sim_world.players)
+            weapon_assign_player(player, WeaponId(weapon_id), state=self._runtime.world.state)
+        self._demo_targets = [None] * len(self._runtime.world.players)
 
     def _spawn(self, spawn_id: SpawnId, pos: Vec2, *, heading: float = 0.0) -> None:
-        rng = self._runtime.sim_world.state.rng
-        self._runtime.sim_world.creatures.spawn_template(
+        rng = self._runtime.world.state.rng
+        self._runtime.world.creatures.spawn_template(
             spawn_id,
             pos,
             float(heading),
@@ -495,7 +495,7 @@ class DemoView:
         self._demo_time_limit_ms = 5000
         # demo_setup_variant_1 uses weapon_id=0x05.
         weapon_id = 5
-        rng = self._runtime.sim_world.state.rng
+        rng = self._runtime.world.state.rng
         self._setup_world_players(
             [
                 (Vec2(490.0, 448.0), weapon_id),
@@ -504,7 +504,7 @@ class DemoView:
         )
         # Native variant 1 calls terrain_generate(&quest_meta_terrain_desc_unlock_gt_0x13).
         self._apply_terrain_setup(terrain_slots=Q2_TERRAIN_SLOTS)
-        self._runtime.sim_world.state.bonuses.weapon_power_up = 15.0
+        self._runtime.world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(
                 int(
@@ -560,7 +560,7 @@ class DemoView:
         self._demo_time_limit_ms = 4000
         # demo_setup_variant_3 uses weapon_id=0x12.
         weapon_id = 18
-        rng = self._runtime.sim_world.state.rng
+        rng = self._runtime.world.state.rng
         self._setup_world_players([(Vec2(512.0, 512.0), weapon_id)])
         quest = quest_by_level(QuestLevel(1, 1))
         assert quest is not None
@@ -607,7 +607,7 @@ class DemoView:
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
         weapons = ", ".join(
             f"P{p.index + 1}:{weapon_display_name(p.weapon.weapon_id)}"
-            for p in self._runtime.sim_world.players
+            for p in self._runtime.world.players
         )
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
@@ -670,13 +670,13 @@ class DemoView:
         draw_grim_mono_text(font, msg, Vec2(text_x, text_y), scale, rl.Color(255, 255, 255, txt_alpha))
 
     def _update_world(self, dt: float) -> None:
-        if not self._runtime.sim_world.players:
+        if not self._runtime.world.players:
             return
         self._tick_harness.advance_frame(self._runtime, float(dt))
 
     def _build_demo_inputs(self, dt: float) -> list[PlayerInput]:
-        players = self._runtime.sim_world.players
-        creatures = self._runtime.sim_world.creatures.entries
+        players = self._runtime.world.players
+        creatures = self._runtime.world.creatures.entries
         if len(self._demo_targets) != len(players):
             self._demo_targets = [None] * len(players)
         center = Vec2(float(self._runtime.world_size) * 0.5, float(self._runtime.world_size) * 0.5)
@@ -742,7 +742,7 @@ class DemoView:
     def _nearest_world_creature_index(self, pos: Vec2) -> int | None:
         best_idx = None
         best_dist = 0.0
-        for idx, creature in enumerate(self._runtime.sim_world.creatures.entries):
+        for idx, creature in enumerate(self._runtime.world.creatures.entries):
             if not (creature.active and creature.hp > 0.0):
                 continue
             d = Vec2.distance_sq(pos, creature.pos)

@@ -143,21 +143,21 @@ def test_world_camera_screen_size_uses_frame_snapshot_when_provided(mocker) -> N
 
 
 def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocker) -> None:
-    world = _runtime_world(
+    runtime = _runtime_world(
         world_size=1024.0,
         screen_width=1024,
         screen_height=768,
     )
-    player = world.sim_world.players[0]
+    player = runtime.world.players[0]
     player.health = 100.0
     player.pos = Vec2(512.0, 512.0)
     mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
     mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
 
-    world.update_camera()
+    runtime.update_camera()
 
-    assert_float_close(world.camera.x, 0.0)
-    assert_float_close(world.camera.y, -224.0)
+    assert_float_close(runtime.camera.x, 0.0)
+    assert_float_close(runtime.camera.y, -224.0)
 
 
 def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(mocker) -> None:

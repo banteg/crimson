@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
-from ...sim.batch_apply import SimMetadataSink, apply_tick_to_sim
 from ...sim.clock import FixedStepClock
 from ...sim.hooks import TickResult
 from ...sim.presentation_step import DeterministicPresentationPlan
+
+if TYPE_CHECKING:
+    from ...world.runtime import WorldRuntime
 
 
 class PlaybackFrameDriver(Protocol):
@@ -24,7 +26,7 @@ class PlaybackFrameAdvance:
 def advance_playback_frame(
     *,
     driver: PlaybackFrameDriver,
-    sim_world: SimMetadataSink,
+    runtime: WorldRuntime,
     clock: FixedStepClock,
     start_tick: int,
     dt_seconds: float,
@@ -45,7 +47,10 @@ def advance_playback_frame(
     clock.accum += float(ticks_requested - len(tick_results)) * float(clock.dt_tick)
 
     for tick_result in tick_results:
-        apply_tick_to_sim(sim_world=sim_world, step=tick_result.payload, game_tune_started=bool(game_tune_started))
+        runtime.advance_presentation_clock(
+            dt_sim=float(tick_result.payload.dt_sim),
+            game_tune_started=bool(game_tune_started),
+        )
     return PlaybackFrameAdvance(
         plans=tuple(tick_result.payload.presentation for tick_result in tick_results),
         tick_results=tuple(tick_results),

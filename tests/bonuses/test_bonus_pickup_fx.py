@@ -86,47 +86,47 @@ def test_second_pickup_in_a_tick_draws_after_the_first_pickup_burst() -> None:
 
 def test_bonus_pickup_spawns_burst_effect() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
-    player = world.sim_world.players[0]
-    entry = world.sim_world.state.bonus_pool.spawn_at(
+    player = runtime.world.players[0]
+    entry = runtime.world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.POINTS,
-        state=world.sim_world.state,
+        state=runtime.world.state,
         emit_burst=False,
     )
     assert entry is not None
 
-    assert not world.sim_world.state.effects.iter_active()
-    world.step_survival_frame(0.016, perk_progression_enabled=False)
+    assert not runtime.world.state.effects.iter_active()
+    runtime.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
-    active = world.sim_world.state.effects.iter_active()
+    active = runtime.world.state.effects.iter_active()
     assert len(active) == 12
     assert {effect.effect_id for effect in active} == {0}
 
 
 def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
 
-    player = world.sim_world.players[0]
-    entry = world.sim_world.state.bonus_pool.spawn_at(
+    player = runtime.world.players[0]
+    entry = runtime.world.state.bonus_pool.spawn_at(
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.FREEZE,
-        state=world.sim_world.state,
+        state=runtime.world.state,
         emit_burst=False,
     )
     assert entry is not None
     entry.time_left = 0.01
-    world.sim_world.state.bonuses.freeze = 0.0
+    runtime.world.state.bonuses.freeze = 0.0
 
-    world.step_survival_frame(0.016, perk_progression_enabled=False)
+    runtime.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     assert entry.bonus_id == BonusId.UNUSED
-    assert world.sim_world.state.bonuses.freeze == 0.0
-    active = world.sim_world.state.effects.iter_active()
+    assert runtime.world.state.bonuses.freeze == 0.0
+    active = runtime.world.state.effects.iter_active()
     assert len(active) == 12
     assert {effect.effect_id for effect in active} == {0}
 

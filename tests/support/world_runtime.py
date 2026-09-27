@@ -13,6 +13,7 @@ from crimson.sim.sessions import (
 )
 from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
+from crimson.weapons import build_damage_scale_by_type
 from crimson.world import WorldRuntime
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -74,8 +75,8 @@ class WorldRuntimeHost(WorldRuntime):
     # Test-specific methods (not on WorldRuntime)
     # ------------------------------------------------------------------
 
-    def load_world_state(self, world_state: WorldState) -> None:
-        self.sim_world.load_world_state(world_state)
+    def load_world_state(self, world: WorldState) -> None:
+        super().load_world_state(world)
         self._survival_test_spawn_state = SurvivalSpawnState()
         self._survival_test_elapsed_ms = 0.0
 
@@ -111,14 +112,14 @@ class WorldRuntimeHost(WorldRuntime):
             violence_disabled = int(self.config.display.violence_disabled)
 
         session = DeterministicSession(
-            world=self.sim_world.world_state,
+            world=self.world,
             world_size=self.world_size,
-            damage_scale_by_type=self.sim_world.damage_scale_by_type,
+            damage_scale_by_type=build_damage_scale_by_type(),
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=perk_progression_enabled,
             detail_preset=detail_preset,
             violence_disabled=violence_disabled,
-            game_tune_started=self.sim_world.game_tune_started,
+            game_tune_started=self.game_tune_started,
             demo_mode_active=self.demo_mode_active,
             mode_runtime=SurvivalSessionRuntime(spawn=self._survival_test_spawn_state),
         )
@@ -132,12 +133,7 @@ class WorldRuntimeHost(WorldRuntime):
         )
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
 
-        self.sim_world.apply_step_metadata(
-            events=tick.events,
-            presentation=tick.presentation,
-            dt_sim=float(tick.dt_sim),
-            game_tune_started=session.game_tune_started,
-        )
+        self.advance_presentation_clock(dt_sim=tick.dt_sim, game_tune_started=session.game_tune_started)
         self.sync_audio_bridge_state()
         self.audio_bridge.apply_plan(
             plan=tick.presentation,

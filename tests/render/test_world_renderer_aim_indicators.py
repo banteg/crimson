@@ -26,19 +26,19 @@ def _make_players() -> list[PlayerState]:
 
 def _make_world(*, players: list[PlayerState]) -> WorldRuntimeHost:
     repo_root = Path(__file__).resolve().parents[1]
-    world = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
-    world.reset(player_count=len(players))
-    for runtime_player, test_player in zip(world.sim_world.players, players, strict=False):
+    runtime = WorldRuntimeHost(assets_dir=repo_root / "artifacts" / "assets")
+    runtime.reset(player_count=len(players))
+    for runtime_player, test_player in zip(runtime.world.players, players, strict=False):
         runtime_player.pos = test_player.pos
         runtime_player.aim = test_player.aim
         runtime_player.spread_heat = test_player.spread_heat
         runtime_player.health = test_player.health
-    world.render_resources.resources = RuntimeResources(
-        assets_dir=world.assets_dir,
+    runtime.render_resources.resources = RuntimeResources(
+        assets_dir=runtime.assets_dir,
         textures={TextureId.UI_AIM: rl.Texture()},
         small_font=cast("SmallFontData", object()),
     )
-    return world
+    return runtime
 
 
 def _draw_ctx() -> WorldDrawContext:

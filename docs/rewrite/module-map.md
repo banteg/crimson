@@ -41,7 +41,8 @@ common drawing live in `src/crimson/ui/` and `src/crimson/screens/chrome.py`.
 
 `WorldState` owns simulation state. `DeterministicSession` adds mode timing,
 ordered mode phases, and deterministic presentation planning. `WorldRuntime`
-binds that simulation to the live camera, terrain and resource consumers.
+holds the current `WorldState` and binds it to the live camera, terrain and
+resource consumers.
 `WorldRenderCtx` combines a frame with an immutable `ViewTransform` at draw time;
 there is no second renderer-owned copy of the camera or world dimensions.
 

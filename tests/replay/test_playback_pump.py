@@ -1,41 +1,27 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from unittest.mock import call
+from pathlib import Path
 
 import pytest
 
-import crimson.replay.driver.playback_pump as playback_pump_module
 from crimson.replay.driver.playback_pump import advance_playback_frame
 from crimson.sim.clock import FixedStepClock
-from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.world_state import WorldEvents
+from crimson.world import WorldRuntime
+from grim.rand import Crand
 from tests.support.builders import FakePlaybackDriver
 
 
-@dataclass
-class _SimWorldStub:
-    calls: list[tuple[float, bool]] = field(default_factory=list)
-
-    def apply_step_metadata(
-        self,
-        *,
-        events: WorldEvents,
-        presentation: DeterministicPresentationPlan,
-        dt_sim: float,
-        game_tune_started: bool,
-    ) -> None:
-        _ = events, presentation
-        self.calls.append((float(dt_sim), bool(game_tune_started)))
+def _runtime(assets_dir: Path) -> WorldRuntime:
+    return WorldRuntime(assets_dir=assets_dir, audio_rng=Crand(0))
 
 
-def test_advance_playback_frame_advances_tick_index() -> None:
+def test_advance_playback_frame_advances_tick_index(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
-    sim_world = _SimWorldStub()
+    runtime = _runtime(assets_dir)
 
     advance = advance_playback_frame(
         driver=FakePlaybackDriver(tick_limit=16),
-        sim_world=sim_world,
+        runtime=runtime,
         clock=clock,
         start_tick=4,
         dt_seconds=2.0 * float(clock.dt_tick),
@@ -47,15 +33,15 @@ def test_advance_playback_frame_advances_tick_index() -> None:
     assert advance.next_tick_index == 6
     assert advance.ticks_requested == 2
     assert len(advance.tick_results) == 2
-    assert len(sim_world.calls) == 2
+    assert runtime.presentation_elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
 
 
-def test_advance_playback_frame_respects_max_ticks_clamp() -> None:
+def test_advance_playback_frame_respects_max_ticks_clamp(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
 
     advance = advance_playback_frame(
         driver=FakePlaybackDriver(tick_limit=16),
-        sim_world=_SimWorldStub(),
+        runtime=_runtime(assets_dir),
         clock=clock,
         start_tick=0,
         dt_seconds=3.0 * float(clock.dt_tick),
@@ -69,12 +55,12 @@ def test_advance_playback_frame_respects_max_ticks_clamp() -> None:
     assert advance.next_tick_index == 1
 
 
-def test_advance_playback_frame_keeps_output_and_outcome_order() -> None:
+def test_advance_playback_frame_keeps_output_and_outcome_order(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
 
     advance = advance_playback_frame(
         driver=FakePlaybackDriver(tick_limit=16),
-        sim_world=_SimWorldStub(),
+        runtime=_runtime(assets_dir),
         clock=clock,
         start_tick=5,
         dt_seconds=3.0 * float(clock.dt_tick),
@@ -87,12 +73,12 @@ def test_advance_playback_frame_keeps_output_and_outcome_order() -> None:
     assert advance.plans == tuple(tick_result.payload.presentation for tick_result in advance.tick_results)
 
 
-def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncates() -> None:
+def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncates(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
 
     advance = advance_playback_frame(
         driver=FakePlaybackDriver(tick_limit=2),
-        sim_world=_SimWorldStub(),
+        runtime=_runtime(assets_dir),
         clock=clock,
         start_tick=1,
         dt_seconds=3.0 * float(clock.dt_tick),
@@ -107,12 +93,12 @@ def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncat
     assert clock.accum == pytest.approx(2.0 * float(clock.dt_tick))
 
 
-def test_advance_playback_frame_does_not_refund_when_all_ticks_complete() -> None:
+def test_advance_playback_frame_does_not_refund_when_all_ticks_complete(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
 
     advance = advance_playback_frame(
         driver=FakePlaybackDriver(tick_limit=16),
-        sim_world=_SimWorldStub(),
+        runtime=_runtime(assets_dir),
         clock=clock,
         start_tick=0,
         dt_seconds=2.0 * float(clock.dt_tick),
@@ -125,22 +111,17 @@ def test_advance_playback_frame_does_not_refund_when_all_ticks_complete() -> Non
     assert clock.accum == pytest.approx(0.0)
 
 
-def test_advance_playback_frame_applies_sim_metadata_after_shared_batch_step_order(mocker) -> None:
-    sequence = mocker.Mock()
+def test_advance_playback_frame_advances_presentation_clock_after_stepping_the_batch(assets_dir: Path) -> None:
     clock = FixedStepClock(tick_rate=60)
-
-    def _on_step() -> None:
-        sequence.step()
-
-    apply_tick_to_sim = mocker.patch.object(
-        playback_pump_module,
-        "apply_tick_to_sim",
-        side_effect=lambda **_kwargs: sequence.apply(),
-    )
+    runtime = _runtime(assets_dir)
+    elapsed_at_step: list[float] = []
 
     advance = advance_playback_frame(
-        driver=FakePlaybackDriver(tick_limit=2, on_step=_on_step),
-        sim_world=_SimWorldStub(),
+        driver=FakePlaybackDriver(
+            tick_limit=2,
+            on_step=lambda: elapsed_at_step.append(runtime.presentation_elapsed_ms),
+        ),
+        runtime=runtime,
         clock=clock,
         start_tick=0,
         dt_seconds=2.0 * float(clock.dt_tick),
@@ -150,5 +131,7 @@ def test_advance_playback_frame_applies_sim_metadata_after_shared_batch_step_ord
     )
 
     assert len(advance.tick_results) == 2
-    assert sequence.mock_calls == [call.step(), call.step(), call.apply(), call.apply()]
-    assert apply_tick_to_sim.call_count == 2
+    assert elapsed_at_step == [0.0, 0.0]
+    assert runtime.presentation_elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
+    assert runtime.bonus_anim_phase == pytest.approx(2.0 * 1.3 / 60.0)
+    assert runtime.game_tune_started is True
