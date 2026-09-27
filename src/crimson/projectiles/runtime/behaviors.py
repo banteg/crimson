@@ -54,11 +54,11 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     ion_scale: float
     detail_preset: int
     rng: CrandLike
-    runtime_state: GameplayState | None
-    effects: EffectPool | None
-    sfx_queue: MutableSequence[SfxRequest] | None
+    runtime_state: GameplayState
+    effects: EffectPool
+    sfx_queue: MutableSequence[SfxRequest]
     step_runtime: WorldStepRuntime
-    sync_creature_index: Callable[[int], None] | None = None
+    sync_creature_index: Callable[[int], None]
 
 
 class _ProjectileHitInfo(msgspec.Struct):
@@ -107,7 +107,6 @@ def _linger_ion_aoe(
             target_size=float(creature.size),
         ):
             _apply_damage_to_creature(
-                ctx.creatures,
                 creature_idx,
                 damage,
                 damage_type=CreatureDamageType.ION,
@@ -189,11 +188,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
     runtime_state = ctx.runtime_state
     creatures = ctx.creatures
     hit_creature = int(hit.hit_idx)
-    if (
-        runtime_state is not None
-        and runtime_state.shock_chain_projectile_id == hit.proj_index
-        and 0 <= hit_creature < len(creatures)
-    ):
+    if runtime_state.shock_chain_projectile_id == hit.proj_index and 0 <= hit_creature < len(creatures):
         links_left = int(runtime_state.shock_chain_links_left)
         if links_left > 0 and creatures:
             runtime_state.shock_chain_links_left = links_left - 1
@@ -239,8 +234,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     ring_step = f32(0.5235988)  # 0x0046f4ec
 
     runtime_state = ctx.runtime_state
-    if runtime_state is not None:
-        runtime_state.bonus_spawn_guard = True
+    runtime_state.bonus_spawn_guard = True
     try:
         for ring_idx in range(12):
             ring_angle = x87_pc24_mul(float(ring_idx), ring_step)
@@ -255,8 +249,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 owner=OwnerRef.from_local_player(0),
             )
     finally:
-        if runtime_state is not None:
-            runtime_state.bonus_spawn_guard = False
+        runtime_state.bonus_spawn_guard = False
 
     _spawn_plasma_cannon_hit_effects(
         ctx.effects,
@@ -297,8 +290,7 @@ def _post_hit_pulse_gun(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
     )
     # Native re-scans the pool per query, so later projectiles this tick see
     # the pushed creature at its new position; resync the spatial hash.
-    if ctx.sync_creature_index is not None:
-        ctx.sync_creature_index(int(hit.hit_idx))
+    ctx.sync_creature_index(int(hit.hit_idx))
 
 
 def _post_hit_plague_spreader(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:

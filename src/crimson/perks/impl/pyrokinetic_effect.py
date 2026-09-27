@@ -37,7 +37,9 @@ def update_pyrokinetic(ctx: PerksUpdateEffectsCtx) -> None:
                     float(ctx.state.rng.rand_tagged(caller) % 628),
                     f32(0.01),
                 )
-                ctx.state.particles.spawn_particle(pos=creature.pos, angle=angle, intensity=float(intensity))
+                ctx.state.particles.spawn_particle(
+                    pos=creature.pos, angle=angle, intensity=float(intensity), rng=ctx.state.rng,
+                )
             ctx.fx_queue.add_random(
                 pos=creature.pos,
                 rng=ctx.state.rng,

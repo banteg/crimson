@@ -1,20 +1,18 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, MutableSequence, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
-from grim.sfx_map import SfxId
-from grim.sfx_types import SfxRequest
+from grim.rand import CrandLike
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
-from ...effects import EffectPool, FxQueue, SpriteEffectPool
+from ...effects import SpriteEffectPool
 from ...effects_atlas import EffectId
 from ...math_parity import (
     NATIVE_HALF_PI,
@@ -85,14 +83,6 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
 class SecondaryStepCtx(msgspec.Struct, frozen=True):
     step_runtime: WorldStepRuntime
     dt: float
-    creatures: Sequence[CreatureState]
-    runtime_state: GameplayState | None = None
-    fx_queue: FxQueue | None = None
-    detail_preset: int = 5
-    # Native secondary-rocket hits run the same first-hit game-tune branch as
-    # bullet hits (sfx_play_exclusive + one playlist rand) outside demo/rush;
-    # when unset, the plain explosion sound is queued directly.
-    play_rocket_hit_audio: Callable[[Vec2], None] | None = None
 
 
 def _creature_is_collidable(creature: CreatureState) -> bool:
@@ -109,25 +99,24 @@ def _step_detonation(
     creature_spatial: CreatureSpatialHash,
     rng: CrandLike,
 ) -> None:
-    runtime_state, creatures = ctx.runtime_state, ctx.creatures
-    fx_queue, step_runtime = ctx.fx_queue, ctx.step_runtime
-    if runtime_state is not None:
-        runtime_state.camera_shake_pulses = 4
+    step_runtime = ctx.step_runtime
+    runtime_state, creatures = step_runtime.world.state, step_runtime.world.creatures.entries
+    fx_queue = step_runtime.fx_queue
+    runtime_state.camera_shake_pulses = 4
 
     entry.detonation_t = x87_pc24_add(entry.detonation_t, x87_pc24_mul(dt, 3.0))
     entry.vel = Vec2(entry.detonation_t, entry.detonation_scale)
     t = float(entry.detonation_t)
     scale = float(entry.detonation_scale)
     if t > 1.0:
-        if fx_queue is not None:
-            fx_queue.add(
-                effect_id=int(EffectId.AURA),
-                pos=entry.pos,
-                width=float(scale) * 256.0,
-                height=float(scale) * 256.0,
-                rotation=0.0,
-                rgba=RGBA(0.0, 0.0, 0.0, 0.25),
-            )
+        fx_queue.add(
+            effect_id=int(EffectId.AURA),
+            pos=entry.pos,
+            width=float(scale) * 256.0,
+            height=float(scale) * 256.0,
+            rotation=0.0,
+            rgba=RGBA(0.0, 0.0, 0.0, 0.25),
+        )
         entry.active = False
 
     radius = x87_pc24_mul(x87_pc24_mul(scale, t), 80.0)
@@ -152,7 +141,6 @@ def _step_detonation(
                 x87_pc24_mul(impulse_dir.y, _DETONATION_IMPULSE_SCALE),
             )
             _apply_damage_to_creature(
-                creatures,
                 creature_idx,
                 damage,
                 damage_type=CreatureDamageType.EXPLOSION,
@@ -164,9 +152,8 @@ def _step_detonation(
             if hp_before > 0.0 and float(creature.hp) <= 0.0:
                 # Native detonation AoE does an extra two random decals and a
                 # second `creature_handle_death` call after the killing hit.
-                if fx_queue is not None:
-                    fx_queue.add_random(pos=creature.pos, rng=rng)
-                    fx_queue.add_random(pos=creature.pos, rng=rng)
+                fx_queue.add_random(pos=creature.pos, rng=rng)
+                fx_queue.add_random(pos=creature.pos, rng=rng)
                 step_runtime.on_secondary_detonation_kill(int(creature_idx))
 
 
@@ -176,7 +163,7 @@ def _move_rocket(
     *,
     dt: float,
     creatures: Sequence[CreatureState],
-    runtime_state: GameplayState | None,
+    runtime_state: GameplayState,
 ) -> None:
     # Move. Native keeps pos/vel as f32 fields: `pos += f32(dt * vel)`.
     entry.pos = Vec2(
@@ -217,7 +204,7 @@ def _move_rocket(
                 entry.target_id = creature_find_nearest_alive(
                     creatures=creatures,
                     origin=entry.pos,
-                    preserve_bugs=bool(runtime_state.preserve_bugs) if runtime_state is not None else False,
+                    preserve_bugs=bool(runtime_state.preserve_bugs),
                 )
                 target_id = entry.target_id
 
@@ -281,7 +268,13 @@ def _move_rocket(
             entry.speed = x87_pc24_sub(entry.speed, x87_pc24_mul(dt, ttl_decay_scale))
 
 
-def _tick_rocket_trail(entry: SecondaryProjectile, *, dt: float, sprite_effects: SpriteEffectPool | None) -> None:
+def _tick_rocket_trail(
+    entry: SecondaryProjectile,
+    *,
+    dt: float,
+    sprite_effects: SpriteEffectPool,
+    rng: CrandLike,
+) -> None:
     # Rocket smoke trail (`trail_timer` in crimsonland.exe).
     trail_speed = x87_pc24_add(abs(entry.vel.x), abs(entry.vel.y))
     trail_decay = x87_pc24_mul(trail_speed, dt)
@@ -294,13 +287,13 @@ def _tick_rocket_trail(entry: SecondaryProjectile, *, dt: float, sprite_effects:
         # (fcos with no fsin), so the smoke drifts diagonally.
         trail_cos = math.cos(float(f32(entry.angle)) + NATIVE_HALF_PI)
         trail_velocity = Vec2(float(f32(trail_cos)) * 90.0, float(f32(trail_cos * 90.0)))
-        if sprite_effects is not None:
-            sprite_effects.spawn(
-                pos=spawn_pos,
-                vel=trail_velocity,
-                scale=14.0,
-                color=RGBA(1.0, 1.0, 1.0, 0.25),
-            )
+        sprite_effects.spawn(
+            pos=spawn_pos,
+            vel=trail_velocity,
+            scale=14.0,
+            color=RGBA(1.0, 1.0, 1.0, 0.25),
+            rng=rng,
+        )
         entry.trail_timer = float(f32(0.06))
 
 
@@ -398,11 +391,11 @@ class SecondaryProjectilePool:
     def step(self, ctx: SecondaryStepCtx) -> int:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
         dt = float(ctx.dt)
-        creatures = ctx.creatures
-        runtime_state = ctx.runtime_state
-        fx_queue = ctx.fx_queue
-        detail_preset = int(ctx.detail_preset)
         step_runtime = ctx.step_runtime
+        runtime_state = step_runtime.world.state
+        creatures = step_runtime.world.creatures.entries
+        fx_queue = step_runtime.fx_queue
+        detail_preset = int(step_runtime.detail_preset)
 
         if dt <= 0.0:
             return 0
@@ -415,7 +408,6 @@ class SecondaryProjectilePool:
             impulse: Vec2 = Vec2(),
         ) -> None:
             _apply_damage_to_creature(
-                creatures,
                 int(creature_index),
                 float(damage),
                 damage_type=CreatureDamageType.EXPLOSION,
@@ -424,17 +416,10 @@ class SecondaryProjectilePool:
                 step_runtime=step_runtime,
             )
 
-        rng = Crand(0)
-        freeze_active = False
-        effects: EffectPool | None = None
-        sprite_effects: SpriteEffectPool | None = None
-        sfx_queue: MutableSequence[SfxRequest] | None = None
-        if runtime_state is not None:
-            rng = runtime_state.rng
-            freeze_active = float(runtime_state.bonuses.freeze) > 0.0
-            effects = runtime_state.effects
-            sprite_effects = runtime_state.sprite_effects
-            sfx_queue = runtime_state.sfx_queue
+        rng = runtime_state.rng
+        freeze_active = float(runtime_state.bonuses.freeze) > 0.0
+        effects = runtime_state.effects
+        sprite_effects = runtime_state.sprite_effects
 
         creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
         hit_count = 0
@@ -454,7 +439,7 @@ class SecondaryProjectilePool:
 
             _move_rocket(entry, rule, dt=dt, creatures=creatures, runtime_state=runtime_state)
 
-            _tick_rocket_trail(entry, dt=dt, sprite_effects=sprite_effects)
+            _tick_rocket_trail(entry, dt=dt, sprite_effects=sprite_effects, rng=rng)
 
             # projectile_update uses creature_find_in_radius(..., 8.0, ...)
             hit_idx: int | None = None
@@ -472,18 +457,14 @@ class SecondaryProjectilePool:
                     break
             if hit_idx is not None:
                 hit_count += 1
-                if runtime_state is not None:
-                    owner_player_index = entry.owner.player_index_in_bounds(len(runtime_state.shots_hit))
-                    if owner_player_index is not None and creature_lifecycle_is_alive(
-                        creatures[int(hit_idx)].lifecycle_stage,
-                    ):
-                        shots_hit = runtime_state.shots_hit
-                        shots_hit[owner_player_index] += 1
+                owner_player_index = entry.owner.player_index_in_bounds(len(runtime_state.shots_hit))
+                if owner_player_index is not None and creature_lifecycle_is_alive(
+                    creatures[int(hit_idx)].lifecycle_stage,
+                ):
+                    shots_hit = runtime_state.shots_hit
+                    shots_hit[owner_player_index] += 1
 
-                if ctx.play_rocket_hit_audio is not None:
-                    ctx.play_rocket_hit_audio(entry.pos)
-                elif sfx_queue is not None:
-                    sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, entry.pos))
+                step_runtime.play_secondary_rocket_hit_audio(entry.pos)
 
                 det_scale = 0.5
                 damage_speed_mul = 0.0
@@ -542,24 +523,23 @@ class SecondaryProjectilePool:
                         freeze_shard_target_pos = bool(rule_freeze_shard_target_pos)
 
                 if freeze_active:
-                    if effects is not None:
-                        for _ in range(4):
-                            shard_angle = (
-                                float(
-                                    rng.rand_tagged(
-                                        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
-                                    )
-                                    % 612,
+                    for _ in range(4):
+                        shard_angle = (
+                            float(
+                                rng.rand_tagged(
+                                    RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
                                 )
-                                * 0.01
+                                % 612,
                             )
-                            effects.spawn_freeze_shard(
-                                pos=entry.pos,
-                                angle=shard_angle,
-                                rng=rng,
-                                detail_preset=int(detail_preset),
-                            )
-                elif fx_queue is not None:
+                            * 0.01
+                        )
+                        effects.spawn_freeze_shard(
+                            pos=entry.pos,
+                            angle=shard_angle,
+                            rng=rng,
+                            detail_preset=int(detail_preset),
+                        )
+                else:
                     for dx_caller, dy_caller in _SECONDARY_PRE_HIT_DECAL_CALLERS:
                         offset = Vec2(
                             float(rng.rand_tagged(dx_caller) % 20 - 10),
@@ -570,7 +550,7 @@ class SecondaryProjectilePool:
                             rng=rng,
                         )
 
-                if burst_scale is not None and effects is not None and int(detail_preset) > int(burst_min_detail):
+                if burst_scale is not None and int(detail_preset) > int(burst_min_detail):
                     effects.spawn_explosion_burst(
                         pos=entry.pos,
                         scale=float(burst_scale),
@@ -604,29 +584,28 @@ class SecondaryProjectilePool:
 
                 # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
-                    if effects is not None:
-                        shard_pos = entry.pos
-                        freeze_angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_FREEZE_SHARD_ANGLE
-                        if isinstance(rule, HomingRocketRule):
-                            freeze_angle_caller = (
-                                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE
-                            )
-                        elif isinstance(rule, RocketMinigunRule):
-                            freeze_angle_caller = (
-                                RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_FREEZE_SHARD_ANGLE
-                            )
-                        if freeze_shard_target_pos:
-                            shard_pos = creatures[hit_idx].pos
-                        for _ in range(8):
-                            shard_angle = float(rng.rand_tagged(freeze_angle_caller) % 612) * 0.01
-                            effects.spawn_freeze_shard(
-                                pos=shard_pos,
-                                angle=shard_angle,
-                                rng=rng,
-                                detail_preset=int(detail_preset),
-                            )
+                    shard_pos = entry.pos
+                    freeze_angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_FREEZE_SHARD_ANGLE
+                    if isinstance(rule, HomingRocketRule):
+                        freeze_angle_caller = (
+                            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE
+                        )
+                    elif isinstance(rule, RocketMinigunRule):
+                        freeze_angle_caller = (
+                            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_FREEZE_SHARD_ANGLE
+                        )
+                    if freeze_shard_target_pos:
+                        shard_pos = creatures[hit_idx].pos
+                    for _ in range(8):
+                        shard_angle = float(rng.rand_tagged(freeze_angle_caller) % 612) * 0.01
+                        effects.spawn_freeze_shard(
+                            pos=shard_pos,
+                            angle=shard_angle,
+                            rng=rng,
+                            detail_preset=int(detail_preset),
+                        )
                 else:
-                    if fx_queue is not None and extra_decals > 0:
+                    if extra_decals > 0:
                         center = creatures[hit_idx].pos
                         angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE
                         radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS
@@ -647,24 +626,24 @@ class SecondaryProjectilePool:
                                 rng=rng,
                             )
 
-                if sprite_effects is not None:
-                    step = math.tau / 10.0
-                    for idx in range(10):
-                        mag = (
-                            float(
-                                rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG)
-                                % 800,
-                            )
-                            * 0.1
+                step = math.tau / 10.0
+                for idx in range(10):
+                    mag = (
+                        float(
+                            rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG)
+                            % 800,
                         )
-                        ang = float(idx) * step
-                        velocity = Vec2.from_angle(ang) * mag
-                        sprite_effects.spawn(
-                            pos=entry.pos,
-                            vel=velocity,
-                            scale=14.0,
-                            color=RGBA(1.0, 1.0, 1.0, 0.37),
-                        )
+                        * 0.1
+                    )
+                    ang = float(idx) * step
+                    velocity = Vec2.from_angle(ang) * mag
+                    sprite_effects.spawn(
+                        pos=entry.pos,
+                        vel=velocity,
+                        scale=14.0,
+                        color=RGBA(1.0, 1.0, 1.0, 0.37),
+                        rng=rng,
+                    )
 
             # Native's TTL check runs after the hit handling in the same
             # iteration (no early-out): a rocket that hits while its TTL is

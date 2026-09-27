@@ -1,19 +1,15 @@
 from __future__ import annotations
 
 import math
-from collections.abc import MutableSequence, Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
 
 from grim.geom import Vec2
-from grim.rand import CrandLike
-from grim.sfx_types import SfxRequest
 
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
-from ...effects import EffectPool
 from ...math_parity import (
     NATIVE_HALF_PI,
     f32,
@@ -45,25 +41,13 @@ from .primary_rules import primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
-    from crimson.sim.gameplay_state import GameplayState
-
     from ...creatures.runtime import CreatureState
-    from ...sim.state_types import PlayerState
     from ...sim.world_state import WorldStepRuntime
-
-class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
-    rng: CrandLike
-    runtime_state: GameplayState
-    players: Sequence[PlayerState]
-    step_runtime: WorldStepRuntime
-    ion_aoe_scale: float = 1.0
-    detail_preset: int = 5
 
 
 class PrimaryStepCtx(msgspec.Struct, frozen=True):
+    step_runtime: WorldStepRuntime
     dt: float
-    creatures: Sequence[CreatureState]
-    options: ProjectileUpdateOptions
 
 
 _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
@@ -175,14 +159,13 @@ class ProjectilePool:
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
         dt = float(f32(float(ctx.dt)))
-        creatures = ctx.creatures
-        options = ctx.options
-        ion_aoe_scale = float(options.ion_aoe_scale)
-        detail_preset = int(options.detail_preset)
-        rng = options.rng
-        runtime_state = options.runtime_state
-        players = options.players
-        step_runtime = options.step_runtime
+        step_runtime = ctx.step_runtime
+        world = step_runtime.world
+        creatures = world.creatures.entries
+        detail_preset = int(step_runtime.detail_preset)
+        runtime_state = world.state
+        rng = runtime_state.rng
+        players = world.players
 
         if dt <= 0.0:
             return []
@@ -191,13 +174,10 @@ class ProjectilePool:
         barrel_greaser_active = PerkId.BARREL_GREASER in perks
         ion_gun_master_active = PerkId.ION_GUN_MASTER in perks
         poison_bullets_active = PerkId.POISON_BULLETS in perks
-        ion_scale = float(ion_aoe_scale)
+        ion_scale = 1.2 if ion_gun_master_active else 1.0
 
-        if ion_scale == 1.0 and ion_gun_master_active:
-            ion_scale = 1.2
-
-        effects: EffectPool | None = runtime_state.effects
-        sfx_queue: MutableSequence[SfxRequest] | None = runtime_state.sfx_queue
+        effects = runtime_state.effects
+        sfx_queue = runtime_state.sfx_queue
 
         hits: list[ProjectileHit] = []
         margin = 64.0
@@ -446,7 +426,6 @@ class ProjectilePool:
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
                             _apply_damage_to_creature(
-                                creatures,
                                 int(hit_idx),
                                 float(damage_amount),
                                 damage_type=damage_type,
@@ -459,7 +438,6 @@ class ProjectilePool:
                                 proj.life_timer = 0.25
                         else:
                             _apply_damage_to_creature(
-                                creatures,
                                 int(hit_idx),
                                 float(remaining),
                                 damage_type=damage_type,

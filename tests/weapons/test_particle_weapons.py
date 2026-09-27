@@ -144,11 +144,7 @@ def test_particle_hits_damage_creatures() -> None:
     world = make_world()
     creature = _fire_at_creature(world, WeaponId.FLAMETHROWER)
 
-    world.state.particles.update(
-        0.016,
-        step_runtime=make_step_runtime(world, dt=0.016),
-        creatures=world.creatures.entries,
-    )
+    world.state.particles.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
     # Flamethrower particles deal intensity * 10 fire damage; intensity has decayed to 1 - 0.016 * 0.9.
     assert_float_close(creature.hp, f32(90.144))
 
@@ -164,21 +160,21 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     assert isinstance(rng, Crand)
     rng.set_trace_sink(lambda _before, _after, _value, caller: callers.append(caller))
     creature = _fire_at_creature(world, WeaponId.BUBBLEGUN)
-    step_runtime = make_step_runtime(world)
     particles = world.state.particles
 
-    particles.update(0.016, creatures=world.creatures.entries, step_runtime=step_runtime)
+    particles.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
     particle = next(entry for entry in particles.entries if entry.active)
     attached_pos = particle.pos
     assert particle.target_id == 0
     assert not particle.render_flag
 
     creature.pos = Vec2(80.0, 40.0)
-    particles.update(0.1, creatures=world.creatures.entries, step_runtime=step_runtime)
+    particles.update(0.1, step_runtime=make_step_runtime(world, dt=0.1))
     assert particle.pos == attached_pos
 
     del callers[:]
-    particles.update(2.0, creatures=world.creatures.entries, step_runtime=step_runtime)
+    step_runtime = make_step_runtime(world, dt=2.0)
+    particles.update(2.0, step_runtime=step_runtime)
 
     assert particle.target_id == 0
     assert [(death.index, death.owner) for death in step_runtime.deaths] == [(0, OwnerRef.from_player(0))]

@@ -2,7 +2,7 @@
 
 import struct
 
-from crimson.effects import FxQueue, ParticlePool, ParticleStyleId, SpriteEffectPool
+from crimson.effects import FxQueue, ParticlePool, ParticleStyleId
 from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -24,8 +24,7 @@ def compare(witness):
     case = witness["input"]
     assert case["fpcw"] == 0x7F
     rng = RecordingCrand(Crand(case["rng_seed"]))
-    pool = ParticlePool(rng=rng)
-    sprites = SpriteEffectPool(rng=rng)
+    pool = ParticlePool()
     fx = FxQueue()
     item = case["particles"][0]
     particle = pool.entries[item["index"]]
@@ -40,6 +39,7 @@ def compare(witness):
         setattr(particle, key, f32(item[key]))
     world = make_world()
     world.state.rng = rng
+    sprites = world.state.sprite_effects
     target = case["creatures"][0]
     creature = world.creatures.entries[target["index"]]
     creature.active = True
@@ -52,13 +52,7 @@ def compare(witness):
     for perk in case.get("perks", []):
         world.state.perks[perk] = 1
 
-    pool.update(
-        case["dt"],
-        creatures=world.creatures.entries,
-        step_runtime=make_step_runtime(world, dt=case["dt"], fx_queue=fx),
-        sprite_effects=sprites,
-        fx_queue=fx,
-    )
+    pool.update(case["dt"], step_runtime=make_step_runtime(world, dt=case["dt"], fx_queue=fx))
     _check_fields(
         witness["index"],
         "particle",

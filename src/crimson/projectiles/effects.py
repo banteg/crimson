@@ -16,16 +16,13 @@ from .types import ProjectileTemplateId
 
 
 def _spawn_shrinkifier_hit_effects(
-    effects: EffectPool | None,
+    effects: EffectPool,
     *,
     pos: Vec2,
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
     """Port of `effect_spawn_shrinkifier_hit` (0x0042f080)."""
-
-    if effects is None:
-        return
 
     detail = int(detail_preset)
 
@@ -75,17 +72,14 @@ def _spawn_shrinkifier_hit_effects(
 
 
 def _spawn_ion_hit_effects(
-    effects: EffectPool | None,
-    sfx_queue: MutableSequence[SfxRequest] | None,
+    effects: EffectPool,
+    sfx_queue: MutableSequence[SfxRequest],
     *,
     type_id: ProjectileTemplateId,
     pos: Vec2,
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
-    if effects is None:
-        return
-
     ring_scale = 0.0
     ring_strength = 0.0
     burst_scale = 0.0
@@ -102,8 +96,7 @@ def _spawn_ion_hit_effects(
             ring_scale = 1.0
             ring_strength = 1.0
             burst_scale = 2.2
-            if sfx_queue is not None:
-                sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
+            sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
         case _:
             return
 
@@ -162,8 +155,8 @@ def _spawn_ion_hit_effects(
 
 
 def _spawn_plasma_cannon_hit_effects(
-    effects: EffectPool | None,
-    sfx_queue: MutableSequence[SfxRequest] | None,
+    effects: EffectPool,
+    sfx_queue: MutableSequence[SfxRequest],
     *,
     pos: Vec2,
     detail_preset: int,
@@ -177,12 +170,8 @@ def _spawn_plasma_cannon_hit_effects(
     - `effect_spawn_plasma_hit_core(pos, 1.0, 1.0)`
     """
 
-    if effects is None:
-        return
-
-    if sfx_queue is not None:
-        sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, pos))
-        sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
+    sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, pos))
+    sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
 
     detail = int(detail_preset)
 
@@ -209,16 +198,13 @@ def _spawn_plasma_cannon_hit_effects(
 
 
 def _spawn_splitter_hit_effects(
-    effects: EffectPool | None,
+    effects: EffectPool,
     *,
     pos: Vec2,
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
     """Port of `effect_spawn_splitter_hit_burst(pos, 26.0, 3)`."""
-
-    if effects is None:
-        return
 
     detail = int(detail_preset)
     for _ in range(3):

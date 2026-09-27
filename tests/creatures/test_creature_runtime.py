@@ -23,7 +23,7 @@ from crimson.creatures.spawn import (
     SpawnSlotInit,
     build_spawn_plan,
 )
-from crimson.effects import FxQueue
+from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
@@ -57,7 +57,7 @@ def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
         pool.entries[i].active = True
         pool.entries[i].hp = 1.0
 
-    mapping, primary = pool.spawn_plan(plan)
+    mapping, primary = pool.spawn_plan(plan, rng=rng, detail_preset=5)
     assert primary == mapping[plan.primary]
 
     # Assert that link indices were remapped from plan-local indices -> pool indices.
@@ -92,7 +92,7 @@ def test_spawn_plan_remaps_spawn_slot_indices() -> None:
         ),
     )
 
-    mapping, primary = pool.spawn_plan(plan)
+    mapping, primary = pool.spawn_plan(plan, rng=rng, detail_preset=5)
     assert primary == mapping[plan.primary]
     assert len(mapping) == 1
     assert len(pool.spawn_slots) == 2
@@ -123,7 +123,7 @@ def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaust
     )
     pool.spawn_slots.append(empty_slot)
 
-    mapping, _ = pool.spawn_plan(plan)
+    mapping, _ = pool.spawn_plan(plan, rng=rng, detail_preset=5)
 
     assert len(pool.spawn_slots) == 1
     assert pool.entries[mapping[0]].spawn_slot_index == 0
@@ -142,7 +142,7 @@ def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaust
             ),
         )
 
-    mapping, _ = pool.spawn_plan(plan)
+    mapping, _ = pool.spawn_plan(plan, rng=rng, detail_preset=5)
 
     assert len(pool.spawn_slots) == NATIVE_SPAWN_SLOT_COUNT
     assert pool.entries[mapping[0]].spawn_slot_index == NATIVE_SPAWN_SLOT_COUNT - 1
@@ -184,6 +184,7 @@ def test_hardcore_runtime_spawn_clears_shared_quest_retry_count() -> None:
         Vec2(100.0, 200.0),
         0.0,
         Crand(0xBEEF),
+        detail_preset=5,
     )
 
     assert env.quest_fail_retry_count == 0
@@ -1695,6 +1696,7 @@ def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
         0.0,
         Crand(0xBEEF),
         env=env,
+        detail_preset=5,
     )
 
     assert mapping == [0]
@@ -1817,7 +1819,10 @@ def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> Non
     pool._tick_dead(
         corpse,
         dt=0.018,
-        fx_queue_rotated=None,
+        fx_queue_rotated=FxQueueRotated(),
+        rng=Crand(0),
+        detail_preset=5,
+        violence_disabled=0,
     )
 
     assert corpse.active is True
@@ -1838,6 +1843,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     corpse.flags = CreatureFlags.ANIM_PING_PONG
     corpse.size = 24.0
 
+    fx_queue_rotated = FxQueueRotated()
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     before_calls = rng.calls
     before_state = rng.state
@@ -1845,7 +1851,7 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
     pool._tick_dead(
         corpse,
         dt=0.1,
-        fx_queue_rotated=None,
+        fx_queue_rotated=fx_queue_rotated,
         rng=rng,
         detail_preset=5,
         violence_disabled=0,
@@ -1878,6 +1884,8 @@ def test_tick_dead_ping_pong_corpse_emits_native_19_blood_burst_rng_budget() -> 
         RngCallerStatic.CREATURE_UPDATE_ALL_PING_PONG_BLOOD_5_ANGLE,
     ] * 5
     assert len(state.effects.iter_active()) == 38
+    # The corpse decal is queued before the burst and draws no RNG.
+    assert fx_queue_rotated.count == 1
 
 
 def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() -> None:
@@ -1965,7 +1973,10 @@ def test_tick_dead_death_slide_preserves_native_multiply_order() -> None:
     pool._tick_dead(
         corpse,
         dt=0.05900000408291817,
-        fx_queue_rotated=None,
+        fx_queue_rotated=FxQueueRotated(),
+        rng=Crand(0),
+        detail_preset=5,
+        violence_disabled=0,
     )
 
     assert corpse.lifecycle_stage == 14.256000518798828
@@ -1994,7 +2005,10 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
     pool._tick_dead(
         corpse,
         dt=0.018,
-        fx_queue_rotated=None,
+        fx_queue_rotated=FxQueueRotated(),
+        rng=Crand(0),
+        detail_preset=5,
+        violence_disabled=0,
     )
     assert pool.entries[6].active is True
 
@@ -2056,7 +2070,7 @@ def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
 
     plan = build_spawn_plan(SpawnId.ALIEN_RANDOM_1D, Vec2(100.0, 200.0), 0.0, rng, env)
 
-    mapping, primary = pool.spawn_plan(plan)
+    mapping, primary = pool.spawn_plan(plan, rng=rng, detail_preset=5)
 
     assert mapping == []
     assert primary is None

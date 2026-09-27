@@ -9,7 +9,7 @@ from crimson.bonuses import BonusId
 from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
-from crimson.effects import FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId
+from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec
@@ -240,8 +240,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
-        step_runtime = ctx.options.step_runtime
-        assert step_runtime is not None
+        step_runtime = ctx.step_runtime
         step_runtime.apply_creature_damage(
             0,
             1000.0,
@@ -375,7 +374,6 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
     mocker.patch.object(world.creatures, "update", return_value=None)
     rng = ScriptedCrand(2, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     world.state.rng = rng
-    world.state.particles = ParticlePool(rng=rng)
     particle = world.state.particles.entries[0]
     particle.active = True
     particle.render_flag = False
@@ -429,8 +427,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
-        step_runtime = ctx.options.step_runtime
-        assert step_runtime is not None
+        step_runtime = ctx.step_runtime
         step_runtime.apply_creature_damage(
             0,
             1000.0,
@@ -531,15 +528,13 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = kwargs
         ctx = cast("PrimaryStepCtx", args[0])
-        step_runtime = ctx.options.step_runtime
-        if step_runtime is not None:
-            step_runtime.apply_creature_damage(
-                0,
-                1000.0,
-                CreatureDamageType.BULLET,
-                Vec2(),
-                OwnerRef.from_player(0),
-            )
+        ctx.step_runtime.apply_creature_damage(
+            0,
+            1000.0,
+            CreatureDamageType.BULLET,
+            Vec2(),
+            OwnerRef.from_player(0),
+        )
         return []
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
@@ -649,7 +644,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
 
     def _fake_projectile_step(*args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", args[0])
-        step_runtime = ctx.options.step_runtime
+        step_runtime = ctx.step_runtime
         hit = ProjectileHit(
             type_id=ProjectileTemplateId.PISTOL,
             origin=Vec2(0.0, 0.0),

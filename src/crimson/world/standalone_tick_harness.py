@@ -42,19 +42,12 @@ class StandaloneTickHarness:
         if session is not None and self.world_state is world_state and int(self.player_count) == int(player_count):
             return session
 
-        detail_preset = 5
-        violence_disabled = 0
-        config = runtime.config
-        if config is not None:
-            detail_preset = config.display.detail_preset
-            violence_disabled = config.display.violence_disabled
-
         self.reset()
         session = DeterministicSession(
             world=world_state,
             game_mode=self.game_mode,
-            detail_preset=int(detail_preset),
-            violence_disabled=int(violence_disabled),
+            detail_preset=runtime.detail_preset,
+            violence_disabled=runtime.violence_disabled,
             game_tune_started=bool(runtime.game_tune_started),
             demo_mode_active=bool(runtime.demo_mode_active),
             perk_progression_enabled=False,

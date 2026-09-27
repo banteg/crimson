@@ -15,7 +15,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
@@ -799,9 +799,8 @@ class CreaturePool:
         self,
         plan: SpawnPlan,
         *,
-        rng: CrandLike | None = None,
-        detail_preset: int = 5,
-        effects: EffectPool | None = None,
+        rng: CrandLike,
+        detail_preset: int,
     ) -> tuple[list[int], int | None]:
         """Materialize a pure `SpawnPlan` into the runtime pool.
 
@@ -878,14 +877,12 @@ class CreaturePool:
         if 0 <= int(plan.primary) < len(mapping):
             primary_pool = mapping[int(plan.primary)]
 
-        effect_pool = self.effects if effects is None else effects
-        if effect_pool is not None and plan.effects:
-            fx_rng = Crand(0) if rng is None else rng
+        if self.effects is not None:
             for fx in plan.effects:
-                effect_pool.spawn_burst(
+                self.effects.spawn_burst(
                     pos=fx.pos,
                     count=int(fx.count),
-                    rng=fx_rng,
+                    rng=rng,
                     detail_preset=int(detail_preset),
                 )
         return mapping, primary_pool
@@ -898,8 +895,7 @@ class CreaturePool:
         rng: CrandLike,
         *,
         env: SpawnEnv | None = None,
-        detail_preset: int = 5,
-        effects: EffectPool | None = None,
+        detail_preset: int,
     ) -> tuple[list[int], int | None]:
         """Build a spawn plan and materialize it into the pool."""
 
@@ -917,7 +913,6 @@ class CreaturePool:
             plan,
             rng=rng,
             detail_preset=int(detail_preset),
-            effects=effects,
         )
 
     def _apply_self_damage_tick(
@@ -1656,10 +1651,10 @@ class CreaturePool:
         creature: CreatureState,
         *,
         dt: float,
-        fx_queue_rotated: FxQueueRotated | None,
-        rng: CrandLike | None = None,
-        detail_preset: int = 5,
-        violence_disabled: int = 0,
+        fx_queue_rotated: FxQueueRotated,
+        rng: CrandLike,
+        detail_preset: int,
+        violence_disabled: int,
     ) -> None:
         """Advance the post-death lifecycle_stage ramp and queue corpse decals.
 
@@ -1718,7 +1713,7 @@ class CreaturePool:
             return
 
         # lifecycle_stage just crossed <= 0: bake a persistent corpse decal into the ground.
-        if int(violence_disabled) == 0 and fx_queue_rotated is not None:
+        if int(violence_disabled) == 0:
             corpse_size = f32(creature.size)
             corpse_half_size = x87_pc24_mul(corpse_size, 0.5)
             # Native uses a special fallback corpse id for ping-pong strip creatures.
@@ -1744,7 +1739,6 @@ class CreaturePool:
         if (
             int(violence_disabled) == 0
             and (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0
-            and rng is not None
             and self.effects is not None
         ):
             for count, age, angle_caller in (

@@ -13,6 +13,7 @@ from crimson.effects import SPRITE_EFFECT_POOL_SIZE, SpriteEffectPool
 from crimson.math_parity import f32
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import Crand
 
 from ._support import Mismatch, compare_fields, mismatch_report
 
@@ -40,12 +41,14 @@ def test_sprite_effect_update_matches_native(oracle) -> None:
     base = oracle.resolve("sprite_effect_pool")
     rng = random.Random(0x42246A)
     pool = SpriteEffectPool()
+    crand = Crand(0)
     for index in range(SPRITE_EFFECT_POOL_SIZE):
         pool.spawn(
             pos=Vec2(rng.uniform(-64.0, 1088.0), rng.uniform(-64.0, 1088.0)),
             vel=Vec2(rng.uniform(-120.0, 120.0), rng.uniform(-120.0, 120.0)),
             scale=rng.uniform(1.0, 32.0),
             color=RGBA(1.0, 1.0, 1.0, rng.choice(_START_ALPHAS)),
+            rng=crand,
         )
         entry = pool.entries[index]
         address = base + index * _SPRITE_STRIDE

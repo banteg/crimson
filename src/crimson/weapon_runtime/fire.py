@@ -121,6 +121,7 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
             vel=Vec2.from_angle(self.aim_heading) * speed,
             scale=scale,
             color=RGBA(0.5, 0.5, 0.5, alpha),
+            rng=self.state.rng,
         )
 
 
@@ -330,6 +331,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
                     owner=owner,
+                    rng=state.rng,
                 )
                 counts_accuracy_shots = False
                 ammo_cost = f32(0.1)
@@ -339,6 +341,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
                     owner=owner,
+                    rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.HR_FLAMER
                 counts_accuracy_shots = False
@@ -349,6 +352,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
                     owner=owner,
+                    rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.BLOW_TORCH
                 counts_accuracy_shots = False
@@ -452,6 +456,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(shot_angle, NATIVE_HALF_PI),
                     owner=owner,
+                    rng=state.rng,
                 )
                 counts_accuracy_shots = False
                 ammo_cost = f32(0.15)

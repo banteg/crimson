@@ -27,7 +27,7 @@ from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
 from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from ..perks.runtime.effects import perks_update_effects
 from ..player_damage import player_take_projectile_damage
-from ..projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions, SecondaryStepCtx
+from ..projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 from .input import PlayerInput
@@ -316,39 +316,15 @@ class WorldState(msgspec.Struct):
         )
         self.creatures.update(step_runtime)
         hits = self.state.projectiles.step(
-            PrimaryStepCtx(
-                dt=float(dt),
-                creatures=self.creatures.entries,
-                options=ProjectileUpdateOptions(
-                    detail_preset=int(detail_preset),
-                    rng=self.state.rng,
-                    runtime_state=self.state,
-                    players=self.players,
-                    step_runtime=step_runtime,
-                ),
-            ),
+            PrimaryStepCtx(step_runtime=step_runtime, dt=float(dt)),
         )
         secondary_hit_count = self.state.secondary_projectiles.step(
-            SecondaryStepCtx(
-                dt=float(dt),
-                creatures=self.creatures.entries,
-                runtime_state=self.state,
-                fx_queue=fx_queue,
-                detail_preset=int(detail_preset),
-                step_runtime=step_runtime,
-                play_rocket_hit_audio=step_runtime.play_secondary_rocket_hit_audio,
-            ),
+            SecondaryStepCtx(step_runtime=step_runtime, dt=float(dt)),
         )
         # Native updates the sprite pool before the particle loop, so sprites
         # spawned by particles only advance on the next tick.
         self.state.sprite_effects.update(dt)
-        self.state.particles.update(
-            dt,
-            creatures=self.creatures.entries,
-            step_runtime=step_runtime,
-            fx_queue=fx_queue,
-            sprite_effects=self.state.sprite_effects,
-        )
+        self.state.particles.update(dt, step_runtime=step_runtime)
         reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
         player_dt = float(dt)
         for idx, player in enumerate(self.players):

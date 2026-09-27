@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.rand import Crand, CrandLike
+from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from .types import QuestContext, QuestDefinition, SpawnEntry
@@ -38,20 +38,13 @@ def build_quest_spawn_table(
     quest: QuestDefinition,
     ctx: QuestContext,
     *,
-    rng: CrandLike | None = None,
-    hardcore: bool = False,
+    rng: CrandLike,
     full_version: bool = True,
 ) -> tuple[SpawnEntry, ...]:
     """Build the quest spawn script from the active startup RNG state."""
 
-    builder_rng = rng if rng is not None else Crand()
-    builder_ctx = msgspec.structs.replace(ctx, hardcore=hardcore)
-    entries = quest.builder(
-        builder_ctx,
-        rng=builder_rng,
-        full_version=full_version,
-    )
-    if hardcore:
+    entries = quest.builder(ctx, rng=rng, full_version=full_version)
+    if ctx.hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)
 

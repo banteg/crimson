@@ -8,7 +8,6 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import player_update
-from crimson.projectiles.runtime import ProjectileUpdateOptions
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -42,7 +41,6 @@ def make_creature_state(
     )
 
 
-
 def make_step_runtime(
     world: WorldState,
     *,
@@ -74,21 +72,6 @@ def place_creatures(world: WorldState, creatures: Sequence[CreatureState]) -> li
     for idx, creature in enumerate(creatures):
         world.creatures.entries[idx] = creature
     return world.creatures.entries
-
-
-def make_projectile_update_options(
-    world: WorldState,
-    *,
-    step_runtime: WorldStepRuntime | None = None,
-    detail_preset: int = 5,
-) -> ProjectileUpdateOptions:
-    return ProjectileUpdateOptions(
-        rng=world.state.rng,
-        runtime_state=world.state,
-        players=world.players,
-        step_runtime=make_step_runtime(world, detail_preset=detail_preset) if step_runtime is None else step_runtime,
-        detail_preset=int(detail_preset),
-    )
 
 
 def step_player(

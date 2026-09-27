@@ -72,6 +72,7 @@ def test_apply_hardcore_spawn_table_adjustment() -> None:
 
 def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
     ctx = QuestContext(player_count=1)
+    hardcore_ctx = QuestContext(player_count=1, hardcore=True)
     cases = (
         (QuestLevel(2, 10), 3, 6),
         (QuestLevel(4, 7), 68, 92),
@@ -86,21 +87,18 @@ def test_builder_specific_hardcore_branches_use_runtime_flag() -> None:
             quest,
             ctx,
             rng=Crand(0),
-            hardcore=False,
             full_version=True,
         )
         demo = build_quest_spawn_table(
             quest,
             ctx,
             rng=Crand(0),
-            hardcore=False,
             full_version=False,
         )
         hardcore = build_quest_spawn_table(
             quest,
-            ctx,
+            hardcore_ctx,
             rng=Crand(0),
-            hardcore=True,
             full_version=True,
         )
 
@@ -134,8 +132,8 @@ def test_build_quest_spawn_table_passes_rng_and_full_version() -> None:
     )
     ctx = QuestContext(player_count=1)
 
-    full_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), hardcore=False, full_version=True)
-    demo_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), hardcore=False, full_version=False)
+    full_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), full_version=True)
+    demo_entries = build_quest_spawn_table(quest, ctx, rng=Crand(123), full_version=False)
 
     assert len(full_entries) == 1
     assert len(demo_entries) == 1

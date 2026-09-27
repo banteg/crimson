@@ -46,11 +46,11 @@ def test_fx_queue_add_random_tags_exact_native_callers() -> None:
 
 def test_particle_pool_tags_exact_native_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool = ParticlePool(size=1, rng=rng)
+    pool = ParticlePool(size=1)
 
-    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
-    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
-    pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
+    pool.spawn_particle_slow(pos=Vec2(), angle=0.0, rng=rng)
 
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
@@ -63,14 +63,15 @@ def test_particle_pool_tags_exact_native_callers() -> None:
 
 def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
     rng = ScriptedCrand([5, 5])
-    pool = ParticlePool(size=2, rng=rng)
+    pool = ParticlePool(size=2)
 
     fast_idx = pool.spawn_particle(
         pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
         angle=f32(0.0014),
         intensity=1.0 + 1e-8,
+        rng=rng,
     )
-    slow_idx = pool.spawn_particle_slow(pos=Vec2(), angle=f32(0.0009))
+    slow_idx = pool.spawn_particle_slow(pos=Vec2(), angle=f32(0.0009), rng=rng)
 
     fast = pool.entries[fast_idx]
     assert fast.pos == Vec2(1.0, 2.0)
@@ -85,10 +86,10 @@ def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
 
 def test_sprite_effect_pool_tags_exact_native_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool = SpriteEffectPool(size=1, rng=rng)
+    pool = SpriteEffectPool(size=1)
 
-    pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0)
-    pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0)
+    pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0, rng=rng)
+    pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0, rng=rng)
 
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
@@ -98,12 +99,13 @@ def test_sprite_effect_pool_tags_exact_native_callers() -> None:
 
 
 def test_sprite_effect_spawn_canonicalizes_native_f32_fields() -> None:
-    pool = SpriteEffectPool(size=1, rng=ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    pool = SpriteEffectPool(size=1)
 
     idx = pool.spawn(
         pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
         vel=Vec2(3.0 + 1e-8, 4.0 + 1e-8),
         scale=5.0 + 1e-8,
+        rng=ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
     )
     entry = pool.entries[idx]
 
@@ -244,8 +246,13 @@ def test_spawn_freeze_shatter_tags_exact_native_callers() -> None:
 
 
 def test_sprite_effect_pool_updates_and_expires() -> None:
-    pool = SpriteEffectPool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    idx = pool.spawn(pos=Vec2(10.0, 20.0), vel=Vec2(2.0, -3.0), scale=1.0)
+    pool = SpriteEffectPool(size=1)
+    idx = pool.spawn(
+        pos=Vec2(10.0, 20.0),
+        vel=Vec2(2.0, -3.0),
+        scale=1.0,
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+    )
     fx = pool.entries[idx]
     assert fx.active
     assert fx.color.a == 1.0
@@ -263,11 +270,13 @@ def test_sprite_effect_pool_updates_and_expires() -> None:
 
 
 def test_particle_pool_style_decay_rules_match_thresholds() -> None:
-    pool = ParticlePool(size=2, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    step_runtime = make_step_runtime(make_world())
+    world = make_world()
+    rng = world.state.rng
+    pool = ParticlePool(size=2)
+    step_runtime = make_step_runtime(world, dt=1.0)
 
     # Style 0 persists until intensity <= 0.0.
-    idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
+    idx0 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
     p0 = pool.entries[idx0]
     p0.render_flag = False
     pool.update(1.0, step_runtime=step_runtime)
@@ -275,7 +284,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert p0.intensity == 0.10000002384185791  # Native subtracts the f32 0.9 literal.
 
     # Style 1 expires once intensity <= 0.8.
-    idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
+    idx1 = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
     p1 = pool.entries[idx1]
     p1.render_flag = False
     p1.style_id = ParticleStyleId.BLOW_TORCH
@@ -283,7 +292,7 @@ def test_particle_pool_style_decay_rules_match_thresholds() -> None:
     assert not p1.active
 
     # Style 8 decays slowly and also uses the 0.8 cutoff.
-    idx2 = pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
+    idx2 = pool.spawn_particle_slow(pos=Vec2(), angle=0.0, rng=rng)
     p2 = pool.entries[idx2]
     p2.render_flag = False
     pool.update(1.0, step_runtime=step_runtime)
@@ -296,34 +305,30 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
     # - spawn_particle: spin
     # - update: random-walk jitter
     # - hit: speed_scale
-    # - hit: sprite_vel_x, sprite_vel_y
+    # - hit: sprite_vel_x, sprite_vel_y, fx_spawn_sprite rotation
     # - fx_queue.add_random: gray, w, rotation, effect_id
-    rng = ScriptedCrand([0, 50, 7, 0, 0, 0, 0, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool = ParticlePool(size=1, rng=rng)
+    rng = ScriptedCrand([0, 50, 7, 0, 0, 0, 0, 0, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world = make_world()
+    world.state.rng = rng
+    sprite_effects = world.state.sprite_effects
+    pool = ParticlePool(size=1)
     fx_queue = FxQueue(capacity=1, max_count=1)
-    sprite_effects = SpriteEffectPool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
 
     particle_id = pool.spawn_particle(
         pos=Vec2(),
         angle=0.0,
         intensity=1.0,
         owner=OwnerRef.from_player(0),
+        rng=rng,
     )
     particle = pool.entries[particle_id]
 
-    world = make_world()
     creature = make_creature_state(pos=Vec2())
     creature.tint = RGBA(0.9, 0.6, 0.2, 0.8)
-    creatures = place_creatures(world, [creature])
+    place_creatures(world, [creature])
 
     dt = 0.016
-    pool.update(
-        dt,
-        step_runtime=make_step_runtime(world, dt=dt),
-        creatures=creatures,
-        fx_queue=fx_queue,
-        sprite_effects=sprite_effects,
-    )
+    pool.update(dt, step_runtime=make_step_runtime(world, dt=dt, fx_queue=fx_queue))
 
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.FX_SPAWN_PARTICLE_SPIN,
@@ -331,6 +336,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BOUNCE_SPEED_SCALE,
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X,
         RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_Y,
+        RngCallerStatic.FX_SPAWN_SPRITE_ROTATION,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_GRAY,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_WIDTH,
         RngCallerStatic.FX_QUEUE_ADD_RANDOM_ROTATION,
@@ -365,11 +371,13 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
 
 def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    pool = ParticlePool(size=3, rng=rng)
+    world = make_world()
+    world.state.rng = rng
+    pool = ParticlePool(size=3)
 
-    flame_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
-    alt_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0)
-    bubble_idx = pool.spawn_particle_slow(pos=Vec2(), angle=0.0)
+    flame_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
+    alt_idx = pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
+    bubble_idx = pool.spawn_particle_slow(pos=Vec2(), angle=0.0, rng=rng)
 
     flame = pool.entries[flame_idx]
     alt = pool.entries[alt_idx]
@@ -377,7 +385,7 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     alt.style_id = ParticleStyleId.BLOW_TORCH
 
     before = rng.calls
-    pool.update(0.016, step_runtime=make_step_runtime(make_world(), dt=0.016))
+    pool.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
 
     assert flame.render_flag
     assert alt.render_flag
@@ -393,10 +401,10 @@ def test_particle_hit_applies_owner_fire_damage() -> None:
     world = make_world()
     world.state.perks[int(PerkId.PYROMANIAC)] = 1
     creatures = place_creatures(world, [make_creature_state(pos=Vec2())])
-    pool = ParticlePool(size=1, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
-    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner=OwnerRef.from_player(0))
+    pool = ParticlePool(size=1)
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner=OwnerRef.from_player(0), rng=world.state.rng)
 
-    pool.update(0.016, creatures=creatures, step_runtime=make_step_runtime(world, dt=0.016))
+    pool.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
 
     # intensity (1 - 0.016 * 0.9) * 10 fire damage, scaled x1.5 by Pyromaniac.
     assert_float_close(creatures[0].hp, f32(85.216))

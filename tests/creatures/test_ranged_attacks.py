@@ -16,7 +16,6 @@ from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import (
     make_creature_state,
-    make_projectile_update_options,
     make_step_runtime,
     place_creatures,
     step_creatures,
@@ -145,11 +144,7 @@ def test_ranged_projectile_can_damage_player() -> None:
     )
 
     world.state.projectiles.step(
-        PrimaryStepCtx(
-            dt=0.001,
-            creatures=world.creatures.entries,
-            options=make_projectile_update_options(world),
-        ),
+        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.001), dt=0.001),
     )
 
     # Creature projectiles subtract a flat 10 from an unshielded player.
@@ -178,11 +173,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     )
 
     world.state.projectiles.step(
-        PrimaryStepCtx(
-            dt=0.1,
-            creatures=world.creatures.entries,
-            options=make_projectile_update_options(world, step_runtime=step_runtime),
-        ),
+        PrimaryStepCtx(step_runtime=step_runtime, dt=0.1),
     )
 
     assert target.hp <= 0.0

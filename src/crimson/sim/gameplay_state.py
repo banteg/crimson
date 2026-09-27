@@ -92,5 +92,5 @@ class GameplayState(msgspec.Struct):
     debug_god_mode: bool = False
 
     def __post_init__(self) -> None:
-        self.particles = ParticlePool(rng=self.rng)
-        self.sprite_effects = SpriteEffectPool(rng=self.rng)
+        self.particles = ParticlePool()
+        self.sprite_effects = SpriteEffectPool()

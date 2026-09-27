@@ -18,7 +18,6 @@ from tests.support.builders.session import make_world
 from tests.support.factories import (
     fire_player_weapon,
     make_creature_state,
-    make_projectile_update_options,
     make_step_runtime,
     place_creatures,
 )
@@ -50,15 +49,10 @@ def _step_rocket_into(creature: CreatureState) -> GameplayState:
             owner=OwnerRef.from_local_player(0),
         ),
     )
-    creatures = place_creatures(world, [creature])
+    place_creatures(world, [creature])
 
     state.secondary_projectiles.step(
-        SecondaryStepCtx(
-            step_runtime=make_step_runtime(world),
-            dt=0.1,
-            creatures=creatures,
-            runtime_state=state,
-        ),
+        SecondaryStepCtx(step_runtime=make_step_runtime(world), dt=0.1),
     )
     return state
 
@@ -70,9 +64,9 @@ def test_shots_fired_and_hit_increment() -> None:
     assert state.shots_fired[0] == 1
     assert state.shots_hit[0] == 0
 
-    creatures = place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0)])
+    place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(dt=0.1, creatures=creatures, options=make_projectile_update_options(world)),
+        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.1), dt=0.1),
     )
     assert hits
     assert state.shots_hit[0] == 1
@@ -82,9 +76,9 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
     world = _fire_pistol_right()
     state = world.state
 
-    creatures = place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, lifecycle_stage=8.0)])
+    place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, lifecycle_stage=8.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(dt=0.1, creatures=creatures, options=make_projectile_update_options(world)),
+        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.1), dt=0.1),
     )
 
     assert hits

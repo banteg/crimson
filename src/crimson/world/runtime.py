@@ -76,6 +76,15 @@ class WorldRuntime:
     # Shared lifecycle methods (extracted from 4 identical implementations)
     # ------------------------------------------------------------------
 
+    @property
+    def detail_preset(self) -> int:
+        # Worlds without a loaded config use the game's default detail level.
+        return 5 if self.config is None else int(self.config.display.detail_preset)
+
+    @property
+    def violence_disabled(self) -> int:
+        return 0 if self.config is None else int(self.config.display.violence_disabled)
+
     def reset(
         self,
         *,

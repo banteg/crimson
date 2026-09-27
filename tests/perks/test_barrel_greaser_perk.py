@@ -11,7 +11,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import make_projectile_update_options
+from tests.support.factories import make_step_runtime
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -49,11 +49,7 @@ def _step_pistol_projectile(*, barrel_greaser: bool) -> float:
     )
 
     pool.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=world.creatures.entries,
-            options=make_projectile_update_options(world),
-        ),
+        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.016), dt=0.016),
     )
 
     return float(pool.entries[proj_idx].pos.x)

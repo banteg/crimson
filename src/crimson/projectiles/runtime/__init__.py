@@ -5,7 +5,6 @@ from .primary_rules import PRIMARY_PROJECTILE_RULE_BY_TYPE_ID, PrimaryProjectile
 from .projectile_pool import (
     PrimaryStepCtx,
     ProjectilePool,
-    ProjectileUpdateOptions,
     projectile_collision_profile,
 )
 from .secondary_pool import SecondaryProjectilePool, SecondarySpawnSpec, SecondaryStepCtx
@@ -17,7 +16,6 @@ __all__ = [
     "PrimaryProjectileRule",
     "PrimaryStepCtx",
     "ProjectilePool",
-    "ProjectileUpdateOptions",
     "SecondaryProjectilePool",
     "SecondarySpawnSpec",
     "SecondaryStepCtx",

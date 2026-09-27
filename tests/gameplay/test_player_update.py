@@ -9,7 +9,7 @@ from crimson.aim_schemes import AimScheme
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.bonuses.hud import bonus_hud_update
-from crimson.effects import FxQueue, ParticlePool, SpriteEffectPool
+from crimson.effects import FxQueue
 from crimson.gameplay import (
     _RELATIVE_MOVE_HEADING_LEFT,
     _direction_from_heading_native,
@@ -35,19 +35,17 @@ from crimson.perks.runtime.effects import perks_update_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand, CrandLike, RecordingCrand
+from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import (
     fire_player_weapon,
-    make_projectile_update_options,
     make_step_runtime,
     place_creatures,
     step_player,
@@ -58,14 +56,6 @@ from tests.support.helpers import ScriptedCrand, assert_float_close
 
 def _active_type_ids(pool: ProjectilePool) -> list[int]:
     return [entry.type_id for entry in pool.entries if entry.active]
-
-
-def _use_rng(state: GameplayState, rng: CrandLike) -> None:
-    """Route the state's rng and its rng-owning fx pools through `rng`, as `GameplayState(rng=...)` does."""
-
-    state.rng = rng
-    state.particles = ParticlePool(rng=rng)
-    state.sprite_effects = SpriteEffectPool(rng=rng)
 
 
 def test_dead_player_update_only_advances_native_death_timer() -> None:
@@ -158,7 +148,7 @@ def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker)
     rng = ScriptedCrand(0)
     world = make_world()
     state = world.state
-    _use_rng(state, rng)
+    state.rng = rng
     aim_heading_before = 1.25
     player = PlayerState(
         index=0,
@@ -660,7 +650,7 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     state.bonus_spawn_guard = True
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=3.9)
     world.players[:] = [player]
@@ -716,7 +706,7 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), man_bomb_timer=0.0)
     world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1
@@ -745,7 +735,7 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), fire_cough_timer=1.95)
     world.players[:] = [player]
     state.perks[int(PerkId.FIRE_CAUGH)] = 1
@@ -768,7 +758,7 @@ def test_player_update_fire_cough_uses_native_spread_angle() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, ScriptedCrand([65, 3, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    state.rng = ScriptedCrand([65, 3, 0, 0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -790,7 +780,7 @@ def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -1469,7 +1459,7 @@ def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
 
     player = PlayerState(
         index=0,
@@ -1534,12 +1524,9 @@ def test_player_fire_weapon_disc_spread_rounds_each_x87_operation() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(
-        state,
-        ScriptedCrand(
-            [3210, 6757, 16721, 32587, 146, 4299, 4835],
-            fallback=ScriptedCrand.Fallback.REPEAT_LAST,
-        ),
+    state.rng = ScriptedCrand(
+        [3210, 6757, 16721, 32587, 146, 4299, 4835],
+        fallback=ScriptedCrand.Fallback.REPEAT_LAST,
     )
     player = PlayerState(
         index=0,
@@ -1630,7 +1617,7 @@ def test_player_fire_weapon_tags_exact_pellet_loop_callers(
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(
         index=0,
         pos=Vec2(100.0, 100.0),
@@ -1651,7 +1638,7 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.35)
     world.players[:] = [player]
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
@@ -1685,7 +1672,7 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95)
     world.players[:] = [player]
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
@@ -1716,7 +1703,7 @@ def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> No
     world = make_world()
     state = world.state
     pool = state.projectiles
-    _use_rng(state, rng)
+    state.rng = rng
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), hot_tempered_timer=1.95, fire_bullets_timer=1.0)
     world.players[:] = [player]
     state.perks[int(PerkId.HOT_TEMPERED)] = 1
@@ -1819,15 +1806,15 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert first_proj >= 0
     assert not state.bonus_spawn_guard
 
-    options = make_projectile_update_options(world, step_runtime=step_runtime)
-    pool.step(PrimaryStepCtx(dt=0.1, creatures=creatures, options=options))
+    step_ctx = PrimaryStepCtx(step_runtime=step_runtime, dt=0.1)
+    pool.step(step_ctx)
 
     assert state.shock_chain_links_left == 0x20
     assert state.shock_chain_projectile_id == first_proj
     assert sum(1 for entry in pool.entries if entry.active) == 1
 
     state.bonus_spawn_guard = True
-    pool.step(PrimaryStepCtx(dt=0.1, creatures=creatures, options=options))
+    pool.step(step_ctx)
 
     assert state.shock_chain_links_left == 0x1F
     assert state.shock_chain_projectile_id != first_proj
@@ -1873,7 +1860,7 @@ def test_player_update_held_reload_key_starts_reload_without_edge() -> None:
 def test_man_bomb_stores_native_pc24_angles(jitter: int, expected_bits: list[int]) -> None:
     world = make_world()
     state = world.state
-    _use_rng(state, ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    state.rng = ScriptedCrand(jitter, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     player = PlayerState(index=0, pos=Vec2(100, 100), man_bomb_timer=3.9)
     world.players[:] = [player]
     state.perks[int(PerkId.MAN_BOMB)] = 1

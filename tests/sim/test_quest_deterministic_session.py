@@ -25,7 +25,6 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
             quest,
             QuestContext(player_count=1),
             rng=Crand(int(seed)),
-            hardcore=False,
             full_version=True,
         ),
     )

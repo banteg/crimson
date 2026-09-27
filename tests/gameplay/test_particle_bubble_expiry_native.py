@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from crimson.effects import FxQueue, FxQueueRotated, ParticlePool, ParticleStyleId
+from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.sim.state_types import PlayerState
@@ -25,7 +25,6 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     state = world.state
     rng = RecordingCrand(Crand(case["rng_seed"]))
     state.rng = rng
-    state.particles = ParticlePool(rng=rng)
     state.survival_recent_death_count = case["history_count"]
     state.survival_reward_fire_seen = bool(case["fire_seen"])
     state.survival_reward_handout_enabled = bool(case["handout_enabled"])
@@ -55,7 +54,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         deaths=[],
         sfx=[],
     )
-    expired = state.particles.update(case["dt"], creatures=world.creatures.entries, step_runtime=runtime)
+    expired = state.particles.update(case["dt"], step_runtime=runtime)
     assert expired == [item["index"] for item in case["particles"]]
     assert state.survival_recent_death_count == witness["history_count"]
     assert state.survival_reward_fire_seen == bool(witness["fire_seen"])

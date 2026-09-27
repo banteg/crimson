@@ -2218,6 +2218,7 @@ class LightingDebugView:
                 pos,
                 heading,
                 self._runtime.world.state.rng,
+                detail_preset=self._runtime.detail_preset,
             )
 
     def _clear_spawned_enemies(self) -> None:

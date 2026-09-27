@@ -96,7 +96,6 @@ def creature_find_nearest_active(
 
 
 def _apply_damage_to_creature(
-    creatures: Sequence[CreatureState],
     creature_index: int,
     damage: float,
     *,
@@ -107,11 +106,8 @@ def _apply_damage_to_creature(
 ) -> None:
     if damage <= 0.0:
         return
-    idx = int(creature_index)
-    if not (0 <= idx < len(creatures)):
-        return
     step_runtime.apply_creature_damage(
-        idx,
+        int(creature_index),
         float(damage),
         int(damage_type),
         impulse,

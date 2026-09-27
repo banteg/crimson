@@ -184,6 +184,7 @@ class ArsenalDebugView:
                 spawn_pos,
                 heading,
                 self._runtime.world.state.rng,
+                detail_preset=self._runtime.detail_preset,
             )
 
     def _spawn_all_bonuses(self) -> None:

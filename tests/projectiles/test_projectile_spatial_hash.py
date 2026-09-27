@@ -63,7 +63,7 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
         ],
     )
 
-    pool.step(SecondaryStepCtx(dt=0.1, creatures=creatures, step_runtime=make_step_runtime(world)))
+    pool.step(SecondaryStepCtx(step_runtime=make_step_runtime(world), dt=0.1))
 
     assert creatures[0].hp < 1000.0
     assert creatures[1].hp == 1000.0
@@ -95,7 +95,7 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     step_runtime = make_step_runtime(world)
     spatial = CreatureSpatialHash(creatures=world.creatures.entries, is_collidable=_is_collidable)
     explosion = SecondaryProjectile(active=True, pos=parent.pos, detonation_scale=1.0)
-    ctx = SecondaryStepCtx(step_runtime=step_runtime, dt=0.1, creatures=world.creatures.entries)
+    ctx = SecondaryStepCtx(step_runtime=step_runtime, dt=0.1)
     _step_detonation(explosion, ctx, dt=0.1, creature_spatial=spatial, rng=world.state.rng)
     children = [c for c in world.creatures.entries[1:] if c.active]
     assert len(children) >= 2

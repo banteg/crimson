@@ -19,7 +19,9 @@ def compare(witness):
         if "rng_seed" in case
         else ScriptedCrand(witness["draws"] or [0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
     )
-    pool = ParticlePool(rng=rng)
+    world = make_world()
+    world.state.rng = rng
+    pool = ParticlePool()
     for item in case["particles"]:
         entry = pool.entries[item["index"]]
         entry.active = True
@@ -31,7 +33,7 @@ def compare(witness):
         entry.scale_x = entry.scale_y = entry.scale_z = entry.age = 0.0
         for key in ("intensity", "angle", "spin"):
             setattr(entry, key, f32(item[key]))
-    pool.update(case["dt"], creatures=(), step_runtime=make_step_runtime(make_world(), dt=case["dt"]))
+    pool.update(case["dt"], step_runtime=make_step_runtime(world, dt=case["dt"]))
     for native in witness["particles"]:
         entry = pool.entries[native["index"]]
         values = {

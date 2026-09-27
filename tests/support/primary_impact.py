@@ -7,7 +7,7 @@ from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions
+from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -92,16 +92,7 @@ def observe(case):
         patch.object(WorldStepRuntime, "apply_creature_damage", record_damage),
     ):
         hits = state.projectiles.step(
-            PrimaryStepCtx(
-                dt=case["dt"],
-                creatures=world.creatures.entries,
-                options=ProjectileUpdateOptions(
-                    rng=rng,
-                    runtime_state=state,
-                    players=world.players,
-                    step_runtime=runtime,
-                ),
-            ),
+            PrimaryStepCtx(step_runtime=runtime, dt=case["dt"]),
         )
     assert len(hits) == 1 and not runtime.deaths
     return {

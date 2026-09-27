@@ -108,7 +108,7 @@ def test_spawn_template_stats_match_native(oracle) -> None:
         pool = CreaturePool(env=env)
         rng = CrtRand(seed)
         try:
-            pool.spawn_template(template_id, pos, heading, rng, env=env)
+            pool.spawn_template(template_id, pos, heading, rng, env=env, detail_preset=5)
         except UnsupportedSpawnTemplateError:
             unsupported.add(int(template_id))
             continue

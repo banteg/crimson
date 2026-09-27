@@ -27,7 +27,6 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
         quest,
         QuestContext(player_count=player_count),
         rng=Crand(seed),
-        hardcore=False,
         full_version=True,
     )
 
@@ -132,7 +131,6 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
         quest,
         QuestContext(player_count=1),
         rng=Crand(0),
-        hardcore=False,
         full_version=True,
     )
     env = SpawnEnv(

@@ -16,7 +16,7 @@ from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
-from tests.support.factories import make_projectile_update_options, make_step_runtime, place_creatures
+from tests.support.factories import make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 _SHRINKIFIER_HIT_CALLERS = [
@@ -44,11 +44,7 @@ def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> World
     )
     step_runtime = make_step_runtime(world, dt=0.016)
     world.state.projectiles.step(
-        PrimaryStepCtx(
-            dt=0.016,
-            creatures=world.creatures.entries,
-            options=make_projectile_update_options(world, step_runtime=step_runtime),
-        ),
+        PrimaryStepCtx(step_runtime=step_runtime, dt=0.016),
     )
     return step_runtime
 

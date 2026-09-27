@@ -20,7 +20,6 @@ from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import (
     make_creature_state,
-    make_projectile_update_options,
     make_step_runtime,
     place_creatures,
 )
@@ -131,11 +130,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
 
     for _ in range(2):
         pool.step(
-            PrimaryStepCtx(
-                dt=0.1,
-                creatures=creatures,
-                options=make_projectile_update_options(world, step_runtime=step_runtime),
-            ),
+            PrimaryStepCtx(step_runtime=step_runtime, dt=0.1),
         )
 
     assert state.shock_chain_links_left == 0x1F
@@ -182,8 +177,8 @@ def test_seeker_spawn_target_miss_handling(preserve_bugs: bool, expected_target_
 )
 def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: int) -> None:
     world = make_world(preserve_bugs=preserve_bugs)
-    state, pool = world.state, world.state.secondary_projectiles
-    creatures = place_creatures(world, [make_creature_state(pos=Vec2(100.0, 0.0), active=False)])
+    pool = world.state.secondary_projectiles
+    place_creatures(world, [make_creature_state(pos=Vec2(100.0, 0.0), active=False)])
 
     idx = pool.spawn_from_spec(
         SecondarySpawnSpec(
@@ -195,12 +190,7 @@ def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: 
     pool.entries[idx].target_id = 0
 
     pool.step(
-        SecondaryStepCtx(
-            step_runtime=make_step_runtime(world),
-            dt=0.01,
-            creatures=creatures,
-            runtime_state=state,
-        ),
+        SecondaryStepCtx(step_runtime=make_step_runtime(world, dt=0.01), dt=0.01),
     )
 
     assert pool.entries[idx].target_id == expected_target_id

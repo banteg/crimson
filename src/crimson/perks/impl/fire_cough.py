@@ -55,7 +55,9 @@ def tick_fire_cough(ctx: PlayerPerkTickCtx) -> None:
     )
 
     vel = Vec2.from_angle(aim_heading) * 25.0
-    ctx.state.sprite_effects.spawn(pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413))
+    ctx.state.sprite_effects.spawn(
+        pos=muzzle, vel=vel, scale=1.0, color=RGBA(0.5, 0.5, 0.5, 0.413), rng=ctx.state.rng,
+    )
 
     ctx.player.fire_cough_timer = x87_pc24_sub(
         ctx.player.fire_cough_timer,

@@ -58,8 +58,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     quest = quest_by_level(QuestLevel(1, 3))
     assert quest is not None
 
-    ctx = QuestContext(player_count=int(replay.run.player_count),
-    )
+    ctx = QuestContext(player_count=int(replay.run.player_count), hardcore=bool(replay.run.hardcore))
     rng = Crand(int(replay.run.seed))
     advance_unlock_terrain(
         rng,
@@ -76,7 +75,6 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
             quest,
             ctx,
             rng=rng,
-            hardcore=bool(replay.run.hardcore),
             full_version=True,
         ),
     )

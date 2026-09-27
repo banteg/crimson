@@ -23,6 +23,7 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         target,
         3.14,
         runtime.world.state.rng,
+        detail_preset=5,
     )
     session = DeterministicSession(
         world=runtime.world,

@@ -10,7 +10,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import make_creature_state, make_projectile_update_options, place_creatures
+from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -51,11 +51,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         pool.entries[proj_idx].life_timer = 0.39
 
         pool.step(
-            PrimaryStepCtx(
-                dt=0.016,
-                creatures=creatures,
-                options=make_projectile_update_options(world),
-            ),
+            PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.016), dt=0.016),
         )
 
         return float(creatures[0].hp)

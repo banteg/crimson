@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
 from enum import IntEnum
 from typing import TYPE_CHECKING
 
@@ -10,7 +9,7 @@ import msgspec
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.rand import CallerStatic, Crand, CrandLike
+from grim.rand import CallerStatic, CrandLike
 
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
@@ -31,7 +30,6 @@ from .owner_ref import OwnerRef
 from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
-    from .creatures.runtime import CreatureState
     from .sim.world_state import WorldStepRuntime
 
 __all__ = [
@@ -119,10 +117,8 @@ class ParticlePool:
         self,
         *,
         size: int = PARTICLE_POOL_SIZE,
-        rng: CrandLike | None = None,
     ) -> None:
         self._entries = [Particle() for _ in range(int(size))]
-        self._rng = Crand(0) if rng is None else rng
 
     @property
     def entries(self) -> list[Particle]:
@@ -132,14 +128,14 @@ class ParticlePool:
         for entry in self._entries:
             entry.active = False
 
-    def _alloc_slot(self, *, caller: CallerStatic) -> int:
+    def _alloc_slot(self, *, caller: CallerStatic, rng: CrandLike) -> int:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 return i
         if not self._entries:
             raise ValueError("Particle pool has zero entries")
         # Native: `crt_rand() & 0x7f` (pool size is 0x80).
-        return self._rng.rand_tagged(caller) % len(self._entries)
+        return rng.rand_tagged(caller) % len(self._entries)
 
     def spawn_particle(
         self,
@@ -148,10 +144,11 @@ class ParticlePool:
         angle: float,
         intensity: float = 1.0,
         owner: OwnerRef = OwnerRef.from_local_player(0),
+        rng: CrandLike,
     ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
 
-        idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_ALLOC)
+        idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_ALLOC, rng=rng)
         entry = self._entries[idx]
         angle_f32 = f32(angle)
         entry.active = True
@@ -164,7 +161,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = f32(intensity)
         entry.angle = angle_f32
-        entry.spin = _native_particle_spin(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN))
+        entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN))
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
         entry.owner = owner
@@ -176,10 +173,11 @@ class ParticlePool:
         pos: Vec2,
         angle: float,
         owner: OwnerRef = OwnerRef.from_local_player(0),
+        rng: CrandLike,
     ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
 
-        idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ALLOC)
+        idx = self._alloc_slot(caller=RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_ALLOC, rng=rng)
         entry = self._entries[idx]
         angle_f32 = f32(angle)
         entry.active = True
@@ -192,7 +190,7 @@ class ParticlePool:
         entry.age = 0.0
         entry.intensity = 1.0
         entry.angle = angle_f32
-        entry.spin = _native_particle_spin(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN))
+        entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN))
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
         entry.owner = owner
@@ -201,15 +199,7 @@ class ParticlePool:
     def iter_active(self) -> list[Particle]:
         return [entry for entry in self._entries if entry.active]
 
-    def update(
-        self,
-        dt: float,
-        *,
-        creatures: Sequence[CreatureState] | None = None,
-        step_runtime: WorldStepRuntime,
-        fx_queue: FxQueue | None = None,
-        sprite_effects: SpriteEffectPool | None = None,
-    ) -> list[int]:
+    def update(self, dt: float, *, step_runtime: WorldStepRuntime) -> list[int]:
         """Advance particles and deactivate expired entries.
 
         This is a minimal port of the particle loop inside `projectile_update`
@@ -222,10 +212,12 @@ class ParticlePool:
         if dt <= 0.0:
             return []
         dt = f32(float(dt))
+        creatures = step_runtime.world.creatures.entries
+        fx_queue = step_runtime.fx_queue
+        sprite_effects = step_runtime.world.state.sprite_effects
+        rng = step_runtime.world.state.rng
 
         def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
-            if creatures is None:
-                return -1
             max_index = min(len(creatures), 0x180)
             radius = f32(float(radius))
 
@@ -253,7 +245,6 @@ class ParticlePool:
             return -1
 
         expired: list[int] = []
-        rng = self._rng
 
         for idx, entry in enumerate(self._entries):
             if not entry.active:
@@ -285,7 +276,7 @@ class ParticlePool:
                 expired.append(idx)
                 if style == int(ParticleStyleId.BUBBLEGUN) and entry.target_id != -1:
                     target_id = int(entry.target_id)
-                    if creatures is not None and 0 <= target_id < len(creatures):
+                    if 0 <= target_id < len(creatures):
                         if creatures[target_id].active:
                             sound_slot = int(
                                 rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_BUBBLEGUN_EXPIRY_SFX) % 3,
@@ -315,7 +306,7 @@ class ParticlePool:
             entry.scale_y = shade
             # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
 
-            if entry.render_flag and creatures is not None:
+            if entry.render_flag:
                 hit_idx = _creature_find_in_radius(pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0)
                 if hit_idx != -1:
                     entry.render_flag = False
@@ -388,7 +379,7 @@ class ParticlePool:
                                 _native_clamp_unit(tint.a),
                             )
 
-                        if sprite_effects is not None and (idx % 3 == 0):
+                        if idx % 3 == 0:
                             sprite_vel = Vec2(
                                 float(
                                     rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_PARTICLE_SPRITE_VEL_X) % 60 - 30,
@@ -402,13 +393,13 @@ class ParticlePool:
                                 vel=sprite_vel,
                                 scale=13.0,
                                 color=RGBA(1.0, 1.0, 1.0, 0.7),
-                            )
-
-                        if fx_queue is not None:
-                            fx_queue.add_random(
-                                pos=creature.pos,
                                 rng=rng,
                             )
+
+                        fx_queue.add_random(
+                            pos=creature.pos,
+                            rng=rng,
+                        )
 
                         creature.pos = Vec2(
                             x87_pc24_add(creature.pos.x, x87_pc24_mul(entry.vel.x, dt)),
@@ -428,9 +419,8 @@ class SpriteEffect(msgspec.Struct):
 
 
 class SpriteEffectPool:
-    def __init__(self, *, size: int = SPRITE_EFFECT_POOL_SIZE, rng: CrandLike | None = None) -> None:
+    def __init__(self, *, size: int = SPRITE_EFFECT_POOL_SIZE) -> None:
         self._entries = [SpriteEffect() for _ in range(int(size))]
-        self._rng = Crand(0) if rng is None else rng
 
     @property
     def entries(self) -> list[SpriteEffect]:
@@ -440,7 +430,7 @@ class SpriteEffectPool:
         for entry in self._entries:
             entry.active = False
 
-    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None) -> int:
+    def spawn(self, *, pos: Vec2, vel: Vec2, scale: float = 1.0, color: RGBA | None = None, rng: CrandLike) -> int:
         """Port of `fx_spawn_sprite` (0x0041fbb0)."""
 
         idx = None
@@ -451,13 +441,13 @@ class SpriteEffectPool:
         if idx is None:
             if not self._entries:
                 raise ValueError("Sprite effect pool has zero entries")
-            idx = self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ALLOC) % len(self._entries)
+            idx = rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ALLOC) % len(self._entries)
 
         entry = self._entries[idx]
         entry.active = True
         entry.color = RGBA() if color is None else RGBA(f32(color.r), f32(color.g), f32(color.b), f32(color.a))
         entry.rotation = x87_pc24_mul(
-            float(self._rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628),
+            float(rng.rand_tagged(RngCallerStatic.FX_SPAWN_SPRITE_ROTATION) % 628),
             _NATIVE_SPRITE_ROTATION_SCALE,
         )
         entry.pos = f32_vec2(pos)

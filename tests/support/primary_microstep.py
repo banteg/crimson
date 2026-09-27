@@ -6,7 +6,7 @@ from unittest.mock import patch
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import PrimaryStepCtx, ProjectileUpdateOptions
+from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
@@ -65,16 +65,7 @@ def observe(case):
 
     with patch.object(CreatureSpatialHash, "candidate_indices", record_query):
         hits = state.projectiles.step(
-            PrimaryStepCtx(
-                dt=case["dt"],
-                creatures=world.creatures.entries,
-                options=ProjectileUpdateOptions(
-                    rng=rng,
-                    runtime_state=state,
-                    players=world.players,
-                    step_runtime=runtime,
-                ),
-            ),
+            PrimaryStepCtx(step_runtime=runtime, dt=case["dt"]),
         )
     assert not hits and not runtime.sfx and not runtime.hit_sfx and not runtime.deaths
     assert rng.calls == 0
