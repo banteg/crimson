@@ -12,9 +12,10 @@ from crimson.player_damage import player_take_damage, player_take_projectile_dam
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import assert_float_close
 
 
 def test_death_clock_clears_regeneration_and_restores_health() -> None:
@@ -37,7 +38,7 @@ def test_death_clock_clears_regeneration_and_restores_health() -> None:
 def test_death_clock_blocks_damage() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     state.perks[int(PerkId.DEATH_CLOCK)] = 1
 

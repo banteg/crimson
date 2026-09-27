@@ -11,13 +11,13 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
-from grim.rand import RecordingCrand
+from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime, place_creatures
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import assert_float_close
 
 _SHRINKIFIER_HIT_CALLERS = [
     RngCallerStatic.SHRINKIFIER_HIT_ROTATION,
@@ -145,7 +145,7 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
 def test_ion_hit_effects_tag_exact_native_callers() -> None:
     effects = EffectPool()
     sfx_queue: list[SfxRequest] = []
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     _spawn_ion_hit_effects(
         effects,

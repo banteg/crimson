@@ -9,9 +9,10 @@ from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import assert_float_close
 
 
 def test_ion_gun_master_increases_ion_damage() -> None:
@@ -29,7 +30,7 @@ def test_ion_gun_master_increases_ion_damage() -> None:
         dt=0.016,
         players=[player],
         perks=perks,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        rng=Crand(0x1234),
     )
 
     assert killed is False

@@ -6,6 +6,7 @@ from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
 from crimson.rng_caller_static import RngCallerStatic
+from grim.rand import Crand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
@@ -131,7 +132,7 @@ def test_player_take_damage_low_health_timer_behavior(
 def test_player_take_damage_decrements_death_timer_on_death_hit() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.health = 5.0
     player.death_timer = 16.0
@@ -194,7 +195,7 @@ def test_player_take_damage_exact_zero_kill_preserve_bugs_keeps_pain_path() -> N
 def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.health = 50.90475845336914
     state.perks[int(PerkId.THICK_SKINNED)] = 1
@@ -208,7 +209,7 @@ def test_player_take_damage_thick_skinned_uses_native_damage_scale_constant() ->
 def test_player_take_damage_sets_survival_damage_seen_even_when_shielded() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.health = 100.0
     player.shield_timer = 1.0
@@ -261,7 +262,7 @@ def test_player_take_damage_uses_target_player_alive_guard_by_default() -> None:
 def test_player_take_damage_preserve_bugs_uses_player1_alive_guard() -> None:
     world = make_world(player_count=2, preserve_bugs=True)
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player1, player2 = world.players
     player1.health = -1.0
     player2.health = 5.0

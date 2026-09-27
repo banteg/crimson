@@ -34,7 +34,7 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
@@ -404,7 +404,7 @@ def test_non_spawner_movement_is_independent_of_creature_type_id() -> None:
         creature.pos = start_pos
         creature.contact_damage = 0.0
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     base = pool.entries[0]
@@ -467,7 +467,7 @@ def test_ai_mode5_near_link_scales_runtime_movement_delta() -> None:
 
     near_start = near.pos
     far_start = far.pos
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     near_step = (near.pos - near_start).length()
@@ -482,7 +482,7 @@ def test_creature_contact_damage_targets_player1_when_player0_is_dead() -> None:
     world = make_world(player_count=2)
     state = world.state
     pool = world.creatures
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     player0 = world.players[0]
     player0.pos = Vec2(100.0, 100.0)
@@ -728,14 +728,14 @@ def test_single_player_dead_player_uses_dead_target_position() -> None:
     creature.target_player = 0
     creature.pos = Vec2(500.0, 500.0)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
     assert creature.target_player == 1
     assert creature.target == Vec2(569.058349609375, expected_dead_target.y)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert creature.target == Vec2(513.7415771484375, expected_dead_target.y)
@@ -763,7 +763,7 @@ def test_single_player_dead_player_contact_path_keeps_dead_player_undamaged() ->
     creature.target_player = 0
     creature.pos = Vec2(432.0, 432.0)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     expected_dead_target = Vec2(1024.0 * (27.0 / 64.0), 1024.0 * (27.0 / 64.0))
@@ -797,7 +797,7 @@ def test_creature_retargets_to_closer_player1_in_two_player_mode() -> None:
     creature.target_player = 0
     creature.pos = Vec2(104.0, 100.0)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert creature.target_player == 1
@@ -861,7 +861,7 @@ def test_creature_update_tracks_nearest_auto_target_for_target_player() -> None:
     near.target_player = 0
     near.pos = Vec2(120.0, 100.0)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert player.auto_target == 1
@@ -900,7 +900,7 @@ def test_creature_update_auto_target_falls_back_when_previous_target_is_dead() -
     live_target.pos = Vec2(120.0, 100.0)
 
     player.auto_target = 0
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert player.auto_target == 1
@@ -969,12 +969,12 @@ def test_creature_update_auto_target_skips_refresh_on_0x46_boundary_tick() -> No
     player.auto_target = 0
     pool._update_tick = creature_runtime._TARGET_REEVAL_PERIOD - 1
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
     assert pool._update_tick == creature_runtime._TARGET_REEVAL_PERIOD
     assert player.auto_target == 0
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
     assert player.auto_target == 1
 
@@ -1015,7 +1015,7 @@ def test_creature_update_coop_auto_target_uses_target_player_position_by_default
     nearer_for_player1.pos = Vec2(80.0, 0.0)
 
     player1.auto_target = 0
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert player1.auto_target == 1
@@ -1057,7 +1057,7 @@ def test_creature_update_coop_auto_target_preserve_bugs_keeps_player1_distance_b
     nearer_for_player1.pos = Vec2(80.0, 0.0)
 
     player1.auto_target = 0
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert player1.auto_target == 0
@@ -1093,7 +1093,7 @@ def test_creature_update_coop_auto_target_preserve_bugs_reuses_other_player_dist
     candidate.target_player = 0
     candidate.pos = Vec2(10.0, 0.0)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     # The candidate is 10 units from player 1, but native reuses its 90-unit
@@ -1126,7 +1126,7 @@ def test_creature_update_preserve_bugs_updates_dead_auto_target_before_redirect(
     candidate.target_player = 0
     candidate.pos = Vec2(10.0, 0.0)
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     assert player0.auto_target == 1
@@ -1156,7 +1156,7 @@ def test_small_creature_dies_on_contact() -> None:
     creature.pos = Vec2(120.0, 100.0)  # dist=20
 
     dt = 1.0 / 60.0
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, dt)
 
     assert_float_close(player.health, 90.0)
@@ -1441,7 +1441,7 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     state = GameplayState()
     state.game_mode = GameMode.RUSH
     state.bonuses.freeze = 1.0
-    state.rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     pool = CreaturePool()
     creature = pool.entries[0]
@@ -1890,7 +1890,7 @@ def test_dead_self_damage_tick_flags_still_reduce_lifecycle_before_dead_decay() 
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
     # Exercise a non-round frame time at the native damage boundary.
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 0.03800000250339508)
 
     # Native applies SELF_DAMAGE_TICK via creature_apply_damage even while hp<=0.
@@ -1912,7 +1912,7 @@ def test_newly_dead_self_damage_tick_preserves_native_prologue_order() -> None:
     corpse.flags = CreatureFlags.SELF_DAMAGE_TICK
 
     dt = f32(0.03800000250339508)
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, dt)
 
     expected = x87_pc24_sub(
@@ -2209,7 +2209,7 @@ def test_fading_corpse_redirects_from_dead_single_player() -> None:
     creature.pos = Vec2(100.0, 100.0)
     creature.size = 45.0
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 0.1)
 
     assert creature.target_player == 1
@@ -2269,7 +2269,7 @@ def test_ai7_non_spawner_idle_keeps_previous_velocity() -> None:
     creature.move_speed = 4.2
     creature.size = 45.0
 
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     step_creatures(world, 1.0 / 60.0)
 
     # Native `creature_update_all` skips movement work for AI7 here without

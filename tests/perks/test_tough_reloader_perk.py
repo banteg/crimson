@@ -3,15 +3,16 @@ from __future__ import annotations
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
+from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import assert_float_close
 
 
 def test_tough_reloader_halves_damage_while_reloading() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.weapon.reload_active = True
     state.perks[int(PerkId.TOUGH_RELOADER)] = 1
@@ -25,7 +26,7 @@ def test_tough_reloader_halves_damage_while_reloading() -> None:
 def test_tough_reloader_sets_spread_heat_from_post_reload_damage_before_thick_skinned() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.spread_heat = 0.1
     player.weapon.reload_active = True

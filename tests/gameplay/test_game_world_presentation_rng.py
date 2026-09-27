@@ -7,6 +7,7 @@ from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import queue_projectile_decals
 from grim.geom import Vec2
+from grim.rand import Crand, RecordingCrand
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -42,10 +43,9 @@ def test_projectile_decals_consume_authoritative_rng() -> None:
 def test_projectile_decals_skip_splatter_rands_when_violence_disabled() -> None:
     from crimson.sim.presentation_step import queue_projectile_decals_pre_hit
     from crimson.sim.state_types import PlayerState
-    from tests.support.helpers import ScriptedCrand
 
     state = GameplayState()
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     hit = ProjectileHit(
         type_id=ProjectileTemplateId.PISTOL,
@@ -74,10 +74,9 @@ def test_projectile_decals_bloody_mess_keeps_decal_loop_when_violence_disabled()
     from crimson.rng_caller_static import RngCallerStatic
     from crimson.sim.presentation_step import queue_projectile_decals_pre_hit
     from crimson.sim.state_types import PlayerState
-    from tests.support.helpers import ScriptedCrand
 
     state = GameplayState()
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
     state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
     hit = ProjectileHit(

@@ -7,7 +7,8 @@ from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from grim.rand import Crand, RecordingCrand
+from tests.support.helpers import assert_float_close
 
 
 def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
@@ -16,7 +17,7 @@ def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
     perks = PerkCounts()
     perks[PerkId.PYROMANIAC] = 1
 
-    rand = ScriptedCrand(0)
+    rand = RecordingCrand(Crand(0x1234))
     killed = creature_apply_damage(
         creature,
         damage_amount=10.0,

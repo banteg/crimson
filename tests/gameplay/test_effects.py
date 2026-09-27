@@ -18,6 +18,7 @@ from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.rand import Crand, RecordingCrand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close
@@ -39,7 +40,7 @@ def test_fx_queue_caps_count() -> None:
 
 
 def test_fx_queue_add_random_tags_exact_native_callers() -> None:
-    rng = ScriptedCrand([0, 0, 0, 0])
+    rng = RecordingCrand(Crand(0x1234))
     q = FxQueue()
 
     assert q.add_random(pos=Vec2(), rng=rng)
@@ -52,7 +53,7 @@ def test_fx_queue_add_random_tags_exact_native_callers() -> None:
 
 
 def test_particle_pool_tags_exact_native_callers() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     pool = ParticlePool()
 
     pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=rng)
@@ -94,7 +95,7 @@ def test_particle_spawn_keeps_native_wide_trig_until_speed_multiply() -> None:
 
 
 def test_sprite_effect_pool_tags_exact_native_callers() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     pool = SpriteEffectPool()
 
     pool.spawn(pos=Vec2(), vel=Vec2(), scale=1.0, rng=rng)
@@ -207,7 +208,7 @@ def test_fx_queue_rotated_texture_failure_is_a_successful_noop() -> None:
 
 def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
     pool = EffectPool()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     pool.spawn_freeze_shard(
         pos=Vec2(),
@@ -228,7 +229,7 @@ def test_spawn_freeze_shard_tags_exact_native_callers() -> None:
 
 def test_spawn_freeze_shatter_tags_exact_native_callers() -> None:
     pool = EffectPool()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     pool.spawn_freeze_shatter(
         pos=Vec2(),
@@ -381,7 +382,7 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
 
 
 def test_particle_pool_tags_style_specific_jitter_callers() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     world.state.rng = rng
     pool = ParticlePool()
@@ -538,7 +539,7 @@ def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
 
 def test_spawn_blood_splatter_tags_exact_native_callers() -> None:
     pool = EffectPool()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     pool.spawn_blood_splatter(
         pos=Vec2(),
@@ -610,7 +611,7 @@ def test_effect_pool_spawn_burst_matches_template_defaults() -> None:
 
 def test_spawn_burst_tags_exact_native_callers() -> None:
     pool = EffectPool()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     pool.spawn_burst(
         pos=Vec2(),
@@ -629,7 +630,7 @@ def test_spawn_burst_tags_exact_native_callers() -> None:
 
 def test_spawn_explosion_burst_tags_exact_native_callers() -> None:
     pool = EffectPool()
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     pool.spawn_explosion_burst(
         pos=Vec2(),

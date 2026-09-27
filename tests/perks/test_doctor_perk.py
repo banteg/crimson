@@ -6,7 +6,8 @@ from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from grim.rand import Crand
+from tests.support.helpers import assert_float_close
 
 
 def test_doctor_increases_bullet_damage_by_20_percent() -> None:
@@ -24,7 +25,7 @@ def test_doctor_increases_bullet_damage_by_20_percent() -> None:
         dt=0.016,
         players=[player],
         perks=perks,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
+        rng=Crand(0x1234),
     )
 
     assert killed is False

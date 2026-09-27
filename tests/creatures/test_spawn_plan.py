@@ -13,8 +13,7 @@ from crimson.creatures.spawn import (
 )
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
-from grim.rand import Crand
-from tests.support.helpers import ScriptedCrand
+from grim.rand import Crand, RecordingCrand
 
 _TEMPLATE_IDS = tuple(sorted(entry.spawn_id for entry in SPAWN_TEMPLATES))
 _VARIANT_CASES = (
@@ -334,7 +333,7 @@ def test_build_spawn_plan_ai1_blue_tint_uses_exact_native_callers(
     template_id: SpawnId,
     caller: RngCallerStatic,
 ) -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     build_spawn_plan(template_id, Vec2(100.0, 200.0), RANDOM_HEADING_SENTINEL, rng, default_spawn_env)
 
@@ -397,7 +396,7 @@ def test_build_spawn_plan_direct_template_rand_sites_use_exact_native_callers(
     template_id: SpawnId,
     callers: list[RngCallerStatic],
 ) -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     build_spawn_plan(template_id, Vec2(100.0, 200.0), 0.0, rng, default_spawn_env)
 
@@ -586,7 +585,7 @@ def test_build_spawn_plan_random_template_callers_use_exact_native_sites(
     template_id: SpawnId,
     callers: list[RngCallerStatic],
 ) -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     build_spawn_plan(template_id, Vec2(100.0, 200.0), 0.0, rng, default_spawn_env)
 

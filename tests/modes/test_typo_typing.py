@@ -16,6 +16,7 @@ from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
 from grim.geom import Vec2
+from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.helpers import ScriptedCrand
@@ -160,7 +161,7 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
     )
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0), experience=130))
     reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
-    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world.state.rng = RecordingCrand(Crand(0x1234))
     world.state.highscore_score_xp = 7
     assign_random = mocker.spy(CreatureNameTable, "assign_random")
 

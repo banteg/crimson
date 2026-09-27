@@ -65,7 +65,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
 def test_flamethrower_particles_spawn_from_barrel_offset_muzzle() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.pos = Vec2()
     player.aim_dir = Vec2(0.0, 1.0)

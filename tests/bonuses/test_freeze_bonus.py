@@ -9,6 +9,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from grim.rand import Crand, RecordingCrand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
 from tests.support.factories import make_step_runtime, place_creatures
@@ -18,7 +19,7 @@ from tests.support.helpers import ScriptedCrand
 def test_freeze_pickup_shatters_existing_corpses() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = RecordingCrand(Crand(0x1234))
     player = world.players[0]
     corpse = place_creatures(world, [_creature(pos=Vec2(100.0, 200.0), hp=0.0)])[0]
 

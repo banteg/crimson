@@ -7,15 +7,16 @@ from crimson.sim.input import PlayerInput
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import fire_player_weapon
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import assert_float_close
 
 
 def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     player = world.players[0]
     player.pos = Vec2()
     player.aim_dir = Vec2(1.0, 0.0)

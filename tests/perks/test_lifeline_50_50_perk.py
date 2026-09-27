@@ -7,11 +7,11 @@ from crimson.perks.runtime.apply import perk_apply
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import ScriptedCrand
+from grim.rand import Crand
 
 
 def test_perk_apply_lifeline_50_50_deactivates_every_other_eligible_creature_slot() -> None:
-    state = GameplayState(rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    state = GameplayState(rng=Crand(0x1234))
     player = PlayerState(index=0, pos=Vec2())
 
     creatures: list[CreatureState] = [CreatureState() for _ in range(8)]

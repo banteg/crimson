@@ -145,7 +145,7 @@ def test_player_update_spread_floor_is_native_f32() -> None:
 
 
 def test_player_update_low_health_timer_spawns_bleed_fx_and_resets_timer(mocker) -> None:
-    rng = ScriptedCrand(0)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     state.rng = rng
@@ -646,7 +646,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
 
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles
@@ -702,7 +702,7 @@ def test_player_update_perk_timers_keep_native_stored_cadence() -> None:
 
 
 def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles
@@ -731,7 +731,7 @@ def test_player_update_man_bomb_can_fire_on_large_moving_frame_then_resets() -> 
 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles
@@ -776,7 +776,7 @@ def test_player_update_fire_cough_uses_native_spread_angle() -> None:
 
 
 def test_player_update_fire_cough_uses_pre_move_position_for_spawn() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles
@@ -1634,7 +1634,7 @@ def test_player_fire_weapon_tags_exact_pellet_loop_callers(
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles
@@ -1668,7 +1668,7 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
 
 
 def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles
@@ -1699,7 +1699,7 @@ def test_player_update_hot_tempered_spawns_from_pre_move_position() -> None:
 
 
 def test_player_update_hot_tempered_converts_to_fire_bullets_when_active() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     world = make_world()
     state = world.state
     pool = state.projectiles

@@ -9,7 +9,8 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from grim.rand import Crand, RecordingCrand
+from tests.support.helpers import assert_float_close
 
 _PYROKINETIC_BURST_CALLERS = [
     RngCallerStatic.PERKS_UPDATE_EFFECTS_PYROKINETIC_ANGLE_0P8,
@@ -33,7 +34,7 @@ _FX_QUEUE_CALLERS = [
 
 def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps() -> None:
     dt = 0.2
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     state = GameplayState(rng=rng)
 
     player = PlayerState(index=0, pos=Vec2())
@@ -66,7 +67,7 @@ def test_perks_update_effects_pyrokinetic_spawns_particle_burst_when_timer_wraps
 def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrapping() -> None:
     # Captured survival run (ticks 4055/4056) sits exactly on the timer boundary;
     # float32 math must avoid wrapping one tick early.
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     state = GameplayState(rng=rng)
 
     player = PlayerState(index=0, pos=Vec2())
@@ -111,7 +112,7 @@ def test_perks_update_effects_pyrokinetic_uses_f32_timer_threshold_before_wrappi
 
 
 def test_perks_update_effects_pyrokinetic_keeps_native_36hz_proc_frame() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     state = GameplayState(rng=rng)
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     state.perks[int(PerkId.PYROKINETIC)] = 1
@@ -150,7 +151,7 @@ def test_perks_update_effects_pyrokinetic_keeps_native_36hz_proc_frame() -> None
 
 
 def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     state = GameplayState(rng=rng, preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
@@ -177,7 +178,7 @@ def test_perks_update_effects_pyrokinetic_defaults_to_first_alive_player_aim() -
 
 
 def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targeting() -> None:
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     state = GameplayState(rng=rng, preserve_bugs=True)
 
     player0 = PlayerState(index=0, pos=Vec2(), health=0.0)
@@ -202,7 +203,7 @@ def test_perks_update_effects_pyrokinetic_preserve_bugs_keeps_player0_only_targe
 
 def test_perks_update_effects_pyrokinetic_default_targets_all_alive_players() -> None:
     dt = 0.2
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
     state = GameplayState(rng=rng, preserve_bugs=False)
 
     player0 = PlayerState(index=0, pos=Vec2())

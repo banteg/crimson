@@ -11,8 +11,8 @@ from crimson.creatures.spawn import (
 from crimson.math_parity import f32
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
-from grim.rand import Crand
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from grim.rand import Crand, RecordingCrand
+from tests.support.helpers import assert_float_close
 
 
 def test_tick_rush_mode_spawns_no_trigger() -> None:
@@ -129,7 +129,7 @@ def test_tick_rush_mode_spawns_uses_native_upward_rounded_sine_scale() -> None:
 
 
 def test_tick_rush_mode_spawns_uses_exact_native_callers() -> None:
-    rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = RecordingCrand(Crand(0x1234))
 
     tick_rush_mode_spawns(
         -1.0,

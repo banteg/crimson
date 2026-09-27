@@ -6,16 +6,17 @@ from crimson.effects import FxQueue
 from crimson.math_parity import f32, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from crimson.perks import PerkId
 from grim.geom import Vec2
+from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import step_creatures
-from tests.support.helpers import ScriptedCrand, assert_float_close
+from tests.support.helpers import assert_float_close
 
 
 def test_radioactive_tick_deals_damage_and_spawns_fx() -> None:
     dt = 0.2
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
 
     player = world.players[0]
     player.pos = Vec2()
@@ -49,7 +50,7 @@ def test_radioactive_kill_awards_base_xp_and_bypasses_death_multipliers() -> Non
     dt = 0.2
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
     state.bonuses.double_experience = 5.0
 
     player = world.players[0]
@@ -83,7 +84,7 @@ def test_radioactive_sets_hp_to_one_for_type_id_one_creatures() -> None:
     dt = 0.2
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
 
     player = world.players[0]
     player.pos = Vec2()
@@ -114,7 +115,7 @@ def test_radioactive_pulse_measures_distance_to_target_player() -> None:
     dt = 0.2
     world = make_world(player_count=2)
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
 
     # The creature targets player slot one and is only in range of that selected target.
     player1, player2 = world.players
@@ -142,7 +143,7 @@ def test_radioactive_pulse_requires_living_creature() -> None:
     dt = 0.2
     world = make_world()
     state = world.state
-    state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    state.rng = Crand(0x1234)
 
     player = world.players[0]
     player.pos = Vec2()
