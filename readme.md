@@ -28,6 +28,8 @@ gh repo clone banteg/crimson && cd crimson
 uv run crimson
 ```
 
+**Display:** `--width`/`--height` set the game resolution (1024x768 is native, 1024x1024 shows the whole arena) and `--fullscreen`/`--windowed` the window mode; both are saved to `crimson.cfg`. Fullscreen scales the game to fit the screen, and Alt+Enter toggles it in game.
+
 **Wayland on Linux:** the raylib wheels run natively on Wayland, but still link `libX11`, so keep it installed.
 
 ### Runtime files

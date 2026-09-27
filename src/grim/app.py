@@ -14,15 +14,25 @@ from .view import View
 
 SCREENSHOT_DIR = Path("screenshots")
 SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
+ALT_KEYS = (rl.KeyboardKey.KEY_LEFT_ALT, rl.KeyboardKey.KEY_RIGHT_ALT)
 
 
 def _not_requested() -> bool:
     return False
 
 
+def _ignore_fullscreen_change(_fullscreen: bool) -> None:
+    return None
+
+
 class RunViewHooks(msgspec.Struct, frozen=True):
     should_close: Callable[[], bool] = _not_requested
     consume_screenshot_request: Callable[[], bool] = _not_requested
+    fullscreen_changed: Callable[[bool], None] = _ignore_fullscreen_change
+
+
+def _fullscreen_toggle_pressed() -> bool:
+    return rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and any(rl.is_key_down(key) for key in ALT_KEYS)
 
 
 def _next_screenshot_index(directory: Path) -> int:
@@ -69,8 +79,14 @@ def run_view(
         screenshot_index = _next_screenshot_index(screenshot_dir)
         while not rl.window_should_close():
             dt = rl.get_frame_time()
+            toggle_fullscreen = _fullscreen_toggle_pressed()
+            if toggle_fullscreen:
+                rl.toggle_borderless_windowed()
+                run_hooks.fullscreen_changed(rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE))
             canvas.fit()
-            view.update(dt)
+            # Skip the update that would also see this frame's Enter press.
+            if not toggle_fullscreen:
+                view.update(dt)
             take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
             if run_hooks.consume_screenshot_request():
                 take_screenshot = True

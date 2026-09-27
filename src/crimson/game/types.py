@@ -35,6 +35,7 @@ class GameConfig(msgspec.Struct, frozen=True):
     assets_dir: Path | None = None
     width: int | None = None
     height: int | None = None
+    windowed: bool | None = None
     fps: int = 60
     seed: int | None = None
     demo_enabled: bool = False

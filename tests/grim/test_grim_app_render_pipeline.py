@@ -8,6 +8,7 @@ from grim.raylib_api import rl
 
 class _FakeRl:
     ConfigFlags = rl.ConfigFlags
+    KeyboardKey = rl.KeyboardKey
 
     def __init__(self) -> None:
         self.window_should_close_calls = 0
@@ -16,6 +17,9 @@ class _FakeRl:
         self.close_calls = 0
         self.init_args: tuple[int, int, str] | None = None
         self.target_fps: int | None = None
+        self.keys_by_frame: list[set[int]] = []
+        self.frame = -1
+        self.borderless = False
 
     def set_config_flags(self, _: int) -> None:
         return None
@@ -34,10 +38,23 @@ class _FakeRl:
         return self.window_should_close_calls > 1
 
     def get_frame_time(self) -> float:
+        self.frame += 1
         return 1.0 / 60.0
 
-    def is_key_pressed(self, _: int) -> bool:
-        return False
+    def _keys(self) -> set[int]:
+        return self.keys_by_frame[self.frame] if self.frame < len(self.keys_by_frame) else set()
+
+    def is_key_pressed(self, key: int) -> bool:
+        return key in self._keys()
+
+    def is_key_down(self, key: int) -> bool:
+        return key in self._keys()
+
+    def toggle_borderless_windowed(self) -> None:
+        self.borderless = not self.borderless
+
+    def is_window_state(self, _: int) -> bool:
+        return self.borderless
 
     def get_render_width(self) -> int:
         return 800
@@ -175,3 +192,23 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     screenshot.assert_called_once_with("00001.png")
     assert quit_requested.call_count == screenshot_requested.call_count == 2
     assert view.close_calls == fake_rl.close_calls == 1
+
+
+def test_run_view_alt_enter_toggles_fullscreen_without_updating_the_view(mocker) -> None:
+    fake_rl = _FakeRl()
+    fake_rl.keys_by_frame = [{rl.KeyboardKey.KEY_LEFT_ALT, rl.KeyboardKey.KEY_ENTER}, {rl.KeyboardKey.KEY_ENTER}]
+    view = _ViewSpy()
+    mocker.patch.object(grim_app, "rl", fake_rl)
+    mocker.patch.object(grim_app, "Canvas", _CanvasStub)
+    mocker.patch.object(grim_app, "WindowSink")
+    mocker.patch.object(grim_app, "RaylibDrawScope")
+    mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
+    mocker.patch.object(fake_rl, "window_should_close", side_effect=[False, False, True])
+    fullscreen_changed = mocker.Mock()
+
+    grim_app.run_view(view, hooks=grim_app.RunViewHooks(fullscreen_changed=fullscreen_changed))
+
+    fullscreen_changed.assert_called_once_with(True)
+    # The toggle frame's Enter press never reaches the view; plain Enter on the next frame does.
+    assert len(view.update_dts) == 1
+    assert view.draw_calls == 2

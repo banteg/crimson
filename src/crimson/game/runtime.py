@@ -9,7 +9,7 @@ from pathlib import Path
 
 from grim import music
 from grim.app import RunViewHooks, run_view
-from grim.config import ensure_crimson_cfg
+from grim.config import CrimsonConfig, ensure_crimson_cfg
 from grim.console import (
     CommandHandler,
     ConsoleState,
@@ -264,6 +264,11 @@ def _resolve_assets_dir(config: GameConfig) -> Path:
     return config.base_dir
 
 
+def _save_windowed(cfg: CrimsonConfig, *, windowed: bool) -> None:
+    cfg.display.windowed = windowed
+    cfg.save()
+
+
 def run_game(config: GameConfig) -> None:
     if config.debug:
         set_debug_enabled(True)
@@ -274,8 +279,17 @@ def run_game(config: GameConfig) -> None:
     faulthandler.enable(crash_file)
     crash_file.write(f"\n[{dt.datetime.now(tz=dt.UTC).astimezone().isoformat()}] run_game start\n")
     cfg = ensure_crimson_cfg(base_dir)
-    width = cfg.display.width if config.width is None else config.width
-    height = cfg.display.height if config.height is None else config.height
+    # Display options stand in for the original launcher, which saved its choices to crimson.cfg.
+    if config.width is not None:
+        cfg.display.width = config.width
+    if config.height is not None:
+        cfg.display.height = config.height
+    if config.windowed is not None:
+        cfg.display.windowed = config.windowed
+    if (config.width, config.height, config.windowed) != (None, None, None):
+        cfg.save()
+    width = cfg.display.width
+    height = cfg.display.height
     rng = Crand(config.seed)
     assets_dir = _resolve_assets_dir(config)
     console = create_console(base_dir, assets_dir=assets_dir)
@@ -327,7 +341,9 @@ def run_game(config: GameConfig) -> None:
             window_state=window_state,
             exit_key=rl.KeyboardKey.KEY_NULL,
             hooks=RunViewHooks(
-                should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request,
+                should_close=view.should_close,
+                consume_screenshot_request=view.consume_screenshot_request,
+                fullscreen_changed=lambda fullscreen: _save_windowed(cfg, windowed=not fullscreen),
             ),
         )
         if state is not None:

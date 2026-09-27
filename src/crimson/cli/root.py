@@ -247,8 +247,13 @@ def cmd_view(
 @app.callback(invoke_without_command=True)
 def cmd_game(
     ctx: typer.Context,
-    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
-    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
+    width: int | None = typer.Option(None, help="game resolution width, saved to crimson.cfg"),
+    height: int | None = typer.Option(None, help="game resolution height, saved to crimson.cfg"),
+    windowed: bool | None = typer.Option(
+        None,
+        "--windowed/--fullscreen",
+        help="window mode, saved to crimson.cfg; toggle in game with alt+enter",
+    ),
     fps: int = typer.Option(60, help="target fps"),
     seed: int | None = typer.Option(None, help="rng seed"),
     demo: bool = typer.Option(False, "--demo", help="enable shareware demo mode"),
@@ -282,6 +287,7 @@ def cmd_game(
         assets_dir=assets_dir,
         width=width,
         height=height,
+        windowed=windowed,
         fps=fps,
         seed=seed,
         demo_enabled=demo,
