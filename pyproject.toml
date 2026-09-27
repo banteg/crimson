@@ -63,7 +63,6 @@ line-length = 120
 [tool.ruff.lint]
 extend-select = ["ARG", "B006", "B007", "B017", "B023", "B904", "B905", "BLE001", "C4", "COM812", "FURB", "I001", "ISC", "PGH003", "PT017", "RET", "RUF012", "RUF100", "S110", "S113", "S607", "SIM", "TRY004", "UP035"]
 extend-ignore = [
-    "E402",
     # Native branch shapes stay as if/else blocks.
     "SIM108",
     # Explicit native control flow preserves NaN behavior and decompilation provenance.
@@ -84,7 +83,6 @@ extend-ignore = [
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
-    "crimson.creatures.spawn_ids.CreatureFlags",
     "crimson.creatures.spawn.CreatureFlags",
     "crimson.owner_ref.OwnerRef.from_local_player",
     "crimson.paths.default_runtime_dir",
@@ -94,12 +92,6 @@ extend-immutable-calls = [
     "typer.Argument",
     "typer.Option",
 ]
-
-[tool.ty.environment]
-extra-paths = ["tests"]
-
-[tool.pytest.ini_options]
-addopts = []
 
 [tool.coverage.run]
 branch = true

@@ -14,7 +14,7 @@ default:
 
 # Tests
 test *args:
-    uv run pytest --no-cov {{args}}
+    uv run pytest {{args}}
 
 test-cov *args:
     uv run pytest --cov=crimson --cov-report=term-missing --cov-report=html --cov-report=xml {{args}}
@@ -28,7 +28,7 @@ check *args:
     uv run crimson match regressions
     ast-grep scan
     ast-grep test
-    uv run pytest --no-cov {{args}}
+    uv run pytest {{args}}
     just check-zig
 
 check-zig:
@@ -38,9 +38,6 @@ check-zig:
 
 ty:
     uv run ty check src tests
-
-ty-tests:
-    uv run ty check tests
 
 # Duplication
 dup-report out="artifacts/duplication/pylint-r0801.txt" min="12":

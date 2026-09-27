@@ -131,7 +131,7 @@ See [docs/contributor/project-tracking/provenance.md](docs/contributor/project-t
 ```bash
 uv run pytest              # test suite
 uv run ruff check .        # lint
-uv run ty check src        # type check
+uv run ty check src tests  # type check
 ast-grep scan              # ast-grep code scan
 ast-grep test              # ast-grep rule tests
 just check                 # all of the above
