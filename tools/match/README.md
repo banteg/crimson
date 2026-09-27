@@ -1212,9 +1212,9 @@ fields are excluded, while vtable slots such as a stale `nullsub_*` are checked
 against their explicit target address. `--rewrite` replaces unambiguous labels
 with their curated identity; when that identity is already present on the line,
 it keeps the useful address as a plain hexadecimal literal instead of repeating
-the name. Ambiguous multi-name addresses remain reported for manual review. The
-same check runs as a pre-commit gate whenever maintained maps, documentation,
-source, scripts, or tools change.
+the name. Ambiguous multi-name addresses remain reported for manual review. CI
+and `just check` run the same check; it scans the whole repository, so it is
+not a pre-commit hook.
 
 ## No Fakematching
 

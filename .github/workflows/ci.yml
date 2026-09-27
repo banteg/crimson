@@ -27,6 +27,12 @@ jobs:
             use_zig: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
+          - task: resolved-name-audit
+            use_uv: true
+            do_sync: true
+            use_zig: false
+            command: uv run --no-sync crimson match resolved-name-audit --check
+            sync_args: ""
           - task: ast-grep
             use_uv: false
             do_sync: false
