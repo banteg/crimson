@@ -21,7 +21,7 @@ just docs-build
 
 ## Useful commands
 
-- `just check` — Python lint/import/type checks, docs and native-recovery checks, ast-grep scan/tests, pytest, and Zig tests/native/WASM builds
+- `just check` — Python lint/type checks, docs and native-recovery checks, ast-grep scan/tests, pytest, and Zig tests/native/WASM builds
 - `just docs-build` — build docs site
 
 ## Run and inspect

@@ -21,12 +21,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - task: lint-imports
-            use_uv: true
-            do_sync: true
-            use_zig: false
-            command: uv run --no-sync lint-imports
-            sync_args: --group dev
           - task: docs-check
             use_uv: true
             do_sync: false

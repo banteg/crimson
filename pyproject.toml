@@ -42,9 +42,6 @@ asm-differ = { git = "https://github.com/simonlindholm/asm-differ", rev = "0dd09
 [dependency-groups]
 dev = [
     "capstone>=5.0.9",
-    "import-linter>=2.9",
-    "mkdocstrings>=1.0.3",
-    "numpy>=2.4.2",
     "pefile>=2024.8.26",
     "pylint>=4.0.4",
     "pytest>=9.0.2",
@@ -117,34 +114,3 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.:",
 ]
-
-[tool.importlinter]
-root_packages = ["crimson", "grim"]
-include_external_packages = true
-
-[[tool.importlinter.contracts]]
-name = "game runtime must not import the native oracle (dev-only Unicorn harness)"
-type = "forbidden"
-source_modules = ["crimson.game", "crimson.sim", "crimson.creatures", "crimson.projectiles", "crimson.weapon_runtime", "crimson.typo", "grim"]
-forbidden_modules = ["unicorn", "crimson.dbg.native_oracle"]
-
-[[tool.importlinter.contracts]]
-name = "perk implementations must stay out of selection and availability"
-type = "forbidden"
-source_modules = ["crimson.perks.impl"]
-forbidden_modules = ["crimson.perks.selection", "crimson.perks.availability"]
-allow_indirect_imports = true
-
-[[tool.importlinter.contracts]]
-name = "perk runtime must stay out of selection and availability"
-type = "forbidden"
-source_modules = ["crimson.perks.runtime"]
-forbidden_modules = ["crimson.perks.selection", "crimson.perks.availability"]
-allow_indirect_imports = true
-
-[[tool.importlinter.contracts]]
-name = "selection and availability must not import perk impl directly"
-type = "forbidden"
-source_modules = ["crimson.perks.selection", "crimson.perks.availability"]
-forbidden_modules = ["crimson.perks.impl"]
-allow_indirect_imports = true

@@ -50,10 +50,7 @@ Shared timers, health writes and RNG draws make call order observable. Preserve
 native guards, float constants and rounding order when editing a perk. Validate
 changes with behavioral tests, RNG traces and complete session-state comparisons;
 checking that one generated registry mirrors another does not prove behavior.
-
-The import-linter contracts keep implementations and runtime code out of
-selection and availability, and prevent selection from importing implementations
-directly. Run `just check` after changes.
+Run `just check` after changes.
 
 Use [Perk runtime reference](../re/static/perks-runtime-reference.md) for the
 native call-site and implementation map.

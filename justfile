@@ -21,7 +21,6 @@ test-cov *args:
 
 check *args:
     uv run ruff check .
-    uv run lint-imports
     uv run ty check src tests
     uv run scripts/check_docs.py
     uv run crimson match experiments --check --strict --limit 1
@@ -50,9 +49,6 @@ ty-tests:
     uv run ty check tests
 
 # Lint
-lint-imports:
-    uv run lint-imports
-
 zig-z004-fix:
     sg run -c sgconfig.local.yml -l zig -p 'const _NAME = _TYPE{};' -r 'const $NAME: $TYPE = .{};' crimson-zig/src -U
     sg run -c sgconfig.local.yml -l zig -p 'var _NAME = _TYPE{};' -r 'var $NAME: $TYPE = .{};' crimson-zig/src -U

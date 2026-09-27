@@ -74,7 +74,7 @@ Skip this for mechanical ports and obvious root-cause fixes.
 
 ## encode lessons in structure
 
-If a mistake or review comment repeats, convert it into enforcement: tests / snapshots / invariants,`ast-grep` rules, import-linter contracts, typed schemas and decoders, scripts/automation.
+If a mistake or review comment repeats, convert it into enforcement: tests / snapshots / invariants, `ast-grep` rules, typed schemas and decoders, scripts/automation.
 
 Text rules are forgettable; structural rules enforce themselves.
 
@@ -82,7 +82,7 @@ Text rules are forgettable; structural rules enforce themselves.
 
 ### required pre-commit checks
 - Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
-- `pre-commit` runs fast checks only (ruff/import-linter/ty/docs/ast-grep/ziglint) and is file-scoped.
+- `pre-commit` runs fast checks only (ruff/ty/docs/ast-grep/ziglint) and is file-scoped.
 - `pre-push` runs the fast packaging and Zig unit-test checks and is file-scoped.
 - Full pytest plus optimized/WASM Zig builds run in CI and remain explicit local checks.
 - ziglint behavior is configured in `crimson-zig/.ziglint.zon` (`Z024` disabled).

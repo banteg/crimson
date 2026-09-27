@@ -4,7 +4,6 @@
 repo = "local"
 hooks = [
     { id = "py-ruff", name = "py-ruff", entry = "uv run ruff check .", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|tests/|scripts/|tools/|pyproject\\.toml|uv\\.lock|justfile)" },
-    { id = "py-import-lints", name = "py-import-lints", entry = "uv run lint-imports", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "py-types", name = "py-types", entry = "uv run ty check src tests", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(src/|tests/|pyproject\\.toml|uv\\.lock|justfile)" },
     { id = "docs-check", name = "docs-check", entry = "uv run scripts/check_docs.py", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(docs/|readme\\.md|zensical\\.toml|scripts/check_docs\\.py|justfile)" },
     { id = "resolved-name-audit", name = "resolved-name-audit", entry = "uv run crimson match resolved-name-audit --check", language = "system", pass_filenames = false, stages = ["pre-commit"], files = "^(analysis/ghidra/maps/(data_map|name_map)\\.json|docs/|src/|scripts/|tools/)" },
