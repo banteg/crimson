@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import operator
 import os
 import re
 import shlex
 import struct
 import subprocess
 from collections import Counter, defaultdict
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
+from functools import partial
 from pathlib import Path
 from typing import Any, cast
 
@@ -1850,26 +1854,50 @@ def build_native_object_set(
         raise ValueError("compile inputs changed while binding canonical configs")
     toolchain_before = _capture_toolchain_snapshot(toolchain_configs, match_root)
 
-    records: list[NativeObjectRecord] = []
-    for function, status in zip(manifest.functions, selected, strict=True):
-        if function.name in clustered_functions:
-            continue
+    # Load the image and reference catalog once: run_match reloads them for every
+    # object, and that GIL-bound work would serialize the threaded audits below.
+    reference_image = matchlib.load_image(image_path, manifest.image_base)
+    reference_catalog = matchlib.load_reference_catalog(
+        manifest,
+        functions_path=functions_path,
+    )
+
+    def match_object_function(
+        object_function: matchlib.ObjectFunction,
+        function: str,
+        *,
+        end_va: int | None,
+        reference_aliases: tuple[tuple[str, str], ...],
+    ) -> matchlib.MatchResult:
+        _, start, end = matchlib.resolve_function(manifest, function, end_override=end_va)
+        return matchlib.match_function(
+            reference_image.function_bytes(start, end),
+            object_function,
+            image=reference_image,
+            target_va=start,
+            reference_catalog=reference_catalog.with_object_aliases(reference_aliases),
+        )
+
+    def audit_function(
+        function: matchlib.FunctionSymbol,
+        status: matchlib.ScratchStatus,
+    ) -> NativeObjectRecord:
         inputs_before = _compile_input_snapshot(status.config, match_root)
         object_path = matchlib.compile_scratch(status.config, match_root, force=True)
         object_data = object_path.read_bytes()
-        result = matchlib.run_match(
-            obj_path=object_path,
-            function=status.config.function,
-            image_path=image_path,
-            functions_path=functions_path,
-            metadata_path=metadata_path,
-            symbol_name=status.config.symbol,
-            object_extent=status.config.archive_extent,
-            object_end_symbol=status.config.archive_end_symbol,
-            object_size=status.config.archive_size,
+        coff = matchlib.parse_coff_object(object_data)
+        object_function = matchlib.extract_object_function(
+            coff,
+            status.config.symbol,
+            extent=status.config.archive_extent,
+            end_symbol=status.config.archive_end_symbol,
+            size=status.config.archive_size,
+        )
+        result = match_object_function(
+            object_function,
+            status.config.function,
             end_va=status.config.end_va,
             reference_aliases=status.config.reference_aliases,
-            scope=scope,
         )
         if object_path.read_bytes() != object_data:
             raise ValueError(
@@ -1881,32 +1909,26 @@ def build_native_object_set(
             raise ValueError(
                 f"{status.config.directory.name}: compile inputs changed during native audit",
             )
-        coff = matchlib.parse_coff_object(object_data)
-        object_function = matchlib.extract_object_function(
-            coff,
-            status.config.symbol,
-            extent=status.config.archive_extent,
-            end_symbol=status.config.archive_end_symbol,
-            size=status.config.archive_size,
-        )
         input_hashes = dict(inputs_after)
         config_path = (status.config.directory / "scratch.conf").resolve()
         source_path = (status.config.directory / status.config.source).resolve()
-        records.append(
-            NativeObjectRecord(
-                function=function,
-                status=refreshed_status,
-                object_path=object_path,
-                object_symbol=object_function.name,
-                coff=coff,
-                compile_inputs=inputs_after,
-                config_sha256=input_hashes[config_path],
-                object_sha256=_normalized_coff_sha256(object_data),
-                source_sha256=input_hashes[source_path],
-            ),
+        return NativeObjectRecord(
+            function=function,
+            status=refreshed_status,
+            object_path=object_path,
+            object_symbol=object_function.name,
+            coff=coff,
+            compile_inputs=inputs_after,
+            config_sha256=input_hashes[config_path],
+            object_sha256=_normalized_coff_sha256(object_data),
+            source_sha256=input_hashes[source_path],
         )
 
-    for cluster, provider, members in prepared_clusters:
+    def audit_cluster(
+        cluster: NativeTranslationUnitSpec,
+        provider: matchlib.ScratchConfig,
+        members: tuple[NativeTranslationUnitMember, ...],
+    ) -> NativeObjectRecord:
         inputs_before = _compile_input_snapshot(provider, match_root)
         object_path = matchlib.compile_scratch(provider, match_root, force=True)
         object_data = object_path.read_bytes()
@@ -1916,16 +1938,12 @@ def build_native_object_set(
         for member in members:
             function = function_by_name[member.function]
             baseline_status = status_by_name[member.function]
-            result = matchlib.run_match(
-                obj_path=object_path,
-                function=member.function,
-                image_path=image_path,
-                functions_path=functions_path,
-                metadata_path=metadata_path,
-                symbol_name=member.symbol,
+            object_function = matchlib.extract_object_function(coff, member.symbol)
+            result = match_object_function(
+                object_function,
+                member.function,
                 end_va=baseline_status.config.end_va,
                 reference_aliases=(*provider.reference_aliases, *aliases),
-                scope=scope,
             )
             clustered_status = _refresh_status(baseline_status, result)
             _validate_cluster_match(
@@ -1933,7 +1951,6 @@ def build_native_object_set(
                 clustered_status,
                 translation_unit=cluster.name,
             )
-            object_function = matchlib.extract_object_function(coff, member.symbol)
             bindings.append(
                 _binding_from_status(
                     function,
@@ -1954,29 +1971,40 @@ def build_native_object_set(
         config_path = (provider.directory / "scratch.conf").resolve()
         source_path = (provider.directory / provider.source).resolve()
         first_binding = bindings[0]
-        records.append(
-            NativeObjectRecord(
-                function=first_binding.function,
-                status=first_binding.status,
-                object_path=object_path,
-                object_symbol=first_binding.object_symbol,
-                coff=coff,
-                compile_inputs=inputs_after,
-                config_sha256=input_hashes[config_path],
-                object_sha256=_normalized_coff_sha256(object_data),
-                source_sha256=input_hashes[source_path],
-                compile_config=provider,
-                members=tuple(bindings),
-                translation_unit=cluster.name,
-                translation_unit_config=translation_units.path
-                if translation_units is not None
-                else None,
-                translation_unit_config_sha256=translation_units.sha256
-                if translation_units is not None
-                else None,
-            ),
+        return NativeObjectRecord(
+            function=first_binding.function,
+            status=first_binding.status,
+            object_path=object_path,
+            object_symbol=first_binding.object_symbol,
+            coff=coff,
+            compile_inputs=inputs_after,
+            config_sha256=input_hashes[config_path],
+            object_sha256=_normalized_coff_sha256(object_data),
+            source_sha256=input_hashes[source_path],
+            compile_config=provider,
+            members=tuple(bindings),
+            translation_unit=cluster.name,
+            translation_unit_config=translation_units.path
+            if translation_units is not None
+            else None,
+            translation_unit_config_sha256=translation_units.sha256
+            if translation_units is not None
+            else None,
         )
 
+    # Every audit compiles a distinct scratch directory, so audits can overlap;
+    # records and the first raised error still follow the sequential order.
+    audits: list[Callable[[], NativeObjectRecord]] = [
+        partial(audit_function, function, status)
+        for function, status in zip(manifest.functions, selected, strict=True)
+        if function.name not in clustered_functions
+    ]
+    audits += [partial(audit_cluster, *prepared) for prepared in prepared_clusters]
+    if jobs == 1 or len(audits) < 2:
+        records = [audit() for audit in audits]
+    else:
+        with ThreadPoolExecutor(max_workers=min(jobs, len(audits))) as executor:
+            records = list(executor.map(operator.call, audits))
     records.sort(key=_record_min_address)
     bound_functions = [
         binding.function.name

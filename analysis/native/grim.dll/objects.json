@@ -64,7 +64,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "2b6f6f91f54be7d50a84617b0891c153492400791da027528d924d1c832acb56",
+  "audit_digest": "60664e325b50fb06caa04fe967f2800e3c52d8a52f967a6b042597ae65317872",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -18698,7 +18698,7 @@
       {
         "path": "src/crimson/native_link.py",
         "repository_relative": true,
-        "sha256": "6b525a4cf757b66603d2b0a9ec0d50c7e1f1270f03190a4a6dae7a062776f5ee"
+        "sha256": "d3f1ee0ce5faee768e274ab917ffb8300e1a31df54df0ff0958e4fc220c3491a"
       },
       {
         "path": "analysis/ida/raw/grim.dll/functions.json",

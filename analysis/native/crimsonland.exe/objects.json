@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "4f31d4c4878e2d41c3a0ace4fbac5c16e4e06d3c7d7f6bc660eb056ac1c41aa6",
+  "audit_digest": "1229a64eddc173d4c9ce015eda74cff945d7b8313e0a5c324b92b58c96681626",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -87432,7 +87432,7 @@
       {
         "path": "src/crimson/native_link.py",
         "repository_relative": true,
-        "sha256": "6b525a4cf757b66603d2b0a9ec0d50c7e1f1270f03190a4a6dae7a062776f5ee"
+        "sha256": "d3f1ee0ce5faee768e274ab917ffb8300e1a31df54df0ff0958e4fc220c3491a"
       },
       {
         "path": "analysis/ida/raw/crimsonland.exe/functions.json",
