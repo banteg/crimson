@@ -354,7 +354,9 @@ pub const ProjectilePool = struct {
 
                         if (hit_player_idx) |player_idx| {
                             proj.life_timer = 0.25;
-                            if (players[player_idx].shield_timer <= 0.0) {
+                            // Original bug #27: native skips the Death Clock immunity here.
+                            const death_clock_immune = !state.preserve_bugs and perks.perkActive(&players[0], PerkId.death_clock);
+                            if (players[player_idx].shield_timer <= 0.0 and !death_clock_immune) {
                                 players[player_idx].health = narrowF32(players[player_idx].health - 10.0);
                             }
                         }
@@ -2068,6 +2070,36 @@ test "ranged projectile can damage player when no creature is hit" {
     );
 
     try std.testing.expect(players[0].health < 100.0);
+}
+
+test "death clock blocks ranged projectiles unless preserving bugs" {
+    for ([_]bool{ false, true }) |preserve_bugs| {
+        var state = state_mod.GameplayState.init(1);
+        state.preserve_bugs = preserve_bugs;
+        var players = [_]state_mod.PlayerState{
+            .{
+                .index = 0,
+                .pos = .{ .x = 4.0, .y = 0.0 },
+                .health = 100.0,
+            },
+        };
+        players[0].perk_counts.set(PerkId.death_clock, 1);
+        var creatures: creatures_mod.CreaturePool = .{};
+        var bonuses: bonus_runtime.BonusPool = .{};
+        var pool: ProjectilePool = .{};
+
+        _ = pool.spawn(
+            .{},
+            native_half_pi,
+            @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
+            owner_ref.OwnerRef.fromCreature(0),
+            45.0,
+            true,
+        );
+        _ = pool.update(&state, players[0..], &creatures, &bonuses, 0.001, 1024.0);
+
+        try std.testing.expectEqual(@as(f32, if (preserve_bugs) 90.0 else 100.0), players[0].health);
+    }
 }
 
 test "ranged projectile can damage creature before player collision" {

@@ -161,6 +161,9 @@ def player_take_projectile_damage(state: GameplayState, player: PlayerState, dam
         return 0.0
     if state.debug_god_mode:
         return 0.0
+    # Original bug #27: native skips the Death Clock immunity here.
+    if PerkId.DEATH_CLOCK in state.perks and not state.preserve_bugs:
+        return 0.0
     if float(player.shield_timer) > 0.0:
         return 0.0
 

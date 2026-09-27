@@ -637,3 +637,44 @@ Rewrite behavior:
 Evidence: the exact `bonus_hud_slot_activate` scratch
 (`tools/match/scratches/bonus_hud_slot_activate/`) and the native `.data` layout
 in `analysis/native/crimsonland.exe/data.json`.
+
+## 27) Enemy projectiles hurt through Death Clock
+
+Native behavior:
+
+- `player_take_damage` (`0x00425e50`) returns before any damage while Death
+  Clock is active, so contact damage and other hits are ignored.
+- `projectile_update` does not call it for enemy projectile hits. It subtracts
+  10 health directly and only checks the shield, so Plasma Shooter and similar
+  shots still land during the 30-second clock.
+
+Why it's likely a bug:
+
+- The perk promises that nothing else can harm the player while the clock runs
+  down; ranged enemies are the one exception, with no apparent intent behind it.
+
+Rewrite behavior:
+
+- Default: enemy projectile hits are ignored while Death Clock is active.
+- `--preserve-bugs`: they subtract 10 health as in the original.
+
+Evidence: `tools/match/scratches/projectile_update/scratch.cpp` (player hit
+branch) and `tools/match/scratches/player_take_damage/scratch.cpp`.
+
+## 28) Spider Plasma draws a bullet sprite inside the plasma
+
+Native behavior:
+
+- `projectile_render` ends with a pass that draws the small bullet sprite at the
+  head of every in-flight projectile, skipping only Plasma Rifle, Plasma Minigun
+  and Pulse Gun.
+- Spider Plasma reuses the Plasma Minigun look but is not in that list, so the
+  green enemy shots carry a bullet sprite in their centre.
+
+Rewrite behavior:
+
+- Default: Spider Plasma is drawn without the bullet core. Shrinkifier and
+  Plasma Cannon keep theirs.
+- `--preserve-bugs`: the core is drawn as in the original.
+
+Evidence: `tools/match/scratches/projectile_render/scratch.cpp` (late bullet pass).

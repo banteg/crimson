@@ -360,7 +360,8 @@ Unlocked by quest 4.9 (*The Annihilation*).
 
 On pick, health is set to 100 and Regeneration / Greater Regeneration are
 cleared. For the next 30 seconds the player is immune to all other damage, but
-health drains steadily to zero (100 HP over 30 s). Medikits stop spawning, and
+health drains steadily to zero (100 HP over 30 s). In the original game, enemy
+projectiles still hit for 10; the rewrite blocks them unless bugs are preserved. Medikits stop spawning, and
 perks that would undermine the clock (Regeneration, Thick Skinned, Highlander,
 Jinxed, etc.) are blocked from selection.
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.creatures.runtime import CreaturePool
 from crimson.effects import FxQueue
 from crimson.math_parity import f32, x87_pc24_mul, x87_pc24_sub
@@ -41,15 +43,16 @@ def test_death_clock_blocks_damage() -> None:
     assert player.health == 100.0
 
 
-def test_death_clock_does_not_block_projectile_hit_path() -> None:
-    state = GameplayState()
+@pytest.mark.parametrize(("preserve_bugs", "health"), [(False, 100.0), (True, 90.0)])
+def test_death_clock_blocks_enemy_projectiles_unless_preserving_bugs(preserve_bugs: bool, health: float) -> None:
+    # Native projectile_update subtracts the hit directly, past the immunity (bug #27).
+    state = GameplayState(preserve_bugs=preserve_bugs)
     player = PlayerState(index=0, pos=Vec2(), health=100.0)
     state.perks[int(PerkId.DEATH_CLOCK)] = 1
 
-    applied = player_take_projectile_damage(state, player, 10.0)
+    player_take_projectile_damage(state, player, 10.0)
 
-    assert applied == 10.0
-    assert player.health == 90.0
+    assert player.health == health
 
 
 def test_death_clock_drains_health_over_time() -> None:
