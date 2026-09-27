@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
-import msgspec
-
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -20,23 +16,6 @@ from .damage_runtime import CreatureLethalHandler
 from .damage_types import CreatureDamageType
 from .runtime import CreatureState
 from .spawn import CreatureFlags, CreatureTypeId
-
-
-class _CreatureDamageCtx(msgspec.Struct):
-    creature: CreatureState
-    damage: float
-    damage_type: int
-    impulse: Vec2
-    owner: OwnerRef
-    dt: float
-    players: list[PlayerState]
-    perks: PerkCounts
-    rng: CrandLike
-    preserve_bugs: bool
-
-
-_CreatureDamageStep = Callable[[_CreatureDamageCtx], None]
-
 
 _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[SfxId, ...]] = {
     CreatureTypeId.ZOMBIE: (
@@ -93,63 +72,6 @@ def creature_death_sfx_for_slot(type_id: CreatureTypeId, sound_slot: int) -> Sfx
     if options is None or not (0 <= slot < len(options)):
         return None
     return options[slot]
-
-
-def _damage_type1_uranium_filled_bullets(ctx: _CreatureDamageCtx) -> None:
-    if PerkId.URANIUM_FILLED_BULLETS not in ctx.perks:
-        return
-    ctx.damage = x87_pc24_add(ctx.damage, ctx.damage)
-
-
-def _damage_type1_living_fortress(ctx: _CreatureDamageCtx) -> None:
-    if PerkId.LIVING_FORTRESS not in ctx.perks:
-        return
-    for player in ctx.players:
-        if float(player.health) <= 0.0:
-            continue
-        timer = float(player.living_fortress_timer)
-        if timer > 0.0:
-            scale = x87_pc24_add(x87_pc24_mul(timer, f32(0.05)), 1.0)
-            ctx.damage = x87_pc24_mul(ctx.damage, scale)
-
-
-def _damage_type1_barrel_greaser(ctx: _CreatureDamageCtx) -> None:
-    if PerkId.BARREL_GREASER not in ctx.perks:
-        return
-    ctx.damage = x87_pc24_mul(ctx.damage, f32(1.4))
-
-
-def _damage_type1_doctor(ctx: _CreatureDamageCtx) -> None:
-    if PerkId.DOCTOR not in ctx.perks:
-        return
-    ctx.damage = x87_pc24_mul(ctx.damage, f32(1.2))
-
-
-def _damage_type1_heading_jitter(ctx: _CreatureDamageCtx) -> None:
-    creature = ctx.creature
-    if (creature.flags & CreatureFlags.ANIM_PING_PONG) != 0:
-        return
-    jitter = x87_pc24_mul(
-        float((ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40),
-        f32(0.002),
-    )
-    size = max(1e-6, float(creature.size))
-    turn = x87_pc24_div(jitter, x87_pc24_mul(size, f32(0.025)))
-    # Native clamps against the f32 literal 1.5707964 and stores the sum f32.
-    turn = min(float(NATIVE_HALF_PI), turn)
-    creature.heading = x87_pc24_add(turn, creature.heading)
-
-
-def _damage_type7_ion_gun_master(ctx: _CreatureDamageCtx) -> None:
-    if PerkId.ION_GUN_MASTER in ctx.perks:
-        ctx.damage = x87_pc24_mul(ctx.damage, f32(1.2))
-
-
-def _damage_type4_pyromaniac(ctx: _CreatureDamageCtx) -> None:
-    if PerkId.PYROMANIAC not in ctx.perks:
-        return
-    ctx.damage = x87_pc24_mul(ctx.damage, f32(1.5))
-    ctx.rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
 
 
 def _damage_lethal_ranged_shock_burst(
@@ -218,25 +140,6 @@ def resolve_native_death_sfx(
     return (options[roll & 3],)
 
 
-_CREATURE_DAMAGE_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
-    CreatureDamageType.BULLET: (
-        _damage_type1_uranium_filled_bullets,
-        _damage_type1_living_fortress,
-        _damage_type1_barrel_greaser,
-        _damage_type1_doctor,
-    ),
-}
-
-_CREATURE_DAMAGE_GLOBAL_PRE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
-    CreatureDamageType.ION: (_damage_type7_ion_gun_master,),
-}
-
-
-_CREATURE_DAMAGE_ALIVE_STEPS: dict[int, tuple[_CreatureDamageStep, ...]] = {
-    CreatureDamageType.FIRE: (_damage_type4_pyromaniac,),
-}
-
-
 def creature_apply_damage(
     creature: CreatureState,
     *,
@@ -248,7 +151,6 @@ def creature_apply_damage(
     players: list[PlayerState],
     perks: PerkCounts,
     rng: CrandLike,
-    preserve_bugs: bool = False,
 ) -> bool:
     """Apply damage to a creature (`creature_apply_damage`), returning True if the hit killed it.
 
@@ -260,48 +162,51 @@ def creature_apply_damage(
 
     creature.last_hit_owner = owner
     creature.hit_flash_timer = f32(0.2)
+    damage = f32(damage_amount)
+    dt = f32(dt)
 
-    ctx = _CreatureDamageCtx(
-        creature=creature,
-        damage=f32(damage_amount),
-        damage_type=int(damage_type),
-        impulse=Vec2(f32(impulse.x), f32(impulse.y)),
-        owner=owner,
-        dt=f32(dt),
-        players=players,
-        perks=perks,
-        rng=rng,
-        preserve_bugs=bool(preserve_bugs),
-    )
+    if damage_type == CreatureDamageType.BULLET:
+        if PerkId.URANIUM_FILLED_BULLETS in perks:
+            damage = x87_pc24_add(damage, damage)
+        if PerkId.LIVING_FORTRESS in perks:
+            for player in players:
+                timer = float(player.living_fortress_timer)
+                if float(player.health) > 0.0 and timer > 0.0:
+                    damage = x87_pc24_mul(damage, x87_pc24_add(x87_pc24_mul(timer, f32(0.05)), 1.0))
+        if PerkId.BARREL_GREASER in perks:
+            damage = x87_pc24_mul(damage, f32(1.4))
+        if PerkId.DOCTOR in perks:
+            damage = x87_pc24_mul(damage, f32(1.2))
+    elif damage_type == CreatureDamageType.ION and PerkId.ION_GUN_MASTER in perks:
+        damage = x87_pc24_mul(damage, f32(1.2))
 
-    for step in _CREATURE_DAMAGE_GLOBAL_PRE_STEPS.get(ctx.damage_type, ()):
-        step(ctx)
-
-    for step in _CREATURE_DAMAGE_PRE_STEPS.get(ctx.damage_type, ()):
-        step(ctx)
-    if ctx.damage_type == CreatureDamageType.BULLET:
-        _damage_type1_heading_jitter(ctx)
+    if damage_type == CreatureDamageType.BULLET and (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
+        jitter = x87_pc24_mul(
+            float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_HEADING_JITTER) & 0x7F) - 0x40),
+            f32(0.002),
+        )
+        turn = x87_pc24_div(jitter, x87_pc24_mul(max(1e-6, float(creature.size)), f32(0.025)))
+        # Native clamps against the f32 literal 1.5707964 and stores the sum f32.
+        creature.heading = x87_pc24_add(min(float(NATIVE_HALF_PI), turn), creature.heading)
 
     if creature.hp <= 0.0:
-        if ctx.dt > 0.0:
-            creature.lifecycle_stage = x87_pc24_sub(
-                creature.lifecycle_stage,
-                x87_pc24_mul(ctx.dt, 15.0),
-            )
+        if dt > 0.0:
+            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, x87_pc24_mul(dt, 15.0))
         return True
 
-    for step in _CREATURE_DAMAGE_ALIVE_STEPS.get(ctx.damage_type, ()):
-        step(ctx)
+    if damage_type == CreatureDamageType.FIRE and PerkId.PYROMANIAC in perks:
+        damage = x87_pc24_mul(damage, f32(1.5))
+        rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
 
-    creature.hp = x87_pc24_sub(creature.hp, ctx.damage)
+    creature.hp = x87_pc24_sub(creature.hp, damage)
     creature.vel = Vec2(
-        x87_pc24_sub(creature.vel.x, ctx.impulse.x),
-        x87_pc24_sub(creature.vel.y, ctx.impulse.y),
+        x87_pc24_sub(creature.vel.x, f32(impulse.x)),
+        x87_pc24_sub(creature.vel.y, f32(impulse.y)),
     )
 
     if creature.hp <= 0.0:
-        if ctx.dt > 0.0:
-            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, ctx.dt)
+        if dt > 0.0:
+            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, dt)
         else:
             creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
         return True
@@ -347,7 +252,6 @@ def creature_apply_damage_with_lethal_followup(
         players=players,
         perks=perks,
         rng=rng,
-        preserve_bugs=bool(preserve_bugs),
     )
     if killed and death_start_needed:
 
