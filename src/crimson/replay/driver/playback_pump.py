@@ -47,6 +47,8 @@ def advance_playback_frame(
     clock.accum += float(ticks_requested - len(tick_results)) * float(clock.dt_tick)
 
     for tick_result in tick_results:
+        # Each tick sees the tune state it left behind, as in live play.
+        game_tune_started = game_tune_started or tick_result.payload.presentation.trigger_game_tune
         runtime.advance_presentation_clock(
             dt_sim=float(tick_result.payload.dt_sim),
             game_tune_started=bool(game_tune_started),
