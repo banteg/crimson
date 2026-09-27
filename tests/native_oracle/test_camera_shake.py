@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import random
 
-from crimson.bonuses.nuke import NUKE_CAMERA_SHAKE_PULSES, NUKE_CAMERA_SHAKE_TIMER
+from crimson.bonuses.apply import NUKE_CAMERA_SHAKE_PULSES, NUKE_CAMERA_SHAKE_TIMER
 from crimson.camera import camera_shake_update
 from crimson.math_parity import f32
 from crimson.sim.gameplay_state import GameplayState

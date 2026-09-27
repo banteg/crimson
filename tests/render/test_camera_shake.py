@@ -5,8 +5,7 @@ from pathlib import Path
 import pytest
 
 from crimson.bonuses import BonusId
-from crimson.bonuses.apply import bonus_apply
-from crimson.bonuses.nuke import NUKE_CAMERA_SHAKE_TIMER
+from crimson.bonuses.apply import NUKE_CAMERA_SHAKE_TIMER, bonus_apply
 from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32

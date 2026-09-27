@@ -11,7 +11,6 @@ from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
 from ..bonuses.fire_bullets import LargeHitDecalRuntime, queue_large_hit_decal_streak
-from ..bonuses.freeze import freeze_bonus_active
 from ..camera import CameraUpdate
 from ..effects import FxQueue
 from ..game_modes import GameMode
@@ -191,7 +190,7 @@ def queue_projectile_decals_pre_hit(
     detail_preset: int,
     violence_disabled: int,
 ) -> ProjectileDecalPostCtx:
-    freeze_active = freeze_bonus_active(state=state)
+    freeze_active = float(state.bonuses.freeze) > 0.0
     bloody = bool(players) and PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks
     large_hit_decal_runtime: LargeHitDecalRuntime | None = None
     if freeze_active:
@@ -391,7 +390,7 @@ def plan_world_presentation_step(
                 detail_preset=int(detail_preset),
                 violence_disabled=int(violence_disabled),
             )
-            if freeze_bonus_active(state=state):
+            if float(state.bonuses.freeze) > 0.0:
                 if (not bool(demo_mode_active)) and game_mode != GameMode.RUSH and (not bool(game_tune_started)):
                     play_game_tune = True
             else:
