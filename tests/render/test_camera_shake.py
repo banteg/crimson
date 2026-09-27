@@ -176,14 +176,13 @@ def _spawn_nuke_pickup_on_player(world: WorldState) -> object:
     return entry
 
 
-def _build_session_world(*, seed: int = 0x1234, world_size: float = 1024.0) -> WorldState:
+def _build_session_world(*, seed: int = 0x1234) -> WorldState:
     world = WorldState.build(
-        world_size=float(world_size),
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    reset_players(world.players, state=world.state, world_size=float(world_size), player_count=1)
+    reset_players(world.players, state=world.state, player_count=1)
     world.state.rng.srand(int(seed))
     return world
 
@@ -194,7 +193,6 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     player = world.players[0]
     session = DeterministicSession(
         world=world,
-        world_size=1024.0,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
         mode_runtime=SurvivalSessionRuntime(),
@@ -217,7 +215,6 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
     player = world.players[0]
     session = DeterministicSession(
         world=world,
-        world_size=1024.0,
         game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
         mode_runtime=RushSessionRuntime(world=world),

@@ -21,6 +21,7 @@ from crimson.dbg.trace import load_trace
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
 from crimson.replay.types import quantize_f32
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
+from crimson.terrain_slots import TERRAIN_SIZE
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 
@@ -116,7 +117,6 @@ def _run_settings_stub(
     hardcore: bool = False,
     detail_preset: int = 5,
     violence_disabled: int = 0,
-    world_size: float = 1024.0,
     status: dict[str, object] | None = None,
 ) -> dict[str, object]:
     return {
@@ -125,7 +125,7 @@ def _run_settings_stub(
         "hardcore": bool(hardcore),
         "detail_preset": int(detail_preset),
         "violence_disabled": int(violence_disabled),
-        "world_size": float(world_size),
+        "world_size": TERRAIN_SIZE,
         "status": _status_stub() if status is None else status,
     }
 

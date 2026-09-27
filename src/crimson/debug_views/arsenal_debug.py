@@ -17,6 +17,7 @@ from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
+from ..terrain_slots import TERRAIN_SIZE
 from ..ui.cursor import draw_aim_cursor
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import (
@@ -31,8 +32,6 @@ from ..world.standalone_tick_harness import StandaloneTickHarness
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .audio_bootstrap import init_view_audio
 from .registry import ViewInstance, register_view
-
-WORLD_SIZE = 1024.0
 
 BG = rl.Color(10, 10, 12, 255)
 
@@ -94,7 +93,6 @@ class ArsenalDebugView:
 
         self._runtime = WorldRuntime(
             assets_dir=ctx.assets_dir,
-            world_size=float(WORLD_SIZE),
             preserve_bugs=bool(ctx.preserve_bugs),
             audio_rng=self._audio_rng,
         )
@@ -148,7 +146,7 @@ class ArsenalDebugView:
         weapon_assign_player(self._player, self._selected_weapon_id(), state=self._runtime.world.state)
 
     def _reset_scene(self) -> None:
-        self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5))
+        self._runtime.reset(seed=0xBEEF, player_count=1, spawn_pos=Vec2(TERRAIN_SIZE * 0.5, TERRAIN_SIZE * 0.5))
         self._tick_harness.reset()
         self._player = self._runtime.world.players[0] if self._runtime.world.players else None
         self._apply_weapon()
@@ -177,8 +175,8 @@ class ArsenalDebugView:
             spawn_pos = (player_pos + Vec2.from_angle(angle) * self._spawn_ring_radius).clamp_rect(
                 48.0,
                 48.0,
-                WORLD_SIZE - 48.0,
-                WORLD_SIZE - 48.0,
+                TERRAIN_SIZE - 48.0,
+                TERRAIN_SIZE - 48.0,
             )
             heading = angle + math.pi
             self._runtime.world.creatures.spawn_template(
@@ -221,8 +219,6 @@ class ArsenalDebugView:
                 bonus_id=bonus_id,
                 duration_override=int(amount_override),
                 state=self._runtime.world.state,
-                world_width=float(WORLD_SIZE),
-                world_height=float(WORLD_SIZE),
             )
 
     def _handle_debug_input(self) -> None:

@@ -19,7 +19,7 @@ from ...sim.bootstrap import TerrainSetup
 from ...sim.hooks import TickResult
 from ...sim.run_init import initialize_run
 from ...sim.run_result import RunOutcome, RunResult, build_run_result
-from ...sim.run_spec import WORLD_SIZE, RunSpec
+from ...sim.run_spec import RunSpec
 from ...sim.sessions import (
     DeterministicSessionTick,
     IllegalCommandError,
@@ -121,7 +121,6 @@ class SessionPlaybackDriver:
     ) -> None:
         self.run_spec = run
         self.mode_id = GameMode(run.game_mode_id)
-        self.world_size = WORLD_SIZE
         self.tick_count = int(tick_count)
         self.max_ticks = max_ticks
         self.trace_rng = bool(trace_rng)

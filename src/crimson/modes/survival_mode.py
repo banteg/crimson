@@ -34,8 +34,6 @@ from .components.highscore_record_builder import build_highscore_record_for_game
 from .components.perk_menu_controller import PerkMenuController
 from .components.perk_prompt_controller import PerkPromptState
 
-WORLD_SIZE = 1024.0
-
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -56,7 +54,6 @@ class SurvivalMode(BaseGameplayMode):
     ) -> None:
         super().__init__(
             ctx,
-            world_size=WORLD_SIZE,
             default_game_mode_id=GameMode.SURVIVAL,
             demo_mode_active=False,
             quest_fail_retry_count=0,

@@ -6,10 +6,10 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
+from ..terrain_slots import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
-    NATIVE_TERRAIN_SIZE,
     edge_midpoints,
     heading_from_center,
     line_points,
@@ -515,7 +515,7 @@ def build_2_8_land_of_lizards(ctx: QuestContext, *, rng: CrandLike, full_version
 def build_2_9_ghost_patrols(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.width, offset=128.0)
-    fixed_right_x = edge_midpoints(NATIVE_TERRAIN_SIZE, offset=128.0).right.x
+    fixed_right_x = edge_midpoints(TERRAIN_SIZE, offset=128.0).right.x
     entries.append(
         spawn(edges.right, heading=0.0, spawn_id=SpawnId.ALIEN_DEADLY_FAST_2B, trigger_ms=1500, count=2),
     )

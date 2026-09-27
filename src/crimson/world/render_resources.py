@@ -19,6 +19,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.terrain_fx import FxQueueTextures, bake_terrain_fx_batch
 from ..sim.state_types import PlayerState
 from ..sim.terrain_fx import TerrainFxBatch
+from ..terrain_slots import TERRAIN_SIZE
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -27,7 +28,6 @@ if TYPE_CHECKING:
 
 class RenderResources(msgspec.Struct):
     assets_dir: Path
-    world_size: float = 1024.0
     config: CrimsonConfig | None = None
 
     ground: GroundRenderer | None = None
@@ -72,8 +72,8 @@ class RenderResources(msgspec.Struct):
                 texture=base,
                 overlay=overlay,
                 overlay_detail=detail,
-                width=int(self.world_size),
-                height=int(self.world_size),
+                width=TERRAIN_SIZE,
+                height=TERRAIN_SIZE,
                 texture_scale=1.0,
             )
         else:
@@ -174,7 +174,6 @@ class RenderResources(msgspec.Struct):
         rtx_mode: RtxRenderMode,
     ) -> RenderFrame:
         return RenderFrame(
-            world_size=float(self.world_size),
             demo_mode_active=bool(demo_mode_active),
             config=self.config,
             camera=camera,

@@ -26,8 +26,9 @@ from ..replay import PackedTickInputs
 from ..replay.checkpoints import ReplayCheckpoint
 from ..replay.types import quantize_f32
 from ..sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from ..sim.run_spec import WORLD_SIZE, RunSpec, RunStatus
+from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.world_reset import CreatureSlotResidue
+from ..terrain_slots import TERRAIN_SIZE
 from .canonical_channels import (
     EntitySamplesSnapshot,
     GameFrameRngAdvanceOperation,
@@ -841,8 +842,8 @@ def _validate_run_settings(settings: _RunSettingsRow, *, field: str) -> GameStat
         raise FridaFinalizeError(f"{field}.detail_preset must be in 1..5")
     if int(settings.violence_disabled) not in (0, 1):
         raise FridaFinalizeError(f"{field}.violence_disabled must be 0 or 1")
-    if float(settings.world_size) != WORLD_SIZE:
-        raise FridaFinalizeError(f"{field}.world_size must be {WORLD_SIZE}")
+    if float(settings.world_size) != TERRAIN_SIZE:
+        raise FridaFinalizeError(f"{field}.world_size must be {TERRAIN_SIZE}")
     return _capture_status(settings.status, field=f"{field}.status")
 
 

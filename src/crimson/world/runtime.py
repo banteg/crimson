@@ -33,7 +33,6 @@ class WorldRuntime:
         self,
         *,
         assets_dir: Path,
-        world_size: float = 1024.0,
         demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
@@ -44,7 +43,6 @@ class WorldRuntime:
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
         self.assets_dir = Path(assets_dir)
-        self.world_size = float(world_size)
         self.demo_mode_active = bool(demo_mode_active)
         self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
@@ -58,7 +56,6 @@ class WorldRuntime:
 
         render_resources = RenderResources(
             assets_dir=self.assets_dir,
-            world_size=float(self.world_size),
             config=self.config,
         )
         self.render_resources = render_resources
@@ -68,32 +65,16 @@ class WorldRuntime:
             audio_rng=self.audio_rng,
         )
         self.terrain_runtime = TerrainRuntime(
-            world_size=float(self.world_size),
             render_resources=render_resources,
         )
 
         self.camera = Vec2(-1.0, -1.0)
 
-        self._sync_world_size_ownership()
         self.sync_audio_bridge_state()
 
     # ------------------------------------------------------------------
     # Shared lifecycle methods (extracted from 4 identical implementations)
     # ------------------------------------------------------------------
-
-    def sync_world_size(self) -> None:
-        self._sync_world_size_ownership()
-
-    def _sync_world_size_ownership(self) -> None:
-        world_size = float(self.world_size)
-        self.render_resources.world_size = world_size
-        self.terrain_runtime.world_size = world_size
-
-        ground = self.render_resources.ground
-        if ground is not None:
-            side = max(0, int(world_size))
-            ground.width = side
-            ground.height = side
 
     def reset(
         self,
@@ -102,7 +83,6 @@ class WorldRuntime:
         player_count: int = 1,
         spawn_pos: Vec2 | None = None,
     ) -> None:
-        self._sync_world_size_ownership()
         self._reset_world(seed=int(seed), player_count=int(player_count), spawn_pos=spawn_pos)
         self.render_resources.clear_pending_terrain_fx()
         self.camera = Vec2(-1.0, -1.0)
@@ -113,7 +93,6 @@ class WorldRuntime:
 
     def _reset_world(self, *, seed: int, player_count: int, spawn_pos: Vec2 | None) -> None:
         self.world = build_reset_world(
-            world_size=self.world_size,
             seed=seed,
             player_count=player_count,
             spawn_pos=spawn_pos,
@@ -158,7 +137,6 @@ class WorldRuntime:
             return
 
         screen_size = viewport.camera_screen_size(
-            world_size=self.world_size,
             config=self.config,
             runtime_w=float(rl.get_screen_width()),
             runtime_h=float(rl.get_screen_height()),
@@ -166,7 +144,6 @@ class WorldRuntime:
         camera = self.camera if update.focus is None else screen_size * 0.5 - update.focus
         camera = camera + update.shake
         self.camera = viewport.clamp_camera(
-            world_size=self.world_size,
             camera=camera,
             screen_size=screen_size,
         )
@@ -186,7 +163,7 @@ class WorldRuntime:
 
     def view_transform(self) -> viewport.ViewTransform:
         return viewport.view_transform(
-            world_size=self.world_size, config=self.config, camera=self.camera,
+            config=self.config, camera=self.camera,
             out_size=Vec2(float(rl.get_screen_width()), float(rl.get_screen_height())),
         )
 

@@ -10,7 +10,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_result import PlayerRunResult, RunOutcome
-from crimson.sim.run_spec import WORLD_SIZE
+from crimson.terrain_slots import TERRAIN_SIZE
 from crimson.weapons import WeaponId
 from grim.rand import CallerStatic, Crand
 from tests.support.replay_runner_helpers import (
@@ -45,8 +45,8 @@ def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
-        width=int(WORLD_SIZE),
-        height=int(WORLD_SIZE),
+        width=TERRAIN_SIZE,
+        height=TERRAIN_SIZE,
     )
 
     terrain_setup = driver.terrain_setup

@@ -81,7 +81,7 @@ def test_alternate_weapon_slows_movement() -> None:
 def test_alternate_weapon_starts_with_preloaded_pistol_alt_slot() -> None:
     state = GameplayState()
     players: list[PlayerState] = []
-    reset_players(players, state=state, world_size=1024.0, player_count=1)
+    reset_players(players, state=state, player_count=1)
     player = players[0]
     alt = _alt(player)
 
@@ -96,7 +96,7 @@ def test_alternate_weapon_starts_with_preloaded_pistol_alt_slot() -> None:
 def test_alternate_weapon_first_weapon_pickup_keeps_preloaded_pistol_slot() -> None:
     state = GameplayState()
     players: list[PlayerState] = []
-    reset_players(players, state=state, world_size=1024.0, player_count=1)
+    reset_players(players, state=state, player_count=1)
     player = players[0]
     state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
 

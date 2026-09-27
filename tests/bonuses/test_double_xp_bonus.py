@@ -27,8 +27,6 @@ def test_creature_handle_death_doubles_xp_when_double_xp_bonus_active() -> None:
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 

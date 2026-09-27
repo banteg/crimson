@@ -82,7 +82,6 @@ def test_typo_commands_apply_before_input_transform(make_world_state) -> None:
 
     session = DeterministicSession(
         world=world,
-        world_size=1024.0,
         game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
         mode_runtime=_TransformObserver(world=world, seen_typing_text=seen_typing_text),
@@ -156,7 +155,6 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
     from crimson.sim.world_state import WorldState
 
     world = WorldState.build(
-        world_size=1024.0,
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -173,7 +171,6 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
             elapsed_before_ms=0.0,
             dt_sim_ms=1.0,
             dt_raw_ms=1.0,
-            world_size=1024.0,
         ),
     )
 

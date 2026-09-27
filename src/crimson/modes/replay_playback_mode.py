@@ -38,7 +38,6 @@ from ..sim.batch_apply import (
     apply_presentation_plans,
 )
 from ..sim.clock import FixedStepClock
-from ..sim.run_spec import WORLD_SIZE
 from ..ui.hud import (
     HUD_AMMO_BASE_POS,
     HUD_AMMO_TEXT_OFFSET,
@@ -300,7 +299,6 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._driver = None
 
-        world_size = WORLD_SIZE
         audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
         audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
         self._audio = audio
@@ -322,7 +320,6 @@ class ReplayPlaybackMode:
 
         runtime = WorldRuntime(
             assets_dir=self._ctx.assets_dir,
-            world_size=float(world_size),
             demo_mode_active=False,
             quest_fail_retry_count=int(quest_fail_retry_count),
             hardcore=bool(hardcore),

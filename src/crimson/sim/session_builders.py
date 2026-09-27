@@ -24,7 +24,6 @@ from .sessions import (
 def build_survival_session(
     *,
     world: WorldState,
-    world_size: float,
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
@@ -34,7 +33,6 @@ def build_survival_session(
     mode_runtime = SurvivalSessionRuntime()
     session = DeterministicSession(
         world=world,
-        world_size=world_size,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
         detail_preset=detail_preset,
@@ -50,7 +48,6 @@ def build_survival_session(
 def build_rush_session(
     *,
     world: WorldState,
-    world_size: float,
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
@@ -59,7 +56,6 @@ def build_rush_session(
     mode_runtime = RushSessionRuntime(world=world)
     session = DeterministicSession(
         world=world,
-        world_size=world_size,
         game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
         detail_preset=detail_preset,
@@ -75,7 +71,6 @@ def build_rush_session(
 def build_quest_session(
     *,
     world: WorldState,
-    world_size: float,
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
@@ -96,7 +91,6 @@ def build_quest_session(
     mode_runtime = QuestSessionRuntime(spawn=quest_state)
     session = DeterministicSession(
         world=world,
-        world_size=world_size,
         game_mode=GameMode.QUESTS,
         perk_progression_enabled=True,
         detail_preset=detail_preset,
@@ -113,7 +107,6 @@ def build_quest_session(
 def build_typo_session(
     *,
     world: WorldState,
-    world_size: float,
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
@@ -129,7 +122,6 @@ def build_typo_session(
     )
     return DeterministicSession(
         world=world,
-        world_size=world_size,
         game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
         detail_preset=detail_preset,
@@ -143,7 +135,6 @@ def build_typo_session(
 def build_tutorial_session(
     *,
     world: WorldState,
-    world_size: float,
     detail_preset: int,
     violence_disabled: int,
     game_tune_started: bool,
@@ -158,7 +149,6 @@ def build_tutorial_session(
     )
     return DeterministicSession(
         world=world,
-        world_size=world_size,
         game_mode=GameMode.TUTORIAL,
         perk_progression_enabled=True,
         detail_preset=detail_preset,

@@ -12,6 +12,7 @@ from ..game_modes import GameMode
 from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import BonusPickupEvent, PlayerState
+from ..terrain_slots import TERRAIN_SIZE
 from ..weapon_runtime.availability import weapon_pick_random_available
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .apply import bonus_apply
@@ -157,16 +158,14 @@ class BonusPool:
         duration_override: int = -1,
         *,
         state: GameplayState,
-        world_width: float = 1024.0,
-        world_height: float = 1024.0,
         detail_preset: int = 5,
         emit_burst: bool = True,
     ) -> BonusEntry | None:
         clamped_pos = pos.clamp_rect(
             BONUS_SPAWN_MARGIN,
             BONUS_SPAWN_MARGIN,
-            float(world_width) - BONUS_SPAWN_MARGIN,
-            float(world_height) - BONUS_SPAWN_MARGIN,
+            TERRAIN_SIZE - BONUS_SPAWN_MARGIN,
+            TERRAIN_SIZE - BONUS_SPAWN_MARGIN,
         )
         if state.game_mode == GameMode.RUSH:
             return None
@@ -225,16 +224,14 @@ class BonusPool:
         *,
         state: GameplayState,
         players: list[PlayerState],
-        world_width: float = 1024.0,
-        world_height: float = 1024.0,
     ) -> BonusEntry:
         if state.game_mode == GameMode.RUSH:
             return self._sentinel
         if (
             pos.x < BONUS_SPAWN_MARGIN
             or pos.y < BONUS_SPAWN_MARGIN
-            or pos.x > world_width - BONUS_SPAWN_MARGIN
-            or pos.y > world_height - BONUS_SPAWN_MARGIN
+            or pos.x > TERRAIN_SIZE - BONUS_SPAWN_MARGIN
+            or pos.y > TERRAIN_SIZE - BONUS_SPAWN_MARGIN
         ):
             return self._sentinel
 
@@ -276,8 +273,6 @@ class BonusPool:
         state: GameplayState,
         players: list[PlayerState],
         detail_preset: int = 5,
-        world_width: float = 1024.0,
-        world_height: float = 1024.0,
     ) -> BonusEntry | None:
         from ..perks import PerkId
 
@@ -305,8 +300,6 @@ class BonusPool:
                     pos,
                     state=state,
                     players=players,
-                    world_width=world_width,
-                    world_height=world_height,
                 )
 
                 entry.bonus_id = BonusId.WEAPON
@@ -354,8 +347,6 @@ class BonusPool:
             pos,
             state=state,
             players=players,
-            world_width=world_width,
-            world_height=world_height,
         )
 
         if entry.bonus_id == BonusId.WEAPON:

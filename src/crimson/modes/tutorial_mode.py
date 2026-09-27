@@ -44,7 +44,6 @@ class TutorialMode(BaseGameplayMode):
     ) -> None:
         super().__init__(
             ctx,
-            world_size=1024.0,
             default_game_mode_id=GameMode.TUTORIAL,
             demo_mode_active=bool(demo_mode_active),
             quest_fail_retry_count=0,

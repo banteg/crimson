@@ -47,7 +47,6 @@ def test_fire_bullets_projectile_decals_flow_through_feature_hooks() -> None:
 
 def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
     world = WorldState.build(
-        world_size=1024.0,
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -58,7 +57,6 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
     events = world.step(
         1.0 / 60.0,
         inputs=[],
-        world_size=1024.0,
         detail_preset=5,
         violence_disabled=0,
         fx_queue=fx_queue,

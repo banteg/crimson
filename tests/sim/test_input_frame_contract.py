@@ -40,7 +40,6 @@ def test_normalize_input_frame_is_player_index_ordered_and_fixed_size() -> None:
 
 def test_world_step_applies_per_player_inputs_by_index() -> None:
     world = WorldState.build(
-        world_size=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -56,7 +55,6 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
             PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(600.0, 300.0)),
             PlayerInput(move=Vec2(-1.0, 0.0), aim=Vec2(400.0, 300.0)),
         ],
-        world_size=1024.0,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

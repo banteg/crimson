@@ -47,7 +47,6 @@ class _WorldStub:
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
-            world_size=1024.0,
             demo_mode_active=False,
             config=None,
             camera=Vec2(),
@@ -96,7 +95,7 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
     render_ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(
-            world_size=frame.world_size, config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024),
+            config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024),
         ),
     )
 

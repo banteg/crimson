@@ -57,7 +57,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, runtime.world.state, world_size=float(runtime.world_size))
+    player_update(player, input_state, 0.05, runtime.world.state)
 
     sounds = plan_player_audio_sfx(
         player,
@@ -98,7 +98,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         fire_down=True,
         aim=Vec2(player.pos.x + 10.0, player.pos.y),
     )
-    player_update(player, input_state, 0.05, runtime.world.state, world_size=float(runtime.world_size))
+    player_update(player, input_state, 0.05, runtime.world.state)
 
     sounds = plan_player_audio_sfx(
         player,

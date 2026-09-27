@@ -52,7 +52,6 @@ class StandaloneTickHarness:
         self.reset()
         session = DeterministicSession(
             world=world_state,
-            world_size=float(runtime.world_size),
             game_mode=self.game_mode,
             detail_preset=int(detail_preset),
             violence_disabled=int(violence_disabled),

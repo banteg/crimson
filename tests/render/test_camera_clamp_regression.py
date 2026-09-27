@@ -76,7 +76,6 @@ def _ground(
 
 def _runtime_world(
     *,
-    world_size: float = 1024.0,
     screen_width: int | None = None,
     screen_height: int | None = None,
 ) -> WorldRuntimeHost:
@@ -88,7 +87,6 @@ def _runtime_world(
         cfg.display.height = int(screen_height)
     return WorldRuntimeHost(
         assets_dir=repo_root / "artifacts" / "assets",
-        world_size=float(world_size),
         config=cfg,
     )
 
@@ -101,24 +99,22 @@ def test_ground_clamp_is_stable_when_screen_matches_world_width() -> None:
 
 
 def test_world_clamp_is_stable_when_screen_matches_world_width() -> None:
-    clamped = viewport.clamp_camera(world_size=1024.0, camera=Vec2(-0.25, -5.0), screen_size=Vec2(1024.0, 768.0))
+    clamped = viewport.clamp_camera(camera=Vec2(-0.25, -5.0), screen_size=Vec2(1024.0, 768.0))
     assert clamped.x == 0.0
 
 
 def test_world_camera_screen_size_fits_widescreen_uniformly() -> None:
     world = _runtime_world(
-        world_size=1024.0,
         screen_width=1280,
         screen_height=720,
     )
-    size = viewport.camera_screen_size(world_size=world.world_size, config=world.config, runtime_w=0.0, runtime_h=0.0)
+    size = viewport.camera_screen_size(config=world.config, runtime_w=0.0, runtime_h=0.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
 
 def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(mocker) -> None:
     world = _runtime_world(
-        world_size=1024.0,
         screen_width=1024,
         screen_height=768,
     )
@@ -131,20 +127,18 @@ def test_world_camera_screen_size_prefers_runtime_dimensions_over_stale_config(m
 
 def test_world_camera_screen_size_uses_frame_snapshot_when_provided(mocker) -> None:
     world = _runtime_world(
-        world_size=1024.0,
         screen_width=1024,
         screen_height=768,
     )
     mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=768)
-    size = viewport.camera_screen_size(world_size=world.world_size, config=world.config, runtime_w=1280.0, runtime_h=720.0)
+    size = viewport.camera_screen_size(config=world.config, runtime_w=1280.0, runtime_h=720.0)
     assert_float_close(size.x, 1024.0)
     assert_float_close(size.y, 576.0)
 
 
 def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocker) -> None:
     runtime = _runtime_world(
-        world_size=1024.0,
         screen_width=1024,
         screen_height=768,
     )
@@ -161,7 +155,7 @@ def test_runtime_update_camera_uses_viewport_math_without_renderer_helpers(mocke
 
 
 def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(mocker) -> None:
-    world = _runtime_world(world_size=1024.0)
+    world = _runtime_world()
     world.camera = Vec2(-32.0, -48.0)
     width = mocker.patch.object(world_runtime.rl, "get_screen_width", return_value=1280)
     height = mocker.patch.object(world_runtime.rl, "get_screen_height", return_value=720)
@@ -184,7 +178,7 @@ def test_view_transform_is_stable_and_runtime_conversion_uses_current_camera(moc
 
 
 def test_runtime_build_render_frame_requires_bound_resources() -> None:
-    world = _runtime_world(world_size=1024.0)
+    world = _runtime_world()
 
     with pytest.raises(AssertionError, match="runtime resources must be loaded before use"):
         world.build_render_frame()

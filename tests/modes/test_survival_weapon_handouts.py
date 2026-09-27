@@ -145,8 +145,6 @@ def test_creature_handle_death_tracks_survival_recent_death_samples() -> None:
             state=state,
             players=[player],
             rng=state.rng,
-            world_width=1024.0,
-            world_height=1024.0,
             fx_queue=None,
         )
 

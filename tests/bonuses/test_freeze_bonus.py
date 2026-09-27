@@ -109,7 +109,6 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     world.state.bonus_pool.spawn_at(world.players[0].pos, BonusId.FREEZE, state=world.state, emit_burst=False)
     session = DeterministicSession(
         world=world,
-        world_size=1024.0,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
@@ -124,9 +123,7 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
 
 
 def test_freeze_stops_creature_movement_and_animation() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -147,7 +144,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     events = world.step(
         0.2,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -166,7 +162,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     events = world.step(
         0.2,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

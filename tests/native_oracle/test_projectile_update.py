@@ -36,12 +36,11 @@ from ._support import (
 )
 from .test_projectiles import _python_projectile
 
-_WORLD_SIZE = 1024.0
 _LOCAL_PLAYER_OWNER_ID = -100
 
 
 def _python_world(seed: int) -> WorldState:
-    world = WorldState.build(world_size=_WORLD_SIZE, demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
     # Native `creature_find_nearest` falls back to slot 0 (shock chain retargets).
     world.state.preserve_bugs = True
     world.state.rng.srand(seed)
@@ -53,7 +52,6 @@ def _step_runtime(world: WorldState, dt: float) -> _WorldStepRuntime:
     return _WorldStepRuntime(
         world=world,
         dt=dt,
-        world_size=_WORLD_SIZE,
         detail_preset=5,
         violence_disabled=0,
         fx_queue=FxQueue(),
@@ -373,7 +371,6 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
                 dt=dt,
                 creatures=world.creatures.entries,
                 options=ProjectileUpdateOptions(
-                    world_size=_WORLD_SIZE,
                     detail_preset=5,
                     rng=state.rng,
                     runtime_state=state,

@@ -31,6 +31,7 @@ from ..player_damage import PlayerDeathRuntime, player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, ProjectileHitRuntime, ProjectileUpdateOptions, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
+from ..terrain_slots import TERRAIN_SIZE
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .presentation_step import (
@@ -61,7 +62,6 @@ class WorldMidStepRuntime(msgspec.Struct):
 class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
     world: WorldState
     dt: float
-    world_size: float
     detail_preset: int
     violence_disabled: int
     fx_queue: FxQueue
@@ -118,7 +118,6 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             creature_index=int(creature_index),
             dt=float(self.dt),
             detail_preset=int(self.detail_preset),
-            world_size=float(self.world_size),
             fx_queue=self.fx_queue,
             deaths=self.deaths,
             sfx=self.sfx,
@@ -136,7 +135,6 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             creature_index=idx,
             dt=float(self.dt),
             detail_preset=int(self.detail_preset),
-            world_size=float(self.world_size),
             fx_queue=self.fx_queue,
             deaths=self.deaths,
             sfx=self.sfx,
@@ -198,7 +196,6 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             creature_index=idx,
             dt=float(self.dt),
             detail_preset=int(self.detail_preset),
-            world_size=float(self.world_size),
             fx_queue=self.fx_queue,
             deaths=self.deaths,
             sfx=self.sfx,
@@ -220,7 +217,6 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             players=self.world.players,
             player=player,
             dt=float(dt),
-            world_size=float(self.world_size),
             detail_preset=int(self.detail_preset),
             fx_queue=self.fx_queue,
             deaths=self.deaths,
@@ -254,15 +250,14 @@ class WorldState(msgspec.Struct):
     def build(
         cls,
         *,
-        world_size: float,
         demo_mode_active: bool,
         hardcore: bool,
         quest_fail_retry_count: int,
         preserve_bugs: bool = False,
     ) -> WorldState:
         spawn_env = SpawnEnv(
-            terrain_width=float(world_size),
-            terrain_height=float(world_size),
+            terrain_width=TERRAIN_SIZE,
+            terrain_height=TERRAIN_SIZE,
             demo_mode_active=demo_mode_active,
             hardcore=hardcore,
             quest_fail_retry_count=int(quest_fail_retry_count),
@@ -290,7 +285,6 @@ class WorldState(msgspec.Struct):
         apply_world_dt_steps: bool = True,
         mid_step_runtime: WorldMidStepRuntime | None = None,
         inputs: Sequence[PlayerInput] | None,
-        world_size: float,
         detail_preset: int,
         violence_disabled: int = 0,
         fx_queue: FxQueue,
@@ -316,8 +310,6 @@ class WorldState(msgspec.Struct):
                 players=self.players,
                 rng=self.state.rng,
                 env=self.spawn_env,
-                world_width=float(world_size),
-                world_height=float(world_size),
                 fx_queue=fx_queue,
                 fx_queue_rotated=fx_queue_rotated,
                 detail_preset=int(detail_preset),
@@ -327,7 +319,6 @@ class WorldState(msgspec.Struct):
         step_runtime = _WorldStepRuntime(
             world=self,
             dt=float(dt),
-            world_size=float(world_size),
             detail_preset=int(detail_preset),
             violence_disabled=int(violence_disabled),
             fx_queue=fx_queue,
@@ -341,7 +332,6 @@ class WorldState(msgspec.Struct):
                 dt=float(dt),
                 creatures=self.creatures.entries,
                 options=ProjectileUpdateOptions(
-                    world_size=float(world_size),
                     detail_preset=int(detail_preset),
                     rng=self.state.rng,
                     runtime_state=self.state,
@@ -383,7 +373,6 @@ class WorldState(msgspec.Struct):
                 self.state,
                 detail_preset=int(detail_preset),
                 violence_disabled=int(violence_disabled),
-                world_size=float(world_size),
                 players=self.players,
                 creatures=self.creatures.entries,
                 spawn_slots=self.creatures.spawn_slots,
@@ -432,7 +421,6 @@ class WorldState(msgspec.Struct):
         creature_index: int,
         dt: float,
         detail_preset: int,
-        world_size: float,
         fx_queue: FxQueue,
         deaths: list[CreatureDeath],
         keep_corpse: bool = True,
@@ -447,8 +435,6 @@ class WorldState(msgspec.Struct):
             rng=self.state.rng,
             dt=float(dt),
             detail_preset=int(detail_preset),
-            world_width=float(world_size),
-            world_height=float(world_size),
             fx_queue=fx_queue,
             deaths=deaths,
             sfx=sfx,

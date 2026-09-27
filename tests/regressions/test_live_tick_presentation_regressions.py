@@ -26,7 +26,6 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
     )
     session = DeterministicSession(
         world=runtime.world,
-        world_size=float(runtime.world_size),
         game_mode=GameMode.SURVIVAL,
         detail_preset=5,
         violence_disabled=0,

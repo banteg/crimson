@@ -9,7 +9,6 @@ from ..quests.level import QuestLevel
 from ..weapon_usage import ZERO_WEAPON_USAGE_COUNTS, WeaponUsageCounts
 
 # Native terrain and world bounds; every run uses the same arena.
-WORLD_SIZE = 1024.0
 
 
 class RunStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):

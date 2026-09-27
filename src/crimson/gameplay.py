@@ -33,6 +33,7 @@ from .player_damage import PlayerDeathRuntime
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
+from .terrain_slots import TERRAIN_SIZE
 from .weapon_runtime import (
     WeaponFireCtx as _WeaponFireCtx,
 )
@@ -898,7 +899,6 @@ def player_update(
     *,
     detail_preset: int = 5,
     violence_disabled: int = 0,
-    world_size: float = 1024.0,
     players: list[PlayerState] | None = None,
     creatures: Sequence[CreatureState] | None = None,
     spawn_slots: Sequence[SpawnSlotInit] | None = None,
@@ -1068,8 +1068,8 @@ def player_update(
     clamped_pos = player.pos.clamp_rect(
         half_size,
         half_size,
-        float(world_size) - half_size,
-        float(world_size) - half_size,
+        TERRAIN_SIZE - half_size,
+        TERRAIN_SIZE - half_size,
     )
     player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
     if player.muzzle_flash_alpha > 0.8:

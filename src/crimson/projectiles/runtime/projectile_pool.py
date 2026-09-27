@@ -28,6 +28,7 @@ from ...math_parity import (
 from ...owner_ref import OwnerRef
 from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
+from ...terrain_slots import TERRAIN_SIZE
 from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
@@ -66,7 +67,6 @@ class ProjectileHitRuntime(msgspec.Struct):
 
 
 class ProjectileUpdateOptions(msgspec.Struct, frozen=True):
-    world_size: float
     rng: CrandLike
     runtime_state: GameplayState
     players: Sequence[PlayerState]
@@ -193,7 +193,6 @@ class ProjectilePool:
         dt = float(f32(float(ctx.dt)))
         creatures = ctx.creatures
         options = ctx.options
-        world_size = float(f32(float(options.world_size)))
         ion_aoe_scale = float(options.ion_aoe_scale)
         detail_preset = int(options.detail_preset)
         rng = options.rng
@@ -279,8 +278,8 @@ class ProjectilePool:
             if (
                 proj.pos.x < -margin
                 or proj.pos.y < -margin
-                or proj.pos.x > world_size + margin
-                or proj.pos.y > world_size + margin
+                or proj.pos.x > TERRAIN_SIZE + margin
+                or proj.pos.y > TERRAIN_SIZE + margin
             ):
                 proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
                 continue

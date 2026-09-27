@@ -19,7 +19,6 @@ def reset_players(
     players: list[PlayerState],
     *,
     state: GameplayState,
-    world_size: float,
     player_count: int,
     spawn_pos: Vec2 | None = None,
 ) -> None:
@@ -28,7 +27,6 @@ def reset_players(
     reset_world_players(
         players,
         state=state,
-        world_size=float(world_size),
         player_count=int(player_count),
         spawn_pos=spawn_pos,
     )

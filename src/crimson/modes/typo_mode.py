@@ -24,8 +24,6 @@ from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 
-WORLD_SIZE = 1024.0
-
 
 class TypoShooterMode(BaseGameplayMode):
     def __init__(
@@ -39,7 +37,6 @@ class TypoShooterMode(BaseGameplayMode):
     ) -> None:
         super().__init__(
             ctx,
-            world_size=WORLD_SIZE,
             default_game_mode_id=GameMode.TYPO,
             demo_mode_active=False,
             quest_fail_retry_count=0,

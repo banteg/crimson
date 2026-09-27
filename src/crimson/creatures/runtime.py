@@ -54,6 +54,7 @@ from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from ..sim.timing import ftol_ms_i32
+from ..terrain_slots import TERRAIN_SIZE
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .anim import CREATURE_ANIM, creature_anim_advance_phase
 from .damage_runtime import CreatureLethalHandler
@@ -343,8 +344,6 @@ class CreatureUpdateOptions(msgspec.Struct, frozen=True):
     players: list[PlayerState]
     rng: CrandLike
     env: SpawnEnv
-    world_width: float
-    world_height: float
     fx_queue: FxQueue
     fx_queue_rotated: FxQueueRotated
     detail_preset: int = 5
@@ -361,8 +360,6 @@ class _CreatureInteractionCtx(msgspec.Struct):
     dt: float
     rng: CrandLike
     detail_preset: int
-    world_width: float
-    world_height: float
     fx_queue: FxQueue | None
     deaths: list[CreatureDeath]
     sfx: list[SfxRequest]
@@ -384,7 +381,6 @@ class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
             players=ctx.players,
             player=ctx.player,
             dt=float(dt),
-            world_size=float(max(float(ctx.world_width), float(ctx.world_height))),
             detail_preset=int(ctx.detail_preset),
             fx_queue=ctx.fx_queue,
             deaths=ctx.deaths,
@@ -438,8 +434,6 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
             rng=ctx.rng,
             dt=float(ctx.dt),
             detail_preset=int(ctx.detail_preset),
-            world_width=float(ctx.world_width),
-            world_height=float(ctx.world_height),
             fx_queue=ctx.fx_queue,
             keep_corpse=False,
         ),
@@ -499,8 +493,6 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
                 rng=ctx.rng,
                 dt=float(ctx.dt),
                 detail_preset=int(ctx.detail_preset),
-                world_width=float(ctx.world_width),
-                world_height=float(ctx.world_height),
                 fx_queue=ctx.fx_queue,
                 deaths=ctx.deaths,
                 sfx=ctx.sfx,
@@ -1062,8 +1054,6 @@ class CreaturePool:
         detail_preset = int(options.detail_preset)
         violence_disabled = int(options.violence_disabled)
         env = options.env
-        world_width = float(options.world_width)
-        world_height = float(options.world_height)
         fx_queue = options.fx_queue
         fx_queue_rotated = options.fx_queue_rotated
 
@@ -1076,8 +1066,8 @@ class CreaturePool:
         single_player_dormant_target: PlayerState | None = None
         if len(players) == 1:
             dormant_pos = Vec2(
-                float(world_width) * (27.0 / 64.0),
-                float(world_height) * (27.0 / 64.0),
+                TERRAIN_SIZE * (27.0 / 64.0),
+                TERRAIN_SIZE * (27.0 / 64.0),
             )
             if self._single_player_dormant_target is None:
                 self._single_player_dormant_target = PlayerState(index=1, pos=dormant_pos)
@@ -1118,8 +1108,6 @@ class CreaturePool:
             rng=rng,
             dt=float(dt),
             detail_preset=int(detail_preset),
-            world_width=float(world_width),
-            world_height=float(world_height),
             fx_queue=fx_queue,
             deaths=deaths,
             sfx=sfx,
@@ -1231,8 +1219,6 @@ class CreaturePool:
                                 rng=rng,
                                 dt=float(dt),
                                 detail_preset=int(detail_preset),
-                                world_width=world_width,
-                                world_height=world_height,
                                 fx_queue=fx_queue,
                             ),
                         )
@@ -1314,8 +1300,8 @@ class CreaturePool:
                 # ANIM_LONG_STRIP is set, and a long-strip mover may step past the bound this frame.
                 size = float(creature.size)
                 creature.pos = Vec2(
-                    _clamp_to_size_bounds(float(creature.pos.x), size, float(world_width)),
-                    _clamp_to_size_bounds(float(creature.pos.y), size, float(world_height)),
+                    _clamp_to_size_bounds(float(creature.pos.x), size, TERRAIN_SIZE),
+                    _clamp_to_size_bounds(float(creature.pos.y), size, TERRAIN_SIZE),
                 )
                 if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
                     creature.vel = Vec2()
@@ -1468,8 +1454,6 @@ class CreaturePool:
                 dt=dt,
                 rng=rng,
                 detail_preset=int(detail_preset),
-                world_width=float(world_width),
-                world_height=float(world_height),
                 fx_queue=fx_queue,
                 deaths=deaths,
                 sfx=sfx,
@@ -1494,8 +1478,6 @@ class CreaturePool:
         rng: CrandLike,
         dt: float,
         detail_preset: int,
-        world_width: float,
-        world_height: float,
         fx_queue: FxQueue | None,
         deaths: list[CreatureDeath],
         sfx: list[SfxRequest],
@@ -1513,8 +1495,6 @@ class CreaturePool:
                 rng=rng,
                 dt=float(dt),
                 detail_preset=int(detail_preset),
-                world_width=float(world_width),
-                world_height=float(world_height),
                 fx_queue=fx_queue,
                 keep_corpse=keep_corpse,
             ),
@@ -1531,8 +1511,6 @@ class CreaturePool:
         rng: CrandLike,
         dt: float = 0.0,
         detail_preset: int = 5,
-        world_width: float,
-        world_height: float,
         fx_queue: FxQueue | None,
         keep_corpse: bool = True,
     ) -> CreatureDeath:
@@ -1546,8 +1524,8 @@ class CreaturePool:
             creature.pos = creature.pos.clamp_rect(
                 BONUS_SPAWN_MARGIN,
                 BONUS_SPAWN_MARGIN,
-                float(world_width) - BONUS_SPAWN_MARGIN,
-                float(world_height) - BONUS_SPAWN_MARGIN,
+                TERRAIN_SIZE - BONUS_SPAWN_MARGIN,
+                TERRAIN_SIZE - BONUS_SPAWN_MARGIN,
             )
             state.bonus_pool.spawn_at(
                 pos=creature.pos,
@@ -1556,8 +1534,6 @@ class CreaturePool:
                 if creature.bonus_duration_override is not None
                 else -1,
                 state=state,
-                world_width=world_width,
-                world_height=world_height,
                 detail_preset=int(detail_preset),
             )
             if not bool(state.preserve_bugs):
@@ -1584,8 +1560,6 @@ class CreaturePool:
             players=players,
             rng=rng,
             detail_preset=int(detail_preset),
-            world_width=world_width,
-            world_height=world_height,
         )
 
         if keep_corpse:
@@ -1853,8 +1827,6 @@ class CreaturePool:
         players: list[PlayerState],
         rng: CrandLike,
         detail_preset: int = 5,
-        world_width: float,
-        world_height: float,
     ) -> CreatureDeath:
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
@@ -1921,8 +1893,6 @@ class CreaturePool:
                 state=state,
                 players=players,
                 detail_preset=detail_preset,
-                world_width=world_width,
-                world_height=world_height,
             )
 
         return CreatureDeath(

@@ -12,6 +12,7 @@ from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import ProjectileHitRuntime, ProjectileUpdateOptions
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
+from crimson.terrain_slots import TERRAIN_SIZE
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
@@ -51,14 +52,12 @@ def make_creature_update_options(
     detail_preset: int = 5,
     violence_disabled: int = 0,
     env: SpawnEnv | None = None,
-    world_width: float = 1024.0,
-    world_height: float = 1024.0,
     fx_queue: FxQueue | None = None,
     fx_queue_rotated: FxQueueRotated | None = None,
     quest_fail_retry_count: int = 0,
 ) -> CreatureUpdateOptions:
-    width = float(world_width)
-    height = float(world_height)
+    width = TERRAIN_SIZE
+    height = TERRAIN_SIZE
     default_env = SpawnEnv(
         terrain_width=width,
         terrain_height=height,
@@ -71,8 +70,6 @@ def make_creature_update_options(
         players=players,
         rng=state.rng if rng is None else rng,
         env=default_env if env is None else env,
-        world_width=width,
-        world_height=height,
         fx_queue=FxQueue() if fx_queue is None else fx_queue,
         fx_queue_rotated=FxQueueRotated() if fx_queue_rotated is None else fx_queue_rotated,
         detail_preset=int(detail_preset),
@@ -142,7 +139,6 @@ class RecordingCreatureDamageRuntime(msgspec.Struct):
 def make_projectile_update_options(
     *,
     creatures: Sequence[CreatureState],
-    world_size: float = 1024.0,
     ion_aoe_scale: float = 1.0,
     detail_preset: int = 5,
     rng: CrandLike | None = None,
@@ -154,7 +150,6 @@ def make_projectile_update_options(
     state = GameplayState() if runtime_state is None else runtime_state
     player_seq: Sequence[PlayerState] = () if players is None else players
     return ProjectileUpdateOptions(
-        world_size=float(world_size),
         rng=state.rng if rng is None else rng,
         runtime_state=state,
         players=player_seq,

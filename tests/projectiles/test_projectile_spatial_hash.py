@@ -82,7 +82,7 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     from crimson.projectiles.types import SecondaryProjectile
     from crimson.sim.world_state import WorldState, _WorldStepRuntime
 
-    world = WorldState.build(world_size=1024.0, demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
     parent = world.creatures.entries[0]
     parent.active = True
     parent.flags = CreatureFlags.SPLIT_ON_DEATH
@@ -91,7 +91,7 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     parent.max_hp = 400.0
     parent.size = 40.0
     fx_queue = FxQueue()
-    damage_runtime = _WorldStepRuntime(world=world, dt=0.1, world_size=1024.0, detail_preset=5,
+    damage_runtime = _WorldStepRuntime(world=world, dt=0.1, detail_preset=5,
                                       violence_disabled=0, fx_queue=fx_queue, game_mode=GameMode.SURVIVAL,
                                       hit_audio_game_tune_started=True, deaths=[], sfx=[])
     spatial = CreatureSpatialHash(creatures=world.creatures.entries, is_collidable=_is_collidable)

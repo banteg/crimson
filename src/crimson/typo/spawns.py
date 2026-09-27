@@ -10,6 +10,7 @@ from grim.math import clamp01
 
 from ..creatures.spawn import CreatureTypeId
 from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
+from ..terrain_slots import TERRAIN_SIZE
 
 
 class TypoSpawnCall(msgspec.Struct, frozen=True):
@@ -24,8 +25,6 @@ def tick_typo_spawns(
     spawn_cooldown_ms: int,
     frame_dt_ms: int,
     player_count: int,
-    world_width: float,
-    world_height: float,
 ) -> tuple[int, list[TypoSpawnCall]]:
     elapsed_ms = int(elapsed_ms)
     cooldown = int(spawn_cooldown_ms)
@@ -48,11 +47,11 @@ def tick_typo_spawns(
         tint = RGBA(tint_r, tint_g, tint_b, 1.0)
 
         t = x87_pc24_mul(float(elapsed_ms), f32(0.001))
-        y = x87_pc24_add(x87_pc24_cos_mul(t, 256.0), x87_pc24_mul(float(world_height), 0.5))
+        y = x87_pc24_add(x87_pc24_cos_mul(t, 256.0), x87_pc24_mul(TERRAIN_SIZE, 0.5))
 
         spawns.append(
             TypoSpawnCall(
-                pos=Vec2(x87_pc24_add(float(world_width), 64.0), y),
+                pos=Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), y),
                 type_id=CreatureTypeId.SPIDER_SP2,
                 tint_rgba=tint,
             ),

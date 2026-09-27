@@ -16,6 +16,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.sessions import MidStepContext
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from crimson.terrain_slots import TERRAIN_SIZE
 from crimson.typo.runtime import typo_mid_step
 from crimson.typo.state import reset_typo_state
 from grim.geom import Vec2
@@ -25,7 +26,6 @@ from ._support import CREATURE_LAYOUT, CREATURE_POOL_SLOTS, CREATURE_STRIDE, Mis
 
 _SPAWN_BLOCK_START = 0x00445A62
 _SPAWN_BLOCK_END = 0x00445C85
-_WORLD_SIZE = 1024
 
 
 def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
@@ -54,7 +54,7 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
 def _python_step(seed: int, *, elapsed_ms: int, dt_ms: int, cooldown_ms: int) -> tuple[WorldState, list[int]]:
     """Run the port's spawn step; return the world and the RNG state before each creature allocation."""
 
-    world = WorldState.build(world_size=float(_WORLD_SIZE), demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
     world.state.typo.spawn_cooldown_ms = cooldown_ms
@@ -73,15 +73,14 @@ def _python_step(seed: int, *, elapsed_ms: int, dt_ms: int, cooldown_ms: int) ->
             elapsed_before_ms=float(elapsed_ms),
             dt_sim_ms=float(dt_ms),
             dt_raw_ms=float(dt_ms),
-            world_size=float(_WORLD_SIZE),
         ),
     )
     return world, alloc_states
 
 
 def test_typo_spawn_block_matches_native(oracle) -> None:
-    oracle.write_u32("terrain_texture_width", _WORLD_SIZE)
-    oracle.write_u32("terrain_texture_height", _WORLD_SIZE)
+    oracle.write_u32("terrain_texture_width", TERRAIN_SIZE)
+    oracle.write_u32("terrain_texture_height", TERRAIN_SIZE)
     oracle.write_u32("config_player_count", 1)
     pristine = oracle.snapshot()
     pool_base = oracle.resolve("creature_pool")

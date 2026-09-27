@@ -75,7 +75,6 @@ def test_quest_audio_requests_survive_render_partitions(
 ) -> None:
     session, spawn = build_quest_session(
         world=make_world(),
-        world_size=1024.0,
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
@@ -177,7 +176,6 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
         world.state.camera_shake_timer = 10.0
         session = DeterministicSession(
             world=world,
-            world_size=1024,
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
         )

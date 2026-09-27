@@ -23,7 +23,7 @@ from .screens.assets import require_runtime_resources
 from .sim.bootstrap import advance_explicit_terrain
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
-from .terrain_slots import Q2_TERRAIN_SLOTS, TerrainSlotTriplet
+from .terrain_slots import Q2_TERRAIN_SLOTS, TERRAIN_SIZE, TerrainSlotTriplet
 from .ui.cursor import draw_menu_cursor
 from .ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .weapon_runtime import weapon_assign_player
@@ -31,7 +31,6 @@ from .weapons import WeaponId, weapon_display_name
 from .world import WorldRuntime
 from .world.standalone_tick_harness import StandaloneTickHarness
 
-WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
 
 _DEMO_UPSELL_MESSAGES: tuple[str, ...] = (
@@ -77,7 +76,6 @@ class DemoView:
         self._quit_after = quit_after
         self._runtime = WorldRuntime(
             assets_dir=state.assets_dir,
-            world_size=float(WORLD_SIZE),
             demo_mode_active=True,
             hardcore=state.config.gameplay.hardcore,
             preserve_bugs=bool(state.preserve_bugs),
@@ -119,8 +117,8 @@ class DemoView:
         terrain = advance_explicit_terrain(
             self._runtime.world.state.rng,
             terrain_slots=terrain_slots,
-            width=int(WORLD_SIZE),
-            height=int(WORLD_SIZE),
+            width=TERRAIN_SIZE,
+            height=TERRAIN_SIZE,
         )
         self._runtime.terrain_runtime.apply_terrain_setup(
             terrain_slots=terrain.terrain_slots,
@@ -679,7 +677,7 @@ class DemoView:
         creatures = self._runtime.world.creatures.entries
         if len(self._demo_targets) != len(players):
             self._demo_targets = [None] * len(players)
-        center = Vec2(float(self._runtime.world_size) * 0.5, float(self._runtime.world_size) * 0.5)
+        center = Vec2(TERRAIN_SIZE * 0.5, TERRAIN_SIZE * 0.5)
 
         dt = float(dt)
 

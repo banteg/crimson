@@ -100,28 +100,6 @@ def test_process_ground_pending_does_not_live_sync_texture_scale_from_config(ass
     assert float(ground.texture_scale) == 1.0
 
 
-def test_reset_syncs_world_size_across_sim_and_render_ownership(assets_dir: Path) -> None:
-    world = _build_world(assets_dir)
-    texture = rl.Texture()
-    world.render_resources.ground = GroundRenderer(
-        texture=texture,
-        overlay=texture,
-        overlay_detail=texture,
-        width=1024,
-        height=1024,
-    )
-    world.world_size = 2048.0
-
-    world.reset(seed=4242, player_count=1)
-
-    assert float(world.world_size) == 2048.0
-    assert float(world.render_resources.world_size) == 2048.0
-    assert float(world.terrain_runtime.world_size) == 2048.0
-    assert world.render_resources.ground is not None
-    assert int(world.render_resources.ground.width) == 2048
-    assert int(world.render_resources.ground.height) == 2048
-
-
 def test_consume_terrain_fx_batch_defers_baking_to_draw_even_when_ground_ready(assets_dir: Path, mocker) -> None:
     runtime = _build_world(assets_dir)
     texture = rl.Texture()

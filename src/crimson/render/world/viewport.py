@@ -5,6 +5,8 @@ import msgspec
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
+from ...terrain_slots import TERRAIN_SIZE
+
 
 class ViewTransform(msgspec.Struct, frozen=True):
     camera: Vec2
@@ -25,7 +27,6 @@ class ViewTransform(msgspec.Struct, frozen=True):
 
 def camera_screen_size(
     *,
-    world_size: float,
     config: CrimsonConfig | None,
     runtime_w: float,
     runtime_h: float,
@@ -41,24 +42,21 @@ def camera_screen_size(
     else:
         screen_w = max(1.0, runtime_w)
         screen_h = max(1.0, runtime_h)
-    world = float(world_size)
-    if world <= 0.0:
-        return Vec2(max(1.0, screen_w), max(1.0, screen_h))
     out_w = max(1.0, screen_w)
     out_h = max(1.0, screen_h)
-    scale = max(out_w / world, out_h / world, 1.0)
-    return Vec2(min(world, out_w / scale), min(world, out_h / scale))
+    scale = max(out_w / TERRAIN_SIZE, out_h / TERRAIN_SIZE, 1.0)
+    return Vec2(min(TERRAIN_SIZE, out_w / scale), min(TERRAIN_SIZE, out_h / scale))
 
 
-def clamp_camera(*, world_size: float, camera: Vec2, screen_size: Vec2) -> Vec2:
+def clamp_camera(*, camera: Vec2, screen_size: Vec2) -> Vec2:
     cam_x = camera.x
     cam_y = camera.y
     if cam_x > -1.0:
         cam_x = -1.0
     if cam_y > -1.0:
         cam_y = -1.0
-    min_x = screen_size.x - float(world_size)
-    min_y = screen_size.y - float(world_size)
+    min_x = screen_size.x - TERRAIN_SIZE
+    min_y = screen_size.y - TERRAIN_SIZE
     if cam_x < min_x:
         cam_x = min_x
     if cam_y < min_y:
@@ -68,18 +66,16 @@ def clamp_camera(*, world_size: float, camera: Vec2, screen_size: Vec2) -> Vec2:
 
 def view_transform(
     *,
-    world_size: float,
     config: CrimsonConfig | None,
     camera: Vec2,
     out_size: Vec2,
 ) -> ViewTransform:
     screen_size = camera_screen_size(
-        world_size=world_size,
         config=config,
         runtime_w=out_size.x,
         runtime_h=out_size.y,
     )
-    clamped_camera = clamp_camera(world_size=world_size, camera=camera, screen_size=screen_size)
+    clamped_camera = clamp_camera(camera=camera, screen_size=screen_size)
     scale_x = out_size.x / screen_size.x if screen_size.x > 0.0 else 1.0
     scale_y = out_size.y / screen_size.y if screen_size.y > 0.0 else 1.0
     return ViewTransform(clamped_camera, Vec2(scale_x, scale_y), screen_size, out_size)

@@ -20,6 +20,7 @@ from ..perks.selection import (
 from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
+from ..terrain_slots import TERRAIN_SIZE
 from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
 from ..weapon_runtime import weapon_assign_player
@@ -76,7 +77,6 @@ class MidStepContext(msgspec.Struct, frozen=True):
     elapsed_before_ms: float
     dt_sim_ms: float
     dt_raw_ms: float
-    world_size: float
 
 
 class PostStepContext(msgspec.Struct, frozen=True):
@@ -85,7 +85,6 @@ class PostStepContext(msgspec.Struct, frozen=True):
     world: WorldState
     step_result: DeterministicStepResult
     dt_sim_ms: float
-    world_size: float
     detail_preset: int
 
 
@@ -143,8 +142,8 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
         player_count=len(ctx.world.players),
         survival_elapsed_ms=ctx.elapsed_before_ms,
         player_experience=int(player_xp),
-        terrain_width=int(ctx.world_size),
-        terrain_height=int(ctx.world_size),
+        terrain_width=TERRAIN_SIZE,
+        terrain_height=TERRAIN_SIZE,
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(wave_spawns)
@@ -158,8 +157,8 @@ def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
         state.rng,
         player_count=len(ctx.world.players),
         survival_elapsed_ms=int(ctx.elapsed_before_ms),
-        terrain_width=float(ctx.world_size),
-        terrain_height=float(ctx.world_size),
+        terrain_width=TERRAIN_SIZE,
+        terrain_height=TERRAIN_SIZE,
     )
     spawn.spawn_cooldown_ms = cooldown
     ctx.world.creatures.spawn_inits(spawns)
@@ -379,7 +378,6 @@ def _session_timing(world: WorldState, dt: float, *, apply_world_dt_steps: bool)
 class DeterministicSession(msgspec.Struct):
     # Core state
     world: WorldState
-    world_size: float
 
     # Mode identity
     game_mode: GameMode
@@ -526,7 +524,6 @@ class DeterministicSession(msgspec.Struct):
                 elapsed_before_ms=elapsed_before_ms,
                 dt_sim_ms=dt_sim_ms,
                 dt_raw_ms=dt_raw_ms,
-                world_size=self.world_size,
             )
             mid_step_runtime = _SessionWorldMidStepRuntime(
                 mode_runtime=mode_runtime,
@@ -558,7 +555,6 @@ class DeterministicSession(msgspec.Struct):
             apply_world_dt_steps=False,
             mid_step_runtime=mid_step_runtime,
             inputs=tick_inputs,
-            world_size=self.world_size,
             detail_preset=self.detail_preset,
             violence_disabled=self.violence_disabled,
             fx_queue=fx_queue,
@@ -616,7 +612,6 @@ class DeterministicSession(msgspec.Struct):
                 world=self.world,
                 step_result=step,
                 dt_sim_ms=dt_sim_ms,
-                world_size=self.world_size,
                 detail_preset=self.detail_preset,
             ),
         )

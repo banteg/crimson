@@ -82,7 +82,6 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
     runtime.world.players[0].weapon.shot_cooldown = 0.0
     session = DeterministicSession(
         world=runtime.world,
-        world_size=runtime.world_size,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )

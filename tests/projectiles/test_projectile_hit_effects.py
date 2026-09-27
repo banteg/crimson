@@ -37,7 +37,6 @@ def test_plasma_cannon_hit_spawns_rings_and_sfx() -> None:
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=4096.0,
                 detail_preset=5,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 runtime_state=runtime_state,
@@ -76,7 +75,6 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
                 runtime_state=runtime_state,
@@ -128,7 +126,6 @@ def test_splitter_child_from_owner_minus_100_can_hit_players() -> None:
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=4096.0,
                 detail_preset=5,
                 rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
                 players=[player],
@@ -158,7 +155,6 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
                 runtime_state=runtime_state,
@@ -258,7 +254,6 @@ def test_non_gauss_freeze_hit_pool_step_leaves_shard_to_presentation(mocker) -> 
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
                 runtime_state=runtime_state,
@@ -363,7 +358,6 @@ def test_shrinkifier_shrink_death_bypasses_damage_pipeline() -> None:
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=4096.0,
                 detail_preset=5,
                 rng=rng,
                 runtime_state=runtime_state,

@@ -47,7 +47,6 @@ def test_shots_fired_and_hit_increment() -> None:
             creatures=[creature],
             options=make_projectile_update_options(
                 creatures=[creature],
-                world_size=1024.0,
                 rng=state.rng,
                 runtime_state=state,
             ),
@@ -80,7 +79,6 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
             creatures=[corpse],
             options=make_projectile_update_options(
                 creatures=[corpse],
-                world_size=1024.0,
                 rng=state.rng,
                 runtime_state=state,
             ),

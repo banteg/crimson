@@ -1377,8 +1377,6 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
     assert death.xp_awarded == 10
@@ -1419,8 +1417,6 @@ def test_death_award_player_source_policy(
         state=state,
         players=players,
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
@@ -1469,8 +1465,6 @@ def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(m
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
@@ -1509,8 +1503,6 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
@@ -1536,8 +1528,6 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
         state=state,
         players=[],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
@@ -1564,8 +1554,6 @@ def test_death_award_uses_float32_sum_before_truncation() -> None:
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
     assert death.xp_awarded == 61
@@ -1590,8 +1578,6 @@ def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=fx_queue,
     )
 
@@ -1618,8 +1604,6 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=fx_queue,
     )
 
@@ -1660,8 +1644,6 @@ def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> Non
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=fx_queue,
     )
 
@@ -1699,8 +1681,6 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
         state=state,
         players=[],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
     pool.handle_death(
@@ -1708,8 +1688,6 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_defaul
         state=state,
         players=[],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
@@ -1747,8 +1725,6 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
         state=state,
         players=[],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
     pool.handle_death(
@@ -1756,8 +1732,6 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
         state=state,
         players=[],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
@@ -2612,8 +2586,6 @@ def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
         state=state,
         players=[],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 

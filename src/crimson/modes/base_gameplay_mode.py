@@ -84,7 +84,6 @@ class BaseGameplayMode:
         self,
         ctx: ViewContext,
         *,
-        world_size: float,
         default_game_mode_id: GameMode,
         demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
@@ -117,7 +116,6 @@ class BaseGameplayMode:
         )
 
         self.assets_dir = ctx.assets_dir
-        self.world_size = float(world_size)
         self.demo_mode_active = bool(demo_mode_active)
         self.quest_fail_retry_count = int(quest_fail_retry_count)
         self.hardcore = bool(hardcore)
@@ -127,7 +125,6 @@ class BaseGameplayMode:
         self.rtx_mode = RtxRenderMode.CLASSIC
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
-            world_size=float(self.world_size),
             demo_mode_active=bool(self.demo_mode_active),
             quest_fail_retry_count=int(self.quest_fail_retry_count),
             hardcore=bool(self.hardcore),
@@ -185,7 +182,6 @@ class BaseGameplayMode:
 
     def _sync_world_runtime_config(self) -> None:
         runtime = self._world_runtime
-        runtime.world_size = float(self.world_size)
         runtime.demo_mode_active = bool(self.demo_mode_active)
         runtime.quest_fail_retry_count = int(self.quest_fail_retry_count)
         runtime.hardcore = bool(self.hardcore)

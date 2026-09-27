@@ -293,8 +293,6 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
                 players=[],
                 rng=rng,
                 dt=0.016,
-                world_width=1024.0,
-                world_height=1024.0,
                 fx_queue=None,
             )
             assert creature.vel == Vec2(9.0, 18.0)

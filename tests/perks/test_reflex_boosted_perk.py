@@ -16,9 +16,7 @@ from tests.support.helpers import assert_float_close
 
 
 def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
-    world_size = 2048.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -33,7 +31,6 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
     world.step(
         1.0,
         inputs=[PlayerInput(move=Vec2(1.0, 0.0))],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -47,7 +44,6 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
 
 def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
     world = WorldState.build(
-        world_size=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -57,7 +53,6 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
     world.players.append(player)
     session, spawn = build_survival_session(
         world=world,
-        world_size=1024.0,
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,
@@ -77,7 +72,6 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
 
 def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> None:
     world = WorldState.build(
-        world_size=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -100,7 +94,6 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         dt,
         apply_world_dt_steps=False,
         inputs=[PlayerInput()],
-        world_size=1024.0,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -126,7 +119,6 @@ def test_player_time_scale_roundtrip_restores_scaled_dt() -> None:
 
 def test_session_does_not_apply_player_time_scale_twice() -> None:
     world = WorldState.build(
-        world_size=1024.0,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -136,7 +128,6 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
     world.state.bonuses.reflex_boost = f32(3.0)
     session, _spawn = build_survival_session(
         world=world,
-        world_size=1024.0,
         detail_preset=5,
         violence_disabled=0,
         game_tune_started=False,

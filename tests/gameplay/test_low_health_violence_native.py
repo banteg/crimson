@@ -73,14 +73,14 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
 
 @pytest.mark.parametrize("violence_disabled", [0, 1, 255])
 def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled) -> None:
-    world = WorldState.build(world_size=1024.0, demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(demo_mode_active=False, hardcore=False, quest_fail_retry_count=0)
     world.players = [
         PlayerState(index=index, pos=Vec2(400.0 + index * 100, 400.0), health=19.0, low_health_timer=0.0)
         for index in range(2)
     ]
     world.step(
         0.016,
-        inputs=[PlayerInput(), PlayerInput()], world_size=1024.0,
+        inputs=[PlayerInput(), PlayerInput()], 
         detail_preset=5, violence_disabled=violence_disabled,
         fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,

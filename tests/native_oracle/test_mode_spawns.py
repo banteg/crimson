@@ -16,12 +16,12 @@ import random
 from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.creatures.spawn import SpawnEnv, build_survival_spawn_creature, tick_rush_mode_spawns
 from crimson.math_parity import f32
+from crimson.terrain_slots import TERRAIN_SIZE
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
 from ._support import CREATURE_LAYOUT, CREATURE_POOL_SLOTS, CREATURE_STRIDE, Mismatch, compare_fields, mismatch_report
 
-_WORLD_SIZE = 1024
 _LARGE_TIMES = ((1 << 24) - 1, 1 << 24, (1 << 24) + 1, 16_777_219, 20_000_001, 33_554_435)
 
 
@@ -50,8 +50,8 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
 
 def _pool() -> CreaturePool:
     env = SpawnEnv(
-        terrain_width=float(_WORLD_SIZE),
-        terrain_height=float(_WORLD_SIZE),
+        terrain_width=TERRAIN_SIZE,
+        terrain_height=TERRAIN_SIZE,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -75,8 +75,8 @@ def _compare_pool(oracle, case: str, pool: CreaturePool) -> tuple[list[Mismatch]
 
 
 def test_rush_mode_spawns_match_native(oracle) -> None:
-    oracle.write_u32("terrain_texture_width", _WORLD_SIZE)
-    oracle.write_u32("terrain_texture_height", _WORLD_SIZE)
+    oracle.write_u32("terrain_texture_width", TERRAIN_SIZE)
+    oracle.write_u32("terrain_texture_height", TERRAIN_SIZE)
     pristine = oracle.snapshot()
 
     rng = random.Random(0x4072B0)
@@ -104,8 +104,8 @@ def test_rush_mode_spawns_match_native(oracle) -> None:
             crt,
             player_count=player_count,
             survival_elapsed_ms=elapsed_ms,
-            terrain_width=float(_WORLD_SIZE),
-            terrain_height=float(_WORLD_SIZE),
+            terrain_width=TERRAIN_SIZE,
+            terrain_height=TERRAIN_SIZE,
         )
         pool = _pool()
         pool.spawn_inits(inits)

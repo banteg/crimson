@@ -84,8 +84,6 @@ def typo_mid_step(ctx: MidStepContext) -> None:
         spawn_cooldown_ms=int(typo.spawn_cooldown_ms),
         frame_dt_ms=int(ctx.dt_sim_ms),
         player_count=len(ctx.world.players),
-        world_width=float(ctx.world_size),
-        world_height=float(ctx.world_size),
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:

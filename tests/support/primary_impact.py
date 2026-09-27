@@ -21,7 +21,7 @@ def bits(x):
 
 
 def observe(case):
-    world = WorldState.build(world_size=1024.0, demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
+    world = WorldState.build(demo_mode_active=True, hardcore=False, quest_fail_retry_count=0)
     state = world.state
     state.bonuses.freeze = case.get("freeze", 0.0)
     rng = RecordingCrand(Crand(case["rng_seed"]))
@@ -54,7 +54,6 @@ def observe(case):
     runtime = _WorldStepRuntime(
         world=world,
         dt=case["dt"],
-        world_size=1024.0,
         detail_preset=5,
         violence_disabled=1,
         fx_queue=FxQueue(),
@@ -96,7 +95,6 @@ def observe(case):
                 dt=case["dt"],
                 creatures=world.creatures.entries,
                 options=ProjectileUpdateOptions(
-                    world_size=1024.0,
                     rng=rng,
                     runtime_state=state,
                     players=world.players,

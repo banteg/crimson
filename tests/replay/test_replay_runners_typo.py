@@ -6,7 +6,7 @@ from crimson.replay.input_codec import pack_tick
 from crimson.sim.bootstrap import advance_unlock_terrain
 from crimson.sim.commands import TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.run_spec import WORLD_SIZE
+from crimson.terrain_slots import TERRAIN_SIZE
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import _blank_typo_replay, _run_verify_playback, finish_replay
@@ -52,8 +52,8 @@ def test_typo_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
     terrain = advance_unlock_terrain(
         rng,
         unlock_index=int(replay.run.status.quest_unlock_index),
-        width=int(WORLD_SIZE),
-        height=int(WORLD_SIZE),
+        width=TERRAIN_SIZE,
+        height=TERRAIN_SIZE,
     )
 
     terrain_setup = driver.terrain_setup

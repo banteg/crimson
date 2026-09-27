@@ -25,7 +25,6 @@ class WorldRuntimeHost(WorldRuntime):
         self,
         *,
         assets_dir: Path,
-        world_size: float = 1024.0,
         demo_mode_active: bool = False,
         quest_fail_retry_count: int = 0,
         hardcore: bool = False,
@@ -38,7 +37,6 @@ class WorldRuntimeHost(WorldRuntime):
         resolved_audio_rng = audio_rng if audio_rng is not None else Crand(0xBEEF)
         super().__init__(
             assets_dir=assets_dir,
-            world_size=world_size,
             demo_mode_active=demo_mode_active,
             quest_fail_retry_count=quest_fail_retry_count,
             hardcore=hardcore,
@@ -112,7 +110,6 @@ class WorldRuntimeHost(WorldRuntime):
 
         session = DeterministicSession(
             world=self.world,
-            world_size=self.world_size,
             game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=perk_progression_enabled,
             detail_preset=detail_preset,

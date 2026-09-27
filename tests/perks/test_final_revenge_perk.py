@@ -17,9 +17,7 @@ from tests.support.helpers import assert_float_close
 
 
 def test_final_revenge_triggers_explosion_damage_on_death() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -42,7 +40,6 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     events = world.step(
         0.2,
         inputs=[PlayerInput()],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -59,9 +56,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
 
 
 def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -79,7 +74,6 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     events = world.step(
         0.05,
         inputs=[PlayerInput(fire_down=True, aim=Vec2(120.0, 100.0))],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -93,9 +87,7 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
 
 
 def test_final_revenge_runs_before_later_creature_slots_update() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -128,7 +120,6 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
     world.step(
         0.2,
         inputs=[PlayerInput()],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -144,9 +135,7 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
 
 
 def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -160,7 +149,6 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
     events = world.step(
         0.05,
         inputs=[PlayerInput()],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -211,7 +199,6 @@ def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> No
         players=[player],
         player=player,
         dt=0.1,
-        world_size=1024.0,
         detail_preset=5,
         fx_queue=None,
         deaths=[],
@@ -248,7 +235,6 @@ def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
         players=[player],
         player=player,
         dt=0.1,
-        world_size=1024.0,
         detail_preset=0,
         fx_queue=None,
         deaths=[],

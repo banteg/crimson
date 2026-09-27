@@ -6,10 +6,10 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
 from ..perks import PerkId
+from ..terrain_slots import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
-    NATIVE_TERRAIN_SIZE,
     angle_step,
     edge_midpoints,
     ring_point,
@@ -29,7 +29,7 @@ from .types import QuestContext, SpawnEntry
 )
 def build_4_1_major_alien_breach(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(NATIVE_TERRAIN_SIZE)
+    edges = edge_midpoints(TERRAIN_SIZE)
     trigger = 4000
     for offset in range(0, 0x5DC, 0xF):
         entries.append(
@@ -156,7 +156,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext, *, rng: CrandLike, full_vers
 def build_4_4_the_collaboration(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width)
-    top = edge_midpoints(NATIVE_TERRAIN_SIZE).top
+    top = edge_midpoints(TERRAIN_SIZE).top
     trigger = 1500
     wave = 0
     while trigger < 0x2B55C:

@@ -38,7 +38,6 @@ class _WorldStub:
 
     def build_render_frame(self) -> RenderFrame:
         return RenderFrame(
-            world_size=1024.0,
             demo_mode_active=False,
             config=None,
             camera=Vec2(),
@@ -68,7 +67,6 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     render_ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(
-            world_size=frame.world_size,
             config=frame.config,
             camera=frame.camera,
             out_size=Vec2(1024, 1024),
@@ -307,7 +305,7 @@ def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_si
     frame = _WorldStub().build_render_frame()
     ctx = WorldRenderCtx(
         frame=frame,
-        view=view_transform(world_size=frame.world_size, config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
+        view=view_transform(config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
     )
     projectile = Projectile(type_id=type_id, origin=Vec2(50, 90), pos=Vec2(110, 210), life_timer=0.4, speed_scale=2.0)
     world_projectiles.draw_projectile(ctx, projectile, alpha=0.7)
@@ -352,7 +350,7 @@ def test_sharpshooter_laser_draws_for_each_living_player(
     frame = structs.replace(_WorldStub().build_render_frame(), state=state, players=players)
     ctx = WorldRenderCtx(
         frame=frame,
-        view=view_transform(world_size=frame.world_size, config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
+        view=view_transform(config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
     )
     world_projectiles.draw_sharpshooter_laser_sight(
         ctx,

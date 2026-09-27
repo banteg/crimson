@@ -12,6 +12,7 @@ from grim.geom import Vec2
 from ..creatures.runtime import CreatureAiMode, CreatureState, CreatureTypeId
 from ..creatures.spawn_ids import CreatureFlags
 from ..math_parity import f32
+from ..terrain_slots import TERRAIN_SIZE
 from ..weapon_runtime import init_default_alt_weapon
 from ..weapons import WeaponId
 from .gameplay_state import GameplayState
@@ -138,7 +139,6 @@ def reset_world_players(
     players: list[PlayerState],
     *,
     state: GameplayState,
-    world_size: float,
     player_count: int,
     spawn_pos: Vec2 | None = None,
 ) -> None:
@@ -148,7 +148,7 @@ def reset_world_players(
     state.perks = PerkCounts()
 
     if spawn_pos is None:
-        center = f32(float(world_size) * 0.5)
+        center = f32(TERRAIN_SIZE * 0.5)
         base = Vec2(center, center)
     else:
         base = Vec2(f32(spawn_pos.x), f32(spawn_pos.y))
@@ -196,7 +196,6 @@ def reset_world_players(
 
 def build_reset_world(
     *,
-    world_size: float,
     seed: int,
     player_count: int,
     spawn_pos: Vec2 | None = None,
@@ -209,7 +208,6 @@ def build_reset_world(
     from .world_state import WorldState
 
     world = WorldState.build(
-        world_size=float(world_size),
         demo_mode_active=bool(demo_mode_active),
         hardcore=bool(hardcore),
         quest_fail_retry_count=int(quest_fail_retry_count),
@@ -219,7 +217,6 @@ def build_reset_world(
     reset_world_players(
         world.players,
         state=world.state,
-        world_size=float(world_size),
         player_count=int(player_count),
         spawn_pos=spawn_pos,
     )

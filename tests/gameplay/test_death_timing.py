@@ -28,9 +28,7 @@ from tests.support.helpers import ScriptedCrand, assert_rng_progression
 
 
 def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -50,7 +48,6 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
     first = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -64,7 +61,6 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
     world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -76,9 +72,7 @@ def test_weapon_guard_runs_before_same_frame_locked_splitter_pickup() -> None:
 
 
 def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -98,7 +92,6 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
     first = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -114,7 +107,6 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
     world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -127,9 +119,7 @@ def test_weapon_usage_time_precedes_same_frame_weapon_pickup() -> None:
 
 
 def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -148,7 +138,6 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
     first = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -163,7 +152,6 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
     world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -175,9 +163,7 @@ def test_highscore_score_stages_before_same_frame_points_pickup() -> None:
 
 
 def test_projectile_kill_awards_xp_same_step() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -204,7 +190,6 @@ def test_projectile_kill_awards_xp_same_step() -> None:
     events = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -229,9 +214,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     preserve_bugs: bool,
     expected_sfx: SfxId,
 ) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -272,7 +255,6 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     events = world.step(
         0.1,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -291,9 +273,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
 
 
 def test_world_step_invalid_creature_type_id_fails_fast() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -315,7 +295,6 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
         world.step(
             0.016,
             inputs=None,
-            world_size=world_size,
             detail_preset=5,
             fx_queue=FxQueue(),
             fx_queue_rotated=FxQueueRotated(),
@@ -325,9 +304,7 @@ def test_world_step_invalid_creature_type_id_fails_fast() -> None:
 
 
 def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -358,7 +335,6 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
     events = world.step(
         0.1,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -379,9 +355,7 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
 
 
 def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -414,7 +388,6 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
     events = world.step(
         0.1,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -429,9 +402,7 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
 
 
 def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -477,7 +448,6 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
     events = world.step(
         0.1,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -493,9 +463,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
 
 
 def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -523,7 +491,6 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
     events = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -544,9 +511,7 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
 
 
 def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -585,7 +550,6 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     events = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -609,9 +573,7 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
 
 
 def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -651,7 +613,6 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
     events = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -672,9 +633,7 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
 
 
 def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -710,7 +669,6 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
     events = world.step(
         0.016,
         inputs=None,
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
@@ -734,9 +692,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
 
 
 def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -764,7 +720,6 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
         world.step(
             0.016,
             inputs=[PlayerInput(aim=Vec2(900.0, 900.0))],
-            world_size=world_size,
             detail_preset=5,
             fx_queue=FxQueue(),
             fx_queue_rotated=FxQueueRotated(),
@@ -782,9 +737,7 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
     from crimson.projectiles.runtime import SecondarySpawnSpec
     from crimson.projectiles.types import SecondaryProjectileTypeId
 
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=False,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -810,7 +763,6 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
     events = world.step(
         0.016,
         inputs=[PlayerInput()],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

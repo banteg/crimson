@@ -6,10 +6,10 @@ from grim.rand import CrandLike
 from ..creatures.spawn import SpawnId
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
+from ..terrain_slots import TERRAIN_SIZE
 from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
-    NATIVE_TERRAIN_SIZE,
     center_point,
     corner_points,
     edge_midpoints,
@@ -31,7 +31,7 @@ from .types import QuestContext, SpawnEntry
 )
 def build_1_1_land_hostile(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
-    top_left, top_right, bottom_left, _bottom_right = corner_points(NATIVE_TERRAIN_SIZE)
+    top_left, top_right, bottom_left, _bottom_right = corner_points(TERRAIN_SIZE)
     return [
         spawn(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=500, count=1),
         spawn(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_SMALL_GRAY_26, trigger_ms=2500, count=2),
@@ -162,10 +162,10 @@ def build_1_3_target_practice(
 )
 def build_1_4_frontline_assault(ctx: QuestContext, *, rng: CrandLike, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    edges = edge_midpoints(NATIVE_TERRAIN_SIZE)
+    edges = edge_midpoints(TERRAIN_SIZE)
     # Only the bottom lane's x reads `terrain_texture_width`.
     bottom = Vec2(float(ctx.width // 2), edges.bottom.y)
-    top_left, top_right, _bottom_left, _bottom_right = corner_points(NATIVE_TERRAIN_SIZE)
+    top_left, top_right, _bottom_left, _bottom_right = corner_points(TERRAIN_SIZE)
     step = 2500
     for i in range(2, 22):
         if i < 5:
@@ -319,7 +319,7 @@ def build_1_6_the_random_factor(
         ):
             entries.append(
                 spawn(
-                    Vec2(edges.bottom.x, NATIVE_TERRAIN_SIZE + 64.0),
+                    Vec2(edges.bottom.x, TERRAIN_SIZE + 64.0),
                     heading=0.0,
                     spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
                     trigger_ms=trigger,
@@ -560,7 +560,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext, *, rng: CrandLike, full_versio
             count=1,
         ),
     ]
-    top_left, top_right, bottom_left, bottom_right = corner_points(NATIVE_TERRAIN_SIZE, offset=25.0)
+    top_left, top_right, bottom_left, bottom_right = corner_points(TERRAIN_SIZE, offset=25.0)
     trigger = 6000
     while trigger < 36800:
         entries.append(

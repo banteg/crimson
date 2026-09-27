@@ -82,7 +82,7 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
         PrimaryStepCtx(
             dt=0.06000000238418579,
             creatures=(),
-            options=make_projectile_update_options(creatures=(), world_size=1024.0),
+            options=make_projectile_update_options(creatures=()),
         ),
     )
 
@@ -103,7 +103,7 @@ def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
         PrimaryStepCtx(
             dt=0.08000000566244125,
             creatures=(),
-            options=make_projectile_update_options(creatures=(), world_size=1024.0),
+            options=make_projectile_update_options(creatures=()),
         ),
     )
 
@@ -126,7 +126,7 @@ def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
         PrimaryStepCtx(
             dt=dt,
             creatures=[creature],
-            options=make_projectile_update_options(creatures=[creature], world_size=1024.0),
+            options=make_projectile_update_options(creatures=[creature]),
         ),
     )
 
@@ -353,7 +353,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                 creatures=creatures,
                 options=make_projectile_update_options(
                     creatures=creatures,
-                    world_size=1024.0,
                     rng=case.get("rng"),
                 ),
             ),
@@ -365,7 +364,6 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
                     creatures=creatures,
                     options=make_projectile_update_options(
                         creatures=creatures,
-                        world_size=1024.0,
                             rng=case.get("rng"),
                     ),
                 ),

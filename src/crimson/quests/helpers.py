@@ -22,7 +22,6 @@ from .types import SpawnEntry
 
 # Most builders bake the 1024x1024 quest terrain into float literals (1088.0 for
 # `1024 + 64`, 512.0 for the center) instead of reading `terrain_texture_width`.
-NATIVE_TERRAIN_SIZE = 1024
 NATIVE_CENTER = Vec2(512.0, 512.0)
 
 # `(float)(crt_rand() % 612) * 0.01f`: random quest angles in [0, 6.11].

@@ -14,9 +14,7 @@ from tests.support.helpers import assert_float_close
 
 
 def test_evil_eyes_freezes_creature_under_aim() -> None:
-    world_size = 1024.0
     world = WorldState.build(
-        world_size=world_size,
         demo_mode_active=True,
         hardcore=False,
         quest_fail_retry_count=0,
@@ -41,7 +39,6 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     events = world.step(
         0.5,
         inputs=[PlayerInput(aim=Vec2(float(creature.pos.x), float(creature.pos.y)))],
-        world_size=world_size,
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

@@ -43,8 +43,6 @@ from .components.highscore_record_builder import shots_from_state
 from .components.perk_menu_controller import PerkMenuController
 from .components.perk_prompt_controller import PerkPromptState
 
-WORLD_SIZE = 1024.0
-
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -82,7 +80,6 @@ class QuestMode(BaseGameplayMode):
     ) -> None:
         super().__init__(
             ctx,
-            world_size=WORLD_SIZE,
             default_game_mode_id=GameMode.QUESTS,
             demo_mode_active=bool(demo_mode_active),
             quest_fail_retry_count=0,

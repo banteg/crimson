@@ -12,7 +12,6 @@ from .render_resources import RenderResources
 
 
 class TerrainRuntime(msgspec.Struct):
-    world_size: float = 1024.0
     render_resources: RenderResources = cast(RenderResources, None)
 
     def apply_terrain_setup(

@@ -25,7 +25,6 @@ class RenderFrame(msgspec.Struct, frozen=True):
     deterministic per frame boundary while remaining allocation-light.
     """
 
-    world_size: float
     demo_mode_active: bool
     config: CrimsonConfig | None
     camera: Vec2

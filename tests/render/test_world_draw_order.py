@@ -36,7 +36,6 @@ class _ResourcesStub:
 
 def _render_ctx_for_creatures(creatures: Sequence[object]):
     frame = RenderFrame(
-        world_size=1024.0,
         demo_mode_active=False,
         config=None,
         camera=Vec2(),
@@ -52,7 +51,6 @@ def _render_ctx_for_creatures(creatures: Sequence[object]):
     return WorldRenderCtx(
         frame=frame,
         view=view_transform(
-            world_size=frame.world_size,
             config=frame.config,
             camera=frame.camera,
             out_size=Vec2(1024, 1024),

@@ -23,6 +23,7 @@ from ..owner_ref import OwnerRef
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
+from ..terrain_slots import TERRAIN_SIZE
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import WorldRuntime
@@ -36,8 +37,7 @@ if TYPE_CHECKING:
     from ..projectiles.types import Projectile, SecondaryProjectile
     from ..sim.state_types import PlayerState
 
-WORLD_SIZE = 1024.0
-WORLD_CENTER = Vec2(WORLD_SIZE * 0.5, WORLD_SIZE * 0.5)
+WORLD_CENTER = Vec2(TERRAIN_SIZE * 0.5, TERRAIN_SIZE * 0.5)
 
 BG = rl.Color(10, 10, 12, 255)
 UI_TEXT = rl.Color(235, 235, 235, 255)
@@ -1202,7 +1202,6 @@ class LightingDebugView:
 
         self._runtime = WorldRuntime(
             assets_dir=ctx.assets_dir,
-            world_size=float(WORLD_SIZE),
             preserve_bugs=bool(ctx.preserve_bugs),
             audio_rng=self._audio_rng,
         )
@@ -1817,7 +1816,7 @@ class LightingDebugView:
 
     @staticmethod
     def _clamp_world_pos(pos: Vec2, *, margin: float = 12.0) -> Vec2:
-        return pos.clamp_rect(float(margin), float(margin), WORLD_SIZE - float(margin), WORLD_SIZE - float(margin))
+        return pos.clamp_rect(float(margin), float(margin), TERRAIN_SIZE - float(margin), TERRAIN_SIZE - float(margin))
 
     @staticmethod
     def _mouse_screen() -> Vec2:
@@ -2123,16 +2122,16 @@ class LightingDebugView:
         muzzle_pos = (player.pos + aim_dir * float(profile.spawn_distance)).clamp_rect(
             8.0,
             8.0,
-            WORLD_SIZE - 8.0,
-            WORLD_SIZE - 8.0,
+            TERRAIN_SIZE - 8.0,
+            TERRAIN_SIZE - 8.0,
         )
 
         if profile.secondary_type_id == SecondaryProjectileTypeId.DETONATION:
             impact = (player.pos + aim_dir * float(profile.explosion_distance)).clamp_rect(
                 16.0,
                 16.0,
-                WORLD_SIZE - 16.0,
-                WORLD_SIZE - 16.0,
+                TERRAIN_SIZE - 16.0,
+                TERRAIN_SIZE - 16.0,
             )
             self._runtime.world.state.secondary_projectiles.spawn_from_spec(
                 SecondarySpawnSpec(
@@ -2210,8 +2209,8 @@ class LightingDebugView:
             pos = (player.pos + Vec2.from_angle(angle) * ENEMY_RING_RADIUS).clamp_rect(
                 48.0,
                 48.0,
-                WORLD_SIZE - 48.0,
-                WORLD_SIZE - 48.0,
+                TERRAIN_SIZE - 48.0,
+                TERRAIN_SIZE - 48.0,
             )
             heading = angle + math.pi
             self._runtime.world.creatures.spawn_template(

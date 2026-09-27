@@ -28,8 +28,6 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
         state=state,
         players=[player],
         rng=state.rng,
-        world_width=1024.0,
-        world_height=1024.0,
         fx_queue=None,
     )
 
