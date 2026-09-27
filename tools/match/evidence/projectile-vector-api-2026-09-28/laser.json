@@ -1,0 +1,47 @@
+{
+  "source_sha256": "0bdd68c99b01b8f49df47ed8629e5203f372b9b5a4cd50e918cdd765a27f5f26",
+  "object_sha256": "8718eb3256fd8e05e4a81b9fbf405bf587cb7ba56babb91750b0e886dea2ca96",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "candidate_body_sha256": "45483c0fd8bbe573a7f7e55ac42bdda02021b48d27c91721ab33c0180d0d6151",
+  "verifier_sha256": "c3343ea700d09ba5ac2d8851803ec3344120e0d347d676ea89bbffb26166157f",
+  "unicorn_version": "2.1.4",
+  "suite": "laser",
+  "packages": [
+    {
+      "package": "laser-trig-rounding",
+      "receipt_sha256": "5806baff09ee9dc348f75cd37c3c0f10c2c3d2e483a3d2920ad0985ce63bdd10",
+      "fixtures_sha256": "0f096537c84782c1c6130a7e8b95e029a8f5e01c7f192ad4cd46911483560d19",
+      "cases": 5040,
+      "ordered_trace_sha256": "dd16bb60cf6af43a531f59b3731df639ac16cc85e854d9cc4eaddb2276e291ec"
+    }
+  ],
+  "negative_control": null,
+  "metrics": {
+    "exact": true,
+    "body_byte_exact": true,
+    "padding_bytes": {
+      "target": 0,
+      "candidate": 0
+    },
+    "match_ratio": 1.0,
+    "prefix_instructions": 3021,
+    "target_instructions": 3021,
+    "candidate_instructions": 3021,
+    "references": {
+      "ok": 544,
+      "unresolved": 0,
+      "mismatch": 0
+    },
+    "stack_frame": {
+      "target_prologue_allocation_bytes": 412,
+      "candidate_prologue_allocation_bytes": 412,
+      "target_minus_candidate_bytes": 0,
+      "classification": "same-prologue-allocation",
+      "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+    }
+  },
+  "scope": "Recorded caller traces and pool/write state with unchanged modeled external contracts; no GPU or all-input equivalence claim",
+  "complete_receipt_sha256": "3abef4a8fa402539ae46064bd009b4868998590edef251633594869aa1628364",
+  "receipt_projection": "Complete metrics except verbose CFG alignment, diff regions and byte mismatch lists."
+}

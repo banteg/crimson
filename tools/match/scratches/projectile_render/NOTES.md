@@ -1,5 +1,23 @@
 # `projectile_render`
 
+## Byte-exact vector API reconstruction (2026-09-28)
+
+[The vector API evidence](../../evidence/projectile-vector-api-2026-09-28/README.md)
+completes the stock MSVC 6.5 match: **3,021/3,021 instructions, prefix 3,021,
+544/0/0 references, 412-byte frame, `body_byte_exact=True`, no padding**.
+
+The vector's indexed component access, const-reference scalar arguments and
+value-returning compound assignments reproduce the compiler's native operand
+ordering. Passing the compound vector operands by value moves the final two
+ion-arc additions across the required ID boundary. Named return copies also
+preserve the post-arc load schedule. The already verified plague parentheses
+remain. No dummy stores, compiler intervention or byte patch is present.
+
+Seven source controls fail exactness, and all 13,046 pinned native fixture
+cases pass, including callback and floating-point boundaries. The incomplete
+recovery/residual flags are removed. The earlier unresolved K6–K9 discussion
+below is retained as historical evidence.
+
 ## Independent plague scheduling correction (2026-09-28)
 
 [The isolated K9 correction](../../evidence/projectile-plague-schedule-2026-09-28/README.md)

@@ -1,0 +1,56 @@
+{
+  "suite": "historic",
+  "source_sha256": "0bdd68c99b01b8f49df47ed8629e5203f372b9b5a4cd50e918cdd765a27f5f26",
+  "body_sha256": "45483c0fd8bbe573a7f7e55ac42bdda02021b48d27c91721ab33c0180d0d6151",
+  "object_sha256": "8718eb3256fd8e05e4a81b9fbf405bf587cb7ba56babb91750b0e886dea2ca96",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "d040de48ec90359a5fa6cef48d60a5b9310a27807c6c90d7b41c6ec925999395",
+  "unicorn_version": "2.1.4",
+  "details": {
+    "packages": [
+      {
+        "name": "plasma-head-alpha",
+        "receipt_sha256": "0a91cacaf22ce8a8c07e84e39a26914cc6d60f07ebdad54f2d2559d08f356972",
+        "cases": 200,
+        "ordered_trace_sha256": "3b4e25b092a2e13d4a8e216409a89ca875277a88ce0fb06e67ef238f994ea5db"
+      },
+      {
+        "name": "beam-direction",
+        "receipt_sha256": "d0c071e39d40cf5f012d83649a8f92eb76de40a99dda7095ab1e302616d795cd",
+        "cases": 480,
+        "ordered_trace_sha256": "c9f43642ffd77eb12182360e4e8ceb630e655b437b215daaf482bdac7013021f"
+      },
+      {
+        "name": "ion-chain-product",
+        "receipt_sha256": "7864de2bf82fa5191bae6e4ee3c96d5a132056feaee10aab8338ff7134538711",
+        "cases": 384,
+        "ordered_trace_sha256": "a402a781b224c39ebbc923a18c9f60c3fbc0c24094e9150a8e4f2106d368641b"
+      },
+      {
+        "name": "laser-owner-rounding",
+        "receipt_sha256": "ae9d7f0146e75e8437c0879705b6b7d710887f90049cc3d3db4c30a8fec77ce7",
+        "cases": 438,
+        "ordered_trace_sha256": "f199e864672a2b42269411f5b2b008302bdf0d60847b3e4cf76cbd0d462a397d"
+      },
+      {
+        "name": "secondary-body-rounding",
+        "receipt_sha256": "c065768a96975442ae61cc77c56b2a13bf083cf353e7a8bd217bb19066de8517",
+        "cases": 1194,
+        "ordered_trace_sha256": "9e1ece0c89ef23a844b4e899bb4e8714750735e532f43ff5e8aaca29ada6fcc9"
+      }
+    ],
+    "cases": 2696,
+    "negative_control": {
+      "kind": "alpha-is-quarter",
+      "source_sha256": "f103bb70a5fdf91a35113f1c0b40086c98eb9b26305906ecba3b8afe1bc0be68",
+      "changed_calls": [
+        6,
+        7
+      ],
+      "native": "397021e26e57ccffc47090ad8345fe957568a3d019fe623972d48190cb433c98",
+      "wrong": "e27a495338d0420e4f9851b49f4c211ba98e1411ae2f24661c595dd59d5c9b9a"
+    },
+    "harness_sha256": "fd8e3986eed00c1307be06e75a2351abc1fcdfa3bc833098a39b3a5194461ef9"
+  },
+  "scope": "Finite native caller traces and modeled external contracts; no GPU or arbitrary-input equivalence claim."
+}

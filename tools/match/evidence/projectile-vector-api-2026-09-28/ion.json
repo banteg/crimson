@@ -1,0 +1,16 @@
+{
+  "suite": "ion",
+  "source_sha256": "0bdd68c99b01b8f49df47ed8629e5203f372b9b5a4cd50e918cdd765a27f5f26",
+  "body_sha256": "45483c0fd8bbe573a7f7e55ac42bdda02021b48d27c91721ab33c0180d0d6151",
+  "object_sha256": "f14349ba874b10fb05b9c5fdb061d0dcaf79b8417417a8b0811a8f431c30fd0d",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "d040de48ec90359a5fa6cef48d60a5b9310a27807c6c90d7b41c6ec925999395",
+  "unicorn_version": "2.1.4",
+  "details": {
+    "cases": 524,
+    "ordered_trace_sha256": "c5351bfa02362ad9d5aa8da3b256a598a3cb0dccd02aec4d228f38c1413bc904",
+    "fixtures_sha256": "791a637fb2522910ddd804617e649b7fb7e50671ea625fed1d97ad1bd7e7bad5",
+    "harness_sha256": "7f66d574c230d1d983ee0f01fe678681400c2fb954afe7d8e5dc9ad237b5371b"
+  },
+  "scope": "Finite native caller traces and modeled external contracts; no GPU or arbitrary-input equivalence claim."
+}

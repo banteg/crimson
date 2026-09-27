@@ -1,0 +1,18 @@
+{
+  "suite": "positions",
+  "source_sha256": "0bdd68c99b01b8f49df47ed8629e5203f372b9b5a4cd50e918cdd765a27f5f26",
+  "body_sha256": "45483c0fd8bbe573a7f7e55ac42bdda02021b48d27c91721ab33c0180d0d6151",
+  "object_sha256": "8718eb3256fd8e05e4a81b9fbf405bf587cb7ba56babb91750b0e886dea2ca96",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "verifier_sha256": "d040de48ec90359a5fa6cef48d60a5b9310a27807c6c90d7b41c6ec925999395",
+  "unicorn_version": "2.1.4",
+  "details": {
+    "cases": 656,
+    "callback_cases": 12,
+    "ordered_trace_sha256": "24dd2d8912db9495f75593249653630ab541ba1f42194d488fc1655cfa267a62",
+    "callback_trace_sha256": "5a7506128c74401ef3daa2f89cae7332f85fd51cff3dd6bea7212a68f8df6dbe",
+    "fixtures_sha256": "6518201a7219c9ea8dee0a04b3c0373e5824b2961de991c9a45507450aa7c2e0",
+    "harness_sha256": "d6908bd102d8aa696e46a60e5be04e24e71e941fa11afa8ab3b8b9d41a627cff"
+  },
+  "scope": "Finite native caller traces and modeled external contracts; no GPU or arbitrary-input equivalence claim."
+}

@@ -1,0 +1,47 @@
+{
+  "source_sha256": "0bdd68c99b01b8f49df47ed8629e5203f372b9b5a4cd50e918cdd765a27f5f26",
+  "object_sha256": "79835402cd6a15e345557e9451fd9a8bf4cfbfaca7013344fa3635f2bd2750ef",
+  "image_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "native_body_sha256": "e0e4790ba783bebbb00a1d97b26e2d25dfea3f78d6b7461e636c27fa7332817e",
+  "candidate_body_sha256": "45483c0fd8bbe573a7f7e55ac42bdda02021b48d27c91721ab33c0180d0d6151",
+  "verifier_sha256": "c3343ea700d09ba5ac2d8851803ec3344120e0d347d676ea89bbffb26166157f",
+  "unicorn_version": "2.1.4",
+  "suite": "conventional",
+  "packages": [
+    {
+      "package": "conventional-corner-rounding",
+      "receipt_sha256": "5b7d219c32e180084d17a0b9fbf39c7cc7ffabdb58d6c85765280806dd1cc060",
+      "fixtures_sha256": "7a9a9566873101ccf05d1ed8005b55ed19ad96cc5c09f69efed6bf3794829a35",
+      "cases": 4118,
+      "ordered_trace_sha256": "a877da7fdab4a42589be5a6ff5982fb48eb91a23442db248db5591f155d59e47"
+    }
+  ],
+  "negative_control": null,
+  "metrics": {
+    "exact": true,
+    "body_byte_exact": true,
+    "padding_bytes": {
+      "target": 0,
+      "candidate": 0
+    },
+    "match_ratio": 1.0,
+    "prefix_instructions": 3021,
+    "target_instructions": 3021,
+    "candidate_instructions": 3021,
+    "references": {
+      "ok": 544,
+      "unresolved": 0,
+      "mismatch": 0
+    },
+    "stack_frame": {
+      "target_prologue_allocation_bytes": 412,
+      "candidate_prologue_allocation_bytes": 412,
+      "target_minus_candidate_bytes": 0,
+      "classification": "same-prologue-allocation",
+      "caveat": "Diagnostic only: prologue allocation includes compiler temporaries and stack-slot coloring; its delta does not imply missing source locals byte-for-byte."
+    }
+  },
+  "scope": "Recorded caller traces and pool/write state with unchanged modeled external contracts; no GPU or all-input equivalence claim",
+  "complete_receipt_sha256": "2b5f6c8c739af281b0ede177ea8a5f89fcec381585378f6c3d4c8282f880d116",
+  "receipt_projection": "Complete metrics except verbose CFG alignment, diff regions and byte mismatch lists."
+}
