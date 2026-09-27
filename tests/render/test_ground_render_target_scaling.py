@@ -26,31 +26,25 @@ def _renderer() -> GroundRenderer:
 
 
 @pytest.mark.parametrize(
-    ("render_width", "render_height", "expected_size"),
+    ("dpi_scale", "expected_size"),
     [
-        (1024, 768, (1024, 1024)),
-        (2048, 1536, (2048, 2048)),
+        (1.0, (1024, 1024)),
+        (1.5, (1024, 1024)),
+        (2.0, (2048, 2048)),
     ],
-    ids=["native-without-hidpi", "double-render-resolution"],
+    ids=["native-without-hidpi", "fractional-dpi", "double-dpi"],
 )
-def test_render_target_size_scales_with_render_resolution(
+def test_render_target_size_scales_with_window_dpi(
     mocker,
-    render_width: int,
-    render_height: int,
+    dpi_scale: float,
     expected_size: tuple[int, int],
 ) -> None:
-    mocker.patch.object(terrain_render.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(terrain_render.rl, "get_screen_height", return_value=768)
-    mocker.patch.object(terrain_render.rl, "get_render_width", return_value=render_width)
-    mocker.patch.object(terrain_render.rl, "get_render_height", return_value=render_height)
+    mocker.patch.object(terrain_render.rl, "get_window_scale_dpi", return_value=rl.Vector2(dpi_scale, dpi_scale))
     assert _renderer()._render_target_size_for(1.0) == expected_size
 
 
-def test_effective_texture_scale_halves_with_double_render_resolution(mocker) -> None:
-    mocker.patch.object(terrain_render.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(terrain_render.rl, "get_screen_height", return_value=768)
-    mocker.patch.object(terrain_render.rl, "get_render_width", return_value=2048)
-    mocker.patch.object(terrain_render.rl, "get_render_height", return_value=1536)
+def test_effective_texture_scale_halves_with_double_dpi(mocker) -> None:
+    mocker.patch.object(terrain_render.rl, "get_window_scale_dpi", return_value=rl.Vector2(2.0, 2.0))
     assert _renderer()._normalized_texture_scale() == 0.5
 
 

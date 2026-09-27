@@ -47,8 +47,7 @@ def run_view(
     hooks: RunViewHooks | None = None,
 ) -> None:
     """Run a Raylib window with a pluggable debug view."""
-    if config_flags:
-        rl.set_config_flags(config_flags)
+    rl.set_config_flags(config_flags | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
     rl.init_window(width, height, title)
     if exit_key is not None:
         rl.set_exit_key(exit_key)

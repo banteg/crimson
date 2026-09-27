@@ -28,7 +28,7 @@ gh repo clone banteg/crimson && cd crimson
 uv run crimson
 ```
 
-**Wayland on Linux:** current PyPI raylib wheels are X11-oriented on x86_64, so you may need `xwayland` + `libX11`. See [electronstudio/raylib-python-cffi#199](https://github.com/electronstudio/raylib-python-cffi/pull/199).
+**Wayland on Linux:** the raylib wheels run natively on Wayland, but still link `libX11`, so keep it installed.
 
 ### Runtime files
 

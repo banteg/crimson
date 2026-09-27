@@ -3,9 +3,12 @@ from __future__ import annotations
 from typing import Any, ClassVar
 
 import grim.app as grim_app
+from grim.raylib_api import rl
 
 
 class _FakeRl:
+    ConfigFlags = rl.ConfigFlags
+
     def __init__(self) -> None:
         self.window_should_close_calls = 0
         self.begin_calls = 0

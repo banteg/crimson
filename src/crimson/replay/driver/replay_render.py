@@ -197,9 +197,7 @@ def run_replay_render_video(
     total_ticks = len(replay.ticks)
     if max_ticks is not None:
         total_ticks = min(total_ticks, max(0, max_ticks))
-    config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
-    if config_flags != 0:
-        rl.set_config_flags(config_flags)
+    rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIDDEN | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
 
     with tempfile.TemporaryDirectory(prefix="crimson-replay-render-") as temp_dir_str:
         temp_dir = Path(temp_dir_str)

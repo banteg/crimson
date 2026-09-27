@@ -420,11 +420,10 @@ class GroundRenderer(msgspec.Struct):
         return True
 
     def _render_pixel_ratio(self) -> float:
-        screen_w = int(rl.get_screen_width())
-        screen_h = int(rl.get_screen_height())
-        render_w = int(rl.get_render_width())
-        render_h = int(rl.get_render_height())
-        if render_w == screen_w * 2 and render_h == screen_h * 2:
+        # Window DPI, not render/screen size: raylib 6 reports the bound FBO's size
+        # from GetRender*() inside texture mode, where terrain stamping happens.
+        dpi = rl.get_window_scale_dpi()
+        if dpi.x == 2.0 and dpi.y == 2.0:
             return 2.0
         return 1.0
 

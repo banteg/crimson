@@ -290,9 +290,7 @@ def run_replay_render_benchmark(
     download_missing_paqs(runtime_assets_dir, console)
     ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
 
-    config_flags = rl.ConfigFlags.FLAG_WINDOW_HIDDEN
-    if int(config_flags) != 0:
-        rl.set_config_flags(int(config_flags))
+    rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIDDEN | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
     resources = None
     window_open = False
     try:
