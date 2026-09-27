@@ -2,6 +2,28 @@
 
 Native target: `crimsonland.exe` at `0x004136b0` (16,257 bytes).
 
+## Exact: the translation unit precedes player_update with its heading helper (2026-09-28)
+
+**Byte-exact**: 4206/4206 instructions, refs 918/0/0. The source inside the function did not change.
+The scratch now defines `player_heading_approach_target` (native `0x413540`, directly before
+`player_update`, from the same C++ object) ahead of `player_update`, as the original translation
+unit did. The native link builds both from this scratch through the `player-update-heading`
+cluster. The helper stays byte-exact in the shared object.
+
+Why the preceding function matters: C2's operand encoder addresses locals through two global
+frame flags, `0x107ac384` and `0x107ac388`. The pass driver sets them per function only after block
+mover loop 2 (`0x1075856b`: FPO sets both; `0x1075874e`: neither), so loop 2 sizes tails with the
+previous function's flags.
+- **First function in the TU:** locals size as `[ebp+disp8]`, 3 bytes. The demo tail is
+  `fld`+`fld`+`fpatan`+`fsub`+`jmp` = 19 bytes, at most 20, so it is cloned into the first arm.
+- **After an FPO function** (such as the heading helper): locals size as `[esp+disp8]` with a SIB
+  byte, 4 bytes. The same tail is 21 bytes and stays shared, as in native.
+
+Final encodings are unaffected: frame offsets are applied after the mover. Every other loop-2 tail
+in `player_update` either has no stack locals (the 7-byte return tail) or is already over 20 bytes.
+Any FPO function in front gives the same object. The cooldown-pointer fix below took care of the
+other two residuals.
+
 ## No named cooldown pointer (2026-09-28)
 
 The firing block reads and writes `player->shot_cooldown` directly. The former

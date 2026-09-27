@@ -1,5 +1,5 @@
 {
-  "audit_digest": "efe54fecba5bb7b3798d4ac380a6a59fec0e4a654b3c4b349f7c8e5921d92008",
+  "audit_digest": "80f90bf73b6ea4167c94e603e01b400918df1b06f4f2f1568a8015a933128855",
   "coalescible_definitions": [
     {
       "definitions": [
@@ -11283,19 +11283,6 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@00000000000000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@00000000000000000000",
-          "comdat_selection": 2,
           "function": "player_render_overlays",
           "kind": "section",
           "logical_section_size": 4,
@@ -11348,12 +11335,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@00000000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -12162,12 +12154,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff5aa64c30000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -12224,12 +12221,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff68000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -12274,12 +12276,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff683126f0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -12669,12 +12676,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff8a3d70a0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -12988,12 +13000,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffacccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -13320,12 +13337,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffbcccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -13620,12 +13642,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffc9a89760000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -13729,12 +13756,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffccccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -13892,12 +13924,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffd8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -14020,12 +14057,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffd99999a0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -14321,12 +14363,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffdcccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -14427,12 +14474,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffdf5c28f0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -14799,12 +14851,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffe8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -15099,12 +15156,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffe860a920000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -15245,12 +15307,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffe99999a0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -15639,12 +15706,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffec90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -15826,12 +15898,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffecccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -16034,12 +16111,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffee147ae0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -16672,12 +16754,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -17067,12 +17154,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff860a920000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -17137,12 +17229,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8666660000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -17365,12 +17462,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffa666660000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -17448,12 +17550,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffb333330000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -17536,12 +17643,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffc000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -17749,12 +17861,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffc90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -18121,12 +18238,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40008000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -18577,12 +18699,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4000c000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -18739,12 +18866,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4000c90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -19129,12 +19261,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40018000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -19588,19 +19725,6 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001a000000000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4001a000000000000000",
-          "comdat_selection": 2,
           "function": "player_take_damage",
           "kind": "section",
           "logical_section_size": 4,
@@ -19614,12 +19738,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001a000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -19891,12 +20020,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001c000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -20055,25 +20189,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001c90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4001c90fdb0000000000",
-          "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -20158,12 +20284,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001e000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -20950,12 +21081,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4002a000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -21671,12 +21807,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4002e000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -21909,12 +22050,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4002f000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -22324,12 +22470,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40038000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -23012,12 +23163,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40039800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -23265,12 +23421,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003a000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -23911,12 +24072,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -24397,12 +24563,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003f000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -25656,12 +25827,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4004a800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -26656,12 +26832,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4004f000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -26924,12 +27105,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40058000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -27787,12 +27973,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4005c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -28141,12 +28332,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40068000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -29109,12 +29305,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4006c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -29753,12 +29954,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40079600000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -30001,12 +30207,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40088000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -30340,12 +30551,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@bfff8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -30520,7 +30736,7 @@
   "default_libraries": [
     {
       "name": "LIBC",
-      "object_count": 569,
+      "object_count": 568,
       "objects": [
         "tools/match/scratches/angle_approach/build/msvc6.5/01b8e4c8f45763f2/scratch.obj",
         "tools/match/scratches/audio_asset_id_table_init/build/msvc6.5/44070a2df01b84cc/scratch.obj",
@@ -30853,7 +31069,6 @@
         "tools/match/scratches/player_apply_move_with_spawn_avoidance/build/msvc6.5/eab0edb854382fae/scratch.obj",
         "tools/match/scratches/player_find_in_radius/build/msvc6.5/76278a43bb2ca4e9/scratch.obj",
         "tools/match/scratches/player_fire_weapon/build/msvc6.5/862cd09623515db8/scratch.obj",
-        "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
         "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
         "tools/match/scratches/player_reset_all/build/msvc6.5/538e7cc0532e7c9b/scratch.obj",
         "tools/match/scratches/player_start_reload/build/msvc6.5/3b54c448398e26ad/scratch.obj",
@@ -31095,7 +31310,7 @@
     },
     {
       "name": "OLDNAMES",
-      "object_count": 569,
+      "object_count": 568,
       "objects": [
         "tools/match/scratches/angle_approach/build/msvc6.5/01b8e4c8f45763f2/scratch.obj",
         "tools/match/scratches/audio_asset_id_table_init/build/msvc6.5/44070a2df01b84cc/scratch.obj",
@@ -31428,7 +31643,6 @@
         "tools/match/scratches/player_apply_move_with_spawn_avoidance/build/msvc6.5/eab0edb854382fae/scratch.obj",
         "tools/match/scratches/player_find_in_radius/build/msvc6.5/76278a43bb2ca4e9/scratch.obj",
         "tools/match/scratches/player_fire_weapon/build/msvc6.5/862cd09623515db8/scratch.obj",
-        "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
         "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
         "tools/match/scratches/player_reset_all/build/msvc6.5/538e7cc0532e7c9b/scratch.obj",
         "tools/match/scratches/player_start_reload/build/msvc6.5/3b54c448398e26ad/scratch.obj",
@@ -64906,12 +65120,17 @@
           "comdat_associative_section": null,
           "comdat_key": "?pu_swap@@YAXAAE0@Z",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 32,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -64924,12 +65143,17 @@
           "comdat_associative_section": null,
           "comdat_key": "?pu_swap@@YAXAAH0@Z",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 32,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -64942,12 +65166,17 @@
           "comdat_associative_section": null,
           "comdat_key": "?pu_swap@@YAXAAM0@Z",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 32,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -66186,19 +66415,6 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@00000000000000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@00000000000000000000",
-          "comdat_selection": 2,
           "function": "player_render_overlays",
           "kind": "section",
           "logical_section_size": 4,
@@ -66251,12 +66467,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@00000000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -67232,12 +67453,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff5aa64c30000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -67250,12 +67476,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff5c49ba60000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -67312,12 +67543,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff68000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -67362,12 +67598,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff683126f0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -67457,12 +67698,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff6aa64c30000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -67493,12 +67739,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff783126f0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -67847,12 +68098,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff8a3d70a0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -67987,12 +68243,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff8c90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -68103,12 +68364,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ff9ba2e8c0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -68376,12 +68642,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffacccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -68744,12 +69015,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffbcccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -69103,12 +69379,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffc9a89760000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -69284,12 +69565,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffccccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -69465,12 +69751,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffd8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -69629,12 +69920,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffd99999a0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -69709,12 +70005,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffda0d97c0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -69966,12 +70267,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffdcccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -70090,12 +70396,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffdf5c28f0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -70462,12 +70773,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffe8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -70762,12 +71078,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffe860a920000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -70944,12 +71265,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffe99999a0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -71392,12 +71718,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffec90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -71579,12 +71910,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffecccccd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -71805,12 +72141,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3ffee147ae0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -72443,12 +72784,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -72892,12 +73238,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff860a920000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -72962,12 +73313,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fff8666660000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -73244,12 +73600,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffa666660000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -73327,12 +73688,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffb333330000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -73415,12 +73781,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffc000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -73628,12 +73999,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffc90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -73779,12 +74155,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@3fffd555550000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -74072,12 +74453,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40008000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -74457,12 +74843,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4000b333330000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -74618,12 +75009,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4000c000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -74798,12 +75194,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4000c90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -75260,12 +75661,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40018000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -75737,19 +76143,6 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001a000000000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4001a000000000000000",
-          "comdat_selection": 2,
           "function": "player_take_damage",
           "kind": "section",
           "logical_section_size": 4,
@@ -75763,12 +76156,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001a000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -76040,12 +76438,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001c000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -76204,25 +76607,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001c90fdb0000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".rdata",
-          "size": null,
-          "weak": false
-        },
-        {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "__real@4@4001c90fdb0000000000",
-          "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -76307,12 +76702,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001e000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -76377,12 +76777,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4001fea5dd0000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -77117,12 +77522,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4002a000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -77862,12 +78272,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4002e000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -78100,12 +78515,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4002f000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -78515,12 +78935,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40038000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -79239,12 +79664,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40039800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -79492,12 +79922,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003a000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -80161,12 +80596,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -80691,12 +81131,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4003f000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -82029,12 +82474,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4004a800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -83090,12 +83540,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4004f000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -83358,12 +83813,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40058000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -84430,12 +84890,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4005c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -84942,12 +85407,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40068000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -86248,12 +86718,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@4006c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -87183,12 +87658,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40079600000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -87588,12 +88068,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@40088000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -88022,12 +88507,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@400fc350000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -88112,12 +88602,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@bfff8000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -88179,12 +88674,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@c0018000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -88197,12 +88697,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@c001a000000000000000",
           "comdat_selection": 2,
-          "function": "player_heading_approach_target",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
+          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -88215,12 +88720,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@c001c000000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -88251,12 +88761,17 @@
           "comdat_associative_section": null,
           "comdat_key": "__real@4@c003c800000000000000",
           "comdat_selection": 2,
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 4,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".rdata",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -102671,11 +103186,16 @@
           "comdat_key": "_player_heading_approach_target",
           "comdat_selection": 1,
           "function": "player_heading_approach_target",
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
           "logical_section_size": 368,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
+          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -103043,11 +103563,16 @@
           "comdat_key": "_player_update",
           "comdat_selection": 1,
           "function": "player_update",
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
-          "logical_section_size": 16288,
+          "logical_section_size": 16272,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -116717,13 +117242,6 @@
         "-defaultlib:LIBC",
         "-defaultlib:OLDNAMES"
       ],
-      "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj"
-    },
-    {
-      "directives": [
-        "-defaultlib:LIBC",
-        "-defaultlib:OLDNAMES"
-      ],
       "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj"
     },
     {
@@ -124136,8 +124654,13 @@
       "name": "?vec2_sub@vec2_t@@QAE?AU1@ABU1@@Z",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -126037,8 +126560,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -126276,8 +126804,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -126423,8 +126956,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -126598,8 +127136,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -126674,8 +127217,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -126930,8 +127478,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -127990,8 +128543,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -128067,8 +128625,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -128191,8 +128754,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -130017,8 +130585,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -131725,8 +132298,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -133709,8 +134287,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -133745,8 +134328,13 @@
       "name": "_cv_padAimDistMul",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -134267,8 +134855,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -135779,8 +136372,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -135809,8 +136407,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -136231,8 +136834,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -136980,8 +137588,13 @@
       "name": "_fire_bullets_fallback_shot_cooldown",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -137011,8 +137624,13 @@
       "name": "_fire_bullets_fallback_spread_heat",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -137042,8 +137660,13 @@
       "name": "_fire_bullets_primary_shot_sfx_id",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -137073,8 +137696,13 @@
       "name": "_fire_bullets_secondary_shot_sfx_id",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -137277,18 +137905,18 @@
           "weak": false
         },
         {
-          "function": "player_heading_approach_target",
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "player_take_damage",
           "object": "tools/match/scratches/player_take_damage/build/msvc6.5/a95c0f1649cd78f6/scratch.obj",
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -137456,8 +138084,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -138132,8 +138765,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -138157,8 +138795,13 @@
       "name": "_fx_spawn_particle_slow",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -138182,8 +138825,13 @@
       "name": "_fx_spawn_secondary_projectile",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -138212,8 +138860,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -140144,8 +140797,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -142385,8 +143043,13 @@
       "name": "_input_aim_pov_left_active",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -142410,8 +143073,13 @@
       "name": "_input_aim_pov_right_active",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -142729,8 +143397,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -145244,8 +145917,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -145615,8 +146293,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -145702,8 +146385,13 @@
       "name": "_perk_fire_cough_trigger_interval_s",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -145733,8 +146421,13 @@
       "name": "_perk_hot_tempered_trigger_interval_s",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -145774,8 +146467,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -145866,8 +146564,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -145902,8 +146605,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -146004,8 +146712,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -146547,8 +147260,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -146670,8 +147388,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -146829,8 +147552,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -147121,8 +147849,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -147162,8 +147895,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -147208,8 +147946,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -147882,8 +148625,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -147928,8 +148676,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -147969,8 +148722,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -148344,8 +149102,13 @@
       "name": "_perk_man_bomb_trigger_interval_s",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149639,8 +150402,13 @@
       "name": "_player_aim_screen_x",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149670,8 +150438,13 @@
       "name": "_player_alt_move_key_backward",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149701,8 +150474,13 @@
       "name": "_player_alt_move_key_forward",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149732,8 +150510,13 @@
       "name": "_player_alt_turn_key_left",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149763,8 +150546,13 @@
       "name": "_player_alt_turn_key_right",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149794,8 +150582,13 @@
       "name": "_player_alt_weapon_swap_cooldown_ms",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149819,8 +150612,13 @@
       "name": "_player_apply_move_with_spawn_avoidance",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -149960,31 +150758,6 @@
     {
       "definitions": [
         {
-          "comdat": true,
-          "comdat_associative_section": null,
-          "comdat_key": "_player_heading_approach_target",
-          "comdat_selection": 1,
-          "function": "player_heading_approach_target",
-          "kind": "section",
-          "logical_section_size": 368,
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "section": ".text",
-          "size": null,
-          "weak": false
-        }
-      ],
-      "name": "_player_heading_approach_target",
-      "referenced_by": [
-        {
-          "function": "player_update",
-          "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
-          "weak": false
-        }
-      ]
-    },
-    {
-      "definitions": [
-        {
           "alignment": 4,
           "comdat": false,
           "comdat_associative_section": null,
@@ -150007,13 +150780,13 @@
       "name": "_player_heading_turn_delta",
       "referenced_by": [
         {
-          "function": "player_heading_approach_target",
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "weak": false
-        },
-        {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -150357,8 +151130,13 @@
       "name": "_player_spread_damping_gate",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -150393,8 +151171,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -150423,8 +151206,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -150630,11 +151418,6 @@
           "weak": false
         },
         {
-          "function": "player_heading_approach_target",
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "player_render_overlays",
           "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
           "weak": false
@@ -150660,8 +151443,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -150807,8 +151595,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -150821,11 +151614,16 @@
           "comdat_key": "_player_update",
           "comdat_selection": 1,
           "function": "player_update",
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "kind": "section",
-          "logical_section_size": 16288,
+          "logical_section_size": 16272,
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
           "section": ".text",
           "size": null,
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ],
@@ -151427,8 +152225,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -151577,8 +152380,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -155525,11 +156333,6 @@
           "weak": false
         },
         {
-          "function": "player_heading_approach_target",
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "player_render_overlays",
           "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
           "weak": false
@@ -155545,8 +156348,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -157137,8 +157945,13 @@
       "name": "_sfx_bloodspill_01",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -157622,8 +158435,13 @@
       "name": "_sfx_explosion_small",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -158931,8 +159749,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -160755,8 +161578,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -161648,8 +162476,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -162136,8 +162969,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -163057,8 +163895,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -163103,8 +163946,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -168162,8 +169010,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -170905,8 +171758,13 @@
       "name": "_vec2_length",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         }
       ]
@@ -171061,8 +171919,13 @@
       "name": "_weapon_ammo_class",
       "referenced_by": [
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -171273,8 +172136,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -171639,9 +172507,9 @@
     "game_owned_closure": true,
     "hard_duplicate_by_section": {},
     "hard_duplicate_symbols": 0,
-    "object_count": 570,
+    "object_count": 569,
     "reference_exports_closed": true,
-    "resolved_symbols": 1265,
+    "resolved_symbols": 1264,
     "unresolved_by_category": {
       "excluded_function": 71,
       "import": 25,
@@ -172016,8 +172884,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -172875,11 +173748,6 @@
           "weak": false
         },
         {
-          "function": "player_heading_approach_target",
-          "object": "tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj",
-          "weak": false
-        },
-        {
           "function": "player_render_overlays",
           "object": "tools/match/scratches/player_render_overlays/build/msvc6.5/b715d8c56716edc8/scratch.obj",
           "weak": false
@@ -172905,8 +173773,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -173851,8 +174724,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {
@@ -176064,8 +176942,13 @@
           "weak": false
         },
         {
-          "function": "player_update",
+          "function": null,
+          "functions": [
+            "player_heading_approach_target",
+            "player_update"
+          ],
           "object": "tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj",
+          "translation_unit": "player-update-heading",
           "weak": false
         },
         {

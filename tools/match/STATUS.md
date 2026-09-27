@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **807/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **808/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**807/810** functions matched exactly (**99.6%**), **312816/341992** code bytes (**91.5%**). Byte totals are manifest function extents with terminal padding trimmed.
+**808/810** functions matched exactly (**99.8%**), **329073/341992** code bytes (**96.2%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **340837/341992** code bytes (**99.7%**).
+Fuzzy-weighted alignment is **341677/341992** code bytes (**99.9%**).
 
-Remaining exact-match debt is **3 functions**, **29176 code bytes**, and **1155 fuzzy-gap bytes**.
+Remaining exact-match debt is **2 functions**, **12919 code bytes**, and **315 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -20,7 +20,7 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 | image | artifacts | functions | objects | TU clusters | ABI | function closure | game-owned closure | all refs closed | hard duplicates | resolved | unresolved |
 |---|---|---:|---:|---:|---|---|---|---|---:|---:|---:|
-| crimsonland.exe | current | 671 | 570 | 28 | passed | yes | yes | no | 0 | 1265 | 97 |
+| crimsonland.exe | current | 671 | 569 | 29 | passed | yes | yes | no | 0 | 1264 | 97 |
 | grim.dll | current | 139 | 132 | 4 | passed | yes | yes | no | 0 | 257 | 53 |
 
 | image | unresolved by category | game-data unresolved | data entries | typed | explicit sizes | explicit alignments | explicit initializers |
@@ -30,17 +30,16 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 
 ## Residual frontier
 
-**3** non-exact scratch-backed functions hold **1155 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
+**2** non-exact scratch-backed functions hold **315 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
 
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **3 / 1155** are historical-only; **0 / 0** have no recorded experiments.
+Current-baseline experiments cover **0 functions / 0 gap bytes**; **2 / 315** are historical-only; **0 / 0** have no recorded experiments.
 
 Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
 
 | rank | image | function | fuzzy gap | declared recovery | declared residual | evidence | current/all | streak | flags |
 |---:|---|---|---:|---|---|---|---:|---:|---|
-| 1 | crimsonland.exe | player_update | 840 | semantic-complete | compiler,references | historical-only | 0/82 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 2 | crimsonland.exe | projectile_render | 283 | incomplete | analysis,compiler,references | historical-only | 0/98 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
-| 3 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/12 | 0 | repeated-variants,variant-errors,historical-only |
+| 1 | crimsonland.exe | projectile_render | 283 | incomplete | analysis,compiler,references | historical-only | 0/98 | 0 | repeated-variants,repeated-specs,metric-tradeoffs,variant-errors,historical-only |
+| 2 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/12 | 0 | repeated-variants,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -110,12 +109,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 668/671 | 291651/320827 | 90.9% | 319672/320827 | 99.6% | 671/671 | 320827/320827 | 100.0% | 668/671 |
+| crimsonland.exe | 669/671 | 307908/320827 | 96.0% | 320512/320827 | 99.9% | 671/671 | 320827/320827 | 100.0% | 669/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**668/671** functions (**99.6%**), **291651/320827** bytes (**90.9%**), **319672/320827** fuzzy-weighted bytes (**99.6%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **668/671** scratches verified.
+**669/671** functions (**99.7%**), **307908/320827** bytes (**96.0%**), **320512/320827** fuzzy-weighted bytes (**99.9%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **669/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -332,7 +331,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | gameplay_reset_state | 0x00412dc0 | 1639 | 1639/1639 | 0 | 307/307 | 100.00% | 307/307 | 216/0/0 |  | gameplay-session-state-reset |
 | match | player_start_reload | 0x00413430 | 263 | 263/263 | 0 | 67/67 | 100.00% | 67/67 | 28/0/0 |  | gameplay-reload |
 | match | player_heading_approach_target | 0x00413540 | 354 | 354/354 | 0 | 95/95 | 100.00% | 95/95 | 27/0/0 |  | gameplay-angle-x87 |
-| wip | player_update | 0x004136b0 | 16257 | 15417/16257 | 840 | 4211/4206 | 94.83% | 7/4206 | 918/0/0 |  | core-player-simulation |
+| match | player_update | 0x004136b0 | 16257 | 16257/16257 | 0 | 4206/4206 | 100.00% | 4206/4206 | 918/0/0 |  | core-player-simulation |
 | match | vec2_sub | 0x00417640 | 26 | 26/26 | 0 | 9/9 | 100.00% | 9/9 | 0/0/0 |  | x87-vector-subtract |
 | match | vec2_length | 0x00417660 | 26 | 26/26 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | x87-fsqrt |
 | match | ui_menu_template_pool_init_thunk | 0x00417680 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-ui-template-init |

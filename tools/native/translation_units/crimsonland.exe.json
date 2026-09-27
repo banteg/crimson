@@ -689,6 +689,20 @@
           "symbol": "_$E2"
         }
       ]
+    },
+    {
+      "name": "player-update-heading",
+      "scratch": "player_update",
+      "members": [
+        {
+          "function": "player_heading_approach_target",
+          "symbol": "player_heading_approach_target"
+        },
+        {
+          "function": "player_update",
+          "symbol": "player_update"
+        }
+      ]
     }
   ]
 }

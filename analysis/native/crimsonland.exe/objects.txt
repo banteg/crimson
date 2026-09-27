@@ -164,7 +164,6 @@ tools/match/scratches/game_save_status/build/msvc6.5/9fe75b1412f27575/scratch.ob
 tools/match/scratches/game_load_status/build/msvc6.5/0da3053e4464575b/scratch.obj
 tools/match/scratches/gameplay_reset_state/build/msvc6.5/8866570c9e2d3e5f/scratch.obj
 tools/match/scratches/player_start_reload/build/msvc6.5/3b54c448398e26ad/scratch.obj
-tools/match/scratches/player_heading_approach_target/build/msvc6.5/cc319ed90365b78e/scratch.obj
 tools/match/scratches/player_update/build/msvc6.5/4929c685e629cbe3/scratch.obj
 tools/match/scratches/vec2_sub/build/msvc6.5/fe6dbc6be2290968/scratch.obj
 tools/match/scratches/vec2_length/build/msvc6.5/08b9273b3f083c9e/scratch.obj
