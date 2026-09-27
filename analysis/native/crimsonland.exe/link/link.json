@@ -11,7 +11,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         },
         "member": "vs6sp6.iso/VS6sp61.cab/vc98/lib/libcmt.lib",
         "source_artifact": "visual-cpp-6-sp6-media"
@@ -29,7 +29,7 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         }
       }
     },
@@ -44,14 +44,14 @@
         "manifest": {
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         },
         "member": "DXF/DXSDK/lib/d3dx8.lib",
         "source_artifact": "directx-8.1-sdk-full"
       }
     }
   ],
-  "audit_digest": "54f5b6e3725ef39655036eaec9c7cbc1af064edce7e7ace0e3d4aa04a1cd5c50",
+  "audit_digest": "9c9f7bb7280be5b5f5febe9d988be4057a67fa7ad20f1276abd53abe6540da29",
   "entry": {
     "aliases": {
       "object": {
@@ -264,7 +264,7 @@
           "note": "The provenance manifest pins the exact LIBCMT archive and records its whole-range executable match.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         }
       ],
       "kind": "static-library",
@@ -339,7 +339,7 @@
           "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "1eac6a3d24ffe617bd5d9a9f2188a929ef6244297375b50042bf5ef2a126cc39"
+          "sha256": "51c9cfc20d474162763c4c0cb314b9981cadd73644e1a30d6ff1a3988b173c9e"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
@@ -1086,7 +1086,7 @@
           "note": "The selected D3DX8 CPU-detection member records these decorated ADVAPI32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         }
       ],
       "import_library": {
@@ -1394,7 +1394,7 @@
           "note": "The pinned VC6 SP6 LIBCMT archive defines __snprintf and _tolower.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         }
       ],
       "kind": "static-library",
@@ -1448,7 +1448,7 @@
           "note": "The pinned D3DX8 and VC6 archives record these decorated KERNEL32 references.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         }
       ],
       "import_library": {
@@ -1724,7 +1724,7 @@
           "note": "The deterministic recovered-provider recipe requires exact instruction and reference matches for every archive member.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         },
         {
           "note": "The final missing DirectX member is an exact 1,014-instruction match with all 61 references aligned.",
@@ -1762,7 +1762,7 @@
           "note": "The pinned DirectX 8.1 archive matches the executable's entire D3DX8 range; the dispatch initializer and thunk match d3dxmath.obj exactly.",
           "path": "analysis/library_provenance.json",
           "repository_relative": true,
-          "sha256": "0fc819c0f3a757c86eefe61e06d6db788cbcfa1324d6537d0c6dd91ad930169d"
+          "sha256": "8bf8118a9d08aab5ce4a4e9b4cf13446ffb545df6b3caab575c9b7c25f97ae6d"
         },
         {
           "note": "The archive proof identifies D3DXVec2Normalize as an original static D3DX8 provider used by both images.",
