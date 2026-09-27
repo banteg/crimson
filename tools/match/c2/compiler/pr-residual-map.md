@@ -7,6 +7,12 @@ labels masked, and 544/0/0 references. A preserving C2 trace and a 76-byte
 relocation-aware region check confirm the store/load mechanism; the full
 function remains non-exact.
 
+Follow-up, 2026-09-28: [the id/window evidence](../../evidence/projectile-id-window-2026-09-28/README.md)
+resolves K6 to K9 below. K6, K7 and K8 are one shift: the arc's inline `operator*` result parts need ids 288
+or 320 higher (mod 2048), which about nine or ten more 32-id chunks of reader IL anywhere after the sharpshooter
+loop give. K9 needs more FROUND nodes in the plague block before quad D. A padded build with no-op parentheses
+is byte-exact. The construct behind the extra reader IL is unknown.
+
 This note maps every mismatching region of `projectile_render` at 32b0ec7fa (81.79% raw, 541/0/0 refs) to
 a C2 mechanism, and records the source changes that remove most of them. It also answers why the
 weight-16 slots of best_p (from [pr-spill-order.md](pr-spill-order.md)) sort opposite to native.

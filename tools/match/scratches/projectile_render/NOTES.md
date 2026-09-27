@@ -3,6 +3,25 @@
 Native target: `crimsonland.exe` at `0x00422c70` (12,551-byte manifest
 extent).
 
+## K6 to K9: one id shift and one scheduler window (2026-09-28)
+
+[The id/window evidence](../../evidence/projectile-id-window-2026-09-28/README.md)
+accounts for every remaining region. A build with two additions is byte-exact
+(`body_byte_exact=True`, 3021/3021, 544/0/0). The canonical source is unchanged,
+because one of the two additions is a measuring device, not recovered source.
+
+- **K6, K7, K8.** The ion arc's `operator*` result parts get their ids in the
+  inline-expansion pass, after the reader. Eight arc sort ties need those ids
+  288 or 320 higher (mod 2048). About 280 to 344 extra reader temps anywhere
+  after the sharpshooter loop do that. So native's source was about nine or ten
+  32-id chunks more verbose than ours, with identical code. Which construct it
+  was is still unknown. The evidence lists the spellings that change code.
+- **K9.** The plague block's first 81-node window ends at quad D's first
+  `push`. Native keeps quad D's three pushes in one window, which needs more
+  counted nodes earlier in the block. No-op parentheses (FROUNDs) around the
+  first quads' coordinates and the angle definitions do that: 21 of 127
+  parenthesis-group combinations are exact on the padded build.
+
 ## K2 alpha object copy recovered (2026-09-26)
 
 The alpha wrapper/tint-constructor pattern from `player_render_overlays`
