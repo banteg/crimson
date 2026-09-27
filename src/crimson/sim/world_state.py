@@ -72,14 +72,11 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
     trigger_game_tune: bool = False
     hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
 
-    def apply_player_projectile_damage(self, player_index: int, damage: float) -> None:
+    def apply_player_damage(self, player_index: int, damage: float) -> None:
         idx = int(player_index)
         if not (0 <= idx < len(self.world.players)):
             return
         player_take_projectile_damage(self.world.state, self.world.players[idx], float(damage))
-
-    def apply_player_damage(self, player_index: int, damage: float) -> None:
-        self.apply_player_projectile_damage(player_index, damage)
 
     def apply_creature_damage(
         self,
@@ -145,19 +142,22 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             sfx=self.sfx,
         )
 
-    def prepare_projectile_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
-        return self.world._prepare_projectile_hit_presentation(
-            hit=hit,
+    def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
+        return queue_projectile_decals_pre_hit(
+            state=self.world.state,
+            players=self.world.players,
             fx_queue=self.fx_queue,
+            hit=hit,
+            rng=self.world.state.rng,
             detail_preset=int(self.detail_preset),
             violence_disabled=int(self.violence_disabled),
         )
 
-    def finalize_projectile_hit_presentation(self, hit: ProjectileHit, post_ctx: object) -> None:
-        decal_post_ctx = msgspec.structs.replace(cast("ProjectileDecalPostCtx", post_ctx), hit=hit)
-        self.world._finalize_projectile_hit_presentation(
-            post_ctx=decal_post_ctx,
+    def finish_hit_presentation(self, hit: ProjectileHit, presentation: object) -> None:
+        queue_projectile_decals_post_hit(
             fx_queue=self.fx_queue,
+            post_ctx=msgspec.structs.replace(cast("ProjectileDecalPostCtx", presentation), hit=hit),
+            rng=self.world.state.rng,
         )
         hit_trigger, keys = plan_hit_sfx(
             [hit],
@@ -186,12 +186,6 @@ class _WorldStepRuntime(ProjectileHitRuntime, PlayerDeathRuntime):
             _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             return
         self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
-
-    def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
-        return self.prepare_projectile_hit_presentation(hit)
-
-    def finish_hit_presentation(self, hit: ProjectileHit, presentation: object) -> None:
-        self.finalize_projectile_hit_presentation(hit, presentation)
 
     def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
         idx = int(creature_index)
@@ -461,34 +455,4 @@ class WorldState(msgspec.Struct):
             deaths=deaths,
             sfx=sfx,
             keep_corpse=bool(keep_corpse),
-        )
-
-    def _prepare_projectile_hit_presentation(
-        self,
-        hit: ProjectileHit,
-        *,
-        fx_queue: FxQueue,
-        detail_preset: int,
-        violence_disabled: int,
-    ) -> ProjectileDecalPostCtx:
-        return queue_projectile_decals_pre_hit(
-            state=self.state,
-            players=self.players,
-            fx_queue=fx_queue,
-            hit=hit,
-            rng=self.state.rng,
-            detail_preset=int(detail_preset),
-            violence_disabled=int(violence_disabled),
-        )
-
-    def _finalize_projectile_hit_presentation(
-        self,
-        *,
-        post_ctx: ProjectileDecalPostCtx,
-        fx_queue: FxQueue,
-    ) -> None:
-        queue_projectile_decals_post_hit(
-            fx_queue=fx_queue,
-            post_ctx=post_ctx,
-            rng=self.state.rng,
         )
