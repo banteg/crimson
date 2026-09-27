@@ -200,15 +200,18 @@ pub fn stepTick(
     context.state.sfx_queue.clear();
 
     context.state.game_mode = context.game_mode;
-    // Perk commands apply before frame timing is derived. Typ-o commands
-    // belong after the mode's pre-step hook, but that hook neither draws RNG
-    // nor reads the typing state, so applying them here is equivalent.
+    // Perk picks apply before frame timing is derived; a menu request opens
+    // mid-tick, before `bonus_update`. Typ-o commands belong after the mode's
+    // pre-step hook, but that hook neither draws RNG nor reads the typing
+    // state, so applying them here is equivalent.
     callPhaseHook(options.hooks, context, .pre_commands, &frame);
+    var open_perk_menu = false;
     for (tick_commands, 0..) |command, index| {
         commands.applyCommand(context, command, frame.dt) catch |err| {
             if (options.failed_command_index) |failed| failed.* = index;
             return err;
         };
+        if (command == .perk_menu_open) open_perk_menu = true;
     }
     frame.commands_applied = tick_commands.len;
     callPhaseHook(options.hooks, context, .post_commands, &frame);
@@ -583,6 +586,7 @@ pub fn stepTick(
     bonus_runtime.updatePrePickupTimers(&context.state, dt_after_player);
     survival_progression.gameplayAccumulateWeaponUsageTime(&context.state, players, frame.dt_sim_ms_i32);
     survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
+    if (open_perk_menu) commands.openRequestedPerkMenu(context);
     try bonus_runtime.bonusUpdate(
         &context.bonuses,
         &context.state,

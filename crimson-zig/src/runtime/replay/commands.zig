@@ -32,17 +32,8 @@ pub fn applyCommand(
 ) CommandError!void {
     const state = &context.state;
     switch (command) {
-        .perk_menu_open => {
-            try requirePerkCommandAllowed(context);
-            _ = perks.perkSelectionCurrentChoices(
-                state,
-                context.players(),
-                context.game_mode,
-                context.player_count,
-                context.quest_unlock_index,
-            );
-            context.perk_menu_open_count += 1;
-        },
+        // The request opens the menu mid-tick, see `openRequestedPerkMenu`.
+        .perk_menu_open => try requirePerkCommandAllowed(context),
         .perk_pick => |pick| {
             try requirePerkCommandAllowed(context);
             // Each pick sees any timing changes made by earlier picks.
@@ -73,6 +64,23 @@ pub fn applyCommand(
         .typo_backspace => typo_runtime.applyBackspaceCommand(state),
         .typo_submit => typo_runtime.applySubmitCommand(state, &context.creatures),
     }
+}
+
+/// Open a requested perk menu where native does: after the frame's simulation
+/// and level-up check, before `bonus_update`, and only while a perk is pending
+/// and someone is alive.
+pub fn openRequestedPerkMenu(context: *session_mod.DeterministicSession) void {
+    if (!context.perk_progression_enabled) return;
+    if (context.state.perk_selection.pending_count <= 0) return;
+    if (session_mod.allPlayersDead(context.playersConst())) return;
+    _ = perks.perkSelectionOpenChoices(
+        &context.state,
+        context.players(),
+        context.game_mode,
+        context.player_count,
+        context.quest_unlock_index,
+    );
+    context.perk_menu_open_count += 1;
 }
 
 /// Why `command` was illegal, worded like the Python session.

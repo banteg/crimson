@@ -94,11 +94,7 @@ class TutorialMode(BaseGameplayMode):
         return f"tutorial_{stamp}"
 
     def _open_perk_menu(self) -> None:
-        self._open_perk_menu_ui(
-            menu=self._perk_menu,
-            players=[self.player],
-            game_mode=GameMode.TUTORIAL,
-        )
+        self._request_perk_menu(self._perk_menu)
 
     def _handle_input(self) -> None:
         if self._perk_menu.open and (

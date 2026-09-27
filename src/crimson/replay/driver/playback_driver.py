@@ -100,7 +100,7 @@ class SessionPlaybackDriver:
 
     Subclasses step the session for each source tick. The replay driver below
     steps recorded ticks exactly as live play does; debug tooling layers
-    original-capture playback on the `before_tick`/`after_step` hooks.
+    original-capture playback on the `before_tick` hook.
     """
 
     def __init__(
@@ -164,11 +164,6 @@ class SessionPlaybackDriver:
         _ = tick_index
         return []
 
-    def after_step(self, tick_index: int) -> None:
-        """Apply work after simulation, inside the tick RNG trace."""
-
-        _ = tick_index
-
     def build_checkpoint(
         self,
         *,
@@ -200,7 +195,6 @@ class SessionPlaybackDriver:
                 strict=bool(self.strict_rng_trace),
             ) as tick_rng_rows:
                 session_tick = self.step_session(tick_index, prelude_post_apply_sfx=pending_sfx)
-                self.after_step(tick_index)
         except IllegalCommandError as exc:
             raise ReplayRunnerError(f"tick {tick_index}: {exc}") from exc
         outcome = session_tick.outcome

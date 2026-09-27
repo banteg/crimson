@@ -77,11 +77,7 @@ class SurvivalMode(BaseGameplayMode):
         return f"survival_{stamp}_score{score}"
 
     def _try_open_perk_menu(self) -> None:
-        self._open_perk_menu_ui(
-            menu=self._perk_menu,
-            players=self.world.players,
-            game_mode=GameMode.SURVIVAL,
-        )
+        self._request_perk_menu(self._perk_menu)
 
     def _perk_menu_closed(self) -> None:
         self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())

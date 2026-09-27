@@ -25,6 +25,7 @@ from ..owner_ref import OwnerRef
 from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
 from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
 from ..perks.runtime.effects import perks_update_effects
+from ..perks.selection import perk_selection_open_choices
 from ..player_damage import player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
@@ -49,6 +50,7 @@ class WorldEvents(msgspec.Struct):
     secondary_hit_count: int = 0
     trigger_game_tune: bool = False
     hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
+    perk_menu_opened: bool = False
 
 
 class WorldStepRuntime(msgspec.Struct):
@@ -271,6 +273,7 @@ class WorldState(msgspec.Struct):
         game_mode: GameMode,
         perk_progression_enabled: bool,
         game_tune_started: bool,
+        open_perk_menu: bool = False,
     ) -> WorldEvents:
         """Advance one frame; the caller has already applied the perk dt steps."""
         dt = float(dt)
@@ -340,6 +343,17 @@ class WorldState(msgspec.Struct):
         # XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
         if perk_progression_enabled:
             survival_progression_update(self.state, self.players)
+        # A perk-menu request opens here, mid-frame: native generates the choices
+        # after this frame's simulation and before `bonus_update`, and only while
+        # a perk is pending and someone is alive.
+        perk_menu_opened = (
+            open_perk_menu
+            and perk_progression_enabled
+            and self.state.perk_selection.pending_count > 0
+            and any(player.health > 0.0 for player in self.players)
+        )
+        if perk_menu_opened:
+            perk_selection_open_choices(self.state, self.players, game_mode=game_mode)
         pickups += bonus_update(
             self.state,
             self.players,
@@ -351,11 +365,13 @@ class WorldState(msgspec.Struct):
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()
-        return step_runtime.build_events(
+        events = step_runtime.build_events(
             hits=hits,
             secondary_hit_count=int(secondary_hit_count),
             pickups=pickups,
         )
+        events.perk_menu_opened = perk_menu_opened
+        return events
 
     def _record_creature_death(
         self,

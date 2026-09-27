@@ -143,7 +143,8 @@ class CapturePlaybackDriver(SessionPlaybackDriver):
     """Replay an original capture through the port simulation.
 
     Prelude operations run between ticks, outside the tick RNG trace, as native
-    frame-loop work; postlude menu opens run after simulation, inside it. The
+    frame-loop work; postlude menu opens are the tick's perk-menu requests and
+    open mid-tick, as they do in recorded runs. The
     captured delta is already perk-transformed, and native menu activity is
     replayed verbatim, so neither the world dt steps nor command legality apply.
     """
@@ -173,12 +174,12 @@ class CapturePlaybackDriver(SessionPlaybackDriver):
         return self.capture.ticks[tick_index].dt
 
     def step_session(self, tick_index: int, *, prelude_post_apply_sfx: list[SfxId]) -> DeterministicSessionTick:
-        # Native menu activity replays as prelude/postlude operations, not commands.
         tick = self.capture.ticks[tick_index]
         return self.session.step_tick(
             dt=tick.dt,
             inputs=unpack_tick_inputs(tick.inputs),
             trace_rng=self.trace_rng,
+            commands=list(tick.postlude),
             prelude_post_apply_sfx=prelude_post_apply_sfx,
         )
 
@@ -195,7 +196,3 @@ class CapturePlaybackDriver(SessionPlaybackDriver):
                 post_apply_sfx.append(sfx)
         return post_apply_sfx
 
-    def after_step(self, tick_index: int) -> None:
-        tick = self.capture.ticks[tick_index]
-        for operation in tick.postlude:
-            self.session.apply_command(operation, dt=tick.dt)

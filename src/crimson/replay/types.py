@@ -15,7 +15,7 @@ from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 
-REPLAY_FORMAT_VERSION = 21
+REPLAY_FORMAT_VERSION = 22
 # Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
 REPLAY_TICK_RATE = 60
 REPLAY_TICK_DT = float(f32(1.0 / REPLAY_TICK_RATE))
@@ -238,8 +238,9 @@ type PackedTickInputs = list[PackedPlayerInput]
 class ReplayTick(msgspec.Struct, frozen=True, array_like=True, forbid_unknown_fields=True):
     """One fixed-dt simulation tick: per-player inputs, then ordered commands.
 
-    Perk commands apply at the start of the tick, before timing is derived;
-    Typ-o commands apply after the mode's pre-step hook.
+    Perk picks apply at the start of the tick, before timing is derived; a perk
+    menu request opens mid-tick, where native opens it; Typ-o commands apply after
+    the mode's pre-step hook.
     """
 
     inputs: PackedTickInputs

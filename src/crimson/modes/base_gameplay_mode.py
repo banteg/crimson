@@ -23,7 +23,6 @@ from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter
 from ..perks import PerkId
 from ..perks.runtime.effects_context import creature_find_in_radius
-from ..perks.selection import perk_selection_open_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
@@ -142,6 +141,7 @@ class BaseGameplayMode:
 
         self._game_over_active = False
         self._game_over_record: HighScoreRecord | None = None
+        self._requested_perk_menu: PerkMenuController | None = None
         self._game_over_banner = "reaper"
 
         self._ui_mouse = Vec2()
@@ -362,21 +362,12 @@ class BaseGameplayMode:
             mouse=self._ui_mouse_pos(),
         )
 
-    def _open_perk_menu_ui(
-        self,
-        *,
-        menu: PerkMenuController,
-        players: list[PlayerState],
-        game_mode: GameMode,
-    ) -> None:
-        if menu.active:
+    def _request_perk_menu(self, menu: PerkMenuController) -> None:
+        """Ask the next tick to open the perk menu; it opens mid-tick, as in native."""
+
+        if menu.active or self._requested_perk_menu is not None:
             return
-        recorder = getattr(self, "_replay_recorder", None)
-        if recorder is not None:
-            self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
-        choices = perk_selection_open_choices(self.state, players, game_mode=game_mode)
-        assert choices, "perk menu open requires prepared perk choices"
-        menu.open_menu()
+        self._requested_perk_menu = menu
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
 
     def _ui_mouse_pos(self) -> rl.Vector2:
@@ -780,8 +771,14 @@ class BaseGameplayMode:
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
         """Return False to stop running ticks this frame."""
 
+        # The request rode in this tick; the tick opened the menu only if native would have.
+        menu = self._requested_perk_menu
+        self._requested_perk_menu = None
         if tick.outcome is not None:
             self._finish_run(tick.outcome)
+            return False
+        if menu is not None and tick.events.perk_menu_opened:
+            menu.open_menu()
             return False
         return True
 
@@ -816,7 +813,12 @@ class BaseGameplayMode:
             )
             plans.append(step.presentation)
             if tick_index is not None:
-                self._record_replay_checkpoint(tick_index, deaths=step.events.deaths, events=step.events)
+                self._record_replay_checkpoint(
+                    tick_index,
+                    force=step.events.perk_menu_opened,
+                    deaths=step.events.deaths,
+                    events=step.events,
+                )
             if recorder is not None:
                 # The replay result is the state after the last recorded tick:
                 # UI work between ticks (perk menu previews, the high-score tag

@@ -4,11 +4,11 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.modes.tutorial_mode import TutorialMode
-from crimson.perks import PerkId
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
+from crimson.ui.perk_menu import PERK_MENU_TRANSITION_MS
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -65,59 +65,39 @@ def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL)
     mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
     mode.open()
-
-    mode.state.tutorial.stage_index = 6
-    mode.state.perk_selection.pending_count = 1
-    mode.state.perk_selection.choices[:] = [PerkId.GRIM_DEAL]
-    mode.state.perk_selection.choices_dirty = False
-
-    open_calls = 0
-    original_open_perk_menu = mode._open_perk_menu
-
-    def _counted_open() -> None:
-        nonlocal open_calls
-        open_calls += 1
-        original_open_perk_menu()
-
-    pick_calls = 0
-
-    def _pick_once(_ctx, _choices, *, dt_ui_ms: float) -> int | None:
-        nonlocal pick_calls
-        _ = dt_ui_ms
-        pick_calls += 1
-        if pick_calls == 1:
-            mode._perk_menu.close()
-            return 0
-        return None
-
     session = mode._sim_session
     assert session is not None
 
-    tick_calls = 0
+    mode.state.tutorial.stage_index = 6
+    mode.state.perk_selection.pending_count = 2
 
-    def _run_ticks(**_kwargs) -> None:
-        nonlocal tick_calls
-        tick_calls += 1
-        if tick_calls >= 2:
-            # The queued pick applies on the first simulated tick.
-            mode._live_ticks.next_tick()
-            session.elapsed_ms += 1000.0 / 60.0
+    def _pick_once(_ctx, _choices, *, dt_ui_ms: float) -> int | None:
+        _ = dt_ui_ms
+        mode._perk_menu.close()
+        return 0
 
-    mocker.patch.object(mode, "_open_perk_menu", side_effect=_counted_open)
     mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_pick_once)
-    mocker.patch.object(mode, "_run_deterministic_session_ticks", side_effect=_run_ticks)
 
+    # The request rides the next tick, which opens the menu mid-tick.
     mode.update(1.0 / 60.0)
-    assert open_calls == 1
+    assert mode._perk_menu.open
+    assert session.elapsed_ms > 0.0
+    elapsed_after_open = session.elapsed_ms
+
+    # The pick waits for the next simulated tick; the closing menu pauses the world.
+    mode._perk_menu.timeline_ms = PERK_MENU_TRANSITION_MS
+    mode.update(1.0 / 60.0)
     assert mode._perk_pick_pending is True
+    assert session.elapsed_ms == elapsed_after_open
 
     mode._perk_menu.timeline_ms = 0.0
     mode.update(1.0 / 60.0)
-    assert open_calls == 1
     assert mode._perk_pick_pending is False
+    assert mode.state.perk_selection.pending_count == 1
+    assert not mode._perk_menu.open
 
     mode.update(1.0 / 60.0)
-    assert open_calls == 2
+    assert mode._perk_menu.open
 
 
 def test_open_perk_menu_ignores_reopen_while_menu_active(mocker, make_mode_config, assets_dir) -> None:

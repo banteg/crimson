@@ -394,6 +394,7 @@ class DeterministicSession(msgspec.Struct):
                     raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
                 return SfxId.UI_BONUS if picked is not None else None
             case PerkMenuOpenCommand():
+                # Between ticks only in original captures; recorded runs open mid-tick.
                 self._require_perk_command_allowed("perk_menu_open")
                 perk_selection_open_choices(self.world.state, self.world.players, game_mode=self.game_mode)
             case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
@@ -415,17 +416,24 @@ class DeterministicSession(msgspec.Struct):
     ) -> DeterministicSessionTick:
         post_apply_sfx = list(prelude_post_apply_sfx or ())
         tick_commands: list[GameCommand] = []
+        open_perk_menu = False
         for command in commands or ():
             match command:
-                case PerkPickCommand() | PerkMenuOpenCommand():
+                case PerkPickCommand():
                     sfx = self.apply_command(command, dt=dt)
                     if sfx is not None:
                         post_apply_sfx.append(sfx)
+                case PerkMenuOpenCommand():
+                    # Live play requests the menu only while it may open.
+                    self._require_perk_command_allowed("perk_menu_open")
+                    open_perk_menu = True
                 case _:
                     tick_commands.append(command)
 
-        # Perk commands belong to the between-tick prelude. Typ-o input belongs
-        # inside the tick, after its loadout enforcement (and reload sound).
+        # Picks belong to the between-tick prelude (the perk screen pauses the
+        # game). A menu request opens mid-tick at the native point, see
+        # `WorldState.step`. Typ-o input belongs inside the tick, after its
+        # loadout enforcement (and reload sound).
         timing = self.timing_for_dt(dt)
         self._mode_before_step()
         for command in tick_commands:
@@ -477,6 +485,7 @@ class DeterministicSession(msgspec.Struct):
             game_mode=self.game_mode,
             perk_progression_enabled=self.perk_progression_enabled,
             game_tune_started=self.game_tune_started,
+            open_perk_menu=open_perk_menu,
         )
 
         presentation_trace = PresentationRngTrace()

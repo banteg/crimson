@@ -69,9 +69,11 @@ class _RngRows(PlaybackWalkObserver):
         self.rows[int(tick_result.tick_index)] = list(draws)
 
 
-def _tick_rng_rows(capture: CaptureReplay) -> dict[int, list[RngTraceDraw]]:
+def _tick_rng_rows(capture: CaptureReplay, *, perks_pending: int = 0) -> dict[int, list[RngTraceDraw]]:
     observer = _RngRows(rows={})
-    CapturePlaybackDriver(capture, trace_rng=True).run(observer=observer)
+    driver = CapturePlaybackDriver(capture, trace_rng=True)
+    driver.world.state.perk_selection.pending_count = perks_pending
+    driver.run(observer=observer)
     return observer.rows
 
 
@@ -140,9 +142,12 @@ def test_capture_playback_draws_frame_rng_before_the_tick_trace() -> None:
     assert advanced[0][0][0] == state
 
 
-def test_capture_playback_applies_postlude_inside_the_tick_trace() -> None:
-    plain = _tick_rng_rows(build_capture(ticks=1))
-    opened = _tick_rng_rows(build_capture(ticks=1, postlude={0: [PerkMenuOpenCommand(player_index=0)]}))
+def test_capture_playback_opens_postlude_menu_inside_the_tick_trace() -> None:
+    plain = _tick_rng_rows(build_capture(ticks=1), perks_pending=1)
+    opened = _tick_rng_rows(
+        build_capture(ticks=1, postlude={0: [PerkMenuOpenCommand(player_index=0)]}),
+        perks_pending=1,
+    )
 
     assert len(opened[0]) > len(plain[0])
     assert opened[0][: len(plain[0])] == plain[0]

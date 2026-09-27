@@ -5,7 +5,7 @@ tags:
   - replay
 ---
 
-# Replay format (v21)
+# Replay format (v22)
 
 A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A
@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `21` |
+| `format_version` | int | `22` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -96,9 +96,10 @@ A tick is a two-element **array** `[inputs, commands]`:
 against the state left by the commands before them.
 
 Every tick advances the simulation by `float32(1/60)` seconds in the native
-1024×1024 arena. Perk commands apply at the start of the tick, before frame
-timing is derived; Typ-o commands apply after the mode's pre-step hook, as in
-live play. Typ-o fires and reloads only through typed words: the input fire
+1024×1024 arena. Perk picks apply at the start of the tick, before frame
+timing is derived; a perk menu open generates its choices after the tick's
+level-up check and before `bonus_update`, where native opens the menu; Typ-o
+commands apply after the mode's pre-step hook, as in live play. Typ-o fires and reloads only through typed words: the input fire
 and reload flags have no effect there.
 
 ### RunResult
@@ -164,7 +165,7 @@ perk prompt stays closed while a pick is waiting for the next tick.
 ## Original captures
 
 Frida captures of the original executable need per-tick native frame deltas,
-top-level RNG draws made between gameplay ticks, native menu activity observed
-inside a tick, and creature-slot residue left by earlier runs. None of these
+top-level RNG draws made between gameplay ticks, and creature-slot residue left
+by earlier runs. None of these
 exist in port play, so they live in a debug-only capture container under
 `crimson.dbg`, replayed by a Python debug driver. Replays never carry them.

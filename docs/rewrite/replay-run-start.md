@@ -104,20 +104,23 @@ checkpoint format 5, capped at 257 MiB compressed and 256 MiB decoded in both
 Python and Zig.
 
 Every tick runs at the fixed float32 1/60 s delta and carries one f32-quantized
-packed input row per player plus an ordered command list. Perk commands apply
+packed input row per player plus an ordered command list. Perk picks apply
 before frame timing is derived, so a Reflex Boosted pick affects the same tick
 in live play and playback, and each pick's immediate effects see the timing
-established by earlier picks. Typ-o commands apply after the mode's pre-step
-hook. Live play and playback share one command handler.
+established by earlier picks. A perk menu request opens where native opens it:
+after the level-up check and before `bonus_update`, so the choices draw from the
+RNG between the tick's render-time pickups and its bonus timers. Typ-o commands
+apply after the mode's pre-step hook. Live play and playback share one command
+handler.
 
-Original captures also need native frame deltas, top-level RNG draws made
-between ticks, and perk-menu activity observed inside a tick. The Frida capture
+Original captures also need native frame deltas and top-level RNG draws made
+between ticks. The Frida capture
 producer writes them in each raw tick's `channels.replay_step` (`dt`, `inputs`,
 `prelude`, `postlude`, `commands`). Finalization uses that channel to build the
 capture replay, and CDT preserves it for direct comparison with recorded
-traces. Prelude operations run between ticks, outside the tick RNG trace;
-postlude menu opens run after simulation, inside it. Replays never carry these
-operations.
+traces. Prelude operations run between ticks, outside the tick RNG trace, and
+replays never carry them; postlude menu opens become the tick's ordinary
+`perk_menu_open` command.
 
 There is no independent replay-input stream or inferred movement input.
 `replay_step` is the single authority for what drove the tick.
