@@ -11,6 +11,7 @@ from collections import Counter, defaultdict
 from collections.abc import Collection
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import asdict, dataclass, field, replace
+from functools import cache
 from pathlib import Path
 from typing import Any, cast
 
@@ -5037,13 +5038,29 @@ def source_probe_tree_fingerprint(
     return digest.hexdigest(), tuple(labels)
 
 
+class SharedInputHashes:
+    """Hash each input that a batch of scratches shares once, not once per scratch.
+
+    Every scratch of one compiler walks the same Bin/Include trees, and every
+    experiment epoch of one image projects the same name and data maps. Batch
+    callers pass one instance down; it never re-reads, so make one per call.
+    """
+
+    def __init__(self) -> None:
+        self.toolchain_fingerprint = cache(match_toolchain.scratch_toolchain_fingerprint)
+        self.json_program_sha256 = cache(native_json_program_sha256)
+
+
 def scratch_experiment_epoch(
     config: ScratchConfig,
     match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    input_hashes: SharedInputHashes | None = None,
 ) -> str:
     """Hash the canonical inputs that determine an experiment baseline."""
 
     match_root = match_root.resolve()
+    input_hashes = input_hashes or SharedInputHashes()
     digest = hashlib.sha256(b"crimson-scratch-experiment-epoch-v2\0")
     profile = {
         "archive": config.archive,
@@ -5065,7 +5082,7 @@ def scratch_experiment_epoch(
         "version": DEFAULT_VERSION,
     }
     if config.archive is None and config.import_thunk is None:
-        profile["toolchain"] = match_toolchain.scratch_toolchain_fingerprint(
+        profile["toolchain"] = input_hashes.toolchain_fingerprint(
             _compiler_executable_path(config, match_root),
             match_root,
         )
@@ -5092,13 +5109,14 @@ def scratch_experiment_epoch(
             Path(match_process.__file__).resolve(),
         },
     )
-    for path in sorted(dependencies, key=lambda value: _experiment_epoch_path_label(value, match_root)):
-        label = _experiment_epoch_path_label(path, match_root)
+    labels = {path: _experiment_epoch_path_label(path, match_root) for path in dependencies}
+    projected_maps = {DEFAULT_NAME_MAP_PATH.resolve(), DEFAULT_DATA_MAP_PATH.resolve()}
+    for path in sorted(dependencies, key=labels.__getitem__):
         digest.update(b"\0path\0")
-        digest.update(label.encode())
+        digest.update(labels[path].encode())
         sha256 = (
-            native_json_program_sha256(path, config.image)
-            if path in {DEFAULT_NAME_MAP_PATH.resolve(), DEFAULT_DATA_MAP_PATH.resolve()} and path.exists()
+            input_hashes.json_program_sha256(path, config.image)
+            if path in projected_maps and path.exists()
             else match_toolchain.file_sha256(path)
         )
         digest.update(b"\0sha256\0")
@@ -5130,6 +5148,7 @@ def scratch_experiment_epochs(
     selected = {directory.resolve() for directory in directories} if directories is not None else None
     epochs: dict[Path, str] = {}
     recorded_by_image: dict[str, dict[Path, str]] = {}
+    input_hashes = SharedInputHashes()
     for conf_path in sorted(match_root.glob("scratches/*/scratch.conf")):
         directory = conf_path.parent.resolve()
         if selected is not None and directory not in selected:
@@ -5151,7 +5170,7 @@ def scratch_experiment_epochs(
             if recorded := recorded_by_image[config.image].get(directory):
                 epochs[directory] = recorded
                 continue
-        epochs[directory] = scratch_experiment_epoch(config, match_root)
+        epochs[directory] = scratch_experiment_epoch(config, match_root, input_hashes=input_hashes)
     return epochs
 
 
@@ -5160,6 +5179,7 @@ def _scratch_build_key(
     match_root: Path,
     *,
     include_resolver: _ScratchIncludeResolver | None = None,
+    input_hashes: SharedInputHashes | None = None,
 ) -> dict[str, Any]:
     dependencies = _scratch_build_dependencies(config, match_root, include_resolver=include_resolver)
     pipeline = [
@@ -5201,7 +5221,7 @@ def _scratch_build_key(
             ],
         }
     key: dict[str, Any] = {
-        "toolchain": match_toolchain.scratch_toolchain_fingerprint(
+        "toolchain": (input_hashes or SharedInputHashes()).toolchain_fingerprint(
             _compiler_executable_path(config, match_root),
             match_root,
         ),
@@ -6452,10 +6472,16 @@ def _scratch_cache_key(
     match_root: Path,
     *,
     include_resolver: _ScratchIncludeResolver,
+    input_hashes: SharedInputHashes,
 ) -> dict[str, Any]:
     return {
         "version": CACHE_VERSION,
-        "build": _scratch_build_key(config, match_root, include_resolver=include_resolver),
+        "build": _scratch_build_key(
+            config,
+            match_root,
+            include_resolver=include_resolver,
+            input_hashes=input_hashes,
+        ),
         "match": {
             "image": config.image,
             "function": config.function,
@@ -6547,6 +6573,7 @@ def _load_cached_status(
     manifest: FunctionManifest,
     match_root: Path,
     include_resolver: _ScratchIncludeResolver,
+    input_hashes: SharedInputHashes,
 ) -> ScratchStatus | None:
     try:
         payload = json.loads(_scratch_cache_path(config).read_text(encoding="utf-8"))
@@ -6558,6 +6585,7 @@ def _load_cached_status(
         manifest,
         match_root,
         include_resolver=include_resolver,
+        input_hashes=input_hashes,
     ):
         return None
     try:
@@ -6575,6 +6603,7 @@ def _store_cached_status(
     manifest: FunctionManifest,
     match_root: Path,
     include_resolver: _ScratchIncludeResolver,
+    input_hashes: SharedInputHashes,
 ) -> None:
     cache_path = _scratch_cache_path(status.config)
     cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -6604,6 +6633,7 @@ def _store_cached_status(
                     manifest,
                     match_root,
                     include_resolver=include_resolver,
+                    input_hashes=input_hashes,
                 ),
                 "status": fields,
                 "audit": _audit_payload(status.audit),
@@ -6656,6 +6686,7 @@ def collect_scratch_statuses(
         catalog_cache[image_name] = load_reference_catalog(manifest_cache[image_name])
 
     include_resolver = _ScratchIncludeResolver(match_root)
+    input_hashes = SharedInputHashes()
     statuses_by_directory: dict[Path, ScratchStatus] = {}
     uncached: list[ScratchConfig] = []
     for config in configs:
@@ -6676,6 +6707,7 @@ def collect_scratch_statuses(
                 manifest=manifest,
                 match_root=match_root,
                 include_resolver=include_resolver,
+                input_hashes=input_hashes,
             )
         )
         if cached is not None:
@@ -6751,6 +6783,7 @@ def collect_scratch_statuses(
                 manifest=manifest,
                 match_root=match_root,
                 include_resolver=include_resolver,
+                input_hashes=input_hashes,
             )
             return status
         except Exception as exc:  # noqa: BLE001 - one scratch failure must not cancel the worker batch

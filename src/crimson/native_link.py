@@ -2102,13 +2102,18 @@ def _function_binding_payload(
     *,
     repo_root: Path,
     match_root: Path,
+    input_hashes: matchlib.SharedInputHashes,
 ) -> dict[str, Any]:
     config = binding.status.config
     config_path = config.directory / "scratch.conf"
     source_path = config.directory / config.source
     return {
         "address": binding.function.address,
-        "experiment_epoch": matchlib.scratch_experiment_epoch(config, match_root),
+        "experiment_epoch": matchlib.scratch_experiment_epoch(
+            config,
+            match_root,
+            input_hashes=input_hashes,
+        ),
         "canonical_config": _repo_relative(config_path, repo_root=repo_root),
         "canonical_config_sha256": binding.config_sha256 or _sha256(config_path),
         "canonical_scratch": _repo_relative(config.directory, repo_root=repo_root),
@@ -2138,6 +2143,7 @@ def object_manifest_payload(
         for binding in _record_bindings(record)
     ]
     state_counts = Counter(binding.status.state for binding in bindings)
+    input_hashes = matchlib.SharedInputHashes()
     records: list[dict[str, Any]] = []
     for record in objects.records:
         compile_config = _record_compile_config(record)
@@ -2169,7 +2175,12 @@ def object_manifest_payload(
             ),
             "function": first_binding.function.name,
             "functions": [
-                _function_binding_payload(binding, repo_root=repo_root, match_root=objects.match_root)
+                _function_binding_payload(
+                    binding,
+                    repo_root=repo_root,
+                    match_root=objects.match_root,
+                    input_hashes=input_hashes,
+                )
                 for binding in record_bindings
             ],
             "match": _match_status_payload(first_binding.status),
