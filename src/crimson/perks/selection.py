@@ -266,8 +266,8 @@ def perk_selection_pick(
     *,
     game_mode: GameMode,
     player_count: int | None = None,
-    dt: float | None = None,
-    creatures: Sequence[CreatureState] | None = None,
+    dt: float = 0.0,
+    creatures: Sequence[CreatureState] = (),
     refresh_choices: bool = False,
 ) -> PerkId | None:
     """Pick a perk from the current choice list and apply it.
@@ -292,7 +292,7 @@ def perk_selection_pick(
     if idx < 0 or idx >= len(choices):
         return None
     perk_id = choices[idx]
-    perk_apply(state, players, perk_id, perk_state=perk_state, dt=dt, creatures=creatures)
+    perk_apply(state, players, perk_id, dt=dt, creatures=creatures)
     assert int(perk_state.pending_count) > 0, "picked perk must leave a pending perk to resolve"
     perk_state.pending_count -= 1
     perk_state.choices_dirty = True

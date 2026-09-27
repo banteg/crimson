@@ -7,15 +7,15 @@ tags:
 
 # Perks architecture (rewrite)
 
-Perk behavior stays in `perks/impl/`, with its native execution phase visible at
-the caller. Metadata, availability and selection stay in `perks/*.py`.
+Immediate perk effects live in one native-shaped function; perks with behavior
+in later phases keep it in `perks/impl/`, called from the phase that owns it.
+Metadata, availability and selection stay in `perks/*.py`.
 
 ## Execution phases
 
-- **Immediate effects:** `perks/runtime/apply.py` increments the owner's perk
-  count, looks up the optional immediate effect in `apply_handlers.py`, then
-  mirrors shared perk counts to the other local players. Perk IDs are the keys;
-  this map does not impose an execution order.
+- **Immediate effects:** `perks/runtime/apply.py` is `perk_apply`: it counts the
+  perk in the single perk table (`GameplayState.perks`) and runs the perk's
+  immediate effect from one `match`, mirroring native's if/else chain.
 - **World timing:** `WorldState.world_dt_after_perk_steps` calls
   `apply_reflex_boosted_dt` directly. Session timing applies it once before the
   world step; direct world-step callers use the same method.
@@ -29,14 +29,13 @@ the caller. Metadata, availability and selection stay in `perks/*.py`.
   Ammunition Within provide this callback to `player_take_damage`; direct perk
   and projectile health writes bypass it, as in the executable.
 
-There is no global hook bundle or derived dispatch registry. A perk with behavior
-in several phases exports an ordinary function for each phase. The call sites
-make each phase's order explicit.
+There is no global hook bundle or dispatch registry. A perk with behavior in a
+later phase exports an ordinary function for that phase, and the call sites make
+each phase's order explicit.
 
 ## Context and ownership
 
-`PlayerPerkTickCtx`, `PerkApplyCtx` and `PerksUpdateEffectsCtx` carry the state each
-phase uses. The global effect phase requires both creature and terrain FX context:
+`PlayerPerkTickCtx` and `PerksUpdateEffectsCtx` carry the state their phases use. The global effect phase requires both creature and terrain FX context:
 passing no queue used to skip effects and their RNG draws. Focused tests use real
 empty pools and queues when the world is empty. Evil Eyes and Pyrokinetic share a
 per-tick aim-target cache through `PerksUpdateEffectsCtx`.

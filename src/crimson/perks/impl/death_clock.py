@@ -2,16 +2,7 @@ from __future__ import annotations
 
 from ...math_parity import f32, x87_pc24_mul, x87_pc24_sub
 from ..ids import PerkId
-from ..runtime.apply_context import PerkApplyCtx
 from ..runtime.effects_context import PerksUpdateEffectsCtx
-
-
-def apply_death_clock(ctx: PerkApplyCtx) -> None:
-    ctx.state.perks[PerkId.GREATER_REGENERATION] = 0
-    ctx.state.perks[PerkId.REGENERATION] = 0
-    for player in ctx.players:
-        if player.health > 0.0:
-            player.health = 100.0
 
 
 def update_death_clock(ctx: PerksUpdateEffectsCtx) -> None:

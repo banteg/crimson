@@ -39,13 +39,15 @@ def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
 
 
 def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(), health=100.0, level=1)
-    perk_state = PerkSelectionState(
-        pending_count=1,
-        choices=[PerkId.INFERNAL_CONTRACT],
-        choices_dirty=False,
+    state = GameplayState(
+        perk_selection=PerkSelectionState(
+            pending_count=1,
+            choices=[PerkId.INFERNAL_CONTRACT],
+            choices_dirty=False,
+        ),
     )
+    perk_state = state.perk_selection
+    player = PlayerState(index=0, pos=Vec2(), health=100.0, level=1)
 
     picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=GameMode.QUESTS, player_count=1)
 
