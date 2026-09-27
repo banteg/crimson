@@ -12,6 +12,8 @@ from . import match_toolchain
 VERIFICATION = "source-bound local compilation; CI checks freshness and report consistency"
 SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1"
 INVENTORY_POLICY = "curated-functions-v1; executable-gaps-unresolved-v1"
+# Synthetic report input: locked versions of the libraries the scoring code imports.
+SCORING_DEPENDENCIES_INPUT = "uv.lock#scoring-dependencies"
 
 
 def native_id(row: dict[str, Any]) -> str:
@@ -35,7 +37,7 @@ def identities(
                 "analysis/matching_scope.json", "analysis/library_provenance.json"}},
         }),
         "scoring": _digest({"policy": SCORING_POLICY, "toolchains": toolchains or {}, "implementation": {
-            p: h for p, h in inputs.items() if p.startswith("src/crimson/match") or p in {"pyproject.toml", "uv.lock"}
+            p: h for p, h in inputs.items() if p.startswith("src/crimson/match") or p == SCORING_DEPENDENCIES_INPUT
         }}),
         "inventory_policy": INVENTORY_POLICY,
         "scoring_policy": SCORING_POLICY,

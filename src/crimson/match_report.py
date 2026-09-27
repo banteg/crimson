@@ -6,10 +6,15 @@ evidence against its inputs and emits the report without distributing compilers.
 
 from __future__ import annotations
 
+import ast
+import hashlib
 import json
 import math
+import re
 import shutil
 import subprocess
+import sys
+import tomllib
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -26,10 +31,7 @@ DEFAULT_REPORT = matchlib.REPO_ROOT / "artifacts" / "decomp" / "report.json"
 def _input_path(path: str) -> bool:
     """Pin relevant code/config, including newly staged or removed scratches."""
     p = Path(path)
-    if path in {
-        "pyproject.toml", "uv.lock", "analysis/library_provenance.json", "analysis/matching_scope.json",
-        "src/crimson/native_link.py",
-    }:
+    if path in {"analysis/library_provenance.json", "analysis/matching_scope.json", "src/crimson/native_link.py"}:
         return True
     if path.startswith("src/crimson/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
@@ -51,8 +53,58 @@ def _git_input_paths(root: Path, *selection: str) -> list[str]:
 
 
 def repository_inputs(root: Path = matchlib.REPO_ROOT) -> dict[str, str]:
-    """Hash tracked inputs only, so another checkout user's uncommitted files never enter the evidence."""
-    return {p: _required_hash(root / p) for p in _git_input_paths(root, "--cached")}
+    """Hash tracked inputs only, so another checkout user's uncommitted files never enter the evidence.
+
+    Python inputs hash by syntax tree, so formatting, comments and docstrings do not
+    invalidate evidence. Instead of the whole lockfile, only the locked versions of the
+    libraries those inputs import (and their dependencies) are pinned.
+    """
+    paths = _git_input_paths(root, "--cached")
+    inputs = {p: _python_digest(root / p) if p.endswith(".py") else _required_hash(root / p) for p in paths}
+    inputs[accounting.SCORING_DEPENDENCIES_INPUT] = _scoring_dependencies_digest(
+        root, [root / p for p in paths if p.endswith(".py")],
+    )
+    return inputs
+
+
+def _python_digest(path: Path) -> str:
+    tree = ast.parse(path.read_text(), filename=str(path))
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and node.body:
+            first = node.body[0]
+            if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+                node.body = node.body[1:] or [ast.Pass()]
+    return hashlib.sha256(ast.dump(tree).encode()).hexdigest()
+
+
+def _distribution_key(name: str) -> str:
+    return re.sub(r"[-_.]+", "_", name).lower()
+
+
+def _scoring_dependencies_digest(root: Path, python_inputs: list[Path]) -> str:
+    imported: set[str] = set()
+    for path in python_inputs:
+        for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".")[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                imported.add(node.module.split(".")[0])
+    packages: dict[str, list[dict[str, Any]]] = {}
+    for package in tomllib.loads((root / "uv.lock").read_text()).get("package", ()):
+        packages.setdefault(_distribution_key(package["name"]), []).append(package)
+    pending = [_distribution_key(name) for name in imported - set(sys.stdlib_module_names)]
+    pinned: dict[str, list[str]] = {}
+    while pending:
+        key = pending.pop()
+        if key in pinned or key not in packages:
+            continue
+        pinned[key] = sorted(str(package.get("version", package.get("source"))) for package in packages[key])
+        pending.extend(
+            _distribution_key(dependency["name"])
+            for package in packages[key]
+            for dependency in package.get("dependencies", ())
+        )
+    return hashlib.sha256(json.dumps(pinned, sort_keys=True).encode()).hexdigest()
 
 
 def untracked_inputs(root: Path = matchlib.REPO_ROOT) -> list[str]:

@@ -144,6 +144,44 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert not report._input_path("tools/match/scratches/new_function/experiments.jsonl")
     assert not report._input_path("tools/match/STATUS.md")
     assert not report._input_path("analysis/native/grim.dll/link/link.json")
+    assert not report._input_path("pyproject.toml")
+    assert not report._input_path("uv.lock")
+
+
+def test_python_inputs_ignore_formatting_comments_and_docstrings(tmp_path: Path) -> None:
+    source = tmp_path / "match_example.py"
+    source.write_text('def score(x):\n    """Score it."""\n    return x + 1\n')
+    baseline = report._python_digest(source)
+
+    source.write_text('def score(x):  # reformatted\n    """Reworded."""\n\n    return (x + 1)\n')
+    assert report._python_digest(source) == baseline
+
+    source.write_text("def score(x):\n    return x + 2\n")
+    assert report._python_digest(source) != baseline
+
+
+def test_scoring_dependencies_pin_only_imported_libraries_and_their_dependencies(tmp_path: Path) -> None:
+    source = tmp_path / "match_example.py"
+    source.write_text("import json\nimport capstone\nfrom pefile import PE\n")
+    lock = tmp_path / "uv.lock"
+
+    def lock_with(ruff: str, capstone: str, cstool: str) -> str:
+        return (
+            f'[[package]]\nname = "capstone"\nversion = "{capstone}"\ndependencies = [{{ name = "cs-tool" }}]\n'
+            f'[[package]]\nname = "cs-tool"\nversion = "{cstool}"\n'
+            '[[package]]\nname = "pefile"\nversion = "2024.8.26"\n'
+            f'[[package]]\nname = "ruff"\nversion = "{ruff}"\n'
+        )
+
+    lock.write_text(lock_with("0.16.0", "5.0.1", "1.0"))
+    baseline = report._scoring_dependencies_digest(tmp_path, [source])
+
+    lock.write_text(lock_with("0.16.9", "5.0.1", "1.0"))
+    assert report._scoring_dependencies_digest(tmp_path, [source]) == baseline
+    lock.write_text(lock_with("0.16.0", "5.0.2", "1.0"))
+    assert report._scoring_dependencies_digest(tmp_path, [source]) != baseline
+    lock.write_text(lock_with("0.16.0", "5.0.1", "1.1"))
+    assert report._scoring_dependencies_digest(tmp_path, [source]) != baseline
 
 
 def test_added_and_deleted_build_inputs_invalidate_snapshot(tmp_path: Path) -> None:
@@ -156,6 +194,7 @@ def test_added_and_deleted_build_inputs_invalidate_snapshot(tmp_path: Path) -> N
     git = shutil.which("git")
     assert git is not None
     subprocess.run([git, "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "uv.lock").write_text("")
     source = tmp_path / "tools/match/scratches/example/scratch.c"
     source.parent.mkdir(parents=True)
     source.write_text("void example(void) {}")
