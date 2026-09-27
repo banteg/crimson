@@ -102,8 +102,7 @@ class DemoTrialOverlayUi:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         panel_pos = self._panel_xy(screen_w=screen_w, screen_h=screen_h)
 
-        scale = 1.0
-        button_w = button_width(self._resources, self._purchase_button.label, scale=scale, force_wide=True)
+        button_w = button_width(self._resources, self._purchase_button.label, force_wide=True)
         gap = 20.0
         row_w = button_w * 2.0 + gap
         button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
@@ -165,8 +164,7 @@ class DemoTrialOverlayUi:
             else:
                 rl.draw_text(line, int(body_x), int(panel_pos.y + y_offset), 16, body_color)
 
-        scale = 1.0
-        button_w = 145.0 * scale
+        button_w = 145.0
         gap = 20.0
         row_w = button_w * 2.0 + gap
         button_base_pos = panel_pos + Vec2(256.0 - row_w * 0.5, 214.0)
@@ -175,14 +173,12 @@ class DemoTrialOverlayUi:
             self._purchase_button,
             pos=button_base_pos,
             width=float(button_w),
-            scale=float(scale),
         )
         button_draw(
             self._resources,
             self._maybe_later_button,
             pos=button_base_pos.offset(dx=button_w + gap),
             width=float(button_w),
-            scale=float(scale),
         )
         draw_menu_cursor(
             self._resources.texture(TextureId.PARTICLES),

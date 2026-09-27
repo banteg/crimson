@@ -72,10 +72,10 @@ class _DatabaseBaseView:
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
 
-    def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
+    def _panel_top_left(self, *, pos: Vec2) -> Vec2:
         return Vec2(
-            pos.x + MENU_PANEL_OFFSET_X * scale,
-            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+            pos.x + MENU_PANEL_OFFSET_X,
+            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
@@ -107,20 +107,19 @@ class _DatabaseBaseView:
             return
 
         screen_width = float(self.state.config.display.width)
-        scale = 1.0
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y))
         resources = require_runtime_resources(self.state)
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        self._update_content_interaction(left_top_left=left_top_left, scale=scale, mouse=mouse)
+        self._update_content_interaction(left_top_left=left_top_left, mouse=mouse)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            pos=left_top_left + back_pos * scale,
+            pos=left_top_left + back_pos,
             width=back_w,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -136,16 +135,14 @@ class _DatabaseBaseView:
         _draw_screen_fade(self.state)
 
         screen_width = float(self.state.config.display.width)
-        scale = 1.0
         shadows_enabled = self.state.config.display.shadows_enabled
 
-        panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, left_slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
@@ -153,26 +150,26 @@ class _DatabaseBaseView:
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=1,
         )
 
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y), scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y))
         right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, RIGHT_PANEL_POS_Y), scale=scale)
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, RIGHT_PANEL_POS_Y))
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, MENU_PANEL_WIDTH, LEFT_PANEL_HEIGHT),
             tint=rl.WHITE,
             shadow=shadows_enabled,
         )
         draw_classic_menu_panel(
             require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, MENU_PANEL_WIDTH, RIGHT_PANEL_HEIGHT),
             tint=rl.WHITE,
             shadow=shadows_enabled,
             flip_x=True,
@@ -180,16 +177,15 @@ class _DatabaseBaseView:
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
-        self._draw_contents(left_panel_top_left, right_panel_top_left, scale=scale, font=font)
+        self._draw_contents(left_panel_top_left, right_panel_top_left, font=font)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
-            pos=left_panel_top_left + back_pos * scale,
+            pos=left_panel_top_left + back_pos,
             width=back_w,
-            scale=scale,
         )
 
         draw_menu_sign(
@@ -209,10 +205,9 @@ class _DatabaseBaseView:
         left_top_left: Vec2,
         right_top_left: Vec2,
         *,
-        scale: float,
         font: SmallFontData,
     ) -> None:
         raise NotImplementedError
 
-    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+    def _update_content_interaction(self, *, left_top_left: Vec2, mouse: rl.Vector2) -> None:
         pass

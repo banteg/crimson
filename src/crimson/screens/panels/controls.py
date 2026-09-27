@@ -168,7 +168,6 @@ class _ControlsDropdownLayout(DropdownLayoutBase, frozen=True):
     arrow_pos: Vec2
     arrow_size: Vec2
     text_pos: Vec2
-    text_scale: float
 
 
 class _RebindRowLayout(msgspec.Struct, frozen=True):
@@ -219,14 +218,13 @@ class ControlsMenuView(PanelMenuView):
         entry = self._entry
         if entry is None or not self._entry_enabled():
             return
-        panel_scale = self._panel_scale()
-        left_top_left = self._left_panel_top_left(panel_scale)
-        right_top_left = self._right_panel_top_left(panel_scale)
+        left_top_left = self._left_panel_top_left()
+        right_top_left = self._right_panel_top_left()
         resources = require_runtime_resources(self.state)
         font = resources.small_font
         if self._capture is not None:
             self._update_back_button(dt, enabled=False)
-            self._update_rebind_capture(right_top_left=right_top_left, panel_scale=panel_scale, font=font)
+            self._update_rebind_capture(right_top_left=right_top_left, font=font)
             return
         dropdown_was_open = self._dropdown is not None
         if dropdown_was_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -235,26 +233,23 @@ class ControlsMenuView(PanelMenuView):
             return
         click_consumed = self._update_method_dropdowns(
             left_top_left=left_top_left,
-            panel_scale=panel_scale,
             font=font,
         )
         click_consumed = click_consumed or dropdown_was_open
         if not click_consumed:
             click_consumed = self._update_rebind_capture(
                 right_top_left=right_top_left,
-                panel_scale=panel_scale,
                 font=font,
             )
         if (not click_consumed) and self._update_direction_arrow_checkbox(
             left_top_left=left_top_left,
-            panel_scale=panel_scale,
             enabled=self._checkbox_enabled(),
             resources=resources,
             font=font,
         ):
             self._dirty = True
             click_consumed = True
-        if self._update_reset_button(dt, left_top_left=left_top_left, panel_scale=panel_scale, enabled=not click_consumed):
+        if self._update_reset_button(dt, left_top_left=left_top_left, enabled=not click_consumed):
             click_consumed = True
         self._update_back_button(dt, enabled=not click_consumed and self._capture is None)
 
@@ -290,31 +285,29 @@ class ControlsMenuView(PanelMenuView):
     def _set_binding_code(self, *, player_index: int, row: RebindRowSpec, code: int) -> None:
         _set_row_binding_code(row, int(code), player_index=player_index, controls=self.state.config.controls)
 
-    def _left_panel_top_left(self, panel_scale: float) -> Vec2:
-        panel_w = MENU_PANEL_WIDTH * panel_scale
+    def _left_panel_top_left(self) -> Vec2:
         _, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
         )
         return (
             Vec2(
                 _controls_left_panel_pos_x(float(self.state.config.display.width)) + slide_x,
                 self._panel_pos.y + self._widescreen_y_shift,
             )
-            + self._panel_offset * panel_scale
+            + self._panel_offset
         )
 
-    def _right_panel_top_left(self, panel_scale: float) -> Vec2:
-        panel_w = MENU_PANEL_WIDTH * panel_scale
+    def _right_panel_top_left(self) -> Vec2:
         _, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=3,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=1,
         )
         return (
@@ -322,7 +315,7 @@ class ControlsMenuView(PanelMenuView):
                 _controls_right_panel_pos_x(float(self.state.config.display.width)) + slide_x,
                 _controls_right_panel_pos_y(float(self.state.config.display.width)) + self._widescreen_y_shift,
             )
-            + self._panel_offset * panel_scale
+            + self._panel_offset
         )
 
     def _direction_arrow_enabled(self) -> bool:
@@ -338,7 +331,6 @@ class ControlsMenuView(PanelMenuView):
         self,
         *,
         left_top_left: Vec2,
-        panel_scale: float,
         enabled: bool,
         resources: RuntimeResources,
         font: SmallFontData,
@@ -346,12 +338,11 @@ class ControlsMenuView(PanelMenuView):
         if not enabled:
             return False
         check_on = resources.texture(TextureId.UI_CHECK_ON)
-        text_scale = 1.0 * panel_scale
         label = "Show direction arrow"
-        check_pos = Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 174.0 * panel_scale)
+        check_pos = Vec2(left_top_left.x + 213.0, left_top_left.y + 174.0)
         label_w = measure_small_text_width(font, label)
-        rect_w = float(check_on.width) * panel_scale + 6.0 * panel_scale + label_w
-        rect_h = max(float(check_on.height) * panel_scale, font.cell_size * text_scale)
+        rect_w = float(check_on.width) + 6.0 + label_w
+        rect_h = max(float(check_on.height), font.cell_size)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         return Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
 
@@ -359,7 +350,6 @@ class ControlsMenuView(PanelMenuView):
         self,
         *,
         left_top_left: Vec2,
-        panel_scale: float,
         enabled: bool,
         resources: RuntimeResources,
         font: SmallFontData,
@@ -368,7 +358,6 @@ class ControlsMenuView(PanelMenuView):
             return False
         hovered = self._checkbox_hovered(
             left_top_left=left_top_left,
-            panel_scale=panel_scale,
             enabled=enabled,
             resources=resources,
             font=font,
@@ -378,16 +367,16 @@ class ControlsMenuView(PanelMenuView):
             return True
         return False
 
-    def _reset_button_layout(self, *, left_top_left: Vec2, panel_scale: float) -> tuple[Vec2, float]:
+    def _reset_button_layout(self, *, left_top_left: Vec2) -> tuple[Vec2, float]:
         resources = require_runtime_resources(self.state)
         button = self._reset_button
-        width = button_width(resources, button.label, scale=panel_scale, force_wide=button.force_wide)
-        return left_top_left + CONTROLS_RESET_BUTTON_OFFSET * panel_scale, width
+        width = button_width(resources, button.label, force_wide=button.force_wide)
+        return left_top_left + CONTROLS_RESET_BUTTON_OFFSET, width
 
-    def _update_reset_button(self, dt: float, *, left_top_left: Vec2, panel_scale: float, enabled: bool) -> bool:
+    def _update_reset_button(self, dt: float, *, left_top_left: Vec2, enabled: bool) -> bool:
         button = self._reset_button
         button.enabled = enabled and self._checkbox_enabled() and self._dropdown is None
-        pos, width = self._reset_button_layout(left_top_left=left_top_left, panel_scale=panel_scale)
+        pos, width = self._reset_button_layout(left_top_left=left_top_left)
         if not button_update(
             button,
             pos=pos,
@@ -439,24 +428,23 @@ class ControlsMenuView(PanelMenuView):
         self,
         *,
         right_top_left: Vec2,
-        panel_scale: float,
         player_index: int,
         sections: tuple[tuple[str, tuple[RebindRowSpec, ...]], ...],
         font: SmallFontData,
     ) -> tuple[_RebindRowLayout, ...]:
         rows: list[_RebindRowLayout] = []
-        y = right_top_left.y + 64.0 * panel_scale
+        y = right_top_left.y + 64.0
         for _section_title, section_rows in sections:
-            row_y = y + 18.0 * panel_scale
+            row_y = y + 18.0
             for row in section_rows:
                 key_code = int(self._binding_code(player_index=player_index, row=row))
                 value_text = input_code_name(key_code)
-                value_pos = Vec2(right_top_left.x + 180.0 * panel_scale, row_y)
-                value_w = max(60.0 * panel_scale, measure_small_text_width(font, value_text))
+                value_pos = Vec2(right_top_left.x + 180.0, row_y)
+                value_w = max(60.0, measure_small_text_width(font, value_text))
                 value_rect = Rect.from_top_left(
-                    Vec2(value_pos.x - 2.0 * panel_scale, row_y - 2.0 * panel_scale),
-                    value_w + 4.0 * panel_scale,
-                    14.0 * panel_scale,
+                    Vec2(value_pos.x - 2.0, row_y - 2.0),
+                    value_w + 4.0,
+                    14.0,
                 )
                 rows.append(
                     _RebindRowLayout(
@@ -466,11 +454,11 @@ class ControlsMenuView(PanelMenuView):
                         value_rect=value_rect,
                     ),
                 )
-                row_y += 16.0 * panel_scale
-            y = row_y + 8.0 * panel_scale
+                row_y += 16.0
+            y = row_y + 8.0
         return tuple(rows)
 
-    def _update_rebind_capture(self, *, right_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
+    def _update_rebind_capture(self, *, right_top_left: Vec2, font: SmallFontData) -> bool:
         player_idx = self._current_player_index()
         player_controls = self.state.config.controls.player(player_idx)
         aim_scheme = player_controls.aim_scheme
@@ -478,7 +466,6 @@ class ControlsMenuView(PanelMenuView):
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
-            panel_scale=panel_scale,
             player_index=player_idx,
             sections=sections,
             font=font,
@@ -563,29 +550,26 @@ class ControlsMenuView(PanelMenuView):
         *,
         pos: Vec2,
         items: tuple[str, ...],
-        scale: float,
         font: SmallFontData,
     ) -> _ControlsDropdownLayout:
-        text_scale = 1.0 * scale
         max_label_w = 0.0
         for label in items:
             max_label_w = max(max_label_w, measure_small_text_width(font, label))
-        width = max_label_w + 48.0 * scale
-        header_h = 16.0 * scale
-        row_h = 16.0 * scale
-        full_h = (float(len(items)) * 16.0 + 24.0) * scale
-        arrow = 16.0 * scale
+        width = max_label_w + 48.0
+        header_h = 16.0
+        row_h = 16.0
+        full_h = float(len(items)) * 16.0 + 24.0
+        arrow = 16.0
         return _ControlsDropdownLayout(
             pos=pos,
             width=width,
             header_h=header_h,
             row_h=row_h,
-            rows_y0=pos.y + 17.0 * scale,
+            rows_y0=pos.y + 17.0,
             full_h=full_h,
-            arrow_pos=Vec2(pos.x + width - arrow - 1.0 * scale, pos.y),
+            arrow_pos=Vec2(pos.x + width - arrow - 1.0, pos.y),
             arrow_size=Vec2(arrow, arrow),
-            text_pos=pos + Vec2(4.0 * scale, 1.0 * scale),
-            text_scale=text_scale,
+            text_pos=pos + Vec2(4.0, 1.0),
         )
 
     def _update_dropdown(
@@ -595,7 +579,6 @@ class ControlsMenuView(PanelMenuView):
         item_count: int,
         is_open: bool,
         enabled: bool,
-        scale: float,
     ) -> tuple[bool, int | None, bool]:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -603,7 +586,7 @@ class ControlsMenuView(PanelMenuView):
             mouse,
             pos=layout.pos,
             width=layout.width,
-            height=14.0 * scale,
+            height=14.0,
         )
         if hovered_header and click:
             return (not is_open), None, True
@@ -620,14 +603,14 @@ class ControlsMenuView(PanelMenuView):
                 mouse,
                 pos=Vec2(layout.pos.x, item_y),
                 width=layout.width,
-                height=14.0 * scale,
+                height=14.0,
             )
             if hovered and click:
                 return False, idx, True
 
         return is_open, None, False
 
-    def _update_method_dropdowns(self, *, left_top_left: Vec2, panel_scale: float, font: SmallFontData) -> bool:
+    def _update_method_dropdowns(self, *, left_top_left: Vec2, font: SmallFontData) -> bool:
         config = self.state.config
         player_idx = self._current_player_index()
         player_controls = config.controls.player(player_idx)
@@ -640,21 +623,18 @@ class ControlsMenuView(PanelMenuView):
         player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
 
         move_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
+            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 144.0),
             items=move_items,
-            scale=panel_scale,
             font=font,
         )
         aim_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 102.0 * panel_scale),
+            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 102.0),
             items=aim_items,
-            scale=panel_scale,
             font=font,
         )
         player_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 340.0 * panel_scale, left_top_left.y + 56.0 * panel_scale),
+            pos=Vec2(left_top_left.x + 340.0, left_top_left.y + 56.0),
             items=player_items,
-            scale=panel_scale,
             font=font,
         )
 
@@ -667,7 +647,6 @@ class ControlsMenuView(PanelMenuView):
             item_count=len(move_items),
             is_open=(self._dropdown is ControlsDropdown.MOVEMENT),
             enabled=move_enabled,
-            scale=panel_scale,
         )
         if consumed:
             self._dropdown = ControlsDropdown.MOVEMENT if is_open else None
@@ -683,7 +662,6 @@ class ControlsMenuView(PanelMenuView):
             item_count=len(aim_items),
             is_open=(self._dropdown is ControlsDropdown.AIM),
             enabled=aim_enabled,
-            scale=panel_scale,
         )
         if consumed:
             self._dropdown = ControlsDropdown.AIM if is_open else None
@@ -699,7 +677,6 @@ class ControlsMenuView(PanelMenuView):
             item_count=len(player_items),
             is_open=(self._dropdown is ControlsDropdown.PLAYER),
             enabled=player_enabled,
-            scale=panel_scale,
         )
         if consumed:
             self._dropdown = ControlsDropdown.PLAYER if is_open else None
@@ -709,26 +686,24 @@ class ControlsMenuView(PanelMenuView):
 
     def _draw_panel(self) -> None:
         shadows_enabled = self.state.config.display.shadows_enabled
-        panel_scale = self._panel_scale()
-        panel_w = MENU_PANEL_WIDTH * panel_scale
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
 
         # Left (controls options) panel: standard 254px height => a single quad.
-        left_top_left = self._left_panel_top_left(panel_scale)
-        left_h = MENU_PANEL_HEIGHT * panel_scale
+        left_top_left = self._left_panel_top_left()
+        left_h = MENU_PANEL_HEIGHT
         draw_classic_menu_panel(
             panel,
-            dst=rl.Rectangle(left_top_left.x, left_top_left.y, panel_w, left_h),
+            dst=rl.Rectangle(left_top_left.x, left_top_left.y, MENU_PANEL_WIDTH, left_h),
             tint=rl.WHITE,
             shadow=shadows_enabled,
         )
 
         # Right (configured bindings) panel: tall 378px panel rendered as 3 vertical slices.
-        right_top_left = self._right_panel_top_left(panel_scale)
-        right_h = float(CONTROLS_RIGHT_PANEL_HEIGHT) * panel_scale
+        right_top_left = self._right_panel_top_left()
+        right_h = float(CONTROLS_RIGHT_PANEL_HEIGHT)
         draw_classic_menu_panel(
             panel,
-            dst=rl.Rectangle(right_top_left.x, right_top_left.y, panel_w, right_h),
+            dst=rl.Rectangle(right_top_left.x, right_top_left.y, MENU_PANEL_WIDTH, right_h),
             tint=rl.WHITE,
             shadow=shadows_enabled,
             # Original ui_element_slot_40 sets direction_flag=1, which mirrors panel UVs.
@@ -736,11 +711,10 @@ class ControlsMenuView(PanelMenuView):
         )
 
     def _draw_contents(self) -> None:
-        # Positions are expressed relative to the panel top-left corners and scaled with the panel scale.
-        panel_scale = self._panel_scale()
+        # Positions are expressed relative to the panel top-left corners.
 
-        left_top_left = self._left_panel_top_left(panel_scale)
-        right_top_left = self._right_panel_top_left(panel_scale)
+        left_top_left = self._left_panel_top_left()
+        right_top_left = self._right_panel_top_left()
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
@@ -767,21 +741,18 @@ class ControlsMenuView(PanelMenuView):
             aim_selected = 0
         player_selected = max(0, min(len(player_items) - 1, player_idx))
         move_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 144.0 * panel_scale),
+            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 144.0),
             items=move_items,
-            scale=panel_scale,
             font=font,
         )
         aim_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0 * panel_scale, left_top_left.y + 102.0 * panel_scale),
+            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 102.0),
             items=aim_items,
-            scale=panel_scale,
             font=font,
         )
         player_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 340.0 * panel_scale, left_top_left.y + 56.0 * panel_scale),
+            pos=Vec2(left_top_left.x + 340.0, left_top_left.y + 56.0),
             items=player_items,
-            scale=panel_scale,
             font=font,
         )
 
@@ -791,10 +762,10 @@ class ControlsMenuView(PanelMenuView):
             texture=text_controls,
             src=rl.Rectangle(0.0, 0.0, float(text_controls.width), float(text_controls.height)),
             dst=rl.Rectangle(
-                left_top_left.x + 206.0 * panel_scale,
-                left_top_left.y + 44.0 * panel_scale,
-                128.0 * panel_scale,
-                32.0 * panel_scale,
+                left_top_left.x + 206.0,
+                left_top_left.y + 44.0,
+                128.0,
+                32.0,
             ),
             origin=rl.Vector2(0.0, 0.0),
             rotation_deg=0.0,
@@ -804,21 +775,21 @@ class ControlsMenuView(PanelMenuView):
         draw_small_text(
             font,
             "Configure for:",
-            Vec2(left_top_left.x + 339.0 * panel_scale, left_top_left.y + 41.0 * panel_scale),
+            Vec2(left_top_left.x + 339.0, left_top_left.y + 41.0),
             text_color_soft,
         )
 
         draw_small_text(
             font,
             "Aiming method:",
-            Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 86.0 * panel_scale),
+            Vec2(left_top_left.x + 213.0, left_top_left.y + 86.0),
             text_color_full,
         )
 
         draw_small_text(
             font,
             "Moving method:",
-            Vec2(left_top_left.x + 213.0 * panel_scale, left_top_left.y + 128.0 * panel_scale),
+            Vec2(left_top_left.x + 213.0, left_top_left.y + 128.0),
             text_color_full,
         )
 
@@ -831,10 +802,10 @@ class ControlsMenuView(PanelMenuView):
             texture=check_tex,
             src=rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
             dst=rl.Rectangle(
-                left_top_left.x + 213.0 * panel_scale,
-                left_top_left.y + 174.0 * panel_scale,
-                16.0 * panel_scale,
-                16.0 * panel_scale,
+                left_top_left.x + 213.0,
+                left_top_left.y + 174.0,
+                16.0,
+                16.0,
             ),
             origin=rl.Vector2(0.0, 0.0),
             rotation_deg=0.0,
@@ -842,7 +813,6 @@ class ControlsMenuView(PanelMenuView):
         )
         checkbox_hovered = self._checkbox_hovered(
             left_top_left=left_top_left,
-            panel_scale=panel_scale,
             enabled=self._checkbox_enabled(),
             resources=resources,
             font=font,
@@ -851,12 +821,12 @@ class ControlsMenuView(PanelMenuView):
         draw_small_text(
             font,
             "Show direction arrow",
-            Vec2(left_top_left.x + 235.0 * panel_scale, left_top_left.y + 175.0 * panel_scale),
+            Vec2(left_top_left.x + 235.0, left_top_left.y + 175.0),
             rl.Color(255, 255, 255, checkbox_alpha),
         )
 
-        reset_pos, reset_width = self._reset_button_layout(left_top_left=left_top_left, panel_scale=panel_scale)
-        button_draw(resources, self._reset_button, pos=reset_pos, width=reset_width, scale=panel_scale)
+        reset_pos, reset_width = self._reset_button_layout(left_top_left=left_top_left)
+        button_draw(resources, self._reset_button, pos=reset_pos, width=reset_width)
 
         dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (
@@ -891,7 +861,6 @@ class ControlsMenuView(PanelMenuView):
                 selected_index=selected_index,
                 is_open=is_open,
                 enabled=enabled,
-                scale=panel_scale,
                 resources=resources,
                 font=font,
             )
@@ -904,42 +873,40 @@ class ControlsMenuView(PanelMenuView):
                 selected_index=selected_index,
                 is_open=is_open,
                 enabled=enabled,
-                scale=panel_scale,
                 resources=resources,
                 font=font,
             )
 
         # --- Right panel: configured bindings list ---
         def _draw_section_heading(title: str, *, y: float) -> None:
-            x_heading = right_top_left.x + 44.0 * panel_scale
+            x_heading = right_top_left.x + 44.0
             draw_small_text(font, title, Vec2(x_heading, y), text_color_full)
             line = rl.Rectangle(
                 x_heading,
-                y + 13.0 * panel_scale,
-                228.0 * panel_scale,
-                max(1.0, panel_scale),
+                y + 13.0,
+                228.0,
+                1.0,
             )
-            rl.draw_rectangle_lines_ex(line, max(1.0, panel_scale), rl.Color(255, 255, 255, 178))
+            rl.draw_rectangle_lines_ex(line, 1.0, rl.Color(255, 255, 255, 178))
 
         draw_small_text(
             font,
             "Configured controls",
-            Vec2(right_top_left.x + 120.0 * panel_scale, right_top_left.y + 38.0 * panel_scale),
+            Vec2(right_top_left.x + 120.0, right_top_left.y + 38.0),
             text_color_full,
         )
         header_w = measure_small_text_width(font, "Configured controls")
         header_line = rl.Rectangle(
-            right_top_left.x + 120.0 * panel_scale,
-            right_top_left.y + 51.0 * panel_scale,
+            right_top_left.x + 120.0,
+            right_top_left.y + 51.0,
             header_w,
-            max(1.0, panel_scale),
+            1.0,
         )
-        rl.draw_rectangle_lines_ex(header_line, max(1.0, panel_scale), rl.Color(255, 255, 255, 204))
+        rl.draw_rectangle_lines_ex(header_line, 1.0, rl.Color(255, 255, 255, 204))
 
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
-            panel_scale=panel_scale,
             player_index=player_idx,
             sections=sections,
             font=font,
@@ -948,10 +915,10 @@ class ControlsMenuView(PanelMenuView):
         mouse = Vec2.from_xy(rl.get_mouse_position())
         dropdown_blocked = self._dropdown is not None
 
-        y = right_top_left.y + 64.0 * panel_scale
+        y = right_top_left.y + 64.0
         for section_title, section_rows in sections:
             _draw_section_heading(section_title, y=y)
-            row_y = y + 18.0 * panel_scale
+            row_y = y + 18.0
             for _ in section_rows:
                 row = next(row_iter)
                 capture = self._capture
@@ -967,7 +934,7 @@ class ControlsMenuView(PanelMenuView):
                 draw_small_text(
                     font,
                     row.row.label,
-                    Vec2(right_top_left.x + 52.0 * panel_scale, row_y),
+                    Vec2(right_top_left.x + 52.0, row_y),
                     rl.Color(255, 255, 255, 178),
                 )
                 value_color = CONTROLS_REBIND_VALUE_COLOR
@@ -977,7 +944,7 @@ class ControlsMenuView(PanelMenuView):
                     value_color = CONTROLS_REBIND_ACTIVE_COLOR
                 draw_small_text(font, value_text, value_pos, value_color)
                 value_w = measure_small_text_width(font, value_text)
-                underline_y = row.row_y + 13.0 * panel_scale
+                underline_y = row.row_y + 13.0
                 rl.draw_line(
                     int(value_pos.x),
                     int(underline_y),
@@ -985,13 +952,13 @@ class ControlsMenuView(PanelMenuView):
                     int(underline_y),
                     value_color,
                 )
-                row_y += 16.0 * panel_scale
-            y = row_y + 8.0 * panel_scale
+                row_y += 16.0
+            y = row_y + 8.0
 
         if self._capture is not None and self._capture.player_index == player_idx:
             hint_pos = Vec2(
-                right_top_left.x + 48.0 * panel_scale,
-                right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0) * panel_scale,
+                right_top_left.x + 48.0,
+                right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0),
             )
             draw_small_text(
                 font,
@@ -1008,7 +975,6 @@ class ControlsMenuView(PanelMenuView):
         selected_index: int,
         is_open: bool,
         enabled: bool,
-        scale: float,
         resources: RuntimeResources,
         font: SmallFontData,
     ) -> None:
@@ -1017,7 +983,7 @@ class ControlsMenuView(PanelMenuView):
             mouse,
             pos=layout.pos,
             width=layout.width,
-            height=14.0 * scale,
+            height=14.0,
         )
         widget_h = layout.full_h if is_open else layout.header_h
         rl.draw_rectangle(int(layout.pos.x), int(layout.pos.y), int(layout.width), int(widget_h), rl.WHITE)
@@ -1026,10 +992,10 @@ class ControlsMenuView(PanelMenuView):
         rl.draw_rectangle(int(layout.pos.x) + 1, int(layout.pos.y) + 1, inner_w, inner_h, rl.BLACK)
 
         if (is_open or hovered_header) and enabled:
-            line_h = max(1, int(1.0 * scale))
+            line_h = 1
             rl.draw_rectangle(
                 int(layout.pos.x),
-                int(layout.pos.y + 15.0 * scale),
+                int(layout.pos.y + 15.0),
                 int(layout.width),
                 line_h,
                 rl.Color(255, 255, 255, 128),
@@ -1062,7 +1028,7 @@ class ControlsMenuView(PanelMenuView):
                 mouse,
                 pos=Vec2(layout.pos.x, item_y),
                 width=layout.width,
-                height=14.0 * scale,
+                height=14.0,
             )
             alpha = 153
             if hovered:

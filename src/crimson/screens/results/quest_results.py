@@ -30,7 +30,7 @@ from ...quests.level import QuestLevel
 from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
 from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_ordinal, format_time_mm_ss
-from ...ui.layout import menu_widescreen_y_shift, ui_scale
+from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
@@ -226,19 +226,16 @@ class QuestResultsUi(msgspec.Struct):
             return 1.0
         return world_fade_alpha(self._intro_ms)
 
-    def _text_width(self, font: SmallFontData, text: str, scale: float) -> float:
-        del scale
+    def _text_width(self, font: SmallFontData, text: str) -> float:
         return float(measure_small_text_width(font, text))
 
-    def _draw_small(self, font: SmallFontData, text: str, pos: Vec2, scale: float, color: rl.Color) -> None:
-        del scale
+    def _draw_small(self, font: SmallFontData, text: str, pos: Vec2, color: rl.Color) -> None:
         draw_small_text(font, text, pos, color)
 
     def _draw_name_entry_stats(
         self,
         *,
         pos: Vec2,
-        scale: float,
         alpha: float,
         show_weapon_row: bool,
         resources: RuntimeResources,
@@ -263,50 +260,47 @@ class QuestResultsUi(msgspec.Struct):
         col_line = rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha_f * 0.7))
         icon_tint = rl.Color(255, 255, 255, int(255 * alpha_f))
 
-        left_center_x = x + 36.0 * scale
-        right_label_x = x + 100.0 * scale
-        right_center_x = right_label_x + 32.0 * scale
+        left_center_x = x + 36.0
+        right_label_x = x + 100.0
+        right_center_x = right_label_x + 32.0
 
-        score_w = self._text_width(font, "Score", 1.0 * scale)
-        self._draw_small(font, "Score", Vec2(left_center_x - score_w * 0.5, y), 1.0 * scale, col_label)
-        score_value_w = self._text_width(font, score_value, 1.0 * scale)
+        score_w = self._text_width(font, "Score")
+        self._draw_small(font, "Score", Vec2(left_center_x - score_w * 0.5, y), col_label)
+        score_value_w = self._text_width(font, score_value)
         self._draw_small(
             font,
             score_value,
-            Vec2(left_center_x - score_value_w * 0.5, y + 15.0 * scale),
-            1.0 * scale,
+            Vec2(left_center_x - score_value_w * 0.5, y + 15.0),
             col_score_value,
         )
         rank_label = f"Rank: {rank_text}"
-        rank_w = self._text_width(font, rank_label, 1.0 * scale)
+        rank_w = self._text_width(font, rank_label)
         self._draw_small(
             font,
             rank_label,
-            Vec2(left_center_x - rank_w * 0.5, y + 30.0 * scale),
-            1.0 * scale,
+            Vec2(left_center_x - rank_w * 0.5, y + 30.0),
             col_label,
         )
 
         # Native path: highscore_card_draw_vertical_divider sets current color from
         # highscore_card_divider_color_r just before
         # drawing "Experience", so it uses the accent-blue tint (alpha*0.7).
-        self._draw_small(font, "Experience", Vec2(right_label_x, y), 1.0 * scale, col_line)
-        xp_value_w = self._text_width(font, xp_value, 1.0 * scale)
+        self._draw_small(font, "Experience", Vec2(right_label_x, y), col_line)
+        xp_value_w = self._text_width(font, xp_value)
         self._draw_small(
             font,
             xp_value,
-            Vec2(right_center_x - xp_value_w * 0.5, y + 15.0 * scale),
-            1.0 * scale,
+            Vec2(right_center_x - xp_value_w * 0.5, y + 15.0),
             col_label,
         )
 
         # Native vertical separator drawn via highscore_card_draw_vertical_divider
         # from x+84, height 48.
-        sep_x = x + 84.0 * scale
-        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0 * scale), col_line)
+        sep_x = x + 84.0
+        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0), col_line)
 
-        row_top = y + 52.0 * scale
-        rl.draw_line(int(x - 12.0 * scale), int(row_top), int(x + 180.0 * scale), int(row_top), col_line)
+        row_top = y + 52.0
+        rl.draw_line(int(x - 12.0), int(row_top), int(x + 180.0), int(row_top), col_line)
         if not show_weapon_row:
             return
 
@@ -314,43 +308,42 @@ class QuestResultsUi(msgspec.Struct):
         wicons = resources.texture(TextureId.UI_WICONS)
         src = _weapon_icon_src(wicons, record.most_used_weapon_id)
         if src is not None:
-            dst = rl.Rectangle(x + 4.0 * scale, row_y, 64.0 * scale, 32.0 * scale)
+            dst = rl.Rectangle(x + 4.0, row_y, 64.0, 32.0)
             rl.draw_texture_pro(wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
 
         weapon_id = record.most_used_weapon_id
         weapon_name = weapon_display_name(weapon_id)
-        name_w = self._text_width(font, weapon_name, 1.0 * scale)
-        name_x = max(x + 4.0 * scale, left_center_x - name_w * 0.5)
-        self._draw_small(font, weapon_name, Vec2(name_x, row_y + 32.0 * scale), 1.0 * scale, col_row)
+        name_w = self._text_width(font, weapon_name)
+        name_x = max(x + 4.0, left_center_x - name_w * 0.5)
+        self._draw_small(font, weapon_name, Vec2(name_x, row_y + 32.0), col_row)
 
         frags_text = f"Frags: {int(record.creature_kill_count)}"
-        self._draw_small(font, frags_text, Vec2(x + 114.0 * scale, row_y + 1.0 * scale), 1.0 * scale, col_row)
+        self._draw_small(font, frags_text, Vec2(x + 114.0, row_y + 1.0), col_row)
 
         fired = max(0, int(record.shots_fired))
         hit = max(0, min(int(record.shots_hit), fired))
         ratio = int((hit * 100) / fired) if fired > 0 else 0
         hit_text = f"Hit %: {ratio}%"
-        self._draw_small(font, hit_text, Vec2(x + 114.0 * scale, row_y + 15.0 * scale), 1.0 * scale, col_row)
+        self._draw_small(font, hit_text, Vec2(x + 114.0, row_y + 15.0), col_row)
 
         rl.draw_line(
-            int(x - 12.0 * scale),
-            int(row_y + 48.0 * scale),
-            int(x + 180.0 * scale),
-            int(row_y + 48.0 * scale),
+            int(x - 12.0),
+            int(row_y + 48.0),
+            int(x + 180.0),
+            int(row_y + 48.0),
             col_line,
         )
 
-    def _panel_layout(self, *, screen_w: float, scale: float) -> _QuestResultsPanelLayout:
+    def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
         panel_slide_x = results_panel_slide_x(self._intro_ms, width=QUEST_RESULTS_PANEL_W)
 
-        panel_pos = Vec2((QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x) * scale, 0.0)
-        layout_w = screen_w / scale if scale else screen_w
-        widescreen_shift_y = menu_widescreen_y_shift(layout_w)
+        panel_pos = Vec2(QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x, 0.0)
+        widescreen_shift_y = menu_widescreen_y_shift(screen_w)
         panel_pos = Vec2(
             panel_pos.x,
-            (QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y) * scale,
+            QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y,
         )
-        panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W * scale, QUEST_RESULTS_PANEL_H * scale)
+        panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W, QUEST_RESULTS_PANEL_H)
         return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
 
     def update(
@@ -446,14 +439,12 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             screen_w = float(rl.get_screen_width())
-            screen_h = float(rl.get_screen_height())
-            scale = ui_scale(screen_w, screen_h)
-            panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
-            content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
-            input_pos = content_pos.offset(dy=150.0 * scale)
-            ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
+            panel_layout = self._panel_layout(screen_w=screen_w)
+            content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
+            input_pos = content_pos.offset(dy=150.0)
+            ok_pos = input_pos + Vec2(170.0, -8.0)
             resources = runtime_resources_for(self.assets_root)
-            ok_w = button_width(resources, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
+            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
             ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
@@ -502,27 +493,24 @@ class QuestResultsUi(msgspec.Struct):
                 return None
 
             screen_w = float(rl.get_screen_width())
-            screen_h = float(rl.get_screen_height())
-            scale = ui_scale(screen_w, screen_h)
-            panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
+            panel_layout = self._panel_layout(screen_w=screen_w)
             qualifies = int(self.rank) < TABLE_MAX
-            content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
-            score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale)
+            content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
+            score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT)
 
-            var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0) * scale
-            var_c_14 = var_c_12 + 84.0 * scale
+            var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0)
+            var_c_14 = var_c_12 + 84.0
             if self.unlock_weapon_name:
-                var_c_14 += 30.0 * scale
+                var_c_14 += 30.0
             if self.unlock_perk_name:
-                var_c_14 += 30.0 * scale
+                var_c_14 += 30.0
 
-            button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
+            button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
             resources = runtime_resources_for(self.assets_root)
 
             play_next_w = button_width(
                 resources,
                 self._play_next_button.label,
-                scale=scale,
                 force_wide=self._play_next_button.force_wide,
             )
             if button_update(
@@ -537,12 +525,11 @@ class QuestResultsUi(msgspec.Struct):
                     play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition(ResultAction.PLAY_NEXT)
                 return None
-            button_pos = button_pos.offset(dy=32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0)
 
             play_again_w = button_width(
                 resources,
                 self._play_again_button.label,
-                scale=scale,
                 force_wide=self._play_again_button.force_wide,
             )
             if button_update(
@@ -557,12 +544,11 @@ class QuestResultsUi(msgspec.Struct):
                     play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition(ResultAction.PLAY_AGAIN)
                 return None
-            button_pos = button_pos.offset(dy=32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0)
 
             high_scores_w = button_width(
                 resources,
                 self._high_scores_button.label,
-                scale=scale,
                 force_wide=self._high_scores_button.force_wide,
             )
             if button_update(
@@ -577,12 +563,11 @@ class QuestResultsUi(msgspec.Struct):
                     play_sfx(SfxId.UI_BUTTONCLICK)
                 self._begin_close_transition(ResultAction.HIGH_SCORES)
                 return None
-            button_pos = button_pos.offset(dy=32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0)
 
             main_menu_w = button_width(
                 resources,
                 self._main_menu_button.label,
-                scale=scale,
                 force_wide=self._main_menu_button.force_wide,
             )
             if button_update(
@@ -608,12 +593,10 @@ class QuestResultsUi(msgspec.Struct):
             mouse = rl.get_mouse_position()
 
         screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
 
         resources = runtime_resources_for(self.assets_root)
         font = resources.small_font
-        panel_layout = self._panel_layout(screen_w=screen_w, scale=scale)
+        panel_layout = self._panel_layout(screen_w=screen_w)
         panel = panel_layout.panel
 
         shadows_enabled = self.config.display.shadows_enabled
@@ -624,18 +607,18 @@ class QuestResultsUi(msgspec.Struct):
             shadow=shadows_enabled,
         )
 
-        content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X * scale)
-        banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT * scale, 36.0 * scale)
+        content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
+        banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT, 36.0)
         text_well_done = resources.texture(TextureId.UI_TEXT_WELL_DONE)
         src = rl.Rectangle(0.0, 0.0, float(text_well_done.width), float(text_well_done.height))
-        dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W * scale, TEXTURE_TOP_BANNER_H * scale)
+        dst = rl.Rectangle(banner_pos.x, banner_pos.y, TEXTURE_TOP_BANNER_W, TEXTURE_TOP_BANNER_H)
         rl.draw_texture_pro(text_well_done, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         qualifies = int(self.rank) < TABLE_MAX
 
         if self.phase == 0:
-            label_x = content_pos.x + 32.0 * scale
-            value_x = label_x + 132.0 * scale
+            label_x = content_pos.x + 32.0
+            value_x = label_x + 132.0
 
             anim = self._breakdown_anim
             step = 4
@@ -667,95 +650,92 @@ class QuestResultsUi(msgspec.Struct):
                     rgb = (COLOR_GREEN.r, COLOR_GREEN.g, COLOR_GREEN.b)
                 return rl.Color(rgb[0], rgb[1], rgb[2], int(255 * max(0.0, min(1.0, alpha))))
 
-            y = panel_layout.top_left.y + 156.0 * scale
+            y = panel_layout.top_left.y + 156.0
             base_value = format_time_mm_ss(base_time_ms)
             life_value = format_time_mm_ss(life_bonus_ms)
             perk_value = format_time_mm_ss(perk_bonus_ms)
             final_value = format_time_mm_ss(final_time_ms)
 
-            self._draw_small(font, "Base Time:", Vec2(label_x, y), 1.0 * scale, _row_color(0))
-            self._draw_small(font, base_value, Vec2(value_x, y), 1.0 * scale, _row_color(0))
-            y += 20.0 * scale
+            self._draw_small(font, "Base Time:", Vec2(label_x, y), _row_color(0))
+            self._draw_small(font, base_value, Vec2(value_x, y), _row_color(0))
+            y += 20.0
 
-            self._draw_small(font, "Life Bonus:", Vec2(label_x, y), 1.0 * scale, _row_color(1))
-            self._draw_small(font, life_value, Vec2(value_x, y), 1.0 * scale, _row_color(1))
-            y += 20.0 * scale
+            self._draw_small(font, "Life Bonus:", Vec2(label_x, y), _row_color(1))
+            self._draw_small(font, life_value, Vec2(value_x, y), _row_color(1))
+            y += 20.0
 
-            self._draw_small(font, "Unpicked Perk Bonus:", Vec2(label_x, y), 1.0 * scale, _row_color(2))
-            self._draw_small(font, perk_value, Vec2(value_x, y), 1.0 * scale, _row_color(2))
-            y += 20.0 * scale
+            self._draw_small(font, "Unpicked Perk Bonus:", Vec2(label_x, y), _row_color(2))
+            self._draw_small(font, perk_value, Vec2(value_x, y), _row_color(2))
+            y += 20.0
 
             # Final time underline + row (matches the extra quad draw in native).
-            line_y = y + 1.0 * scale
+            line_y = y + 1.0
             line_color = rl.Color(255, 255, 255, _row_color(3, final=True).a)
-            rl.draw_rectangle(int(label_x - 4.0 * scale), int(line_y), int(168.0 * scale), int(1.0 * scale), line_color)
+            rl.draw_rectangle(int(label_x - 4.0), int(line_y), 168, 1, line_color)
 
-            y += 8.0 * scale
-            self._draw_small(font, "Final Time:", Vec2(label_x, y), 1.0 * scale, _row_color(3, final=True))
-            self._draw_small(font, final_value, Vec2(value_x, y), 1.0 * scale, _row_color(3, final=True))
+            y += 8.0
+            self._draw_small(font, "Final Time:", Vec2(label_x, y), _row_color(3, final=True))
+            self._draw_small(font, final_value, Vec2(value_x, y), _row_color(3, final=True))
 
         elif self.phase == 1:
-            text_y = panel_layout.top_left.y + 118.0 * scale
+            text_y = panel_layout.top_left.y + 118.0
             name_prompt = "State your name trooper!"
             self._draw_small(
                 font,
                 name_prompt,
-                Vec2(content_pos.x + 42.0 * scale, text_y),
-                1.0 * scale,
+                Vec2(content_pos.x + 42.0, text_y),
                 COLOR_UI_ACCENT,
             )
 
-            input_pos = content_pos.offset(dy=150.0 * scale)
+            input_pos = content_pos.offset(dy=150.0)
             rl.draw_rectangle_lines(
                 int(input_pos.x),
                 int(input_pos.y),
-                int(INPUT_BOX_W * scale),
-                int(INPUT_BOX_H * scale),
+                int(INPUT_BOX_W),
+                int(INPUT_BOX_H),
                 rl.WHITE,
             )
             rl.draw_rectangle(
-                int(input_pos.x + 1.0 * scale),
-                int(input_pos.y + 1.0 * scale),
-                int((INPUT_BOX_W - 2.0) * scale),
-                int((INPUT_BOX_H - 2.0) * scale),
+                int(input_pos.x + 1.0),
+                int(input_pos.y + 1.0),
+                int(INPUT_BOX_W - 2.0),
+                int(INPUT_BOX_H - 2.0),
                 rl.Color(0, 0, 0, 255),
             )
             draw_ui_text(
                 resources,
                 self.input_text,
-                input_pos + Vec2(4.0 * scale, 2.0 * scale),
-                scale=1.0 * scale,
+                input_pos + Vec2(4.0, 2.0),
                 color=COLOR_TEXT_MUTED,
             )
             if self.save_error is not None:
                 draw_ui_text(
-                    resources, self.save_error, input_pos + Vec2(0.0, 22.0 * scale),
-                    scale=scale, color=COLOR_TEXT_MUTED,
+                    resources, self.save_error, input_pos + Vec2(0.0, 22.0),
+                    color=COLOR_TEXT_MUTED,
                 )
             caret_alpha = 1.0
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4
             caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
             caret_x = (
-                input_pos.x + 4.0 * scale + self._text_width(font, self.input_text[: self.input_caret], 1.0 * scale)
+                input_pos.x + 4.0 + self._text_width(font, self.input_text[: self.input_caret])
             )
             rl.draw_rectangle(
                 int(caret_x),
-                int(input_pos.y + 2.0 * scale),
-                int(1.0 * scale),
-                int(14.0 * scale),
+                int(input_pos.y + 2.0),
+                1,
+                14,
                 caret_color,
             )
 
-            ok_pos = input_pos + Vec2(170.0 * scale, -8.0 * scale)
-            ok_w = button_width(resources, self._ok_button.label, scale=scale, force_wide=self._ok_button.force_wide)
-            button_draw(resources, self._ok_button, pos=ok_pos, width=ok_w, scale=scale)
+            ok_pos = input_pos + Vec2(170.0, -8.0)
+            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
+            button_draw(resources, self._ok_button, pos=ok_pos, width=ok_w)
 
             # Native phase 1 still renders the quest score card while entering the name.
-            score_card_pos = input_pos + Vec2(26.0 * scale, 46.0 * scale)
+            score_card_pos = input_pos + Vec2(26.0, 46.0)
             self._draw_name_entry_stats(
                 pos=score_card_pos,
-                scale=scale,
                 alpha=1.0,
                 show_weapon_row=True,
                 resources=resources,
@@ -763,21 +743,19 @@ class QuestResultsUi(msgspec.Struct):
             )
 
         else:
-            score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT * scale)
-            var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0) * scale
+            score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT)
+            var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0)
             if not qualifies:
                 self._draw_small(
                     font,
                     "Score too low for top100.",
-                    Vec2(score_card_pos.x + 8.0 * scale, panel_layout.top_left.y + 102.0 * scale),
-                    1.0 * scale,
+                    Vec2(score_card_pos.x + 8.0, panel_layout.top_left.y + 102.0),
                     rl.Color(200, 200, 200, 255),
                 )
 
-            card_y = var_c_12 + 16.0 * scale
+            card_y = var_c_12 + 16.0
             self._draw_name_entry_stats(
                 pos=Vec2(score_card_pos.x, card_y),
-                scale=scale,
                 alpha=1.0,
                 show_weapon_row=False,
                 resources=resources,
@@ -785,46 +763,41 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             # Unlock lines (their presence shifts the buttons down in native).
-            var_c_14 = var_c_12 + 84.0 * scale
+            var_c_14 = var_c_12 + 84.0
             if self.unlock_weapon_name:
                 self._draw_small(
                     font,
                     "Weapon unlocked:",
-                    Vec2(score_card_pos.x, var_c_14 + 1.0 * scale),
-                    1.0 * scale,
+                    Vec2(score_card_pos.x, var_c_14 + 1.0),
                     COLOR_TEXT_SUBTLE,
                 )
                 self._draw_small(
                     font,
                     self.unlock_weapon_name,
-                    Vec2(score_card_pos.x, var_c_14 + 14.0 * scale),
-                    1.0 * scale,
+                    Vec2(score_card_pos.x, var_c_14 + 14.0),
                     COLOR_TEXT,
                 )
-                var_c_14 += 30.0 * scale
+                var_c_14 += 30.0
             if self.unlock_perk_name:
                 self._draw_small(
                     font,
                     "Perk unlocked:",
-                    Vec2(score_card_pos.x, var_c_14 + 1.0 * scale),
-                    1.0 * scale,
+                    Vec2(score_card_pos.x, var_c_14 + 1.0),
                     COLOR_TEXT_SUBTLE,
                 )
                 self._draw_small(
                     font,
                     self.unlock_perk_name,
-                    Vec2(score_card_pos.x, var_c_14 + 14.0 * scale),
-                    1.0 * scale,
+                    Vec2(score_card_pos.x, var_c_14 + 14.0),
                     COLOR_TEXT,
                 )
-                var_c_14 += 30.0 * scale
+                var_c_14 += 30.0
 
             # Buttons
-            button_pos = Vec2(score_card_pos.x + 20.0 * scale, var_c_14 + 6.0 * scale)
+            button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
             play_next_w = button_width(
                 resources,
                 self._play_next_button.label,
-                scale=scale,
                 force_wide=self._play_next_button.force_wide,
             )
             button_draw(
@@ -832,13 +805,11 @@ class QuestResultsUi(msgspec.Struct):
                 self._play_next_button,
                 pos=button_pos,
                 width=play_next_w,
-                scale=scale,
             )
-            button_pos = button_pos.offset(dy=32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0)
             play_again_w = button_width(
                 resources,
                 self._play_again_button.label,
-                scale=scale,
                 force_wide=self._play_again_button.force_wide,
             )
             button_draw(
@@ -846,13 +817,11 @@ class QuestResultsUi(msgspec.Struct):
                 self._play_again_button,
                 pos=button_pos,
                 width=play_again_w,
-                scale=scale,
             )
-            button_pos = button_pos.offset(dy=32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0)
             high_scores_w = button_width(
                 resources,
                 self._high_scores_button.label,
-                scale=scale,
                 force_wide=self._high_scores_button.force_wide,
             )
             button_draw(
@@ -860,13 +829,11 @@ class QuestResultsUi(msgspec.Struct):
                 self._high_scores_button,
                 pos=button_pos,
                 width=high_scores_w,
-                scale=scale,
             )
-            button_pos = button_pos.offset(dy=32.0 * scale)
+            button_pos = button_pos.offset(dy=32.0)
             main_menu_w = button_width(
                 resources,
                 self._main_menu_button.label,
-                scale=scale,
                 force_wide=self._main_menu_button.force_wide,
             )
             button_draw(
@@ -874,7 +841,6 @@ class QuestResultsUi(msgspec.Struct):
                 self._main_menu_button,
                 pos=button_pos,
                 width=main_menu_w,
-                scale=scale,
             )
 
         draw_menu_cursor(

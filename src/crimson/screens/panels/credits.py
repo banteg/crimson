@@ -270,16 +270,16 @@ class CreditsView:
             return
         self._transition.begin(action)
 
-    def _panel_top_left(self, *, scale: float) -> Vec2:
+    def _panel_top_left(self) -> Vec2:
         return Vec2(
-            CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
-            CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+            CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X,
+            CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
         )
 
     @staticmethod
-    def _scroll_fraction_px(scroll_time_s: float, *, scale: float) -> float:
-        frac = scroll_time_s * (_TEXT_LINE_HEIGHT * scale)
-        line_h = _TEXT_LINE_HEIGHT * scale
+    def _scroll_fraction_px(scroll_time_s: float) -> float:
+        frac = scroll_time_s * _TEXT_LINE_HEIGHT
+        line_h = _TEXT_LINE_HEIGHT
         while frac > line_h:
             frac -= line_h
         return frac
@@ -295,14 +295,13 @@ class CreditsView:
         if self._line_max_index < self._scroll_line_end_index:
             self._scroll_line_end_index = self._line_max_index
 
-    def _panel_slide_x(self, *, scale: float) -> float:
-        panel_w = MENU_PANEL_WIDTH * scale
+    def _panel_slide_x(self) -> float:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
         return float(slide_x)
@@ -336,15 +335,14 @@ class CreditsView:
         y: float,
         base_y: float,
         visible_count: int,
-        scale: float,
     ) -> float:
-        fade_px = _TEXT_FADE_PX * scale
-        top = base_y + (8.0 * scale)
+        fade_px = _TEXT_FADE_PX
+        top = base_y + 8.0
         alpha = 1.0
         if y < top:
             alpha = 1.0 - ((top - y) / fade_px)
         else:
-            bottom = base_y + (float(visible_count - 1) * (_TEXT_LINE_HEIGHT * scale)) - fade_px
+            bottom = base_y + (float(visible_count - 1) * _TEXT_LINE_HEIGHT) - fade_px
             if y > bottom:
                 alpha = ((bottom - y) / fade_px) + 1.0
         if alpha < 0.0:
@@ -357,7 +355,6 @@ class CreditsView:
         self,
         *,
         panel_top_left: Vec2,
-        scale: float,
         font: SmallFontData,
         mouse: rl.Vector2,
         click: bool,
@@ -366,9 +363,9 @@ class CreditsView:
         if visible_count <= 0 or not click:
             return
 
-        base_y = panel_top_left.y + (_TEXT_BASE_Y * scale)
-        frac_px = self._scroll_fraction_px(self._scroll_time_s, scale=scale)
-        center_x = panel_top_left.x + ((_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X) * scale)
+        base_y = panel_top_left.y + _TEXT_BASE_Y
+        frac_px = self._scroll_fraction_px(self._scroll_time_s)
+        center_x = panel_top_left.x + (_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X)
 
         for row in range(visible_count):
             index = self._scroll_line_start_index + row
@@ -377,13 +374,13 @@ class CreditsView:
             line = self._lines[index]
             text_w = measure_small_text_width(font, line.text)
             x = center_x - (text_w * 0.5)
-            y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
+            y = base_y + (float(row) * _TEXT_LINE_HEIGHT) - frac_px
             if not self._mouse_inside_rect(
                 mouse,
                 x=x,
                 y=y,
                 w=text_w,
-                h=_TEXT_RECT_H * scale,
+                h=_TEXT_RECT_H,
             ):
                 continue
 
@@ -433,16 +430,14 @@ class CreditsView:
         if not interactive:
             return
 
-        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
-        slide_x = self._panel_slide_x(scale=scale)
-        panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
+        slide_x = self._panel_slide_x()
+        panel_top_left = self._panel_top_left().offset(dx=slide_x)
         resources = require_runtime_resources(self.state)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         self._update_line_clicks(
             panel_top_left=panel_top_left,
-            scale=scale,
             font=resources.small_font,
             mouse=mouse,
             click=click,
@@ -451,10 +446,10 @@ class CreditsView:
 
         dt_ms_f = dt_clamped * 1000.0
 
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
-            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
             width=back_w,
             dt_ms=dt_ms_f,
             mouse=mouse,
@@ -469,12 +464,11 @@ class CreditsView:
             secret_w = button_width(
                 resources,
                 self._secret_button.label,
-                scale=scale,
                 force_wide=self._secret_button.force_wide,
             )
             if button_update(
                 self._secret_button,
-                pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
+                pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
                 width=secret_w,
                 dt_ms=dt_ms_f,
                 mouse=mouse,
@@ -492,15 +486,14 @@ class CreditsView:
 
         resources = require_runtime_resources(self.state)
 
-        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
-        slide_x = self._panel_slide_x(scale=scale)
-        panel_top_left = self._panel_top_left(scale=scale).offset(dx=slide_x)
+        slide_x = self._panel_slide_x()
+        panel_top_left = self._panel_top_left().offset(dx=slide_x)
 
         dst = rl.Rectangle(
             panel_top_left.x,
             panel_top_left.y,
-            MENU_PANEL_WIDTH * scale,
-            CREDITS_PANEL_HEIGHT * scale,
+            MENU_PANEL_WIDTH,
+            CREDITS_PANEL_HEIGHT,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(
@@ -514,49 +507,46 @@ class CreditsView:
         draw_small_text(
             font,
             "credits",
-            panel_top_left + Vec2(_TITLE_X * scale, _TITLE_Y * scale),
+            panel_top_left + Vec2(_TITLE_X, _TITLE_Y),
             rl.Color(255, 255, 255, 255),
         )
 
         visible_count = self._scroll_line_end_index - self._scroll_line_start_index
         if visible_count > 0:
-            base_y = panel_top_left.y + (_TEXT_BASE_Y * scale)
-            frac_px = self._scroll_fraction_px(self._scroll_time_s, scale=scale)
-            center_x = panel_top_left.x + ((_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X) * scale)
+            base_y = panel_top_left.y + _TEXT_BASE_Y
+            frac_px = self._scroll_fraction_px(self._scroll_time_s)
+            center_x = panel_top_left.x + (_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X)
 
             for row in range(visible_count):
                 index = self._scroll_line_start_index + row
                 if index < 0 or index >= len(self._lines):
                     continue
                 line = self._lines[index]
-                y = base_y + (float(row) * (_TEXT_LINE_HEIGHT * scale)) - frac_px
-                alpha = self._line_alpha(y=y, base_y=base_y, visible_count=visible_count, scale=scale)
+                y = base_y + (float(row) * _TEXT_LINE_HEIGHT) - frac_px
+                alpha = self._line_alpha(y=y, base_y=base_y, visible_count=visible_count)
                 color = self._line_color(line.flags, alpha=alpha)
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
-            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
             width=back_w,
-            scale=scale,
         )
 
         if self._secret_button_visible():
             secret_w = button_width(
                 resources,
                 self._secret_button.label,
-                scale=scale,
                 force_wide=self._secret_button.force_wide,
             )
             button_draw(
                 resources,
                 self._secret_button,
-                pos=panel_top_left + Vec2(_SECRET_BUTTON_X * scale, _SECRET_BUTTON_Y * scale),
+                pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
                 width=secret_w,
-                scale=scale,
             )
 
         draw_menu_sign(

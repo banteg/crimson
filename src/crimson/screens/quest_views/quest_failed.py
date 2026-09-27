@@ -124,17 +124,15 @@ class QuestFailedView:
         panel_top_left = self._panel_top_left()
         if outcome is None:
             return
-        scale = 1.0
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         resources = require_runtime_resources(self.state)
-        button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET * scale, QUEST_FAILED_BUTTON_Y_OFFSET * scale)
+        button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
         retry_w = button_width(
             resources,
             self._retry_button.label,
-            scale=scale,
             force_wide=self._retry_button.force_wide,
         )
         if button_update(
@@ -147,12 +145,11 @@ class QuestFailedView:
         ):
             self._activate_retry()
             return
-        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         play_another_w = button_width(
             resources,
             self._quest_list_button.label,
-            scale=scale,
             force_wide=self._quest_list_button.force_wide,
         )
         if button_update(
@@ -165,12 +162,11 @@ class QuestFailedView:
         ):
             self._activate_play_another()
             return
-        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         main_menu_w = button_width(
             resources,
             self._main_menu_button.label,
-            scale=scale,
             force_wide=self._main_menu_button.force_wide,
         )
         if button_update(
@@ -221,22 +217,19 @@ class QuestFailedView:
         )
         self._draw_score_preview(font, panel_top_left=panel_top_left)
 
-        scale = 1.0
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
         retry_w = button_width(
             resources,
             self._retry_button.label,
-            scale=scale,
             force_wide=self._retry_button.force_wide,
         )
-        button_draw(resources, self._retry_button, pos=button_pos, width=retry_w, scale=scale)
+        button_draw(resources, self._retry_button, pos=button_pos, width=retry_w)
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         play_another_w = button_width(
             resources,
             self._quest_list_button.label,
-            scale=scale,
             force_wide=self._quest_list_button.force_wide,
         )
         button_draw(
@@ -244,14 +237,12 @@ class QuestFailedView:
             self._quest_list_button,
             pos=button_pos,
             width=play_another_w,
-            scale=scale,
         )
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         main_menu_w = button_width(
             resources,
             self._main_menu_button.label,
-            scale=scale,
             force_wide=self._main_menu_button.force_wide,
         )
         button_draw(
@@ -259,7 +250,6 @@ class QuestFailedView:
             self._main_menu_button,
             pos=button_pos,
             width=main_menu_w,
-            scale=scale,
         )
 
         draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
@@ -362,8 +352,7 @@ class QuestFailedView:
         self._closing = True
         self._close_action = action
 
-    def _text_width(self, text: str, scale: float) -> float:
-        del scale
+    def _text_width(self, text: str) -> float:
         return float(measure_small_text_width(require_runtime_resources(self.state).small_font, text))
 
     def _draw_score_preview(self, font: SmallFontData, *, panel_top_left: Vec2) -> None:
@@ -379,11 +368,11 @@ class QuestFailedView:
         separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
 
         score_label = "Score"
-        score_label_w = self._text_width(score_label, 1.0)
+        score_label_w = self._text_width(score_label)
         draw_small_text(font, score_label, score_pos.offset(dx=32.0 - score_label_w * 0.5), label_color)
 
         score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
-        score_value_w = self._text_width(score_value, 1.0)
+        score_value_w = self._text_width(score_value)
         draw_small_text(font, score_value, score_pos + Vec2(32.0 - score_value_w * 0.5, 15.0), value_color)
 
         sep_pos = score_pos.offset(dx=80.0)
@@ -392,7 +381,7 @@ class QuestFailedView:
         col2_pos = score_pos.offset(dx=96.0)
         draw_small_text(font, "Experience", col2_pos, value_color)
         xp_value = f"{int(record.score_xp)}"
-        xp_w = self._text_width(xp_value, 1.0)
+        xp_w = self._text_width(xp_value)
         draw_small_text(font, xp_value, col2_pos + Vec2(32.0 - xp_w * 0.5, 15.0), label_color)
 
         # `highscore_card_draw_horizontal_divider`: 192px separator at x-16.

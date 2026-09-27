@@ -10,9 +10,9 @@ from ...tutorial import TutorialOverlayState
 TUTORIAL_PANEL_POS = Vec2(0.0, 64.0)
 TUTORIAL_PANEL_PADDING = Vec2(20.0, 8.0)
 
-DrawUiText = Callable[[str, Vec2, rl.Color, float], None]
-MeasureUiTextWidth = Callable[[str, float], float]
-MeasureUiLineHeight = Callable[[float], int]
+DrawUiText = Callable[[str, Vec2, rl.Color], None]
+MeasureUiTextWidth = Callable[[str], float]
+MeasureUiLineHeight = Callable[[], int]
 
 
 def tutorial_prompt_panel_rect(
@@ -21,18 +21,15 @@ def tutorial_prompt_panel_rect(
     measure_text_width: MeasureUiTextWidth,
     measure_line_height: MeasureUiLineHeight,
     pos: Vec2,
-    scale: float,
 ) -> tuple[rl.Rectangle, list[str], float]:
     lines = text.splitlines() if text else [""]
-    line_h = float(measure_line_height(scale))
+    line_h = float(measure_line_height())
     max_w = 0.0
     for line in lines:
-        max_w = max(max_w, float(measure_text_width(line, scale)))
+        max_w = max(max_w, float(measure_text_width(line)))
 
-    pad_x = TUTORIAL_PANEL_PADDING.x * scale
-    pad_y = TUTORIAL_PANEL_PADDING.y * scale
-    width = max_w + pad_x * 2.0
-    height = float(len(lines)) * line_h + pad_y * 2.0
+    width = max_w + TUTORIAL_PANEL_PADDING.x * 2.0
+    height = float(len(lines)) * line_h + TUTORIAL_PANEL_PADDING.y * 2.0
     screen_w = float(rl.get_screen_width())
     x = (screen_w - width) * 0.5
     rect = rl.Rectangle(float(x), pos.y, float(width), float(height))
@@ -55,7 +52,6 @@ def draw_tutorial_prompt_panel(
         measure_text_width=measure_text_width,
         measure_line_height=measure_line_height,
         pos=pos,
-        scale=1.0,
     )
     fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
     border = rl.Color(255, 255, 255, int(255 * alpha))
@@ -67,7 +63,7 @@ def draw_tutorial_prompt_panel(
     x = rect.x + TUTORIAL_PANEL_PADDING.x
     line_y = rect.y + TUTORIAL_PANEL_PADDING.y
     for line in lines:
-        draw_text(line, Vec2(x, line_y), color, 1.0)
+        draw_text(line, Vec2(x, line_y), color)
         line_y += line_h
 
 

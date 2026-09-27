@@ -102,9 +102,8 @@ class EndNoteView:
         if not enabled:
             return
 
-        scale = 1.0
         panel_top_left = self._panel_top_left()
-        button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
+        button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET, END_NOTE_BUTTON_Y_OFFSET)
 
         resources = require_runtime_resources(self.state)
         mouse = rl.get_mouse_position()
@@ -113,7 +112,6 @@ class EndNoteView:
         survival_w = button_width(
             resources,
             self._survival_button.label,
-            scale=scale,
             force_wide=self._survival_button.force_wide,
         )
         if button_update(
@@ -128,8 +126,8 @@ class EndNoteView:
             self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.SURVIVAL))
             return
 
-        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        rush_w = button_width(resources, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
+        rush_w = button_width(resources, self._rush_button.label, force_wide=self._rush_button.force_wide)
         if button_update(
             self._rush_button,
             pos=button_pos,
@@ -142,8 +140,8 @@ class EndNoteView:
             self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.RUSH))
             return
 
-        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        typo_w = button_width(resources, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
+        typo_w = button_width(resources, self._typo_button.label, force_wide=self._typo_button.force_wide)
         if button_update(
             self._typo_button,
             pos=button_pos,
@@ -156,11 +154,10 @@ class EndNoteView:
             self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.TYPO), fade_to_black=True)
             return
 
-        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
         main_w = button_width(
             resources,
             self._main_menu_button.label,
-            scale=scale,
             force_wide=self._main_menu_button.force_wide,
         )
         if button_update(
@@ -180,13 +177,12 @@ class EndNoteView:
 
         resources = require_runtime_resources(self.state)
 
-        scale = 1.0
         panel_top_left = self._panel_top_left()
         panel = rl.Rectangle(
             panel_top_left.x,
             panel_top_left.y,
-            float(END_NOTE_PANEL_W * scale),
-            float(END_NOTE_PANEL_H * scale),
+            float(END_NOTE_PANEL_W),
+            float(END_NOTE_PANEL_H),
         )
 
         shadows_enabled = self.state.config.display.shadows_enabled
@@ -222,42 +218,40 @@ class EndNoteView:
             ]
         )
 
-        header_pos = panel_top_left + Vec2(END_NOTE_HEADER_X_OFFSET * scale, END_NOTE_HEADER_Y_OFFSET * scale)
+        header_pos = panel_top_left + Vec2(END_NOTE_HEADER_X_OFFSET, END_NOTE_HEADER_Y_OFFSET)
         header_color = rl.Color(255, 255, 255, int(255 * 0.8))
         body_color = rl.Color(255, 255, 255, int(255 * 0.5))
 
         draw_small_text(font, header, header_pos, header_color)
 
-        body_pos = Vec2(panel_top_left.x + END_NOTE_BODY_X_OFFSET * scale, header_pos.y + END_NOTE_BODY_Y_GAP * scale)
+        body_pos = Vec2(panel_top_left.x + END_NOTE_BODY_X_OFFSET, header_pos.y + END_NOTE_BODY_Y_GAP)
         for idx, line in enumerate(body_lines):
             draw_small_text(font, line, body_pos, body_color)
             if idx != len(body_lines) - 1:
-                body_pos = body_pos.offset(dy=END_NOTE_LINE_STEP_Y * scale)
-        body_pos = body_pos.offset(dy=END_NOTE_AFTER_BODY_Y_GAP * scale)
+                body_pos = body_pos.offset(dy=END_NOTE_LINE_STEP_Y)
+        body_pos = body_pos.offset(dy=END_NOTE_AFTER_BODY_Y_GAP)
         draw_small_text(font, "Good luck with your battles, trooper!", body_pos, body_color)
 
-        button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET * scale, END_NOTE_BUTTON_Y_OFFSET * scale)
+        button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET, END_NOTE_BUTTON_Y_OFFSET)
         survival_w = button_width(
             resources,
             self._survival_button.label,
-            scale=scale,
             force_wide=self._survival_button.force_wide,
         )
-        button_draw(resources, self._survival_button, pos=button_pos, width=survival_w, scale=scale)
-        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        rush_w = button_width(resources, self._rush_button.label, scale=scale, force_wide=self._rush_button.force_wide)
-        button_draw(resources, self._rush_button, pos=button_pos, width=rush_w, scale=scale)
-        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
-        typo_w = button_width(resources, self._typo_button.label, scale=scale, force_wide=self._typo_button.force_wide)
-        button_draw(resources, self._typo_button, pos=button_pos, width=typo_w, scale=scale)
-        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y * scale)
+        button_draw(resources, self._survival_button, pos=button_pos, width=survival_w)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
+        rush_w = button_width(resources, self._rush_button.label, force_wide=self._rush_button.force_wide)
+        button_draw(resources, self._rush_button, pos=button_pos, width=rush_w)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
+        typo_w = button_width(resources, self._typo_button.label, force_wide=self._typo_button.force_wide)
+        button_draw(resources, self._typo_button, pos=button_pos, width=typo_w)
+        button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
         main_w = button_width(
             resources,
             self._main_menu_button.label,
-            scale=scale,
             force_wide=self._main_menu_button.force_wide,
         )
-        button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w, scale=scale)
+        button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w)
 
         draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
 

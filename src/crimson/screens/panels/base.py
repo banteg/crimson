@@ -19,7 +19,6 @@ from crimson.ui.menu_layout import (
     MENU_PANEL_OFFSET_X,
     MENU_PANEL_OFFSET_Y,
     MENU_PANEL_WIDTH,
-    MENU_SCALE_SMALL_THRESHOLD,
     MenuEntry,
     back_button_scale,
     label_alpha,
@@ -213,19 +212,16 @@ class PanelMenuView:
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=MENU_PANEL_WIDTH * self._panel_scale(),
+            width=MENU_PANEL_WIDTH,
         )
-        item_scale = self._panel_scale()
-        panel_w = MENU_PANEL_WIDTH * item_scale
-        panel_h = float(self._panel_height) * item_scale
         panel_top_left = (
             Vec2(
                 self._panel_pos.x + slide_x,
                 self._panel_pos.y + self._widescreen_y_shift,
             )
-            + self._panel_offset * item_scale
+            + self._panel_offset
         )
-        dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, float(panel_w), float(panel_h))
+        dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, MENU_PANEL_WIDTH, float(self._panel_height))
         shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
 
@@ -314,11 +310,6 @@ class PanelMenuView:
         mouse = rl.get_mouse_position()
         mouse_pos = Vec2.from_xy(mouse)
         return self._menu_item_bounds(entry).contains(mouse_pos)
-
-    def _panel_scale(self) -> float:
-        # Not native: ui_menu_layout_init never scales panels. Panel contents are
-        # laid out against this scale until they move to native coordinates.
-        return 0.9 if self._menu_screen_width <= MENU_SCALE_SMALL_THRESHOLD else 1.0
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)

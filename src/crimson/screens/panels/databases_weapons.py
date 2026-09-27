@@ -37,16 +37,16 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         # state_15: ui_buttonSm bbox [270,507]..[352,539] => relative to left panel (-98,194): (368, 313)
         return Vec2(368.0, 313.0)
 
-    def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
+    def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, font: SmallFontData) -> None:
         left = left_top_left
         right = right_top_left
         detail_shift_x = weapons_db_right_detail_x_shift(float(self.state.config.display.width))
-        detail_top_left = right + Vec2(detail_shift_x * scale, 0.0)
+        detail_top_left = right + Vec2(detail_shift_x, 0.0)
         dim_color = rl.Color(255, 255, 255, int(255 * 0.7))
         text_color = rl.WHITE
 
         # state_15 title at (153,244) => relative to left panel (-98,194): (251,50)
-        title_pos = left + Vec2(251.0 * scale, 50.0 * scale)
+        title_pos = left + Vec2(251.0, 50.0)
         title_text = "Unlocked Weapons Database"
         draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
         title_w = measure_small_text_width(font, title_text)
@@ -54,9 +54,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         rl.draw_rectangle_lines_ex(
             rl.Rectangle(
                 title_pos.x,
-                title_pos.y + 13.0 * scale,
+                title_pos.y + 13.0,
                 title_w,
-                max(1.0, 1.0 * scale),
+                1.0,
             ),
             1.0,
             rl.Color(255, 255, 255, int(255 * 0.5)),
@@ -65,26 +65,26 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         weapon_ids = self._weapon_ids
         count = len(weapon_ids)
         weapon_label = "weapon" if count == 1 else "weapons"
-        draw_small_text(font, f"{count} {weapon_label} in database", left + Vec2(210.0 * scale, 80.0 * scale), dim_color)
-        draw_small_text(font, "Weapon", left + Vec2(210.0 * scale, 108.0 * scale), text_color)
+        draw_small_text(font, f"{count} {weapon_label} in database", left + Vec2(210.0, 80.0), dim_color)
+        draw_small_text(font, "Weapon", left + Vec2(210.0, 108.0), text_color)
 
         # Oracle frame: outer [114,322]-[364,486], inner [115,323]-[363,485].
-        frame_x = left.x + 212.0 * scale
-        frame_y = left.y + 128.0 * scale
-        frame_w = 250.0 * scale
-        frame_h = 164.0 * scale
+        frame_x = left.x + 212.0
+        frame_y = left.y + 128.0
+        frame_w = 250.0
+        frame_h = 164.0
         rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
         rl.draw_rectangle(
-            int(round(frame_x + 1.0 * scale)),
-            int(round(frame_y + 1.0 * scale)),
-            max(0, int(round(frame_w - 2.0 * scale))),
-            max(0, int(round(frame_h - 2.0 * scale))),
+            int(round(frame_x + 1.0)),
+            int(round(frame_y + 1.0)),
+            max(0, int(round(frame_w - 2.0))),
+            max(0, int(round(frame_h - 2.0))),
             rl.BLACK,
         )
 
         # Oracle list widget is 10 rows tall.
-        list_top_left = left + Vec2(218.0 * scale, 130.0 * scale)
-        row_step = 16.0 * scale
+        list_top_left = left + Vec2(218.0, 130.0)
+        row_step = 16.0
         visible_rows = 10
         max_scroll = max(0, len(weapon_ids) - visible_rows)
         start = max(0, min(max_scroll, int(self._list_scroll_index)))
@@ -102,10 +102,10 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         name, icon_index = self._weapon_label_and_icon(weapon_id)
         weapon = self._weapon_entry(weapon_id)
         weapon_no_label = "wepno"
-        draw_small_text(font, f"{weapon_no_label} #{weapon_id}", detail_top_left + Vec2(240.0 * scale, 32.0 * scale), rl.Color(255, 255, 255, int(255 * 0.4)))
-        draw_small_text(font, name, detail_top_left + Vec2(50.0 * scale, 50.0 * scale), text_color)
+        draw_small_text(font, f"{weapon_no_label} #{weapon_id}", detail_top_left + Vec2(240.0, 32.0), rl.Color(255, 255, 255, int(255 * 0.4)))
+        draw_small_text(font, name, detail_top_left + Vec2(50.0, 50.0), text_color)
         if icon_index is not None:
-            self._draw_wicon(icon_index, pos=detail_top_left + Vec2(82.0 * scale, 82.0 * scale), scale=scale)
+            self._draw_wicon(icon_index, pos=detail_top_left + Vec2(82.0, 82.0))
 
         reload_time = weapon.reload_time
         clip_size = weapon.clip_size
@@ -115,11 +115,11 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             firerate_text = f"{firerate_label}: n/a"
         else:
             firerate_text = f"{firerate_label}: {self._weapon_rpm(weapon)} rpm"
-        draw_small_text(font, firerate_text, detail_top_left + Vec2(66.0 * scale, 128.0 * scale), text_color)
-        draw_small_text(font, f"Reload time: {reload_time:.1f} secs", detail_top_left + Vec2(66.0 * scale, 146.0 * scale), text_color)
-        draw_small_text(font, f"Clip size: {clip_size}", detail_top_left + Vec2(66.0 * scale, 164.0 * scale), text_color)
+        draw_small_text(font, firerate_text, detail_top_left + Vec2(66.0, 128.0), text_color)
+        draw_small_text(font, f"Reload time: {reload_time:.1f} secs", detail_top_left + Vec2(66.0, 146.0), text_color)
+        draw_small_text(font, f"Clip size: {clip_size}", detail_top_left + Vec2(66.0, 164.0), text_color)
 
-    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+    def _update_content_interaction(self, *, left_top_left: Vec2, mouse: rl.Vector2) -> None:
         weapon_ids = self._weapon_ids
         if not weapon_ids:
             self._selected_weapon_id = None
@@ -138,16 +138,16 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             self._selected_weapon_id = None
             return
 
-        row_step = 16.0 * scale
-        list_hit_x = left_top_left.x + 214.0 * scale
-        list_hit_y = left_top_left.y + 128.0 * scale
-        list_hit_w = 246.0 * scale
-        list_hit_h = min(160.0 * scale, row_step * float(row_count))
+        row_step = 16.0
+        list_hit_x = left_top_left.x + 214.0
+        list_hit_y = left_top_left.y + 128.0
+        list_hit_w = 246.0
+        list_hit_h = min(160.0, row_step * float(row_count))
         if (
             list_hit_x <= mouse.x < list_hit_x + list_hit_w
             and list_hit_y <= mouse.y < list_hit_y + list_hit_h
         ):
-            list_text_top = left_top_left.y + 130.0 * scale
+            list_text_top = left_top_left.y + 130.0
             row = int((mouse.y - list_text_top) // row_step)
             if 0 <= row < row_count:
                 self._selected_weapon_id = int(weapon_ids[start + row])
@@ -194,7 +194,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
     def _weapon_rpm(self, weapon: Weapon) -> int:
         return int(60.0 / float(weapon.shot_cooldown))
 
-    def _draw_wicon(self, icon_index: int, *, pos: Vec2, scale: float) -> None:
+    def _draw_wicon(self, icon_index: int, *, pos: Vec2) -> None:
         tex = require_runtime_resources(self.state).texture(TextureId.UI_WICONS)
         idx = int(icon_index)
         if idx < 0 or idx > 31:
@@ -210,7 +210,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         rl.draw_texture_pro(
             tex,
             rl.Rectangle(src_x, src_y, icon_w, icon_h),
-            rl.Rectangle(pos.x, pos.y, icon_w * scale, icon_h * scale),
+            rl.Rectangle(pos.x, pos.y, icon_w, icon_h),
             rl.Vector2(0.0, 0.0),
             0.0,
             rl.WHITE,

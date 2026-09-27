@@ -86,11 +86,7 @@ def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuV
 
 
 def _click_reset(view: ControlsMenuView, mocker: MockerFixture) -> None:
-    panel_scale = view._panel_scale()
-    pos, width = view._reset_button_layout(
-        left_top_left=view._left_panel_top_left(panel_scale),
-        panel_scale=panel_scale,
-    )
+    pos, width = view._reset_button_layout(left_top_left=view._left_panel_top_left())
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(pos.x + width * 0.5, pos.y + 16.0))
     mocker.patch.object(
         rl,

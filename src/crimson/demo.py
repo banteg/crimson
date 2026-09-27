@@ -273,11 +273,9 @@ class DemoView:
 
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        scale = 1.0
         button_w = button_width(
             resources,
             self._purchase_button.label,
-            scale=scale,
             force_wide=self._purchase_button.force_wide,
         )
         purchase_requested = button_update(
@@ -398,20 +396,17 @@ class DemoView:
         # Buttons on the right.
         button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
         button_base_pos = Vec2(screen_w / 2.0 + 128.0, button_base_y + 50.0)
-        scale = 1.0
         button_w = button_width(
             resources,
             self._purchase_button.label,
-            scale=scale,
             force_wide=self._purchase_button.force_wide,
         )
-        button_draw(resources, self._purchase_button, pos=button_base_pos, width=button_w, scale=scale)
+        button_draw(resources, self._purchase_button, pos=button_base_pos, width=button_w)
         button_draw(
             resources,
             self._maybe_later_button,
             pos=button_base_pos.offset(dy=40.0),
             width=button_w,
-            scale=scale,
         )
 
         # Demo purchase screen uses menu-style cursor; draw it explicitly since the OS cursor is hidden.

@@ -80,9 +80,8 @@ class PerkPromptUi:
         label: str,
         timer_ms: float,
         pulse: float,
-        ui_text_width: Callable[[str, float], int],
+        ui_text_width: Callable[[str], int],
         text_color: rl.Color,
-        scale: float = 1.0,
     ) -> None:
         alpha = float(timer_ms) / PERK_PROMPT_MAX_TIMER_MS
         if alpha <= 1e-3:
@@ -93,12 +92,11 @@ class PerkPromptUi:
         rot_deg = -(1.0 - alpha) * 90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
-        text_scale = float(scale)
-        text_w = float(ui_text_width(label, text_scale))
+        text_w = float(ui_text_width(label))
         x = float(rl.get_screen_width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
         y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
         color = rl.Color(int(text_color.r), int(text_color.g), int(text_color.b), int(255 * alpha))
-        draw_ui_text(resources, label, Vec2(x, y), scale=text_scale, color=color)
+        draw_ui_text(resources, label, Vec2(x, y), color=color)
 
         tex = resources.texture(TextureId.UI_MENU_ITEM)
         bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE

@@ -15,7 +15,6 @@ from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 
 
 class _ModsContentLayout(msgspec.Struct, frozen=True):
-    scale: float
     base_pos: Vec2
     label_pos: Vec2
 
@@ -30,25 +29,23 @@ class ModsMenuView(PanelMenuView):
         self._lines = self._build_lines()
 
     def _content_layout(self) -> _ModsContentLayout:
-        panel_scale = self._panel_scale()
-        panel_w = MENU_PANEL_WIDTH * panel_scale
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (
             Vec2(
                 self._panel_pos.x + slide_x,
                 self._panel_pos.y + self._widescreen_y_shift,
             )
-            + self._panel_offset * panel_scale
+            + self._panel_offset
         )
-        base_pos = panel_top_left + Vec2(212.0 * panel_scale, 32.0 * panel_scale)
-        label_pos = base_pos.offset(dx=8.0 * panel_scale)
-        return _ModsContentLayout(scale=panel_scale, base_pos=base_pos, label_pos=label_pos)
+        base_pos = panel_top_left + Vec2(212.0, 32.0)
+        label_pos = base_pos.offset(dx=8.0)
+        return _ModsContentLayout(base_pos=base_pos, label_pos=label_pos)
 
     def _build_lines(self) -> list[str]:
         mods_dir = self.state.base_dir / "mods"
@@ -81,15 +78,14 @@ class ModsMenuView(PanelMenuView):
         layout = self._content_layout()
         base_pos = layout.base_pos
         label_pos = layout.label_pos
-        scale = layout.scale
 
         font = require_runtime_resources(self.state).small_font
         title_color = rl.Color(255, 255, 255, 255)
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
         draw_small_text(font, "MODS", base_pos, title_color)
-        line_pos = label_pos.offset(dy=44.0 * scale)
-        line_step = (font.cell_size + 4.0) * scale
+        line_pos = label_pos.offset(dy=44.0)
+        line_step = font.cell_size + 4.0
         for line in self._lines:
             draw_small_text(font, line, line_pos, text_color)
             line_pos = line_pos.offset(dy=line_step)

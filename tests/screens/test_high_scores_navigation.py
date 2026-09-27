@@ -63,7 +63,7 @@ def test_refresh_keeps_query_and_saves_changed_preferences(scores_view, screen_r
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(HS_QUEST_ARROW_X + 1, HS_QUEST_ARROW_Y + 1))
     # The arrow handler applies the same query/config mutation as an actual click.
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
-    assert view._update_quest_arrows(left_panel_top_left=Vec2(), scale=1.0, resources=screen_resources)
+    assert view._update_quest_arrows(left_panel_top_left=Vec2(), resources=screen_resources)
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(-1000, -1000))
     query = view._request

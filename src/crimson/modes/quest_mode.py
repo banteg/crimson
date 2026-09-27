@@ -45,7 +45,6 @@ from .components.perk_prompt_controller import PerkPromptState
 
 WORLD_SIZE = 1024.0
 
-UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -430,8 +429,8 @@ class QuestMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             god = "on" if self.state.debug_god_mode else "off"
-            line = float(self._ui_line_height(scale=0.9))
-            self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR, scale=0.9)
+            line = float(self._ui_line_height())
+            self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR)
             overlay_end_y = y + line
             debug_overlay_height = max(0.0, float(overlay_end_y) - float(y))
 
@@ -446,7 +445,6 @@ class QuestMode(BaseGameplayMode):
             config=self.config,
             ui_text_width=self._ui_text_width,
             text_color=UI_TEXT_COLOR,
-            prompt_scale=UI_TEXT_SCALE,
         )
         self._perk_menu.draw(
             self._perk_menu_ui_context(),

@@ -14,7 +14,7 @@ from ...input_codes import (
 from .perk_menu_controller import PerkMenuUiContext
 from .perk_prompt_ui import PERK_PROMPT_MAX_TIMER_MS, PerkPromptUi
 
-UiTextWidthFn = Callable[[str, float], int]
+UiTextWidthFn = Callable[[str], int]
 
 
 @dataclass(slots=True)
@@ -84,7 +84,6 @@ class PerkPromptState:
         config: CrimsonConfig,
         ui_text_width: UiTextWidthFn,
         text_color,
-        prompt_scale: float = 1.0,
     ) -> None:
         if menu_active or (not any_alive):
             return
@@ -100,7 +99,6 @@ class PerkPromptState:
             pulse=float(self.pulse),
             ui_text_width=ui_text_width,
             text_color=text_color,
-            scale=float(prompt_scale),
         )
 
     def _prompt_open_requested(self, *, config: CrimsonConfig, player_count: int) -> bool:

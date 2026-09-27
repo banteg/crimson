@@ -108,20 +108,19 @@ def _draw_dropdown(
     arrow_pos: Vec2,
     is_open: bool,
     enabled: bool,
-    scale: float,
 ) -> None:
     item_count = max(0, len(items))
-    header_h = 16.0 * scale
-    row_h = 16.0 * scale
-    full_h = (float(item_count) * 16.0 + 24.0) * scale
-    rows_y0 = widget_pos.y + 17.0 * scale
+    header_h = 16.0
+    row_h = 16.0
+    full_h = float(item_count) * 16.0 + 24.0
+    rows_y0 = widget_pos.y + 17.0
 
     mouse = rl.get_mouse_position()
     hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
         mouse,
         pos=widget_pos,
         width=widget_w,
-        height=14.0 * scale,
+        height=14.0,
     )
 
     widget_h = full_h if is_open else header_h
@@ -135,12 +134,11 @@ def _draw_dropdown(
     )
 
     if (is_open or hovered_header) and enabled:
-        line_h = max(1, int(1.0 * scale))
         rl.draw_rectangle(
             int(widget_pos.x),
-            int(widget_pos.y + 15.0 * scale),
+            int(widget_pos.y + 15.0),
             int(widget_w),
-            line_h,
+            1,
             rl.Color(255, 255, 255, 128),
         )
 
@@ -149,8 +147,8 @@ def _draw_dropdown(
         if ((is_open or hovered_header) and enabled)
         else resources.texture(TextureId.UI_DROP_OFF)
     )
-    arrow_w = float(arrow_tex.width) * scale
-    arrow_h = float(arrow_tex.height) * scale
+    arrow_w = float(arrow_tex.width)
+    arrow_h = float(arrow_tex.height)
     rl.draw_texture_pro(
         arrow_tex,
         rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
@@ -176,7 +174,7 @@ def _draw_dropdown(
             mouse,
             pos=Vec2(widget_pos.x, item_y),
             width=widget_w,
-            height=14.0 * scale,
+            height=14.0,
         )
         alpha = 153
         if hovered:
@@ -192,7 +190,6 @@ def draw_right_panel(
     resources: RuntimeResources,
     font: SmallFontData,
     right_top_left: Vec2,
-    scale: float,
     highlight_rank: int | None,
 ) -> None:
     if highlight_rank is None:
@@ -201,7 +198,6 @@ def draw_right_panel(
             resources=resources,
             font=font,
             right_top_left=right_top_left,
-            scale=scale,
         )
         return
     _draw_right_panel_local_score(
@@ -209,7 +205,6 @@ def draw_right_panel(
         resources=resources,
         font=font,
         right_top_left=right_top_left,
-        scale=scale,
         highlight_rank=highlight_rank,
     )
 
@@ -220,10 +215,9 @@ def _draw_right_panel_quest_options(
     resources: RuntimeResources,
     font: SmallFontData,
     right_top_left: Vec2,
-    scale: float,
 ) -> None:
     options_shift_x = hs_right_options_x_shift(float(view.state.config.display.width))
-    options_top_left = right_top_left + Vec2(options_shift_x * scale, 0.0)
+    options_top_left = right_top_left + Vec2(options_shift_x, 0.0)
     text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
     # Checkbox: "Show internet scores"
@@ -232,14 +226,14 @@ def _draw_right_panel_quest_options(
         if view.state.config.profile.show_internet_scores
         else resources.texture(TextureId.UI_CHECK_OFF)
     )
-    check_w = float(check_tex.width) * scale
-    check_h = float(check_tex.height) * scale
+    check_w = float(check_tex.width)
+    check_h = float(check_tex.height)
     rl.draw_texture_pro(
         check_tex,
         rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
         rl.Rectangle(
-            options_top_left.x + HS_RIGHT_CHECK_X * scale,
-            options_top_left.y + HS_RIGHT_CHECK_Y * scale,
+            options_top_left.x + HS_RIGHT_CHECK_X,
+            options_top_left.y + HS_RIGHT_CHECK_Y,
             check_w,
             check_h,
         ),
@@ -250,31 +244,31 @@ def _draw_right_panel_quest_options(
     draw_small_text(
         font,
         "Show internet scores",
-        options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X * scale, HS_RIGHT_SHOW_INTERNET_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X, HS_RIGHT_SHOW_INTERNET_Y),
         text_color,
     )
     draw_small_text(
         font,
         "Number of players",
-        options_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X * scale, HS_RIGHT_NUMBER_PLAYERS_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_NUMBER_PLAYERS_X, HS_RIGHT_NUMBER_PLAYERS_Y),
         text_color,
     )
     draw_small_text(
         font,
         "Game mode",
-        options_top_left + Vec2(HS_RIGHT_GAME_MODE_X * scale, HS_RIGHT_GAME_MODE_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_GAME_MODE_X, HS_RIGHT_GAME_MODE_Y),
         text_color,
     )
     draw_small_text(
         font,
         "Show scores:",
-        options_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X * scale, HS_RIGHT_SHOW_SCORES_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_SHOW_SCORES_X, HS_RIGHT_SHOW_SCORES_Y),
         text_color,
     )
     draw_small_text(
         font,
         "Selected score list:",
-        options_top_left + Vec2(HS_RIGHT_SCORE_LIST_X * scale, HS_RIGHT_SCORE_LIST_Y * scale),
+        options_top_left + Vec2(HS_RIGHT_SCORE_LIST_X, HS_RIGHT_SCORE_LIST_Y),
         text_color,
     )
 
@@ -346,15 +340,14 @@ def _draw_right_panel_quest_options(
         _draw_dropdown(
             resources=resources,
             font=font,
-            widget_pos=options_top_left + widget_offset * scale,
-            widget_w=widget_w * scale,
+            widget_pos=options_top_left + widget_offset,
+            widget_w=widget_w,
             items=items,
             selected_index=selected_index,
-            value_pos=options_top_left + value_offset * scale,
-            arrow_pos=options_top_left + arrow_offset * scale,
+            value_pos=options_top_left + value_offset,
+            arrow_pos=options_top_left + arrow_offset,
             is_open=is_open,
             enabled=bool(enabled),
-            scale=scale,
         )
     for is_open, widget_offset, widget_w, items, selected_index, value_offset, arrow_offset, enabled in dropdowns:
         if not is_open:
@@ -362,15 +355,14 @@ def _draw_right_panel_quest_options(
         _draw_dropdown(
             resources=resources,
             font=font,
-            widget_pos=options_top_left + widget_offset * scale,
-            widget_w=widget_w * scale,
+            widget_pos=options_top_left + widget_offset,
+            widget_w=widget_w,
             items=items,
             selected_index=selected_index,
-            value_pos=options_top_left + value_offset * scale,
-            arrow_pos=options_top_left + arrow_offset * scale,
+            value_pos=options_top_left + value_offset,
+            arrow_pos=options_top_left + arrow_offset,
             is_open=is_open,
             enabled=bool(enabled),
-            scale=scale,
         )
 
 
@@ -380,11 +372,10 @@ def _draw_right_panel_local_score(
     resources: RuntimeResources,
     font: SmallFontData,
     right_top_left: Vec2,
-    scale: float,
     highlight_rank: int | None,
 ) -> None:
     local_shift_x = hs_right_local_card_x_shift(float(view.state.config.display.width))
-    card_top_left = right_top_left + Vec2(local_shift_x * scale, 0.0)
+    card_top_left = right_top_left + Vec2(local_shift_x, 0.0)
     if not view._records:
         return
     idx = int(highlight_rank) if highlight_rank is not None else int(view._scroll_index)
@@ -403,33 +394,33 @@ def _draw_right_panel_local_score(
     name = str(entry.name())
     if not name:
         name = "???"
-    draw_small_text(font, name, card_top_left + Vec2(HS_LOCAL_NAME_X * scale, HS_LOCAL_NAME_Y * scale), text_color)
+    draw_small_text(font, name, card_top_left + Vec2(HS_LOCAL_NAME_X, HS_LOCAL_NAME_Y), text_color)
     draw_small_text(
-        font, "Local score", card_top_left + Vec2(HS_LOCAL_LABEL_X * scale, HS_LOCAL_LABEL_Y * scale), text_color,
+        font, "Local score", card_top_left + Vec2(HS_LOCAL_LABEL_X, HS_LOCAL_LABEL_Y), text_color,
     )
     rl.draw_line(
-        int(card_top_left.x + 78.0 * scale),
-        int(card_top_left.y + 57.0 * scale),
-        int(card_top_left.x + 117.0 * scale),
-        int(card_top_left.y + 57.0 * scale),
+        int(card_top_left.x + 78.0),
+        int(card_top_left.y + 57.0),
+        int(card_top_left.x + 117.0),
+        int(card_top_left.y + 57.0),
         separator_color,
     )
 
     date_text = format_score_date(entry)
     if date_text:
         draw_small_text(
-            font, date_text, card_top_left + Vec2(HS_LOCAL_DATE_X * scale, HS_LOCAL_DATE_Y * scale), text_color,
+            font, date_text, card_top_left + Vec2(HS_LOCAL_DATE_X, HS_LOCAL_DATE_Y), text_color,
         )
     rl.draw_line(
-        int(card_top_left.x + 74.0 * scale),
-        int(card_top_left.y + 72.0 * scale),
-        int(card_top_left.x + 266.0 * scale),
-        int(card_top_left.y + 72.0 * scale),
+        int(card_top_left.x + 74.0),
+        int(card_top_left.y + 72.0),
+        int(card_top_left.x + 266.0),
+        int(card_top_left.y + 72.0),
         separator_color,
     )
 
     draw_small_text(
-        font, "Score", card_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X * scale, HS_LOCAL_SCORE_LABEL_Y * scale), text_color,
+        font, "Score", card_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X, HS_LOCAL_SCORE_LABEL_Y), text_color,
     )
 
     mode_raw = int(entry.game_mode_id)
@@ -448,21 +439,21 @@ def _draw_right_panel_local_score(
     draw_small_text(
         font,
         time_label,
-        card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X * scale, HS_LOCAL_TIME_LABEL_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X, HS_LOCAL_TIME_LABEL_Y),
         game_time_color,
     )
     rl.draw_line(
-        int(card_top_left.x + 170.0 * scale),
-        int(card_top_left.y + 90.0 * scale),
-        int(card_top_left.x + 170.0 * scale),
-        int(card_top_left.y + 138.0 * scale),
+        int(card_top_left.x + 170.0),
+        int(card_top_left.y + 90.0),
+        int(card_top_left.x + 170.0),
+        int(card_top_left.y + 138.0),
         separator_color,
     )
 
     # Native highscore card:
     # - Rush/Quest: score is survival time in seconds (ms * 0.001), rendered with 2 decimals.
     # - Others: score is XP (u32).
-    score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X * scale, HS_LOCAL_SCORE_VALUE_Y * scale)
+    score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X, HS_LOCAL_SCORE_VALUE_Y)
     match mode_id:
         case GameMode.RUSH | GameMode.QUESTS:
             score_value = f"{elapsed_ms * 0.001:.2f} secs"
@@ -470,8 +461,8 @@ def _draw_right_panel_local_score(
             # centered in the left score column in native.
             score_label_w = measure_small_text_width(font, "Score")
             score_value_w = measure_small_text_width(font, score_value)
-            score_col_center_x = HS_LOCAL_SCORE_LABEL_X * scale + score_label_w * 0.5
-            score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y * scale)
+            score_col_center_x = HS_LOCAL_SCORE_LABEL_X + score_label_w * 0.5
+            score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y)
         case _:
             score_value = f"{score_xp}"
     draw_small_text(font, score_value, card_top_left + score_value_pos, value_color)
@@ -481,27 +472,26 @@ def _draw_right_panel_local_score(
             draw_small_text(
                 font,
                 f"{score_xp}",
-                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X, HS_LOCAL_TIME_VALUE_Y),
                 game_time_color,
             )
         case _:
             _draw_clock_gauge(
                 resources=resources,
                 elapsed_ms=elapsed_ms,
-                pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X * scale, HS_LOCAL_CLOCK_Y * scale),
-                scale=scale,
+                pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X, HS_LOCAL_CLOCK_Y),
             )
             draw_small_text(
                 font,
                 format_elapsed_mm_ss(elapsed_ms),
-                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X * scale, HS_LOCAL_TIME_VALUE_Y * scale),
+                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X, HS_LOCAL_TIME_VALUE_Y),
                 game_time_color,
             )
 
     draw_small_text(
         font,
         f"Rank: {ordinal(idx + 1)}",
-        card_top_left + Vec2(HS_LOCAL_RANK_X * scale, HS_LOCAL_RANK_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_RANK_X, HS_LOCAL_RANK_Y),
         text_color,
     )
 
@@ -513,10 +503,10 @@ def _draw_right_panel_local_score(
     if shots_fired > 0:
         hit_pct = int((shots_hit * 100) // shots_fired)
     rl.draw_line(
-        int(card_top_left.x + 74.0 * scale),
-        int(card_top_left.y + 142.0 * scale),
-        int(card_top_left.x + 266.0 * scale),
-        int(card_top_left.y + 142.0 * scale),
+        int(card_top_left.x + 74.0),
+        int(card_top_left.y + 142.0),
+        int(card_top_left.x + 266.0),
+        int(card_top_left.y + 142.0),
         separator_color,
     )
 
@@ -526,33 +516,32 @@ def _draw_right_panel_local_score(
         _draw_wicon(
             resources=resources,
             icon_index=icon_index,
-            pos=card_top_left + Vec2(HS_LOCAL_WICON_X * scale, HS_LOCAL_WICON_Y * scale),
-            scale=scale,
+            pos=card_top_left + Vec2(HS_LOCAL_WICON_X, HS_LOCAL_WICON_Y),
         )
-    weapon_name_x = HS_LOCAL_WICON_X * scale + max(
+    weapon_name_x = HS_LOCAL_WICON_X + max(
         0.0,
-        32.0 * scale - measure_small_text_width(font, weapon_name) * 0.5,
+        32.0 - measure_small_text_width(font, weapon_name) * 0.5,
     )
     draw_small_text(
-        font, weapon_name, card_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y * scale), lower_section_color,
+        font, weapon_name, card_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y), lower_section_color,
     )
     draw_small_text(
         font,
         f"Frags: {frags}",
-        card_top_left + Vec2(HS_LOCAL_FRAGS_X * scale, HS_LOCAL_FRAGS_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_FRAGS_X, HS_LOCAL_FRAGS_Y),
         lower_section_color,
     )
     draw_small_text(
         font,
         f"Hit %: {hit_pct}%",
-        card_top_left + Vec2(HS_LOCAL_HIT_X * scale, HS_LOCAL_HIT_Y * scale),
+        card_top_left + Vec2(HS_LOCAL_HIT_X, HS_LOCAL_HIT_Y),
         lower_section_color,
     )
     rl.draw_line(
-        int(card_top_left.x + 74.0 * scale),
-        int(card_top_left.y + 194.0 * scale),
-        int(card_top_left.x + 266.0 * scale),
-        int(card_top_left.y + 194.0 * scale),
+        int(card_top_left.x + 74.0),
+        int(card_top_left.y + 194.0),
+        int(card_top_left.x + 266.0),
+        int(card_top_left.y + 194.0),
         separator_color,
     )
 
@@ -562,12 +551,11 @@ def _draw_clock_gauge(
     resources: RuntimeResources,
     elapsed_ms: int,
     pos: Vec2,
-    scale: float,
 ) -> None:
     table_tex = resources.texture(TextureId.UI_CLOCK_TABLE)
     pointer_tex = resources.texture(TextureId.UI_CLOCK_POINTER)
-    draw_w = 32.0 * scale
-    draw_h = 32.0 * scale
+    draw_w = 32.0
+    draw_h = 32.0
     dst = rl.Rectangle(pos.x, pos.y, draw_w, draw_h)
     src_table = rl.Rectangle(0.0, 0.0, float(table_tex.width), float(table_tex.height))
     src_pointer = rl.Rectangle(0.0, 0.0, float(pointer_tex.width), float(pointer_tex.height))
@@ -597,7 +585,6 @@ def _draw_wicon(
     resources: RuntimeResources,
     icon_index: int,
     pos: Vec2,
-    scale: float,
 ) -> None:
     tex = resources.texture(TextureId.UI_WICONS)
     idx = int(icon_index)
@@ -614,7 +601,7 @@ def _draw_wicon(
     rl.draw_texture_pro(
         tex,
         rl.Rectangle(src_x, src_y, icon_w, icon_h),
-        rl.Rectangle(pos.x, pos.y, icon_w * scale, icon_h * scale),
+        rl.Rectangle(pos.x, pos.y, icon_w, icon_h),
         rl.Vector2(0.0, 0.0),
         0.0,
         rl.WHITE,

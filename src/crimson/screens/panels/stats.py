@@ -145,10 +145,10 @@ class StatisticsMenuView:
     def _assert_open(self) -> None:
         assert self._is_open, "StatisticsMenuView must be opened before use"
 
-    def _panel_top_left(self, *, scale: float) -> Vec2:
+    def _panel_top_left(self) -> Vec2:
         return Vec2(
-            STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X * scale,
-            STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+            STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X,
+            STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
@@ -185,17 +185,15 @@ class StatisticsMenuView:
         if not interactive:
             return
 
-        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
-        panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
-        panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
+        panel_top_left = self._panel_top_left().offset(dx=float(slide_x))
         resources = require_runtime_resources(self.state)
 
         mouse = rl.get_mouse_position()
@@ -203,32 +201,32 @@ class StatisticsMenuView:
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
-            w = button_width(resources, btn.label, scale=scale, force_wide=btn.force_wide)
+            w = button_width(resources, btn.label, force_wide=btn.force_wide)
             return button_update(btn, pos=pos, width=w, dt_ms=dt_ms_f, mouse=mouse, click=click)
 
-        button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
-        if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0 * scale)):
+        button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
+        if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(ShowScores(ScoreQuery.from_config(self.state.config)))
             return
-        if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0 * scale)):
+        if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.WEAPONS)
             return
-        if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0 * scale)):
+        if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.PERKS)
             return
-        if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0 * scale)):
+        if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.CREDITS)
             return
 
-        if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale)):
+        if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y)):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.MENU)
@@ -241,22 +239,20 @@ class StatisticsMenuView:
 
         resources = require_runtime_resources(self.state)
 
-        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
-        panel_w = MENU_PANEL_WIDTH * scale
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
-        panel_top_left = self._panel_top_left(scale=scale).offset(dx=float(slide_x))
+        panel_top_left = self._panel_top_left().offset(dx=float(slide_x))
         dst = rl.Rectangle(
             panel_top_left.x,
             panel_top_left.y,
-            panel_w,
-            STATISTICS_PANEL_HEIGHT * scale,
+            MENU_PANEL_WIDTH,
+            STATISTICS_PANEL_HEIGHT,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(
@@ -274,10 +270,10 @@ class StatisticsMenuView:
             texture=label_tex,
             src=src,
             dst=rl.Rectangle(
-                panel_top_left.x + _TITLE_X * scale,
-                panel_top_left.y + _TITLE_Y * scale,
-                _TITLE_W * scale,
-                _TITLE_H * scale,
+                panel_top_left.x + _TITLE_X,
+                panel_top_left.y + _TITLE_Y,
+                _TITLE_W,
+                _TITLE_H,
             ),
             origin=rl.Vector2(0.0, 0.0),
             rotation_deg=0.0,
@@ -291,7 +287,7 @@ class StatisticsMenuView:
             _format_playtime_text(
                 int(self.state.status.play_time_ms),
             ),
-            panel_top_left + Vec2(_PLAYTIME_X * scale, _PLAYTIME_Y * scale),
+            panel_top_left + Vec2(_PLAYTIME_X, _PLAYTIME_Y),
             rl.Color(255, 255, 255, int(255 * 0.8)),
         )
 
@@ -304,24 +300,22 @@ class StatisticsMenuView:
             draw_small_text(font, _STATS_EASTER_TEXT, Vec2(x, _STATS_EASTER_TEXT_Y), rl.Color(51, 255, 153, 128))
 
         # Buttons.
-        button_base = panel_top_left + Vec2(_BUTTON_X * scale, _BUTTON_Y0 * scale)
+        button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
-            w = button_width(resources, btn.label, scale=scale, force_wide=btn.force_wide)
+            w = button_width(resources, btn.label, force_wide=btn.force_wide)
             button_draw(
                 resources,
                 btn,
-                pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i) * scale),
+                pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i)),
                 width=w,
-                scale=scale,
             )
 
-        back_w = button_width(resources, self._btn_back.label, scale=scale, force_wide=self._btn_back.force_wide)
+        back_w = button_width(resources, self._btn_back.label, force_wide=self._btn_back.force_wide)
         button_draw(
             resources,
             self._btn_back,
-            pos=panel_top_left + Vec2(_BACK_BUTTON_X * scale, _BACK_BUTTON_Y * scale),
+            pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
             width=back_w,
-            scale=scale,
         )
 
         draw_menu_sign(

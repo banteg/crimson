@@ -29,7 +29,6 @@ from .components.highscore_record_builder import build_highscore_record_for_game
 
 WORLD_SIZE = 1024.0
 
-UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)

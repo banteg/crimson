@@ -319,19 +319,17 @@ class BaseGameplayMode:
         if self.audio is not None:
             update_audio(self.audio, dt, advance_sfx=self._game_over_active)
 
-    def _ui_line_height(self, scale: float = 1.0) -> int:
+    def _ui_line_height(self) -> int:
         if self._small is not None:
-            return int(self._small.cell_size * scale)
-        return int(20 * scale)
+            return int(self._small.cell_size)
+        return 20
 
-    def _ui_text_width(self, text: str, scale: float = 1.0) -> int:
-        _ = scale
+    def _ui_text_width(self, text: str) -> int:
         font = self._small
         assert font is not None, "small font must be loaded before ui text measurement"
         return int(measure_small_text_width(font, text))
 
-    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, scale: float = 1.0) -> None:
-        _ = scale
+    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color) -> None:
         font = self._small
         assert font is not None, "small font must be loaded before ui text draw"
         draw_small_text(font, text, pos, color)

@@ -36,7 +36,6 @@ from .components.perk_prompt_controller import PerkPromptState
 
 WORLD_SIZE = 1024.0
 
-UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -134,25 +133,6 @@ class SurvivalMode(BaseGameplayMode):
         if allow_pulse:
             self._perk_prompt.tick_pulse(float(dt_ui_ms))
         self._perk_menu.tick_timeline(float(dt_ui_ms))
-
-    def _wrap_ui_text(self, text: str, *, max_width: float, scale: float = UI_TEXT_SCALE) -> list[str]:
-        lines: list[str] = []
-        for raw in text.splitlines() or [""]:
-            para = raw.strip()
-            if not para:
-                lines.append("")
-                continue
-            current = ""
-            for word in para.split():
-                candidate = word if not current else f"{current} {word}"
-                if current and self._ui_text_width(candidate, scale) > max_width:
-                    lines.append(current)
-                    current = word
-                else:
-                    current = candidate
-            if current:
-                lines.append(current)
-        return lines
 
     def open(self) -> None:
         super().open()
@@ -359,7 +339,6 @@ class SurvivalMode(BaseGameplayMode):
                 f"debug: [/] weapon  F3 perk+1  F2 god={god}  X xp+5000",
                 Vec2(x, y + line * 2.0),
                 UI_HINT_COLOR,
-                scale=0.9,
             )
             y_extra = y + line * 3.0
             if self._paused:
@@ -377,7 +356,6 @@ class SurvivalMode(BaseGameplayMode):
                 config=self.config,
                 ui_text_width=self._ui_text_width,
                 text_color=UI_TEXT_COLOR,
-                prompt_scale=UI_TEXT_SCALE,
             )
             self._perk_menu.draw(
                 self._perk_menu_ui_context(),

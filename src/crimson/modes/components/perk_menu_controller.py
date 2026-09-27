@@ -13,7 +13,6 @@ from grim.sfx_map import SfxId
 from ...input_codes import PadCode, pad_nav_pressed
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...sim.state_types import PerkCounts, PlayerState
-from ...ui.layout import ui_origin, ui_scale
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
     PERK_MENU_TRANSITION_MS,
@@ -196,9 +195,6 @@ class PerkMenuController:
             self._selected_index = (self._selected_index - 1) % len(choices)
 
         screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
-        origin = ui_origin(screen_w, screen_h, scale)
         slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -208,8 +204,6 @@ class PerkMenuController:
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin=origin,
-            scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
@@ -222,7 +216,7 @@ class PerkMenuController:
                 violence_disabled=int(ctx.violence_disabled),
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
+            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos)
             if rect.contains(ctx.mouse):
                 self._selected_index = idx
                 if click:
@@ -234,7 +228,6 @@ class PerkMenuController:
         cancel_w = button_width(
             ctx.resources,
             self._cancel_button.label,
-            scale=scale,
             force_wide=self._cancel_button.force_wide,
         )
         if button_update(
@@ -270,9 +263,6 @@ class PerkMenuController:
             self._selected_index = 0
 
         screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        scale = ui_scale(screen_w, screen_h)
-        origin = ui_origin(screen_w, screen_h, scale)
         slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
 
         master_owned = PerkId.PERK_MASTER in ctx.perks
@@ -280,8 +270,6 @@ class PerkMenuController:
         computed = perk_menu_compute_layout(
             self._layout,
             screen_w=screen_w,
-            origin=origin,
-            scale=scale,
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
@@ -308,7 +296,7 @@ class PerkMenuController:
         elif expert_owned:
             sponsor = "extra perk sponsored by the Perk Expert"
         if sponsor:
-            draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, scale=scale, color=UI_SPONSOR_COLOR)
+            draw_ui_text(ctx.resources, sponsor, computed.sponsor_pos, color=UI_SPONSOR_COLOR)
 
         for idx, perk_id in enumerate(choices):
             label = perk_display_name(
@@ -316,9 +304,9 @@ class PerkMenuController:
                 violence_disabled=int(ctx.violence_disabled),
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos, scale=scale)
+            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos)
             hovered = rect.contains(ctx.mouse) or (idx == self._selected_index)
-            draw_menu_item(ctx.resources, label, pos=item_pos, scale=scale, hovered=hovered)
+            draw_menu_item(ctx.resources, label, pos=item_pos, hovered=hovered)
 
         selected = choices[self._selected_index]
         desc = self._prewrapped_perk_desc(
@@ -330,17 +318,15 @@ class PerkMenuController:
             ctx.resources,
             desc,
             computed.desc.top_left,
-            scale=scale,
             color=UI_TEXT_COLOR,
         )
 
         cancel_w = button_width(
-            ctx.resources, self._cancel_button.label, scale=scale, force_wide=self._cancel_button.force_wide,
+            ctx.resources, self._cancel_button.label, force_wide=self._cancel_button.force_wide,
         )
         button_draw(
             ctx.resources,
             self._cancel_button,
             pos=computed.cancel_pos,
             width=cancel_w,
-            scale=scale,
         )

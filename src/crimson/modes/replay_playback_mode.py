@@ -242,20 +242,18 @@ class ReplayPlaybackMode:
 
         text_x = icon_x + icon_w + 6.0 + float(_REPLAY_WIDGET_TEXT_OFFSET_X)
         line1_y = line1_y + float(_REPLAY_WIDGET_TEXT_OFFSET_Y)
-        text_scale = 1.0
         status = "PAUSE" if self._paused else "REPLAY"
         status_color = rl.Color(245, 210, 120, 230) if self._paused else rl.Color(230, 230, 230, 220)
         self._draw_ui_text(
             f"{status} {self._playback_speed():.2f}x",
             Vec2(text_x, line1_y),
             status_color,
-            scale=text_scale,
         )
 
         elapsed_text = self._format_time_text(elapsed_seconds)
         total_text = self._format_time_text(total_seconds)
-        elapsed_w = self._measure_ui_text_width(elapsed_text, scale=text_scale)
-        total_w = self._measure_ui_text_width(total_text, scale=text_scale)
+        elapsed_w = self._measure_ui_text_width(elapsed_text)
+        total_w = self._measure_ui_text_width(total_text)
         line2_y = line1_y + 18.0
 
         right_limit = panel_x + panel_w - 4.0 + float(_REPLAY_WIDGET_TEXT_OFFSET_X)
@@ -274,13 +272,11 @@ class ReplayPlaybackMode:
             elapsed_text,
             Vec2(text_x, line2_y),
             rl.Color(220, 220, 220, 210),
-            scale=text_scale,
         )
         self._draw_ui_text(
             total_text,
             Vec2(total_x, line2_y),
             rl.Color(220, 220, 220, 210),
-            scale=text_scale,
         )
 
     def open(self) -> None:
@@ -393,14 +389,12 @@ class ReplayPlaybackMode:
     def consume_screenshot_request(self) -> bool:
         return False
 
-    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color, *, scale: float = 1.0) -> None:
-        _ = scale
+    def _draw_ui_text(self, text: str, pos: Vec2, color: rl.Color) -> None:
         font = self._small
         assert font is not None, "small font must be loaded before replay ui draw"
         draw_small_text(font, text, pos, color)
 
-    def _measure_ui_text_width(self, text: str, *, scale: float = 1.0) -> float:
-        _ = scale
+    def _measure_ui_text_width(self, text: str) -> float:
         font = self._small
         assert font is not None, "small font must be loaded before replay ui measurement"
         return float(measure_small_text_width(font, text))
@@ -582,8 +576,8 @@ class ReplayPlaybackMode:
             creatures=runtime.sim_world.creatures.entries,
             names=runtime.sim_world.state.typo.names.names,
             world_to_screen=runtime.world_to_screen,
-            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
-            measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
+            draw_text=self._draw_ui_text,
+            measure_text_width=self._measure_ui_text_width,
         )
 
     def _draw_typing_box(self) -> None:
@@ -595,8 +589,8 @@ class ReplayPlaybackMode:
             runtime.render_resources.resources.texture(TextureId.UI_IND_PANEL),
             text=runtime.sim_world.state.typo.typing.text,
             cursor_pulse_time=float(cursor_pulse_time),
-            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
-            measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
+            draw_text=self._draw_ui_text,
+            measure_text_width=self._measure_ui_text_width,
         )
 
     def _draw_tutorial_overlays(self) -> None:
@@ -604,9 +598,9 @@ class ReplayPlaybackMode:
         assert runtime is not None, "World runtime must be open before tutorial replay draw"
         draw_tutorial_overlay_panels(
             runtime.sim_world.state.tutorial_overlay,
-            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
-            measure_text_width=lambda text, scale: float(self._measure_ui_text_width(text, scale=scale)),
-            measure_line_height=lambda _scale: int(
+            draw_text=self._draw_ui_text,
+            measure_text_width=self._measure_ui_text_width,
+            measure_line_height=lambda: int(
                 self._small.cell_size if self._small is not None else 20,
             ),
         )

@@ -180,7 +180,7 @@ class QuestsMenuView:
         )
         dt_ms = min(float(dt), 0.1) * 1000.0
         resources = require_runtime_resources(self.state)
-        back_w = button_width(resources, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
@@ -286,13 +286,12 @@ class QuestsMenuView:
         hardcore = config.gameplay.hardcore
 
         font = resources.small_font
-        text_scale = 1.0
         label = "Hardcore"
         label_w = measure_small_text_width(font, label)
 
         check_pos = layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
         rect_w = float(check_on.width) + 6.0 + label_w
-        rect_h = max(float(check_on.height), font.cell_size * text_scale)
+        rect_h = max(float(check_on.height), font.cell_size)
 
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
@@ -548,13 +547,12 @@ class QuestsMenuView:
 
         # Back button.
         back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
-        back_w = button_width(resources, self._back_button.label, scale=1.0, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
             pos=back_pos,
             width=float(back_w),
-            scale=1.0,
         )
 
     def _draw_panel(self) -> None:

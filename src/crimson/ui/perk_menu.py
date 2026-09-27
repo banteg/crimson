@@ -64,52 +64,49 @@ def perk_menu_compute_layout(
     layout: PerkMenuLayout,
     *,
     screen_w: float,
-    origin: Vec2,
-    scale: float,
     choice_count: int,
     expert_owned: bool,
     master_owned: bool,
     panel_slide_x: float = 0.0,
 ) -> PerkMenuComputedLayout:
-    layout_w = screen_w / scale if scale else screen_w
-    widescreen_shift_y = menu_widescreen_y_shift(layout_w)
+    widescreen_shift_y = menu_widescreen_y_shift(screen_w)
     panel_pos = layout.panel_pos + Vec2(panel_slide_x, widescreen_shift_y)
-    panel = Rect.from_pos_size(origin + panel_pos * scale, layout.panel_size * scale)
+    panel = Rect.from_pos_size(panel_pos, layout.panel_size)
     anchor_pos = Vec2(
-        panel.x + MENU_PANEL_ANCHOR_X * scale,
-        panel.y + MENU_PANEL_ANCHOR_Y * scale,
+        panel.x + MENU_PANEL_ANCHOR_X,
+        panel.y + MENU_PANEL_ANCHOR_Y,
     )
 
     title = Rect.from_top_left(
-        anchor_pos.offset(dx=MENU_TITLE_X * scale, dy=MENU_TITLE_Y * scale),
-        MENU_TITLE_W * scale,
-        MENU_TITLE_H * scale,
+        anchor_pos.offset(dx=MENU_TITLE_X, dy=MENU_TITLE_Y),
+        MENU_TITLE_W,
+        MENU_TITLE_H,
     )
 
     sponsor_pos = Vec2(
-        anchor_pos.x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT) * scale,
-        anchor_pos.y + MENU_SPONSOR_Y * scale,
+        anchor_pos.x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT),
+        anchor_pos.y + MENU_SPONSOR_Y,
     )
 
     list_step_y = MENU_LIST_STEP_EXPERT if expert_owned else MENU_LIST_STEP_NORMAL
     list_pos = Vec2(
         anchor_pos.x,
-        anchor_pos.y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL) * scale,
+        anchor_pos.y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL),
     )
 
     desc_pos = Vec2(
-        anchor_pos.x + MENU_DESC_X * scale,
-        list_pos.y + choice_count * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale,
+        anchor_pos.x + MENU_DESC_X,
+        list_pos.y + choice_count * list_step_y + MENU_DESC_Y_AFTER_LIST,
     )
     if choice_count > 5:
-        desc_pos = desc_pos.offset(dy=-MENU_DESC_Y_EXTRA_TIGHTEN * scale)
+        desc_pos = desc_pos.offset(dy=-MENU_DESC_Y_EXTRA_TIGHTEN)
 
     # Keep the description within the monitor screen area and above the button.
-    desc_right = panel.x + MENU_DESC_RIGHT_X * scale
-    cancel_pos = anchor_pos.offset(dx=MENU_BUTTON_X * scale, dy=MENU_BUTTON_Y * scale)
+    desc_right = panel.x + MENU_DESC_RIGHT_X
+    cancel_pos = anchor_pos.offset(dx=MENU_BUTTON_X, dy=MENU_BUTTON_Y)
     desc_size = Vec2(
         max(0.0, desc_right - desc_pos.x),
-        max(0.0, cancel_pos.y - 12.0 * scale - desc_pos.y),
+        max(0.0, cancel_pos.y - 12.0 - desc_pos.y),
     )
     desc = Rect.from_pos_size(desc_pos, desc_size)
 
@@ -118,7 +115,7 @@ def perk_menu_compute_layout(
         title=title,
         sponsor_pos=sponsor_pos,
         list_pos=list_pos,
-        list_step_y=list_step_y * scale,
+        list_step_y=list_step_y,
         desc=desc,
         cancel_pos=cancel_pos,
     )
@@ -167,10 +164,8 @@ def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
     )
 
 
-def _ui_text_width(resources: RuntimeResources, text: str, scale: float) -> float:
-    font = resources.small_font
-    del scale
-    return measure_small_text_width(font, text)
+def _ui_text_width(resources: RuntimeResources, text: str) -> float:
+    return measure_small_text_width(resources.small_font, text)
 
 
 def draw_ui_text(
@@ -178,15 +173,12 @@ def draw_ui_text(
     text: str,
     pos: Vec2,
     *,
-    scale: float,
     color: rl.Color,
 ) -> None:
-    font = resources.small_font
-    del scale
-    draw_small_text(font, text, pos, color)
+    draw_small_text(resources.small_font, text, pos, color)
 
 
-def wrap_ui_text(resources: RuntimeResources, text: str, *, max_width: float, scale: float) -> list[str]:
+def wrap_ui_text(resources: RuntimeResources, text: str, *, max_width: float) -> list[str]:
     lines: list[str] = []
     for raw in text.splitlines() or [""]:
         para = raw.strip()
@@ -196,7 +188,7 @@ def wrap_ui_text(resources: RuntimeResources, text: str, *, max_width: float, sc
         current = ""
         for word in para.split():
             candidate = word if not current else f"{current} {word}"
-            if current and _ui_text_width(resources, candidate, scale) > max_width:
+            if current and _ui_text_width(resources, candidate) > max_width:
                 lines.append(current)
                 current = word
             else:
@@ -211,18 +203,17 @@ def draw_wrapped_ui_text_in_rect(
     text: str,
     *,
     rect: Rect,
-    scale: float,
     color: rl.Color,
 ) -> None:
     font = resources.small_font
-    lines = wrap_ui_text(resources, text, max_width=rect.w, scale=scale)
-    line_h = font.cell_size * scale
+    lines = wrap_ui_text(resources, text, max_width=rect.w)
+    line_h = font.cell_size
     pos = rect.top_left
     max_y = rect.bottom
     for line in lines:
         if pos.y + line_h > max_y:
             break
-        draw_ui_text(resources, line, pos, scale=scale, color=color)
+        draw_ui_text(resources, line, pos, color=color)
         pos = pos.offset(dy=line_h)
 
 
@@ -231,10 +222,8 @@ MENU_ITEM_ALPHA_IDLE = 0.6
 MENU_ITEM_ALPHA_HOVER = 1.0
 
 
-def menu_item_hit_rect(resources: RuntimeResources, label: str, *, pos: Vec2, scale: float) -> Rect:
-    width = _ui_text_width(resources, label, scale)
-    height = 16.0 * scale
-    return Rect.from_top_left(pos, width, height)
+def menu_item_hit_rect(resources: RuntimeResources, label: str, *, pos: Vec2) -> Rect:
+    return Rect.from_top_left(pos, _ui_text_width(resources, label), 16.0)
 
 
 def draw_menu_item(
@@ -242,15 +231,14 @@ def draw_menu_item(
     label: str,
     *,
     pos: Vec2,
-    scale: float,
     hovered: bool,
 ) -> float:
     alpha = MENU_ITEM_ALPHA_HOVER if hovered else MENU_ITEM_ALPHA_IDLE
     r, g, b = MENU_ITEM_RGB
     color = rl.Color(int(r), int(g), int(b), int(255 * alpha))
-    draw_ui_text(resources, label, pos, scale=scale, color=color)
-    width = _ui_text_width(resources, label, scale)
-    line_y = pos.y + 13.0 * scale
+    draw_ui_text(resources, label, pos, color=color)
+    width = _ui_text_width(resources, label)
+    line_y = pos.y + 13.0
     rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)
     return width
 
@@ -273,13 +261,12 @@ def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, r
     )
 
 
-def button_width(resources: RuntimeResources, label: str, *, scale: float, force_wide: bool) -> float:
-    text_w = _ui_text_width(resources, label, scale)
+def button_width(resources: RuntimeResources, label: str, *, force_wide: bool) -> float:
     if force_wide:
-        return 145.0 * scale
-    if text_w < 40.0 * scale:
-        return 82.0 * scale
-    return 145.0 * scale
+        return 145.0
+    if _ui_text_width(resources, label) < 40.0:
+        return 82.0
+    return 145.0
 
 
 def button_hit_rect(*, pos: Vec2, width: float) -> Rect:
@@ -320,10 +307,9 @@ def button_draw(
     *,
     pos: Vec2,
     width: float,
-    scale: float,
 ) -> None:
     button_sm, button_md = _resolve_button_textures(resources)
-    texture = button_md if width > 120.0 * scale else button_sm
+    texture = button_md if width > 120.0 else button_sm
 
     if state.hover_t > 0:
         # ui_button_update: highlight fill uses a hover-scaled alpha and click-biased blue tint.
@@ -346,31 +332,30 @@ def button_draw(
             int(255 * clamp(a, 0.0, 1.0)),
         )
         rl.draw_rectangle(
-            int(pos.x + 12.0 * scale),
-            int(pos.y + 5.0 * scale),
-            int(width - 24.0 * scale),
-            int(22.0 * scale),
+            int(pos.x + 12.0),
+            int(pos.y + 5.0),
+            int(width - 24.0),
+            22,
             hl,
         )
 
     plate_tint = rl.Color(255, 255, 255, int(255 * clamp(state.alpha, 0.0, 1.0)))
 
     src = rl.Rectangle(0.0, 0.0, texture.width, texture.height)
-    dst = rl.Rectangle(pos.x, pos.y, width, 32.0 * scale)
+    dst = rl.Rectangle(pos.x, pos.y, width, 32.0)
     rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, plate_tint)
 
     text_a = state.alpha if state.hovered else state.alpha * 0.7
     text_tint = rl.Color(255, 255, 255, int(255 * clamp(text_a, 0.0, 1.0)))
-    text_w = _ui_text_width(resources, state.label, scale)
-    text_pos = Vec2(pos.x + width * 0.5 - text_w * 0.5 + 1.0 * scale, pos.y + 10.0 * scale)
-    draw_ui_text(resources, state.label, text_pos, scale=scale, color=text_tint)
+    text_w = _ui_text_width(resources, state.label)
+    text_pos = Vec2(pos.x + width * 0.5 - text_w * 0.5 + 1.0, pos.y + 10.0)
+    draw_ui_text(resources, state.label, text_pos, color=text_tint)
 
 
-def cursor_draw(resources: RuntimeResources, *, mouse: rl.Vector2, scale: float, alpha: float = 1.0) -> None:
+def cursor_draw(resources: RuntimeResources, *, mouse: rl.Vector2, alpha: float = 1.0) -> None:
     tex = resources.texture(TextureId.UI_CURSOR)
     a = int(255 * clamp(alpha, 0.0, 1.0))
     tint = rl.Color(255, 255, 255, a)
-    size = 32.0 * scale
     src = rl.Rectangle(0.0, 0.0, tex.width, tex.height)
-    dst = rl.Rectangle(mouse.x, mouse.y, size, size)
+    dst = rl.Rectangle(mouse.x, mouse.y, 32.0, 32.0)
     rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)

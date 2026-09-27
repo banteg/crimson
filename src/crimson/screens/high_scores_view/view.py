@@ -122,10 +122,10 @@ class HighScoresView:
         self._dirty = False
         self._dropdown = None
 
-    def _panel_top_left(self, *, pos: Vec2, scale: float) -> Vec2:
+    def _panel_top_left(self, *, pos: Vec2) -> Vec2:
         return Vec2(
-            pos.x + MENU_PANEL_OFFSET_X * scale,
-            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y * scale,
+            pos.x + MENU_PANEL_OFFSET_X,
+            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
         )
 
     def update(self, dt: float) -> None:
@@ -150,12 +150,11 @@ class HighScoresView:
             return
 
         screen_width = float(self.state.config.display.width)
-        scale = 1.0
         resources = require_runtime_resources(self.state)
         font = resources.small_font
 
         # Compute animated panel positions so hit-tests match the draw path even while sliding.
-        panel_w = MENU_PANEL_WIDTH * scale
+        panel_w = MENU_PANEL_WIDTH
         _angle_rad, left_slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
@@ -173,9 +172,9 @@ class HighScoresView:
             direction_flag=1,
         )
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y), scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y))
         right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y))
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
@@ -183,7 +182,6 @@ class HighScoresView:
             dropdown_was_open = self._dropdown is not None
             if self._update_right_panel_widgets(
                 right_top_left=right_panel_top_left,
-                scale=scale,
                 resources=resources,
                 font=font,
             ):
@@ -192,19 +190,17 @@ class HighScoresView:
                 return
             if self._update_quest_arrows(
                 left_panel_top_left=left_panel_top_left,
-                scale=scale,
                 resources=resources,
             ):
                 return
 
         if enabled:
-            button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
+            button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
             mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             w = button_width(
                 resources,
                 self._update_button.label,
-                scale=scale,
                 force_wide=self._update_button.force_wide,
             )
             if button_update(
@@ -220,10 +216,10 @@ class HighScoresView:
                     play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
                 self._reload_records()
                 return
-            w = button_width(resources, self._play_button.label, scale=scale, force_wide=self._play_button.force_wide)
+            w = button_width(resources, self._play_button.label, force_wide=self._play_button.force_wide)
             if button_update(
                 self._play_button,
-                pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
+                pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y),
                 width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -234,12 +230,11 @@ class HighScoresView:
             back_w = button_width(
                 resources,
                 self._back_button.label,
-                scale=scale,
                 force_wide=self._back_button.force_wide,
             )
             if button_update(
                 self._back_button,
-                pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
+                pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
                 width=back_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -308,16 +303,16 @@ class HighScoresView:
             ),
         )
 
-    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int, scale: float) -> _ScoresDropdownLayout:
-        header_h = 16.0 * scale
-        row_h = 16.0 * scale
-        full_h = (float(item_count) * 16.0 + 24.0) * scale
+    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int) -> _ScoresDropdownLayout:
+        header_h = 16.0
+        row_h = 16.0
+        full_h = float(item_count) * 16.0 + 24.0
         return _ScoresDropdownLayout(
             pos=pos,
             width=float(width),
             header_h=header_h,
             row_h=row_h,
-            rows_y0=pos.y + 17.0 * scale,
+            rows_y0=pos.y + 17.0,
             full_h=full_h,
         )
 
@@ -328,7 +323,6 @@ class HighScoresView:
         item_count: int,
         is_open: bool,
         enabled: bool,
-        scale: float,
     ) -> tuple[bool, int | None, bool]:
         mouse = rl.get_mouse_position()
         click = bool(enabled) and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -336,7 +330,7 @@ class HighScoresView:
             mouse,
             pos=layout.pos,
             width=layout.width,
-            height=14.0 * scale,
+            height=14.0,
         )
         if hovered_header and click:
             return (not is_open), None, True
@@ -353,7 +347,7 @@ class HighScoresView:
                 mouse,
                 pos=Vec2(layout.pos.x, item_y),
                 width=layout.width,
-                height=14.0 * scale,
+                height=14.0,
             )
             if hovered and click:
                 return False, idx, True
@@ -370,7 +364,6 @@ class HighScoresView:
         self,
         *,
         right_top_left: Vec2,
-        scale: float,
         resources: RuntimeResources,
         font: SmallFontData,
     ) -> bool:
@@ -380,7 +373,7 @@ class HighScoresView:
         # We don't explicitly track which right panel is active; hit tests are enough.
         dropdown_blocked = self._dropdown is not None
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
-        shifted_right_top_left = right_top_left + Vec2(small_width_shift_x * scale, 0.0)
+        shifted_right_top_left = right_top_left + Vec2(small_width_shift_x, 0.0)
 
         # Checkbox: "Show internet scores" (config.show_online_scores).
         if not dropdown_blocked:
@@ -390,11 +383,11 @@ class HighScoresView:
                 else resources.texture(TextureId.UI_CHECK_OFF)
             )
             label = "Show internet scores"
-            check_pos = shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X * scale, HS_RIGHT_CHECK_Y * scale)
+            check_pos = shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y)
             label_w = measure_small_text_width(font, label)
-            font_h = float(font.cell_size) * scale
-            rect_w = float(check_tex.width) * scale + 6.0 * scale + label_w
-            rect_h = max(float(check_tex.height) * scale, font_h)
+            font_h = float(font.cell_size)
+            rect_w = float(check_tex.width) + 6.0 + label_w
+            rect_h = max(float(check_tex.height), font_h)
             mouse_pos = Vec2.from_xy(rl.get_mouse_position())
             if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos) and rl.is_mouse_button_pressed(
                 rl.MouseButton.MOUSE_BUTTON_LEFT,
@@ -407,14 +400,13 @@ class HighScoresView:
         # Dropdown: show scores date filter (config.highscore_date_mode).
         show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
         show_scores_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_SHOW_SCORES_WIDGET_X * scale,
-            HS_RIGHT_SHOW_SCORES_WIDGET_Y * scale,
+            HS_RIGHT_SHOW_SCORES_WIDGET_X,
+            HS_RIGHT_SHOW_SCORES_WIDGET_Y,
         )
         show_scores_layout = self._dropdown_layout(
             pos=show_scores_pos,
-            width=float(HS_RIGHT_SHOW_SCORES_WIDGET_W) * scale,
+            width=float(HS_RIGHT_SHOW_SCORES_WIDGET_W),
             item_count=len(show_scores_items),
-            scale=scale,
         )
         show_scores_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.PROFILE})
         is_open, show_scores_selected, consumed = self._update_dropdown(
@@ -422,7 +414,6 @@ class HighScoresView:
             item_count=len(show_scores_items),
             is_open=(self._dropdown is ScoreDropdown.DATE),
             enabled=bool(show_scores_enabled),
-            scale=scale,
         )
         if consumed:
             self._dropdown = ScoreDropdown.DATE if is_open else None
@@ -437,14 +428,13 @@ class HighScoresView:
         # Dropdown: player count (config.player_count).
         player_items = ("1 player", "2 players", "3 players", "4 players")
         player_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_PLAYER_COUNT_WIDGET_X * scale,
-            HS_RIGHT_PLAYER_COUNT_WIDGET_Y * scale,
+            HS_RIGHT_PLAYER_COUNT_WIDGET_X,
+            HS_RIGHT_PLAYER_COUNT_WIDGET_Y,
         )
         player_layout = self._dropdown_layout(
             pos=player_pos,
-            width=float(HS_RIGHT_PLAYER_COUNT_WIDGET_W) * scale,
+            width=float(HS_RIGHT_PLAYER_COUNT_WIDGET_W),
             item_count=len(player_items),
-            scale=scale,
         )
         player_enabled = not (self._dropdown in {ScoreDropdown.MODE, ScoreDropdown.DATE, ScoreDropdown.PROFILE})
         is_open, player_selected, consumed = self._update_dropdown(
@@ -452,7 +442,6 @@ class HighScoresView:
             item_count=len(player_items),
             is_open=(self._dropdown is ScoreDropdown.PLAYERS),
             enabled=bool(player_enabled),
-            scale=scale,
         )
         if consumed:
             self._dropdown = ScoreDropdown.PLAYERS if is_open else None
@@ -475,14 +464,13 @@ class HighScoresView:
         if int(self.state.status.quest_unlock_index) >= 0x28:
             mode_items.append(("Typ'o'Shooter", GameMode.TYPO))
         game_mode_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_GAME_MODE_WIDGET_X * scale,
-            HS_RIGHT_GAME_MODE_WIDGET_Y * scale,
+            HS_RIGHT_GAME_MODE_WIDGET_X,
+            HS_RIGHT_GAME_MODE_WIDGET_Y,
         )
         game_mode_layout = self._dropdown_layout(
             pos=game_mode_pos,
-            width=float(HS_RIGHT_GAME_MODE_WIDGET_W) * scale,
+            width=float(HS_RIGHT_GAME_MODE_WIDGET_W),
             item_count=len(mode_items),
-            scale=scale,
         )
         game_mode_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.DATE, ScoreDropdown.PROFILE})
         is_open, game_mode_selected, consumed = self._update_dropdown(
@@ -490,7 +478,6 @@ class HighScoresView:
             item_count=len(mode_items),
             is_open=(self._dropdown is ScoreDropdown.MODE),
             enabled=bool(game_mode_enabled),
-            scale=scale,
         )
         if consumed:
             self._dropdown = ScoreDropdown.MODE if is_open else None
@@ -518,21 +505,19 @@ class HighScoresView:
         score_list_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.DATE})
         names = list(self.state.config.profile.saved_name_labels())
         score_list_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_SCORE_LIST_WIDGET_X * scale,
-            HS_RIGHT_SCORE_LIST_WIDGET_Y * scale,
+            HS_RIGHT_SCORE_LIST_WIDGET_X,
+            HS_RIGHT_SCORE_LIST_WIDGET_Y,
         )
         score_list_layout = self._dropdown_layout(
             pos=score_list_pos,
-            width=float(HS_RIGHT_SCORE_LIST_WIDGET_W) * scale,
+            width=float(HS_RIGHT_SCORE_LIST_WIDGET_W),
             item_count=len(names),
-            scale=scale,
         )
         is_open, score_list_selected, consumed = self._update_dropdown(
             layout=score_list_layout,
             item_count=len(names),
             is_open=(self._dropdown is ScoreDropdown.PROFILE),
             enabled=bool(score_list_enabled),
-            scale=scale,
         )
         if consumed:
             self._dropdown = ScoreDropdown.PROFILE if is_open else None
@@ -546,7 +531,6 @@ class HighScoresView:
         self,
         *,
         left_panel_top_left: Vec2,
-        scale: float,
         resources: RuntimeResources,
     ) -> bool:
         request = self._request
@@ -570,12 +554,12 @@ class HighScoresView:
 
         mouse = Vec2.from_xy(rl.get_mouse_position())
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        arrow_w = float(arrow.width) * scale
-        arrow_h = float(arrow.height) * scale
+        arrow_w = float(arrow.width)
+        arrow_h = float(arrow.height)
 
         # The native has two arrows spaced 255px apart; at 1.1 only the "next" arrow is drawn.
-        prev_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
-        next_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
+        prev_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X - 255.0, HS_QUEST_ARROW_Y)
+        next_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y)
         prev_rect = Rect.from_top_left(prev_pos, arrow_w, arrow_h)
         next_rect = Rect.from_top_left(next_pos, arrow_w, arrow_h)
 
@@ -608,9 +592,8 @@ class HighScoresView:
         quest_minor = int(request.quest_level.minor) if request.quest_level is not None else 0
 
         screen_width = float(self.state.config.display.width)
-        scale = 1.0
         shadows_enabled = self.state.config.display.shadows_enabled
-        panel_w = MENU_PANEL_WIDTH * scale
+        panel_w = MENU_PANEL_WIDTH
         _angle_rad, left_slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
@@ -629,21 +612,21 @@ class HighScoresView:
         )
 
         left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y), scale=scale)
+        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y))
         right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y), scale=scale)
+        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y))
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, HS_LEFT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, HS_LEFT_PANEL_HEIGHT),
             tint=rl.WHITE,
             shadow=shadows_enabled,
         )
         draw_classic_menu_panel(
             resources.texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, HS_RIGHT_PANEL_HEIGHT * scale),
+            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, HS_RIGHT_PANEL_HEIGHT),
             tint=rl.WHITE,
             shadow=shadows_enabled,
             flip_x=True,
@@ -654,7 +637,6 @@ class HighScoresView:
             resources=resources,
             font=font,
             left_panel_top_left=left_panel_top_left,
-            scale=scale,
             mode_id=mode_id,
             quest_major=quest_major,
             quest_minor=quest_minor,
@@ -666,7 +648,6 @@ class HighScoresView:
             resources=resources,
             font=font,
             right_top_left=right_panel_top_left,
-            scale=scale,
             highlight_rank=selected_rank,
         )
         draw_menu_sign(

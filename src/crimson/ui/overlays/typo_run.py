@@ -8,7 +8,6 @@ from grim.raylib_api import rl
 
 from ...creatures.runtime import CreatureState
 
-NAME_LABEL_SCALE = 1.0
 NAME_LABEL_BG_ALPHA = 0.67
 
 TYPING_PANEL_WIDTH = 182.0
@@ -19,8 +18,8 @@ TYPING_PROMPT = ">"
 TYPING_CURSOR = "_"
 TYPING_CURSOR_X_OFFSET = 14.0
 
-type DrawUiText = Callable[[str, Vec2, rl.Color, float], None]
-type MeasureUiTextWidth = Callable[[str, float], float]
+type DrawUiText = Callable[[str, Vec2, rl.Color], None]
+type MeasureUiTextWidth = Callable[[str], float]
 type WorldToScreen = Callable[[Vec2], Vec2]
 
 
@@ -53,7 +52,7 @@ def draw_typo_name_labels(
 
         screen_pos = world_to_screen(creature.pos)
         y = screen_pos.y - 50.0
-        text_w = float(measure_text_width(text, NAME_LABEL_SCALE))
+        text_w = float(measure_text_width(text))
         text_h = 15.0
         x = screen_pos.x - text_w * 0.5
 
@@ -61,7 +60,7 @@ def draw_typo_name_labels(
         bg = rl.Color(0, 0, 0, int(255 * bg_alpha))
         fg = rl.Color(255, 255, 255, int(255 * label_alpha))
         rl.draw_rectangle_rec(rl.Rectangle(x - 4.0, y, text_w + 8.0, text_h), bg)
-        draw_text(text, Vec2(x, y), fg, NAME_LABEL_SCALE)
+        draw_text(text, Vec2(x, y), fg)
 
 
 def draw_typing_box(
@@ -87,11 +86,11 @@ def draw_typing_box(
     tint = rl.Color(255, 255, 255, int(255 * TYPING_PANEL_ALPHA))
     rl.draw_texture_pro(panel_texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
-    draw_text(TYPING_PROMPT + text, Vec2(TYPING_TEXT_X, text_y), rl.Color(255, 255, 255, 255), 1.0)
+    draw_text(TYPING_PROMPT + text, Vec2(TYPING_TEXT_X, text_y), rl.Color(255, 255, 255, 255))
 
     cursor_dim = math.sin(float(cursor_pulse_time) * 4.0) > 0.0
     cursor_alpha = 0.4 if cursor_dim else 1.0
     cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
-    text_w = float(measure_text_width(text, 1.0))
+    text_w = float(measure_text_width(text))
     cursor_x = text_w + TYPING_CURSOR_X_OFFSET
-    draw_text(TYPING_CURSOR, Vec2(cursor_x, text_y), cursor_color, 1.0)
+    draw_text(TYPING_CURSOR, Vec2(cursor_x, text_y), cursor_color)

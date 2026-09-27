@@ -71,11 +71,11 @@ def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
     ui._intro_ms = RESULTS_PANEL_VISIBLE_MS
 
-    layout_640 = ui._panel_layout(screen_w=640.0, scale=1.0)
+    layout_640 = ui._panel_layout(screen_w=640.0)
     assert layout_640.top_left.y == 29.0
     assert layout_640.panel.y == 29.0
 
-    layout_1024 = ui._panel_layout(screen_w=1024.0, scale=1.0)
+    layout_1024 = ui._panel_layout(screen_w=1024.0)
     assert layout_1024.top_left.y == 119.0
     assert layout_1024.panel.y == 119.0
 
@@ -312,7 +312,6 @@ def test_game_over_hit_ratio_tooltip_preserves_original_text(
         font=_resources_for_score_card().small_font,
         alpha=1.0,
         show_weapon_row=True,
-        scale=1.0,
         mouse=rl.Vector2(-1000.0, -1000.0),
     )
 

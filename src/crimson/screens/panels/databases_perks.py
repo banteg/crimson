@@ -55,7 +55,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
         return Vec2(356.0, 315.0)
 
-    def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, scale: float, font: SmallFontData) -> None:
+    def _draw_contents(self, left_top_left: Vec2, right_top_left: Vec2, *, font: SmallFontData) -> None:
         left = left_top_left
         right = right_top_left
         text_color = rl.WHITE
@@ -64,7 +64,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         detail_shift_x = perks_db_right_detail_x_shift(float(self.state.config.display.width))
 
         # state_16 title at (163,244) => relative to left panel (-98,194): (261,50)
-        title_pos = left + Vec2(261.0 * scale, 50.0 * scale)
+        title_pos = left + Vec2(261.0, 50.0)
         title_text = "Unlocked Perks Database"
         draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
         title_w = measure_small_text_width(font, title_text)
@@ -72,9 +72,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         rl.draw_rectangle_lines_ex(
             rl.Rectangle(
                 title_pos.x,
-                title_pos.y + 13.0 * scale,
+                title_pos.y + 13.0,
                 title_w,
-                max(1.0, 1.0 * scale),
+                1.0,
             ),
             1.0,
             rl.Color(255, 255, 255, int(255 * 0.5)),
@@ -83,27 +83,27 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         perk_ids = self._perk_ids
         count = len(perk_ids)
         perk_label = "perk" if count == 1 else "perks"
-        draw_small_text(font, f"{count} {perk_label} in database", left + Vec2(210.0 * scale, 78.0 * scale), dim_color)
-        draw_small_text(font, "Perks", left + Vec2(210.0 * scale, 106.0 * scale), text_color)
+        draw_small_text(font, f"{count} {perk_label} in database", left + Vec2(210.0, 78.0), dim_color)
+        draw_small_text(font, "Perks", left + Vec2(210.0, 106.0), text_color)
 
-        frame_x = left.x + self._LIST_FRAME_X * scale
-        frame_y = left.y + self._LIST_FRAME_Y * scale
-        frame_w = self._LIST_WIDTH * scale
-        frame_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
+        frame_x = left.x + self._LIST_FRAME_X
+        frame_y = left.y + self._LIST_FRAME_Y
+        frame_w = self._LIST_WIDTH
+        frame_h = self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0
         rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
         rl.draw_rectangle(
-            int(round(frame_x + 1.0 * scale)),
-            int(round(frame_y + 1.0 * scale)),
-            max(0, int(round(frame_w - 2.0 * scale))),
-            max(0, int(round(frame_h - 2.0 * scale))),
+            int(round(frame_x + 1.0)),
+            int(round(frame_y + 1.0)),
+            max(0, int(round(frame_w - 2.0))),
+            max(0, int(round(frame_h - 2.0))),
             rl.BLACK,
         )
 
         max_scroll = max(0, len(perk_ids) - self._VISIBLE_ROWS)
         start = max(0, min(max_scroll, int(self._list_scroll_index)))
         end = min(len(perk_ids), start + self._VISIBLE_ROWS)
-        list_top_left = left + Vec2(self._LIST_TEXT_X * scale, self._LIST_TEXT_Y * scale)
-        row_step = self._LIST_ROW_HEIGHT * scale
+        list_top_left = left + Vec2(self._LIST_TEXT_X, self._LIST_TEXT_Y)
+        row_step = self._LIST_ROW_HEIGHT
         for row, perk_id in enumerate(perk_ids[start:end], start=0):
             list_index = start + row
             if list_index == self._hovered_row_index:
@@ -123,29 +123,28 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             # Native list draws a 1px scrollbar strip + draggable thumb.
             track_x, track_y, track_h, thumb_top, thumb_h, _scroll_span = self._scrollbar_geometry(
                 left_top_left=left,
-                scale=scale,
                 count=count,
                 start=start,
             )
             rl.draw_rectangle(
                 int(round(track_x)),
                 int(round(track_y)),
-                max(1, int(round(1.0 * scale))),
+                1,
                 int(round(track_h)),
                 rl.WHITE,
             )
             rl.draw_rectangle(
-                int(round(track_x + 1.0 * scale)),
+                int(round(track_x + 1.0)),
                 int(round(thumb_top)),
-                max(1, int(round(8.0 * scale))),
-                max(1, int(round(thumb_h + 1.0 * scale))),
+                8,
+                max(1, int(round(thumb_h + 1.0))),
                 rl.Color(255, 255, 255, int(255 * 0.8)),
             )
             rl.draw_rectangle(
-                int(round(track_x + 2.0 * scale)),
-                int(round(thumb_top + 1.0 * scale)),
-                max(1, int(round(6.0 * scale))),
-                max(1, int(round(max(1.0, thumb_h - 1.0 * scale)))),
+                int(round(track_x + 2.0)),
+                int(round(thumb_top + 1.0)),
+                6,
+                max(1, int(round(max(1.0, thumb_h - 1.0)))),
                 rl.Color(51, 204, 255, int(255 * 0.2)),
             )
 
@@ -154,39 +153,39 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             return
         perk_id = hovered_perk_id
         perk_name = self._perk_name(perk_id, violence_disabled=violence_disabled)
-        detail_anchor = right + Vec2((34.0 + detail_shift_x) * scale, 72.0 * scale)
+        detail_anchor = right + Vec2(34.0 + detail_shift_x, 72.0)
         perk_no_label = "perkno"
         draw_small_text(
             font,
             f"{perk_no_label} #{perk_id}",
-            detail_anchor + Vec2(190.0 * scale, -40.0 * scale),
+            detail_anchor + Vec2(190.0, -40.0),
             rl.Color(255, 255, 255, int(255 * 0.4)),
         )
         name_w = measure_small_text_width(font, perk_name)
-        perk_name_pos = Vec2(detail_anchor.x + 128.0 * scale - name_w * 0.5, detail_anchor.y - 22.0 * scale)
+        perk_name_pos = Vec2(detail_anchor.x + 128.0 - name_w * 0.5, detail_anchor.y - 22.0)
         draw_small_text(font, perk_name, perk_name_pos, text_color)
         rl.draw_rectangle_lines_ex(
             rl.Rectangle(
                 perk_name_pos.x,
-                perk_name_pos.y + 13.0 * scale,
+                perk_name_pos.y + 13.0,
                 name_w,
-                max(1.0, 1.0 * scale),
+                1.0,
             ),
             1.0,
             rl.Color(255, 255, 255, int(255 * 0.5)),
         )
 
-        desc_pos = detail_anchor + Vec2(16.0 * scale, 0.0)
+        desc_pos = detail_anchor + Vec2(16.0, 0.0)
         prereq_name = self._perk_prereq_name(perk_id, violence_disabled=violence_disabled)
         if prereq_name:
             draw_small_text(font, f"Requires: {prereq_name}", desc_pos, rl.Color(255, 204, 204, int(255 * 0.8)))
-            desc_pos = desc_pos.offset(dy=18.0 * scale)
+            desc_pos = desc_pos.offset(dy=18.0)
 
         wrapped_desc = self._prewrapped_perk_desc(perk_id, font, violence_disabled=violence_disabled)
         if wrapped_desc:
             draw_small_text(font, wrapped_desc, desc_pos, dim_color)
 
-    def _update_content_interaction(self, *, left_top_left: Vec2, scale: float, mouse: rl.Vector2) -> None:
+    def _update_content_interaction(self, *, left_top_left: Vec2, mouse: rl.Vector2) -> None:
         perk_ids = self._perk_ids
         count = len(perk_ids)
         self._hovered_row_index = -1
@@ -216,10 +215,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
                 self._list_scroll_index += self._VISIBLE_ROWS - 1
 
-        list_hit_x = left_top_left.x + self._LIST_FRAME_X * scale
-        list_hit_y = left_top_left.y + self._LIST_FRAME_Y * scale
-        list_hit_w = self._LIST_WIDTH * scale
-        list_hit_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
+        list_hit_x = left_top_left.x + self._LIST_FRAME_X
+        list_hit_y = left_top_left.y + self._LIST_FRAME_Y
+        list_hit_w = self._LIST_WIDTH
+        list_hit_h = self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0
         mouse_in_list = (
             list_hit_x <= mouse.x < list_hit_x + list_hit_w and list_hit_y <= mouse.y < list_hit_y + list_hit_h
         )
@@ -234,18 +233,15 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             start = max(0, min(max_scroll, int(self._list_scroll_index)))
             track_x, track_y, track_h, thumb_top, thumb_h, scroll_span = self._scrollbar_geometry(
                 left_top_left=left_top_left,
-                scale=scale,
                 count=count,
                 start=start,
             )
-            thumb_x = track_x + 1.0 * scale
-            thumb_w = 8.0 * scale
+            thumb_x = track_x + 1.0
+            thumb_w = 8.0
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            in_track = track_x <= mouse.x < track_x + 10.0 * scale and track_y <= mouse.y < track_y + track_h
-            in_thumb = (
-                thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0 * scale
-            )
+            in_track = track_x <= mouse.x < track_x + 10.0 and track_y <= mouse.y < track_y + track_h
+            in_thumb = thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0
 
             if click and in_track:
                 self._nav_focus_index = 1
@@ -253,8 +249,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                     self._scroll_drag_active = True
                     self._scroll_drag_offset = float(mouse.y - thumb_top)
                 else:
-                    travel = max(1.0, track_h - 3.0 * scale - thumb_h)
-                    target = float(mouse.y - track_y - 1.0 * scale - thumb_h * 0.5)
+                    travel = max(1.0, track_h - 3.0 - thumb_h)
+                    target = float(mouse.y - track_y - 1.0 - thumb_h * 0.5)
                     target = max(0.0, min(travel, target))
                     self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
                     self._scroll_drag_active = True
@@ -262,8 +258,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
 
             if self._scroll_drag_active:
                 if down:
-                    travel = max(1.0, track_h - 3.0 * scale - thumb_h)
-                    target = float(mouse.y - track_y - 1.0 * scale - self._scroll_drag_offset)
+                    travel = max(1.0, track_h - 3.0 - thumb_h)
+                    target = float(mouse.y - track_y - 1.0 - self._scroll_drag_offset)
                     target = max(0.0, min(travel, target))
                     self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
                 else:
@@ -277,8 +273,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         end = min(count, start + self._VISIBLE_ROWS)
         row_count = end - start
         if row_count > 0 and mouse_in_list:
-            row_step = self._LIST_ROW_HEIGHT * scale
-            list_text_top = left_top_left.y + self._LIST_TEXT_Y * scale
+            row_step = self._LIST_ROW_HEIGHT
+            list_text_top = left_top_left.y + self._LIST_TEXT_Y
             row = int((mouse.y - list_text_top) // row_step)
             if 0 <= row < row_count:
                 self._hovered_row_index = start + row
@@ -306,17 +302,16 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self,
         *,
         left_top_left: Vec2,
-        scale: float,
         count: int,
         start: int,
     ) -> tuple[float, float, float, float, float, int]:
-        track_x = left_top_left.x + (self._LIST_FRAME_X + 240.0) * scale
-        track_y = left_top_left.y + self._LIST_FRAME_Y * scale
-        track_h = (self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0) * scale
+        track_x = left_top_left.x + (self._LIST_FRAME_X + 240.0)
+        track_y = left_top_left.y + self._LIST_FRAME_Y
+        track_h = self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0
         scroll_span = max(1, int(count) - self._VISIBLE_ROWS)
         thumb_h = (float(self._VISIBLE_ROWS) / float(count)) * track_h
-        thumb_h = min(thumb_h, track_h - 3.0 * scale)
-        thumb_top = track_y + 1.0 * scale + ((track_h - 3.0 * scale - thumb_h) / float(scroll_span)) * float(start)
+        thumb_h = min(thumb_h, track_h - 3.0)
+        thumb_top = track_y + 1.0 + ((track_h - 3.0 - thumb_h) / float(scroll_span)) * float(start)
         return track_x, track_y, track_h, thumb_top, thumb_h, scroll_span
 
     def _build_perk_database_ids(self) -> list[PerkId]:

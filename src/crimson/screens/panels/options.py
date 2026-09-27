@@ -27,7 +27,6 @@ class SliderState(msgspec.Struct):
 
 
 class _OptionsContentLayout(msgspec.Struct, frozen=True):
-    scale: float
     base_pos: Vec2
     label_pos: Vec2
     slider_pos: Vec2
@@ -72,12 +71,11 @@ class OptionsMenuView(PanelMenuView):
         base_pos = layout.base_pos
         label_pos = layout.label_pos
         slider_pos = layout.slider_pos
-        scale = layout.scale
 
         resources = require_runtime_resources(self.state)
         rect_on = resources.texture(TextureId.UI_RECT_ON)
 
-        if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0 * scale), rect_on, scale):
+        if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0), rect_on):
             config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
             set_sfx_volume(self.state.audio, config.audio.sfx_volume)
             self._dirty = True
@@ -85,9 +83,8 @@ class OptionsMenuView(PanelMenuView):
         if self._update_slider(
             "music",
             self._slider_music,
-            slider_pos.offset(dy=67.0 * scale),
+            slider_pos.offset(dy=67.0),
             rect_on,
-            scale,
         ):
             config.audio.music_volume = float(self._slider_music.value) * 0.1
             set_music_volume(self.state.audio, config.audio.music_volume)
@@ -96,9 +93,8 @@ class OptionsMenuView(PanelMenuView):
         if self._update_slider(
             "detail",
             self._slider_detail,
-            slider_pos.offset(dy=87.0 * scale),
+            slider_pos.offset(dy=87.0),
             rect_on,
-            scale,
         ):
             preset = apply_detail_preset(config, self._slider_detail.value)
             self._slider_detail.value = preset
@@ -107,9 +103,8 @@ class OptionsMenuView(PanelMenuView):
         if self._update_slider(
             "mouse",
             self._slider_mouse,
-            slider_pos.offset(dy=107.0 * scale),
+            slider_pos.offset(dy=107.0),
             rect_on,
-            scale,
         ):
             sensitivity = float(self._slider_mouse.value) * 0.1
             if sensitivity < 0.1:
@@ -119,12 +114,12 @@ class OptionsMenuView(PanelMenuView):
             config.display.mouse_sensitivity = sensitivity
             self._dirty = True
 
-        if self._update_checkbox(label_pos.offset(dy=135.0 * scale), scale):
+        if self._update_checkbox(label_pos.offset(dy=135.0)):
             config.gameplay.show_info_texts = self._ui_info_texts
             self._dirty = True
 
         # `options_menu_update`: controls button is aligned with the panel content base.
-        controls_pos = base_pos.offset(dy=155.0 * scale)
+        controls_pos = base_pos.offset(dy=155.0)
         dt_ms = min(float(dt), 0.1) * 1000.0
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -132,7 +127,6 @@ class OptionsMenuView(PanelMenuView):
         width = button_width(
             resources,
             self._controls_button.label,
-            scale=scale,
             force_wide=self._controls_button.force_wide,
         )
         if button_update(
@@ -183,31 +177,28 @@ class OptionsMenuView(PanelMenuView):
         )
 
     def _content_layout(self) -> _OptionsContentLayout:
-        panel_scale = self._panel_scale()
-        panel_w = MENU_PANEL_WIDTH * panel_scale
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (
             Vec2(
                 self._panel_pos.x + slide_x,
                 self._panel_pos.y + self._widescreen_y_shift,
             )
-            + self._panel_offset * panel_scale
+            + self._panel_offset
         )
-        base_pos = panel_top_left + Vec2(212.0 * panel_scale, 40.0 * panel_scale)
+        base_pos = panel_top_left + Vec2(212.0, 40.0)
         # `options_menu_update`: title label is anchored at panel_top + 40.
-        label_pos = base_pos.offset(dx=8.0 * panel_scale)
-        slider_pos = label_pos.offset(dx=130.0 * panel_scale)
+        label_pos = base_pos.offset(dx=8.0)
+        slider_pos = label_pos.offset(dx=130.0)
         return _OptionsContentLayout(
             base_pos=base_pos,
             label_pos=label_pos,
             slider_pos=slider_pos,
-            scale=panel_scale,
         )
 
     def _update_slider(
@@ -216,10 +207,9 @@ class OptionsMenuView(PanelMenuView):
         slider: SliderState,
         pos: Vec2,
         rect_on: rl.Texture,
-        scale: float,
     ) -> bool:
-        rect_w = float(rect_on.width) * scale
-        rect_h = float(rect_on.height) * scale
+        rect_w = float(rect_on.width)
+        rect_h = float(rect_on.height)
         if rect_w <= 0.0 or rect_h <= 0.0:
             return False
         bar_w = rect_w * float(slider.max_value)
@@ -228,9 +218,9 @@ class OptionsMenuView(PanelMenuView):
             mouse_pos,
             pos=pos,
             width=bar_w,
-            height=18.0 * scale,
-            left_pad=3.0 * scale,
-            top_pad=1.0 * scale,
+            height=18.0,
+            left_pad=3.0,
+            top_pad=1.0,
         )
 
         changed = False
@@ -259,15 +249,14 @@ class OptionsMenuView(PanelMenuView):
 
         return changed
 
-    def _update_checkbox(self, pos: Vec2, scale: float) -> bool:
+    def _update_checkbox(self, pos: Vec2) -> bool:
         resources = require_runtime_resources(self.state)
         check_on = resources.texture(TextureId.UI_CHECK_ON)
         font = resources.small_font
-        text_scale = 1.0 * scale
         label = "UI Info texts"
         label_w = measure_small_text_width(font, label)
-        rect_w = float(check_on.width) * scale + 6.0 * scale + label_w
-        rect_h = max(float(check_on.height) * scale, font.cell_size * text_scale)
+        rect_w = float(check_on.width) + 6.0 + label_w
+        rect_h = max(float(check_on.height), font.cell_size)
         mouse_pos = Vec2.from_xy(rl.get_mouse_position())
         hovered = Rect.from_top_left(pos, rect_w, rect_h).contains(mouse_pos)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
@@ -282,7 +271,6 @@ class OptionsMenuView(PanelMenuView):
         base_pos = layout.base_pos
         label_pos = layout.label_pos
         slider_pos = layout.slider_pos
-        scale = layout.scale
 
         font = resources.small_font
         text_color = rl.Color(255, 255, 255, int(255 * 0.8))
@@ -297,8 +285,8 @@ class OptionsMenuView(PanelMenuView):
         dst = rl.Rectangle(
             base_pos.x,
             base_pos.y,
-            title_w * scale,
-            MENU_LABEL_ROW_HEIGHT * scale,
+            title_w,
+            MENU_LABEL_ROW_HEIGHT,
         )
         draw_ui_quad(
             texture=labels_tex,
@@ -309,20 +297,20 @@ class OptionsMenuView(PanelMenuView):
             tint=rl.WHITE,
         )
 
-        draw_small_text(font, "Effect density applies next game.", base_pos.offset(dy=195.0 * scale), text_color)
+        draw_small_text(font, "Effect density applies next game.", base_pos.offset(dy=195.0), text_color)
 
         y_offsets = (47.0, 67.0, 87.0, 107.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
-            draw_small_text(font, label, label_pos.offset(dy=offset * scale), text_color)
+            draw_small_text(font, label, label_pos.offset(dy=offset), text_color)
 
         rect_on = resources.texture(TextureId.UI_RECT_ON)
         rect_off = resources.texture(TextureId.UI_RECT_OFF)
-        rect_w = float(rect_on.width) * scale
-        rect_h = float(rect_on.height) * scale
+        rect_w = float(rect_on.width)
+        rect_h = float(rect_on.height)
 
         self._draw_slider(
             self._slider_sfx,
-            slider_pos.offset(dy=47.0 * scale),
+            slider_pos.offset(dy=47.0),
             rect_on,
             rect_off,
             rect_w,
@@ -330,7 +318,7 @@ class OptionsMenuView(PanelMenuView):
         )
         self._draw_slider(
             self._slider_music,
-            slider_pos.offset(dy=67.0 * scale),
+            slider_pos.offset(dy=67.0),
             rect_on,
             rect_off,
             rect_w,
@@ -338,7 +326,7 @@ class OptionsMenuView(PanelMenuView):
         )
         self._draw_slider(
             self._slider_detail,
-            slider_pos.offset(dy=87.0 * scale),
+            slider_pos.offset(dy=87.0),
             rect_on,
             rect_off,
             rect_w,
@@ -346,7 +334,7 @@ class OptionsMenuView(PanelMenuView):
         )
         self._draw_slider(
             self._slider_mouse,
-            slider_pos.offset(dy=107.0 * scale),
+            slider_pos.offset(dy=107.0),
             rect_on,
             rect_off,
             rect_w,
@@ -358,9 +346,9 @@ class OptionsMenuView(PanelMenuView):
             if self._ui_info_texts
             else resources.texture(TextureId.UI_CHECK_OFF)
         )
-        check_w = float(check_tex.width) * scale
-        check_h = float(check_tex.height) * scale
-        check_pos = label_pos.offset(dy=135.0 * scale)
+        check_w = float(check_tex.width)
+        check_h = float(check_tex.height)
+        check_pos = label_pos.offset(dy=135.0)
         rl.draw_texture_pro(
             check_tex,
             rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
@@ -369,13 +357,12 @@ class OptionsMenuView(PanelMenuView):
             0.0,
             rl.WHITE,
         )
-        draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0 * scale, 1.0 * scale), text_color)
+        draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0, 1.0), text_color)
 
-        button_pos = base_pos.offset(dy=155.0 * scale)
+        button_pos = base_pos.offset(dy=155.0)
         button_w = button_width(
             resources,
             self._controls_button.label,
-            scale=scale,
             force_wide=self._controls_button.force_wide,
         )
         button_draw(
@@ -383,7 +370,6 @@ class OptionsMenuView(PanelMenuView):
             self._controls_button,
             pos=button_pos,
             width=button_w,
-            scale=scale,
         )
 
     def _draw_slider(

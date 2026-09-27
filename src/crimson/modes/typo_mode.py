@@ -199,8 +199,8 @@ class TypoShooterMode(BaseGameplayMode):
             creatures=self.creatures.entries,
             names=self.state.typo.names.names,
             world_to_screen=self.world_to_screen,
-            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
-            measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale=scale)),
+            draw_text=self._draw_ui_text,
+            measure_text_width=self._ui_text_width,
         )
 
     def _draw_typing_box(self) -> None:
@@ -208,8 +208,8 @@ class TypoShooterMode(BaseGameplayMode):
             self.render_resources.resources.texture(TextureId.UI_IND_PANEL),
             text=self.state.typo.typing.text,
             cursor_pulse_time=float(self._cursor_pulse_time),
-            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
-            measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale=scale)),
+            draw_text=self._draw_ui_text,
+            measure_text_width=self._ui_text_width,
         )
 
     def draw(self) -> None:

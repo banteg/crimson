@@ -38,7 +38,6 @@ def draw_main_panel(
     resources: RuntimeResources,
     font: SmallFontData,
     left_panel_top_left: Vec2,
-    scale: float,
     mode_id: GameMode,
     quest_major: int,
     quest_minor: int,
@@ -56,16 +55,15 @@ def draw_main_panel(
             title_x = 266.0
         case _:
             pass
-    title_draw_pos = left_panel_top_left + Vec2(title_x * scale, 41.0 * scale)
+    title_draw_pos = left_panel_top_left + Vec2(title_x, 41.0)
     draw_small_text(font, title, title_draw_pos, rl.Color(255, 255, 255, 255))
     ul_w = measure_small_text_width(font, title)
-    ul_h = max(1, int(round(1.0 * scale)))
-    ul_pos = left_panel_top_left + Vec2(title_x * scale, HS_TITLE_UNDERLINE_Y * scale)
+    ul_pos = left_panel_top_left + Vec2(title_x, HS_TITLE_UNDERLINE_Y)
     rl.draw_rectangle(
         int(round(ul_pos.x)),
         int(round(ul_pos.y)),
         int(round(ul_w)),
-        ul_h,
+        1,
         rl.Color(255, 255, 255, int(255 * 0.7)),
     )
     if mode_id == GameMode.QUESTS:
@@ -77,7 +75,7 @@ def draw_main_panel(
         quest_level = QuestLevel(int(quest_major), int(quest_minor))
         quest = quest_by_level(quest_level)
         quest_label = f"{quest_level.text}: {quest.title if quest is not None else '???'}"
-        draw_small_text(font, quest_label, left_panel_top_left + Vec2(236.0 * scale, 63.0 * scale), quest_color)
+        draw_small_text(font, quest_label, left_panel_top_left + Vec2(236.0, 63.0), quest_color)
         arrow = resources.texture(TextureId.UI_ARROW)
         global_index = int(quest_level.global_index)
         unlock = (
@@ -87,13 +85,13 @@ def draw_main_panel(
         )
         max_index = max(0, min(49, unlock))
 
-        dst_w = float(arrow.width) * scale
-        dst_h = float(arrow.height) * scale
+        dst_w = float(arrow.width)
+        dst_h = float(arrow.height)
         tint = rl.Color(255, 255, 255, int(255 * 0.51))
 
         if global_index > 0:
             src = rl.Rectangle(0.0, 0.0, float(arrow.width), float(arrow.height))
-            arrow_pos = left_panel_top_left + Vec2((HS_QUEST_ARROW_X - 255.0) * scale, HS_QUEST_ARROW_Y * scale)
+            arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X - 255.0, HS_QUEST_ARROW_Y)
             dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
             rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
@@ -102,42 +100,42 @@ def draw_main_panel(
             # Keep src.x in-range; with CLAMP wrap, raylib can collapse flipped UVs
             # when the rect starts at x=tex.width.
             src = rl.Rectangle(0.0, 0.0, -float(arrow.width), float(arrow.height))
-            arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X * scale, HS_QUEST_ARROW_Y * scale)
+            arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y)
             dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
             rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
 
     header_color = rl.Color(255, 255, 255, 255)
-    draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0 * scale, 84.0 * scale), header_color)
-    draw_small_text(font, "Score", left_panel_top_left + Vec2(246.0 * scale, 84.0 * scale), header_color)
-    draw_small_text(font, "Player", left_panel_top_left + Vec2(302.0 * scale, 84.0 * scale), header_color)
+    draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0, 84.0), header_color)
+    draw_small_text(font, "Score", left_panel_top_left + Vec2(246.0, 84.0), header_color)
+    draw_small_text(font, "Player", left_panel_top_left + Vec2(302.0, 84.0), header_color)
 
     # Score list viewport frame (white 1px border + black interior).
-    frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
-    frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y * scale
-    frame_w = HS_SCORE_FRAME_W * scale
-    frame_h = HS_SCORE_FRAME_H * scale
+    frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X
+    frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y
+    frame_w = HS_SCORE_FRAME_W
+    frame_h = HS_SCORE_FRAME_H
     rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
     rl.draw_rectangle(
-        int(round(frame_x + 1.0 * scale)),
-        int(round(frame_y + 1.0 * scale)),
-        max(0, int(round(frame_w - 2.0 * scale))),
-        max(0, int(round(frame_h - 2.0 * scale))),
+        int(round(frame_x + 1.0)),
+        int(round(frame_y + 1.0)),
+        max(0, int(round(frame_w - 2.0))),
+        max(0, int(round(frame_h - 2.0))),
         rl.BLACK,
     )
 
-    row_step = 16.0 * scale
+    row_step = 16.0
     rows = 10
     start = max(0, int(view._scroll_index))
     end = min(len(view._records), start + rows)
-    y = left_panel_top_left.y + 103.0 * scale
+    y = left_panel_top_left.y + 103.0
     selected_rank = (
         int(request.highlight_rank) if (request.highlight_rank is not None) else None
     )
     mouse = Vec2.from_xy(rl.get_mouse_position())
-    frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X * scale
-    frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y * scale
-    frame_w = HS_SCORE_FRAME_W * scale
-    frame_h = HS_SCORE_FRAME_H * scale
+    frame_x = left_panel_top_left.x + HS_SCORE_FRAME_X
+    frame_y = left_panel_top_left.y + HS_SCORE_FRAME_Y
+    frame_w = HS_SCORE_FRAME_W
+    frame_h = HS_SCORE_FRAME_H
     if (
         frame_x <= mouse.x < frame_x + frame_w
         and frame_y <= mouse.y < frame_y + frame_h
@@ -152,7 +150,7 @@ def draw_main_panel(
         draw_small_text(
             font,
             "No scores yet.",
-            Vec2(left_panel_top_left.x + 211.0 * scale, y + 8.0 * scale),
+            Vec2(left_panel_top_left.x + 211.0, y + 8.0),
             rl.Color(190, 190, 200, 255),
         )
     else:
@@ -175,29 +173,27 @@ def draw_main_panel(
             if selected_rank is not None and int(selected_rank) == idx:
                 color = rl.Color(255, 255, 255, 255)
 
-            draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0 * scale, y), color)
-            draw_small_text(font, value, Vec2(left_panel_top_left.x + 246.0 * scale, y), color)
-            draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0 * scale, y), color)
+            draw_small_text(font, f"{idx + 1}", Vec2(left_panel_top_left.x + 216.0, y), color)
+            draw_small_text(font, value, Vec2(left_panel_top_left.x + 246.0, y), color)
+            draw_small_text(font, name, Vec2(left_panel_top_left.x + 304.0, y), color)
             y += row_step
 
-    button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X * scale, HS_BUTTON_Y0 * scale)
-    w = button_width(resources, view._update_button.label, scale=scale, force_wide=view._update_button.force_wide)
-    button_draw(resources, view._update_button, pos=button_base_pos, width=w, scale=scale)
-    w = button_width(resources, view._play_button.label, scale=scale, force_wide=view._play_button.force_wide)
+    button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
+    w = button_width(resources, view._update_button.label, force_wide=view._update_button.force_wide)
+    button_draw(resources, view._update_button, pos=button_base_pos, width=w)
+    w = button_width(resources, view._play_button.label, force_wide=view._play_button.force_wide)
     button_draw(
         resources,
         view._play_button,
-        pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y * scale),
+        pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y),
         width=w,
-        scale=scale,
     )
-    w = button_width(resources, view._back_button.label, scale=scale, force_wide=view._back_button.force_wide)
+    w = button_width(resources, view._back_button.label, force_wide=view._back_button.force_wide)
     button_draw(
         resources,
         view._back_button,
-        pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X * scale, HS_BACK_BUTTON_Y * scale),
+        pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
         width=w,
-        scale=scale,
     )
 
     return selected_rank

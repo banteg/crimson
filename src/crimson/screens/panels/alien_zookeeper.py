@@ -61,7 +61,6 @@ _BACK_LABEL = "Back"
 
 
 class _AzkLayout(msgspec.Struct):
-    scale: float
     panel_x: float
     panel_y: float
     board_x: float
@@ -171,49 +170,43 @@ class AlienZooKeeperView:
             return
         self._transition.begin(action)
 
-    def _panel_slide_x(self, *, scale: float) -> float:
-        panel_w = MENU_PANEL_WIDTH * scale
+    def _panel_slide_x(self) -> float:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
         return float(slide_x)
 
-    def _layout(self, *, scale: float) -> _AzkLayout:
+    def _layout(self) -> _AzkLayout:
         layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self.state.config.display.width) < 641.0 else _LAYOUT_OFFSET_X
-        slide_x = self._panel_slide_x(scale=scale)
+        slide_x = self._panel_slide_x()
         anchor_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
         title_base_y = _LAYOUT_BASE_Y + _LAYOUT_POS_Y + _TITLE_BASE_Y_OFFSET + self._widescreen_y_shift
-        board_x = anchor_x + (22.0 * scale)
-        board_y = title_base_y + (_BOARD_Y_OFFSET * scale)
-
-        tile_size = _TILE_SIZE * scale
-        board_size = _BOARD_SIZE * scale
-
+        board_x = anchor_x + 22.0
+        board_y = title_base_y + _BOARD_Y_OFFSET
         return _AzkLayout(
-            scale=scale,
             panel_x=_LAYOUT_POS_X + layout_offset_x + slide_x,
             panel_y=_LAYOUT_BASE_Y + _LAYOUT_POS_Y + self._widescreen_y_shift,
             board_x=board_x,
             board_y=board_y,
-            tile_size=tile_size,
-            board_size=board_size,
+            tile_size=_TILE_SIZE,
+            board_size=_BOARD_SIZE,
             title_x=anchor_x,
-            title_y=title_base_y - (14.0 * scale),
-            subtitle_1_x=anchor_x + (12.0 * scale),
-            subtitle_1_y=title_base_y + (10.0 * scale),
-            subtitle_2_x=anchor_x + (18.0 * scale),
-            subtitle_2_y=title_base_y + (23.0 * scale),
-            score_x=board_x + (124.0 * scale),
-            score_y=board_y - (16.0 * scale),
-            game_over_x=board_x + (38.0 * scale),
-            game_over_y=board_y + (74.0 * scale),  # 96 - 22
-            reset_pos=Vec2(anchor_x + (38.0 * scale), title_base_y + (256.0 * scale)),
-            back_pos=Vec2(anchor_x + (138.0 * scale), title_base_y + (256.0 * scale)),
+            title_y=title_base_y - 14.0,
+            subtitle_1_x=anchor_x + 12.0,
+            subtitle_1_y=title_base_y + 10.0,
+            subtitle_2_x=anchor_x + 18.0,
+            subtitle_2_y=title_base_y + 23.0,
+            score_x=board_x + 124.0,
+            score_y=board_y - 16.0,
+            game_over_x=board_x + 38.0,
+            game_over_y=board_y + 74.0,  # 96 - 22
+            reset_pos=Vec2(anchor_x + 38.0, title_base_y + 256.0),
+            back_pos=Vec2(anchor_x + 138.0, title_base_y + 256.0),
         )
 
     def _fill_empty_cells(self) -> None:
@@ -322,8 +315,7 @@ class AlienZooKeeperView:
         if not interactive:
             return
 
-        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
-        layout = self._layout(scale=scale)
+        layout = self._layout()
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if click:
@@ -335,7 +327,6 @@ class AlienZooKeeperView:
         reset_w = button_width(
             resources,
             self._reset_button.label,
-            scale=scale,
             force_wide=self._reset_button.force_wide,
         )
         if button_update(
@@ -351,7 +342,7 @@ class AlienZooKeeperView:
             self._reset_state()
             return
 
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
             self._back_button,
             pos=layout.back_pos,
@@ -372,14 +363,13 @@ class AlienZooKeeperView:
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
-        scale = 0.9 if float(self.state.config.display.width) < 641.0 else 1.0
-        layout = self._layout(scale=scale)
+        layout = self._layout()
 
         dst = rl.Rectangle(
             layout.panel_x,
             layout.panel_y,
-            MENU_PANEL_WIDTH * scale,
-            378.0 * scale,
+            MENU_PANEL_WIDTH,
+            378.0,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
         draw_classic_menu_panel(
@@ -398,21 +388,21 @@ class AlienZooKeeperView:
 
         board_bg = rl.Rectangle(layout.board_x, layout.board_y, layout.board_size, layout.board_size)
         rl.draw_rectangle_rec(board_bg, _to_color(0.0, 0.0, 0.0, 0.6))
-        rl.draw_rectangle_lines_ex(board_bg, max(1.0, scale), rl.WHITE)
+        rl.draw_rectangle_lines_ex(board_bg, 1.0, rl.WHITE)
 
         timer_value = self._timer_ms // 100
         if timer_value > 0xC0:
             timer_value = 0xC0
-        timer_h = 6.0 * scale
-        timer_y = layout.board_y + (200.0 * scale)
-        timer_fill_w = float(timer_value) * scale
+        timer_h = 6.0
+        timer_y = layout.board_y + 200.0
+        timer_fill_w = float(timer_value)
         rl.draw_rectangle_rec(
             rl.Rectangle(layout.board_x, timer_y, timer_fill_w, timer_h),
             _to_color(0.2, 0.6, 1.0, 0.6),
         )
         rl.draw_rectangle_lines_ex(
             rl.Rectangle(layout.board_x, timer_y, layout.board_size, timer_h),
-            max(1.0, scale),
+            1.0,
             rl.WHITE,
         )
 
@@ -420,13 +410,13 @@ class AlienZooKeeperView:
             row = self._selected_index // _BOARD_SIDE
             col = self._selected_index % _BOARD_SIDE
             sel_rect = rl.Rectangle(
-                layout.board_x + col * layout.tile_size + (4.0 * scale),
-                layout.board_y + row * layout.tile_size + (4.0 * scale),
-                24.0 * scale,
-                24.0 * scale,
+                layout.board_x + col * layout.tile_size + 4.0,
+                layout.board_y + row * layout.tile_size + 4.0,
+                24.0,
+                24.0,
             )
             rl.draw_rectangle_rec(sel_rect, _to_color(0.2, 0.4, 0.7, 0.4))
-            rl.draw_rectangle_lines_ex(sel_rect, max(1.0, scale), rl.WHITE)
+            rl.draw_rectangle_lines_ex(sel_rect, 1.0, rl.WHITE)
 
         alien = resources.texture(TextureId.ALIEN)
         frame_w = float(alien.width) / 8.0
@@ -466,7 +456,6 @@ class AlienZooKeeperView:
         reset_w = button_width(
             resources,
             self._reset_button.label,
-            scale=scale,
             force_wide=self._reset_button.force_wide,
         )
         button_draw(
@@ -474,16 +463,14 @@ class AlienZooKeeperView:
             self._reset_button,
             pos=layout.reset_pos,
             width=reset_w,
-            scale=scale,
         )
 
-        back_w = button_width(resources, self._back_button.label, scale=scale, force_wide=self._back_button.force_wide)
+        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
             pos=layout.back_pos,
             width=back_w,
-            scale=scale,
         )
 
         draw_menu_sign(

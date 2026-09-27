@@ -178,15 +178,14 @@ class TutorialMode(BaseGameplayMode):
             resources = self.render_resources.resources
             rect, _lines, _line_h = tutorial_prompt_panel_rect(
                 overlay.prompt_text,
-                measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
+                measure_text_width=self._ui_text_width,
                 measure_line_height=self._ui_line_height,
                 pos=TUTORIAL_PANEL_POS,
-                scale=1.0,
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(resources, self._play_button.label, scale=1.0, force_wide=True)
-            repeat_w = button_width(resources, self._repeat_button.label, scale=1.0, force_wide=True)
+            play_w = button_width(resources, self._play_button.label, force_wide=True)
+            repeat_w = button_width(resources, self._repeat_button.label, force_wide=True)
             if button_update(
                 self._play_button,
                 pos=button_base_pos,
@@ -212,7 +211,7 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.enabled:
             resources = self.render_resources.resources
             y = float(rl.get_screen_height()) - 50.0
-            w = button_width(resources, self._skip_button.label, scale=1.0, force_wide=True)
+            w = button_width(resources, self._skip_button.label, force_wide=True)
             if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
                 self._finish_tutorial_run(restart=False)
 
@@ -317,8 +316,8 @@ class TutorialMode(BaseGameplayMode):
         overlay = self.state.tutorial_overlay
         draw_tutorial_overlay_panels(
             overlay,
-            draw_text=lambda text, pos, color, scale: self._draw_ui_text(text, pos, color, scale=scale),
-            measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
+            draw_text=self._draw_ui_text,
+            measure_text_width=self._ui_text_width,
             measure_line_height=self._ui_line_height,
         )
         resources = self.render_resources.resources
@@ -329,35 +328,32 @@ class TutorialMode(BaseGameplayMode):
         if stage == 8:
             rect, _lines, _line_h = tutorial_prompt_panel_rect(
                 overlay.prompt_text,
-                measure_text_width=lambda text, scale: float(self._ui_text_width(text, scale)),
+                measure_text_width=self._ui_text_width,
                 measure_line_height=self._ui_line_height,
                 pos=TUTORIAL_PANEL_POS,
-                scale=1.0,
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(resources, self._play_button.label, scale=1.0, force_wide=True)
-            repeat_w = button_width(resources, self._repeat_button.label, scale=1.0, force_wide=True)
+            play_w = button_width(resources, self._play_button.label, force_wide=True)
+            repeat_w = button_width(resources, self._repeat_button.label, force_wide=True)
             button_draw(
                 resources,
                 self._play_button,
                 pos=button_base_pos,
                 width=play_w,
-                scale=1.0,
             )
             button_draw(
                 resources,
                 self._repeat_button,
                 pos=button_base_pos.offset(dx=play_w + gap),
                 width=repeat_w,
-                scale=1.0,
             )
             return
 
         if self._skip_button.alpha > 1e-3:
             y = float(rl.get_screen_height()) - 50.0
-            w = button_width(resources, self._skip_button.label, scale=1.0, force_wide=True)
-            button_draw(resources, self._skip_button, pos=Vec2(10.0, y), width=w, scale=1.0)
+            w = button_width(resources, self._skip_button.label, force_wide=True)
+            button_draw(resources, self._skip_button, pos=Vec2(10.0, y), width=w)
 
         if self._paused:
             x = 18.0
