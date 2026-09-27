@@ -8,6 +8,7 @@ See: `docs/creatures/update.md`.
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
+from functools import partial
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -390,66 +391,7 @@ class _CreatureInteractionPlayerDeathRuntime(PlayerDeathRuntime):
         )
 
 
-class _CreatureInteractionCreatureDamageRuntime(msgspec.Struct):
-    ctx: _CreatureInteractionCtx
-
-    def on_creature_lethal(
-        self,
-        creature_index: int,
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-    ) -> None:
-        ctx = self.ctx
-        ctx.deaths.append(
-            ctx.pool.handle_death(
-                int(creature_index),
-                state=ctx.state,
-                players=ctx.players,
-                rng=ctx.rng,
-                dt=float(ctx.dt),
-                detail_preset=int(ctx.detail_preset),
-                world_width=float(ctx.world_width),
-                world_height=float(ctx.world_height),
-                fx_queue=ctx.fx_queue,
-            ),
-        )
-        ctx.sfx.extend(SfxRequest(sound, ctx.pool.entries[creature_index].pos) for sound in resolve_damage_followup())
-
-
 _CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
-
-
-class _CreaturePoolCreatureDamageRuntime(msgspec.Struct):
-    pool: CreaturePool
-    state: GameplayState
-    players: list[PlayerState]
-    rng: CrandLike
-    dt: float
-    detail_preset: int
-    world_width: float
-    world_height: float
-    fx_queue: FxQueue | None
-    deaths: list[CreatureDeath]
-    sfx: list[SfxRequest]
-
-    def on_creature_lethal(
-        self,
-        creature_index: int,
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-    ) -> None:
-        self.deaths.append(
-            self.pool.handle_death(
-                int(creature_index),
-                state=self.state,
-                players=self.players,
-                rng=self.rng,
-                dt=float(self.dt),
-                detail_preset=int(self.detail_preset),
-                world_width=float(self.world_width),
-                world_height=float(self.world_height),
-                fx_queue=self.fx_queue,
-            ),
-        )
-        self.sfx.extend(SfxRequest(sound, self.pool.entries[creature_index].pos) for sound in resolve_damage_followup())
 
 
 def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
@@ -550,7 +492,19 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
             preserve_bugs=bool(ctx.state.preserve_bugs),
             effects=ctx.state.effects,
             detail_preset=int(ctx.detail_preset),
-            on_lethal=_CreatureInteractionCreatureDamageRuntime(ctx=ctx).on_creature_lethal,
+            on_lethal=partial(
+                ctx.pool.record_death,
+                state=ctx.state,
+                players=ctx.players,
+                rng=ctx.rng,
+                dt=float(ctx.dt),
+                detail_preset=int(ctx.detail_preset),
+                world_width=float(ctx.world_width),
+                world_height=float(ctx.world_height),
+                fx_queue=ctx.fx_queue,
+                deaths=ctx.deaths,
+                sfx=ctx.sfx,
+            ),
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
@@ -1157,8 +1111,8 @@ class CreaturePool:
         # Native AI7 timer math uses `frame_dt_ms` integer slots with ftol-style
         # truncation semantics.
         dt_ms = ftol_ms_i32(float(dt)) if dt > 0.0 else 0
-        creature_damage_runtime = _CreaturePoolCreatureDamageRuntime(
-            pool=self,
+        on_lethal = partial(
+            self.record_death,
             state=state,
             players=players,
             rng=rng,
@@ -1190,7 +1144,7 @@ class CreaturePool:
                     dt=dt,
                     dt_ms=dt_ms,
                     options=options,
-                    on_lethal=creature_damage_runtime.on_creature_lethal,
+                    on_lethal=on_lethal,
                     single_player_dormant_target=single_player_dormant_target,
                 )
                 continue
@@ -1203,7 +1157,7 @@ class CreaturePool:
                 creature,
                 dt=dt,
                 options=options,
-                on_lethal=creature_damage_runtime.on_creature_lethal,
+                on_lethal=on_lethal,
             )
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
@@ -1334,7 +1288,7 @@ class CreaturePool:
                     preserve_bugs=bool(state.preserve_bugs),
                     effects=state.effects,
                     detail_preset=int(detail_preset),
-                    on_lethal=creature_damage_runtime.on_creature_lethal,
+                    on_lethal=on_lethal,
                 )
 
             if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
@@ -1529,6 +1483,44 @@ class CreaturePool:
                 continue
 
         return CreatureUpdateResult(deaths=tuple(deaths), spawned=tuple(spawned), sfx=tuple(sfx))
+
+    def record_death(
+        self,
+        idx: int,
+        resolve_damage_followup: Callable[[], tuple[SfxId, ...]] | None = None,
+        *,
+        state: GameplayState,
+        players: list[PlayerState],
+        rng: CrandLike,
+        dt: float,
+        detail_preset: int,
+        world_width: float,
+        world_height: float,
+        fx_queue: FxQueue | None,
+        deaths: list[CreatureDeath],
+        sfx: list[SfxRequest],
+        keep_corpse: bool = True,
+    ) -> None:
+        """Handle a death and record it, then play the killing hit's follow-up (native order).
+
+        Serves as the lethal callback of `creature_apply_damage_with_lethal_followup`.
+        """
+        deaths.append(
+            self.handle_death(
+                int(idx),
+                state=state,
+                players=players,
+                rng=rng,
+                dt=float(dt),
+                detail_preset=int(detail_preset),
+                world_width=float(world_width),
+                world_height=float(world_height),
+                fx_queue=fx_queue,
+                keep_corpse=keep_corpse,
+            ),
+        )
+        if resolve_damage_followup is not None:
+            sfx.extend(SfxRequest(sound, self._entries[int(idx)].pos) for sound in resolve_damage_followup())
 
     def handle_death(
         self,

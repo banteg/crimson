@@ -447,8 +447,9 @@ class WorldState(msgspec.Struct):
         sfx: list[SfxRequest],
         resolve_damage_followup: Callable[[], tuple[SfxId, ...]] | None = None,
     ) -> None:
-        death = self.creatures.handle_death(
+        self.creatures.record_death(
             int(creature_index),
+            resolve_damage_followup,
             state=self.state,
             players=self.players,
             rng=self.state.rng,
@@ -457,13 +458,10 @@ class WorldState(msgspec.Struct):
             world_width=float(world_size),
             world_height=float(world_size),
             fx_queue=fx_queue,
+            deaths=deaths,
+            sfx=sfx,
             keep_corpse=bool(keep_corpse),
         )
-        deaths.append(death)
-        if resolve_damage_followup is not None:
-            sfx.extend(
-                SfxRequest(sound, self.creatures.entries[creature_index].pos) for sound in resolve_damage_followup()
-            )
 
     def _prepare_projectile_hit_presentation(
         self,

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Callable
+from functools import partial
 from typing import TYPE_CHECKING
-
-import msgspec
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
@@ -20,39 +18,6 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ...creatures.runtime import CreatureDeath, CreaturePool
-
-
-class _FinalRevengeCreatureDamageRuntime(msgspec.Struct):
-    state: GameplayState
-    creatures: CreaturePool
-    players: list[PlayerState]
-    dt: float
-    world_size: float
-    detail_preset: int
-    fx_queue: FxQueue | None
-    deaths: list[CreatureDeath]
-
-    def on_creature_lethal(
-        self,
-        creature_index: int,
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-    ) -> None:
-        self.deaths.append(
-            self.creatures.handle_death(
-                int(creature_index),
-                state=self.state,
-                players=self.players,
-                rng=self.state.rng,
-                dt=float(self.dt),
-                detail_preset=int(self.detail_preset),
-                world_width=float(self.world_size),
-                world_height=float(self.world_size),
-                fx_queue=self.fx_queue,
-            ),
-        )
-        self.state.sfx_queue.extend(
-            SfxRequest(sound, self.creatures.entries[creature_index].pos) for sound in resolve_damage_followup()
-        )
 
 
 def apply_final_revenge_on_player_death(
@@ -82,15 +47,18 @@ def apply_final_revenge_on_player_death(
     )
 
     state.bonus_spawn_guard = True
-    creature_damage_runtime = _FinalRevengeCreatureDamageRuntime(
+    on_lethal = partial(
+        creatures.record_death,
         state=state,
-        creatures=creatures,
         players=players,
+        rng=state.rng,
         dt=float(dt),
-        world_size=float(world_size),
         detail_preset=int(detail_preset),
+        world_width=float(world_size),
+        world_height=float(world_size),
         fx_queue=fx_queue,
         deaths=deaths,
+        sfx=state.sfx_queue,
     )
     for creature_idx, creature in enumerate(creatures.entries):
         if not creature.active:
@@ -120,7 +88,7 @@ def apply_final_revenge_on_player_death(
             preserve_bugs=bool(state.preserve_bugs),
             effects=state.effects,
             detail_preset=int(detail_preset),
-            on_lethal=creature_damage_runtime.on_creature_lethal,
+            on_lethal=on_lethal,
         )
 
     state.bonus_spawn_guard = False
