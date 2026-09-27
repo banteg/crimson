@@ -94,7 +94,6 @@ def bonus_update(
     dt: float,
     *,
     creatures: Sequence[CreatureState],
-    update_hud: bool = True,
     detail_preset: int = 5,
     step_runtime: WorldStepRuntime,
 ) -> list[BonusPickupEvent]:
@@ -137,8 +136,7 @@ def bonus_update(
         else:
             state.bonuses.freeze = float(f32(float(freeze) - float(dt)))
 
-    if update_hud:
-        bonus_hud_update(state, players, dt=dt)
+    bonus_hud_update(state, players, dt=dt)
 
     return pickups
 

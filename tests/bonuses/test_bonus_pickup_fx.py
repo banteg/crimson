@@ -30,7 +30,7 @@ def _step_world_over_bonuses(
     world.players.append(PlayerState(index=0, pos=Vec2(512.0, 512.0)))
     state = world.state
     for pos, bonus_id in bonuses:
-        assert state.bonus_pool.spawn_at(pos=pos, bonus_id=bonus_id, state=state, emit_burst=False) is not None
+        assert state.bonus_pool.spawn_at(pos=pos, bonus_id=bonus_id, state=state) is not None
     rng = state.rng
     assert isinstance(rng, Crand)
     rng.srand(0x150767)
@@ -40,12 +40,15 @@ def _step_world_over_bonuses(
     )
     events = world.step(
         0.016,
+        mid_step_runtime=None,
         inputs=None,
         detail_preset=5,
+        violence_disabled=0,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
+        game_tune_started=False,
     )
     return world, events, [caller for caller in callers if caller.name.startswith("BONUS_APPLY_")]
 
@@ -64,7 +67,8 @@ def test_reflex_boost_and_freeze_pickups_spawn_ring_and_burst() -> None:
 
     assert [pickup.bonus_id for pickup in events.pickups] == [BonusId.REFLEX_BOOST, BonusId.FREEZE]
     effect_ids = [int(effect.effect_id) for effect in world.state.effects.iter_active()]
-    assert effect_ids.count(int(EffectId.BURST)) == 24
+    # Each `bonus_spawn_at` left its 16-particle burst alive (0.5s lifetime); each pickup adds 12.
+    assert effect_ids.count(int(EffectId.BURST)) == 2 * 16 + 2 * 12
     assert effect_ids.count(int(EffectId.RING)) == 2
 
 
@@ -91,16 +95,16 @@ def test_bonus_pickup_spawns_burst_effect() -> None:
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.POINTS,
         state=runtime.world.state,
-        emit_burst=False,
     )
     assert entry is not None
 
-    assert not runtime.world.state.effects.iter_active()
+    # `bonus_spawn_at` emits its own 16-particle burst.
+    assert len(runtime.world.state.effects.iter_active()) == 16
     runtime.step_survival_frame(0.016, perk_progression_enabled=False)
 
     assert entry.picked
     active = runtime.world.state.effects.iter_active()
-    assert len(active) == 12
+    assert len(active) == 16 + 12
     assert {effect.effect_id for effect in active} == {0}
 
 
@@ -113,7 +117,6 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
         pos=Vec2(player.pos.x, player.pos.y),
         bonus_id=BonusId.FREEZE,
         state=runtime.world.state,
-        emit_burst=False,
     )
     assert entry is not None
     entry.time_left = 0.01
@@ -125,7 +128,8 @@ def test_expired_bonus_can_still_pickup_as_unused_in_same_tick() -> None:
     assert entry.bonus_id == BonusId.UNUSED
     assert runtime.world.state.bonuses.freeze == 0.0
     active = runtime.world.state.effects.iter_active()
-    assert len(active) == 12
+    # 16 from `bonus_spawn_at`, 12 from the pickup burst.
+    assert len(active) == 16 + 12
     assert {effect.effect_id for effect in active} == {0}
 
 
@@ -145,7 +149,6 @@ def test_bonus_lifetime_decrement_stores_native_f32_result() -> None:
         pos=Vec2(100.0, 100.0),
         bonus_id=BonusId.POINTS,
         state=world.state,
-        emit_burst=False,
     )
     assert entry is not None
     entry.time_left = 9.85200023651123
@@ -181,7 +184,6 @@ def test_coop_players_on_same_bonus_both_apply_in_one_tick() -> None:
         pos=Vec2(500.0, 500.0),
         bonus_id=BonusId.SHIELD,
         state=world.state,
-        emit_burst=False,
     )
     assert entry is not None
 

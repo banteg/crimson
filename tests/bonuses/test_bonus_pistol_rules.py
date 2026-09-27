@@ -160,12 +160,12 @@ def test_pistol_safety_net_consumes_weapon_rng_when_spawn_pos_is_blocked() -> No
 
 def test_spawn_gate_consumes_pick_rng_when_spacing_rejects_slot() -> None:
     state = _init_bonus_state(GameplayState())
+    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
+    # `bonus_spawn_at` draws its 16-particle burst; script the kill-drop draws after it.
+    seeded = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.POINTS, state=state)
+    assert seeded is not None
     rng = ScriptedCrand([1, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
     state.rng = rng
-
-    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    seeded = state.bonus_pool.spawn_at(pos=Vec2(100.0, 100.0), bonus_id=BonusId.POINTS, state=state, emit_burst=False)
-    assert seeded is not None
     before_calls = rng.calls
     before_state = rng.state
 

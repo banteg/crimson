@@ -5,6 +5,7 @@ from pathlib import Path
 from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
+from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from tests.support.world_runtime import WorldRuntimeHost
@@ -43,8 +44,6 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         if not step.presentation.terrain_fx.is_empty():
             break
         runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=bool(session.game_tune_started))
-        runtime.sync_audio_bridge_state()
-        runtime.audio_bridge.apply_plan(plan=step.presentation, apply_audio=True)
-        runtime.update_camera(step.presentation.camera)
+        apply_presentation_plans(plans=[step.presentation], runtime=runtime)
 
     assert not step.presentation.terrain_fx.is_empty()

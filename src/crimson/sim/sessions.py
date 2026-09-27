@@ -439,7 +439,6 @@ class DeterministicSession(msgspec.Struct):
             raise IllegalCommandError(f"{name} while every player is dead")
 
     def apply_command(self, command: GameCommand, *, dt: float) -> SfxId | None:
-        perk_state = self.world.state.perk_selection
         match command:
             case PerkPickCommand(choice_index=choice_index):
                 self._require_perk_command_allowed("perk_pick")
@@ -448,26 +447,17 @@ class DeterministicSession(msgspec.Struct):
                 picked = perk_selection_pick(
                     self.world.state,
                     self.world.players,
-                    perk_state,
                     choice_index,
                     game_mode=self.game_mode,
-                    player_count=len(self.world.players),
                     dt=timing.dt_sim,
                     creatures=self.world.creatures.entries,
-                    refresh_choices=False,
                 )
                 if picked is None and self.strict_commands:
                     raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
                 return SfxId.UI_BONUS if picked is not None else None
             case PerkMenuOpenCommand():
                 self._require_perk_command_allowed("perk_menu_open")
-                perk_selection_open_choices(
-                    self.world.state,
-                    self.world.players,
-                    perk_state,
-                    game_mode=self.game_mode,
-                    player_count=len(self.world.players),
-                )
+                perk_selection_open_choices(self.world.state, self.world.players, game_mode=self.game_mode)
             case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
                 if self.game_mode != GameMode.TYPO:
                     raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
@@ -547,9 +537,6 @@ class DeterministicSession(msgspec.Struct):
 
         events = self.world.step(
             timing.dt_sim,
-            # Session timing already applied the outer-loop perk transforms so
-            # mode hooks and the world share the same native frame delta.
-            apply_world_dt_steps=False,
             mid_step_runtime=mid_step_runtime,
             inputs=tick_inputs,
             detail_preset=self.detail_preset,

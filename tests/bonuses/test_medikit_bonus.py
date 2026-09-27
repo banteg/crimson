@@ -16,6 +16,7 @@ def test_medikit_narrows_updated_health_to_f32() -> None:
         world.state,
         player,
         BonusId.MEDIKIT,
+        amount=10,
         step_runtime=make_step_runtime(world),
         origin=Vec2(),
         creatures=world.creatures.entries,

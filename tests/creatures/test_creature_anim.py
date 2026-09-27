@@ -124,6 +124,9 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 

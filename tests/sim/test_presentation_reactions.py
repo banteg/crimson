@@ -10,6 +10,7 @@ from crimson.sim.sessions import IllegalCommandError
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
 from grim.audio import AudioState
+from grim.geom import Vec2
 from grim.music import init_music_state
 from grim.rand import Crand
 from grim.sfx import init_sfx_state
@@ -77,7 +78,6 @@ def test_quest_audio_requests_survive_render_partitions(
         world=make_world(),
         detail_preset=5,
         violence_disabled=0,
-        game_tune_started=False,
         demo_mode_active=False,
         apply_world_dt_steps=True,
         spawn_entries=(),
@@ -108,10 +108,7 @@ def test_shared_audio_sink_applies_post_tick_sfx_and_quest_music(mocker) -> None
         post_apply_sfx=(SfxRequest(SfxId.UI_BONUS), SfxRequest(SfxId.QUESTHIT)),
         play_quest_completion_music=True,
     )
-    bridge.apply_post_plan(plan=plan, apply_audio=False)
-    play_sfx.assert_not_called()
-    play_music.assert_not_called()
-    bridge.apply_post_plan(plan=plan)
+    bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_BONUS, SfxId.QUESTHIT]
     play_music.assert_called_once_with(audio, "crimsonquest", fade_in=True)
 
@@ -133,11 +130,8 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
         post_apply_sfx=(SfxRequest(SfxId.UI_LEVELUP),),
         reflex_boost_timer=0.5,
     )
-    bridge.apply_plan(plan=plan, apply_audio=False)
-    bridge.apply_post_plan(plan=plan, apply_audio=False)
-    assert calls.mock_calls == []
-    bridge.apply_plan(plan=plan)
-    bridge.apply_post_plan(plan=plan)
+    bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
+    bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert calls.mock_calls == [
         call.tune(audio, rng=rng),
         call.sfx(audio, SfxId.UI_BONUS, reflex_boost_timer=0.5, gain=1.0, pan=0),
@@ -191,7 +185,7 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
                 step = session.step_tick(dt=1 / 60, inputs=(PlayerInput(aim=Vec2(600, 512), fire_down=tick == 0),))
                 plans.append(step.presentation)
                 tick += 1
-            apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
+            apply_presentation_plans(plans=plans, runtime=runtime)
         voice_names = {id(sample.source.sound): sample.entry_name for sample in audio.sfx.owned_samples}
         sounds = [(name, voice_names[id(args[0])], args[1:]) for name, args, _ in backend.mock_calls]
         return runtime.camera, sounds, audio.sfx.cooldowns, session_digest(session)
@@ -240,8 +234,8 @@ def test_hit_cooldown_suppresses_playback_without_skipping_random_draws(mocker) 
     )
     bridge = AudioBridge(audio=audio, audio_rng=Crand(1))
     plan = DeterministicPresentationPlan(sfx=tuple(requests), sfx_dt=1 / 60)
-    bridge.apply_plan(plan=plan)
-    bridge.apply_post_plan(plan=plan)
+    bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
+    bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert rng.calls == 6
     assert [request.position for request in requests] == [hit.hit for hit in hits]
     assert backend.play_sound.call_count == 1

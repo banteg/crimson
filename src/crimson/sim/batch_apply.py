@@ -13,8 +13,6 @@ def apply_presentation_plans(
     *,
     plans: Sequence[DeterministicPresentationPlan],
     runtime: WorldRuntime,
-    apply_audio: bool,
-    update_camera: bool = True,
 ) -> None:
     if not plans:
         return
@@ -27,17 +25,15 @@ def apply_presentation_plans(
         view = runtime.view_transform()
         runtime.audio_bridge.apply_plan(
             plan=plan,
-            apply_audio=bool(apply_audio),
             camera=view.camera,
             screen_width=view.screen_size.x,
         )
-        if update_camera and plan.camera is not None:
+        if plan.camera is not None:
             runtime.update_camera(plan.camera)
         if not plan.terrain_fx.is_empty():
             runtime.render_resources.consume_terrain_fx_batch(plan.terrain_fx)
         runtime.audio_bridge.apply_post_plan(
             plan=plan,
-            apply_audio=apply_audio,
             camera=view.camera,
             screen_width=view.screen_size.x,
         )

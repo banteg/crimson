@@ -156,7 +156,6 @@ class BonusPool:
         *,
         state: GameplayState,
         detail_preset: int = 5,
-        emit_burst: bool = True,
     ) -> BonusEntry | None:
         clamped_pos = pos.clamp_rect(
             BONUS_SPAWN_MARGIN,
@@ -181,20 +180,18 @@ class BonusPool:
             amount = int(meta.native_amount or 0) if meta is not None else 0
         entry.amount = int(amount)
 
-        if emit_burst:
-            # Native `bonus_spawn_at` always spawns a 16-particle burst
-            # (4 crt_rand draws each). The tutorial writes the pool directly
-            # in native code and emits its own 12-particle burst instead.
-            state.effects.spawn_burst(
-                pos=entry.pos,
-                count=16,
-                rng=state.rng,
-                detail_preset=int(detail_preset),
-                rotation_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_ROTATION,
-                vel_x_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_X,
-                vel_y_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y,
-                scale_step_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP,
-            )
+        # Native `bonus_spawn_at` always spawns a 16-particle burst (4 crt_rand draws
+        # each); the tutorial writes the pool directly and emits its own burst.
+        state.effects.spawn_burst(
+            pos=entry.pos,
+            count=16,
+            rng=state.rng,
+            detail_preset=int(detail_preset),
+            rotation_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_ROTATION,
+            vel_x_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_X,
+            vel_y_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y,
+            scale_step_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP,
+        )
         return None if self._is_sentinel_entry(entry) else entry
 
     def seed_tutorial_entry(

@@ -57,6 +57,7 @@ def _nuke_type_ids(*, preserve_bugs: bool, fire_bullets_timers: tuple[float, flo
         world.state,
         player1,
         BonusId.NUKE,
+        amount=1,
         step_runtime=make_step_runtime(world),
         origin=player1.pos,
         creatures=world.creatures.entries,

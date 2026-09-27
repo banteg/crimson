@@ -9,7 +9,6 @@ from crimson.bonuses.apply import NUKE_CAMERA_SHAKE_TIMER, bonus_apply
 from crimson.camera import camera_shake_update
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
-from crimson.replay.driver.setup import reset_players
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -18,6 +17,7 @@ from crimson.sim.sessions import (
     RushSessionRuntime,
     SurvivalSessionRuntime,
 )
+from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
@@ -140,6 +140,7 @@ def test_bonus_apply_nuke_starts_camera_shake_and_damages_creatures() -> None:
         state,
         player,
         BonusId.NUKE,
+        amount=1,
         step_runtime=step_runtime,
         origin=player.pos,
         creatures=creatures,
@@ -189,7 +190,7 @@ def _build_session_world(*, seed: int = 0x1234) -> WorldState:
         hardcore=False,
         quest_fail_retry_count=0,
     )
-    reset_players(world.players, state=world.state, player_count=1)
+    reset_world_players(world.players, state=world.state, player_count=1)
     world.state.rng.srand(int(seed))
     return world
 

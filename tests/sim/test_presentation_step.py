@@ -135,7 +135,7 @@ def test_plan_world_presentation_step_orders_sfx(mocker) -> None:
         music=init_music_state(ready=False, enabled=False, volume=1.0),
         sfx=make_sfx_state(*sfx_ids(commands.sfx)),
     )
-    AudioBridge(audio=audio, audio_rng=Crand(1)).apply_plan(plan=commands)
+    AudioBridge(audio=audio, audio_rng=Crand(1)).apply_plan(plan=commands, camera=Vec2(), screen_width=1024.0)
     assert backend.play_sound.call_count == 8
 
 

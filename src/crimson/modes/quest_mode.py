@@ -128,7 +128,6 @@ class QuestMode(BaseGameplayMode):
             menu=self._perk_menu,
             players=self.world.players,
             game_mode=GameMode.QUESTS,
-            player_count=max(1, len(self.world.players)),
         )
 
     def _perk_menu_closed(self) -> None:
@@ -137,7 +136,7 @@ class QuestMode(BaseGameplayMode):
     def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
         perk_ctx = self._perk_menu_ui_context()
         pending_count = self._ui_pending_perk_count()
-        choices = perk_selection_prepared_choices(self.state, self.state.perk_selection)
+        choices = perk_selection_prepared_choices(self.state)
         self._perk_prompt.begin_frame()
         if self._perk_menu.open:
             choice_index = self._perk_menu.handle_input(
@@ -441,7 +440,7 @@ class QuestMode(BaseGameplayMode):
         )
         self._perk_menu.draw(
             self._perk_menu_ui_context(),
-            perk_selection_prepared_choices(self.state, self.state.perk_selection),
+            perk_selection_prepared_choices(self.state),
         )
 
         if perk_menu_active:

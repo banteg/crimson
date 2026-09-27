@@ -63,12 +63,9 @@ class AudioBridge:
         self,
         *,
         plan: DeterministicPresentationPlan,
-        apply_audio: bool = True,
-        camera: Vec2 = Vec2(),
-        screen_width: float = 1024.0,
+        camera: Vec2,
+        screen_width: float,
     ) -> None:
-        if not apply_audio:
-            return
         if plan.trigger_game_tune and self.audio is not None:
             trigger_game_tune(self.audio, rng=self.audio_rng)
         for request in plan.sfx:
@@ -78,12 +75,9 @@ class AudioBridge:
         self,
         *,
         plan: DeterministicPresentationPlan,
-        apply_audio: bool = True,
-        camera: Vec2 = Vec2(),
-        screen_width: float = 1024.0,
+        camera: Vec2,
+        screen_width: float,
     ) -> None:
-        if not apply_audio:
-            return
         for request in plan.post_apply_sfx:
             self._play_request(request, plan, camera=camera, screen_width=screen_width)
         if plan.play_quest_completion_music and self.audio is not None:

@@ -52,7 +52,7 @@ class WorldRuntime:
         self.audio_rng = audio_rng
         self.rtx_mode = rtx_mode
 
-        self._reset_world(seed=0xBEEF, player_count=1, spawn_pos=None)
+        self._reset_world(seed=0xBEEF, player_count=1)
 
         render_resources = RenderResources(
             assets_dir=self.assets_dir,
@@ -90,9 +90,8 @@ class WorldRuntime:
         *,
         seed: int = 0xBEEF,
         player_count: int = 1,
-        spawn_pos: Vec2 | None = None,
     ) -> None:
-        self._reset_world(seed=int(seed), player_count=int(player_count), spawn_pos=spawn_pos)
+        self._reset_world(seed=int(seed), player_count=int(player_count))
         self.render_resources.clear_pending_terrain_fx()
         self.camera = Vec2(-1.0, -1.0)
 
@@ -100,11 +99,10 @@ class WorldRuntime:
             terrain_seed = self.world.state.rng.state
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
 
-    def _reset_world(self, *, seed: int, player_count: int, spawn_pos: Vec2 | None) -> None:
+    def _reset_world(self, *, seed: int, player_count: int) -> None:
         self.world = build_reset_world(
             seed=seed,
             player_count=player_count,
-            spawn_pos=spawn_pos,
             demo_mode_active=self.demo_mode_active,
             hardcore=self.hardcore,
             quest_fail_retry_count=self.quest_fail_retry_count,

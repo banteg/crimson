@@ -100,7 +100,6 @@ class TutorialMode(BaseGameplayMode):
             menu=self._perk_menu,
             players=[self.player],
             game_mode=GameMode.TUTORIAL,
-            player_count=1,
         )
 
     def _handle_input(self) -> None:
@@ -226,7 +225,7 @@ class TutorialMode(BaseGameplayMode):
             return
 
         perk_pending = self._ui_pending_perk_count() > 0 and self.player.health > 0.0
-        choices = perk_selection_prepared_choices(self.state, self.state.perk_selection)
+        choices = perk_selection_prepared_choices(self.state)
         if (
             int(self.state.tutorial.stage_index) == 6
             and perk_pending
@@ -308,7 +307,7 @@ class TutorialMode(BaseGameplayMode):
         if perk_menu_active:
             self._perk_menu.draw(
                 self._perk_menu_ui_context(),
-                perk_selection_prepared_choices(self.state, self.state.perk_selection),
+                perk_selection_prepared_choices(self.state),
             )
             self._draw_menu_cursor()
 

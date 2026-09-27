@@ -356,20 +356,13 @@ class BaseGameplayMode:
         menu: PerkMenuController,
         players: list[PlayerState],
         game_mode: GameMode,
-        player_count: int,
     ) -> None:
         if menu.active:
             return
         recorder = getattr(self, "_replay_recorder", None)
         if recorder is not None:
             self._record_replay_checkpoint(max(0, int(recorder.tick_index) - 1), force=True)
-        choices = perk_selection_open_choices(
-            self.state,
-            players,
-            self.state.perk_selection,
-            game_mode=game_mode,
-            player_count=int(player_count),
-        )
+        choices = perk_selection_open_choices(self.state, players, game_mode=game_mode)
         assert choices, "perk menu open requires prepared perk choices"
         menu.open_menu()
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
@@ -796,4 +789,4 @@ class BaseGameplayMode:
             # first. The run's final tick ends the frame.
             if not self._on_tick_applied(step) or step.outcome is not None:
                 break
-        apply_presentation_plans(plans=plans, runtime=self._world_runtime, apply_audio=True)
+        apply_presentation_plans(plans=plans, runtime=self._world_runtime)

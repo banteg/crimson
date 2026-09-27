@@ -281,21 +281,19 @@ class WorldState(msgspec.Struct):
         self,
         dt: float,
         *,
-        apply_world_dt_steps: bool = True,
-        mid_step_runtime: WorldMidStepRuntime | None = None,
+        mid_step_runtime: WorldMidStepRuntime | None,
         inputs: Sequence[PlayerInput] | None,
         detail_preset: int,
-        violence_disabled: int = 0,
+        violence_disabled: int,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         game_mode: GameMode,
         perk_progression_enabled: bool,
-        game_tune_started: bool = False,
+        game_tune_started: bool,
     ) -> WorldEvents:
+        """Advance one frame; the caller has already applied the perk dt steps."""
         dt = float(dt)
         fx_queue.violence_disabled = int(violence_disabled)
-        if apply_world_dt_steps:
-            dt = self.world_dt_after_perk_steps(dt)
         frame_dt_ms = ftol_ms_i32(dt)
         inputs = normalize_input_frame(inputs, player_count=len(self.players))
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
@@ -359,7 +357,6 @@ class WorldState(msgspec.Struct):
             self.players,
             dt,
             creatures=self.creatures.entries,
-            update_hud=True,
             detail_preset=int(detail_preset),
             step_runtime=step_runtime,
         )

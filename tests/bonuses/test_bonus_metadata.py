@@ -25,7 +25,6 @@ def test_bonus_spawn_uses_native_constructor_default_amount(bonus_id: BonusId) -
         Vec2(100.0, 100.0),
         bonus_id,
         state=GameplayState(),
-        emit_burst=False,
     )
 
     assert entry is not None

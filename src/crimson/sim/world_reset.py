@@ -139,18 +139,14 @@ def reset_world_players(
     *,
     state: GameplayState,
     player_count: int,
-    spawn_pos: Vec2 | None = None,
 ) -> None:
     previous_players = tuple(players)
     players.clear()
     # `player_reset_all` clears player one's struct, which holds the perk table.
     state.perks = PerkCounts()
 
-    if spawn_pos is None:
-        center = f32(TERRAIN_SIZE * 0.5)
-        base = Vec2(center, center)
-    else:
-        base = Vec2(f32(spawn_pos.x), f32(spawn_pos.y))
+    center = f32(TERRAIN_SIZE * 0.5)
+    base = Vec2(center, center)
     count = max(1, int(player_count))
 
     for idx in range(count):
@@ -197,7 +193,6 @@ def build_reset_world(
     *,
     seed: int,
     player_count: int,
-    spawn_pos: Vec2 | None = None,
     demo_mode_active: bool = False,
     hardcore: bool = False,
     quest_fail_retry_count: int = 0,
@@ -217,7 +212,6 @@ def build_reset_world(
         world.players,
         state=world.state,
         player_count=int(player_count),
-        spawn_pos=spawn_pos,
     )
     world.creatures.apply_gameplay_reset_target_players(len(world.players))
     return world

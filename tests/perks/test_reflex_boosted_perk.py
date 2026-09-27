@@ -15,7 +15,7 @@ from grim.geom import Vec2
 from tests.support.helpers import assert_float_close
 
 
-def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
+def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
     world = WorldState.build(
         demo_mode_active=True,
         hardcore=False,
@@ -28,13 +28,17 @@ def test_reflex_boosted_scales_dt_by_0_9_in_world_step() -> None:
     world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)
 
+    # The session applies the perk dt steps before stepping the world.
     world.step(
-        1.0,
+        world.world_dt_after_perk_steps(1.0),
         inputs=[PlayerInput(move=Vec2(1.0, 0.0))],
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -55,7 +59,6 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
         world=world,
         detail_preset=5,
         violence_disabled=0,
-        game_tune_started=False,
     )
     spawn.spawn_cooldown_ms = 1000.0
 
@@ -91,12 +94,14 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
 
     world.step(
         dt,
-        apply_world_dt_steps=False,
         inputs=[PlayerInput()],
         detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -129,7 +134,6 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
         world=world,
         detail_preset=5,
         violence_disabled=0,
-        game_tune_started=False,
     )
 
     dt_sim = f32(f32(0.09) * f32(0.3))

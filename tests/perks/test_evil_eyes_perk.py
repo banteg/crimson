@@ -43,6 +43,9 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
     assert events

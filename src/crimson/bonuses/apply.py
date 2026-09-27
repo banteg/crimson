@@ -52,7 +52,7 @@ def bonus_apply(
     player: PlayerState,
     bonus_id: BonusId,
     *,
-    amount: int | None = None,
+    amount: int,
     origin: Vec2,
     creatures: Sequence[CreatureState],
     players: list[PlayerState],
@@ -64,8 +64,6 @@ def bonus_apply(
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is None:
         return
-    if amount is None:
-        amount = int(meta.native_amount or 0)
     multiplier = 1.5 if PerkId.BONUS_ECONOMIST in state.perks else 1.0
     player_owner = owner_ref_for_player(player.index) if state.friendly_fire_enabled else OwnerRef.from_local_player(0)
 

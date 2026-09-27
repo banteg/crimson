@@ -33,7 +33,7 @@ def test_entity_uids_follow_allocations_between_snapshots() -> None:
         world.state.secondary_projectiles.spawn_from_spec(
             SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET),
         )
-        world.state.bonus_pool.spawn_at(Vec2(), BonusId.POINTS, state=world.state, emit_burst=False)
+        world.state.bonus_pool.spawn_at(Vec2(), BonusId.POINTS, state=world.state)
 
     spawn_all()
     first = _entity_samples_for_world(world)

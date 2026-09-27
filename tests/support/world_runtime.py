@@ -4,6 +4,7 @@ from pathlib import Path
 
 from crimson.game_modes import GameMode
 from crimson.render.rtx.mode import RtxRenderMode
+from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import (
     DeterministicSession,
@@ -16,7 +17,6 @@ from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
-from grim.geom import Vec2
 from grim.rand import Crand
 
 
@@ -56,9 +56,8 @@ class WorldRuntimeHost(WorldRuntime):
         *,
         seed: int = 0xBEEF,
         player_count: int = 1,
-        spawn_pos: Vec2 | None = None,
     ) -> None:
-        super().reset(seed=seed, player_count=player_count, spawn_pos=spawn_pos)
+        super().reset(seed=seed, player_count=player_count)
         self._survival_test_spawn_state = SurvivalSpawnState()
         self._survival_test_elapsed_ms = 0.0
 
@@ -98,10 +97,7 @@ class WorldRuntimeHost(WorldRuntime):
         *,
         inputs: list[PlayerInput] | None = None,
         perk_progression_enabled: bool = False,
-        apply_audio: bool = True,
     ) -> DeterministicSessionTick:
-        self.sync_audio_bridge_state()
-
         detail_preset = 5
         violence_disabled = 0
         if self.config is not None:
@@ -129,12 +125,5 @@ class WorldRuntimeHost(WorldRuntime):
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
 
         self.advance_presentation_clock(dt_sim=tick.dt_sim, game_tune_started=session.game_tune_started)
-        self.sync_audio_bridge_state()
-        self.audio_bridge.apply_plan(
-            plan=tick.presentation,
-            apply_audio=bool(apply_audio),
-        )
-        self.update_camera(tick.presentation.camera)
-        self.render_resources.consume_terrain_fx_batch(tick.presentation.terrain_fx)
-        self.audio_bridge.apply_post_plan(plan=tick.presentation, apply_audio=apply_audio)
+        apply_presentation_plans(plans=[tick.presentation], runtime=self)
         return tick

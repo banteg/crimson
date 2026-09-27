@@ -74,7 +74,7 @@ def test_apply_presentation_plans_applies_terrain_fx_in_tick_order(mocker) -> No
     runtime.audio_bridge.apply_post_plan.side_effect = lambda **kw: calls.append(("done", 1))
     runtime.update_camera.side_effect = lambda update: calls.append(("camera", 1))
     runtime.render_resources.consume_terrain_fx_batch.side_effect = lambda batch: calls.append(("terrain", 1))
-    apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
+    apply_presentation_plans(plans=plans, runtime=runtime)
 
     assert calls == [
         ("sync", None),

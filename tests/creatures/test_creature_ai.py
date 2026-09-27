@@ -56,7 +56,7 @@ def test_ai7_tick_link_timer_positive_rolls_back_negative() -> None:
 
 def test_ai_mode_0_orbits_when_close() -> None:
     c = StubCreature(pos=Vec2(), ai_mode=CreatureAiMode.ORBIT_PLAYER, phase_seed=0)
-    ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), creatures=[c], dt=1.0 / 60.0)
+    ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), distance_player_pos=Vec2(100.0, 0.0), creatures=[c], dt=1.0 / 60.0)
     assert_float_close(ai.move_scale, 1.0)
     assert_float_close(c.target.x, 185.0)
     assert_float_close(c.target.y, 0.0)
@@ -71,7 +71,7 @@ def test_ai_mode_5_scales_down_near_link() -> None:
         link_index=0,
         target_offset=Vec2(),
     )
-    ai = creature_ai_update_target(c, player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
+    ai = creature_ai_update_target(c, player_pos=Vec2(), distance_player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
     assert c.force_target == 0
     assert_float_close(c.target.x, 100.0)
     assert_float_close(c.target.y, 100.0)
@@ -81,7 +81,7 @@ def test_ai_mode_5_scales_down_near_link() -> None:
 def test_ai_mode_4_link_dead_self_damage() -> None:
     dead = StubCreature(pos=Vec2(), hp=0.0)
     c = StubCreature(pos=Vec2(10.0, 10.0), ai_mode=CreatureAiMode.LINK_GUARD, link_index=0)
-    ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), creatures=[dead, c], dt=1.0 / 60.0)
+    ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), distance_player_pos=Vec2(100.0, 0.0), creatures=[dead, c], dt=1.0 / 60.0)
     assert c.ai_mode == CreatureAiMode.ORBIT_PLAYER
     assert ai.self_damage == 1000.0
 
@@ -96,7 +96,7 @@ def test_ai_mode_6_orbits_linked_creature() -> None:
         orbit_radius=10.0,
         heading=0.0,
     )
-    ai = creature_ai_update_target(c, player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
+    ai = creature_ai_update_target(c, player_pos=Vec2(), distance_player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
     assert ai.self_damage is None
     assert c.ai_mode == CreatureAiMode.ORBIT_LINK
     assert c.force_target == 0
@@ -118,7 +118,7 @@ def test_ai_mode_6_keeps_native_orbit_link_x87_staging() -> None:
         heading=-2.0916693210601807,
     )
 
-    creature_ai_update_target(c, player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
+    creature_ai_update_target(c, player_pos=Vec2(), distance_player_pos=Vec2(), creatures=[link, c], dt=1.0 / 60.0)
 
     assert c.force_target == 0
     assert c.target.x == 150.48397827148438
@@ -127,7 +127,7 @@ def test_ai_mode_6_keeps_native_orbit_link_x87_staging() -> None:
 
 def test_ai_mode_7_orbit_radius_timer_counts_down() -> None:
     c = StubCreature(pos=Vec2(), ai_mode=CreatureAiMode.HOLD_TIMER, orbit_radius=1.5)
-    ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), creatures=[c], dt=0.5)
+    ai = creature_ai_update_target(c, player_pos=Vec2(100.0, 0.0), distance_player_pos=Vec2(100.0, 0.0), creatures=[c], dt=0.5)
     assert ai.self_damage is None
     assert c.ai_mode == CreatureAiMode.HOLD_TIMER
     assert_float_close(c.orbit_radius, 1.0)
@@ -135,7 +135,7 @@ def test_ai_mode_7_orbit_radius_timer_counts_down() -> None:
 
 def test_ai_targets_and_heading_are_float32_quantized() -> None:
     c = StubCreature(pos=Vec2(0.125, -0.25), ai_mode=CreatureAiMode.ORBIT_PLAYER, phase_seed=13)
-    creature_ai_update_target(c, player_pos=Vec2(123.5, 456.25), creatures=[c], dt=1.0 / 60.0)
+    creature_ai_update_target(c, player_pos=Vec2(123.5, 456.25), distance_player_pos=Vec2(123.5, 456.25), creatures=[c], dt=1.0 / 60.0)
     assert_float_close(c.target.x, f32(c.target.x))
     assert_float_close(c.target.y, f32(c.target.y))
     assert_float_close(c.target_heading, f32(c.target_heading))
@@ -151,6 +151,7 @@ def test_ai_orbit_distance_uses_native_per_operation_f32_rounding() -> None:
     creature_ai_update_target(
         c,
         player_pos=Vec2(506.59539794921875, 535.6737060546875),
+        distance_player_pos=Vec2(506.59539794921875, 535.6737060546875),
         creatures=[c],
         dt=0.03200000151991844,
     )
@@ -170,6 +171,7 @@ def test_ai_orbit_target_keeps_trig_wide_until_first_multiply() -> None:
     creature_ai_update_target(
         c,
         player_pos=Vec2(364.858154296875, 678.1124267578125),
+        distance_player_pos=Vec2(364.858154296875, 678.1124267578125),
         creatures=[c],
         dt=0.04100000113248825,
     )

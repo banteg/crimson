@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Iterator, Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -65,11 +65,6 @@ class WorldDrawContext(msgspec.Struct, frozen=True):
     monster_vision: bool = False
     monster_vision_src: rl.Rectangle | None = None
     poison_src: rl.Rectangle | None = None
-
-
-type _WorldToScreenWithFn = Callable[[Vec2, Vec2, Vec2], Vec2]
-type _DrawAimCircleFn = Callable[[Vec2, float, float], None]
-type _DrawClockGaugeFn = Callable[[Vec2, int, float, float], None]
 
 
 def draw_world(
@@ -488,46 +483,8 @@ def iter_visible_aim_players(render_ctx: WorldRenderCtx) -> tuple[PlayerState, .
     return tuple(render_ctx.frame.players)
 
 
-def draw_aim_indicators(
-    render_ctx: WorldRenderCtx,
-    *,
-    ctx: WorldDrawContext,
-    world_to_screen_with: _WorldToScreenWithFn | None = None,
-    draw_aim_circle_fn: _DrawAimCircleFn | None = None,
-    draw_clock_gauge_fn: _DrawClockGaugeFn | None = None,
-) -> None:
-    transform = world_to_screen_with
-    if transform is None:
-
-        def transform(pos: Vec2, camera: Vec2, view_scale: Vec2) -> Vec2:
-            return viewport.world_to_screen_with(
-                pos,
-                camera=camera,
-                view_scale=view_scale,
-            )
-
-    draw_circle = draw_aim_circle_fn
-    if draw_circle is None:
-
-        def draw_circle(center: Vec2, radius: float, alpha: float) -> None:
-            draw_aim_circle(
-                center=center,
-                radius=radius,
-                alpha=alpha,
-            )
-
-    draw_gauge = draw_clock_gauge_fn
-    if draw_gauge is None:
-
-        def draw_gauge(pos: Vec2, ms: int, scale: float, alpha: float) -> None:
-            draw_clock_gauge(
-                render_ctx,
-                pos=pos,
-                ms=ms,
-                scale=scale,
-                alpha=alpha,
-            )
-
+def draw_aim_indicators(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+    view = render_ctx.view
     for player in iter_visible_aim_players(render_ctx):
         if player.health <= 0.0:
             continue
@@ -535,39 +492,29 @@ def draw_aim_indicators(
         aim = player.aim
         dist = player.pos.distance_to(player.aim)
         radius = max(6.0, dist * float(player.spread_heat) * 0.5)
-        aim_screen = transform(aim, render_ctx.view.camera, render_ctx.view.view_scale)
-        screen_radius = max(1.0, radius * render_ctx.view.scale)
-        draw_circle(aim_screen, screen_radius, ctx.entity_alpha)
+        aim_screen = viewport.world_to_screen_with(aim, camera=view.camera, view_scale=view.view_scale)
+        draw_aim_circle(center=aim_screen, radius=max(1.0, radius * view.scale), alpha=ctx.entity_alpha)
 
         reload_timer = float(player.weapon.reload_timer)
         reload_max = float(player.weapon.reload_timer_max)
         if reload_max > 1e-6 and reload_timer > 1e-6:
             progress = reload_timer / reload_max
             if progress > 0.0:
-                ms = int(progress * 60000.0)
-                draw_gauge(Vec2(int(aim_screen.x), int(aim_screen.y)), ms, render_ctx.view.scale, ctx.entity_alpha)
+                draw_clock_gauge(
+                    render_ctx,
+                    pos=Vec2(int(aim_screen.x), int(aim_screen.y)),
+                    ms=int(progress * 60000.0),
+                    scale=view.scale,
+                    alpha=ctx.entity_alpha,
+                )
 
 
-def draw_aim_enhancements(
-    render_ctx: WorldRenderCtx,
-    *,
-    ctx: WorldDrawContext,
-    world_to_screen_with: _WorldToScreenWithFn | None = None,
-) -> None:
-    transform = world_to_screen_with
-    if transform is None:
-
-        def transform(pos: Vec2, camera: Vec2, view_scale: Vec2) -> Vec2:
-            return viewport.world_to_screen_with(
-                pos,
-                camera=camera,
-                view_scale=view_scale,
-            )
-
+def draw_aim_enhancements(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+    view = render_ctx.view
     for player in iter_visible_aim_players(render_ctx):
         if player.health <= 0.0:
             continue
-        aim_screen = transform(player.aim, render_ctx.view.camera, render_ctx.view.view_scale)
+        aim_screen = viewport.world_to_screen_with(player.aim, camera=view.camera, view_scale=view.view_scale)
         draw_aim_cursor(ctx.particles_texture, render_ctx.frame.resources.texture(TextureId.UI_AIM), pos=aim_screen)
 
 

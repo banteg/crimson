@@ -58,7 +58,7 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     assert draw_text.call_count == 0
 
     # SFX only materialize when the presentation plan is explicitly applied
-    audio_bridge.apply_plan(plan=plan, apply_audio=True)
+    audio_bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert [call.args[1] for call in play_sfx.call_args_list] == sfx_ids(plan.sfx)
 
 
@@ -91,7 +91,7 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
     clock = (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase, runtime.game_tune_started)
     assert clock[0] > 0.0
 
-    apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
+    apply_presentation_plans(plans=plans, runtime=runtime)
 
     # Presentation output does not touch the presentation clock, syncs audio
     # once per batch, and plays each plan's sounds in tick order.

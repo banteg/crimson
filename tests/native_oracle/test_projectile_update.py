@@ -430,6 +430,7 @@ def test_shock_chain_bonus_matches_native(oracle) -> None:
             state,
             world.players[0],
             BonusId.SHOCK_CHAIN,
+            amount=1,
             step_runtime=_step_runtime(world, 0.0),
             origin=origin,
             creatures=world.creatures.entries,

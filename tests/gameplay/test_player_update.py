@@ -1747,10 +1747,10 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
 
 
 @pytest.mark.parametrize(
-    "bonus_id",
-    [BonusId.WEAPON_POWER_UP, BonusId.REFLEX_BOOST, BonusId.FIRE_BULLETS],
+    ("bonus_id", "amount"),
+    [(BonusId.WEAPON_POWER_UP, 10), (BonusId.REFLEX_BOOST, 3), (BonusId.FIRE_BULLETS, 4)],
 )
-def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) -> None:
+def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId, amount: int) -> None:
     world = make_world()
     player = world.players[0]
     player.weapon.clip_size = 8
@@ -1763,6 +1763,7 @@ def test_ammo_refill_bonuses_preserve_native_reload_metadata(bonus_id: BonusId) 
         world.state,
         player,
         bonus_id,
+        amount=amount,
         step_runtime=make_step_runtime(world),
         origin=player.pos,
         creatures=world.creatures.entries,
@@ -1796,6 +1797,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
         state,
         player,
         BonusId.SHOCK_CHAIN,
+        amount=1,
         step_runtime=step_runtime,
         origin=player.pos,
         creatures=creatures,

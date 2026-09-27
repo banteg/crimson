@@ -71,8 +71,6 @@ def _live_runtime_checkpoints(
         tick = driver.step_tick(tick_index)
         step = tick.payload
         runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=bool(driver.session.game_tune_started))
-        runtime.sync_audio_bridge_state()
-        runtime.audio_bridge.apply_plan(plan=step.presentation, apply_audio=False)
         runtime.render_resources.consume_terrain_fx_batch(step.presentation.terrain_fx)
 
         checkpoints.append(

@@ -45,35 +45,18 @@ def _draw_ctx() -> WorldDrawContext:
     return WorldDrawContext()
 
 
-def _x_from_call_arg(call, *, key: str, arg_index: int) -> float:
-    if key in call.kwargs:
-        return float(call.kwargs[key].x)
-    return float(call.args[arg_index].x)
-
-
-
-
 def test_aim_indicators_draw_all_local_players(mocker) -> None:
     world = _make_world(players=_make_players())
     render_ctx = WorldRenderCtx(frame=world.build_render_frame(), view=world.view_transform())
     ctx = _draw_ctx()
     draw_aim_cursor = mocker.patch.object(world_draw_module, "draw_aim_cursor")
-    draw_aim_circle = mocker.Mock()
+    for name in ("begin_blend_mode", "end_blend_mode", "rl_set_texture", "draw_ring"):
+        mocker.patch.object(rl, name)
+    draw_circle_sector = mocker.patch.object(rl, "draw_circle_sector")
 
-    draw_aim_indicators(
-        render_ctx,
-        ctx=ctx,
-        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
-        draw_aim_circle_fn=draw_aim_circle,
-        draw_clock_gauge_fn=lambda _pos, _ms, _scale, _alpha: None,
-    )
-    draw_aim_enhancements(
-        render_ctx,
-        ctx=ctx,
-        world_to_screen_with=lambda pos, _camera, _view_scale: pos,
-    )
+    draw_aim_indicators(render_ctx, ctx=ctx)
+    draw_aim_enhancements(render_ctx, ctx=ctx)
 
-    circles = [_x_from_call_arg(call, key="center", arg_index=0) for call in draw_aim_circle.call_args_list]
-    cursors = [_x_from_call_arg(call, key="pos", arg_index=-1) for call in draw_aim_cursor.call_args_list]
-    assert circles == [10.0, 20.0, 30.0]
-    assert cursors == [10.0, 20.0, 30.0]
+    expected = [render_ctx.view.world_to_screen(player.aim) for player in world.world.players]
+    assert [Vec2(call.args[0].x, call.args[0].y) for call in draw_circle_sector.call_args_list] == expected
+    assert [call.kwargs["pos"] for call in draw_aim_cursor.call_args_list] == expected

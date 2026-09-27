@@ -441,7 +441,7 @@ class ReplayPlaybackMode:
         )
         self._tick_index = int(advance.next_tick_index)
 
-        apply_presentation_plans(plans=advance.plans, runtime=runtime, apply_audio=True)
+        apply_presentation_plans(plans=advance.plans, runtime=runtime)
 
         self._mark_finished_if_complete()
         self._dt_accum = float(self._clock.accum)

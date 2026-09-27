@@ -60,6 +60,9 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
     )
 
     assert world.players[0].pos.x > before[0][0]

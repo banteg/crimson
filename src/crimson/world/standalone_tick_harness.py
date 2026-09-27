@@ -71,5 +71,5 @@ class StandaloneTickHarness:
             step = step_replay_tick(session, self.ticks.next_tick())
             runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=session.game_tune_started)
             plans.append(step.presentation)
-        apply_presentation_plans(plans=plans, runtime=runtime, apply_audio=True)
+        apply_presentation_plans(plans=plans, runtime=runtime)
         return len(plans)

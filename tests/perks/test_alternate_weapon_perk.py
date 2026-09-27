@@ -8,10 +8,10 @@ from crimson.gameplay import player_update
 from crimson.math_parity import f32, x87_pc24_mul
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
-from crimson.replay.driver.setup import reset_players
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
@@ -99,7 +99,7 @@ def test_alternate_weapon_slows_movement() -> None:
 def test_alternate_weapon_starts_with_preloaded_pistol_alt_slot() -> None:
     state = GameplayState()
     players: list[PlayerState] = []
-    reset_players(players, state=state, player_count=1)
+    reset_world_players(players, state=state, player_count=1)
     player = players[0]
     alt = _alt(player)
 

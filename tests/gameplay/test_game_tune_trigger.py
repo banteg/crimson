@@ -45,7 +45,9 @@ def test_game_tune_triggers_in_typo_mode(mocker) -> None:
         demo_mode_active=False,
         game_tune_started=False,
     )
-    bridge.apply_plan(plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)))
+    bridge.apply_plan(
+        plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)), camera=Vec2(), screen_width=1024.0,
+    )
 
     assert trigger_game_tune.call_count == 1
     assert trigger_game_tune.call_args.kwargs["rng"] is bridge.audio_rng
@@ -71,7 +73,9 @@ def test_game_tune_not_triggered_in_rush_mode(mocker) -> None:
         demo_mode_active=False,
         game_tune_started=False,
     )
-    bridge.apply_plan(plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)))
+    bridge.apply_plan(
+        plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds)), camera=Vec2(), screen_width=1024.0,
+    )
 
     trigger_game_tune.assert_not_called()
     assert play_sfx.call_args_list == [
@@ -99,6 +103,8 @@ def test_game_tune_not_triggered_in_demo(mocker) -> None:
     )
     bridge.apply_plan(
         plan=DeterministicPresentationPlan(trigger_game_tune=tune, sfx=tuple(sounds), demo_mode_active=True),
+        camera=Vec2(),
+        screen_width=1024.0,
     )
 
     trigger_game_tune.assert_not_called()

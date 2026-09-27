@@ -51,6 +51,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
     fx_queue_rotated = FxQueueRotated()
     events = world.step(
         1.0 / 60.0,
+        mid_step_runtime=None,
         inputs=[],
         detail_preset=5,
         violence_disabled=0,
@@ -58,6 +59,7 @@ def test_step_dispatch_functions_execute_as_behavioral_smoke() -> None:
         fx_queue_rotated=fx_queue_rotated,
         game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
+        game_tune_started=False,
     )
 
     plan = plan_world_presentation_step(

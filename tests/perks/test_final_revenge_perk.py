@@ -44,6 +44,9 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -78,6 +81,9 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -124,6 +130,9 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -153,6 +162,9 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 

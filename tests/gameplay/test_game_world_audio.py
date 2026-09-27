@@ -65,7 +65,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
         prev_reload_active=prev_reload_active,
         prev_reload_timer=prev_reload_timer,
     )
-    runtime.audio_bridge.apply_plan(plan=DeterministicPresentationPlan(sfx=tuple(sounds)))
+    apply_presentation_plans(plans=[DeterministicPresentationPlan(sfx=tuple(sounds))], runtime=runtime)
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.PISTOL_FIRE
@@ -106,7 +106,7 @@ def test_fire_bullets_suppresses_weapon_fire_sfx(mocker) -> None:
         prev_reload_active=prev_reload_active,
         prev_reload_timer=prev_reload_timer,
     )
-    runtime.audio_bridge.apply_plan(plan=DeterministicPresentationPlan(sfx=tuple(sounds)))
+    apply_presentation_plans(plans=[DeterministicPresentationPlan(sfx=tuple(sounds))], runtime=runtime)
 
     assert play_sfx.call_count == 2
     assert {call.args[1] for call in play_sfx.call_args_list} == {SfxId.AUTORIFLE_FIRE, SfxId.PLASMAMINIGUN_FIRE}
@@ -184,7 +184,7 @@ def test_presentation_apply_plays_post_apply_bonus_sfx(mocker) -> None:
     runtime.audio_rng = Crand(0)
     step = make_tick_payload(post_apply_sfx=(SfxRequest(SfxId.UI_BONUS),))
 
-    apply_presentation_plans(plans=[step.presentation], runtime=runtime, apply_audio=True)
+    apply_presentation_plans(plans=[step.presentation], runtime=runtime)
 
     play_sfx.assert_called_once()
     assert play_sfx.call_args.args[1] == SfxId.UI_BONUS

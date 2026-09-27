@@ -29,6 +29,7 @@ def test_spawn_signature_phase1_perks_and_bonuses() -> None:
             state,
             player,
             BonusId.FIREBLAST,
+            amount=1,
             step_runtime=make_step_runtime(world),
             origin=player.pos,
             creatures=world.creatures.entries,

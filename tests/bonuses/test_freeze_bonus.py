@@ -66,6 +66,7 @@ def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
         world.state,
         player,
         BonusId.FREEZE,
+        amount=5,
         step_runtime=make_step_runtime(world),
         origin=player.pos,
         creatures=world.creatures.entries,
@@ -86,7 +87,8 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     from crimson.sim.sessions import DeterministicSession
 
     world = make_world(preserve_bugs=True)
-    world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world.state.rng = rng
     creature = world.creatures.entries[0]
     creature.active = True
     creature.hp = 1.0
@@ -97,7 +99,9 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
         type_id=ProjectileTemplateId.PISTOL,
         owner=OwnerRef.from_local_player(0),
     )
-    world.state.bonus_pool.spawn_at(world.players[0].pos, BonusId.FREEZE, state=world.state, emit_burst=False)
+    world.state.bonus_pool.spawn_at(world.players[0].pos, BonusId.FREEZE, state=world.state)
+    # `bonus_spawn_at` drew its 16-particle burst (64 draws) before the tick.
+    tick_start = rng.calls
     session = DeterministicSession(
         world=world,
         game_mode=GameMode.SURVIVAL,
@@ -106,10 +110,10 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     result = session.step_tick(dt=1 / 60, inputs=[PlayerInput(aim=Vec2(600, 512))])
     assert len(result.events.deaths) == 1
     assert [p.bonus_id for p in result.events.pickups] == [BonusId.FREEZE]
-    callers = [r.caller for r in world.state.rng.records_since()]
+    callers = [r.caller for r in rng.records_since(tick_start)]
     assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) == 8
     assert callers.count(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) == 1
-    assert world.state.rng.calls == 212
+    assert len(callers) == 212
     assert not creature.active
 
 
@@ -139,6 +143,9 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -157,6 +164,9 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         game_mode=GameMode.SURVIVAL,
+        mid_step_runtime=None,
+        violence_disabled=0,
+        game_tune_started=False,
         perk_progression_enabled=False,
     )
 

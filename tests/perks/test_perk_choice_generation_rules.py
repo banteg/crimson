@@ -69,7 +69,7 @@ def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
     state.quest_level = QuestLevel(3, 4)
     player = PlayerState(index=0, pos=Vec2())
 
-    choices = perk_generate_choices(state, player, game_mode=GameMode.QUESTS, player_count=1)
+    choices = perk_generate_choices(state, [player], game_mode=GameMode.QUESTS)
     assert choices and choices[0] == PerkId.MONSTER_VISION
 
 
@@ -92,13 +92,7 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     prepare_perk_availability(state)
     player = PlayerState(index=0, pos=Vec2())
 
-    choices = perk_generate_choices(
-        state,
-        player,
-        game_mode=GameMode.QUESTS,
-        player_count=1,
-        count=7,
-    )
+    choices = perk_generate_choices(state, [player], game_mode=GameMode.QUESTS)
     assert choices == [
         PerkId.MONSTER_VISION,
         PerkId.ANXIOUS_LOADER,
@@ -127,7 +121,7 @@ def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None
         state.perk_available[int(perk_id)] = True
 
     player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    choices = perk_generate_choices(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
+    choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
     assert PerkId.PYROMANIAC not in choices
 
 
@@ -147,13 +141,7 @@ def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_h
 
     player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
-    choices = perk_generate_choices(
-        state,
-        player0,
-        players=[player0, player1],
-        game_mode=GameMode.SURVIVAL,
-        player_count=2,
-    )
+    choices = perk_generate_choices(state, [player0, player1], game_mode=GameMode.SURVIVAL)
     assert PerkId.PYROMANIAC in choices
 
 
@@ -173,13 +161,7 @@ def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> 
 
     player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
     player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
-    choices = perk_generate_choices(
-        state,
-        player0,
-        players=[player0, player1],
-        game_mode=GameMode.SURVIVAL,
-        player_count=2,
-    )
+    choices = perk_generate_choices(state, [player0, player1], game_mode=GameMode.SURVIVAL)
     assert PerkId.PYROMANIAC not in choices
 
 
@@ -191,7 +173,7 @@ def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
     player = PlayerState(index=0, pos=Vec2())
     state.perks[int(PerkId.DEATH_CLOCK)] = 1
 
-    choices = perk_generate_choices(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
+    choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
     assert PerkId.JINXED not in choices
 
 
@@ -203,7 +185,7 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
         state.perk_available[int(perk_id)] = True
 
     player = PlayerState(index=0, pos=Vec2())
-    choices = perk_generate_choices(state, player, game_mode=GameMode.SURVIVAL, player_count=1)
+    choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
     assert PerkId.ANXIOUS_LOADER not in choices
     assert [
         record.caller
@@ -248,7 +230,7 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
 
     before_calls = rng.calls
     before_state = rng.state
-    choices = perk_generate_choices(state, player, game_mode=GameMode.QUESTS, player_count=1, count=7)
+    choices = perk_generate_choices(state, [player], game_mode=GameMode.QUESTS)
     assert choices == [
         PerkId.RANDOM_WEAPON,
         PerkId.INSTANT_WINNER,
@@ -290,7 +272,7 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
         return original(*args, **kwargs)
 
     mocker.patch.object(selection_mod, "perk_can_offer", side_effect=_counting_perk_can_offer)
-    choices = selection_mod.perk_generate_choices(state, player, game_mode=GameMode.QUESTS, player_count=1, count=7)
+    choices = selection_mod.perk_generate_choices(state, [player], game_mode=GameMode.QUESTS)
     assert choices == [
         PerkId.INSTANT_WINNER,
         PerkId.RANDOM_WEAPON,
