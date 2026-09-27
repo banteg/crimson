@@ -115,6 +115,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         default=False,
         help="run replay fixture integration tests",
     )
+    parser.addoption(
+        "--update-rng-golden",
+        action="store_true",
+        default=False,
+        help="rewrite replay fixture rng call-order goldens instead of checking them",
+    )
 
 
 def pytest_configure(config: pytest.Config) -> None:

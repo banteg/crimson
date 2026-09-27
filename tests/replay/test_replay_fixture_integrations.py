@@ -15,6 +15,14 @@ from crimson.replay.driver.playback_driver import (
 from crimson.sim.hooks import TickResult
 from crimson.sim.world_state import WorldState
 from tests.support.replay_runner_helpers import RECORDED_REPLAYS, _run_verify_playback
+from tests.support.rng_golden import (
+    caller_names,
+    callers_digest,
+    golden_path,
+    read_golden,
+    record_call_order,
+    write_golden,
+)
 
 pytestmark = [pytest.mark.slow, pytest.mark.replay_fixture]
 
@@ -124,3 +132,19 @@ def test_verify_vs_playback_parity(replay_path: Path) -> None:
     assert verify_result == replay.result
     assert playback_result == verify_result
     assert checkpoint_diff.ok
+
+
+@pytest.mark.parametrize("replay_path", RECORDED_REPLAYS, ids=lambda path: path.name)
+def test_replay_fixture_rng_call_order(replay_path: Path, request: pytest.FixtureRequest) -> None:
+    callers_by_tick = record_call_order(_load_replay_fixture(replay_path))
+    golden = golden_path(replay_path)
+    if request.config.getoption("--update-rng-golden"):
+        write_golden(golden, callers_by_tick)
+        return
+
+    expected = read_golden(golden)
+    assert len(callers_by_tick) == len(expected)
+    for tick_index, (callers, digest) in enumerate(zip(callers_by_tick, expected, strict=True)):
+        assert callers_digest(callers) == digest, (
+            f"rng call order diverged at tick {tick_index}: {len(callers)} draws {caller_names(callers)}"
+        )
