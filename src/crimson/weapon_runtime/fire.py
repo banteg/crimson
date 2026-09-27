@@ -17,6 +17,7 @@ from ..math_parity import (
     native_fire_muzzle_pos,
     native_shot_angle_from_jitter_draws,
     x87_pc24_add,
+    x87_pc24_div,
     x87_pc24_mul,
     x87_pc24_sub,
 )
@@ -476,9 +477,11 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     x87_pc24_mul(x87_pc24_mul(step, clip_ammo), 0.5),
                 )
             else:
-                spread = math.pi * (2.0 / 3.0)
-                step = 0.0 if rocket_count <= 1 else spread / float(rocket_count - 1)
-                angle = shot_angle - spread * 0.5
+                # Port fix: spread the clip evenly over 120 degrees, in the same
+                # per-operation f32 steps as the rest of the fire path.
+                spread = x87_pc24_mul(NATIVE_PI, f32(2.0 / 3.0))
+                step = 0.0 if rocket_count <= 1 else x87_pc24_div(spread, float(rocket_count - 1))
+                angle = x87_pc24_sub(shot_angle, x87_pc24_mul(NATIVE_PI, f32(1.0 / 3.0)))
             for _ in range(rocket_count):
                 state.secondary_projectiles.spawn_from_spec(
                     SecondarySpawnSpec(
@@ -491,7 +494,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                         preserve_bugs=bool(state.preserve_bugs),
                     ),
                 )
-                angle = x87_pc24_add(angle, step) if preserve_swarmer_bug else angle + step
+                angle = x87_pc24_add(angle, step)
             # Native subtracts the full clip value, zeroing the ammo even when
             # the clip was fractional or negative.
             ammo_cost = clip_ammo

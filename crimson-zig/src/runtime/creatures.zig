@@ -2523,9 +2523,9 @@ pub const CreaturePool = struct {
                 state.bonuses.energizer <= 0.0)
             {
                 consumeContactSfxRng(state, creature.type_id);
-                // Native perk_count_get reads player slot zero; contact damage,
-                // shielding, and ownership still use the selected target.
-                const contact_perk_player = if (state.preserve_bugs) &players[0] else contact_player;
+                // Perks are one shared table (native perk_count_get reads slot
+                // zero); contact damage, shielding and ownership use the target.
+                const contact_perk_player = &players[0];
                 if (perkActive(contact_perk_player, PerkId.mr_melee)) {
                     _ = self.applyDamage(
                         state,
@@ -4478,12 +4478,16 @@ pub fn applyPlayerContactDamageWithPlayers(
     dt: f32,
 ) void {
     var player1_source: *const state_mod.PlayerState = player;
-    if (state.preserve_bugs) {
-        if (all_players) |players| {
-            if (players.len > 0) player1_source = &players[0];
+    // Perks are one shared table (native `perk_count_get` reads slot zero), so
+    // the dormant single-player target still sees Death Clock and friends.
+    var perk_source: *const state_mod.PlayerState = player;
+    if (all_players) |players| {
+        if (players.len > 0) {
+            perk_source = &players[0];
+            if (state.preserve_bugs) player1_source = &players[0];
         }
     }
-    applyPlayerContactDamageWithSource(state, player, damage, dt, player1_source);
+    applyPlayerContactDamageWithSource(state, player, damage, dt, perk_source, player1_source);
 }
 
 fn applyPlayerContactDamageWithSource(
@@ -4491,12 +4495,13 @@ fn applyPlayerContactDamageWithSource(
     player: *state_mod.PlayerState,
     damage: f32,
     dt: f32,
+    perk_source: *const state_mod.PlayerState,
     player1_source: *const state_mod.PlayerState,
 ) void {
-    if (perkActive(player1_source, PerkId.death_clock)) return;
+    if (perkActive(perk_source, PerkId.death_clock)) return;
 
     var damage_scaled: f32 = damage;
-    if (perkActive(player1_source, PerkId.tough_reloader) and player.weapon.reload_active) {
+    if (perkActive(perk_source, PerkId.tough_reloader) and player.weapon.reload_active) {
         damage_scaled = narrowF32(damage_scaled * 0.5);
     }
     const spread_heat_damage = damage_scaled;
@@ -4506,18 +4511,18 @@ fn applyPlayerContactDamageWithSource(
     const was_alive = player1_source.health > 0.0;
 
     var dodged = false;
-    if (perkActive(player1_source, PerkId.ninja)) {
+    if (perkActive(perk_source, PerkId.ninja)) {
         dodged = (state.rng.randTagged(rng_callers.player_take_damage_ninja) % 3) == 0;
-    } else if (perkActive(player1_source, PerkId.dodger)) {
+    } else if (perkActive(perk_source, PerkId.dodger)) {
         dodged = (state.rng.randTagged(rng_callers.player_take_damage_dodger) % 5) == 0;
     }
 
-    if (perkActive(player1_source, PerkId.thick_skinned)) {
+    if (perkActive(perk_source, PerkId.thick_skinned)) {
         damage_scaled = narrowF32(damage_scaled * thick_skinned_damage_scale_f32);
     }
 
     if (!dodged) {
-        if (perkActive(player1_source, PerkId.highlander)) {
+        if (perkActive(perk_source, PerkId.highlander)) {
             if ((state.rng.randTagged(rng_callers.player_take_damage_highlander) % 10) == 0) {
                 player.health = 0.0;
             }
@@ -4546,14 +4551,14 @@ fn applyPlayerContactDamageWithSource(
         if (!was_alive) return;
     } else {
         if (!was_alive) return;
-        if (!perkActive(player1_source, PerkId.final_revenge)) {
+        if (!perkActive(perk_source, PerkId.final_revenge)) {
             const death_roll = state.rng.randTagged(rng_callers.player_take_damage_death_sfx) & 1;
             state.sfx_queue.append(if (death_roll == 0) .trooper_die_01 else .trooper_die_02);
         }
     }
 
     if (!dodged) {
-        if (!perkActive(player1_source, PerkId.unstoppable)) {
+        if (!perkActive(perk_source, PerkId.unstoppable)) {
             const jitter_i32: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_take_damage_heading) % 100)) - 50;
             const heading_jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.04));
             player.heading = native_math.pc24Add(player.heading, heading_jitter);
@@ -7804,64 +7809,6 @@ test "final revenge kills later creature before its live update" {
     try std.testing.expectEqual(state_mod.SfxId.shockwave, state.sfx_queue.constSlice()[1]);
 }
 
-test "preserve bugs uses player one damage perk source" {
-    var native_state = state_mod.GameplayState.init(1);
-    native_state.preserve_bugs = true;
-    var native_players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .health = 100.0 },
-        .{
-            .index = 1,
-            .pos = .{},
-            .health = 100.0,
-            .weapon = .{ .weapon_id = .pistol, .reload_active = true },
-        },
-    };
-    native_players[0].perk_counts.set(PerkId.tough_reloader, 1);
-
-    applyPlayerContactDamageWithPlayers(
-        &native_state,
-        &native_players[1],
-        native_players[0..],
-        10.0,
-        0.1,
-    );
-    try expectFloatClose(95.0, native_players[1].health);
-
-    var target_state = state_mod.GameplayState.init(1);
-    target_state.preserve_bugs = true;
-    var target_players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{}, .health = 100.0 },
-        .{
-            .index = 1,
-            .pos = .{},
-            .health = 100.0,
-            .weapon = .{ .weapon_id = .pistol, .reload_active = true },
-        },
-    };
-    target_players[1].perk_counts.set(PerkId.tough_reloader, 1);
-
-    applyPlayerContactDamageWithPlayers(
-        &target_state,
-        &target_players[1],
-        target_players[0..],
-        10.0,
-        0.1,
-    );
-    try expectFloatClose(90.0, target_players[1].health);
-
-    var corrected_state = state_mod.GameplayState.init(1);
-    var corrected_players = target_players;
-    corrected_players[1].health = 100.0;
-    applyPlayerContactDamageWithPlayers(
-        &corrected_state,
-        &corrected_players[1],
-        corrected_players[0..],
-        10.0,
-        0.1,
-    );
-    try expectFloatClose(95.0, corrected_players[1].health);
-}
-
 test "zero contact damage preserves native side effects and rng" {
     var state = state_mod.GameplayState.init(1);
     var player: state_mod.PlayerState = .{
@@ -7904,6 +7851,7 @@ test "dead primary suppresses dormant target post-hit effects" {
         &dormant_target,
         10.0,
         0.1,
+        &primary,
         &primary,
     );
 
