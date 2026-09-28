@@ -5,7 +5,7 @@ tags:
   - replay
 ---
 
-# Replay format (v23)
+# Replay format (v24)
 
 A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A
@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `23` |
+| `format_version` | int | `24` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |

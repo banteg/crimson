@@ -73,7 +73,7 @@ test "dbg verify emits complete ordered format contract" {
     try std.testing.expectEqualStrings(
         \\trace_format_version=2
         \\trace_schema_version=19
-        \\replay_format_version=23
+        \\replay_format_version=24
         \\checkpoint_format_version=5
         \\frida_capture_format_version=29
         \\frida_evidence_format_version=3
