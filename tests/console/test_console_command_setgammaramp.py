@@ -52,13 +52,15 @@ def test_game_loop_draw_applies_gamma_after_the_complete_dpi_sized_frame(mocker,
         ordered.attach_mock(mocker.patch.object(loop_view.rl, name), name)
     ordered.attach_mock(mocker.patch.object(view, "_draw_scene_layers"), "scene")
     ordered.attach_mock(mocker.patch.object(loop_view, "_set_gamma_ramp_gain"), "gain")
+    ordered.attach_mock(mocker.patch.object(loop_view, "opaque_blend"), "opaque")
 
     view.draw()
 
     ensure.assert_called_once_with(2048, 1536)
     assert [entry[0] for entry in ordered.mock_calls] == [
         "begin_texture_mode", "rl_scalef", "clear_background", "scene",
-        "end_texture_mode", "gain", "begin_shader_mode", "draw_texture_pro", "end_shader_mode",
+        "end_texture_mode", "gain", "begin_shader_mode",
+        "opaque", "opaque().__enter__", "draw_texture_pro", "opaque().__exit__", "end_shader_mode",
     ]
     ordered.rl_scalef.assert_called_once_with(2.0, 2.0, 1.0)
     ordered.gain.assert_called_once_with(shader, 7, 1.4)

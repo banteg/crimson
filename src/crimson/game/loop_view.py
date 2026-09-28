@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
+from grim.blend import opaque_blend
 from grim.raylib_api import rl
 from grim.texture_mode import texture_mode
 
@@ -256,12 +257,13 @@ class GameLoopView:
         _set_gamma_ramp_gain(shader, self._gamma_gain_loc, gamma_gain)
         rl.begin_shader_mode(shader)
         try:
-            rl.draw_texture_pro(
-                target.texture,
-                rl.Rectangle(0.0, 0.0, float(render_w), -float(render_h)),
-                rl.Rectangle(0.0, 0.0, float(screen_w), float(screen_h)),
-                rl.Vector2(0.0, 0.0), 0.0, rl.WHITE,
-            )
+            with opaque_blend():
+                rl.draw_texture_pro(
+                    target.texture,
+                    rl.Rectangle(0.0, 0.0, float(render_w), -float(render_h)),
+                    rl.Rectangle(0.0, 0.0, float(screen_w), float(screen_h)),
+                    rl.Vector2(0.0, 0.0), 0.0, rl.WHITE,
+                )
         finally:
             rl.end_shader_mode()
 

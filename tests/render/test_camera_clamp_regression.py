@@ -196,7 +196,7 @@ def test_ground_draw_view_uses_explicit_output_dimensions_without_refitting(mock
 
     mocker.patch.object(terrain_render.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(terrain_render.rl, "get_screen_height", return_value=768)
-    mocker.patch.object(terrain_render, "_blend_custom", side_effect=_noop_blend)
+    mocker.patch.object(terrain_render, "opaque_blend", side_effect=_noop_blend)
     fit_view_window = mocker.patch.object(
         terrain_render.GroundRenderer,
         "_fit_view_window",
@@ -241,7 +241,7 @@ def test_ground_draw_uses_runtime_dimensions_when_screen_size_is_omitted(mocker)
 
     mocker.patch.object(terrain_render.rl, "get_screen_width", return_value=1280)
     mocker.patch.object(terrain_render.rl, "get_screen_height", return_value=720)
-    mocker.patch.object(terrain_render, "_blend_custom", side_effect=_noop_blend)
+    mocker.patch.object(terrain_render, "opaque_blend", side_effect=_noop_blend)
     mocker.patch.object(terrain_render.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
     fit_view_window = mocker.patch.object(
         terrain_render.GroundRenderer,
@@ -299,7 +299,7 @@ def test_terrain_rt_blend_mask_alpha_writes_uses_color_mask(mocker) -> None:
 
     blend_custom = mocker.patch.object(
         terrain_render,
-        "_blend_custom",
+        "blend_custom",
         side_effect=lambda *_args, **_kwargs: _record("blend"),
     )
     color_mask = mocker.patch.object(terrain_render.rl, "rl_color_mask", autospec=True)

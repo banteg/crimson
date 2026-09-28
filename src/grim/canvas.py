@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 import msgspec
 
+from .blend import opaque_blend
 from .raylib_api import rl
 from .texture_mode import texture_mode
 
@@ -86,14 +87,15 @@ class Canvas:
             rl.clear_background(rl.BLACK)
             draw_frame()
         rl.clear_background(rl.BLACK)
-        rl.draw_texture_pro(
-            target.texture,
-            rl.Rectangle(0.0, 0.0, float(target_w), -float(target_h)),
-            dst,
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
+        with opaque_blend():
+            rl.draw_texture_pro(
+                target.texture,
+                rl.Rectangle(0.0, 0.0, float(target_w), -float(target_h)),
+                dst,
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
 
     def _ensure_target(self, target_w: int, target_h: int) -> rl.RenderTexture:
         target = self._target

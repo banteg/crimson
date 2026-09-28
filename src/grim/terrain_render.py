@@ -10,6 +10,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from grim import canvas
 from grim.raylib_api import rd, rl
 
+from .blend import blend_custom, opaque_blend
 from .geom import Vec2
 from .rand import CrtRand
 from .shaders import AlphaTestShader
@@ -65,20 +66,6 @@ _EXPLICIT_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
 )
 
 @contextmanager
-def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
-    # NOTE: raylib/rlgl tracks custom blend factors as state; some backends only
-    # apply them when switching the blend mode. Set factors both before and
-    # after BeginBlendMode() to ensure the current draw uses the intended values.
-    rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
-    rl.begin_blend_mode(rl.BlendMode.BLEND_CUSTOM)
-    rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
-    try:
-        yield
-    finally:
-        rl.end_blend_mode()
-
-
-@contextmanager
 def _color_mask(*, write_alpha: bool) -> Iterator[None]:
     rl.rl_color_mask(True, True, True, bool(write_alpha))
     try:
@@ -93,7 +80,7 @@ def _terrain_rt_blend(
     dst_factor: int,
     blend_equation: int,
 ) -> Iterator[None]:
-    with _color_mask(write_alpha=False), _blend_custom(src_factor, dst_factor, blend_equation):
+    with _color_mask(write_alpha=False), blend_custom(src_factor, dst_factor, blend_equation):
         yield
 
 
@@ -318,7 +305,7 @@ class GroundRenderer(msgspec.Struct):
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
-        with _blend_custom(rd.RL_ONE, rd.RL_ZERO, rd.RL_FUNC_ADD):
+        with opaque_blend():
             rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def _fit_view_window(self, screen_w: float, screen_h: float) -> tuple[float, float]:
