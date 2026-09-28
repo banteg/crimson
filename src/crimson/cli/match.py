@@ -12,6 +12,7 @@ import typer
 
 from .. import (
     library_match,
+    match_builds,
     match_data_inventory,
     match_diagnostics,
     match_experiments,
@@ -420,25 +421,36 @@ def cmd_match_scratch(
         "--scope",
         help="matching ownership scope",
     ),
+    build: str | None = typer.Option(
+        None,
+        "--build",
+        help="compile as another build of the image's family and compare against its image",
+    ),
 ) -> None:
     """Compile and compare one configured scratch through the cached pipeline."""
     try:
         config = matchlib.load_scratch_config(directory.resolve())
+        target = matchlib.default_match_target(config.image)
+        if build is not None:
+            image = match_builds.load_registry().image(build, config.image)
+            config, target = image.scratch_config(config), image.target
         obj_path = matchlib.compile_scratch(config, match_root)
-        image_path = matchlib.default_image_path(config.image)
         result = matchlib.run_match(
             obj_path=obj_path,
             function=config.function,
-            image_path=image_path,
-            functions_path=matchlib.default_functions_path(config.image),
-            metadata_path=matchlib.default_metadata_path(config.image),
+            image_path=target.image_path,
+            functions_path=target.functions_path,
+            metadata_path=target.metadata_path,
             symbol_name=config.symbol,
             object_extent=config.archive_extent,
             object_end_symbol=config.archive_end_symbol,
             object_size=config.archive_size,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
-            scope=scope,
+            # Ownership scopes describe the canonical images only.
+            scope=scope if build is None else "all",
+            image_name=target.image_name,
+            data_map_path=target.data_map_path,
         )
     except Exception as exc:
         typer.echo(f"match failed: {exc}", err=True)
@@ -906,6 +918,92 @@ def cmd_match_archive(
         raise typer.Exit(code=1)
 
 
+@match_app.command("builds")
+def cmd_match_builds() -> None:
+    """Check every build's images against their pins and summarize their function maps."""
+    registry = match_builds.load_registry()
+    for images in registry.builds.values():
+        for image in images.values():
+            line = f"{image.build:8} {image.name:16} {image.state():8}"
+            functions_path = image.target.functions_path
+            if image.canonical_build is None:
+                line += " no family"
+            elif image.is_canonical:
+                line += " canonical"
+            elif functions_path.is_file():
+                rows = json.loads(functions_path.read_text(encoding="utf-8"))
+                counts = {evidence: sum(1 for row in rows if row["evidence"] == evidence) for evidence in match_builds.EVIDENCE}
+                line += " " + " ".join(f"{evidence}={count}" for evidence, count in counts.items())
+            else:
+                line += " unmapped"
+            typer.echo(line)
+
+
+@match_app.command("build-map")
+def cmd_match_build_map(
+    builds: list[str] | None = typer.Argument(None, help="builds to map (default: every non-canonical family build)"),
+    check: bool = typer.Option(False, "--check", help="fail when a committed map differs from a fresh one"),
+) -> None:
+    """Map canonical functions and globals into the other builds of their family."""
+    registry = match_builds.load_registry()
+    images = [
+        image
+        for image in match_builds.mapped_images(registry)
+        if not builds or image.build in builds
+    ]
+    unknown = set(builds or ()) - {image.build for image in images}
+    if unknown:
+        raise typer.BadParameter(f"not a mapped family build: {', '.join(sorted(unknown))}")
+    stale = []
+    for image in images:
+        payload = match_builds.map_build_image(image, registry.canonical(image))
+        if check:
+            stale += match_builds.stale_build_map_files(image, payload)
+        else:
+            match_builds.write_build_map(image, payload)
+        summary = " ".join(f"{key}={value}" for key, value in payload["summary"].items())
+        typer.echo(f"{image.build} {image.name}: {summary}")
+    for path in stale:
+        typer.echo(f"stale: {path.relative_to(matchlib.REPO_ROOT)}", err=True)
+    if stale:
+        raise typer.Exit(code=1)
+
+
+@match_app.command("build-scan")
+def cmd_match_build_scan(
+    build: str = typer.Argument(..., help="build to compile every mapped scratch as"),
+    match_root: Path = typer.Option(matchlib.DEFAULT_MATCH_ROOT, "--match-root", help="tools/match root"),
+    jobs: int = typer.Option(matchlib.DEFAULT_MATCH_JOBS, "--jobs", "-j", min=1, help="parallel matching jobs"),
+    as_json: bool = typer.Option(False, "--json", help="emit one row per scratch as JSON"),
+) -> None:
+    """Compile every scratch whose function the build's map places, and compare it there."""
+    rows = match_builds.scan_build(match_builds.load_registry(), build, match_root, jobs=jobs)
+    if as_json:
+        typer.echo(
+            json.dumps(
+                [
+                    {
+                        "scratch": row.status.config.directory.name,
+                        "image": row.status.config.image,
+                        "address": f"0x{row.status.address:08X}",
+                        "evidence": row.evidence,
+                        "compiler": row.status.config.compiler,
+                        "state": row.status.state,
+                        "ratio": row.status.ratio,
+                        "error": row.status.error,
+                    }
+                    for row in rows
+                ],
+                indent=2,
+            ),
+        )
+        return
+    for evidence in match_builds.EVIDENCE:
+        states = [row.status.state for row in rows if row.evidence == evidence]
+        counts = " ".join(f"{state}={states.count(state)}" for state in reversed(match_builds.SCAN_STATES))
+        typer.echo(f"{build} {evidence:10} scratches={len(states):4} {counts}")
+
+
 @match_app.command("probe")
 def cmd_match_probe(
     directory: Path = typer.Argument(..., help="scratch directory containing scratch.conf"),
@@ -917,14 +1015,25 @@ def cmd_match_probe(
     label: str | None = typer.Option(None, "--label", help="short experiment label"),
     record: bool = typer.Option(False, "--record", help="append the result to experiments.jsonl"),
     as_json: bool = typer.Option(False, "--json", help="emit machine-readable JSON"),
+    build: str | None = typer.Option(
+        None,
+        "--build",
+        help="compile as another build of the image's family and compare against its image",
+    ),
 ) -> None:
     """Compare an untracked source overlay against the current scratch."""
     if source is None and not use_stdin:
         raise typer.BadParameter("pass --source or --stdin")
     if source is not None and use_stdin:
         raise typer.BadParameter("--source and --stdin are mutually exclusive")
+    if record and build is not None:
+        raise typer.BadParameter("experiments.jsonl records canonical probes only")
     try:
         config = matchlib.load_scratch_config(directory.resolve())
+        target = None
+        if build is not None:
+            image = match_builds.load_registry().image(build, config.image)
+            config, target = image.scratch_config(config), image.target
         if use_stdin:
             source_text = sys.stdin.read()
         else:
@@ -937,6 +1046,7 @@ def cmd_match_probe(
             compiler=compiler,
             cflags=cflags,
             label=label,
+            target=target,
         )
     except Exception as exc:
         typer.echo(f"probe failed: {exc}", err=True)

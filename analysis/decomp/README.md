@@ -212,3 +212,10 @@ the first default-branch report upload. Use the full game name `Crimsonland` and
 platform `Windows`. The GitHub app is optional; ordinary polling is sufficient.
 See the [integration guide](https://decomp.wiki/tools/decomp-dev) and
 [objdiff report schema](https://github.com/encounter/objdiff/blob/main/objdiff-core/protos/report.proto).
+
+## Other builds
+
+`<build>/<image>/` holds the maps that place canonical functions and globals in
+another build of the family, derived by `uv run crimson match build-map`. They
+feed `--build` comparisons and are not part of this report; see
+[decomp/README.md](../../decomp/README.md#other-builds).

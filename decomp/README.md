@@ -43,8 +43,8 @@ rebuilds the trees from them and checks every image against its pin. 1.9.93 is t
 The game grew from one C++ object into two dozen source files, and it never
 had a C object: every build before 1.9.9 takes its runtime from an older
 compiler build, and none links a C object from the game's compiler. The
-freeware builds share their compiler with 1.9.1 but join a family only once
-measured function overlap shows they share source.
+freeware builds share their compiler with 1.9.1 but little of its code (see
+[other builds](#other-builds)), so they belong to no family yet.
 
 Two build quirks are recorded in `builds.json`:
 
@@ -66,14 +66,61 @@ Builds in one family share one source. A build differs only by:
 - real source changes, guarded by `CL_BUILD`.
 
 `CL_BUILD` is `major*10000 + minor*100 + patch` (1.9.8 is 10908, 1.9.93 is
-10993). Guards are reconstruction scaffolding, not a claim about the original
-source; generated per-build trees resolve them away. Rules:
+10993). A source that tests it includes `cl_build.h`, which defaults it to the
+canonical build; the matcher defines it for every other build. Guards are
+reconstruction scaffolding, not a claim about the original source; generated
+per-build trees resolve them away. Rules:
 
 - Guard only behavioural changes. A body that differs only in code generation
   under another compiler is a spelling constraint, not a source change.
 - Guard whole statements or whole functions; guard a struct field once instead
   of every user.
 - A guard counts only when every build it claims compiles exactly.
+
+## Other builds
+
+The curated analysis names only the canonical images. `uv run crimson match
+build-map` derives maps for every other build of a family and writes them to
+`analysis/decomp/<build>/<image>/`. Each function row records how it was placed,
+strongest first:
+
+- `exact`: the body is identical up to relinking;
+- `referenced`: an operand of an exact body points at it;
+- `called`: the same call site of a mapped caller that changed but kept its
+  call sequence;
+- `ordered`: it sits between mapped neighbours in layout order, at a similar
+  size.
+
+Only `exact` rows have an exact extent; the others run to the next known
+function. A global is named when every reference to it from an exact body
+agrees.
+
+Game code (679 canonical functions) overlaps 1.9.93 as follows:
+
+| Build | Exact | Placed |
+|---|---|---|
+| 1.0.2 | 17 | 78 |
+| 1.3.0 | 21 | 110 |
+| 1.4.0 | 58 | 151 |
+| 1.9.1 | 429 | 632 |
+| 1.9.8 | 361 | 655 |
+| 1.9.9 | 622 | 677 |
+| 1.9.92 | 647 | 678 |
+
+1.9.8 places more functions than 1.9.1, but the Processor Pack changes enough
+code generation that fewer of its bodies are exact.
+
+`--build` compiles a scratch with that build's compiler profile and
+`/DCL_BUILD=<n>`, and compares it against that build's image:
+
+```bash
+uv run crimson match scratch tools/match/scratches/<name> --build 1.9.8
+uv run crimson match probe tools/match/scratches/<name> --build 1.9.8 --source <file>
+uv run crimson match build-scan 1.9.8
+```
+
+A reference to a global that the build's data map does not name stays
+unresolved, so such a function reports `audit`, never `match`.
 
 ## Scope
 

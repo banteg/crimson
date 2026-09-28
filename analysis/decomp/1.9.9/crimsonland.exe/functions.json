@@ -1,0 +1,8130 @@
+[
+  {
+    "address": "0x00401030",
+    "canonical_address": "0x00401030",
+    "end": "0x00401042",
+    "evidence": "exact",
+    "name": "console_input_clear",
+    "size": 18
+  },
+  {
+    "address": "0x00401050",
+    "canonical_address": "0x00401050",
+    "end": "0x00401056",
+    "evidence": "exact",
+    "name": "console_input_buffer",
+    "size": 6
+  },
+  {
+    "address": "0x00401060",
+    "canonical_address": "0x00401060",
+    "end": "0x004010EB",
+    "evidence": "exact",
+    "name": "console_input_poll",
+    "size": 139
+  },
+  {
+    "address": "0x004010F0",
+    "canonical_address": "0x00401120",
+    "end": "0x00401114",
+    "evidence": "exact",
+    "name": "console_cmd_arg_get",
+    "size": 36
+  },
+  {
+    "address": "0x00401120",
+    "canonical_address": "0x00401150",
+    "end": "0x00401126",
+    "evidence": "exact",
+    "name": "console_cmd_argc_get",
+    "size": 6
+  },
+  {
+    "address": "0x00401130",
+    "canonical_address": "0x00401160",
+    "end": "0x0040113A",
+    "evidence": "exact",
+    "name": "console_global_construct_and_register",
+    "size": 10
+  },
+  {
+    "address": "0x00401140",
+    "canonical_address": "0x00401170",
+    "end": "0x0040114A",
+    "evidence": "exact",
+    "name": "console_global_init",
+    "size": 10
+  },
+  {
+    "address": "0x00401150",
+    "canonical_address": "0x00401180",
+    "end": "0x0040115C",
+    "evidence": "exact",
+    "name": "console_register_global_destructor_atexit",
+    "size": 12
+  },
+  {
+    "address": "0x00401160",
+    "canonical_address": "0x00401190",
+    "end": "0x0040116A",
+    "evidence": "exact",
+    "name": "console_global_destroy",
+    "size": 10
+  },
+  {
+    "address": "0x00401170",
+    "canonical_address": "0x004011A0",
+    "end": "0x004011BE",
+    "evidence": "exact",
+    "name": "console_clear_log",
+    "size": 78
+  },
+  {
+    "address": "0x004011C0",
+    "canonical_address": "0x004011F0",
+    "end": "0x00401204",
+    "evidence": "exact",
+    "name": "console_log_node_free",
+    "size": 68
+  },
+  {
+    "address": "0x00401210",
+    "canonical_address": "0x00401240",
+    "end": "0x00401218",
+    "evidence": "exact",
+    "name": "console_cmd_quit",
+    "size": 8
+  },
+  {
+    "address": "0x00401220",
+    "canonical_address": "0x00401250",
+    "end": "0x0040130C",
+    "evidence": "exact",
+    "name": "console_cmd_exec",
+    "size": 236
+  },
+  {
+    "address": "0x00401310",
+    "canonical_address": "0x00401340",
+    "end": "0x00401321",
+    "evidence": "exact",
+    "name": "console_cmd_extend",
+    "size": 17
+  },
+  {
+    "address": "0x00401330",
+    "canonical_address": "0x00401360",
+    "end": "0x0040133B",
+    "evidence": "exact",
+    "name": "console_cmd_minimize",
+    "size": 11
+  },
+  {
+    "address": "0x00401340",
+    "canonical_address": "0x00401370",
+    "end": "0x00401381",
+    "evidence": "exact",
+    "name": "console_cmdlist",
+    "size": 65
+  },
+  {
+    "address": "0x00401390",
+    "canonical_address": "0x004013C0",
+    "end": "0x004013D1",
+    "evidence": "exact",
+    "name": "console_vars",
+    "size": 65
+  },
+  {
+    "address": "0x004013E0",
+    "canonical_address": "0x00401410",
+    "end": "0x004014D5",
+    "evidence": "exact",
+    "name": "console_echo",
+    "size": 245
+  },
+  {
+    "address": "0x004014E0",
+    "canonical_address": "0x00401510",
+    "end": "0x0040152D",
+    "evidence": "exact",
+    "name": "console_cmd_set",
+    "size": 77
+  },
+  {
+    "address": "0x00401530",
+    "canonical_address": "0x00401560",
+    "end": "0x004016AE",
+    "evidence": "exact",
+    "name": "console_init",
+    "size": 382
+  },
+  {
+    "address": "0x004016B0",
+    "canonical_address": "0x004016E0",
+    "end": "0x0040176B",
+    "evidence": "exact",
+    "name": "console_destroy",
+    "size": 187
+  },
+  {
+    "address": "0x00401770",
+    "canonical_address": "0x004017A0",
+    "end": "0x00401831",
+    "evidence": "exact",
+    "name": "console_push_line",
+    "size": 193
+  },
+  {
+    "address": "0x00401840",
+    "canonical_address": "0x00401870",
+    "end": "0x00401871",
+    "evidence": "exact",
+    "name": "console_printf",
+    "size": 49
+  },
+  {
+    "address": "0x00401880",
+    "canonical_address": "0x004018B0",
+    "end": "0x0040189A",
+    "evidence": "exact",
+    "name": "console_set_open",
+    "size": 26
+  },
+  {
+    "address": "0x004018A0",
+    "canonical_address": "0x004018D0",
+    "end": "0x00401903",
+    "evidence": "exact",
+    "name": "console_history_apply",
+    "size": 99
+  },
+  {
+    "address": "0x00401910",
+    "canonical_address": "0x00401940",
+    "end": "0x00401A0E",
+    "evidence": "exact",
+    "name": "console_exec_line",
+    "size": 254
+  },
+  {
+    "address": "0x00401A10",
+    "canonical_address": "0x00401A40",
+    "end": "0x00401D98",
+    "evidence": "exact",
+    "name": "console_update",
+    "size": 904
+  },
+  {
+    "address": "0x00401DA0",
+    "canonical_address": "0x00401DD0",
+    "end": "0x00402320",
+    "evidence": "ordered",
+    "name": "console_render",
+    "size": 1408
+  },
+  {
+    "address": "0x00402320",
+    "canonical_address": "0x00402350",
+    "end": "0x00402447",
+    "evidence": "exact",
+    "name": "console_register_cvar",
+    "size": 295
+  },
+  {
+    "address": "0x00402450",
+    "canonical_address": "0x00402480",
+    "end": "0x004024AC",
+    "evidence": "exact",
+    "name": "console_cvar_find",
+    "size": 92
+  },
+  {
+    "address": "0x004024B0",
+    "canonical_address": "0x004024E0",
+    "end": "0x004024F8",
+    "evidence": "exact",
+    "name": "console_cvar_unregister",
+    "size": 72
+  },
+  {
+    "address": "0x00402500",
+    "canonical_address": "0x00402530",
+    "end": "0x0040254A",
+    "evidence": "exact",
+    "name": "console_command_unregister",
+    "size": 74
+  },
+  {
+    "address": "0x00402550",
+    "canonical_address": "0x00402580",
+    "end": "0x004025F1",
+    "evidence": "exact",
+    "name": "console_tokenize_line",
+    "size": 161
+  },
+  {
+    "address": "0x00402600",
+    "canonical_address": "0x00402630",
+    "end": "0x004026A4",
+    "evidence": "exact",
+    "name": "console_cvar_autocomplete",
+    "size": 164
+  },
+  {
+    "address": "0x004026B0",
+    "canonical_address": "0x004026E0",
+    "end": "0x00402713",
+    "evidence": "exact",
+    "name": "console_register_command",
+    "size": 99
+  },
+  {
+    "address": "0x00402720",
+    "canonical_address": "0x00402750",
+    "end": "0x0040277D",
+    "evidence": "exact",
+    "name": "console_command_find",
+    "size": 93
+  },
+  {
+    "address": "0x00402780",
+    "canonical_address": "0x004027B0",
+    "end": "0x00402825",
+    "evidence": "exact",
+    "name": "console_command_autocomplete",
+    "size": 165
+  },
+  {
+    "address": "0x00402830",
+    "canonical_address": "0x00402860",
+    "end": "0x004028A9",
+    "evidence": "exact",
+    "name": "console_flush_log",
+    "size": 121
+  },
+  {
+    "address": "0x004028B0",
+    "canonical_address": "0x004010F0",
+    "end": "0x004028DA",
+    "evidence": "exact",
+    "name": "invoke_callback_n",
+    "size": 42
+  },
+  {
+    "address": "0x004028E0",
+    "canonical_address": "0x004028E0",
+    "end": "0x004028E5",
+    "evidence": "exact",
+    "name": "config_init_defaults_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004028F0",
+    "canonical_address": "0x004028F0",
+    "end": "0x00402BCE",
+    "evidence": "exact",
+    "name": "config_init_defaults",
+    "size": 734
+  },
+  {
+    "address": "0x00402BD0",
+    "canonical_address": "0x00402BD0",
+    "end": "0x00402BF2",
+    "evidence": "exact",
+    "name": "game_build_path",
+    "size": 34
+  },
+  {
+    "address": "0x00402C00",
+    "canonical_address": "0x00402C00",
+    "end": "0x00402D46",
+    "evidence": "exact",
+    "name": "register_core_cvars",
+    "size": 326
+  },
+  {
+    "address": "0x00402D50",
+    "canonical_address": "0x00402D50",
+    "end": "0x00402EC7",
+    "evidence": "exact",
+    "name": "ui_render_loading",
+    "size": 375
+  },
+  {
+    "address": "0x00402ED0",
+    "canonical_address": "0x00402ED0",
+    "end": "0x00402FD7",
+    "evidence": "exact",
+    "name": "demo_setup_variant_0",
+    "size": 263
+  },
+  {
+    "address": "0x00402FE0",
+    "canonical_address": "0x00402FE0",
+    "end": "0x004030EF",
+    "evidence": "exact",
+    "name": "demo_setup_variant_2",
+    "size": 271
+  },
+  {
+    "address": "0x004030F0",
+    "canonical_address": "0x004030F0",
+    "end": "0x00403242",
+    "evidence": "exact",
+    "name": "demo_setup_variant_1",
+    "size": 338
+  },
+  {
+    "address": "0x00403250",
+    "canonical_address": "0x00403250",
+    "end": "0x00403366",
+    "evidence": "exact",
+    "name": "demo_setup_variant_3",
+    "size": 278
+  },
+  {
+    "address": "0x00403370",
+    "canonical_address": "0x00403370",
+    "end": "0x00403382",
+    "evidence": "exact",
+    "name": "demo_purchase_interstitial_begin",
+    "size": 18
+  },
+  {
+    "address": "0x00403390",
+    "canonical_address": "0x00403390",
+    "end": "0x0040342B",
+    "evidence": "exact",
+    "name": "demo_mode_start",
+    "size": 155
+  },
+  {
+    "address": "0x00403430",
+    "canonical_address": "0x00403430",
+    "end": "0x00403498",
+    "evidence": "exact",
+    "name": "ui_mouse_inside_rect_with_padding",
+    "size": 104
+  },
+  {
+    "address": "0x004034A0",
+    "canonical_address": "0x004034A0",
+    "end": "0x004034FC",
+    "evidence": "exact",
+    "name": "ui_mouse_inside_rect",
+    "size": 92
+  },
+  {
+    "address": "0x00403500",
+    "canonical_address": "0x00403500",
+    "end": "0x00403550",
+    "evidence": "referenced",
+    "name": "game_core_init",
+    "size": 80
+  },
+  {
+    "address": "0x00403550",
+    "canonical_address": "0x00403550",
+    "end": "0x004036CA",
+    "evidence": "exact",
+    "name": "perk_prompt_update_and_render",
+    "size": 378
+  },
+  {
+    "address": "0x004036D0",
+    "canonical_address": "0x004036D0",
+    "end": "0x0040426A",
+    "evidence": "exact",
+    "name": "input_key_name",
+    "size": 2970
+  },
+  {
+    "address": "0x004045A0",
+    "canonical_address": "0x004045A0",
+    "end": "0x004047B7",
+    "evidence": "exact",
+    "name": "perks_generate_choices",
+    "size": 535
+  },
+  {
+    "address": "0x004047C0",
+    "canonical_address": "0x004047C0",
+    "end": "0x00405170",
+    "evidence": "ordered",
+    "name": "demo_trial_overlay_render",
+    "size": 2480
+  },
+  {
+    "address": "0x00405170",
+    "canonical_address": "0x00405130",
+    "end": "0x00405171",
+    "evidence": "exact",
+    "name": "demo_trial_already_paid_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00405180",
+    "canonical_address": "0x00405140",
+    "end": "0x00405181",
+    "evidence": "exact",
+    "name": "demo_trial_purchase_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00405190",
+    "canonical_address": "0x00405150",
+    "end": "0x00405191",
+    "evidence": "exact",
+    "name": "demo_trial_maybe_later_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004051A0",
+    "canonical_address": "0x00405160",
+    "end": "0x00405616",
+    "evidence": "exact",
+    "name": "ui_render_keybind_help",
+    "size": 1142
+  },
+  {
+    "address": "0x00405620",
+    "canonical_address": "0x004055E0",
+    "end": "0x00405995",
+    "evidence": "exact",
+    "name": "perk_apply",
+    "size": 885
+  },
+  {
+    "address": "0x004059A0",
+    "canonical_address": "0x00405960",
+    "end": "0x00405C11",
+    "evidence": "exact",
+    "name": "gameplay_render_world",
+    "size": 625
+  },
+  {
+    "address": "0x00405C20",
+    "canonical_address": "0x00405BE0",
+    "end": "0x00406163",
+    "evidence": "exact",
+    "name": "perk_selection_screen_update",
+    "size": 1347
+  },
+  {
+    "address": "0x00406170",
+    "canonical_address": "0x00406130",
+    "end": "0x00406171",
+    "evidence": "exact",
+    "name": "perk_selection_select_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00406180",
+    "canonical_address": "0x00406140",
+    "end": "0x00406181",
+    "evidence": "exact",
+    "name": "perk_selection_cancel_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00406190",
+    "canonical_address": "0x00406150",
+    "end": "0x00406191",
+    "evidence": "exact",
+    "name": "perk_selection_choice_items_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004061A0",
+    "canonical_address": "0x00406160",
+    "end": "0x004061A1",
+    "evidence": "exact",
+    "name": "perk_selection_hover_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004061B0",
+    "canonical_address": "0x00406170",
+    "end": "0x004061B1",
+    "evidence": "exact",
+    "name": "perk_selection_idle_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004061C0",
+    "canonical_address": "0x00406180",
+    "end": "0x00406220",
+    "evidence": "exact",
+    "name": "format_ordinal",
+    "size": 96
+  },
+  {
+    "address": "0x00406220",
+    "canonical_address": "0x004061E0",
+    "end": "0x0040638A",
+    "evidence": "exact",
+    "name": "ui_draw_clock_gauge",
+    "size": 362
+  },
+  {
+    "address": "0x00406390",
+    "canonical_address": "0x00406350",
+    "end": "0x00406AEB",
+    "evidence": "exact",
+    "name": "game_update_victory_screen",
+    "size": 1883
+  },
+  {
+    "address": "0x00406AF0",
+    "canonical_address": "0x00406AB0",
+    "end": "0x00406AF1",
+    "evidence": "exact",
+    "name": "game_completed_main_menu_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00406B00",
+    "canonical_address": "0x00406AC0",
+    "end": "0x00406B01",
+    "evidence": "exact",
+    "name": "game_completed_typo_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00406B10",
+    "canonical_address": "0x00406AD0",
+    "end": "0x00406B11",
+    "evidence": "exact",
+    "name": "game_completed_rush_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00406B20",
+    "canonical_address": "0x00406AE0",
+    "end": "0x00406B21",
+    "evidence": "exact",
+    "name": "game_completed_survival_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00406B30",
+    "canonical_address": "0x00406AF0",
+    "end": "0x00406B78",
+    "evidence": "exact",
+    "name": "game_update_generic_menu",
+    "size": 72
+  },
+  {
+    "address": "0x00406B80",
+    "canonical_address": "0x00406B40",
+    "end": "0x00407110",
+    "evidence": "referenced",
+    "name": "perks_update_effects",
+    "size": 1424
+  },
+  {
+    "address": "0x00407110",
+    "canonical_address": "0x004070E0",
+    "end": "0x004072D7",
+    "evidence": "exact",
+    "name": "quest_mode_update",
+    "size": 455
+  },
+  {
+    "address": "0x004072E0",
+    "canonical_address": "0x004072B0",
+    "end": "0x00407532",
+    "evidence": "exact",
+    "name": "rush_mode_update",
+    "size": 594
+  },
+  {
+    "address": "0x00407540",
+    "canonical_address": "0x00407510",
+    "end": "0x00407CF5",
+    "evidence": "exact",
+    "name": "survival_spawn_creature",
+    "size": 1973
+  },
+  {
+    "address": "0x00407D00",
+    "canonical_address": "0x00407CD0",
+    "end": "0x00408560",
+    "evidence": "ordered",
+    "name": "survival_update",
+    "size": 2144
+  },
+  {
+    "address": "0x00408560",
+    "canonical_address": "0x00408530",
+    "end": "0x0040899C",
+    "evidence": "exact",
+    "name": "tutorial_prompt_dialog",
+    "size": 1084
+  },
+  {
+    "address": "0x004089A0",
+    "canonical_address": "0x00408970",
+    "end": "0x004089A1",
+    "evidence": "exact",
+    "name": "tutorial_primary_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004089B0",
+    "canonical_address": "0x00408980",
+    "end": "0x004089B1",
+    "evidence": "exact",
+    "name": "tutorial_repeat_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004089C0",
+    "canonical_address": "0x00408990",
+    "end": "0x00409530",
+    "evidence": "ordered",
+    "name": "tutorial_timeline_update",
+    "size": 2928
+  },
+  {
+    "address": "0x00409530",
+    "canonical_address": "0x00409500",
+    "end": "0x004098BE",
+    "evidence": "exact",
+    "name": "camera_update",
+    "size": 910
+  },
+  {
+    "address": "0x004098C0",
+    "canonical_address": "0x00409890",
+    "end": "0x0040A345",
+    "evidence": "exact",
+    "name": "bonus_apply",
+    "size": 2693
+  },
+  {
+    "address": "0x0040A350",
+    "canonical_address": "0x0040A320",
+    "end": "0x0040A4F0",
+    "evidence": "exact",
+    "name": "bonus_update",
+    "size": 416
+  },
+  {
+    "address": "0x0040A4F0",
+    "canonical_address": "0x0040A4C0",
+    "end": "0x0040A536",
+    "evidence": "exact",
+    "name": "ui_draw_clock_gauge_at",
+    "size": 70
+  },
+  {
+    "address": "0x0040A540",
+    "canonical_address": "0x0040A510",
+    "end": "0x0040AABA",
+    "evidence": "exact",
+    "name": "ui_render_aim_indicators",
+    "size": 1402
+  },
+  {
+    "address": "0x0040AAC0",
+    "canonical_address": "0x0040AA90",
+    "end": "0x0040AAC1",
+    "evidence": "exact",
+    "name": "ui_render_aim_lifetime_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040AAD0",
+    "canonical_address": "0x0040AAA0",
+    "end": "0x0040AAD1",
+    "evidence": "exact",
+    "name": "ui_render_aim_screen_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040AAE0",
+    "canonical_address": "0x0040AAB0",
+    "end": "0x0040B730",
+    "evidence": "ordered",
+    "name": "gameplay_update_and_render",
+    "size": 3152
+  },
+  {
+    "address": "0x0040B730",
+    "canonical_address": "0x0040B5D0",
+    "end": "0x0040B789",
+    "evidence": "exact",
+    "name": "plugin_runtime_clear_pools",
+    "size": 89
+  },
+  {
+    "address": "0x0040B790",
+    "canonical_address": "0x0040B630",
+    "end": "0x0040B899",
+    "evidence": "exact",
+    "name": "plugin_runtime_update_and_render",
+    "size": 265
+  },
+  {
+    "address": "0x0040B8A0",
+    "canonical_address": "0x0040B740",
+    "end": "0x0040C440",
+    "evidence": "ordered",
+    "name": "demo_purchase_screen_update",
+    "size": 2976
+  },
+  {
+    "address": "0x0040C440",
+    "canonical_address": "0x0040C1A0",
+    "end": "0x0040C441",
+    "evidence": "exact",
+    "name": "demo_purchase_purchase_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040C450",
+    "canonical_address": "0x0040C1B0",
+    "end": "0x0040C451",
+    "evidence": "exact",
+    "name": "demo_purchase_maybe_later_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040C470",
+    "canonical_address": "0x0040C1C0",
+    "end": "0x0040D250",
+    "evidence": "ordered",
+    "name": "game_frame_update",
+    "size": 3552
+  },
+  {
+    "address": "0x0040D250",
+    "canonical_address": "0x0040CFD0",
+    "end": "0x0040D255",
+    "evidence": "exact",
+    "name": "credits_line_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0040D260",
+    "canonical_address": "0x0040CFE0",
+    "end": "0x0040D278",
+    "evidence": "exact",
+    "name": "credits_line_table_global_init",
+    "size": 24
+  },
+  {
+    "address": "0x0040D280",
+    "canonical_address": "0x0040D000",
+    "end": "0x0040D2C0",
+    "evidence": "exact",
+    "name": "credits_line_set",
+    "size": 64
+  },
+  {
+    "address": "0x0040D2C0",
+    "canonical_address": "0x0040D040",
+    "end": "0x0040D302",
+    "evidence": "exact",
+    "name": "credits_line_clear_flag",
+    "size": 66
+  },
+  {
+    "address": "0x0040D310",
+    "canonical_address": "0x0040D090",
+    "end": "0x0040DA79",
+    "evidence": "exact",
+    "name": "credits_build_lines",
+    "size": 1897
+  },
+  {
+    "address": "0x0040DA80",
+    "canonical_address": "0x0040D800",
+    "end": "0x0040E1C1",
+    "evidence": "exact",
+    "name": "credits_screen_update",
+    "size": 1857
+  },
+  {
+    "address": "0x0040E1D0",
+    "canonical_address": "0x0040DF50",
+    "end": "0x0040E1D1",
+    "evidence": "exact",
+    "name": "credits_secret_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040E1E0",
+    "canonical_address": "0x0040DF60",
+    "end": "0x0040E1E1",
+    "evidence": "exact",
+    "name": "credits_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040E1F0",
+    "canonical_address": "0x0040DF70",
+    "end": "0x0040E1F5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_05_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0040E200",
+    "canonical_address": "0x0040DF80",
+    "end": "0x0040E201",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_05",
+    "size": 1
+  },
+  {
+    "address": "0x0040E210",
+    "canonical_address": "0x0040DF90",
+    "end": "0x0040E215",
+    "evidence": "exact",
+    "name": "mod_api_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0040E220",
+    "canonical_address": "0x0040DFA0",
+    "end": "0x0040E235",
+    "evidence": "exact",
+    "name": "mod_api_init",
+    "size": 21
+  },
+  {
+    "address": "0x0040E240",
+    "canonical_address": "0x0040DFC0",
+    "end": "0x0040E274",
+    "evidence": "exact",
+    "name": "mod_api_core_printf",
+    "size": 52
+  },
+  {
+    "address": "0x0040E280",
+    "canonical_address": "0x0040E000",
+    "end": "0x0040E2B2",
+    "evidence": "exact",
+    "name": "mod_api_debug_printf",
+    "size": 50
+  },
+  {
+    "address": "0x0040E2C0",
+    "canonical_address": "0x0040E040",
+    "end": "0x0040E2FD",
+    "evidence": "exact",
+    "name": "mod_api_core_get_var",
+    "size": 61
+  },
+  {
+    "address": "0x0040E300",
+    "canonical_address": "0x0040E080",
+    "end": "0x0040E312",
+    "evidence": "exact",
+    "name": "mod_api_core_del_var",
+    "size": 18
+  },
+  {
+    "address": "0x0040E320",
+    "canonical_address": "0x0040E0A0",
+    "end": "0x0040E332",
+    "evidence": "exact",
+    "name": "mod_api_core_execute",
+    "size": 18
+  },
+  {
+    "address": "0x0040E340",
+    "canonical_address": "0x0040E0C0",
+    "end": "0x0040E357",
+    "evidence": "exact",
+    "name": "mod_api_core_add_command",
+    "size": 23
+  },
+  {
+    "address": "0x0040E360",
+    "canonical_address": "0x0040E0E0",
+    "end": "0x0040E372",
+    "evidence": "exact",
+    "name": "mod_api_core_del_command",
+    "size": 18
+  },
+  {
+    "address": "0x0040E380",
+    "canonical_address": "0x0040E100",
+    "end": "0x0040E469",
+    "evidence": "exact",
+    "name": "mod_api_core_get_extension",
+    "size": 233
+  },
+  {
+    "address": "0x0040E470",
+    "canonical_address": "0x0040E1F0",
+    "end": "0x0040E492",
+    "evidence": "exact",
+    "name": "mod_api_gfx_clear",
+    "size": 34
+  },
+  {
+    "address": "0x0040E4A0",
+    "canonical_address": "0x0040E220",
+    "end": "0x0040E4B6",
+    "evidence": "exact",
+    "name": "mod_api_gfx_get_string_width",
+    "size": 22
+  },
+  {
+    "address": "0x0040E4C0",
+    "canonical_address": "0x0040E240",
+    "end": "0x0040E4F5",
+    "evidence": "exact",
+    "name": "mod_api_gfx_printf",
+    "size": 53
+  },
+  {
+    "address": "0x0040E500",
+    "canonical_address": "0x0040E280",
+    "end": "0x0040E553",
+    "evidence": "exact",
+    "name": "mod_api_gfx_load_texture",
+    "size": 83
+  },
+  {
+    "address": "0x0040E560",
+    "canonical_address": "0x0040E2E0",
+    "end": "0x0040E578",
+    "evidence": "exact",
+    "name": "mod_api_gfx_free_texture",
+    "size": 24
+  },
+  {
+    "address": "0x0040E580",
+    "canonical_address": "0x0040E300",
+    "end": "0x0040E598",
+    "evidence": "exact",
+    "name": "mod_api_gfx_set_texture",
+    "size": 24
+  },
+  {
+    "address": "0x0040E5A0",
+    "canonical_address": "0x0040E320",
+    "end": "0x0040E5C5",
+    "evidence": "exact",
+    "name": "mod_api_gfx_set_color",
+    "size": 37
+  },
+  {
+    "address": "0x0040E5D0",
+    "canonical_address": "0x0040E350",
+    "end": "0x0040E5F5",
+    "evidence": "exact",
+    "name": "mod_api_gfx_set_subset",
+    "size": 37
+  },
+  {
+    "address": "0x0040E600",
+    "canonical_address": "0x0040E380",
+    "end": "0x0040E61B",
+    "evidence": "exact",
+    "name": "mod_api_gfx_set_texture_filter",
+    "size": 27
+  },
+  {
+    "address": "0x0040E620",
+    "canonical_address": "0x0040E3A0",
+    "end": "0x0040E653",
+    "evidence": "exact",
+    "name": "mod_api_gfx_set_blend_mode",
+    "size": 51
+  },
+  {
+    "address": "0x0040E660",
+    "canonical_address": "0x0040E3E0",
+    "end": "0x0040E676",
+    "evidence": "exact",
+    "name": "mod_api_gfx_begin",
+    "size": 22
+  },
+  {
+    "address": "0x0040E680",
+    "canonical_address": "0x0040E400",
+    "end": "0x0040E696",
+    "evidence": "exact",
+    "name": "mod_api_gfx_end",
+    "size": 22
+  },
+  {
+    "address": "0x0040E6A0",
+    "canonical_address": "0x0040E420",
+    "end": "0x0040E6EC",
+    "evidence": "exact",
+    "name": "mod_api_gfx_quad",
+    "size": 76
+  },
+  {
+    "address": "0x0040E6F0",
+    "canonical_address": "0x0040E470",
+    "end": "0x0040E73F",
+    "evidence": "exact",
+    "name": "mod_api_gfx_quad_rot",
+    "size": 79
+  },
+  {
+    "address": "0x0040E740",
+    "canonical_address": "0x0040E4C0",
+    "end": "0x0040E7A4",
+    "evidence": "exact",
+    "name": "mod_api_gfx_draw_quads",
+    "size": 100
+  },
+  {
+    "address": "0x0040E7B0",
+    "canonical_address": "0x0040E530",
+    "end": "0x0040E7DD",
+    "evidence": "exact",
+    "name": "mod_api_sfx_load_sample",
+    "size": 45
+  },
+  {
+    "address": "0x0040E7E0",
+    "canonical_address": "0x0040E560",
+    "end": "0x0040E7F0",
+    "evidence": "exact",
+    "name": "mod_api_sfx_free_sample",
+    "size": 16
+  },
+  {
+    "address": "0x0040E7F0",
+    "canonical_address": "0x0040E570",
+    "end": "0x0040E823",
+    "evidence": "exact",
+    "name": "mod_api_sfx_play_sample",
+    "size": 51
+  },
+  {
+    "address": "0x0040E830",
+    "canonical_address": "0x0040E5B0",
+    "end": "0x0040E85D",
+    "evidence": "exact",
+    "name": "mod_api_sfx_load_tune",
+    "size": 45
+  },
+  {
+    "address": "0x0040E860",
+    "canonical_address": "0x0040E5E0",
+    "end": "0x0040E870",
+    "evidence": "exact",
+    "name": "mod_api_sfx_free_tune",
+    "size": 16
+  },
+  {
+    "address": "0x0040E870",
+    "canonical_address": "0x0040E5F0",
+    "end": "0x0040E87E",
+    "evidence": "exact",
+    "name": "mod_api_sfx_play_tune",
+    "size": 14
+  },
+  {
+    "address": "0x0040E880",
+    "canonical_address": "0x0040E600",
+    "end": "0x0040E88E",
+    "evidence": "exact",
+    "name": "mod_api_sfx_stop_tune",
+    "size": 14
+  },
+  {
+    "address": "0x0040E890",
+    "canonical_address": "0x0040E610",
+    "end": "0x0040E89B",
+    "evidence": "exact",
+    "name": "mod_api_inp_get_pressed_char",
+    "size": 11
+  },
+  {
+    "address": "0x0040E8A0",
+    "canonical_address": "0x0040E620",
+    "end": "0x0040E8D6",
+    "evidence": "exact",
+    "name": "mod_api_inp_get_analog",
+    "size": 54
+  },
+  {
+    "address": "0x0040E8E0",
+    "canonical_address": "0x0040E660",
+    "end": "0x0040E900",
+    "evidence": "exact",
+    "name": "mod_api_inp_key_down",
+    "size": 32
+  },
+  {
+    "address": "0x0040E900",
+    "canonical_address": "0x0040E680",
+    "end": "0x0040E910",
+    "evidence": "exact",
+    "name": "mod_api_inp_get_key_name",
+    "size": 16
+  },
+  {
+    "address": "0x0040E910",
+    "canonical_address": "0x0040E690",
+    "end": "0x0040E973",
+    "evidence": "exact",
+    "name": "mod_api_cl_enter_menu",
+    "size": 99
+  },
+  {
+    "address": "0x0040E980",
+    "canonical_address": "0x0040E700",
+    "end": "0x0040EACC",
+    "evidence": "exact",
+    "name": "mod_load_info",
+    "size": 332
+  },
+  {
+    "address": "0x0040EAD0",
+    "canonical_address": "0x0040E850",
+    "end": "0x0040EAD1",
+    "evidence": "exact",
+    "name": "mod_info_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040EAE0",
+    "canonical_address": "0x0040E860",
+    "end": "0x0040EBBB",
+    "evidence": "exact",
+    "name": "mod_load_mod",
+    "size": 219
+  },
+  {
+    "address": "0x0040EBC0",
+    "canonical_address": "0x0040E940",
+    "end": "0x0040EC17",
+    "evidence": "exact",
+    "name": "mods_any_available",
+    "size": 87
+  },
+  {
+    "address": "0x0040EC20",
+    "canonical_address": "0x0040E9A0",
+    "end": "0x0040F64F",
+    "evidence": "exact",
+    "name": "mods_menu_update",
+    "size": 2607
+  },
+  {
+    "address": "0x0040F650",
+    "canonical_address": "0x0040F3D0",
+    "end": "0x0040F651",
+    "evidence": "exact",
+    "name": "mods_menu_launch_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040F660",
+    "canonical_address": "0x0040F3E0",
+    "end": "0x0040F661",
+    "evidence": "exact",
+    "name": "mods_menu_main_menu_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040F670",
+    "canonical_address": "0x0040F3F0",
+    "end": "0x0040F671",
+    "evidence": "exact",
+    "name": "mods_menu_scrollbar_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0040F680",
+    "canonical_address": "0x0040F400",
+    "end": "0x0040F766",
+    "evidence": "exact",
+    "name": "credits_secret_match3_find",
+    "size": 230
+  },
+  {
+    "address": "0x0040F770",
+    "canonical_address": "0x0040F4F0",
+    "end": "0x004101A4",
+    "evidence": "exact",
+    "name": "credits_secret_alien_zookeeper_update",
+    "size": 2612
+  },
+  {
+    "address": "0x004101B0",
+    "canonical_address": "0x0040FF30",
+    "end": "0x004101B1",
+    "evidence": "exact",
+    "name": "credits_secret_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004101C0",
+    "canonical_address": "0x0040FF40",
+    "end": "0x004101C1",
+    "evidence": "exact",
+    "name": "credits_secret_reset_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004101D0",
+    "canonical_address": "0x0040FF50",
+    "end": "0x00410239",
+    "evidence": "exact",
+    "name": "time_format_mm_ss",
+    "size": 105
+  },
+  {
+    "address": "0x00410240",
+    "canonical_address": "0x0040FFC0",
+    "end": "0x00410A10",
+    "evidence": "ordered",
+    "name": "game_over_screen_update",
+    "size": 2000
+  },
+  {
+    "address": "0x00410A10",
+    "canonical_address": "0x00410790",
+    "end": "0x00410A11",
+    "evidence": "exact",
+    "name": "game_over_main_menu_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410A20",
+    "canonical_address": "0x004107A0",
+    "end": "0x00410A21",
+    "evidence": "exact",
+    "name": "game_over_highscores_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410A30",
+    "canonical_address": "0x004107B0",
+    "end": "0x00410A31",
+    "evidence": "exact",
+    "name": "game_over_play_again_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410A40",
+    "canonical_address": "0x004107C0",
+    "end": "0x00410A41",
+    "evidence": "exact",
+    "name": "game_over_name_input_state_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410A50",
+    "canonical_address": "0x004107D0",
+    "end": "0x00410A51",
+    "evidence": "exact",
+    "name": "game_over_name_submit_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410A60",
+    "canonical_address": "0x004107E0",
+    "end": "0x00410F70",
+    "evidence": "ordered",
+    "name": "quest_failed_screen_update",
+    "size": 1296
+  },
+  {
+    "address": "0x00410F70",
+    "canonical_address": "0x00410CF0",
+    "end": "0x00410F71",
+    "evidence": "exact",
+    "name": "quest_failed_main_menu_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410F80",
+    "canonical_address": "0x00410D00",
+    "end": "0x00410F81",
+    "evidence": "exact",
+    "name": "quest_failed_play_another_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410F90",
+    "canonical_address": "0x00410D10",
+    "end": "0x00410F91",
+    "evidence": "exact",
+    "name": "quest_failed_play_again_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00410FA0",
+    "canonical_address": "0x00410D20",
+    "end": "0x004122A0",
+    "evidence": "ordered",
+    "name": "quest_results_screen_update",
+    "size": 4864
+  },
+  {
+    "address": "0x004122A0",
+    "canonical_address": "0x00412020",
+    "end": "0x004122A1",
+    "evidence": "exact",
+    "name": "quest_results_main_menu_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004122B0",
+    "canonical_address": "0x00412030",
+    "end": "0x004122B1",
+    "evidence": "exact",
+    "name": "quest_results_highscores_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004122C0",
+    "canonical_address": "0x00412040",
+    "end": "0x004122C1",
+    "evidence": "exact",
+    "name": "quest_results_play_again_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004122D0",
+    "canonical_address": "0x00412050",
+    "end": "0x004122D1",
+    "evidence": "exact",
+    "name": "quest_results_play_next_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004122E0",
+    "canonical_address": "0x00412060",
+    "end": "0x004122E1",
+    "evidence": "exact",
+    "name": "quest_results_name_input_state_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004122F0",
+    "canonical_address": "0x00412070",
+    "end": "0x004122F1",
+    "evidence": "exact",
+    "name": "quest_results_name_submit_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00412300",
+    "canonical_address": "0x00412080",
+    "end": "0x00412305",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_07_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00412310",
+    "canonical_address": "0x00412090",
+    "end": "0x00412311",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_07",
+    "size": 1
+  },
+  {
+    "address": "0x00412320",
+    "canonical_address": "0x004120A0",
+    "end": "0x00412325",
+    "evidence": "exact",
+    "name": "gameplay_run_state_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00412330",
+    "canonical_address": "0x004120B0",
+    "end": "0x004123DC",
+    "evidence": "exact",
+    "name": "gameplay_run_state_init",
+    "size": 172
+  },
+  {
+    "address": "0x004123E0",
+    "canonical_address": "0x00412160",
+    "end": "0x004123E5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_09_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004123F0",
+    "canonical_address": "0x00412170",
+    "end": "0x004123F1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_09",
+    "size": 1
+  },
+  {
+    "address": "0x00412400",
+    "canonical_address": "0x00412180",
+    "end": "0x00412410",
+    "evidence": "ordered",
+    "name": "quest_meta_global_construct_and_register",
+    "size": 16
+  },
+  {
+    "address": "0x00412410",
+    "canonical_address": "0x00412190",
+    "end": "0x00412429",
+    "evidence": "exact",
+    "name": "quest_meta_init",
+    "size": 25
+  },
+  {
+    "address": "0x00412430",
+    "canonical_address": "0x004121B0",
+    "end": "0x0041245D",
+    "evidence": "exact",
+    "name": "quest_meta_entry_init",
+    "size": 45
+  },
+  {
+    "address": "0x00412460",
+    "canonical_address": "0x004121E0",
+    "end": "0x0041246F",
+    "evidence": "exact",
+    "name": "quest_meta_entry_release",
+    "size": 15
+  },
+  {
+    "address": "0x00412470",
+    "canonical_address": "0x004121F0",
+    "end": "0x00412480",
+    "evidence": "ordered",
+    "name": "quest_meta_register_atexit",
+    "size": 16
+  },
+  {
+    "address": "0x00412480",
+    "canonical_address": "0x00412200",
+    "end": "0x00412494",
+    "evidence": "exact",
+    "name": "quest_meta_table_destroy",
+    "size": 20
+  },
+  {
+    "address": "0x004124A0",
+    "canonical_address": "0x00412220",
+    "end": "0x004124A5",
+    "evidence": "exact",
+    "name": "bonus_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004124B0",
+    "canonical_address": "0x00412230",
+    "end": "0x004124C7",
+    "evidence": "exact",
+    "name": "bonus_pool_global_init",
+    "size": 23
+  },
+  {
+    "address": "0x004124D0",
+    "canonical_address": "0x00412250",
+    "end": "0x004124D5",
+    "evidence": "exact",
+    "name": "creature_spawn_slot_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004124E0",
+    "canonical_address": "0x00412260",
+    "end": "0x0041250D",
+    "evidence": "exact",
+    "name": "creature_spawn_slot_table_global_init",
+    "size": 45
+  },
+  {
+    "address": "0x00412510",
+    "canonical_address": "0x00412290",
+    "end": "0x00412515",
+    "evidence": "exact",
+    "name": "game_status_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00412520",
+    "canonical_address": "0x004122A0",
+    "end": "0x004125CB",
+    "evidence": "exact",
+    "name": "game_status_global_init",
+    "size": 171
+  },
+  {
+    "address": "0x004125D0",
+    "canonical_address": "0x00412350",
+    "end": "0x004125D5",
+    "evidence": "exact",
+    "name": "highscore_init_sentinels_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004125E0",
+    "canonical_address": "0x00412360",
+    "end": "0x00412640",
+    "evidence": "exact",
+    "name": "highscore_init_sentinels",
+    "size": 96
+  },
+  {
+    "address": "0x00412640",
+    "canonical_address": "0x004123C0",
+    "end": "0x00412650",
+    "evidence": "ordered",
+    "name": "bonus_meta_global_construct_and_register",
+    "size": 16
+  },
+  {
+    "address": "0x00412650",
+    "canonical_address": "0x004123D0",
+    "end": "0x00412669",
+    "evidence": "exact",
+    "name": "bonus_meta_table_init",
+    "size": 25
+  },
+  {
+    "address": "0x00412670",
+    "canonical_address": "0x004123F0",
+    "end": "0x0041268B",
+    "evidence": "exact",
+    "name": "bonus_meta_entry_init",
+    "size": 27
+  },
+  {
+    "address": "0x00412690",
+    "canonical_address": "0x00412440",
+    "end": "0x0041269C",
+    "evidence": "exact",
+    "name": "bonus_meta_register_atexit",
+    "size": 12
+  },
+  {
+    "address": "0x004126A0",
+    "canonical_address": "0x00412450",
+    "end": "0x004126B4",
+    "evidence": "exact",
+    "name": "bonus_meta_table_destroy",
+    "size": 20
+  },
+  {
+    "address": "0x004126C0",
+    "canonical_address": "0x00412470",
+    "end": "0x004128A4",
+    "evidence": "exact",
+    "name": "bonus_pick_random_type",
+    "size": 484
+  },
+  {
+    "address": "0x004128B0",
+    "canonical_address": "0x00412660",
+    "end": "0x00412B8F",
+    "evidence": "exact",
+    "name": "bonus_metadata_init",
+    "size": 735
+  },
+  {
+    "address": "0x00412B90",
+    "canonical_address": "0x00412940",
+    "end": "0x00412BAA",
+    "evidence": "exact",
+    "name": "bonus_reset_availability",
+    "size": 26
+  },
+  {
+    "address": "0x00412BB0",
+    "canonical_address": "0x00412960",
+    "end": "0x00412C60",
+    "evidence": "exact",
+    "name": "game_mode_label",
+    "size": 176
+  },
+  {
+    "address": "0x00412C60",
+    "canonical_address": "0x00412A10",
+    "end": "0x00412CC5",
+    "evidence": "exact",
+    "name": "play_time_load",
+    "size": 101
+  },
+  {
+    "address": "0x00412CD0",
+    "canonical_address": "0x00412A80",
+    "end": "0x00412E5F",
+    "evidence": "exact",
+    "name": "game_save_status",
+    "size": 399
+  },
+  {
+    "address": "0x00412E60",
+    "canonical_address": "0x00412C10",
+    "end": "0x00413004",
+    "evidence": "exact",
+    "name": "game_load_status",
+    "size": 420
+  },
+  {
+    "address": "0x00413010",
+    "canonical_address": "0x00412DC0",
+    "end": "0x00413677",
+    "evidence": "exact",
+    "name": "gameplay_reset_state",
+    "size": 1639
+  },
+  {
+    "address": "0x00413680",
+    "canonical_address": "0x00413430",
+    "end": "0x00413790",
+    "evidence": "ordered",
+    "name": "player_start_reload",
+    "size": 272
+  },
+  {
+    "address": "0x00413790",
+    "canonical_address": "0x00413540",
+    "end": "0x004138F2",
+    "evidence": "exact",
+    "name": "player_heading_approach_target",
+    "size": 354
+  },
+  {
+    "address": "0x00413900",
+    "canonical_address": "0x004136B0",
+    "end": "0x004177E0",
+    "evidence": "ordered",
+    "name": "player_update",
+    "size": 16096
+  },
+  {
+    "address": "0x004177E0",
+    "canonical_address": "0x00417640",
+    "end": "0x004177FA",
+    "evidence": "exact",
+    "name": "vec2_sub",
+    "size": 26
+  },
+  {
+    "address": "0x00417800",
+    "canonical_address": "0x00417660",
+    "end": "0x0041781A",
+    "evidence": "exact",
+    "name": "vec2_length",
+    "size": 26
+  },
+  {
+    "address": "0x00417820",
+    "canonical_address": "0x00417680",
+    "end": "0x00417825",
+    "evidence": "exact",
+    "name": "ui_menu_template_pool_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00417830",
+    "canonical_address": "0x00417690",
+    "end": "0x00417980",
+    "evidence": "exact",
+    "name": "ui_menu_template_pool_init",
+    "size": 336
+  },
+  {
+    "address": "0x00417980",
+    "canonical_address": "0x00417A90",
+    "end": "0x00417983",
+    "evidence": "exact",
+    "name": "ui_template_slot_ctor_noop",
+    "size": 3
+  },
+  {
+    "address": "0x004179A0",
+    "canonical_address": "0x004177F0",
+    "end": "0x00417C36",
+    "evidence": "exact",
+    "name": "ui_element_globals_init",
+    "size": 662
+  },
+  {
+    "address": "0x00417C40",
+    "canonical_address": "0x00417AA0",
+    "end": "0x00417C4D",
+    "evidence": "exact",
+    "name": "ui_template_block_set_mode4",
+    "size": 13
+  },
+  {
+    "address": "0x00417C50",
+    "canonical_address": "0x00417AB0",
+    "end": "0x00417C80",
+    "evidence": "exact",
+    "name": "ui_template_triplet_reset_and_seed_modes",
+    "size": 48
+  },
+  {
+    "address": "0x00417C80",
+    "canonical_address": "0x00417AE0",
+    "end": "0x00417D1E",
+    "evidence": "exact",
+    "name": "ui_draw_textured_quad",
+    "size": 158
+  },
+  {
+    "address": "0x00417D20",
+    "canonical_address": "0x00417B80",
+    "end": "0x00418341",
+    "evidence": "exact",
+    "name": "terrain_generate",
+    "size": 1569
+  },
+  {
+    "address": "0x00418350",
+    "canonical_address": "0x004181B0",
+    "end": "0x00418A34",
+    "evidence": "exact",
+    "name": "terrain_generate_random",
+    "size": 1764
+  },
+  {
+    "address": "0x00418A40",
+    "canonical_address": "0x004188A0",
+    "end": "0x00418CF5",
+    "evidence": "exact",
+    "name": "terrain_render",
+    "size": 693
+  },
+  {
+    "address": "0x00418D00",
+    "canonical_address": "0x00418B60",
+    "end": "0x00419812",
+    "evidence": "exact",
+    "name": "creature_render_type",
+    "size": 2834
+  },
+  {
+    "address": "0x00419820",
+    "canonical_address": "0x00419680",
+    "end": "0x00419D36",
+    "evidence": "exact",
+    "name": "creature_render_all",
+    "size": 1302
+  },
+  {
+    "address": "0x00419D40",
+    "canonical_address": "0x00419BA0",
+    "end": "0x00419E9C",
+    "evidence": "exact",
+    "name": "ui_element_set_rect",
+    "size": 348
+  },
+  {
+    "address": "0x00419EA0",
+    "canonical_address": "0x00419D00",
+    "end": "0x00419F6F",
+    "evidence": "exact",
+    "name": "ui_element_load",
+    "size": 207
+  },
+  {
+    "address": "0x00419F70",
+    "canonical_address": "0x00419DD0",
+    "end": "0x0041A197",
+    "evidence": "exact",
+    "name": "ui_menu_assets_init",
+    "size": 551
+  },
+  {
+    "address": "0x0041A1A0",
+    "canonical_address": "0x0041A000",
+    "end": "0x0041A1A5",
+    "evidence": "exact",
+    "name": "reserved_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041A1B0",
+    "canonical_address": "0x0041A010",
+    "end": "0x0041A1D9",
+    "evidence": "exact",
+    "name": "reserved_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041A1E0",
+    "canonical_address": "0x0041A040",
+    "end": "0x0041A4BA",
+    "evidence": "exact",
+    "name": "ui_cursor_render",
+    "size": 730
+  },
+  {
+    "address": "0x0041A4C0",
+    "canonical_address": "0x0041A320",
+    "end": "0x0041A6C6",
+    "evidence": "exact",
+    "name": "ui_render_aim_enhancement",
+    "size": 518
+  },
+  {
+    "address": "0x0041A6D0",
+    "canonical_address": "0x0041A530",
+    "end": "0x0041A869",
+    "evidence": "exact",
+    "name": "ui_elements_update_and_render",
+    "size": 409
+  },
+  {
+    "address": "0x0041A870",
+    "canonical_address": "0x0041A6D0",
+    "end": "0x0041A95D",
+    "evidence": "exact",
+    "name": "ui_draw_progress_bar",
+    "size": 237
+  },
+  {
+    "address": "0x0041A960",
+    "canonical_address": "0x0041A7C0",
+    "end": "0x0041A965",
+    "evidence": "exact",
+    "name": "bonus_hud_slot_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041A970",
+    "canonical_address": "0x0041A7D0",
+    "end": "0x0041A9A8",
+    "evidence": "exact",
+    "name": "bonus_hud_slot_table_global_init",
+    "size": 56
+  },
+  {
+    "address": "0x0041A9B0",
+    "canonical_address": "0x0041A810",
+    "end": "0x0041AA4F",
+    "evidence": "exact",
+    "name": "bonus_hud_slot_activate",
+    "size": 159
+  },
+  {
+    "address": "0x0041AA50",
+    "canonical_address": "0x0041A8B0",
+    "end": "0x0041B06E",
+    "evidence": "exact",
+    "name": "bonus_hud_slot_update_and_render",
+    "size": 1566
+  },
+  {
+    "address": "0x0041B070",
+    "canonical_address": "0x0041AED0",
+    "end": "0x0041CC10",
+    "evidence": "referenced",
+    "name": "ui_render_hud",
+    "size": 7072
+  },
+  {
+    "address": "0x0041CC10",
+    "canonical_address": "0x0041CA80",
+    "end": "0x0041CC11",
+    "evidence": "exact",
+    "name": "ui_hud_progress_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0041CC20",
+    "canonical_address": "0x0041CA90",
+    "end": "0x0041CE33",
+    "evidence": "exact",
+    "name": "hud_update_and_render",
+    "size": 531
+  },
+  {
+    "address": "0x0041CE40",
+    "canonical_address": "0x0041CCB0",
+    "end": "0x0041CF3B",
+    "evidence": "exact",
+    "name": "dx_get_version",
+    "size": 251
+  },
+  {
+    "address": "0x0041CF40",
+    "canonical_address": "0x0041CDB0",
+    "end": "0x0041D16C",
+    "evidence": "exact",
+    "name": "dx_get_version_from_dxdiag",
+    "size": 556
+  },
+  {
+    "address": "0x0041D170",
+    "canonical_address": "0x0041CFE0",
+    "end": "0x0041DCE0",
+    "evidence": "referenced",
+    "name": "dx_get_version_fallback_from_files",
+    "size": 2928
+  },
+  {
+    "address": "0x0041DCE0",
+    "canonical_address": "0x0041DB50",
+    "end": "0x0041DD9B",
+    "evidence": "exact",
+    "name": "win32_file_get_version_words",
+    "size": 187
+  },
+  {
+    "address": "0x0041DDA0",
+    "canonical_address": "0x0041DC10",
+    "end": "0x0041DDD1",
+    "evidence": "exact",
+    "name": "dx_version_pack_4x16",
+    "size": 49
+  },
+  {
+    "address": "0x0041DDE0",
+    "canonical_address": "0x0041DC50",
+    "end": "0x0041DE0D",
+    "evidence": "exact",
+    "name": "dx_version_compare_4x16",
+    "size": 45
+  },
+  {
+    "address": "0x0041DE10",
+    "canonical_address": "0x0041DC80",
+    "end": "0x0041DE63",
+    "evidence": "exact",
+    "name": "grim_load_interface",
+    "size": 83
+  },
+  {
+    "address": "0x0041DE70",
+    "canonical_address": "0x0041DCE0",
+    "end": "0x0041DEC8",
+    "evidence": "exact",
+    "name": "vorbis_mem_read",
+    "size": 88
+  },
+  {
+    "address": "0x0041DED0",
+    "canonical_address": "0x0041DD40",
+    "end": "0x0041DF12",
+    "evidence": "exact",
+    "name": "vorbis_mem_seek",
+    "size": 66
+  },
+  {
+    "address": "0x0041DF20",
+    "canonical_address": "0x0041DD90",
+    "end": "0x0041DF26",
+    "evidence": "exact",
+    "name": "vorbis_mem_close_callback",
+    "size": 6
+  },
+  {
+    "address": "0x0041DF30",
+    "canonical_address": "0x0041DDA0",
+    "end": "0x0041DF38",
+    "evidence": "exact",
+    "name": "vorbis_mem_tell",
+    "size": 8
+  },
+  {
+    "address": "0x0041DF40",
+    "canonical_address": "0x0041DDB0",
+    "end": "0x0041DF56",
+    "evidence": "exact",
+    "name": "vorbis_pcm_seek",
+    "size": 22
+  },
+  {
+    "address": "0x0041DF60",
+    "canonical_address": "0x0041DDD0",
+    "end": "0x0041E064",
+    "evidence": "exact",
+    "name": "vorbis_mem_open",
+    "size": 260
+  },
+  {
+    "address": "0x0041E070",
+    "canonical_address": "0x0041DEE0",
+    "end": "0x0041E08D",
+    "evidence": "exact",
+    "name": "vorbis_mem_close",
+    "size": 29
+  },
+  {
+    "address": "0x0041E090",
+    "canonical_address": "0x0041DF00",
+    "end": "0x0041E0C7",
+    "evidence": "exact",
+    "name": "vorbis_read_pcm16",
+    "size": 55
+  },
+  {
+    "address": "0x0041E0F0",
+    "canonical_address": "0x0041DF50",
+    "end": "0x0041E100",
+    "evidence": "ordered",
+    "name": "demo_trial_time_limit_ms",
+    "size": 16
+  },
+  {
+    "address": "0x0041E100",
+    "canonical_address": "0x0041DF60",
+    "end": "0x0041E110",
+    "evidence": "ordered",
+    "name": "play_time_get",
+    "size": 16
+  },
+  {
+    "address": "0x0041E110",
+    "canonical_address": "0x0041DF70",
+    "end": "0x0041E115",
+    "evidence": "exact",
+    "name": "unused_fx_queue_random_prefix_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E120",
+    "canonical_address": "0x0041DF80",
+    "end": "0x0041E149",
+    "evidence": "exact",
+    "name": "unused_fx_queue_random_prefix_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E150",
+    "canonical_address": "0x0041DFB0",
+    "end": "0x0041E155",
+    "evidence": "exact",
+    "name": "unused_fx_rotated_effect_id_prefix_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E160",
+    "canonical_address": "0x0041DFC0",
+    "end": "0x0041E189",
+    "evidence": "exact",
+    "name": "unused_fx_rotated_effect_id_prefix_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E190",
+    "canonical_address": "0x0041DFF0",
+    "end": "0x0041E195",
+    "evidence": "exact",
+    "name": "unused_aim64_prefix_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E1A0",
+    "canonical_address": "0x0041E000",
+    "end": "0x0041E1C9",
+    "evidence": "exact",
+    "name": "unused_aim64_prefix_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E1D0",
+    "canonical_address": "0x0041E030",
+    "end": "0x0041E1D5",
+    "evidence": "exact",
+    "name": "unused_fx_rotated_scale_prefix_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E1E0",
+    "canonical_address": "0x0041E040",
+    "end": "0x0041E209",
+    "evidence": "exact",
+    "name": "unused_fx_rotated_scale_prefix_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E210",
+    "canonical_address": "0x0041E070",
+    "end": "0x0041E215",
+    "evidence": "exact",
+    "name": "render_tint_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E220",
+    "canonical_address": "0x0041E080",
+    "end": "0x0041E249",
+    "evidence": "exact",
+    "name": "render_tint_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E250",
+    "canonical_address": "0x0041E0B0",
+    "end": "0x0041E255",
+    "evidence": "exact",
+    "name": "unused_global_noop_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E260",
+    "canonical_address": "0x0041E0C0",
+    "end": "0x0041E261",
+    "evidence": "exact",
+    "name": "unused_global_noop_init",
+    "size": 1
+  },
+  {
+    "address": "0x0041E270",
+    "canonical_address": "0x0041E0D0",
+    "end": "0x0041E275",
+    "evidence": "exact",
+    "name": "unused_particle_pool_suffix_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E280",
+    "canonical_address": "0x0041E0E0",
+    "end": "0x0041E2A9",
+    "evidence": "exact",
+    "name": "unused_particle_pool_suffix_color_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E2B0",
+    "canonical_address": "0x0041E110",
+    "end": "0x0041E2B5",
+    "evidence": "exact",
+    "name": "unused_effect_uv8_prefix_state_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E2C0",
+    "canonical_address": "0x0041E120",
+    "end": "0x0041E2DC",
+    "evidence": "exact",
+    "name": "unused_effect_uv8_prefix_state_global_init",
+    "size": 28
+  },
+  {
+    "address": "0x0041E2E0",
+    "canonical_address": "0x0041E140",
+    "end": "0x0041E2E5",
+    "evidence": "exact",
+    "name": "unused_effect_uv16_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E2F0",
+    "canonical_address": "0x0041E150",
+    "end": "0x0041E305",
+    "evidence": "exact",
+    "name": "unused_effect_uv16_prefix_vec2_global_init",
+    "size": 21
+  },
+  {
+    "address": "0x0041E310",
+    "canonical_address": "0x0041E170",
+    "end": "0x0041E315",
+    "evidence": "exact",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E320",
+    "canonical_address": "0x0041E180",
+    "end": "0x0041E335",
+    "evidence": "exact",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+    "size": 21
+  },
+  {
+    "address": "0x0041E340",
+    "canonical_address": "0x0041E1A0",
+    "end": "0x0041E345",
+    "evidence": "exact",
+    "name": "fx_queue_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E350",
+    "canonical_address": "0x0041E1B0",
+    "end": "0x0041E3E3",
+    "evidence": "exact",
+    "name": "fx_queue_global_init",
+    "size": 147
+  },
+  {
+    "address": "0x0041E3F0",
+    "canonical_address": "0x0041E250",
+    "end": "0x0041E3F5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_31_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E400",
+    "canonical_address": "0x0041E260",
+    "end": "0x0041E401",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_31",
+    "size": 1
+  },
+  {
+    "address": "0x0041E410",
+    "canonical_address": "0x0041E270",
+    "end": "0x0041E42A",
+    "evidence": "exact",
+    "name": "vec2_add",
+    "size": 26
+  },
+  {
+    "address": "0x0041E430",
+    "canonical_address": "0x0041E290",
+    "end": "0x0041E594",
+    "evidence": "exact",
+    "name": "player_apply_move_with_spawn_avoidance",
+    "size": 356
+  },
+  {
+    "address": "0x0041E5A0",
+    "canonical_address": "0x0041E400",
+    "end": "0x0041E5BA",
+    "evidence": "exact",
+    "name": "vec2_add_inplace",
+    "size": 26
+  },
+  {
+    "address": "0x0041E5C0",
+    "canonical_address": "0x0041E420",
+    "end": "0x0041E5C5",
+    "evidence": "exact",
+    "name": "unused_fx_queue_random_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E5D0",
+    "canonical_address": "0x0041E430",
+    "end": "0x0041E5E5",
+    "evidence": "exact",
+    "name": "unused_fx_queue_random_prefix_vec2_global_init",
+    "size": 21
+  },
+  {
+    "address": "0x0041E5F0",
+    "canonical_address": "0x0041E450",
+    "end": "0x0041E5F5",
+    "evidence": "exact",
+    "name": "secondary_projectile_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E600",
+    "canonical_address": "0x0041E460",
+    "end": "0x0041E629",
+    "evidence": "exact",
+    "name": "secondary_projectile_pool_global_init",
+    "size": 41
+  },
+  {
+    "address": "0x0041E630",
+    "canonical_address": "0x0041E490",
+    "end": "0x0041E635",
+    "evidence": "exact",
+    "name": "sprite_effect_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E640",
+    "canonical_address": "0x0041E4A0",
+    "end": "0x0041E6A1",
+    "evidence": "exact",
+    "name": "sprite_effect_pool_global_init",
+    "size": 97
+  },
+  {
+    "address": "0x0041E6B0",
+    "canonical_address": "0x0041E510",
+    "end": "0x0041E6B5",
+    "evidence": "exact",
+    "name": "particle_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E6C0",
+    "canonical_address": "0x0041E520",
+    "end": "0x0041E75F",
+    "evidence": "exact",
+    "name": "particle_pool_global_init",
+    "size": 159
+  },
+  {
+    "address": "0x0041E760",
+    "canonical_address": "0x0041E5C0",
+    "end": "0x0041E765",
+    "evidence": "exact",
+    "name": "player_state_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E770",
+    "canonical_address": "0x0041E5D0",
+    "end": "0x0041E853",
+    "evidence": "exact",
+    "name": "player_state_table_global_init",
+    "size": 227
+  },
+  {
+    "address": "0x0041E860",
+    "canonical_address": "0x0041E6C0",
+    "end": "0x0041E865",
+    "evidence": "exact",
+    "name": "creature_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E870",
+    "canonical_address": "0x0041E6D0",
+    "end": "0x0041E8AC",
+    "evidence": "exact",
+    "name": "creature_pool_global_init",
+    "size": 60
+  },
+  {
+    "address": "0x0041E8B0",
+    "canonical_address": "0x0041E710",
+    "end": "0x0041E8B5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_38_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E8C0",
+    "canonical_address": "0x0041E720",
+    "end": "0x0041E8C1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_38",
+    "size": 1
+  },
+  {
+    "address": "0x0041E8D0",
+    "canonical_address": "0x0041E730",
+    "end": "0x0041E8D5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_39_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E8E0",
+    "canonical_address": "0x0041E740",
+    "end": "0x0041E8E1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_39",
+    "size": 1
+  },
+  {
+    "address": "0x0041E8F0",
+    "canonical_address": "0x0041E750",
+    "end": "0x0041E8F5",
+    "evidence": "exact",
+    "name": "projectile_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E900",
+    "canonical_address": "0x0041E760",
+    "end": "0x0041E933",
+    "evidence": "exact",
+    "name": "projectile_pool_global_init",
+    "size": 51
+  },
+  {
+    "address": "0x0041E940",
+    "canonical_address": "0x0041E7A0",
+    "end": "0x0041E945",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_41_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E950",
+    "canonical_address": "0x0041E7B0",
+    "end": "0x0041E951",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_41",
+    "size": 1
+  },
+  {
+    "address": "0x0041E960",
+    "canonical_address": "0x0041E7C0",
+    "end": "0x0041E965",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_42_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E970",
+    "canonical_address": "0x0041E7D0",
+    "end": "0x0041E971",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_42",
+    "size": 1
+  },
+  {
+    "address": "0x0041E980",
+    "canonical_address": "0x0041E7E0",
+    "end": "0x0041E985",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_43_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E990",
+    "canonical_address": "0x0041E7F0",
+    "end": "0x0041E991",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_43",
+    "size": 1
+  },
+  {
+    "address": "0x0041E9A0",
+    "canonical_address": "0x0041E800",
+    "end": "0x0041E9A5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_44_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E9B0",
+    "canonical_address": "0x0041E810",
+    "end": "0x0041E9B1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_44",
+    "size": 1
+  },
+  {
+    "address": "0x0041E9C0",
+    "canonical_address": "0x0041E820",
+    "end": "0x0041E9C5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_45_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041E9D0",
+    "canonical_address": "0x0041E830",
+    "end": "0x0041E9D1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_45",
+    "size": 1
+  },
+  {
+    "address": "0x0041E9E0",
+    "canonical_address": "0x0041E840",
+    "end": "0x0041EA6C",
+    "evidence": "exact",
+    "name": "fx_queue_add",
+    "size": 140
+  },
+  {
+    "address": "0x0041EA70",
+    "canonical_address": "0x0041E8D0",
+    "end": "0x0041EA90",
+    "evidence": "exact",
+    "name": "input_aim_pov_left_active",
+    "size": 32
+  },
+  {
+    "address": "0x0041EA90",
+    "canonical_address": "0x0041E8F0",
+    "end": "0x0041EAB0",
+    "evidence": "exact",
+    "name": "input_aim_pov_right_active",
+    "size": 32
+  },
+  {
+    "address": "0x0041EAB0",
+    "canonical_address": "0x0041E910",
+    "end": "0x0041EDF2",
+    "evidence": "exact",
+    "name": "creature_handle_death",
+    "size": 834
+  },
+  {
+    "address": "0x0041EE00",
+    "canonical_address": "0x0041EC60",
+    "end": "0x0041F2C9",
+    "evidence": "exact",
+    "name": "config_sync_from_grim",
+    "size": 1225
+  },
+  {
+    "address": "0x0041F2D0",
+    "canonical_address": "0x0041F130",
+    "end": "0x0041F340",
+    "evidence": "ordered",
+    "name": "config_ensure_file",
+    "size": 112
+  },
+  {
+    "address": "0x0041F340",
+    "canonical_address": "0x0041F1A0",
+    "end": "0x0041F5CD",
+    "evidence": "exact",
+    "name": "config_load_presets",
+    "size": 653
+  },
+  {
+    "address": "0x0041F5D0",
+    "canonical_address": "0x0041F430",
+    "end": "0x0041F6FB",
+    "evidence": "exact",
+    "name": "angle_approach",
+    "size": 299
+  },
+  {
+    "address": "0x0041F700",
+    "canonical_address": "0x0041F560",
+    "end": "0x0041F705",
+    "evidence": "exact",
+    "name": "bonus_pool_sentinel_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0041F710",
+    "canonical_address": "0x0041F570",
+    "end": "0x0041F71B",
+    "evidence": "exact",
+    "name": "bonus_pool_sentinel_global_init",
+    "size": 11
+  },
+  {
+    "address": "0x0041F720",
+    "canonical_address": "0x0041F580",
+    "end": "0x0041F74E",
+    "evidence": "exact",
+    "name": "bonus_alloc_slot",
+    "size": 46
+  },
+  {
+    "address": "0x0041F750",
+    "canonical_address": "0x0041F5B0",
+    "end": "0x0041F92F",
+    "evidence": "exact",
+    "name": "bonus_spawn_at",
+    "size": 479
+  },
+  {
+    "address": "0x0041F930",
+    "canonical_address": "0x0041F790",
+    "end": "0x0041FA65",
+    "evidence": "exact",
+    "name": "bonus_spawn_at_pos",
+    "size": 309
+  },
+  {
+    "address": "0x0041FA70",
+    "canonical_address": "0x0041F8D0",
+    "end": "0x0041FD40",
+    "evidence": "referenced",
+    "name": "bonus_try_spawn_on_kill",
+    "size": 720
+  },
+  {
+    "address": "0x0041FD40",
+    "canonical_address": "0x0041FBB0",
+    "end": "0x0041FDEF",
+    "evidence": "exact",
+    "name": "fx_spawn_sprite",
+    "size": 175
+  },
+  {
+    "address": "0x0041FDF0",
+    "canonical_address": "0x0041FC60",
+    "end": "0x0041FE10",
+    "evidence": "referenced",
+    "name": "weapon_table_entry",
+    "size": 32
+  },
+  {
+    "address": "0x0041FE10",
+    "canonical_address": "0x0041FC80",
+    "end": "0x00420058",
+    "evidence": "exact",
+    "name": "player_reset_all",
+    "size": 584
+  },
+  {
+    "address": "0x00420060",
+    "canonical_address": "0x0041FED0",
+    "end": "0x004201C4",
+    "evidence": "exact",
+    "name": "effect_uv_tables_init",
+    "size": 356
+  },
+  {
+    "address": "0x004201D0",
+    "canonical_address": "0x00420040",
+    "end": "0x004202B1",
+    "evidence": "exact",
+    "name": "creature_find_nearest",
+    "size": 225
+  },
+  {
+    "address": "0x004202C0",
+    "canonical_address": "0x00420130",
+    "end": "0x004203C8",
+    "evidence": "exact",
+    "name": "fx_spawn_particle",
+    "size": 264
+  },
+  {
+    "address": "0x004203D0",
+    "canonical_address": "0x00420240",
+    "end": "0x004204E2",
+    "evidence": "exact",
+    "name": "fx_spawn_particle_slow",
+    "size": 274
+  },
+  {
+    "address": "0x004204F0",
+    "canonical_address": "0x00420360",
+    "end": "0x004205CA",
+    "evidence": "exact",
+    "name": "fx_spawn_secondary_projectile",
+    "size": 218
+  },
+  {
+    "address": "0x004205D0",
+    "canonical_address": "0x00420440",
+    "end": "0x00420760",
+    "evidence": "referenced",
+    "name": "projectile_spawn",
+    "size": 400
+  },
+  {
+    "address": "0x00420760",
+    "canonical_address": "0x004205D0",
+    "end": "0x00420785",
+    "evidence": "exact",
+    "name": "projectile_reset_pools",
+    "size": 37
+  },
+  {
+    "address": "0x00420790",
+    "canonical_address": "0x00420600",
+    "end": "0x0042082F",
+    "evidence": "exact",
+    "name": "creatures_apply_radius_damage",
+    "size": 159
+  },
+  {
+    "address": "0x00420830",
+    "canonical_address": "0x004206A0",
+    "end": "0x004208B5",
+    "evidence": "exact",
+    "name": "creature_find_in_radius",
+    "size": 133
+  },
+  {
+    "address": "0x004208C0",
+    "canonical_address": "0x00420730",
+    "end": "0x00420945",
+    "evidence": "exact",
+    "name": "player_find_in_radius",
+    "size": 133
+  },
+  {
+    "address": "0x00420950",
+    "canonical_address": "0x004207C0",
+    "end": "0x00420D13",
+    "evidence": "exact",
+    "name": "creature_apply_damage",
+    "size": 963
+  },
+  {
+    "address": "0x00420D20",
+    "canonical_address": "0x00420B90",
+    "end": "0x00422A3E",
+    "evidence": "referenced",
+    "name": "projectile_update",
+    "size": 7454
+  },
+  {
+    "address": "0x00422E00",
+    "canonical_address": "0x00422C70",
+    "end": "0x00425F07",
+    "evidence": "exact",
+    "name": "projectile_render",
+    "size": 12551
+  },
+  {
+    "address": "0x00425F10",
+    "canonical_address": "0x00425D80",
+    "end": "0x00425FDB",
+    "evidence": "exact",
+    "name": "plaguebearer_spread_infection",
+    "size": 203
+  },
+  {
+    "address": "0x00425FE0",
+    "canonical_address": "0x00425E50",
+    "end": "0x00426380",
+    "evidence": "ordered",
+    "name": "player_take_damage",
+    "size": 928
+  },
+  {
+    "address": "0x00426380",
+    "canonical_address": "0x00426220",
+    "end": "0x00426913",
+    "evidence": "referenced",
+    "name": "creature_update_all",
+    "size": 1427
+  },
+  {
+    "address": "0x00427830",
+    "canonical_address": "0x00427700",
+    "end": "0x00427953",
+    "evidence": "exact",
+    "name": "fx_queue_add_random",
+    "size": 291
+  },
+  {
+    "address": "0x00427960",
+    "canonical_address": "0x00427830",
+    "end": "0x00427961",
+    "evidence": "exact",
+    "name": "fx_queue_random_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00427970",
+    "canonical_address": "0x00427840",
+    "end": "0x00427A42",
+    "evidence": "exact",
+    "name": "fx_queue_add_rotated",
+    "size": 210
+  },
+  {
+    "address": "0x00427A50",
+    "canonical_address": "0x00427920",
+    "end": "0x0042826C",
+    "evidence": "exact",
+    "name": "fx_queue_render",
+    "size": 2076
+  },
+  {
+    "address": "0x00428270",
+    "canonical_address": "0x00428140",
+    "end": "0x00428301",
+    "evidence": "exact",
+    "name": "creature_alloc_slot",
+    "size": 145
+  },
+  {
+    "address": "0x00428310",
+    "canonical_address": "0x004281E0",
+    "end": "0x0042833E",
+    "evidence": "exact",
+    "name": "creature_reset_all",
+    "size": 46
+  },
+  {
+    "address": "0x00428340",
+    "canonical_address": "0x00428210",
+    "end": "0x00428368",
+    "evidence": "exact",
+    "name": "creatures_none_active",
+    "size": 40
+  },
+  {
+    "address": "0x00428370",
+    "canonical_address": "0x00428240",
+    "end": "0x004284BE",
+    "evidence": "exact",
+    "name": "creature_spawn",
+    "size": 334
+  },
+  {
+    "address": "0x004284C0",
+    "canonical_address": "0x00428390",
+    "end": "0x004296B0",
+    "evidence": "referenced",
+    "name": "player_render_overlays",
+    "size": 4592
+  },
+  {
+    "address": "0x004296B0",
+    "canonical_address": "0x00429580",
+    "end": "0x00429713",
+    "evidence": "exact",
+    "name": "bonus_label_for_entry",
+    "size": 99
+  },
+  {
+    "address": "0x00429720",
+    "canonical_address": "0x004295F0",
+    "end": "0x0042A720",
+    "evidence": "referenced",
+    "name": "bonus_render",
+    "size": 4096
+  },
+  {
+    "address": "0x0042A720",
+    "canonical_address": "0x0042A5F0",
+    "end": "0x0042A756",
+    "evidence": "exact",
+    "name": "audio_resume_all",
+    "size": 54
+  },
+  {
+    "address": "0x0042A760",
+    "canonical_address": "0x0042A630",
+    "end": "0x0042A794",
+    "evidence": "exact",
+    "name": "audio_suspend_all",
+    "size": 52
+  },
+  {
+    "address": "0x0042A7A0",
+    "canonical_address": "0x0042A670",
+    "end": "0x0042A825",
+    "evidence": "exact",
+    "name": "texture_get_or_load",
+    "size": 133
+  },
+  {
+    "address": "0x0042A830",
+    "canonical_address": "0x0042A700",
+    "end": "0x0042A8AE",
+    "evidence": "exact",
+    "name": "texture_get_or_load_alt",
+    "size": 126
+  },
+  {
+    "address": "0x0042A8B0",
+    "canonical_address": "0x0042A780",
+    "end": "0x0042A8EC",
+    "evidence": "exact",
+    "name": "console_cmd_load_texture",
+    "size": 60
+  },
+  {
+    "address": "0x0042A8F0",
+    "canonical_address": "0x0042A7C0",
+    "end": "0x0042A98E",
+    "evidence": "exact",
+    "name": "console_cmd_set_resource_paq",
+    "size": 158
+  },
+  {
+    "address": "0x0042A990",
+    "canonical_address": "0x0042A860",
+    "end": "0x0042A9B5",
+    "evidence": "exact",
+    "name": "console_cmd_tell_time_survived",
+    "size": 37
+  },
+  {
+    "address": "0x0042A9C0",
+    "canonical_address": "0x0042A890",
+    "end": "0x0042AA57",
+    "evidence": "exact",
+    "name": "console_cmd_open_url",
+    "size": 151
+  },
+  {
+    "address": "0x0042AA60",
+    "canonical_address": "0x0042A930",
+    "end": "0x0042AA9A",
+    "evidence": "exact",
+    "name": "console_cmd_snd_freq_adjustment",
+    "size": 58
+  },
+  {
+    "address": "0x0042AAA0",
+    "canonical_address": "0x0042A970",
+    "end": "0x0042AAA5",
+    "evidence": "exact",
+    "name": "console_cmd_generate_terrain",
+    "size": 5
+  },
+  {
+    "address": "0x0042AAB0",
+    "canonical_address": "0x0042A980",
+    "end": "0x0042AAEA",
+    "evidence": "exact",
+    "name": "reg_read_dword_default",
+    "size": 58
+  },
+  {
+    "address": "0x0042AAF0",
+    "canonical_address": "0x0042A9C0",
+    "end": "0x0042AB15",
+    "evidence": "exact",
+    "name": "reg_write_dword",
+    "size": 37
+  },
+  {
+    "address": "0x0042AB20",
+    "canonical_address": "0x0042A9F0",
+    "end": "0x0042AD00",
+    "evidence": "exact",
+    "name": "init_audio_and_terrain",
+    "size": 480
+  },
+  {
+    "address": "0x0042AD00",
+    "canonical_address": "0x0042ABD0",
+    "end": "0x0042B1B3",
+    "evidence": "exact",
+    "name": "load_textures_step",
+    "size": 1203
+  },
+  {
+    "address": "0x0042B1C0",
+    "canonical_address": "0x0042B090",
+    "end": "0x0042B373",
+    "evidence": "exact",
+    "name": "game_startup_init_prelude",
+    "size": 435
+  },
+  {
+    "address": "0x0042B380",
+    "canonical_address": "0x0042B250",
+    "end": "0x0042B3BF",
+    "evidence": "exact",
+    "name": "startup_audio_load_thread",
+    "size": 63
+  },
+  {
+    "address": "0x0042B3C0",
+    "canonical_address": "0x0042B290",
+    "end": "0x0042C480",
+    "evidence": "ordered",
+    "name": "game_startup_init",
+    "size": 4288
+  },
+  {
+    "address": "0x0042C480",
+    "canonical_address": "0x0042C360",
+    "end": "0x0042C4E4",
+    "evidence": "exact",
+    "name": "console_cmd_snd_add_game_tune",
+    "size": 100
+  },
+  {
+    "address": "0x0042C4F0",
+    "canonical_address": "0x0042C3D0",
+    "end": "0x0042C564",
+    "evidence": "exact",
+    "name": "console_cmd_set_gamma_ramp",
+    "size": 116
+  },
+  {
+    "address": "0x0042C570",
+    "canonical_address": "0x0042C450",
+    "end": "0x0042D200",
+    "evidence": "ordered",
+    "name": "crimsonland_main",
+    "size": 3216
+  },
+  {
+    "address": "0x0042D200",
+    "canonical_address": "0x0042D0E0",
+    "end": "0x0042D9BD",
+    "evidence": "exact",
+    "name": "highscore_sync_worker",
+    "size": 1981
+  },
+  {
+    "address": "0x0042D9C0",
+    "canonical_address": "0x0042D8A0",
+    "end": "0x0042DF30",
+    "evidence": "referenced",
+    "name": "statistics_update_check_worker",
+    "size": 1392
+  },
+  {
+    "address": "0x0042DF30",
+    "canonical_address": "0x0042DE00",
+    "end": "0x0042DF35",
+    "evidence": "exact",
+    "name": "effect_pool_vertices_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0042DF40",
+    "canonical_address": "0x0042DE10",
+    "end": "0x0042DF67",
+    "evidence": "exact",
+    "name": "effect_pool_vertices_global_init",
+    "size": 39
+  },
+  {
+    "address": "0x0042DF70",
+    "canonical_address": "0x0042DE40",
+    "end": "0x0042DF75",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_48_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0042DF80",
+    "canonical_address": "0x0042DE50",
+    "end": "0x0042DF81",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_48",
+    "size": 1
+  },
+  {
+    "address": "0x0042DF90",
+    "canonical_address": "0x0042DE60",
+    "end": "0x0042DF95",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_49_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0042DFA0",
+    "canonical_address": "0x0042DE70",
+    "end": "0x0042DFA1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_49",
+    "size": 1
+  },
+  {
+    "address": "0x0042DFB0",
+    "canonical_address": "0x0042DE80",
+    "end": "0x0042E03F",
+    "evidence": "exact",
+    "name": "effect_init_entry",
+    "size": 143
+  },
+  {
+    "address": "0x0042E040",
+    "canonical_address": "0x0042DF10",
+    "end": "0x0042E1A3",
+    "evidence": "exact",
+    "name": "effect_defaults_reset",
+    "size": 355
+  },
+  {
+    "address": "0x0042E1B0",
+    "canonical_address": "0x0042E080",
+    "end": "0x0042E1CD",
+    "evidence": "exact",
+    "name": "effect_free",
+    "size": 29
+  },
+  {
+    "address": "0x0042E1D0",
+    "canonical_address": "0x0042E0A0",
+    "end": "0x0042E241",
+    "evidence": "exact",
+    "name": "effect_select_texture",
+    "size": 113
+  },
+  {
+    "address": "0x0042E250",
+    "canonical_address": "0x0042E120",
+    "end": "0x0042E833",
+    "evidence": "exact",
+    "name": "effect_spawn",
+    "size": 1507
+  },
+  {
+    "address": "0x0042E840",
+    "canonical_address": "0x0042E710",
+    "end": "0x0042E94B",
+    "evidence": "exact",
+    "name": "effects_update",
+    "size": 267
+  },
+  {
+    "address": "0x0042E950",
+    "canonical_address": "0x0042E820",
+    "end": "0x0042EC34",
+    "evidence": "exact",
+    "name": "effects_render",
+    "size": 740
+  },
+  {
+    "address": "0x0042EC40",
+    "canonical_address": "0x0042EB10",
+    "end": "0x0042EDA9",
+    "evidence": "exact",
+    "name": "effect_spawn_blood_splatter",
+    "size": 361
+  },
+  {
+    "address": "0x0042EDB0",
+    "canonical_address": "0x0042EC80",
+    "end": "0x0042EF28",
+    "evidence": "exact",
+    "name": "effect_spawn_freeze_shard",
+    "size": 376
+  },
+  {
+    "address": "0x0042EF30",
+    "canonical_address": "0x0042EE00",
+    "end": "0x0042F083",
+    "evidence": "exact",
+    "name": "effect_spawn_freeze_shatter",
+    "size": 339
+  },
+  {
+    "address": "0x0042F090",
+    "canonical_address": "0x0042EF60",
+    "end": "0x0042F1AA",
+    "evidence": "exact",
+    "name": "effect_spawn_burst",
+    "size": 282
+  },
+  {
+    "address": "0x0042F1B0",
+    "canonical_address": "0x0042F080",
+    "end": "0x0042F392",
+    "evidence": "exact",
+    "name": "effect_spawn_shrinkifier_hit",
+    "size": 482
+  },
+  {
+    "address": "0x0042F3A0",
+    "canonical_address": "0x0042F270",
+    "end": "0x0042F45F",
+    "evidence": "exact",
+    "name": "effect_spawn_ion_hit_core",
+    "size": 191
+  },
+  {
+    "address": "0x0042F460",
+    "canonical_address": "0x0042F330",
+    "end": "0x0042F519",
+    "evidence": "exact",
+    "name": "effect_spawn_plasma_hit_core",
+    "size": 185
+  },
+  {
+    "address": "0x0042F520",
+    "canonical_address": "0x0042F3F0",
+    "end": "0x0042F66D",
+    "evidence": "exact",
+    "name": "effect_spawn_splitter_hit_burst",
+    "size": 333
+  },
+  {
+    "address": "0x0042F670",
+    "canonical_address": "0x0042F540",
+    "end": "0x0042F7EA",
+    "evidence": "exact",
+    "name": "effect_spawn_ion_hit_sparks",
+    "size": 378
+  },
+  {
+    "address": "0x0042F7F0",
+    "canonical_address": "0x0042F6C0",
+    "end": "0x0042FBB4",
+    "evidence": "exact",
+    "name": "effect_spawn_explosion_burst",
+    "size": 964
+  },
+  {
+    "address": "0x0042FBC0",
+    "canonical_address": "0x0042FA90",
+    "end": "0x0042FBCA",
+    "evidence": "exact",
+    "name": "perk_meta_global_construct_and_register",
+    "size": 10
+  },
+  {
+    "address": "0x0042FBD0",
+    "canonical_address": "0x0042FAA0",
+    "end": "0x0042FBEC",
+    "evidence": "exact",
+    "name": "perk_meta_table_init",
+    "size": 28
+  },
+  {
+    "address": "0x0042FBF0",
+    "canonical_address": "0x0042FAC0",
+    "end": "0x0042FC0B",
+    "evidence": "exact",
+    "name": "perk_meta_entry_init",
+    "size": 27
+  },
+  {
+    "address": "0x0042FC10",
+    "canonical_address": "0x00412410",
+    "end": "0x0042FC34",
+    "evidence": "exact",
+    "name": "bonus_meta_entry_release",
+    "size": 36
+  },
+  {
+    "address": "0x0042FC40",
+    "canonical_address": "0x0042FAE0",
+    "end": "0x0042FC4C",
+    "evidence": "exact",
+    "name": "perk_meta_register_atexit",
+    "size": 12
+  },
+  {
+    "address": "0x0042FC50",
+    "canonical_address": "0x0042FAF0",
+    "end": "0x0042FC67",
+    "evidence": "exact",
+    "name": "perk_meta_table_destroy",
+    "size": 23
+  },
+  {
+    "address": "0x0042FC70",
+    "canonical_address": "0x0042FB10",
+    "end": "0x0042FD30",
+    "evidence": "referenced",
+    "name": "perk_can_offer",
+    "size": 192
+  },
+  {
+    "address": "0x0042FD30",
+    "canonical_address": "0x0042FBD0",
+    "end": "0x0042FD89",
+    "evidence": "exact",
+    "name": "perk_select_random",
+    "size": 89
+  },
+  {
+    "address": "0x0042FD90",
+    "canonical_address": "0x0042FC30",
+    "end": "0x0042FE40",
+    "evidence": "referenced",
+    "name": "perks_rebuild_available",
+    "size": 176
+  },
+  {
+    "address": "0x0042FE40",
+    "canonical_address": "0x0042FCF0",
+    "end": "0x0042FE4C",
+    "evidence": "exact",
+    "name": "perk_count_get",
+    "size": 12
+  },
+  {
+    "address": "0x0042FE50",
+    "canonical_address": "0x0042FD00",
+    "end": "0x0042FEDF",
+    "evidence": "exact",
+    "name": "wrap_text_to_width_alloc",
+    "size": 143
+  },
+  {
+    "address": "0x0042FEE0",
+    "canonical_address": "0x0042FD90",
+    "end": "0x00430B40",
+    "evidence": "referenced",
+    "name": "perks_init_database",
+    "size": 3168
+  },
+  {
+    "address": "0x00430B40",
+    "canonical_address": "0x00430A20",
+    "end": "0x00430BEA",
+    "evidence": "exact",
+    "name": "quest_meta_init_entry",
+    "size": 170
+  },
+  {
+    "address": "0x00430BF0",
+    "canonical_address": "0x00430AD0",
+    "end": "0x00430C0E",
+    "evidence": "exact",
+    "name": "creature_spawn_slot_alloc",
+    "size": 30
+  },
+  {
+    "address": "0x00430C10",
+    "canonical_address": "0x00430AF0",
+    "end": "0x00434340",
+    "evidence": "referenced",
+    "name": "creature_spawn_template",
+    "size": 14128
+  },
+  {
+    "address": "0x00434340",
+    "canonical_address": "0x00434220",
+    "end": "0x00434367",
+    "evidence": "exact",
+    "name": "quest_spawn_table_empty",
+    "size": 39
+  },
+  {
+    "address": "0x00434370",
+    "canonical_address": "0x00434250",
+    "end": "0x004344E0",
+    "evidence": "exact",
+    "name": "quest_spawn_timeline_update",
+    "size": 368
+  },
+  {
+    "address": "0x004344E0",
+    "canonical_address": "0x004343C0",
+    "end": "0x004344FE",
+    "evidence": "exact",
+    "name": "quest_database_advance_slot",
+    "size": 30
+  },
+  {
+    "address": "0x00434500",
+    "canonical_address": "0x004343E0",
+    "end": "0x00434596",
+    "evidence": "exact",
+    "name": "quest_build_fallback",
+    "size": 150
+  },
+  {
+    "address": "0x004345A0",
+    "canonical_address": "0x00434480",
+    "end": "0x00434977",
+    "evidence": "exact",
+    "name": "quest_build_nagolipoli",
+    "size": 983
+  },
+  {
+    "address": "0x00434980",
+    "canonical_address": "0x00434860",
+    "end": "0x00434ADC",
+    "evidence": "exact",
+    "name": "quest_build_monster_blues",
+    "size": 348
+  },
+  {
+    "address": "0x00434AE0",
+    "canonical_address": "0x004349C0",
+    "end": "0x00434DB5",
+    "evidence": "exact",
+    "name": "quest_build_the_gathering",
+    "size": 725
+  },
+  {
+    "address": "0x00434DC0",
+    "canonical_address": "0x00434CA0",
+    "end": "0x00435020",
+    "evidence": "exact",
+    "name": "quest_build_army_of_three",
+    "size": 608
+  },
+  {
+    "address": "0x00435020",
+    "canonical_address": "0x00434F00",
+    "end": "0x0043523D",
+    "evidence": "exact",
+    "name": "quest_build_knee_deep_in_the_dead",
+    "size": 541
+  },
+  {
+    "address": "0x00435240",
+    "canonical_address": "0x00435120",
+    "end": "0x004353E8",
+    "evidence": "exact",
+    "name": "quest_build_the_gang_wars",
+    "size": 424
+  },
+  {
+    "address": "0x004353F0",
+    "canonical_address": "0x004352D0",
+    "end": "0x0043559D",
+    "evidence": "exact",
+    "name": "quest_build_the_fortress",
+    "size": 429
+  },
+  {
+    "address": "0x004355A0",
+    "canonical_address": "0x00435480",
+    "end": "0x00435726",
+    "evidence": "exact",
+    "name": "quest_build_cross_fire",
+    "size": 390
+  },
+  {
+    "address": "0x00435730",
+    "canonical_address": "0x00435610",
+    "end": "0x004359B9",
+    "evidence": "exact",
+    "name": "quest_build_the_beating",
+    "size": 649
+  },
+  {
+    "address": "0x004359C0",
+    "canonical_address": "0x004358A0",
+    "end": "0x00435B47",
+    "evidence": "exact",
+    "name": "quest_build_the_spanking_of_the_dead",
+    "size": 391
+  },
+  {
+    "address": "0x00435B50",
+    "canonical_address": "0x00435A30",
+    "end": "0x00435CE7",
+    "evidence": "exact",
+    "name": "quest_build_hidden_evil",
+    "size": 407
+  },
+  {
+    "address": "0x00435CF0",
+    "canonical_address": "0x00435BD0",
+    "end": "0x00435DDF",
+    "evidence": "exact",
+    "name": "quest_build_land_hostile",
+    "size": 239
+  },
+  {
+    "address": "0x00435DE0",
+    "canonical_address": "0x00435CC0",
+    "end": "0x00435FB2",
+    "evidence": "exact",
+    "name": "quest_build_minor_alien_breach",
+    "size": 466
+  },
+  {
+    "address": "0x00435FC0",
+    "canonical_address": "0x00435EA0",
+    "end": "0x004361BB",
+    "evidence": "exact",
+    "name": "quest_build_alien_squads",
+    "size": 507
+  },
+  {
+    "address": "0x004361C0",
+    "canonical_address": "0x004360A0",
+    "end": "0x00436240",
+    "evidence": "exact",
+    "name": "quest_build_zombie_masters",
+    "size": 128
+  },
+  {
+    "address": "0x00436240",
+    "canonical_address": "0x00436120",
+    "end": "0x00436315",
+    "evidence": "exact",
+    "name": "quest_build_8_legged_terror",
+    "size": 213
+  },
+  {
+    "address": "0x00436320",
+    "canonical_address": "0x00436200",
+    "end": "0x0043646E",
+    "evidence": "exact",
+    "name": "quest_build_ghost_patrols",
+    "size": 334
+  },
+  {
+    "address": "0x00436470",
+    "canonical_address": "0x00436350",
+    "end": "0x0043655D",
+    "evidence": "exact",
+    "name": "quest_build_the_random_factor",
+    "size": 237
+  },
+  {
+    "address": "0x00436560",
+    "canonical_address": "0x00436440",
+    "end": "0x004365BF",
+    "evidence": "exact",
+    "name": "quest_build_spider_wave_syndrome",
+    "size": 95
+  },
+  {
+    "address": "0x004365C0",
+    "canonical_address": "0x004364A0",
+    "end": "0x00436832",
+    "evidence": "exact",
+    "name": "quest_build_nesting_grounds",
+    "size": 626
+  },
+  {
+    "address": "0x00436840",
+    "canonical_address": "0x00436720",
+    "end": "0x00436939",
+    "evidence": "exact",
+    "name": "quest_build_alien_dens",
+    "size": 249
+  },
+  {
+    "address": "0x00436940",
+    "canonical_address": "0x00436820",
+    "end": "0x00436ABE",
+    "evidence": "exact",
+    "name": "quest_build_arachnoid_farm",
+    "size": 382
+  },
+  {
+    "address": "0x00436AC0",
+    "canonical_address": "0x004369A0",
+    "end": "0x00436D26",
+    "evidence": "exact",
+    "name": "quest_build_gauntlet",
+    "size": 614
+  },
+  {
+    "address": "0x00436D30",
+    "canonical_address": "0x00436C10",
+    "end": "0x00436E83",
+    "evidence": "exact",
+    "name": "quest_build_syntax_terror",
+    "size": 339
+  },
+  {
+    "address": "0x00436E90",
+    "canonical_address": "0x00436D70",
+    "end": "0x00436FFD",
+    "evidence": "exact",
+    "name": "quest_build_spider_spawns",
+    "size": 365
+  },
+  {
+    "address": "0x00437000",
+    "canonical_address": "0x00436EE0",
+    "end": "0x0043717F",
+    "evidence": "exact",
+    "name": "quest_build_two_fronts",
+    "size": 383
+  },
+  {
+    "address": "0x00437180",
+    "canonical_address": "0x00437060",
+    "end": "0x004374DD",
+    "evidence": "exact",
+    "name": "quest_build_survival_of_the_fastest",
+    "size": 861
+  },
+  {
+    "address": "0x004374E0",
+    "canonical_address": "0x004373C0",
+    "end": "0x004375C0",
+    "evidence": "exact",
+    "name": "quest_build_spideroids",
+    "size": 224
+  },
+  {
+    "address": "0x004375C0",
+    "canonical_address": "0x004374A0",
+    "end": "0x004376B4",
+    "evidence": "exact",
+    "name": "quest_build_evil_zombies_at_large",
+    "size": 244
+  },
+  {
+    "address": "0x004376C0",
+    "canonical_address": "0x004375A0",
+    "end": "0x0043782F",
+    "evidence": "exact",
+    "name": "quest_build_everred_pastures",
+    "size": 367
+  },
+  {
+    "address": "0x00437830",
+    "canonical_address": "0x00437710",
+    "end": "0x0043792E",
+    "evidence": "exact",
+    "name": "quest_build_lizard_kings",
+    "size": 254
+  },
+  {
+    "address": "0x00437930",
+    "canonical_address": "0x00437810",
+    "end": "0x00437A32",
+    "evidence": "exact",
+    "name": "quest_build_sweep_stakes",
+    "size": 258
+  },
+  {
+    "address": "0x00437A40",
+    "canonical_address": "0x00437920",
+    "end": "0x00437B11",
+    "evidence": "exact",
+    "name": "quest_build_deja_vu",
+    "size": 209
+  },
+  {
+    "address": "0x00437B20",
+    "canonical_address": "0x00437A00",
+    "end": "0x00437C10",
+    "evidence": "exact",
+    "name": "quest_build_target_practice",
+    "size": 240
+  },
+  {
+    "address": "0x00437C10",
+    "canonical_address": "0x00437AF0",
+    "end": "0x00437CB7",
+    "evidence": "exact",
+    "name": "quest_build_major_alien_breach",
+    "size": 167
+  },
+  {
+    "address": "0x00437CC0",
+    "canonical_address": "0x00437BA0",
+    "end": "0x00437D8C",
+    "evidence": "exact",
+    "name": "quest_build_land_of_lizards",
+    "size": 204
+  },
+  {
+    "address": "0x00437D90",
+    "canonical_address": "0x00437C70",
+    "end": "0x00437E85",
+    "evidence": "exact",
+    "name": "quest_build_the_lizquidation",
+    "size": 245
+  },
+  {
+    "address": "0x00437E90",
+    "canonical_address": "0x00437D70",
+    "end": "0x00437F28",
+    "evidence": "exact",
+    "name": "quest_build_zombie_time",
+    "size": 152
+  },
+  {
+    "address": "0x00437F30",
+    "canonical_address": "0x00437E10",
+    "end": "0x0043804D",
+    "evidence": "exact",
+    "name": "quest_build_frontline_assault",
+    "size": 285
+  },
+  {
+    "address": "0x00438050",
+    "canonical_address": "0x00437F30",
+    "end": "0x0043816E",
+    "evidence": "exact",
+    "name": "quest_build_the_collaboration",
+    "size": 286
+  },
+  {
+    "address": "0x00438170",
+    "canonical_address": "0x00438050",
+    "end": "0x004383E0",
+    "evidence": "exact",
+    "name": "quest_build_the_blighting",
+    "size": 624
+  },
+  {
+    "address": "0x004383E0",
+    "canonical_address": "0x004382C0",
+    "end": "0x004384F6",
+    "evidence": "exact",
+    "name": "quest_build_the_annihilation",
+    "size": 278
+  },
+  {
+    "address": "0x00438500",
+    "canonical_address": "0x004383E0",
+    "end": "0x004385B8",
+    "evidence": "exact",
+    "name": "quest_build_the_massacre",
+    "size": 184
+  },
+  {
+    "address": "0x004385C0",
+    "canonical_address": "0x004384A0",
+    "end": "0x0043881A",
+    "evidence": "exact",
+    "name": "quest_build_the_killing",
+    "size": 602
+  },
+  {
+    "address": "0x00438820",
+    "canonical_address": "0x00438700",
+    "end": "0x00438957",
+    "evidence": "exact",
+    "name": "quest_build_lizard_zombie_pact",
+    "size": 311
+  },
+  {
+    "address": "0x00438960",
+    "canonical_address": "0x00438840",
+    "end": "0x00438A5E",
+    "evidence": "exact",
+    "name": "quest_build_lizard_raze",
+    "size": 254
+  },
+  {
+    "address": "0x00438A60",
+    "canonical_address": "0x00438940",
+    "end": "0x00438B52",
+    "evidence": "exact",
+    "name": "quest_build_surrounded_by_reptiles",
+    "size": 242
+  },
+  {
+    "address": "0x00438B60",
+    "canonical_address": "0x00438A40",
+    "end": "0x00438F2F",
+    "evidence": "exact",
+    "name": "quest_build_the_unblitzkrieg",
+    "size": 975
+  },
+  {
+    "address": "0x00438F30",
+    "canonical_address": "0x00438E10",
+    "end": "0x004391E4",
+    "evidence": "exact",
+    "name": "quest_build_the_end_of_all",
+    "size": 692
+  },
+  {
+    "address": "0x004391F0",
+    "canonical_address": "0x004390D0",
+    "end": "0x0043934A",
+    "evidence": "exact",
+    "name": "quest_build_spiders_inc",
+    "size": 346
+  },
+  {
+    "address": "0x00439350",
+    "canonical_address": "0x00439230",
+    "end": "0x0043A8AA",
+    "evidence": "exact",
+    "name": "quest_database_init",
+    "size": 5466
+  },
+  {
+    "address": "0x0043A8B0",
+    "canonical_address": "0x0043A790",
+    "end": "0x0043AA62",
+    "evidence": "exact",
+    "name": "quest_start_selected",
+    "size": 434
+  },
+  {
+    "address": "0x0043AA70",
+    "canonical_address": "0x0043A950",
+    "end": "0x0043AB76",
+    "evidence": "exact",
+    "name": "highscore_date_checksum",
+    "size": 262
+  },
+  {
+    "address": "0x0043AB90",
+    "canonical_address": "0x0043AA60",
+    "end": "0x0043ABB6",
+    "evidence": "exact",
+    "name": "highscore_submit_full_version_guard",
+    "size": 38
+  },
+  {
+    "address": "0x0043ABC0",
+    "canonical_address": "0x0043AA90",
+    "end": "0x0043AC31",
+    "evidence": "exact",
+    "name": "highscore_record_pack_for_submit",
+    "size": 113
+  },
+  {
+    "address": "0x0043AC40",
+    "canonical_address": "0x0043AB10",
+    "end": "0x0043ACF3",
+    "evidence": "exact",
+    "name": "highscore_read_record",
+    "size": 179
+  },
+  {
+    "address": "0x0043AD00",
+    "canonical_address": "0x0043ABD0",
+    "end": "0x0043AD97",
+    "evidence": "exact",
+    "name": "highscore_record_equals",
+    "size": 151
+  },
+  {
+    "address": "0x0043ADA0",
+    "canonical_address": "0x0043AC70",
+    "end": "0x0043AE9F",
+    "evidence": "exact",
+    "name": "highscore_update_record",
+    "size": 255
+  },
+  {
+    "address": "0x0043AEA0",
+    "canonical_address": "0x0043AD70",
+    "end": "0x0043AFDE",
+    "evidence": "exact",
+    "name": "highscore_write_record",
+    "size": 318
+  },
+  {
+    "address": "0x0043AFE0",
+    "canonical_address": "0x0043AEB0",
+    "end": "0x0043B000",
+    "evidence": "exact",
+    "name": "highscore_compare_survival_score_desc",
+    "size": 32
+  },
+  {
+    "address": "0x0043B000",
+    "canonical_address": "0x0043AED0",
+    "end": "0x0043B020",
+    "evidence": "exact",
+    "name": "highscore_compare_rush_field32_desc",
+    "size": 32
+  },
+  {
+    "address": "0x0043B020",
+    "canonical_address": "0x0043AEF0",
+    "end": "0x0043B055",
+    "evidence": "exact",
+    "name": "highscore_compare_quest_field32_asc_nonzero_first",
+    "size": 53
+  },
+  {
+    "address": "0x0043B060",
+    "canonical_address": "0x0043AF30",
+    "end": "0x0043B0C5",
+    "evidence": "exact",
+    "name": "highscore_find_name_entry",
+    "size": 101
+  },
+  {
+    "address": "0x0043B0D0",
+    "canonical_address": "0x0043AFA0",
+    "end": "0x0043B57E",
+    "evidence": "exact",
+    "name": "highscore_load_table",
+    "size": 1198
+  },
+  {
+    "address": "0x0043B580",
+    "canonical_address": "0x0043B450",
+    "end": "0x0043B636",
+    "evidence": "exact",
+    "name": "highscore_save_record",
+    "size": 182
+  },
+  {
+    "address": "0x0043B640",
+    "canonical_address": "0x0043B510",
+    "end": "0x0043B64C",
+    "evidence": "exact",
+    "name": "highscore_save_active",
+    "size": 12
+  },
+  {
+    "address": "0x0043B650",
+    "canonical_address": "0x0043B520",
+    "end": "0x0043B6D5",
+    "evidence": "exact",
+    "name": "highscore_rank_index",
+    "size": 133
+  },
+  {
+    "address": "0x0043B6E0",
+    "canonical_address": "0x0043B5B0",
+    "end": "0x0043B872",
+    "evidence": "exact",
+    "name": "highscore_build_path",
+    "size": 402
+  },
+  {
+    "address": "0x0043B880",
+    "canonical_address": "0x0043B750",
+    "end": "0x0043B925",
+    "evidence": "exact",
+    "name": "highscore_record_init",
+    "size": 165
+  },
+  {
+    "address": "0x0043B930",
+    "canonical_address": "0x0043B800",
+    "end": "0x0043B935",
+    "evidence": "exact",
+    "name": "highscore_load_table_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0043B940",
+    "canonical_address": "0x0043B810",
+    "end": "0x0043B976",
+    "evidence": "exact",
+    "name": "sfx_entry_reset_runtime_state",
+    "size": 54
+  },
+  {
+    "address": "0x0043B980",
+    "canonical_address": "0x0043B850",
+    "end": "0x0043B99E",
+    "evidence": "exact",
+    "name": "buffer_reader_init",
+    "size": 30
+  },
+  {
+    "address": "0x0043B9A0",
+    "canonical_address": "0x0043B870",
+    "end": "0x0043B9AA",
+    "evidence": "exact",
+    "name": "buffer_reader_seek",
+    "size": 10
+  },
+  {
+    "address": "0x0043B9B0",
+    "canonical_address": "0x0043B880",
+    "end": "0x0043B9C9",
+    "evidence": "exact",
+    "name": "buffer_reader_read_u16",
+    "size": 25
+  },
+  {
+    "address": "0x0043B9D0",
+    "canonical_address": "0x0043B8A0",
+    "end": "0x0043B9E8",
+    "evidence": "exact",
+    "name": "buffer_reader_read_u32",
+    "size": 24
+  },
+  {
+    "address": "0x0043B9F0",
+    "canonical_address": "0x0043B8C0",
+    "end": "0x0043BA03",
+    "evidence": "exact",
+    "name": "buffer_reader_skip",
+    "size": 19
+  },
+  {
+    "address": "0x0043BA10",
+    "canonical_address": "0x0043B8E0",
+    "end": "0x0043BA67",
+    "evidence": "exact",
+    "name": "buffer_reader_find_tag",
+    "size": 87
+  },
+  {
+    "address": "0x0043BA70",
+    "canonical_address": "0x0043B940",
+    "end": "0x0043BAAE",
+    "evidence": "exact",
+    "name": "resource_pack_read_cstring",
+    "size": 62
+  },
+  {
+    "address": "0x0043BAB0",
+    "canonical_address": "0x0043B980",
+    "end": "0x0043BB0F",
+    "evidence": "exact",
+    "name": "resource_pack_set",
+    "size": 95
+  },
+  {
+    "address": "0x0043BB10",
+    "canonical_address": "0x0043B9E0",
+    "end": "0x0043BBF9",
+    "evidence": "exact",
+    "name": "resource_open_read",
+    "size": 233
+  },
+  {
+    "address": "0x0043BC00",
+    "canonical_address": "0x0043BAD0",
+    "end": "0x0043BC11",
+    "evidence": "exact",
+    "name": "resource_close",
+    "size": 17
+  },
+  {
+    "address": "0x0043BC20",
+    "canonical_address": "0x0043BAF0",
+    "end": "0x0043BD41",
+    "evidence": "exact",
+    "name": "dsound_init",
+    "size": 289
+  },
+  {
+    "address": "0x0043BD50",
+    "canonical_address": "0x0043BC20",
+    "end": "0x0043BD6A",
+    "evidence": "exact",
+    "name": "dsound_shutdown",
+    "size": 26
+  },
+  {
+    "address": "0x0043BD70",
+    "canonical_address": "0x0043BC40",
+    "end": "0x0043BDC1",
+    "evidence": "exact",
+    "name": "dsound_restore_buffer",
+    "size": 81
+  },
+  {
+    "address": "0x0043BDD0",
+    "canonical_address": "0x0043BCA0",
+    "end": "0x0043BE1B",
+    "evidence": "exact",
+    "name": "resource_read_alloc",
+    "size": 75
+  },
+  {
+    "address": "0x0043BE20",
+    "canonical_address": "0x0043BCF0",
+    "end": "0x0043BF50",
+    "evidence": "exact",
+    "name": "sfx_entry_load_ogg",
+    "size": 304
+  },
+  {
+    "address": "0x0043BF50",
+    "canonical_address": "0x0043BE20",
+    "end": "0x0043BF88",
+    "evidence": "exact",
+    "name": "sfx_entry_seek",
+    "size": 56
+  },
+  {
+    "address": "0x0043BF90",
+    "canonical_address": "0x0043BE60",
+    "end": "0x0043C067",
+    "evidence": "exact",
+    "name": "sfx_entry_start_playback",
+    "size": 215
+  },
+  {
+    "address": "0x0043C070",
+    "canonical_address": "0x0043BF40",
+    "end": "0x0043C08B",
+    "evidence": "exact",
+    "name": "sfx_entry_resume",
+    "size": 27
+  },
+  {
+    "address": "0x0043C090",
+    "canonical_address": "0x0043BF60",
+    "end": "0x0043C0CC",
+    "evidence": "exact",
+    "name": "sfx_entry_stop",
+    "size": 60
+  },
+  {
+    "address": "0x0043C0D0",
+    "canonical_address": "0x0043BFA0",
+    "end": "0x0043C148",
+    "evidence": "exact",
+    "name": "sfx_entry_set_volume",
+    "size": 120
+  },
+  {
+    "address": "0x0043C150",
+    "canonical_address": "0x0043C020",
+    "end": "0x0043C1B8",
+    "evidence": "exact",
+    "name": "sfx_entry_load_wav",
+    "size": 104
+  },
+  {
+    "address": "0x0043C1C0",
+    "canonical_address": "0x0043C090",
+    "end": "0x0043C237",
+    "evidence": "exact",
+    "name": "sfx_release_entry",
+    "size": 119
+  },
+  {
+    "address": "0x0043C240",
+    "canonical_address": "0x0043C110",
+    "end": "0x0043C352",
+    "evidence": "exact",
+    "name": "wav_parse_into_entry",
+    "size": 274
+  },
+  {
+    "address": "0x0043C360",
+    "canonical_address": "0x0043C230",
+    "end": "0x0043C3DB",
+    "evidence": "exact",
+    "name": "sfx_entry_upload_buffer",
+    "size": 123
+  },
+  {
+    "address": "0x0043C3E0",
+    "canonical_address": "0x0043C2B0",
+    "end": "0x0043C4CE",
+    "evidence": "exact",
+    "name": "sfx_entry_create_buffers",
+    "size": 238
+  },
+  {
+    "address": "0x0043C4D0",
+    "canonical_address": "0x0043C3A0",
+    "end": "0x0043C64C",
+    "evidence": "exact",
+    "name": "music_entry_load_ogg",
+    "size": 380
+  },
+  {
+    "address": "0x0043C650",
+    "canonical_address": "0x0043C520",
+    "end": "0x0043C6BD",
+    "evidence": "exact",
+    "name": "music_stream_update",
+    "size": 109
+  },
+  {
+    "address": "0x0043C6C0",
+    "canonical_address": "0x0043C590",
+    "end": "0x0043C79D",
+    "evidence": "exact",
+    "name": "music_stream_fill",
+    "size": 221
+  },
+  {
+    "address": "0x0043C7A0",
+    "canonical_address": "0x0043C670",
+    "end": "0x0043C7A5",
+    "evidence": "exact",
+    "name": "sfx_entry_table_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0043C7B0",
+    "canonical_address": "0x0043C680",
+    "end": "0x0043C7CF",
+    "evidence": "exact",
+    "name": "sfx_entry_table_init",
+    "size": 31
+  },
+  {
+    "address": "0x0043C7D0",
+    "canonical_address": "0x0043C6A0",
+    "end": "0x0043C7D5",
+    "evidence": "exact",
+    "name": "audio_asset_id_table_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0043C7E0",
+    "canonical_address": "0x0043C6B0",
+    "end": "0x0043C7F1",
+    "evidence": "exact",
+    "name": "audio_asset_id_table_init",
+    "size": 17
+  },
+  {
+    "address": "0x0043C800",
+    "canonical_address": "0x0043C6D0",
+    "end": "0x0043C805",
+    "evidence": "exact",
+    "name": "music_entry_table_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0043C810",
+    "canonical_address": "0x0043C6E0",
+    "end": "0x0043C82F",
+    "evidence": "exact",
+    "name": "music_entry_table_init",
+    "size": 31
+  },
+  {
+    "address": "0x0043C830",
+    "canonical_address": "0x0043C700",
+    "end": "0x0043C869",
+    "evidence": "exact",
+    "name": "sfx_release_sample",
+    "size": 57
+  },
+  {
+    "address": "0x0043C870",
+    "canonical_address": "0x0043C740",
+    "end": "0x0043C9F5",
+    "evidence": "exact",
+    "name": "sfx_load_sample",
+    "size": 389
+  },
+  {
+    "address": "0x0043CA00",
+    "canonical_address": "0x0043C8D0",
+    "end": "0x0043CA8B",
+    "evidence": "exact",
+    "name": "music_load_track",
+    "size": 139
+  },
+  {
+    "address": "0x0043CA90",
+    "canonical_address": "0x0043C960",
+    "end": "0x0043CAAB",
+    "evidence": "exact",
+    "name": "music_queue_track",
+    "size": 27
+  },
+  {
+    "address": "0x0043CAB0",
+    "canonical_address": "0x0043C980",
+    "end": "0x0043CAE9",
+    "evidence": "exact",
+    "name": "music_release_track",
+    "size": 57
+  },
+  {
+    "address": "0x0043CAF0",
+    "canonical_address": "0x0043C9C0",
+    "end": "0x0043CBC4",
+    "evidence": "exact",
+    "name": "audio_init_music",
+    "size": 212
+  },
+  {
+    "address": "0x0043CBD0",
+    "canonical_address": "0x0043CAA0",
+    "end": "0x0043D0BE",
+    "evidence": "exact",
+    "name": "audio_init_sfx",
+    "size": 1262
+  },
+  {
+    "address": "0x0043D0C0",
+    "canonical_address": "0x0043CF90",
+    "end": "0x0043D196",
+    "evidence": "exact",
+    "name": "sfx_system_init",
+    "size": 214
+  },
+  {
+    "address": "0x0043D1A0",
+    "canonical_address": "0x0043D070",
+    "end": "0x0043D1FB",
+    "evidence": "exact",
+    "name": "sfx_release_all",
+    "size": 91
+  },
+  {
+    "address": "0x0043D200",
+    "canonical_address": "0x0043D0D0",
+    "end": "0x0043D237",
+    "evidence": "exact",
+    "name": "music_release_all",
+    "size": 55
+  },
+  {
+    "address": "0x0043D240",
+    "canonical_address": "0x0043D110",
+    "end": "0x0043D24F",
+    "evidence": "exact",
+    "name": "audio_shutdown_all",
+    "size": 15
+  },
+  {
+    "address": "0x0043D250",
+    "canonical_address": "0x0043D120",
+    "end": "0x0043D390",
+    "evidence": "exact",
+    "name": "sfx_play",
+    "size": 320
+  },
+  {
+    "address": "0x0043D390",
+    "canonical_address": "0x0043D260",
+    "end": "0x0043D512",
+    "evidence": "exact",
+    "name": "sfx_play_panned",
+    "size": 386
+  },
+  {
+    "address": "0x0043D520",
+    "canonical_address": "0x0043D3F0",
+    "end": "0x0043D586",
+    "evidence": "exact",
+    "name": "audio_update",
+    "size": 102
+  },
+  {
+    "address": "0x0043D590",
+    "canonical_address": "0x0043D460",
+    "end": "0x0043D67F",
+    "evidence": "exact",
+    "name": "sfx_play_exclusive",
+    "size": 239
+  },
+  {
+    "address": "0x0043D680",
+    "canonical_address": "0x0043D550",
+    "end": "0x0043D6D7",
+    "evidence": "exact",
+    "name": "sfx_mute_all",
+    "size": 87
+  },
+  {
+    "address": "0x0043D6E0",
+    "canonical_address": "0x0043D5B0",
+    "end": "0x0043D856",
+    "evidence": "exact",
+    "name": "sfx_update_mute_fades",
+    "size": 374
+  },
+  {
+    "address": "0x0043D860",
+    "canonical_address": "0x0043D730",
+    "end": "0x0043D89A",
+    "evidence": "exact",
+    "name": "audio_suspend_channels",
+    "size": 58
+  },
+  {
+    "address": "0x0043D8A0",
+    "canonical_address": "0x0043D770",
+    "end": "0x0043D8E9",
+    "evidence": "exact",
+    "name": "audio_resume_channels",
+    "size": 73
+  },
+  {
+    "address": "0x0043D8F0",
+    "canonical_address": "0x0043D7C0",
+    "end": "0x0043D90E",
+    "evidence": "exact",
+    "name": "sfx_is_unmuted",
+    "size": 30
+  },
+  {
+    "address": "0x0043D910",
+    "canonical_address": "0x0043D7E0",
+    "end": "0x0043D95B",
+    "evidence": "exact",
+    "name": "ui_focus_set",
+    "size": 75
+  },
+  {
+    "address": "0x0043D960",
+    "canonical_address": "0x0043D830",
+    "end": "0x0043DA6C",
+    "evidence": "exact",
+    "name": "ui_focus_update",
+    "size": 268
+  },
+  {
+    "address": "0x0043DA70",
+    "canonical_address": "0x0043D940",
+    "end": "0x0043DAD8",
+    "evidence": "exact",
+    "name": "ui_focus_draw",
+    "size": 104
+  },
+  {
+    "address": "0x0043DAE0",
+    "canonical_address": "0x0043D9B0",
+    "end": "0x0043DDAA",
+    "evidence": "exact",
+    "name": "ui_segmented_slider_update",
+    "size": 714
+  },
+  {
+    "address": "0x0043DDB0",
+    "canonical_address": "0x0043DC80",
+    "end": "0x0043E01E",
+    "evidence": "exact",
+    "name": "ui_checkbox_update",
+    "size": 622
+  },
+  {
+    "address": "0x0043E020",
+    "canonical_address": "0x0043DEF0",
+    "end": "0x0043E707",
+    "evidence": "exact",
+    "name": "ui_scrollbar_update",
+    "size": 1767
+  },
+  {
+    "address": "0x0043E710",
+    "canonical_address": "0x0043E5E0",
+    "end": "0x0043E934",
+    "evidence": "exact",
+    "name": "ui_menu_item_update",
+    "size": 548
+  },
+  {
+    "address": "0x0043E940",
+    "canonical_address": "0x0043E810",
+    "end": "0x0043E941",
+    "evidence": "exact",
+    "name": "ui_menu_hover_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0043E950",
+    "canonical_address": "0x0043E820",
+    "end": "0x0043E951",
+    "evidence": "exact",
+    "name": "ui_menu_idle_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0043E960",
+    "canonical_address": "0x0043E830",
+    "end": "0x0043EE1F",
+    "evidence": "exact",
+    "name": "ui_button_update",
+    "size": 1215
+  },
+  {
+    "address": "0x0043EE20",
+    "canonical_address": "0x0043ECF0",
+    "end": "0x0043F0EC",
+    "evidence": "exact",
+    "name": "ui_text_input_update",
+    "size": 716
+  },
+  {
+    "address": "0x0043F0F0",
+    "canonical_address": "0x0043EFC0",
+    "end": "0x0043F67C",
+    "evidence": "exact",
+    "name": "ui_list_widget_update",
+    "size": 1420
+  },
+  {
+    "address": "0x0043F680",
+    "canonical_address": "0x0043F550",
+    "end": "0x004401E0",
+    "evidence": "referenced",
+    "name": "statistics_menu_update",
+    "size": 2912
+  },
+  {
+    "address": "0x004401E0",
+    "canonical_address": "0x00440090",
+    "end": "0x004401E1",
+    "evidence": "exact",
+    "name": "statistics_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004401F0",
+    "canonical_address": "0x004400A0",
+    "end": "0x004401F1",
+    "evidence": "exact",
+    "name": "statistics_update_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440200",
+    "canonical_address": "0x004400B0",
+    "end": "0x00440201",
+    "evidence": "exact",
+    "name": "statistics_mods_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440210",
+    "canonical_address": "0x004400C0",
+    "end": "0x00440211",
+    "evidence": "exact",
+    "name": "statistics_typo_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440220",
+    "canonical_address": "0x004400D0",
+    "end": "0x00440221",
+    "evidence": "exact",
+    "name": "statistics_credits_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440230",
+    "canonical_address": "0x004400E0",
+    "end": "0x00440231",
+    "evidence": "exact",
+    "name": "statistics_perks_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440240",
+    "canonical_address": "0x004400F0",
+    "end": "0x00440241",
+    "evidence": "exact",
+    "name": "statistics_weapons_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440250",
+    "canonical_address": "0x00440100",
+    "end": "0x00440251",
+    "evidence": "exact",
+    "name": "statistics_high_scores_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440260",
+    "canonical_address": "0x00440110",
+    "end": "0x00440A90",
+    "evidence": "referenced",
+    "name": "unlocked_weapons_database_update",
+    "size": 2096
+  },
+  {
+    "address": "0x00440A90",
+    "canonical_address": "0x00440940",
+    "end": "0x00440A91",
+    "evidence": "exact",
+    "name": "unlocked_weapons_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440AA0",
+    "canonical_address": "0x00440950",
+    "end": "0x00440AA1",
+    "evidence": "exact",
+    "name": "unlocked_weapons_scrollbar_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00440AB0",
+    "canonical_address": "0x00440960",
+    "end": "0x004412C1",
+    "evidence": "exact",
+    "name": "unlocked_perks_database_update",
+    "size": 2065
+  },
+  {
+    "address": "0x004412D0",
+    "canonical_address": "0x00441180",
+    "end": "0x004412D1",
+    "evidence": "exact",
+    "name": "unlocked_perks_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004412E0",
+    "canonical_address": "0x00441190",
+    "end": "0x004412E1",
+    "evidence": "exact",
+    "name": "unlocked_perks_scrollbar_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004412F0",
+    "canonical_address": "0x004411A0",
+    "end": "0x004412F5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_54_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00441300",
+    "canonical_address": "0x004411B0",
+    "end": "0x00441301",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_54",
+    "size": 1
+  },
+  {
+    "address": "0x00441310",
+    "canonical_address": "0x004411C0",
+    "end": "0x00441363",
+    "evidence": "exact",
+    "name": "highscore_card_draw_horizontal_divider",
+    "size": 83
+  },
+  {
+    "address": "0x00441370",
+    "canonical_address": "0x00441220",
+    "end": "0x004413B7",
+    "evidence": "exact",
+    "name": "highscore_card_draw_vertical_divider",
+    "size": 71
+  },
+  {
+    "address": "0x004413C0",
+    "canonical_address": "0x00441270",
+    "end": "0x004414F0",
+    "evidence": "ordered",
+    "name": "highscore_format_date_label",
+    "size": 304
+  },
+  {
+    "address": "0x004414F0",
+    "canonical_address": "0x004413A0",
+    "end": "0x004422A0",
+    "evidence": "referenced",
+    "name": "ui_text_input_render",
+    "size": 3504
+  },
+  {
+    "address": "0x004422A0",
+    "canonical_address": "0x00442150",
+    "end": "0x00442506",
+    "evidence": "exact",
+    "name": "ui_update_notice_update",
+    "size": 614
+  },
+  {
+    "address": "0x00442510",
+    "canonical_address": "0x004423C0",
+    "end": "0x00442511",
+    "evidence": "exact",
+    "name": "ui_update_notice_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00442520",
+    "canonical_address": "0x004423D0",
+    "end": "0x0044447A",
+    "evidence": "exact",
+    "name": "highscore_screen_update",
+    "size": 8026
+  },
+  {
+    "address": "0x00444480",
+    "canonical_address": "0x00444330",
+    "end": "0x00444481",
+    "evidence": "exact",
+    "name": "highscore_game_mode_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444490",
+    "canonical_address": "0x00444340",
+    "end": "0x00444491",
+    "evidence": "exact",
+    "name": "highscore_player_count_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004444A0",
+    "canonical_address": "0x00444350",
+    "end": "0x004444A1",
+    "evidence": "exact",
+    "name": "highscore_date_filter_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004444B0",
+    "canonical_address": "0x00444360",
+    "end": "0x004444B1",
+    "evidence": "exact",
+    "name": "highscore_online_scores_checkbox_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004444C0",
+    "canonical_address": "0x00444370",
+    "end": "0x004444C1",
+    "evidence": "exact",
+    "name": "highscore_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004444D0",
+    "canonical_address": "0x00444380",
+    "end": "0x004444D1",
+    "evidence": "exact",
+    "name": "highscore_play_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004444E0",
+    "canonical_address": "0x00444390",
+    "end": "0x004444E1",
+    "evidence": "exact",
+    "name": "highscore_update_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004444F0",
+    "canonical_address": "0x004443A0",
+    "end": "0x004444F1",
+    "evidence": "exact",
+    "name": "highscore_score_scrollbar_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444500",
+    "canonical_address": "0x004443B0",
+    "end": "0x00444501",
+    "evidence": "exact",
+    "name": "highscore_hardcore_checkbox_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444510",
+    "canonical_address": "0x004443C0",
+    "end": "0x00444919",
+    "evidence": "exact",
+    "name": "ui_profile_menu_update",
+    "size": 1033
+  },
+  {
+    "address": "0x00444920",
+    "canonical_address": "0x004447D0",
+    "end": "0x00444921",
+    "evidence": "exact",
+    "name": "profile_name_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444930",
+    "canonical_address": "0x004447E0",
+    "end": "0x00444931",
+    "evidence": "exact",
+    "name": "profile_delete_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444940",
+    "canonical_address": "0x004447F0",
+    "end": "0x00444941",
+    "evidence": "exact",
+    "name": "profile_add_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444950",
+    "canonical_address": "0x00444800",
+    "end": "0x00444951",
+    "evidence": "exact",
+    "name": "profile_name_input_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00444960",
+    "canonical_address": "0x00444810",
+    "end": "0x00444ACC",
+    "evidence": "exact",
+    "name": "creature_spawn_tinted",
+    "size": 364
+  },
+  {
+    "address": "0x00444AD0",
+    "canonical_address": "0x00444980",
+    "end": "0x004450C0",
+    "evidence": "referenced",
+    "name": "player_fire_weapon",
+    "size": 1520
+  },
+  {
+    "address": "0x004450C0",
+    "canonical_address": "0x00444F70",
+    "end": "0x004452A0",
+    "evidence": "referenced",
+    "name": "typo_word_pick_fragment",
+    "size": 480
+  },
+  {
+    "address": "0x004452A0",
+    "canonical_address": "0x004451B0",
+    "end": "0x004453F9",
+    "evidence": "exact",
+    "name": "typo_word_pick_highscore_name",
+    "size": 345
+  },
+  {
+    "address": "0x00445400",
+    "canonical_address": "0x00445310",
+    "end": "0x0044546E",
+    "evidence": "exact",
+    "name": "typo_target_name_is_unique",
+    "size": 110
+  },
+  {
+    "address": "0x00445470",
+    "canonical_address": "0x00445380",
+    "end": "0x0044567A",
+    "evidence": "exact",
+    "name": "typo_target_name_assign_random",
+    "size": 522
+  },
+  {
+    "address": "0x00445680",
+    "canonical_address": "0x00445590",
+    "end": "0x004456E2",
+    "evidence": "exact",
+    "name": "typo_target_find_by_name",
+    "size": 98
+  },
+  {
+    "address": "0x004456F0",
+    "canonical_address": "0x00445600",
+    "end": "0x004458A2",
+    "evidence": "exact",
+    "name": "typo_target_name_draw_labels",
+    "size": 434
+  },
+  {
+    "address": "0x004458B0",
+    "canonical_address": "0x004457C0",
+    "end": "0x004460D2",
+    "evidence": "exact",
+    "name": "typo_gameplay_update_and_render",
+    "size": 2082
+  },
+  {
+    "address": "0x004460E0",
+    "canonical_address": "0x00445FF0",
+    "end": "0x004460E1",
+    "evidence": "exact",
+    "name": "typo_target_world_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x004460F0",
+    "canonical_address": "0x00446000",
+    "end": "0x00446118",
+    "evidence": "exact",
+    "name": "input_any_key_pressed",
+    "size": 40
+  },
+  {
+    "address": "0x00446120",
+    "canonical_address": "0x00446030",
+    "end": "0x004461D0",
+    "evidence": "referenced",
+    "name": "input_primary_just_pressed",
+    "size": 176
+  },
+  {
+    "address": "0x004461D0",
+    "canonical_address": "0x004460F0",
+    "end": "0x0044621A",
+    "evidence": "exact",
+    "name": "input_primary_is_down",
+    "size": 74
+  },
+  {
+    "address": "0x00446220",
+    "canonical_address": "0x00446140",
+    "end": "0x00446221",
+    "evidence": "exact",
+    "name": "ui_callback_noop",
+    "size": 1
+  },
+  {
+    "address": "0x00446230",
+    "canonical_address": "0x00446150",
+    "end": "0x0044624F",
+    "evidence": "exact",
+    "name": "ui_get_element_index",
+    "size": 31
+  },
+  {
+    "address": "0x00446250",
+    "canonical_address": "0x00446170",
+    "end": "0x0044626F",
+    "evidence": "exact",
+    "name": "ui_elements_reset_state",
+    "size": 31
+  },
+  {
+    "address": "0x00446270",
+    "canonical_address": "0x00446190",
+    "end": "0x00446293",
+    "evidence": "exact",
+    "name": "ui_elements_max_timeline",
+    "size": 35
+  },
+  {
+    "address": "0x004462A0",
+    "canonical_address": "0x004461C0",
+    "end": "0x004469DE",
+    "evidence": "exact",
+    "name": "game_state_set",
+    "size": 1854
+  },
+  {
+    "address": "0x004469E0",
+    "canonical_address": "0x00446900",
+    "end": "0x00446D1F",
+    "evidence": "exact",
+    "name": "ui_element_update",
+    "size": 831
+  },
+  {
+    "address": "0x00446D20",
+    "canonical_address": "0x00446C40",
+    "end": "0x00447429",
+    "evidence": "exact",
+    "name": "ui_element_render",
+    "size": 1801
+  },
+  {
+    "address": "0x00447430",
+    "canonical_address": "0x00447350",
+    "end": "0x00447442",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_mods",
+    "size": 18
+  },
+  {
+    "address": "0x00447450",
+    "canonical_address": "0x00447370",
+    "end": "0x00447462",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_options",
+    "size": 18
+  },
+  {
+    "address": "0x00447470",
+    "canonical_address": "0x00447390",
+    "end": "0x004474B3",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_statistics",
+    "size": 67
+  },
+  {
+    "address": "0x004474C0",
+    "canonical_address": "0x004473E0",
+    "end": "0x004474D2",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_controls",
+    "size": 18
+  },
+  {
+    "address": "0x004474E0",
+    "canonical_address": "0x00447400",
+    "end": "0x004474F2",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_play_game",
+    "size": 18
+  },
+  {
+    "address": "0x00447500",
+    "canonical_address": "0x00447420",
+    "end": "0x0044752D",
+    "evidence": "exact",
+    "name": "ui_menu_click_back_contextual",
+    "size": 45
+  },
+  {
+    "address": "0x00447530",
+    "canonical_address": "0x00447450",
+    "end": "0x0044756D",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_quit",
+    "size": 61
+  },
+  {
+    "address": "0x00447570",
+    "canonical_address": "0x00447490",
+    "end": "0x004475B3",
+    "evidence": "exact",
+    "name": "ui_menu_pause_click_resume",
+    "size": 67
+  },
+  {
+    "address": "0x004475C0",
+    "canonical_address": "0x004474E0",
+    "end": "0x00447660",
+    "evidence": "exact",
+    "name": "ui_menu_pause_click_main_menu",
+    "size": 160
+  },
+  {
+    "address": "0x00447660",
+    "canonical_address": "0x00447580",
+    "end": "0x004476B0",
+    "evidence": "referenced",
+    "name": "config_apply_detail_preset",
+    "size": 80
+  },
+  {
+    "address": "0x004476B0",
+    "canonical_address": "0x004475D0",
+    "end": "0x00447D05",
+    "evidence": "exact",
+    "name": "options_menu_update",
+    "size": 1621
+  },
+  {
+    "address": "0x00447D10",
+    "canonical_address": "0x00447C30",
+    "end": "0x00447D11",
+    "evidence": "exact",
+    "name": "options_controls_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00447D20",
+    "canonical_address": "0x00447C40",
+    "end": "0x00447D21",
+    "evidence": "exact",
+    "name": "options_mouse_sensitivity_slider_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00447D30",
+    "canonical_address": "0x00447C50",
+    "end": "0x00447D31",
+    "evidence": "exact",
+    "name": "options_graphics_detail_slider_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00447D40",
+    "canonical_address": "0x00447C60",
+    "end": "0x00447D41",
+    "evidence": "exact",
+    "name": "options_music_volume_slider_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00447D50",
+    "canonical_address": "0x00447C70",
+    "end": "0x00447D51",
+    "evidence": "exact",
+    "name": "options_sfx_volume_slider_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00447D60",
+    "canonical_address": "0x00447C80",
+    "end": "0x00447D61",
+    "evidence": "exact",
+    "name": "options_info_checkbox_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00447D70",
+    "canonical_address": "0x00447C90",
+    "end": "0x00447DD0",
+    "evidence": "ordered",
+    "name": "input_configure_for_label",
+    "size": 96
+  },
+  {
+    "address": "0x00447DD0",
+    "canonical_address": "0x00447CF0",
+    "end": "0x00447E20",
+    "evidence": "ordered",
+    "name": "input_scheme_label",
+    "size": 80
+  },
+  {
+    "address": "0x00447E20",
+    "canonical_address": "0x00447D40",
+    "end": "0x00448B8C",
+    "evidence": "exact",
+    "name": "quest_select_menu_update",
+    "size": 3436
+  },
+  {
+    "address": "0x00448B90",
+    "canonical_address": "0x00448AB0",
+    "end": "0x00448B91",
+    "evidence": "exact",
+    "name": "quest_select_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448BA0",
+    "canonical_address": "0x00448AC0",
+    "end": "0x00448BA1",
+    "evidence": "exact",
+    "name": "quest_select_hardcore_checkbox_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448BB0",
+    "canonical_address": "0x00448AD0",
+    "end": "0x00448BB1",
+    "evidence": "exact",
+    "name": "quest_select_unused_orange_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448BC0",
+    "canonical_address": "0x00448AE0",
+    "end": "0x00448BC1",
+    "evidence": "exact",
+    "name": "quest_select_hovered_stage_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448BD0",
+    "canonical_address": "0x00448AF0",
+    "end": "0x00448BD1",
+    "evidence": "exact",
+    "name": "quest_select_selected_stage_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448BE0",
+    "canonical_address": "0x00448B00",
+    "end": "0x00448BE1",
+    "evidence": "exact",
+    "name": "quest_select_title_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448BF0",
+    "canonical_address": "0x00448B10",
+    "end": "0x00448BF1",
+    "evidence": "exact",
+    "name": "quest_select_unused_blue_dim_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448C00",
+    "canonical_address": "0x00448B20",
+    "end": "0x00448C01",
+    "evidence": "exact",
+    "name": "quest_select_unused_blue_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448C10",
+    "canonical_address": "0x00448B30",
+    "end": "0x00448C11",
+    "evidence": "exact",
+    "name": "quest_select_row_hover_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448C20",
+    "canonical_address": "0x00448B40",
+    "end": "0x00448C21",
+    "evidence": "exact",
+    "name": "quest_select_row_idle_color_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x00448C30",
+    "canonical_address": "0x00448B50",
+    "end": "0x00448DA9",
+    "evidence": "exact",
+    "name": "input_detect_active_analog_axis",
+    "size": 377
+  },
+  {
+    "address": "0x00448DB0",
+    "canonical_address": "0x00448CD0",
+    "end": "0x0044EDD0",
+    "evidence": "referenced",
+    "name": "controls_menu_update",
+    "size": 24608
+  },
+  {
+    "address": "0x0044EDD0",
+    "canonical_address": "0x0044ECF0",
+    "end": "0x0044EDEA",
+    "evidence": "exact",
+    "name": "vec2_add_out",
+    "size": 26
+  },
+  {
+    "address": "0x0044EDF0",
+    "canonical_address": "0x0044ED10",
+    "end": "0x0044EDF1",
+    "evidence": "exact",
+    "name": "controls_rebind_items_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE00",
+    "canonical_address": "0x0044ED20",
+    "end": "0x0044EE01",
+    "evidence": "exact",
+    "name": "controls_direction_arrow_checkbox_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE10",
+    "canonical_address": "0x0044ED30",
+    "end": "0x0044EE11",
+    "evidence": "exact",
+    "name": "controls_move_method_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE20",
+    "canonical_address": "0x0044ED40",
+    "end": "0x0044EE21",
+    "evidence": "exact",
+    "name": "controls_aim_method_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE30",
+    "canonical_address": "0x0044ED50",
+    "end": "0x0044EE31",
+    "evidence": "exact",
+    "name": "controls_player_profile_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE40",
+    "canonical_address": "0x0044ED60",
+    "end": "0x0044EE41",
+    "evidence": "exact",
+    "name": "controls_back_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE50",
+    "canonical_address": "0x0044ED70",
+    "end": "0x0044EE51",
+    "evidence": "exact",
+    "name": "controls_redefine_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044EE60",
+    "canonical_address": "0x0044ED80",
+    "end": "0x0044FB10",
+    "evidence": "referenced",
+    "name": "play_game_menu_update",
+    "size": 3248
+  },
+  {
+    "address": "0x0044FB10",
+    "canonical_address": "0x0044FA30",
+    "end": "0x0044FB11",
+    "evidence": "exact",
+    "name": "play_game_player_count_list_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB20",
+    "canonical_address": "0x0044FA40",
+    "end": "0x0044FB21",
+    "evidence": "exact",
+    "name": "play_game_tutorial_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB30",
+    "canonical_address": "0x0044FA50",
+    "end": "0x0044FB31",
+    "evidence": "exact",
+    "name": "play_game_hardcore_checkbox_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB40",
+    "canonical_address": "0x0044FA60",
+    "end": "0x0044FB41",
+    "evidence": "exact",
+    "name": "play_game_typo_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB50",
+    "canonical_address": "0x0044FA70",
+    "end": "0x0044FB51",
+    "evidence": "exact",
+    "name": "play_game_survival_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB60",
+    "canonical_address": "0x0044FA80",
+    "end": "0x0044FB61",
+    "evidence": "exact",
+    "name": "play_game_rush_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB70",
+    "canonical_address": "0x0044FA90",
+    "end": "0x0044FB71",
+    "evidence": "exact",
+    "name": "play_game_quests_button_destroy",
+    "size": 1
+  },
+  {
+    "address": "0x0044FB80",
+    "canonical_address": "0x0044FAA0",
+    "end": "0x0044FC2D",
+    "evidence": "exact",
+    "name": "ui_element_init_defaults",
+    "size": 173
+  },
+  {
+    "address": "0x0044FC30",
+    "canonical_address": "0x0044FB50",
+    "end": "0x0044FD50",
+    "evidence": "exact",
+    "name": "ui_element_layout_calc",
+    "size": 288
+  },
+  {
+    "address": "0x0044FD50",
+    "canonical_address": "0x0044FC70",
+    "end": "0x0044FD60",
+    "evidence": "referenced",
+    "name": "ui_menu_main_click_buy_full_version",
+    "size": 16
+  },
+  {
+    "address": "0x0044FD60",
+    "canonical_address": "0x0044FCA0",
+    "end": "0x0044FD68",
+    "evidence": "exact",
+    "name": "ui_menu_main_click_recheck_full_version",
+    "size": 8
+  },
+  {
+    "address": "0x0044FD70",
+    "canonical_address": "0x0044FCB0",
+    "end": "0x004519B5",
+    "evidence": "exact",
+    "name": "ui_menu_layout_init",
+    "size": 7237
+  },
+  {
+    "address": "0x004519C0",
+    "canonical_address": "0x00451900",
+    "end": "0x004519C5",
+    "evidence": "exact",
+    "name": "weapon_table_defaults_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004519D0",
+    "canonical_address": "0x00451910",
+    "end": "0x00451A70",
+    "evidence": "ordered",
+    "name": "weapon_table_defaults_global_init",
+    "size": 160
+  },
+  {
+    "address": "0x00451A70",
+    "canonical_address": "0x004519B0",
+    "end": "0x00452D50",
+    "evidence": "referenced",
+    "name": "weapon_table_init",
+    "size": 4832
+  },
+  {
+    "address": "0x00452D50",
+    "canonical_address": "0x00452CD0",
+    "end": "0x00452DC0",
+    "evidence": "referenced",
+    "name": "weapon_pick_random_available",
+    "size": 112
+  },
+  {
+    "address": "0x00452DC0",
+    "canonical_address": "0x00452D40",
+    "end": "0x00452EA0",
+    "evidence": "referenced",
+    "name": "weapon_assign_player",
+    "size": 224
+  },
+  {
+    "address": "0x00452EA0",
+    "canonical_address": "0x00452E40",
+    "end": "0x00452F40",
+    "evidence": "referenced",
+    "name": "weapon_refresh_available",
+    "size": 160
+  },
+  {
+    "address": "0x00452F90",
+    "canonical_address": "0x00452EF0",
+    "end": "0x00452FBD",
+    "evidence": "exact",
+    "name": "float_near_equal",
+    "size": 45
+  },
+  {
+    "address": "0x00452FCA",
+    "canonical_address": "0x00452F2A",
+    "end": "0x00452FD0",
+    "evidence": "exact",
+    "name": "D3DXVec2Normalize",
+    "size": 6
+  },
+  {
+    "address": "0x00452FD0",
+    "canonical_address": "0x00452F30",
+    "end": "0x00452FFA",
+    "evidence": "ordered",
+    "name": "d3dx_init_vec2_hermite",
+    "size": 42
+  },
+  {
+    "address": "0x00452FFA",
+    "canonical_address": "0x00452F5A",
+    "end": "0x00453088",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_hermite",
+    "size": 142
+  },
+  {
+    "address": "0x00453088",
+    "canonical_address": "0x00452FE8",
+    "end": "0x004530B2",
+    "evidence": "exact",
+    "name": "d3dx_init_vec2_catmull_rom",
+    "size": 42
+  },
+  {
+    "address": "0x004530B2",
+    "canonical_address": "0x00453012",
+    "end": "0x00453161",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_catmull_rom",
+    "size": 175
+  },
+  {
+    "address": "0x00453190",
+    "canonical_address": "0x004530F0",
+    "end": "0x004531D3",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_barycentric",
+    "size": 67
+  },
+  {
+    "address": "0x00453207",
+    "canonical_address": "0x00453167",
+    "end": "0x00453237",
+    "evidence": "referenced",
+    "name": "D3DXVec3Normalize",
+    "size": 48
+  },
+  {
+    "address": "0x00453237",
+    "canonical_address": "0x00453197",
+    "end": "0x004532E5",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_hermite",
+    "size": 174
+  },
+  {
+    "address": "0x0045330F",
+    "canonical_address": "0x0045326F",
+    "end": "0x004533E0",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_catmull_rom",
+    "size": 209
+  },
+  {
+    "address": "0x004533E0",
+    "canonical_address": "0x00453340",
+    "end": "0x0045340F",
+    "evidence": "ordered",
+    "name": "d3dx_init_vec3_barycentric",
+    "size": 47
+  },
+  {
+    "address": "0x0045340F",
+    "canonical_address": "0x0045336F",
+    "end": "0x0045346C",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_barycentric",
+    "size": 93
+  },
+  {
+    "address": "0x00453479",
+    "canonical_address": "0x004533D9",
+    "end": "0x00453504",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_transform",
+    "size": 139
+  },
+  {
+    "address": "0x00453511",
+    "canonical_address": "0x00453464",
+    "end": "0x00453524",
+    "evidence": "ordered",
+    "name": "d3dx_init_vec3_transform_coord",
+    "size": 19
+  },
+  {
+    "address": "0x00453524",
+    "canonical_address": "0x00453484",
+    "end": "0x0045358A",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_transform_normal",
+    "size": 102
+  },
+  {
+    "address": "0x004535B9",
+    "canonical_address": "0x00453519",
+    "end": "0x004536A9",
+    "evidence": "exact",
+    "name": "d3dx_c_vec4_cross",
+    "size": 240
+  },
+  {
+    "address": "0x004536B6",
+    "canonical_address": "0x00453616",
+    "end": "0x004536E0",
+    "evidence": "exact",
+    "name": "d3dx_init_vec4_hermite",
+    "size": 42
+  },
+  {
+    "address": "0x004536E0",
+    "canonical_address": "0x00453640",
+    "end": "0x004537B1",
+    "evidence": "exact",
+    "name": "d3dx_c_vec4_hermite",
+    "size": 209
+  },
+  {
+    "address": "0x004537B1",
+    "canonical_address": "0x00453711",
+    "end": "0x004537DB",
+    "evidence": "exact",
+    "name": "d3dx_init_vec4_catmull_rom",
+    "size": 42
+  },
+  {
+    "address": "0x004537DB",
+    "canonical_address": "0x0045373B",
+    "end": "0x004538CE",
+    "evidence": "exact",
+    "name": "d3dx_c_vec4_catmull_rom",
+    "size": 243
+  },
+  {
+    "address": "0x004538FD",
+    "canonical_address": "0x0045385D",
+    "end": "0x00453974",
+    "evidence": "exact",
+    "name": "d3dx_c_vec4_barycentric",
+    "size": 119
+  },
+  {
+    "address": "0x00453981",
+    "canonical_address": "0x004538E1",
+    "end": "0x00453A20",
+    "evidence": "exact",
+    "name": "d3dx_c_vec4_transform",
+    "size": 159
+  },
+  {
+    "address": "0x00453A2D",
+    "canonical_address": "0x0045398D",
+    "end": "0x00453AF7",
+    "evidence": "exact",
+    "name": "d3dx_c_matrixf_determinant",
+    "size": 202
+  },
+  {
+    "address": "0x00453B04",
+    "canonical_address": "0x00453A64",
+    "end": "0x00453B0A",
+    "evidence": "referenced",
+    "name": "D3DXMatrixMultiply",
+    "size": 6
+  },
+  {
+    "address": "0x00453B0A",
+    "canonical_address": "0x00453A6A",
+    "end": "0x00453D40",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_multiply",
+    "size": 566
+  },
+  {
+    "address": "0x00453D40",
+    "canonical_address": "0x00453CA0",
+    "end": "0x00453D4D",
+    "evidence": "ordered",
+    "name": "d3dx_init_matrix_transpose",
+    "size": 13
+  },
+  {
+    "address": "0x00453D4D",
+    "canonical_address": "0x00453CAD",
+    "end": "0x00453D53",
+    "evidence": "referenced",
+    "name": "D3DXMatrixTranspose",
+    "size": 6
+  },
+  {
+    "address": "0x00453D53",
+    "canonical_address": "0x00453CB3",
+    "end": "0x00453DC0",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_transpose",
+    "size": 109
+  },
+  {
+    "address": "0x00453DCD",
+    "canonical_address": "0x00453D2D",
+    "end": "0x00454003",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_multiply_transpose",
+    "size": 566
+  },
+  {
+    "address": "0x00454010",
+    "canonical_address": "0x00453F70",
+    "end": "0x00454016",
+    "evidence": "ordered",
+    "name": "D3DXMatrixInverse",
+    "size": 6
+  },
+  {
+    "address": "0x00454016",
+    "canonical_address": "0x00453F76",
+    "end": "0x004543A3",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_inverse",
+    "size": 909
+  },
+  {
+    "address": "0x004543A3",
+    "canonical_address": "0x00454303",
+    "end": "0x004543D1",
+    "evidence": "exact",
+    "name": "d3dx_init_matrix_scaling",
+    "size": 46
+  },
+  {
+    "address": "0x004543D1",
+    "canonical_address": "0x00454331",
+    "end": "0x0045442D",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_scaling",
+    "size": 92
+  },
+  {
+    "address": "0x0045445B",
+    "canonical_address": "0x004543BB",
+    "end": "0x004544B7",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_translation",
+    "size": 92
+  },
+  {
+    "address": "0x004544B7",
+    "canonical_address": "0x00454417",
+    "end": "0x004544D3",
+    "evidence": "exact",
+    "name": "d3dx_init_matrix_rotation_x",
+    "size": 28
+  },
+  {
+    "address": "0x004544D3",
+    "canonical_address": "0x00454433",
+    "end": "0x0045454D",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_rotation_x",
+    "size": 122
+  },
+  {
+    "address": "0x00454569",
+    "canonical_address": "0x004544C9",
+    "end": "0x004545E4",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_rotation_y",
+    "size": 123
+  },
+  {
+    "address": "0x00454600",
+    "canonical_address": "0x00454560",
+    "end": "0x0045467C",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_rotation_z",
+    "size": 124
+  },
+  {
+    "address": "0x0045469C",
+    "canonical_address": "0x004545FC",
+    "end": "0x0045479E",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_rotation_axis",
+    "size": 258
+  },
+  {
+    "address": "0x004547AB",
+    "canonical_address": "0x0045470B",
+    "end": "0x004547B1",
+    "evidence": "exact",
+    "name": "D3DXMatrixRotationQuaternion",
+    "size": 6
+  },
+  {
+    "address": "0x004547B1",
+    "canonical_address": "0x00454711",
+    "end": "0x00454893",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_rotation_quaternion",
+    "size": 226
+  },
+  {
+    "address": "0x00454893",
+    "canonical_address": "0x004547F3",
+    "end": "0x004548C1",
+    "evidence": "exact",
+    "name": "d3dx_init_matrix_rotation_yaw_pitch_roll",
+    "size": 46
+  },
+  {
+    "address": "0x004548F9",
+    "canonical_address": "0x00454859",
+    "end": "0x004549DF",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_affine_transformation",
+    "size": 230
+  },
+  {
+    "address": "0x00454A06",
+    "canonical_address": "0x00454966",
+    "end": "0x00454AA3",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_to_axis_angle",
+    "size": 157
+  },
+  {
+    "address": "0x00454AB0",
+    "canonical_address": "0x00454A10",
+    "end": "0x00454BE4",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_rotation_matrix",
+    "size": 308
+  },
+  {
+    "address": "0x00454BE4",
+    "canonical_address": "0x004545DC",
+    "end": "0x00454C04",
+    "evidence": "exact",
+    "name": "d3dx_init_matrix_rotation_axis",
+    "size": 32
+  },
+  {
+    "address": "0x00454C04",
+    "canonical_address": "0x00454B64",
+    "end": "0x00454C60",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_rotation_axis",
+    "size": 92
+  },
+  {
+    "address": "0x00454C60",
+    "canonical_address": "0x00454BC0",
+    "end": "0x00454C8E",
+    "evidence": "ordered",
+    "name": "d3dx_init_quaternion_rotation_yaw_pitch_roll",
+    "size": 46
+  },
+  {
+    "address": "0x00454C8E",
+    "canonical_address": "0x00454BEE",
+    "end": "0x00454C94",
+    "evidence": "referenced",
+    "name": "D3DXQuaternionRotationYawPitchRoll",
+    "size": 6
+  },
+  {
+    "address": "0x00454C94",
+    "canonical_address": "0x00454BF4",
+    "end": "0x00454D6D",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_rotation_yaw_pitch_roll",
+    "size": 217
+  },
+  {
+    "address": "0x00454D7A",
+    "canonical_address": "0x00454CDA",
+    "end": "0x00454D80",
+    "evidence": "referenced",
+    "name": "D3DXQuaternionMultiply",
+    "size": 6
+  },
+  {
+    "address": "0x00454D80",
+    "canonical_address": "0x00454CE0",
+    "end": "0x00454E16",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_multiply",
+    "size": 150
+  },
+  {
+    "address": "0x00454E23",
+    "canonical_address": "0x00454D83",
+    "end": "0x00454EDC",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_normalize",
+    "size": 185
+  },
+  {
+    "address": "0x00454EE9",
+    "canonical_address": "0x00454E49",
+    "end": "0x00454EEF",
+    "evidence": "referenced",
+    "name": "D3DXQuaternionInverse",
+    "size": 6
+  },
+  {
+    "address": "0x00454EEF",
+    "canonical_address": "0x00454E4F",
+    "end": "0x00454FA3",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_inverse",
+    "size": 180
+  },
+  {
+    "address": "0x00454FA3",
+    "canonical_address": "0x00454F03",
+    "end": "0x00454FA9",
+    "evidence": "exact",
+    "name": "D3DXQuaternionLn",
+    "size": 6
+  },
+  {
+    "address": "0x00454FA9",
+    "canonical_address": "0x00454F09",
+    "end": "0x00455027",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_ln",
+    "size": 126
+  },
+  {
+    "address": "0x00455027",
+    "canonical_address": "0x00454F87",
+    "end": "0x0045502D",
+    "evidence": "exact",
+    "name": "D3DXQuaternionExp",
+    "size": 6
+  },
+  {
+    "address": "0x0045502D",
+    "canonical_address": "0x00454F8D",
+    "end": "0x004550C8",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_exp",
+    "size": 155
+  },
+  {
+    "address": "0x004550EC",
+    "canonical_address": "0x0045504C",
+    "end": "0x004550F2",
+    "evidence": "referenced",
+    "name": "D3DXQuaternionSlerp",
+    "size": 6
+  },
+  {
+    "address": "0x004550F2",
+    "canonical_address": "0x00455052",
+    "end": "0x004551D5",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_slerp",
+    "size": 227
+  },
+  {
+    "address": "0x004551FF",
+    "canonical_address": "0x0045515F",
+    "end": "0x00455256",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_squad",
+    "size": 87
+  },
+  {
+    "address": "0x00455296",
+    "canonical_address": "0x004551F6",
+    "end": "0x00455321",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_barycentric",
+    "size": 139
+  },
+  {
+    "address": "0x0045532E",
+    "canonical_address": "0x0045528E",
+    "end": "0x00455334",
+    "evidence": "referenced",
+    "name": "D3DXPlaneNormalize",
+    "size": 6
+  },
+  {
+    "address": "0x00455334",
+    "canonical_address": "0x00455294",
+    "end": "0x004553D8",
+    "evidence": "exact",
+    "name": "d3dx_c_plane_normalize",
+    "size": 164
+  },
+  {
+    "address": "0x004553E5",
+    "canonical_address": "0x00455345",
+    "end": "0x00455487",
+    "evidence": "exact",
+    "name": "d3dx_c_plane_intersect_line",
+    "size": 162
+  },
+  {
+    "address": "0x00455494",
+    "canonical_address": "0x004553F4",
+    "end": "0x004554CC",
+    "evidence": "exact",
+    "name": "d3dx_c_plane_from_point_normal",
+    "size": 56
+  },
+  {
+    "address": "0x004554D9",
+    "canonical_address": "0x00455439",
+    "end": "0x0045557B",
+    "evidence": "exact",
+    "name": "d3dx_c_plane_from_points",
+    "size": 162
+  },
+  {
+    "address": "0x00455588",
+    "canonical_address": "0x004554E8",
+    "end": "0x00455627",
+    "evidence": "exact",
+    "name": "d3dx_c_plane_transform",
+    "size": 159
+  },
+  {
+    "address": "0x00455627",
+    "canonical_address": "0x00455587",
+    "end": "0x004556B4",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_normalize",
+    "size": 141
+  },
+  {
+    "address": "0x004556B4",
+    "canonical_address": "0x00455614",
+    "end": "0x0045571F",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_transform",
+    "size": 107
+  },
+  {
+    "address": "0x0045571F",
+    "canonical_address": "0x0045567F",
+    "end": "0x0045579F",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_transform_coord",
+    "size": 128
+  },
+  {
+    "address": "0x0045579F",
+    "canonical_address": "0x004556FF",
+    "end": "0x004557DB",
+    "evidence": "exact",
+    "name": "d3dx_c_vec2_transform_normal",
+    "size": 60
+  },
+  {
+    "address": "0x004557DB",
+    "canonical_address": "0x0045573B",
+    "end": "0x0045587B",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_normalize",
+    "size": 160
+  },
+  {
+    "address": "0x0045587B",
+    "canonical_address": "0x004557DB",
+    "end": "0x0045593A",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_transform_coord",
+    "size": 191
+  },
+  {
+    "address": "0x00455C6D",
+    "canonical_address": "0x00455BCD",
+    "end": "0x00455D26",
+    "evidence": "exact",
+    "name": "d3dx_c_vec4_normalize",
+    "size": 185
+  },
+  {
+    "address": "0x00455D26",
+    "canonical_address": "0x00455C86",
+    "end": "0x00455D5F",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_rotation_yaw_pitch_roll",
+    "size": 57
+  },
+  {
+    "address": "0x00455D5F",
+    "canonical_address": "0x00455CBF",
+    "end": "0x00456013",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_transformation",
+    "size": 692
+  },
+  {
+    "address": "0x00456013",
+    "canonical_address": "0x00455F73",
+    "end": "0x004560ED",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_shadow",
+    "size": 218
+  },
+  {
+    "address": "0x004560ED",
+    "canonical_address": "0x0045604D",
+    "end": "0x004561AC",
+    "evidence": "exact",
+    "name": "d3dx_c_matrix_reflect",
+    "size": 191
+  },
+  {
+    "address": "0x004561AC",
+    "canonical_address": "0x0045610C",
+    "end": "0x00456586",
+    "evidence": "exact",
+    "name": "d3dx_c_quaternion_squad_setup",
+    "size": 986
+  },
+  {
+    "address": "0x00456586",
+    "canonical_address": "0x004564E6",
+    "end": "0x004565E2",
+    "evidence": "exact",
+    "name": "renderer_registry_read",
+    "size": 92
+  },
+  {
+    "address": "0x004565E2",
+    "canonical_address": "0x00456542",
+    "end": "0x0045661A",
+    "evidence": "exact",
+    "name": "d3dx_is_x3d_processor",
+    "size": 56
+  },
+  {
+    "address": "0x0045661A",
+    "canonical_address": "0x0045657A",
+    "end": "0x004566BF",
+    "evidence": "exact",
+    "name": "d3dx_is_intel_sse_processor",
+    "size": 165
+  },
+  {
+    "address": "0x004566BF",
+    "canonical_address": "0x0045661F",
+    "end": "0x00456773",
+    "evidence": "exact",
+    "name": "renderer_processor_feature_available",
+    "size": 180
+  },
+  {
+    "address": "0x00456773",
+    "canonical_address": "0x004566D3",
+    "end": "0x00456850",
+    "evidence": "referenced",
+    "name": "D3DXCpuOptimizations",
+    "size": 221
+  },
+  {
+    "address": "0x00456850",
+    "canonical_address": "0x004567B0",
+    "end": "0x00456956",
+    "evidence": "exact",
+    "name": "renderer_patch_sse",
+    "size": 262
+  },
+  {
+    "address": "0x00456960",
+    "canonical_address": "0x004568C0",
+    "end": "0x00456A6A",
+    "evidence": "exact",
+    "name": "renderer_patch_sse2",
+    "size": 266
+  },
+  {
+    "address": "0x00456A70",
+    "canonical_address": "0x004569D0",
+    "end": "0x00456B45",
+    "evidence": "exact",
+    "name": "d3dx_x3d_get_feature_flags",
+    "size": 213
+  },
+  {
+    "address": "0x00456B45",
+    "canonical_address": "0x00456AA5",
+    "end": "0x00456D6B",
+    "evidence": "exact",
+    "name": "renderer_patch_3dnow",
+    "size": 550
+  },
+  {
+    "address": "0x00456D6B",
+    "canonical_address": "0x00456CCB",
+    "end": "0x00456DD4",
+    "evidence": "exact",
+    "name": "d3dx_x86_vec2_transform",
+    "size": 105
+  },
+  {
+    "address": "0x00456DD4",
+    "canonical_address": "0x00456D34",
+    "end": "0x00456E09",
+    "evidence": "exact",
+    "name": "d3dx_x86_vec2_transform_normal",
+    "size": 53
+  },
+  {
+    "address": "0x00456F8C",
+    "canonical_address": "0x00456EEC",
+    "end": "0x00457056",
+    "evidence": "exact",
+    "name": "d3dx_x86_vec3_normalize",
+    "size": 202
+  },
+  {
+    "address": "0x00457056",
+    "canonical_address": "0x00456FB6",
+    "end": "0x00457139",
+    "evidence": "exact",
+    "name": "d3dx_x86_matrix_multiply",
+    "size": 227
+  },
+  {
+    "address": "0x00457139",
+    "canonical_address": "0x00457099",
+    "end": "0x004571C7",
+    "evidence": "exact",
+    "name": "d3dx_x86_matrix_multiply_transpose",
+    "size": 142
+  },
+  {
+    "address": "0x004571C7",
+    "canonical_address": "0x00457127",
+    "end": "0x00457203",
+    "evidence": "exact",
+    "name": "d3dx_x86_init_fast_table",
+    "size": 60
+  },
+  {
+    "address": "0x00457210",
+    "canonical_address": "0x00457170",
+    "end": "0x00457250",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec2_transform",
+    "size": 64
+  },
+  {
+    "address": "0x00457250",
+    "canonical_address": "0x004571B0",
+    "end": "0x004572A9",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec2_transform_coord",
+    "size": 89
+  },
+  {
+    "address": "0x004572B0",
+    "canonical_address": "0x00457210",
+    "end": "0x004572E9",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec2_transform_normal",
+    "size": 57
+  },
+  {
+    "address": "0x004572FE",
+    "canonical_address": "0x0045725E",
+    "end": "0x004573E3",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec3_transform_coord_impl",
+    "size": 229
+  },
+  {
+    "address": "0x004573FE",
+    "canonical_address": "0x0045848E",
+    "end": "0x004574AB",
+    "evidence": "exact",
+    "name": "d3dx_sse2_vec4_transform_impl",
+    "size": 173
+  },
+  {
+    "address": "0x004574BE",
+    "canonical_address": "0x0045735E",
+    "end": "0x00457576",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec3_normalize_impl",
+    "size": 184
+  },
+  {
+    "address": "0x0045758E",
+    "canonical_address": "0x0045742E",
+    "end": "0x00457658",
+    "evidence": "exact",
+    "name": "d3dx_sse_plane_normalize_impl",
+    "size": 202
+  },
+  {
+    "address": "0x0045766E",
+    "canonical_address": "0x0045750E",
+    "end": "0x00457706",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec4_cross_impl",
+    "size": 152
+  },
+  {
+    "address": "0x00457710",
+    "canonical_address": "0x004575B0",
+    "end": "0x004577AC",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec4_normalize",
+    "size": 156
+  },
+  {
+    "address": "0x004577B0",
+    "canonical_address": "0x00457650",
+    "end": "0x00457864",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec3_catmull_rom",
+    "size": 180
+  },
+  {
+    "address": "0x00457870",
+    "canonical_address": "0x00457710",
+    "end": "0x004578F7",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec2_catmull_rom",
+    "size": 135
+  },
+  {
+    "address": "0x00457900",
+    "canonical_address": "0x004577A0",
+    "end": "0x004579A7",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec4_catmull_rom",
+    "size": 167
+  },
+  {
+    "address": "0x004579B0",
+    "canonical_address": "0x00457850",
+    "end": "0x00457A65",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec3_hermite",
+    "size": 181
+  },
+  {
+    "address": "0x00457A70",
+    "canonical_address": "0x00457910",
+    "end": "0x00457B0C",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec4_hermite",
+    "size": 156
+  },
+  {
+    "address": "0x00457B10",
+    "canonical_address": "0x004579B0",
+    "end": "0x00457B98",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec2_hermite",
+    "size": 136
+  },
+  {
+    "address": "0x00457BA0",
+    "canonical_address": "0x00457A40",
+    "end": "0x00457BFC",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec3_barycentric",
+    "size": 92
+  },
+  {
+    "address": "0x00457C00",
+    "canonical_address": "0x00457AA0",
+    "end": "0x00457C48",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec4_barycentric",
+    "size": 72
+  },
+  {
+    "address": "0x00457C50",
+    "canonical_address": "0x00457AF0",
+    "end": "0x00457CA1",
+    "evidence": "exact",
+    "name": "d3dx_sse_vec2_barycentric",
+    "size": 81
+  },
+  {
+    "address": "0x00457CB0",
+    "canonical_address": "0x00457B50",
+    "end": "0x00457D6E",
+    "evidence": "exact",
+    "name": "d3dx_sse_plane_intersect_line",
+    "size": 190
+  },
+  {
+    "address": "0x00457D7E",
+    "canonical_address": "0x00457C1E",
+    "end": "0x00457E54",
+    "evidence": "exact",
+    "name": "d3dx_sse_plane_from_points_impl",
+    "size": 214
+  },
+  {
+    "address": "0x00457E6E",
+    "canonical_address": "0x00457D0E",
+    "end": "0x00457FEA",
+    "evidence": "exact",
+    "name": "d3dx_sse_matrix_shadow_impl",
+    "size": 380
+  },
+  {
+    "address": "0x00457FFE",
+    "canonical_address": "0x00457E9E",
+    "end": "0x004580C4",
+    "evidence": "exact",
+    "name": "d3dx_sse_matrix_reflect_impl",
+    "size": 198
+  },
+  {
+    "address": "0x004580D0",
+    "canonical_address": "0x00457F70",
+    "end": "0x00458152",
+    "evidence": "exact",
+    "name": "d3dx_sse_quaternion_multiply",
+    "size": 130
+  },
+  {
+    "address": "0x00458160",
+    "canonical_address": "0x00458000",
+    "end": "0x004581FC",
+    "evidence": "exact",
+    "name": "d3dx_sse_quaternion_normalize",
+    "size": 156
+  },
+  {
+    "address": "0x0045820E",
+    "canonical_address": "0x004580AE",
+    "end": "0x0045826F",
+    "evidence": "exact",
+    "name": "d3dx_sse_quaternion_inverse_impl",
+    "size": 97
+  },
+  {
+    "address": "0x00458270",
+    "canonical_address": "0x00458110",
+    "end": "0x00458384",
+    "evidence": "exact",
+    "name": "d3dx_sse_quaternion_rotation_matrix",
+    "size": 276
+  },
+  {
+    "address": "0x0045839E",
+    "canonical_address": "0x0045823E",
+    "end": "0x00458451",
+    "evidence": "exact",
+    "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll_impl",
+    "size": 179
+  },
+  {
+    "address": "0x0045846E",
+    "canonical_address": "0x0045830E",
+    "end": "0x00458512",
+    "evidence": "exact",
+    "name": "d3dx_sse2_vec3_transform_normal_impl",
+    "size": 164
+  },
+  {
+    "address": "0x0045852E",
+    "canonical_address": "0x004583CE",
+    "end": "0x004585D1",
+    "evidence": "exact",
+    "name": "d3dx_sse2_vec3_transform_impl",
+    "size": 163
+  },
+  {
+    "address": "0x004585EE",
+    "canonical_address": "0x0045854E",
+    "end": "0x00458726",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_multiply_impl",
+    "size": 312
+  },
+  {
+    "address": "0x0045873E",
+    "canonical_address": "0x0045869E",
+    "end": "0x004587F6",
+    "evidence": "exact",
+    "name": "d3dx_sse2_vec3_normalize_impl",
+    "size": 184
+  },
+  {
+    "address": "0x0045880E",
+    "canonical_address": "0x0045876E",
+    "end": "0x004588D8",
+    "evidence": "exact",
+    "name": "d3dx_sse2_plane_normalize_impl",
+    "size": 202
+  },
+  {
+    "address": "0x004588EE",
+    "canonical_address": "0x0045884E",
+    "end": "0x00458B99",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_inverse_impl",
+    "size": 683
+  },
+  {
+    "address": "0x00458BAE",
+    "canonical_address": "0x00458B0E",
+    "end": "0x00458CF8",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_multiply_transpose_impl",
+    "size": 330
+  },
+  {
+    "address": "0x00458D0E",
+    "canonical_address": "0x00458C6E",
+    "end": "0x00458DA6",
+    "evidence": "exact",
+    "name": "d3dx_sse2_vec4_cross_impl",
+    "size": 152
+  },
+  {
+    "address": "0x00458DBE",
+    "canonical_address": "0x00458D1E",
+    "end": "0x00458E2B",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_rotation_x_impl",
+    "size": 109
+  },
+  {
+    "address": "0x00458E3E",
+    "canonical_address": "0x00458D9E",
+    "end": "0x00458EB2",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_rotation_y_impl",
+    "size": 116
+  },
+  {
+    "address": "0x00458ECE",
+    "canonical_address": "0x00458E2E",
+    "end": "0x00458F8B",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_determinant_impl",
+    "size": 189
+  },
+  {
+    "address": "0x00458F9E",
+    "canonical_address": "0x00458EFE",
+    "end": "0x00459074",
+    "evidence": "exact",
+    "name": "d3dx_sse2_plane_from_points_impl",
+    "size": 214
+  },
+  {
+    "address": "0x0045908E",
+    "canonical_address": "0x00458FEE",
+    "end": "0x0045920A",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_shadow_impl",
+    "size": 380
+  },
+  {
+    "address": "0x0045921E",
+    "canonical_address": "0x0045917E",
+    "end": "0x004592E4",
+    "evidence": "exact",
+    "name": "d3dx_sse2_matrix_reflect_impl",
+    "size": 198
+  },
+  {
+    "address": "0x004592F0",
+    "canonical_address": "0x00459250",
+    "end": "0x00459404",
+    "evidence": "exact",
+    "name": "d3dx_sse2_quaternion_rotation_matrix",
+    "size": 276
+  },
+  {
+    "address": "0x0045941E",
+    "canonical_address": "0x0045937E",
+    "end": "0x004594D1",
+    "evidence": "exact",
+    "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll_impl",
+    "size": 179
+  },
+  {
+    "address": "0x004595D6",
+    "canonical_address": "0x00459536",
+    "end": "0x00459689",
+    "evidence": "exact",
+    "name": "x3d_quaternion_to_axis_angle",
+    "size": 179
+  },
+  {
+    "address": "0x00459689",
+    "canonical_address": "0x004595E9",
+    "end": "0x004598A5",
+    "evidence": "exact",
+    "name": "x3d_quaternion_rotation_matrix",
+    "size": 540
+  },
+  {
+    "address": "0x004598A5",
+    "canonical_address": "0x00459805",
+    "end": "0x00459ABA",
+    "evidence": "exact",
+    "name": "x3d_quaternion_rotation_matrix_k7",
+    "size": 533
+  },
+  {
+    "address": "0x00459ABA",
+    "canonical_address": "0x00459A1A",
+    "end": "0x00459B7F",
+    "evidence": "exact",
+    "name": "x3d_quaternion_rotation_yaw_pitch_roll",
+    "size": 197
+  },
+  {
+    "address": "0x00459B7F",
+    "canonical_address": "0x00459ADF",
+    "end": "0x00459BEB",
+    "evidence": "exact",
+    "name": "x3d_quaternion_rotation_axis",
+    "size": 108
+  },
+  {
+    "address": "0x00459BEB",
+    "canonical_address": "0x00459B4B",
+    "end": "0x00459D22",
+    "evidence": "exact",
+    "name": "x3d_quaternion_slerp",
+    "size": 311
+  },
+  {
+    "address": "0x00459D22",
+    "canonical_address": "0x00459C82",
+    "end": "0x00459DAF",
+    "evidence": "exact",
+    "name": "x3d_quaternion_barycentric",
+    "size": 141
+  },
+  {
+    "address": "0x00459DAF",
+    "canonical_address": "0x00459D0F",
+    "end": "0x00459E41",
+    "evidence": "exact",
+    "name": "x3d_quaternion_squad",
+    "size": 146
+  },
+  {
+    "address": "0x00459E41",
+    "canonical_address": "0x00459DA1",
+    "end": "0x00459EA5",
+    "evidence": "exact",
+    "name": "x3d_quaternion_inverse",
+    "size": 100
+  },
+  {
+    "address": "0x00459EA5",
+    "canonical_address": "0x00459E05",
+    "end": "0x00459F4C",
+    "evidence": "exact",
+    "name": "x3d_quaternion_ln",
+    "size": 167
+  },
+  {
+    "address": "0x00459F4C",
+    "canonical_address": "0x00459EAC",
+    "end": "0x00459FF1",
+    "evidence": "exact",
+    "name": "x3d_quaternion_exp",
+    "size": 165
+  },
+  {
+    "address": "0x00459FF1",
+    "canonical_address": "0x00459F51",
+    "end": "0x0045AA4A",
+    "evidence": "exact",
+    "name": "x3d_quaternion_squad_setup",
+    "size": 2649
+  },
+  {
+    "address": "0x0045AA4A",
+    "canonical_address": "0x0045A9AA",
+    "end": "0x0045AC7C",
+    "evidence": "exact",
+    "name": "x3d_matrix_multiply",
+    "size": 562
+  },
+  {
+    "address": "0x0045AC7C",
+    "canonical_address": "0x0045ABDC",
+    "end": "0x0045AD4B",
+    "evidence": "exact",
+    "name": "x3d_matrix_determinant",
+    "size": 207
+  },
+  {
+    "address": "0x0045AD4B",
+    "canonical_address": "0x0045ACAB",
+    "end": "0x0045AD9B",
+    "evidence": "exact",
+    "name": "x3d_matrix_translation",
+    "size": 80
+  },
+  {
+    "address": "0x0045AD9B",
+    "canonical_address": "0x0045ACFB",
+    "end": "0x0045AE86",
+    "evidence": "exact",
+    "name": "x3d_matrix_shadow",
+    "size": 235
+  },
+  {
+    "address": "0x0045AE86",
+    "canonical_address": "0x0045ADE6",
+    "end": "0x0045AF62",
+    "evidence": "exact",
+    "name": "x3d_matrix_reflect",
+    "size": 220
+  },
+  {
+    "address": "0x0045AF62",
+    "canonical_address": "0x0045AEC2",
+    "end": "0x0045AFC5",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_x",
+    "size": 99
+  },
+  {
+    "address": "0x0045AFC5",
+    "canonical_address": "0x0045AF25",
+    "end": "0x0045B023",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_y",
+    "size": 94
+  },
+  {
+    "address": "0x0045B023",
+    "canonical_address": "0x0045AF83",
+    "end": "0x0045B07C",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_z",
+    "size": 89
+  },
+  {
+    "address": "0x0045B07C",
+    "canonical_address": "0x0045AFDC",
+    "end": "0x0045B0C3",
+    "evidence": "exact",
+    "name": "x3d_matrix_scaling",
+    "size": 71
+  },
+  {
+    "address": "0x0045B0C3",
+    "canonical_address": "0x0045B023",
+    "end": "0x0045B132",
+    "evidence": "exact",
+    "name": "x3d_matrix_transpose",
+    "size": 111
+  },
+  {
+    "address": "0x0045B132",
+    "canonical_address": "0x0045B092",
+    "end": "0x0045B16B",
+    "evidence": "exact",
+    "name": "x3d_matrix_identity",
+    "size": 57
+  },
+  {
+    "address": "0x0045B16B",
+    "canonical_address": "0x0045B0CB",
+    "end": "0x0045B23D",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_quaternion",
+    "size": 210
+  },
+  {
+    "address": "0x0045B23D",
+    "canonical_address": "0x0045B19D",
+    "end": "0x0045B2F2",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_quaternion_k7",
+    "size": 181
+  },
+  {
+    "address": "0x0045B2F2",
+    "canonical_address": "0x0045B252",
+    "end": "0x0045C48A",
+    "evidence": "exact",
+    "name": "x3d_matrix_transformation",
+    "size": 4504
+  },
+  {
+    "address": "0x0045C48A",
+    "canonical_address": "0x0045C3EA",
+    "end": "0x0045C62F",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_yaw_pitch_roll",
+    "size": 421
+  },
+  {
+    "address": "0x0045C62F",
+    "canonical_address": "0x0045C58F",
+    "end": "0x0045CB63",
+    "evidence": "exact",
+    "name": "x3d_matrix_affine_transformation",
+    "size": 1332
+  },
+  {
+    "address": "0x0045CB63",
+    "canonical_address": "0x0045CAC3",
+    "end": "0x0045CC7C",
+    "evidence": "exact",
+    "name": "x3d_matrix_rotation_axis",
+    "size": 281
+  },
+  {
+    "address": "0x0045CC7C",
+    "canonical_address": "0x0045CBDC",
+    "end": "0x0045DDD0",
+    "evidence": "exact",
+    "name": "x3d_matrix_transformation_k7",
+    "size": 4436
+  },
+  {
+    "address": "0x0045DDD0",
+    "canonical_address": "0x0045DD30",
+    "end": "0x0045E0B2",
+    "evidence": "exact",
+    "name": "x3d_matrix_inverse_k7",
+    "size": 738
+  },
+  {
+    "address": "0x0045E0B2",
+    "canonical_address": "0x0045E012",
+    "end": "0x0045E4AA",
+    "evidence": "exact",
+    "name": "x3d_matrix_multiply_transpose",
+    "size": 1016
+  },
+  {
+    "address": "0x0045E4AA",
+    "canonical_address": "0x0045E40A",
+    "end": "0x0045E7DE",
+    "evidence": "exact",
+    "name": "mat4_invert",
+    "size": 820
+  },
+  {
+    "address": "0x0045E7DE",
+    "canonical_address": "0x0045E73E",
+    "end": "0x0045E7FA",
+    "evidence": "exact",
+    "name": "x3d_matrix_inverse",
+    "size": 28
+  },
+  {
+    "address": "0x0045E8D2",
+    "canonical_address": "0x0045E832",
+    "end": "0x0045E931",
+    "evidence": "exact",
+    "name": "x3d_vec3_normalize",
+    "size": 95
+  },
+  {
+    "address": "0x0045E931",
+    "canonical_address": "0x0045E891",
+    "end": "0x0045E9A2",
+    "evidence": "exact",
+    "name": "x3d_vec3_barycentric",
+    "size": 113
+  },
+  {
+    "address": "0x0045E9A2",
+    "canonical_address": "0x0045E902",
+    "end": "0x0045EA76",
+    "evidence": "exact",
+    "name": "x3d_vec3_hermite",
+    "size": 212
+  },
+  {
+    "address": "0x0045EA76",
+    "canonical_address": "0x0045E9D6",
+    "end": "0x0045EB60",
+    "evidence": "exact",
+    "name": "x3d_vec3_catmull_rom",
+    "size": 234
+  },
+  {
+    "address": "0x0045EB60",
+    "canonical_address": "0x0045EAC0",
+    "end": "0x0045EBEB",
+    "evidence": "exact",
+    "name": "x3d_vec3_transform_coord_inline",
+    "size": 139
+  },
+  {
+    "address": "0x0045EBEB",
+    "canonical_address": "0x0045EB4B",
+    "end": "0x0045EDB2",
+    "evidence": "exact",
+    "name": "mat4_mul",
+    "size": 455
+  },
+  {
+    "address": "0x0045EDB2",
+    "canonical_address": "0x0045ED12",
+    "end": "0x0045EDB7",
+    "evidence": "exact",
+    "name": "vec3_transform_coord_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x0045EDB7",
+    "canonical_address": "0x0045ED17",
+    "end": "0x0045EF3F",
+    "evidence": "referenced",
+    "name": "vec3_project",
+    "size": 392
+  },
+  {
+    "address": "0x0045EF3F",
+    "canonical_address": "0x0045EE9F",
+    "end": "0x0045F165",
+    "evidence": "referenced",
+    "name": "vec3_unproject",
+    "size": 550
+  },
+  {
+    "address": "0x0045F165",
+    "canonical_address": "0x0045F0C5",
+    "end": "0x0045F65A",
+    "evidence": "referenced",
+    "name": "x3d_vec3_unproject_k7",
+    "size": 1269
+  },
+  {
+    "address": "0x0045F65A",
+    "canonical_address": "0x0045F5BA",
+    "end": "0x0045F78C",
+    "evidence": "exact",
+    "name": "x3d_vec4_cross",
+    "size": 306
+  },
+  {
+    "address": "0x0045F78C",
+    "canonical_address": "0x0045F6EC",
+    "end": "0x0045F7FD",
+    "evidence": "exact",
+    "name": "x3d_vec4_barycentric",
+    "size": 113
+  },
+  {
+    "address": "0x0045F7FD",
+    "canonical_address": "0x0045F75D",
+    "end": "0x0045F8C5",
+    "evidence": "exact",
+    "name": "x3d_vec4_hermite",
+    "size": 200
+  },
+  {
+    "address": "0x0045F8C5",
+    "canonical_address": "0x0045F825",
+    "end": "0x0045F9A3",
+    "evidence": "exact",
+    "name": "x3d_vec4_catmull_rom",
+    "size": 222
+  },
+  {
+    "address": "0x0045FB88",
+    "canonical_address": "0x0045FAE8",
+    "end": "0x0045FBEC",
+    "evidence": "exact",
+    "name": "x3d_plane_normalize",
+    "size": 100
+  },
+  {
+    "address": "0x0045FBEC",
+    "canonical_address": "0x0045FB4C",
+    "end": "0x0045FC6A",
+    "evidence": "exact",
+    "name": "x3d_plane_transform",
+    "size": 126
+  },
+  {
+    "address": "0x0045FC70",
+    "canonical_address": "0x0045FBD0",
+    "end": "0x0045FE5C",
+    "evidence": "exact",
+    "name": "d3dx_sse_sin_cos4",
+    "size": 492
+  },
+  {
+    "address": "0x0045FE60",
+    "canonical_address": "0x0045FDC0",
+    "end": "0x0045FF48",
+    "evidence": "exact",
+    "name": "d3dx_sse2_sincos",
+    "size": 232
+  },
+  {
+    "address": "0x0045FF50",
+    "canonical_address": "0x0045FEB0",
+    "end": "0x00460099",
+    "evidence": "exact",
+    "name": "d3dx_sse2_sin_cos4",
+    "size": 329
+  },
+  {
+    "address": "0x00460180",
+    "canonical_address": "0x004600C0",
+    "end": "0x00460275",
+    "evidence": "exact",
+    "name": "math_atan2_packed",
+    "size": 245
+  },
+  {
+    "address": "0x00460280",
+    "canonical_address": "0x004601C0",
+    "end": "0x00460377",
+    "evidence": "exact",
+    "name": "math_acos_packed",
+    "size": 247
+  },
+  {
+    "address": "0x00460480",
+    "canonical_address": "0x004603C0",
+    "end": "0x00460569",
+    "evidence": "exact",
+    "name": "x3d_log",
+    "size": 233
+  },
+  {
+    "address": "0x00460860",
+    "canonical_address": "0x004607A0",
+    "end": "0x00460979",
+    "evidence": "exact",
+    "name": "math_sincos_packed",
+    "size": 281
+  },
+  {
+    "address": "0x00460980",
+    "canonical_address": "0x004608C0",
+    "end": "0x00460A9B",
+    "evidence": "exact",
+    "name": "math_sin_packed",
+    "size": 283
+  },
+  {
+    "address": "0x00460D90",
+    "canonical_address": "0x00460CD0",
+    "end": "0x00460DC8",
+    "evidence": "exact",
+    "name": "crt_cfltcvt_init",
+    "size": 56
+  },
+  {
+    "address": "0x00460DC8",
+    "canonical_address": "0x00460D08",
+    "end": "0x00460E46",
+    "evidence": "exact",
+    "name": "crt_onexit",
+    "size": 126
+  },
+  {
+    "address": "0x00460E46",
+    "canonical_address": "0x00460D86",
+    "end": "0x00460E58",
+    "evidence": "exact",
+    "name": "crt_atexit",
+    "size": 18
+  },
+  {
+    "address": "0x00460E87",
+    "canonical_address": "0x00460DC7",
+    "end": "0x00460E92",
+    "evidence": "exact",
+    "name": "crt_free",
+    "size": 11
+  },
+  {
+    "address": "0x00460E92",
+    "canonical_address": "0x00460DD2",
+    "end": "0x00460F1D",
+    "evidence": "exact",
+    "name": "crt_atol",
+    "size": 139
+  },
+  {
+    "address": "0x00460F1D",
+    "canonical_address": "0x00460E5D",
+    "end": "0x00460F4E",
+    "evidence": "exact",
+    "name": "crt_fclose",
+    "size": 49
+  },
+  {
+    "address": "0x00460F4E",
+    "canonical_address": "0x00460E8E",
+    "end": "0x00460F9A",
+    "evidence": "exact",
+    "name": "crt_fclose_lk",
+    "size": 76
+  },
+  {
+    "address": "0x00460FB0",
+    "canonical_address": "0x00460EF0",
+    "end": "0x0046106C",
+    "evidence": "exact",
+    "name": "crt_strchr",
+    "size": 188
+  },
+  {
+    "address": "0x0046106C",
+    "canonical_address": "0x00460FAC",
+    "end": "0x004610CE",
+    "evidence": "exact",
+    "name": "crt_fgets",
+    "size": 98
+  },
+  {
+    "address": "0x004610CE",
+    "canonical_address": "0x0046100E",
+    "end": "0x004610FF",
+    "evidence": "exact",
+    "name": "crt_fsopen",
+    "size": 49
+  },
+  {
+    "address": "0x004610FF",
+    "canonical_address": "0x0046103F",
+    "end": "0x00461112",
+    "evidence": "exact",
+    "name": "crt_fopen",
+    "size": 19
+  },
+  {
+    "address": "0x00461114",
+    "canonical_address": "0x00461054",
+    "end": "0x0046113B",
+    "evidence": "exact",
+    "name": "crt_ftol",
+    "size": 39
+  },
+  {
+    "address": "0x0046113B",
+    "canonical_address": "0x0046107B",
+    "end": "0x00461149",
+    "evidence": "exact",
+    "name": "??2@YAPAXI@Z",
+    "size": 14
+  },
+  {
+    "address": "0x00461149",
+    "canonical_address": "0x00461089",
+    "end": "0x0046119A",
+    "evidence": "exact",
+    "name": "crt_vsprintf",
+    "size": 81
+  },
+  {
+    "address": "0x0046119A",
+    "canonical_address": "0x004610DA",
+    "end": "0x004611F1",
+    "evidence": "exact",
+    "name": "crt_atof_l",
+    "size": 87
+  },
+  {
+    "address": "0x00461200",
+    "canonical_address": "0x00461140",
+    "end": "0x00461219",
+    "evidence": "exact",
+    "name": "crt_ci_pow",
+    "size": 25
+  },
+  {
+    "address": "0x00461222",
+    "canonical_address": "0x00461162",
+    "end": "0x004613F5",
+    "evidence": "exact",
+    "name": "sub_461162",
+    "size": 467
+  },
+  {
+    "address": "0x004613F5",
+    "canonical_address": "0x00461335",
+    "end": "0x0046141D",
+    "evidence": "exact",
+    "name": "sub_461335",
+    "size": 40
+  },
+  {
+    "address": "0x0046141D",
+    "canonical_address": "0x0046135D",
+    "end": "0x004614C1",
+    "evidence": "exact",
+    "name": "crt_strtok",
+    "size": 164
+  },
+  {
+    "address": "0x004614D0",
+    "canonical_address": "0x00461410",
+    "end": "0x00461508",
+    "evidence": "exact",
+    "name": "crt_strncmp",
+    "size": 56
+  },
+  {
+    "address": "0x00461508",
+    "canonical_address": "0x00461448",
+    "end": "0x00461537",
+    "evidence": "exact",
+    "name": "crt_fflush",
+    "size": 47
+  },
+  {
+    "address": "0x00461537",
+    "canonical_address": "0x00461477",
+    "end": "0x00461565",
+    "evidence": "exact",
+    "name": "crt_fflush_nolock",
+    "size": 46
+  },
+  {
+    "address": "0x00461565",
+    "canonical_address": "0x004614A5",
+    "end": "0x004615C1",
+    "evidence": "exact",
+    "name": "crt_flushbuf",
+    "size": 92
+  },
+  {
+    "address": "0x004615CA",
+    "canonical_address": "0x0046150A",
+    "end": "0x0046166E",
+    "evidence": "exact",
+    "name": "crt_flsall",
+    "size": 164
+  },
+  {
+    "address": "0x0046166E",
+    "canonical_address": "0x004615AE",
+    "end": "0x0046169D",
+    "evidence": "exact",
+    "name": "crt_fwrite",
+    "size": 47
+  },
+  {
+    "address": "0x0046169D",
+    "canonical_address": "0x004615DD",
+    "end": "0x004617A7",
+    "evidence": "exact",
+    "name": "crt_fwrite_nolock",
+    "size": 266
+  },
+  {
+    "address": "0x004617A7",
+    "canonical_address": "0x004616E7",
+    "end": "0x004617F9",
+    "evidence": "exact",
+    "name": "crt_sprintf",
+    "size": 82
+  },
+  {
+    "address": "0x004617F9",
+    "canonical_address": "0x00461739",
+    "end": "0x00461806",
+    "evidence": "exact",
+    "name": "crt_srand",
+    "size": 13
+  },
+  {
+    "address": "0x00461806",
+    "canonical_address": "0x00461746",
+    "end": "0x00461828",
+    "evidence": "exact",
+    "name": "crt_rand",
+    "size": 34
+  },
+  {
+    "address": "0x00461828",
+    "canonical_address": "0x00461768",
+    "end": "0x004618F5",
+    "evidence": "exact",
+    "name": "crt_findfirst",
+    "size": 205
+  },
+  {
+    "address": "0x004618F5",
+    "canonical_address": "0x00461835",
+    "end": "0x004619BD",
+    "evidence": "exact",
+    "name": "crt_findnext",
+    "size": 200
+  },
+  {
+    "address": "0x004619BD",
+    "canonical_address": "0x004618FD",
+    "end": "0x004619DD",
+    "evidence": "exact",
+    "name": "crt_findclose",
+    "size": 32
+  },
+  {
+    "address": "0x004619DD",
+    "canonical_address": "0x0046191D",
+    "end": "0x00461A41",
+    "evidence": "exact",
+    "name": "crt_timet_from_ft",
+    "size": 100
+  },
+  {
+    "address": "0x00461A41",
+    "canonical_address": "0x00461981",
+    "end": "0x00461AC3",
+    "evidence": "exact",
+    "name": "crt_ehvec_ctor",
+    "size": 130
+  },
+  {
+    "address": "0x00461AC3",
+    "canonical_address": "0x00461A03",
+    "end": "0x00461B43",
+    "evidence": "exact",
+    "name": "crt_ehvec_dtor",
+    "size": 128
+  },
+  {
+    "address": "0x00461B43",
+    "canonical_address": "0x00461A83",
+    "end": "0x00461BA1",
+    "evidence": "exact",
+    "name": "crt_array_unwind",
+    "size": 94
+  },
+  {
+    "address": "0x00461BA1",
+    "canonical_address": "0x00461AF7",
+    "end": "0x00461BD0",
+    "evidence": "exact",
+    "name": "crt_fread",
+    "size": 47
+  },
+  {
+    "address": "0x00461BD0",
+    "canonical_address": "0x00461B26",
+    "end": "0x00461CB8",
+    "evidence": "exact",
+    "name": "crt_fread_nolock",
+    "size": 232
+  },
+  {
+    "address": "0x00461CB8",
+    "canonical_address": "0x00461C0E",
+    "end": "0x00461CDA",
+    "evidence": "exact",
+    "name": "crt_ftell",
+    "size": 34
+  },
+  {
+    "address": "0x00461CDA",
+    "canonical_address": "0x00461C30",
+    "end": "0x00461E3B",
+    "evidence": "exact",
+    "name": "crt_ftell_nolock",
+    "size": 353
+  },
+  {
+    "address": "0x00461E3B",
+    "canonical_address": "0x00461D91",
+    "end": "0x00461E67",
+    "evidence": "exact",
+    "name": "crt_fseek",
+    "size": 44
+  },
+  {
+    "address": "0x00461E67",
+    "canonical_address": "0x00461DBD",
+    "end": "0x00461EF4",
+    "evidence": "exact",
+    "name": "crt_fseek_nolock",
+    "size": 141
+  },
+  {
+    "address": "0x00461EF4",
+    "canonical_address": "0x00461E4A",
+    "end": "0x00461F45",
+    "evidence": "exact",
+    "name": "crt_snprintf",
+    "size": 81
+  },
+  {
+    "address": "0x00461F45",
+    "canonical_address": "0x00461E9B",
+    "end": "0x00461FB4",
+    "evidence": "exact",
+    "name": "crt_tolower",
+    "size": 111
+  },
+  {
+    "address": "0x00461FB4",
+    "canonical_address": "0x00461F0A",
+    "end": "0x0046207F",
+    "evidence": "exact",
+    "name": "crt_tolower_l",
+    "size": 203
+  },
+  {
+    "address": "0x0046207F",
+    "canonical_address": "0x00461FD5",
+    "end": "0x004620C0",
+    "evidence": "exact",
+    "name": "crt_printf",
+    "size": 65
+  },
+  {
+    "address": "0x004620C0",
+    "canonical_address": "0x00462020",
+    "end": "0x0046216A",
+    "evidence": "exact",
+    "name": "crt_alldiv",
+    "size": 170
+  },
+  {
+    "address": "0x00462170",
+    "canonical_address": "0x004620D0",
+    "end": "0x004621A4",
+    "evidence": "exact",
+    "name": "crt_allmul",
+    "size": 52
+  },
+  {
+    "address": "0x004621A4",
+    "canonical_address": "0x00462104",
+    "end": "0x00462213",
+    "evidence": "exact",
+    "name": "crt_toupper",
+    "size": 111
+  },
+  {
+    "address": "0x00462213",
+    "canonical_address": "0x00462173",
+    "end": "0x004622DF",
+    "evidence": "exact",
+    "name": "crt_toupper_l",
+    "size": 204
+  },
+  {
+    "address": "0x004622DF",
+    "canonical_address": "0x0046223F",
+    "end": "0x00462356",
+    "evidence": "exact",
+    "name": "crt_beginthread",
+    "size": 119
+  },
+  {
+    "address": "0x00462356",
+    "canonical_address": "0x004622B6",
+    "end": "0x004623DD",
+    "evidence": "exact",
+    "name": "crt_thread_entry",
+    "size": 135
+  },
+  {
+    "address": "0x00462413",
+    "canonical_address": "0x00462373",
+    "end": "0x00462450",
+    "evidence": "exact",
+    "name": "crt_endthread",
+    "size": 61
+  },
+  {
+    "address": "0x00462452",
+    "canonical_address": "0x0046248E",
+    "end": "0x00462479",
+    "evidence": "exact",
+    "name": "crt_getcwd",
+    "size": 39
+  },
+  {
+    "address": "0x00462479",
+    "canonical_address": "0x004624B5",
+    "end": "0x0046254E",
+    "evidence": "exact",
+    "name": "crt_getdcwd",
+    "size": 213
+  },
+  {
+    "address": "0x0046254E",
+    "canonical_address": "0x0046258A",
+    "end": "0x00462585",
+    "evidence": "exact",
+    "name": "crt_validdrive",
+    "size": 55
+  },
+  {
+    "address": "0x00462585",
+    "canonical_address": "0x00462BA0",
+    "end": "0x004625B9",
+    "evidence": "exact",
+    "name": "crt_sscanf",
+    "size": 52
+  },
+  {
+    "address": "0x004625C0",
+    "canonical_address": "0x00462B20",
+    "end": "0x00462640",
+    "evidence": "exact",
+    "name": "crt_strstr",
+    "size": 128
+  },
+  {
+    "address": "0x00462640",
+    "canonical_address": "0x00462BD4",
+    "end": "0x00462794",
+    "evidence": "exact",
+    "name": "crt_qsort",
+    "size": 340
+  },
+  {
+    "address": "0x00462794",
+    "canonical_address": "0x00462D28",
+    "end": "0x004627E2",
+    "evidence": "exact",
+    "name": "crt_shortsort",
+    "size": 78
+  },
+  {
+    "address": "0x004627E2",
+    "canonical_address": "0x00462D76",
+    "end": "0x0046280E",
+    "evidence": "exact",
+    "name": "crt_swap",
+    "size": 44
+  },
+  {
+    "address": "0x0046280E",
+    "canonical_address": "0x00462DA2",
+    "end": "0x0046283F",
+    "evidence": "exact",
+    "name": "crt_getc",
+    "size": 49
+  },
+  {
+    "address": "0x00462840",
+    "canonical_address": "0x00462DE0",
+    "end": "0x00462910",
+    "evidence": "exact",
+    "name": "crt_stricmp",
+    "size": 208
+  },
+  {
+    "address": "0x0046293D",
+    "canonical_address": "0x00462EDD",
+    "end": "0x0046294E",
+    "evidence": "exact",
+    "name": "crt_exit",
+    "size": 17
+  },
+  {
+    "address": "0x0046294E",
+    "canonical_address": "0x00462EEE",
+    "end": "0x0046295F",
+    "evidence": "exact",
+    "name": "crt_immediate_exit",
+    "size": 17
+  },
+  {
+    "address": "0x0046295F",
+    "canonical_address": "0x00462EFF",
+    "end": "0x00462A02",
+    "evidence": "exact",
+    "name": "crt_doexit",
+    "size": 163
+  },
+  {
+    "address": "0x00462A04",
+    "canonical_address": "0x00462FA4",
+    "end": "0x00462A0D",
+    "evidence": "exact",
+    "name": "crt_exit_lock",
+    "size": 9
+  },
+  {
+    "address": "0x00462A0D",
+    "canonical_address": "0x00462FAD",
+    "end": "0x00462A16",
+    "evidence": "exact",
+    "name": "crt_exit_unlock",
+    "size": 9
+  },
+  {
+    "address": "0x00462A16",
+    "canonical_address": "0x00462FB6",
+    "end": "0x00462A30",
+    "evidence": "exact",
+    "name": "crt_call_fn_range",
+    "size": 26
+  },
+  {
+    "address": "0x00462A30",
+    "canonical_address": "0x00462FD0",
+    "end": "0x00462A5E",
+    "evidence": "exact",
+    "name": "crt_isalpha",
+    "size": 46
+  },
+  {
+    "address": "0x00462A5E",
+    "canonical_address": "0x00462FFE",
+    "end": "0x00462A86",
+    "evidence": "exact",
+    "name": "crt_isspace",
+    "size": 40
+  },
+  {
+    "address": "0x00462A86",
+    "canonical_address": "0x00463026",
+    "end": "0x00462B8E",
+    "evidence": "ordered",
+    "name": "start",
+    "size": 264
+  },
+  {
+    "address": "0x00462B8E",
+    "canonical_address": "0x0046312E",
+    "end": "0x00462BE0",
+    "evidence": "referenced",
+    "name": "crt_amsg_exit",
+    "size": 82
+  },
+  {
+    "address": "0x00462BE0",
+    "canonical_address": "0x00463180",
+    "end": "0x00462CAB",
+    "evidence": "referenced",
+    "name": "crt_ci_acos",
+    "size": 203
+  },
+  {
+    "address": "0x00462CAB",
+    "canonical_address": "0x0046324B",
+    "end": "0x00463128",
+    "evidence": "referenced",
+    "name": "crt_finite",
+    "size": 1149
+  },
+  {
+    "address": "0x00463128",
+    "canonical_address": "0x004636C8",
+    "end": "0x00463147",
+    "evidence": "ordered",
+    "name": "seh_prolog",
+    "size": 31
+  },
+  {
+    "address": "0x00463147",
+    "canonical_address": "0x00463B10",
+    "end": "0x00463197",
+    "evidence": "ordered",
+    "name": "crt_cfltcvt",
+    "size": 80
+  },
+  {
+    "address": "0x00463197",
+    "canonical_address": "0x00463737",
+    "end": "0x004631C0",
+    "evidence": "ordered",
+    "name": "crt_ms_p5_mp_test_fdiv",
+    "size": 41
+  },
+  {
+    "address": "0x004631C0",
+    "canonical_address": "0x00463760",
+    "end": "0x00463280",
+    "evidence": "referenced",
+    "name": "crt_forcdecpt",
+    "size": 192
+  },
+  {
+    "address": "0x00463280",
+    "canonical_address": "0x00463820",
+    "end": "0x004635E6",
+    "evidence": "referenced",
+    "name": "crt_fassign",
+    "size": 870
+  },
+  {
+    "address": "0x004635E6",
+    "canonical_address": "0x004626AA",
+    "end": "0x00463915",
+    "evidence": "referenced",
+    "name": "crt_realloc",
+    "size": 815
+  },
+  {
+    "address": "0x00463915",
+    "canonical_address": "0x00463B86",
+    "end": "0x00463A03",
+    "evidence": "referenced",
+    "name": "crt_msize",
+    "size": 238
+  },
+  {
+    "address": "0x00463A03",
+    "canonical_address": "0x004629D9",
+    "end": "0x00463A15",
+    "evidence": "referenced",
+    "name": "crt_malloc",
+    "size": 18
+  },
+  {
+    "address": "0x00463A15",
+    "canonical_address": "0x004629EB",
+    "end": "0x00463B3D",
+    "evidence": "referenced",
+    "name": "crt_nh_malloc",
+    "size": 296
+  },
+  {
+    "address": "0x00463B3D",
+    "canonical_address": "0x004625C1",
+    "end": "0x00463C26",
+    "evidence": "referenced",
+    "name": "crt_free_base",
+    "size": 233
+  },
+  {
+    "address": "0x00463C26",
+    "canonical_address": "0x00463C74",
+    "end": "0x00463D57",
+    "evidence": "referenced",
+    "name": "crt_isctype",
+    "size": 305
+  },
+  {
+    "address": "0x00463D57",
+    "canonical_address": "0x00463DA5",
+    "end": "0x00463D86",
+    "evidence": "referenced",
+    "name": "crt_lock_file",
+    "size": 47
+  },
+  {
+    "address": "0x00463D86",
+    "canonical_address": "0x00463DD4",
+    "end": "0x00463DA9",
+    "evidence": "referenced",
+    "name": "crt_lock_file2",
+    "size": 35
+  },
+  {
+    "address": "0x00463DA9",
+    "canonical_address": "0x00463DF7",
+    "end": "0x00463DD8",
+    "evidence": "referenced",
+    "name": "crt_unlock_file",
+    "size": 47
+  },
+  {
+    "address": "0x00463DD8",
+    "canonical_address": "0x00463E26",
+    "end": "0x00463DFB",
+    "evidence": "referenced",
+    "name": "crt_unlock_file2",
+    "size": 35
+  },
+  {
+    "address": "0x00463DFB",
+    "canonical_address": "0x00463E49",
+    "end": "0x00463EDB",
+    "evidence": "referenced",
+    "name": "crt_close",
+    "size": 224
+  },
+  {
+    "address": "0x00463EDB",
+    "canonical_address": "0x00463F29",
+    "end": "0x00463F06",
+    "evidence": "referenced",
+    "name": "crt_freebuf",
+    "size": 43
+  },
+  {
+    "address": "0x00463F06",
+    "canonical_address": "0x00463F54",
+    "end": "0x00463FE2",
+    "evidence": "referenced",
+    "name": "crt_filbuf",
+    "size": 220
+  },
+  {
+    "address": "0x00463FE2",
+    "canonical_address": "0x00464030",
+    "end": "0x00464152",
+    "evidence": "referenced",
+    "name": "crt_openfile",
+    "size": 368
+  },
+  {
+    "address": "0x00464152",
+    "canonical_address": "0x004641A0",
+    "end": "0x0046421A",
+    "evidence": "referenced",
+    "name": "crt_getstream",
+    "size": 200
+  },
+  {
+    "address": "0x0046421A",
+    "canonical_address": "0x00464268",
+    "end": "0x00464332",
+    "evidence": "referenced",
+    "name": "crt_flsbuf",
+    "size": 280
+  },
+  {
+    "address": "0x00464332",
+    "canonical_address": "0x00464380",
+    "end": "0x00464B99",
+    "evidence": "referenced",
+    "name": "crt_output",
+    "size": 2151
+  },
+  {
+    "address": "0x00464B99",
+    "canonical_address": "0x00464BE7",
+    "end": "0x00464C20",
+    "evidence": "referenced",
+    "name": "crt_fltin2",
+    "size": 135
+  },
+  {
+    "address": "0x00464C20",
+    "canonical_address": "0x00464C70",
+    "end": "0x00465080",
+    "evidence": "referenced",
+    "name": "crt_strlen",
+    "size": 1120
+  },
+  {
+    "address": "0x00465080",
+    "canonical_address": "0x004650D0",
+    "end": "0x004650E0",
+    "evidence": "referenced",
+    "name": "crt_start_two_arg_error_handling",
+    "size": 96
+  },
+  {
+    "address": "0x004650E0",
+    "canonical_address": "0x00465130",
+    "end": "0x004650F5",
+    "evidence": "referenced",
+    "name": "crt_two_to_tos",
+    "size": 21
+  },
+  {
+    "address": "0x004650F5",
+    "canonical_address": "0x00465145",
+    "end": "0x00465125",
+    "evidence": "referenced",
+    "name": "crt_load_cw",
+    "size": 48
+  },
+  {
+    "address": "0x00465125",
+    "canonical_address": "0x00465175",
+    "end": "0x004651C9",
+    "evidence": "referenced",
+    "name": "crt_fload_with_fb",
+    "size": 164
+  },
+  {
+    "address": "0x004651C9",
+    "canonical_address": "0x00465219",
+    "end": "0x0046526C",
+    "evidence": "referenced",
+    "name": "crt_check_range_exit",
+    "size": 163
+  },
+  {
+    "address": "0x0046526C",
+    "canonical_address": "0x004652BC",
+    "end": "0x00465455",
+    "evidence": "referenced",
+    "name": "crt_powhlp",
+    "size": 489
+  },
+  {
+    "address": "0x00465455",
+    "canonical_address": "0x004654A5",
+    "end": "0x00465468",
+    "evidence": "referenced",
+    "name": "crt_init_thread_data",
+    "size": 19
+  },
+  {
+    "address": "0x00465468",
+    "canonical_address": "0x004654B8",
+    "end": "0x004654CF",
+    "evidence": "referenced",
+    "name": "crt_get_thread_data",
+    "size": 103
+  },
+  {
+    "address": "0x004654CF",
+    "canonical_address": "0x0046551F",
+    "end": "0x0046556F",
+    "evidence": "referenced",
+    "name": "crt_free_thread_data",
+    "size": 160
+  },
+  {
+    "address": "0x0046556F",
+    "canonical_address": "0x004655BF",
+    "end": "0x00465602",
+    "evidence": "referenced",
+    "name": "crt_commit",
+    "size": 147
+  },
+  {
+    "address": "0x00465602",
+    "canonical_address": "0x00465652",
+    "end": "0x0046581B",
+    "evidence": "referenced",
+    "name": "crt_write",
+    "size": 537
+  },
+  {
+    "address": "0x0046581B",
+    "canonical_address": "0x0046586B",
+    "end": "0x0046587C",
+    "evidence": "referenced",
+    "name": "crt_lock",
+    "size": 97
+  },
+  {
+    "address": "0x0046587C",
+    "canonical_address": "0x004658CC",
+    "end": "0x004658A0",
+    "evidence": "referenced",
+    "name": "crt_unlock",
+    "size": 36
+  },
+  {
+    "address": "0x004658A0",
+    "canonical_address": "0x004658F0",
+    "end": "0x00465BE0",
+    "evidence": "referenced",
+    "name": "crt_bufcpy",
+    "size": 832
+  },
+  {
+    "address": "0x00465BE0",
+    "canonical_address": "0x00465C30",
+    "end": "0x00465CD0",
+    "evidence": "referenced",
+    "name": "crt_strcpy",
+    "size": 240
+  },
+  {
+    "address": "0x00465CD0",
+    "canonical_address": "0x00465D20",
+    "end": "0x00465D43",
+    "evidence": "referenced",
+    "name": "crt_dosmaperr",
+    "size": 115
+  },
+  {
+    "address": "0x00465D43",
+    "canonical_address": "0x00465D93",
+    "end": "0x00465D4C",
+    "evidence": "referenced",
+    "name": "crt_errno_ptr",
+    "size": 9
+  },
+  {
+    "address": "0x00465D4C",
+    "canonical_address": "0x00465D9C",
+    "end": "0x00465D55",
+    "evidence": "referenced",
+    "name": "crt_doserrno_ptr",
+    "size": 9
+  },
+  {
+    "address": "0x00465D55",
+    "canonical_address": "0x00465DA5",
+    "end": "0x00465E20",
+    "evidence": "referenced",
+    "name": "crt_mktime",
+    "size": 203
+  },
+  {
+    "address": "0x00465E20",
+    "canonical_address": "0x00465E70",
+    "end": "0x00465F40",
+    "evidence": "referenced",
+    "name": "crt_except_handler3",
+    "size": 288
+  },
+  {
+    "address": "0x00465F40",
+    "canonical_address": "0x00465F48",
+    "end": "0x00465FAF",
+    "evidence": "ordered",
+    "name": "crt_terminate",
+    "size": 111
+  },
+  {
+    "address": "0x00465FAF",
+    "canonical_address": "0x00465FFF",
+    "end": "0x004663A9",
+    "evidence": "referenced",
+    "name": "crt_read",
+    "size": 1018
+  },
+  {
+    "address": "0x004663A9",
+    "canonical_address": "0x004663F9",
+    "end": "0x00466481",
+    "evidence": "referenced",
+    "name": "crt_lseek",
+    "size": 216
+  },
+  {
+    "address": "0x00466481",
+    "canonical_address": "0x004664D1",
+    "end": "0x004666D0",
+    "evidence": "referenced",
+    "name": "crt_lcmap_string",
+    "size": 591
+  },
+  {
+    "address": "0x004666D0",
+    "canonical_address": "0x004666F5",
+    "end": "0x0046675D",
+    "evidence": "referenced",
+    "name": "crt_stbuf",
+    "size": 141
+  },
+  {
+    "address": "0x0046675D",
+    "canonical_address": "0x00466782",
+    "end": "0x00466787",
+    "evidence": "referenced",
+    "name": "crt_ftbuf",
+    "size": 42
+  },
+  {
+    "address": "0x00466787",
+    "canonical_address": "0x004667AC",
+    "end": "0x004668C4",
+    "evidence": "referenced",
+    "name": "crt_calloc",
+    "size": 317
+  },
+  {
+    "address": "0x004668C4",
+    "canonical_address": "0x00466A8E",
+    "end": "0x00466A3C",
+    "evidence": "ordered",
+    "name": "crt_heap_select",
+    "size": 376
+  },
+  {
+    "address": "0x00466A3C",
+    "canonical_address": "0x00467E62",
+    "end": "0x0046879A",
+    "evidence": "referenced",
+    "name": "crt_scan_input",
+    "size": 7518
+  },
+  {
+    "address": "0x0046879A",
+    "canonical_address": "0x00461AE1",
+    "end": "0x004688D0",
+    "evidence": "referenced",
+    "name": "crt_array_unwind_filter",
+    "size": 310
+  },
+  {
+    "address": "0x0046E8A9",
+    "canonical_address": "0x0046E8F4",
+    "end": "0x0046E8E0",
+    "evidence": "referenced",
+    "name": "strdup_malloc",
+    "size": 55
+  },
+  {
+    "address": "0x0046E8E0",
+    "canonical_address": "0x0046E920",
+    "end": "0x0046E8E6",
+    "evidence": "referenced",
+    "name": "ov_pcm_seek",
+    "size": 6
+  },
+  {
+    "address": "0x0046E8E6",
+    "canonical_address": "0x0046E926",
+    "end": "0x0046E8EC",
+    "evidence": "referenced",
+    "name": "ov_pcm_total",
+    "size": 6
+  },
+  {
+    "address": "0x0046E8EC",
+    "canonical_address": "0x0046E92C",
+    "end": "0x0046E8F2",
+    "evidence": "referenced",
+    "name": "ov_info",
+    "size": 6
+  },
+  {
+    "address": "0x0046E8F2",
+    "canonical_address": "0x0046E932",
+    "end": "0x0046E8F8",
+    "evidence": "referenced",
+    "name": "ov_open_callbacks",
+    "size": 6
+  },
+  {
+    "address": "0x0046E8F8",
+    "canonical_address": "0x0046E938",
+    "end": "0x0046E8FE",
+    "evidence": "referenced",
+    "name": "ov_clear",
+    "size": 6
+  },
+  {
+    "address": "0x0046E8FE",
+    "canonical_address": "0x0046E93E",
+    "end": "0x0046E904",
+    "evidence": "referenced",
+    "name": "ov_read",
+    "size": 6
+  },
+  {
+    "address": "0x0046E904",
+    "canonical_address": "0x0046E944",
+    "end": "0x0046E90A",
+    "evidence": "referenced",
+    "name": "HlinkNavigateString",
+    "size": 6
+  },
+  {
+    "address": "0x0046E90A",
+    "canonical_address": "0x0046E94A",
+    "end": "0x0046E910",
+    "evidence": "ordered",
+    "name": "Direct3DCreate8",
+    "size": 6
+  },
+  {
+    "address": "0x0046E910",
+    "canonical_address": "0x0046E950",
+    "end": "0x0046E916",
+    "evidence": "referenced",
+    "name": "VerQueryValueA",
+    "size": 6
+  },
+  {
+    "address": "0x0046E916",
+    "canonical_address": "0x0046E956",
+    "end": "0x0046E91C",
+    "evidence": "referenced",
+    "name": "GetFileVersionInfoA",
+    "size": 6
+  },
+  {
+    "address": "0x0046E91C",
+    "canonical_address": "0x0046E95C",
+    "end": "0x0046E922",
+    "evidence": "referenced",
+    "name": "GetFileVersionInfoSizeA",
+    "size": 6
+  },
+  {
+    "address": "0x0046E922",
+    "canonical_address": "0x0046E962",
+    "end": "0x0046E938",
+    "evidence": "referenced",
+    "name": "DirectSoundCreate8",
+    "size": 22
+  }
+]

@@ -1,0 +1,1335 @@
+{
+  "entries": [
+    {
+      "address": "0x1005b2f0",
+      "name": "grim_interface_vtable",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005bb30",
+      "name": "grim_format_info_default",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005bb58",
+      "name": "grim_format_info_entries",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c274",
+      "name": "grim_vertex_space_converter_vtable",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c288",
+      "name": "grim_pixel_format_vtable_dxt",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c2e8",
+      "name": "grim_pixel_format_vtable_yuv",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c2f8",
+      "name": "grim_pixel_format_vtable_r8g8b8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c328",
+      "name": "grim_pixel_format_vtable_a8r8g8b8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c338",
+      "name": "grim_pixel_format_vtable_x8r8g8b8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c348",
+      "name": "grim_pixel_format_vtable_r5g6b5",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c36c",
+      "name": "grim_pixel_format_vtable_x1r5g5b5",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c37c",
+      "name": "grim_pixel_format_vtable_a1r5g5b5",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c38c",
+      "name": "grim_pixel_format_vtable_a4r4g4b4",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c39c",
+      "name": "grim_pixel_format_vtable_r3g3b2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c3ac",
+      "name": "grim_pixel_format_vtable_a8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c3bc",
+      "name": "grim_pixel_format_vtable_a8r3g3b2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c3cc",
+      "name": "grim_pixel_format_vtable_x4r4g4b4",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c3dc",
+      "name": "grim_pixel_format_vtable_a2b10g10r10",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c3ec",
+      "name": "grim_pixel_format_vtable_g16r16",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c3fc",
+      "name": "grim_pixel_format_vtable_a8p8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c40c",
+      "name": "grim_pixel_format_vtable_p8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c41c",
+      "name": "grim_pixel_format_vtable_l8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c42c",
+      "name": "grim_pixel_format_vtable_a8l8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c43c",
+      "name": "grim_pixel_format_vtable_a4l4",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c44c",
+      "name": "grim_pixel_format_vtable_v8u8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c45c",
+      "name": "grim_pixel_format_vtable_l6v5u5",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c46c",
+      "name": "grim_pixel_format_vtable_x8l8v8u8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c47c",
+      "name": "grim_pixel_format_vtable_q8w8v8u8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c48c",
+      "name": "grim_pixel_format_vtable_v16u16",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c49c",
+      "name": "grim_pixel_format_vtable_w11v11u10",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c4ac",
+      "name": "grim_pixel_format_vtable_a2w10v10u10",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c4bc",
+      "name": "grim_pixel_format_vtable_d16_lockable",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c4cc",
+      "name": "grim_pixel_format_vtable_l16",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c4dc",
+      "name": "grim_pixel_format_vtable_al16",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c4ec",
+      "name": "grim_pixel_format_vtable_r16",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c4fc",
+      "name": "grim_pixel_format_vtable_ar16",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c50c",
+      "name": "grim_pixel_format_vtable_dxt1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c51c",
+      "name": "grim_pixel_format_vtable_dxt2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c52c",
+      "name": "grim_pixel_format_vtable_dxt3",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c53c",
+      "name": "grim_pixel_format_vtable_dxt4",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c54c",
+      "name": "grim_pixel_format_vtable_dxt5",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c55c",
+      "name": "grim_pixel_format_vtable_uyvy",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c56c",
+      "name": "grim_pixel_format_vtable_yuy2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005c5d0",
+      "name": "d3dx_jpeg_std_message_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dcac",
+      "name": "IID_IDirect3DVolumeTexture8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dcbc",
+      "name": "IID_IDirect3DTexture8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dccc",
+      "name": "IID_IDirect3DBaseTexture8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dce0",
+      "name": "grim_dxt5_alpha_weights_max_8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd00",
+      "name": "grim_dxt5_alpha_weights_min_8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd20",
+      "name": "grim_dxt5_alpha_weights_max_6",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd38",
+      "name": "grim_dxt5_alpha_weights_min_6",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd58",
+      "name": "grim_dxt1_color_weights_max_4",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd68",
+      "name": "grim_dxt1_color_weights_min_4",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd78",
+      "name": "grim_dxt1_color_weights_max_3",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd84",
+      "name": "grim_dxt1_color_weights_min_3",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dd94",
+      "name": "grim_dxt1_index_map_4color",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dda4",
+      "name": "grim_dxt1_index_map_3color",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ddbc",
+      "name": "grim_dxt5_alpha_index_map_8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005dddc",
+      "name": "grim_dxt5_alpha_index_map_6",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005e040",
+      "name": "d3dx_jpeg_natural_order",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ec90",
+      "name": "d3dx_jpeg_idct_aanscales",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ed10",
+      "name": "d3dx_jpeg_idct_aanscalefactor",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ed50",
+      "name": "d3dx_jpeg_base_dither_matrix",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ee50",
+      "name": "d3dx_jpeg_quant1_rgb_order",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005efe8",
+      "name": "d3dx_zlib_cplens",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005f068",
+      "name": "d3dx_zlib_cplext",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005f0e8",
+      "name": "d3dx_zlib_cpdist",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005f160",
+      "name": "d3dx_zlib_cpdext",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005f5f4",
+      "name": "c_dfDIJoystick2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005f7fc",
+      "name": "c_dfDIKeyboard",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005fa04",
+      "name": "c_dfDIMouse2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005fa1c",
+      "name": "GUID_SysKeyboard",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005fa2c",
+      "name": "GUID_SysMouse",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005facc",
+      "name": "IID_IDirectInput8A",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005fadc",
+      "name": "grim_jpeg_std_message_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005fcd0",
+      "name": "grim_jpeg_natural_order",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ff10",
+      "name": "grim_jpeg_idct_aanscales",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ff90",
+      "name": "grim_jpeg_idct_aanscalefactor",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1005ffd0",
+      "name": "grim_jpeg_base_dither_matrix",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100600d0",
+      "name": "grim_jpeg_quant1_rgb_order",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100602f0",
+      "name": "zlib_static_literal_tree",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060770",
+      "name": "zlib_static_distance_tree",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060c50",
+      "name": "zlib_cplens",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060ccc",
+      "name": "zlib_cplext",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060d48",
+      "name": "zlib_cpdist",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060dc0",
+      "name": "zlib_cpdext",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060e38",
+      "name": "msvc_vector_destructor_iterator_scope_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10060e48",
+      "name": "msvc_array_unwind_scope_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10063080",
+      "name": "grim_lookup_blob_magic",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10063088",
+      "name": "grim_key_char_buffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006308c",
+      "name": "grim_key_char_buffer_count",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10063090",
+      "name": "grim_key_char_buffer_size",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10063094",
+      "name": "grim_texture_slot_max_index",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10063098",
+      "name": "grim_bound_texture_handle",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10066d48",
+      "name": "grim_format_info_end",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10066d50",
+      "name": "d3dx_fast_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10066f38",
+      "name": "d3dx_dds_formats",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10066fc0",
+      "name": "d3dx_dds_pixel_format_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10067488",
+      "name": "d3dx_box_filter_2d_a8r8g8b8_impl",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006748c",
+      "name": "d3dx_box_filter_2d_x8r8g8b8_impl",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10067490",
+      "name": "grim_dither_half_pattern",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10067510",
+      "name": "grim_dither_bayer_pattern",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10067590",
+      "name": "d3dx_is_mmx",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10067598",
+      "name": "png_gamma_shift",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100675b8",
+      "name": "grim_dxt_luminance_weights",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100675c8",
+      "name": "grim_dxt_luminance_inverse",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100675e0",
+      "name": "d3dx_inverse_sqrt_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100685e8",
+      "name": "d3dx_jpeg_mmx_idct_enabled",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100687c0",
+      "name": "d3dx_sse_quaternion_constants",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068800",
+      "name": "d3dx_sse2_math_constants",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068940",
+      "name": "d3dx_jpeg_mmx_sub128",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068948",
+      "name": "d3dx_jpeg_mmx_vu_mul",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068950",
+      "name": "d3dx_jpeg_mmx_yv_mul",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068958",
+      "name": "d3dx_jpeg_mmx_yu_mul",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068960",
+      "name": "d3dx_jpeg_mmx_high_dword_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100689a0",
+      "name": "d3dx_sse_trig_constants",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068c80",
+      "name": "d3dx_sse2_trig_constants",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f58",
+      "name": "d3dx_x87_math_sign",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f5c",
+      "name": "d3dx_x87_math_abs_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f60",
+      "name": "d3dx_x87_math_mantissa_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f64",
+      "name": "d3dx_x87_math_exponent_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f68",
+      "name": "d3dx_x87_math_one",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f6c",
+      "name": "d3dx_x87_math_half",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f74",
+      "name": "d3dx_x87_math_out_of_bounds",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f88",
+      "name": "d3dx_x87_math_atan_q0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f8c",
+      "name": "d3dx_x87_math_atan_q1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f90",
+      "name": "d3dx_x87_math_atan_q2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f94",
+      "name": "d3dx_x87_math_atan_p0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f98",
+      "name": "d3dx_x87_math_atan_p1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068f9c",
+      "name": "d3dx_x87_math_atan_p2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fa0",
+      "name": "d3dx_x87_math_acos_bound",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fa4",
+      "name": "d3dx_x87_math_acos_p0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fac",
+      "name": "d3dx_x87_math_acos_q0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fb0",
+      "name": "d3dx_x87_math_acos_q1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fb4",
+      "name": "d3dx_x87_math_pi_over_2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fb8",
+      "name": "d3dx_x87_math_negative_pi_over_2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fc8",
+      "name": "d3dx_x87_math_ln2_high",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fcc",
+      "name": "d3dx_x87_math_ln2_low",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fd0",
+      "name": "d3dx_x87_math_root_two",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fd4",
+      "name": "d3dx_x87_math_exponent_decrement",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fd8",
+      "name": "d3dx_x87_math_exponent_bias",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fdc",
+      "name": "d3dx_x87_math_log_c2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fe0",
+      "name": "d3dx_x87_math_log_c1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fe4",
+      "name": "d3dx_x87_math_log_c0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10068fec",
+      "name": "d3dx_x87_math_max_normal",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006901c",
+      "name": "d3dx_zlib_fixed_distance_bits",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10069020",
+      "name": "d3dx_zlib_fixed_literal_tree",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006a020",
+      "name": "d3dx_zlib_fixed_distance_tree",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006a120",
+      "name": "d3dx_zlib_inflate_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006bf54",
+      "name": "zlib_fixed_distance_bits",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006bf58",
+      "name": "zlib_fixed_literal_tree",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006cf58",
+      "name": "zlib_fixed_distance_tree",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006d148",
+      "name": "zlib_inflate_mask",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006d5e8",
+      "name": "grim_frame_dt",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006d5f8",
+      "name": "grim_window_icon_handle",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006d600",
+      "name": "grim_process_hinstance",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006da38",
+      "name": "grim_index_buffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dc40",
+      "name": "grim_d3d_device",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dc44",
+      "name": "grim_backbuffer_height",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dc48",
+      "name": "grim_tick_prev_ms",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dc4c",
+      "name": "grim_window_class",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dc60",
+      "name": "grim_window_class_hinstance",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dc74",
+      "name": "grim_window_class_name",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dcb0",
+      "name": "grim_vertex_buffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dcb4",
+      "name": "grim_rotation_radians",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dcb8",
+      "name": "grim_vertex_write_ptr",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006ddc4",
+      "name": "grim_rotation_sin",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006dec8",
+      "name": "grim_mouse_button_cache",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006ded8",
+      "name": "grim_time_ms",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2e0",
+      "name": "grim_lookup_blob_size",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2e4",
+      "name": "grim_rotation_m00",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2e8",
+      "name": "grim_rotation_m01",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2ec",
+      "name": "grim_rotation_m10",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2f0",
+      "name": "grim_rotation_m11",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2f4",
+      "name": "grim_timing_frozen",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e2f8",
+      "name": "grim_config_default",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e308",
+      "name": "grim_texture_format",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e30c",
+      "name": "grim_render_target_surface",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e3ec",
+      "name": "grim_preferred_texture_format",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006e4f0",
+      "name": "grim_lookup_blob",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f0f8",
+      "name": "grim_mouse_x_cached",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f0fc",
+      "name": "grim_mouse_y_cached",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f104",
+      "name": "grim_vertex_z",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f108",
+      "name": "grim_vertex_rhw",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f10c",
+      "name": "grim_uv_u0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f110",
+      "name": "grim_uv_v0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f114",
+      "name": "grim_uv_u1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f118",
+      "name": "grim_uv_v1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f11c",
+      "name": "grim_uv_u2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f120",
+      "name": "grim_uv_v2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f124",
+      "name": "grim_uv_u3",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f128",
+      "name": "grim_uv_v3",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f130",
+      "name": "grim_d3d_device_type",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f138",
+      "name": "grim_fps",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f140",
+      "name": "grim_d3d8_probe",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f948",
+      "name": "grim_window_title",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f950",
+      "name": "grim_tick_now_ms",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006f954",
+      "name": "grim_timing_epoch_ms",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fa84",
+      "name": "grim_color_slot0",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fa88",
+      "name": "grim_color_slot1",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fa8c",
+      "name": "grim_color_slot2",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fa90",
+      "name": "grim_color_slot3",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006faf8",
+      "name": "grim_subrect_ptr_table",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1006fe88",
+      "name": "grim_backbuffer_width",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070320",
+      "name": "grim_device_ready",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070368",
+      "name": "grim_vertex_count",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070370",
+      "name": "grim_rotation_cos",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070384",
+      "name": "grim_error_text",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070388",
+      "name": "grim_d3d8",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1007038c",
+      "name": "grim_backbuffer_surface",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070610",
+      "name": "grim_config_values",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070690",
+      "name": "grim_windowed_mode_enabled",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100706e0",
+      "name": "grim_input_cached",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100706f0",
+      "name": "grim_joystick_enabled",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070b50",
+      "name": "grim_config_dialog_option_3ef_checked",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e38",
+      "name": "grim_ms_to_seconds_scale",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e40",
+      "name": "grim_mouse_wheel_delta_cached",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e45",
+      "name": "grim_render_disabled",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e6c",
+      "name": "grim_key_char_queue_count",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e70",
+      "name": "grim_selected_adapter_index",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e74",
+      "name": "grim_font_texture",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e78",
+      "name": "grim_splash_texture",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e7c",
+      "name": "grim_batch_active",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e80",
+      "name": "grim_main_window_hwnd",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e84",
+      "name": "grim_device_window_override",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10070e90",
+      "name": "grim_texture_slots",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071290",
+      "name": "grim_dc_mode_active",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712a0",
+      "name": "grim_fps_sample_frames",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712a4",
+      "name": "grim_fps_sample_elapsed_ms",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712a8",
+      "name": "grim_interface_instance",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712ac",
+      "name": "grim_paused_flag",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712b0",
+      "name": "grim_empty_string",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712b8",
+      "name": "grim_joystick_state",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712bc",
+      "name": "grim_joystick_axis_y",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712c0",
+      "name": "grim_joystick_axis_z",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100712e8",
+      "name": "grim_joystick_buttons",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100713c8",
+      "name": "grim_dinput_joystick",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100713cc",
+      "name": "grim_joystick_device",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100713d0",
+      "name": "grim_joystick_found",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100713e0",
+      "name": "grim_keyboard_event_buffer",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100714a8",
+      "name": "grim_dinput_keyboard",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100714ac",
+      "name": "grim_keyboard_device",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100714b0",
+      "name": "grim_keyboard_state",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715b0",
+      "name": "grim_dinput_mouse",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715b4",
+      "name": "grim_mouse_device",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715c4",
+      "name": "grim_mouse_buttons",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715cc",
+      "name": "grim_mouse_x",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715d0",
+      "name": "grim_mouse_y",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715d8",
+      "name": "grim_mouse_dx",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715dc",
+      "name": "grim_mouse_dy",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715e0",
+      "name": "grim_mouse_wheel_delta",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100715ec",
+      "name": "grim_crt_proc_attached",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071968",
+      "name": "d3dx_debug_mute_d3d8d_callback",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x1007196c",
+      "name": "d3dx_debug_mute_d3d8_callback",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071970",
+      "name": "fpu_control_word_saved_blt",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071974",
+      "name": "fpu_control_word_saved_ftol",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071978",
+      "name": "fpu_control_word_saved_dxt",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10071980",
+      "name": "d3dx_sse_math_bss",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100719a0",
+      "name": "d3dx_jpeg_mmx_zero",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100735c8",
+      "name": "grim_crt_raw_dll_main",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100735d0",
+      "name": "d3dx_rsqrt_half_vector",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100735e0",
+      "name": "d3dx_rsqrt_three_vector",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100735f0",
+      "name": "d3dx_rsqrt_init_guard",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x100741a0",
+      "name": "d3dx_sse2_math_vectors",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10074260",
+      "name": "d3dx_sse_quaternion_vectors",
+      "program": "1.9.8/grim.dll"
+    },
+    {
+      "address": "0x10074260",
+      "name": "d3dx_sse2_quaternion_vectors",
+      "program": "1.9.8/grim.dll"
+    }
+  ],
+  "notes": "Globals named by exact 1.9.93 function bodies; every observed reference to an entry agrees."
+}

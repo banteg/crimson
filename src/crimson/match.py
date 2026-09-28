@@ -209,6 +209,30 @@ def default_metadata_path(image: str = DEFAULT_IMAGE_NAME) -> Path:
 
 
 @dataclass(frozen=True, slots=True)
+class MatchTarget:
+    """An image and the maps that name its functions and data.
+
+    ``image_name`` is the program key that selects rows from the shared name
+    and data maps, so an image of another build never inherits canonical names.
+    """
+
+    image_path: Path
+    functions_path: Path
+    metadata_path: Path
+    image_name: str
+    data_map_path: Path = DEFAULT_DATA_MAP_PATH
+
+
+def default_match_target(image: str = DEFAULT_IMAGE_NAME) -> MatchTarget:
+    return MatchTarget(
+        default_image_path(image),
+        default_functions_path(image),
+        default_metadata_path(image),
+        image,
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class FunctionSymbol:
     name: str
     address: int
@@ -3956,11 +3980,14 @@ def run_match(
     end_va: int | None = None,
     reference_aliases: tuple[tuple[str, str], ...] = (),
     scope: str | None = None,
+    image_name: str | None = None,
+    data_map_path: Path = DEFAULT_DATA_MAP_PATH,
 ) -> MatchResult:
+    image_name = image_name or image_path.name
     manifest = load_function_manifest(
         functions_path,
         metadata_path=metadata_path,
-        image_name=image_path.name,
+        image_name=image_name,
         scope=scope,
     )
     try:
@@ -3970,7 +3997,7 @@ def run_match(
             load_function_manifest(
                 functions_path,
                 metadata_path=metadata_path,
-                image_name=image_path.name,
+                image_name=image_name,
                 scope="all",
             )
             if scope not in (None, "all")
@@ -3993,9 +4020,11 @@ def run_match(
     )
     _, start, end = resolved
     image = load_image(image_path, manifest.image_base)
-    catalog = load_reference_catalog(manifest, functions_path=functions_path).with_object_aliases(
-        reference_aliases,
-    )
+    catalog = load_reference_catalog(
+        manifest,
+        data_map_path=data_map_path,
+        functions_path=functions_path,
+    ).with_object_aliases(reference_aliases)
     return match_function(
         image.function_bytes(start, end),
         candidate,
@@ -5942,36 +5971,42 @@ def evaluate_scratch(
     match_root: Path = DEFAULT_MATCH_ROOT,
     *,
     deadline: float | None = None,
+    target: MatchTarget | None = None,
 ) -> ScratchStatus:
-    """Compile and evaluate one explicit scratch configuration."""
+    """Compile and evaluate one explicit scratch configuration.
+
+    ``target`` defaults to the canonical image of ``config.image``.
+    """
 
     match_root = match_root.resolve()
-    image_path, functions_path, metadata_path = _paths_for_image(config.image)
+    target = target or default_match_target(config.image)
     manifest = load_function_manifest(
-        functions_path,
-        metadata_path=metadata_path,
-        image_name=config.image,
+        target.functions_path,
+        metadata_path=target.metadata_path,
+        image_name=target.image_name,
     )
     address = 0
     target_size = 0
     try:
         function, start, end = resolve_function(manifest, config.function, end_override=config.end_va)
         address = function.address
-        image = load_image(image_path, manifest.image_base)
+        image = load_image(target.image_path, manifest.image_base)
         target_size = len(image.function_bytes(start, end))
         obj_path = compile_scratch(config, match_root, deadline=deadline)
         result = run_match(
             obj_path=obj_path,
             function=config.function,
-            image_path=image_path,
-            functions_path=functions_path,
-            metadata_path=metadata_path,
+            image_path=target.image_path,
+            functions_path=target.functions_path,
+            metadata_path=target.metadata_path,
             symbol_name=config.symbol,
             object_extent=config.archive_extent,
             object_end_symbol=config.archive_end_symbol,
             object_size=config.archive_size,
             end_va=config.end_va,
             reference_aliases=config.reference_aliases,
+            image_name=target.image_name,
+            data_map_path=target.data_map_path,
         )
         return ScratchStatus(
             config=config,
@@ -6021,6 +6056,7 @@ def evaluate_source_probe(
     compiler: str | None = None,
     cflags: str | None = None,
     label: str | None = None,
+    target: MatchTarget | None = None,
 ) -> ProbeResult:
     """Compare a temporary source overlay without modifying the scratch."""
 
@@ -6032,11 +6068,12 @@ def evaluate_source_probe(
         compiler=compiler or config.compiler,
         cflags=cflags or config.cflags,
     )
-    baseline = evaluate_scratch(baseline_config, match_root)
+    baseline = evaluate_scratch(baseline_config, match_root, target=target)
     probe = evaluate_source_overlay(
         baseline_config,
         source_text,
         match_root=match_root,
+        target=target,
     )
     source_tree_sha256, source_dependencies = source_probe_tree_fingerprint(
         baseline_config,
@@ -6060,6 +6097,7 @@ def evaluate_source_overlay(
     match_root: Path = DEFAULT_MATCH_ROOT,
     source_path: Path | None = None,
     deadline: float | None = None,
+    target: MatchTarget | None = None,
 ) -> ScratchStatus:
     """Evaluate one temporary source or included-header overlay."""
 
@@ -6112,7 +6150,7 @@ def evaluate_source_overlay(
                 else None
             ),
         )
-        return evaluate_scratch(shadow_config, match_root, deadline=deadline)
+        return evaluate_scratch(shadow_config, match_root, deadline=deadline, target=target)
 
 
 def available_scratch_compilers(match_root: Path = DEFAULT_MATCH_ROOT) -> tuple[str, ...]:
