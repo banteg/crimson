@@ -153,6 +153,100 @@
         "exe_sha256": "93cdcdc872c836e75122e3a1d41312c74761cf4736181d3541521e82f6cb2031",
         "whatsupdated_title": "Crimsonland Updates (latest entry 1.9.91)"
       }
+    },
+    {
+      "version": "1.3.1",
+      "path": "game_bins/crimsonland/historical/discmaster/crimsonland_v131.zip",
+      "source": "https://discmaster.textfiles.com/file/40437/CGWDec02.iso/crimsonland_v131.zip",
+      "size": 7943327,
+      "sha256": "cf3cce09e4535b5200448d98013b25a23b20d98eadfe5d45fb5df2dcf8593ccc",
+      "payload": {
+        "path": "game_bins/crimsonland/1.3.1/crimson.exe",
+        "size": 225280,
+        "sha256": "177fc668c8ff7433bb92e11af105a1efb871814079a3070cc5b37d9f765e8153",
+        "exe_version_string": "v1.3.1",
+        "version_string_file_offset": "0x30558",
+        "exe_pe_timestamp": "2002-09-08T13:14:39Z",
+        "documentation": {
+          "path": "game_bins/crimsonland/1.3.1/readme.txt",
+          "size": 9104,
+          "sha256": "1e69b67f437c47aa5b6eefaebcbbfc7095c8a2109b556bc1be85bdaf6a5cf817"
+        },
+        "documentation_header": [
+          "Crimsonland documentation",
+          " for version 1.3.1",
+          " 08.09.2002 (dd.mm.yyyy)"
+        ]
+      },
+      "recovery_manifest": "analysis/historical/discmaster-recovery/manifest.json"
+    },
+    {
+      "version": "1.8.7",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-04.exe",
+      "source": "https://discmaster.textfiles.com/file/36307/Game.EXE_06_2003_DVD.iso/Shareware/Action/Crimsonland/CrimsonlandSetup.exe",
+      "size": 7161710,
+      "sha256": "ecc09f68e40cb3c832a64596f4f859c9f64e1a0e14a1f135c5731ff9a534b58b",
+      "payload": {
+        "path": "game_bins/crimsonland/1.8.7/crimsonland.exe",
+        "size": 569344,
+        "sha256": "1653aa8246b6deea9d74d68c1ffcfaaa4df856b06c953f26b047f24f997db6ff",
+        "exe_version_string": "crimsonland v.1.8.7",
+        "version_string_file_offset": "0x753d4",
+        "exe_pe_timestamp": "2003-04-22T21:38:19Z"
+      },
+      "recovery_manifest": "analysis/historical/discmaster-recovery/manifest.json"
+    },
+    {
+      "version": "1.9.0",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-05.exe",
+      "source": "https://discmaster.textfiles.com/file/24086/2003-08_Disc_7.31.bin/Software/Demos/CrimsonlandSetup.exe",
+      "size": 7286801,
+      "sha256": "20cadabedd41c397a636267e35771bd1b38675fb9df691a539b05a3304db084c",
+      "payload": {
+        "path": "game_bins/crimsonland/1.9.0/crimsonland.exe",
+        "size": 491520,
+        "sha256": "9dea9c456e96221c9a826b9a342e9c852fb83dc0b2a7cd606fda3103486360cd",
+        "exe_version_string": "crimsonland v.1.9.0",
+        "version_string_file_offset": "0x682b0",
+        "exe_pe_timestamp": "2003-05-21T17:37:13Z",
+        "documentation": {
+          "path": "game_bins/crimsonland/1.9.0/whatsupdated.txt",
+          "size": 437,
+          "sha256": "5eedffc28eede6cab653c1e50ab65584cff1b37d7b8ac9e32c328d2da4564de6"
+        },
+        "documentation_header": [
+          "Crimsonland UPDATE to version 1.9.0",
+          "",
+          ""
+        ]
+      },
+      "recovery_manifest": "analysis/historical/discmaster-recovery/manifest.json"
+    },
+    {
+      "version": "1.9.3",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-08.exe",
+      "source": "https://discmaster.textfiles.com/file/542/EJV8_CD1.ISO/ejv8-cd1/data/shoot/Crimsonland/crimsonland.exe",
+      "size": 7402839,
+      "sha256": "42be27a0e1c12b6570fa7ca0744cd7c0fe44045aa5c14c9104917ad7f4a4d8be",
+      "payload": {
+        "path": "game_bins/crimsonland/1.9.3/crimsonland.exe",
+        "size": 503808,
+        "sha256": "d965d89fb4bdd3b7c4375c3ae437cc8a28ac9ca129ef4198a6120a33c9051a9a",
+        "exe_version_string": "Crimsonland 1.9.3",
+        "version_string_file_offset": "0x6dc8c",
+        "exe_pe_timestamp": "2003-06-30T15:25:04Z",
+        "documentation": {
+          "path": "game_bins/crimsonland/1.9.3/whatsupdated.txt",
+          "size": 259,
+          "sha256": "a0cb7742545d49dd68900c195467774637caa1afd2fdb3a3755fdf2090750170"
+        },
+        "documentation_header": [
+          "Crimsonland version 1.9.3",
+          "",
+          ""
+        ]
+      },
+      "recovery_manifest": "analysis/historical/discmaster-recovery/manifest.json"
     }
   ],
   "unrecovered": [
@@ -184,26 +278,6 @@
     {
       "version": "1.2.4",
       "evidence": "Mentioned by the 1.3.0 and 1.4.0 readmes",
-      "reason": "No package URL or surviving capture found."
-    },
-    {
-      "version": "1.3.1",
-      "evidence": "Crimsongame forum threads 30 and 369 mention a 1.3.1 zip",
-      "reason": "No package URL or surviving capture found."
-    },
-    {
-      "version": "1.8.7",
-      "evidence": "Crimsongame forum thread 369 asks for 1.9.0 or 1.8.7",
-      "reason": "Single forum mention; no package URL or surviving capture found."
-    },
-    {
-      "version": "1.9.0",
-      "evidence": "Crimsongame forum threads 14 and 369",
-      "reason": "No package URL or surviving capture found."
-    },
-    {
-      "version": "1.9.3",
-      "evidence": "MOD SDK 1.0 readme (2003-08-14) requires full version v1.93 or above",
       "reason": "No package URL or surviving capture found."
     },
     {

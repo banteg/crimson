@@ -47,17 +47,17 @@ is "recovered" only when a package survives and its contents confirm the number.
 | 1.2.2 | missing | Full and no-music links survive; Wayback only retained later 404 responses. |
 | 1.2.4 | missing | Mentioned retrospectively by the 1.3.0 and 1.4.0 readmes. |
 | 1.3.0 | recovered | Original ZIP and readme dated 2002-07-11; Pelit catalog record `CLAND130.ZIP` is dated 2002-07-24. |
-| 1.3.1 | missing | Crimsongame forum posts mention a 1.3.1 ZIP. |
+| 1.3.1 | recovered | `crimsonland_v131.zip` on the Computer Gaming World December 2002 disc; executable reads `v1.3.1`, readme dated 2002-09-08. |
 | 1.4.0 | recovered | Original ZIP and readme dated 2002-09-16; the last freeware release. |
 
 ### Commercial (2003-2010)
 
 | Version | State | Evidence |
 | --- | --- | --- |
-| 1.8.7 | missing | A single Crimsongame forum request for "1.9.0 or 1.8.7"; possibly a pre-launch build. |
-| 1.9.0 | missing | Crimsongame forum posts. |
+| 1.8.7 | recovered | Game.EXE June 2003 disc installer; executable reads `crimsonland v.1.8.7` (built 2003-04-22). |
+| 1.9.0 | recovered | PC Gamer August 2003 disc installer; executable reads `crimsonland v.1.9.0` (built 2003-05-21), with matching release notes. |
 | 1.9.1 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `crimsonland v.1.9.1` (built 2003-06-09). |
-| 1.9.3 | missing | The MOD SDK 1.0 readme (2003-08-14) requires "v1.93 or above". 1.9.2 and 1.9.4-1.9.7 are not individually attested. |
+| 1.9.3 | recovered | L'Encyclopedie Des Jeux Video 8 installer; executable reads `Crimsonland 1.9.3` (built 2003-06-30), with matching release notes. The PC Gamer October 2003 installer contains the same executable. |
 | 1.9.8 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `Crimsonland 1.9.8` (built 2003-08-18). |
 | 1.9.9 | recovered | Suomipelit ZIP dated 2008-12-07; crimsonland.com news of 2008-11-20. |
 | 1.9.91 | missing | Listed in the 1.9.93 `whatsupdated.txt`; the 2009 news post counts from "1.9.90". |
@@ -66,6 +66,32 @@ is "recovered" only when a package survives and its contents confirm the number.
 
 Recovered packages are deliberately stored under ignored `game_bins/`, with
 their retrieval URLs, sizes, and SHA-256 hashes committed in the manifest.
+Versions 1.9.2 and 1.9.4-1.9.7 are not individually attested.
+
+### Recovery through disc contents
+
+On 2026-09-28, filename searches in
+[DiscMaster](https://discmaster.textfiles.com/search?q=crimsonland%2A)
+recovered four previously missing builds: 1.3.1, 1.8.7, 1.9.0, and 1.9.3.
+DiscMaster indexes files inside disc images and nested archives, allowing
+packages to be found even when a disc's catalog description does not name the
+game. Searching `crimsonland*` also finds `CrimsonlandSetup.exe`, which the
+plain `crimsonland` search did not return.
+
+The sources, original-package and executable hashes, exact version-string
+offsets, PE timestamps, extraction details, and retained search results are in
+[`analysis/historical/discmaster-recovery/manifest.json`](../../../../analysis/historical/discmaster-recovery/manifest.json).
+The extracted trees are stored in `game_bins/crimsonland/{version}/` alongside
+the previously recovered versions. All verification was static; these packages
+have not been runtime-tested. Disc file dates and PE timestamps are not treated
+as exact release dates.
+
+The 1.8.7 recovery confirms the previously uncertain forum mention with an
+actual distributed executable. The 1.9.0 installer contains a complete game
+tree despite its release notes saying "UPDATE ONLY". The two 1.9.3 installers
+have different hashes and differ in other files, but their game executables
+are byte-identical. The `cland.exe` on Chip April 2002 was checked and excluded:
+it is an unrelated puzzle game called C-Land.
 
 The 2003 and 2004 Reflexive installers wrap an Inno Setup installer in a
 Reflexive Arcade loader, so their outer PE timestamps (2003-04-25 and

@@ -1,0 +1,222 @@
+{
+  "schema": 1,
+  "kind": "historical-crimsonland-disc-recovery",
+  "retrieved_at": "2026-09-28",
+  "method": "Search DiscMaster filenames inside extracted disc images and nested archives, retrieve individual original packages, statically extract and verify payload version strings. No game or installer was executed.",
+  "release_artifacts": [
+    {
+      "version": "1.3.1",
+      "path": "game_bins/crimsonland/historical/discmaster/crimsonland_v131.zip",
+      "size": 7943327,
+      "sha256": "cf3cce09e4535b5200448d98013b25a23b20d98eadfe5d45fb5df2dcf8593ccc",
+      "source": "https://discmaster.textfiles.com/file/40437/CGWDec02.iso/crimsonland_v131.zip",
+      "discmaster_url": "https://discmaster.textfiles.com/browse/40437/CGWDec02.iso/crimsonland_v131.zip",
+      "disc_title": "Computer Gaming World 2002 December",
+      "archive_item": "https://archive.org/details/cgwdec-02",
+      "disc_file_date": "2002-09-12",
+      "extracted_directory": "game_bins/crimsonland/1.3.1",
+      "file_count": 34,
+      "extracted_inventory": {
+        "path": "analysis/historical/discmaster-recovery/captures/1.3.1-files.json",
+        "size": 5136,
+        "sha256": "633da86aa0c93ce15ab1b5f8ebca54f91e8bc8dac2245b40a024be20492fd87d"
+      },
+      "payload": {
+        "path": "game_bins/crimsonland/1.3.1/crimson.exe",
+        "size": 225280,
+        "sha256": "177fc668c8ff7433bb92e11af105a1efb871814079a3070cc5b37d9f765e8153",
+        "exe_version_string": "v1.3.1",
+        "version_string_file_offset": "0x30558",
+        "exe_pe_timestamp": "2002-09-08T13:14:39Z",
+        "documentation": {
+          "path": "game_bins/crimsonland/1.3.1/readme.txt",
+          "size": 9104,
+          "sha256": "1e69b67f437c47aa5b6eefaebcbbfc7095c8a2109b556bc1be85bdaf6a5cf817"
+        },
+        "documentation_header": [
+          "Crimsonland documentation",
+          " for version 1.3.1",
+          " 08.09.2002 (dd.mm.yyyy)"
+        ]
+      },
+      "verification": "ZIP CRC test passed"
+    },
+    {
+      "version": "1.8.7",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-04.exe",
+      "size": 7161710,
+      "sha256": "ecc09f68e40cb3c832a64596f4f859c9f64e1a0e14a1f135c5731ff9a534b58b",
+      "source": "https://discmaster.textfiles.com/file/36307/Game.EXE_06_2003_DVD.iso/Shareware/Action/Crimsonland/CrimsonlandSetup.exe",
+      "discmaster_url": "https://discmaster.textfiles.com/view/36307/Game.EXE_06_2003_DVD.iso/Shareware/Action/Crimsonland/CrimsonlandSetup.exe",
+      "disc_title": "Game.EXE 2003 June",
+      "archive_item": "https://archive.org/details/dvdrom-game.exe-2003-06",
+      "disc_file_date": "2003-04-28",
+      "extracted_directory": "game_bins/crimsonland/1.8.7",
+      "file_count": 55,
+      "extracted_inventory": {
+        "path": "analysis/historical/discmaster-recovery/captures/1.8.7-files.json",
+        "size": 8383,
+        "sha256": "7b57e27a828f175ede2ffac5dc57466ea6e649573f9c8ff1e6f25804915cf08a"
+      },
+      "payload": {
+        "path": "game_bins/crimsonland/1.8.7/crimsonland.exe",
+        "size": 569344,
+        "sha256": "1653aa8246b6deea9d74d68c1ffcfaaa4df856b06c953f26b047f24f997db6ff",
+        "exe_version_string": "crimsonland v.1.8.7",
+        "version_string_file_offset": "0x753d4",
+        "exe_pe_timestamp": "2003-04-22T21:38:19Z"
+      },
+      "verification": "Embedded Inno Setup 2.0.18 carved at offset 0x34c04; innoextract completed successfully"
+    },
+    {
+      "version": "1.9.0",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-05.exe",
+      "size": 7286801,
+      "sha256": "20cadabedd41c397a636267e35771bd1b38675fb9df691a539b05a3304db084c",
+      "source": "https://discmaster.textfiles.com/file/24086/2003-08_Disc_7.31.bin/Software/Demos/CrimsonlandSetup.exe",
+      "discmaster_url": "https://discmaster.textfiles.com/view/24086/2003-08_Disc_7.31.bin/Software/Demos/CrimsonlandSetup.exe",
+      "disc_title": "PC Gamer 2003 August",
+      "archive_item": "https://archive.org/details/pcgamer-coverdisc-2003-08",
+      "disc_file_date": "2003-05-22",
+      "extracted_directory": "game_bins/crimsonland/1.9.0",
+      "file_count": 60,
+      "extracted_inventory": {
+        "path": "analysis/historical/discmaster-recovery/captures/1.9.0-files.json",
+        "size": 9117,
+        "sha256": "ebff6c0b54d42c2878b868b21b3413dafd26a13dd0e17af31c399d18dab54f9d"
+      },
+      "payload": {
+        "path": "game_bins/crimsonland/1.9.0/crimsonland.exe",
+        "size": 491520,
+        "sha256": "9dea9c456e96221c9a826b9a342e9c852fb83dc0b2a7cd606fda3103486360cd",
+        "exe_version_string": "crimsonland v.1.9.0",
+        "version_string_file_offset": "0x682b0",
+        "exe_pe_timestamp": "2003-05-21T17:37:13Z",
+        "documentation": {
+          "path": "game_bins/crimsonland/1.9.0/whatsupdated.txt",
+          "size": 437,
+          "sha256": "5eedffc28eede6cab653c1e50ab65584cff1b37d7b8ac9e32c328d2da4564de6"
+        },
+        "documentation_header": [
+          "Crimsonland UPDATE to version 1.9.0",
+          "",
+          ""
+        ]
+      },
+      "verification": "Embedded Inno Setup 2.0.18 carved at offset 0x34c04; innoextract completed successfully",
+      "note": "whatsupdated.txt says UPDATE ONLY, but installer contains the complete game tree, including music, graphics, sound assets, and manual."
+    },
+    {
+      "version": "1.9.3",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-08.exe",
+      "size": 7402839,
+      "sha256": "42be27a0e1c12b6570fa7ca0744cd7c0fe44045aa5c14c9104917ad7f4a4d8be",
+      "source": "https://discmaster.textfiles.com/file/542/EJV8_CD1.ISO/ejv8-cd1/data/shoot/Crimsonland/crimsonland.exe",
+      "discmaster_url": "https://discmaster.textfiles.com/view/542/EJV8_CD1.ISO/ejv8-cd1/data/shoot/Crimsonland/crimsonland.exe",
+      "disc_title": "L'Encyclopedie Des Jeux Video 8",
+      "archive_item": "https://archive.org/details/ejv-8",
+      "disc_file_date": "2003-08-04",
+      "extracted_directory": "game_bins/crimsonland/1.9.3",
+      "file_count": 61,
+      "extracted_inventory": {
+        "path": "analysis/historical/discmaster-recovery/captures/1.9.3-files.json",
+        "size": 9260,
+        "sha256": "7d1a715c4d342cf2b932152bbeef919149e8936ffbebca3105ed9edc89609052"
+      },
+      "payload": {
+        "path": "game_bins/crimsonland/1.9.3/crimsonland.exe",
+        "size": 503808,
+        "sha256": "d965d89fb4bdd3b7c4375c3ae437cc8a28ac9ca129ef4198a6120a33c9051a9a",
+        "exe_version_string": "Crimsonland 1.9.3",
+        "version_string_file_offset": "0x6dc8c",
+        "exe_pe_timestamp": "2003-06-30T15:25:04Z",
+        "documentation": {
+          "path": "game_bins/crimsonland/1.9.3/whatsupdated.txt",
+          "size": 259,
+          "sha256": "a0cb7742545d49dd68900c195467774637caa1afd2fdb3a3755fdf2090750170"
+        },
+        "documentation_header": [
+          "Crimsonland version 1.9.3",
+          "",
+          ""
+        ]
+      },
+      "verification": "Embedded Inno Setup 2.0.18 carved at offset 0x34c04; innoextract completed successfully"
+    }
+  ],
+  "additional_packages": [
+    {
+      "version": "1.9.3",
+      "path": "game_bins/crimsonland/historical/discmaster/CrimsonlandSetup-2003-07.exe",
+      "size": 7350144,
+      "sha256": "cda6a7d984be9bc4aa9161d20c69807456fac987eb02de4236987c97d0e0dbd5",
+      "source": "https://discmaster.textfiles.com/file/24107/PC%20Gamer%20Disc%207.33%20%28October%202003%29.ISO/Software/Demos/ReflexiveGames/Crimsonland/CrimsonlandSetup.exe",
+      "disc_title": "PC Gamer 2003 October",
+      "disc_file_date": "2003-07-17",
+      "verification": "Successfully extracted at offset 0x34c04. Game executable is byte-identical to recovered 1.9.3; entire installer/game tree is not identical.",
+      "payload": {
+        "path": "game_bins/crimsonland/historical/discmaster/07-extracted/app/crimsonland.exe",
+        "size": 503808,
+        "sha256": "d965d89fb4bdd3b7c4375c3ae437cc8a28ac9ca129ef4198a6120a33c9051a9a"
+      }
+    }
+  ],
+  "searches": [
+    {
+      "query": "https://discmaster.textfiles.com/search?q=crimsonland&outputAs=json&limit=1000",
+      "result_count": 214,
+      "path": "analysis/historical/discmaster-recovery/captures/crimsonland-search.json",
+      "size": 524599,
+      "sha256": "5207a34a2e2f10dbae327fdb534e25af6c91ff92586e6205914f7fadfd864cf0"
+    },
+    {
+      "query": "https://discmaster.textfiles.com/search?q=cland&outputAs=json&limit=1000",
+      "result_count": 81,
+      "path": "analysis/historical/discmaster-recovery/captures/cland-search.json",
+      "size": 238909,
+      "sha256": "a4bdad22621f14d0b1780b90a4a4c71af2dda4d4ce26ff3da0433200c6fd0262"
+    },
+    {
+      "query": "https://discmaster.textfiles.com/search?q=crimsonlandsetup&outputAs=json&limit=1000",
+      "result_count": 21,
+      "path": "analysis/historical/discmaster-recovery/captures/setup.json",
+      "size": 292843,
+      "sha256": "afad9f221105773ec8b5516b1de204fcc08f877a2feef3c00a1876ac70de2634"
+    },
+    {
+      "query": "https://discmaster.textfiles.com/search?q=cland*&outputAs=json&limit=1000",
+      "result_count": 862,
+      "path": "analysis/historical/discmaster-recovery/captures/cland-prefix.json",
+      "size": 2142520,
+      "sha256": "851fe1392217af041bf705dffbc0bc3f2246c280320bf51abcb8498501454d5d"
+    },
+    {
+      "query": "https://discmaster.textfiles.com/search?q=crimsonland*&outputAs=json&limit=1000",
+      "result_count": 242,
+      "path": "analysis/historical/discmaster-recovery/captures/crimson-prefix.json",
+      "size": 835173,
+      "sha256": "dc4fd2dcb8bedf7db3cfcb56200f7609c42d83e7c083b075260330a494520cdf"
+    }
+  ],
+  "excluded_leads": [
+    {
+      "source": "https://discmaster.textfiles.com/browse/23410/Chip_2002-04_cd1.bin/oddech/cland",
+      "reason": "The contemporary _chip_cd.txt describes C-Land, a colored-block puzzle game by Jaroslav Porplycia; unrelated to Crimsonland.",
+      "evidence": {
+        "path": "analysis/historical/discmaster-recovery/captures/chip-cland.txt",
+        "size": 796,
+        "sha256": "7605d0d2c805dcd485335d3a0882c64037ce6c0ac461036570fb9ac4629f9220"
+      }
+    }
+  ],
+  "remaining_unrecovered": [
+    "1.1.1",
+    "1.1.6",
+    "1.1.7",
+    "1.2.1",
+    "1.2.2",
+    "1.2.4",
+    "1.9.91"
+  ],
+  "limits": "Searches cover DiscMaster indexed filenames, not all preserved discs or all possible aliases. PE timestamps and disc file dates are recorded as evidence, not asserted release dates. Packages were not runtime-tested."
+}
