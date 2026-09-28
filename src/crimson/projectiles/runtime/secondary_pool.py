@@ -34,13 +34,6 @@ from ..types import (
     SecondaryProjectileTypeId,
 )
 from .collision import _apply_damage_to_creature, creature_find_nearest_alive
-from .secondary_rules import (
-    DetonationRule,
-    HomingRocketRule,
-    RocketMinigunRule,
-    RocketRule,
-    secondary_rule_for_type_id,
-)
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -160,7 +153,6 @@ def _step_detonation(
 
 def _move_rocket(
     entry: SecondaryProjectile,
-    rule: RocketRule | HomingRocketRule | RocketMinigunRule,
     *,
     dt: float,
     creatures: Sequence[CreatureState],
@@ -174,31 +166,17 @@ def _move_rocket(
 
     # Update velocity + countdown. `projectile_vec2_length` rounds per PC=24 op.
     speed_mag = x87_pc24_hypot(entry.vel.x, entry.vel.y)
-    match rule:
-        case (
-            RocketRule(
-                accel_factor_scale=accel_factor_scale,
-                speed_cap=speed_cap,
-                ttl_decay_scale=ttl_decay_scale,
-            )
-            | RocketMinigunRule(
-                accel_factor_scale=accel_factor_scale,
-                speed_cap=speed_cap,
-                ttl_decay_scale=ttl_decay_scale,
-            )
-        ):
-            if speed_mag < float(speed_cap):
-                factor = x87_pc24_add(x87_pc24_mul(dt, accel_factor_scale), 1.0)
+    match entry.type_id:
+        case SecondaryProjectileTypeId.ROCKET | SecondaryProjectileTypeId.ROCKET_MINIGUN:
+            rocket = entry.type_id == SecondaryProjectileTypeId.ROCKET
+            if speed_mag < (500.0 if rocket else 600.0):
+                factor = x87_pc24_add(x87_pc24_mul(dt, 3.0 if rocket else 4.0), 1.0)
                 entry.vel = Vec2(
                     float(f32(factor * float(entry.vel.x))),
                     float(f32(factor * float(entry.vel.y))),
                 )
-            entry.speed = x87_pc24_sub(entry.speed, x87_pc24_mul(dt, ttl_decay_scale))
-        case HomingRocketRule(
-            target_accel=target_accel,
-            max_velocity=max_velocity,
-            ttl_decay_scale=ttl_decay_scale,
-        ):
+            entry.speed = x87_pc24_sub(entry.speed, f32(dt))
+        case SecondaryProjectileTypeId.HOMING_ROCKET:
             # Type 2: homing projectile.
             target_id = entry.target_id
             if not (0 <= target_id < len(creatures)) or not creatures[target_id].active:
@@ -233,7 +211,7 @@ def _move_rocket(
                         x87_pc24_cos_mul(
                             heading_ext,
                             dt,
-                            target_accel,
+                            800.0,
                         ),
                     ),
                     x87_pc24_add(
@@ -241,19 +219,19 @@ def _move_rocket(
                         x87_pc24_sin_mul(
                             heading_stored,
                             dt,
-                            target_accel,
+                            800.0,
                         ),
                     ),
                 )
                 speed_after = x87_pc24_hypot(entry.vel.x, entry.vel.y)
-                if speed_after > float(max_velocity):
+                if speed_after > 350.0:
                     entry.vel = Vec2(
                         x87_pc24_sub(
                             entry.vel.x,
                             x87_pc24_cos_mul(
                                 heading_stored,
                                 dt,
-                                target_accel,
+                                800.0,
                             ),
                         ),
                         x87_pc24_sub(
@@ -261,12 +239,12 @@ def _move_rocket(
                             x87_pc24_sin_mul(
                                 heading_stored,
                                 dt,
-                                target_accel,
+                                800.0,
                             ),
                         ),
                     )
 
-            entry.speed = x87_pc24_sub(entry.speed, x87_pc24_mul(dt, ttl_decay_scale))
+            entry.speed = x87_pc24_sub(entry.speed, x87_pc24_mul(dt, 0.5))
 
 
 def _tick_rocket_trail(
@@ -341,48 +319,31 @@ class SecondaryProjectilePool:
         entry.detonation_t = 0.0
         entry.detonation_scale = 1.0
 
-        rule = secondary_rule_for_type_id(type_id)
-        match rule:
-            case DetonationRule():
-                # Detonation uses explicit timer/scale fields now.
+        match type_id:
+            case SecondaryProjectileTypeId.DETONATION:
                 entry.detonation_t = 0.0
                 entry.detonation_scale = float(time_to_live)
                 entry.vel = Vec2(0.0, f32(time_to_live))
                 entry.speed = float(f32(float(time_to_live)))
                 return index
-            case (
-                RocketRule(base_speed=base_speed)
-                | HomingRocketRule(base_speed=base_speed)
-                | RocketMinigunRule(
-                    base_speed=base_speed,
-                )
-            ):
+            case SecondaryProjectileTypeId.HOMING_ROCKET:
                 radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
-                if isinstance(rule, HomingRocketRule):
-                    # Native stores each trig result as float32 before the
-                    # seeker-specific 190x velocity override.
-                    entry.vel = Vec2(
-                        x87_pc24_cos_mul(radians, 1.0, float(base_speed)),
-                        x87_pc24_sin_mul(radians, 1.0, float(base_speed)),
-                    )
-                else:
-                    entry.vel = Vec2(
-                        x87_pc24_cos_mul(radians, float(base_speed)),
-                        x87_pc24_sin_mul(radians, float(base_speed)),
-                    )
+                # Native stores each trig result as float32 before the seeker's 190x velocity override.
+                entry.vel = Vec2(x87_pc24_cos_mul(radians, 1.0, 190.0), x87_pc24_sin_mul(radians, 1.0, 190.0))
                 entry.speed = float(f32(float(time_to_live)))
-
-        if isinstance(rule, HomingRocketRule):
-            # Native `fx_spawn_secondary_projectile` seeds seeker target_id at spawn via
-            # `creature_find_nearest(&player_aim_x, -1, 0.0)`.
-            entry.target_id = -1
-            if creatures is not None:
-                origin = target_hint if target_hint is not None else pos
-                entry.target_id = creature_find_nearest_alive(
-                    creatures=creatures,
-                    origin=origin,
-                    preserve_bugs=preserve_bugs,
-                )
+                # Native `fx_spawn_secondary_projectile` seeds the seeker target with
+                # `creature_find_nearest(&player_aim_x, -1, 0.0)`.
+                entry.target_id = -1
+                if creatures is not None:
+                    entry.target_id = creature_find_nearest_alive(
+                        creatures=creatures,
+                        origin=target_hint if target_hint is not None else pos,
+                        preserve_bugs=preserve_bugs,
+                    )
+            case _:
+                radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
+                entry.vel = Vec2(x87_pc24_cos_mul(radians, 90.0), x87_pc24_sin_mul(radians, 90.0))
+                entry.speed = float(f32(float(time_to_live)))
 
         return index
 
@@ -429,16 +390,12 @@ class SecondaryProjectilePool:
             if not entry.active:
                 continue
 
-            rule = secondary_rule_for_type_id(SecondaryProjectileTypeId(entry.type_id))
-
-            if isinstance(rule, DetonationRule):
+            type_id = entry.type_id
+            if type_id == SecondaryProjectileTypeId.DETONATION:
                 _step_detonation(entry, ctx, dt=dt, creature_spatial=creature_spatial, rng=rng)
                 continue
 
-            if not isinstance(rule, (RocketRule, HomingRocketRule, RocketMinigunRule)):
-                continue
-
-            _move_rocket(entry, rule, dt=dt, creatures=creatures, runtime_state=runtime_state)
+            _move_rocket(entry, dt=dt, creatures=creatures, runtime_state=runtime_state)
 
             _tick_rocket_trail(entry, dt=dt, sprite_effects=sprite_effects, rng=rng)
 
@@ -466,62 +423,6 @@ class SecondaryProjectilePool:
                     shots_hit[owner_player_index] += 1
 
                 step_runtime.play_secondary_rocket_hit_audio(entry.pos)
-
-                det_scale = 0.5
-                damage_speed_mul = 0.0
-                damage_base = 150.0
-                burst_scale: float | None = None
-                burst_min_detail = 0
-                extra_decals = 0
-                extra_radius = 0.0
-                freeze_shard_target_pos = False
-                match rule:
-                    case RocketRule(
-                        detonation_scale=detonation_scale,
-                        damage_speed_mul=rule_damage_speed_mul,
-                        damage_base=rule_damage_base,
-                        burst_scale=rule_burst_scale,
-                        burst_min_detail=rule_burst_min_detail,
-                        extra_decals=rule_extra_decals,
-                        extra_radius=rule_extra_radius,
-                        freeze_shard_target_pos=rule_freeze_shard_target_pos,
-                    ):
-                        det_scale = float(detonation_scale)
-                        damage_speed_mul = float(rule_damage_speed_mul)
-                        damage_base = float(rule_damage_base)
-                        burst_scale = None if rule_burst_scale is None else float(rule_burst_scale)
-                        burst_min_detail = int(rule_burst_min_detail)
-                        extra_decals = int(rule_extra_decals)
-                        extra_radius = float(rule_extra_radius)
-                        freeze_shard_target_pos = bool(rule_freeze_shard_target_pos)
-                    case HomingRocketRule(
-                        detonation_scale=detonation_scale,
-                        damage_speed_mul=rule_damage_speed_mul,
-                        damage_base=rule_damage_base,
-                        extra_decals=rule_extra_decals,
-                        extra_radius=rule_extra_radius,
-                        freeze_shard_target_pos=rule_freeze_shard_target_pos,
-                    ):
-                        det_scale = float(detonation_scale)
-                        damage_speed_mul = float(rule_damage_speed_mul)
-                        damage_base = float(rule_damage_base)
-                        extra_decals = int(rule_extra_decals)
-                        extra_radius = float(rule_extra_radius)
-                        freeze_shard_target_pos = bool(rule_freeze_shard_target_pos)
-                    case RocketMinigunRule(
-                        detonation_scale=detonation_scale,
-                        damage_speed_mul=rule_damage_speed_mul,
-                        damage_base=rule_damage_base,
-                        extra_decals=rule_extra_decals,
-                        extra_radius=rule_extra_radius,
-                        freeze_shard_target_pos=rule_freeze_shard_target_pos,
-                    ):
-                        det_scale = float(detonation_scale)
-                        damage_speed_mul = float(rule_damage_speed_mul)
-                        damage_base = float(rule_damage_base)
-                        extra_decals = int(rule_extra_decals)
-                        extra_radius = float(rule_extra_radius)
-                        freeze_shard_target_pos = bool(rule_freeze_shard_target_pos)
 
                 if freeze_active:
                     for _ in range(4):
@@ -551,20 +452,18 @@ class SecondaryProjectilePool:
                             rng=rng,
                         )
 
-                if burst_scale is not None and int(detail_preset) > int(burst_min_detail):
-                    effects.spawn_explosion_burst(
-                        pos=entry.pos,
-                        scale=float(burst_scale),
-                        rng=rng,
-                        detail_preset=int(detail_preset),
-                    )
+                match type_id:
+                    case SecondaryProjectileTypeId.ROCKET:
+                        damage = x87_pc24_add(x87_pc24_mul(entry.speed, 50.0), 500.0)
+                        if detail_preset >= 3:
+                            effects.spawn_explosion_burst(pos=entry.pos, scale=0.4, rng=rng, detail_preset=detail_preset)
+                    case SecondaryProjectileTypeId.HOMING_ROCKET:
+                        damage = x87_pc24_add(x87_pc24_mul(entry.speed, 20.0), 80.0)
+                    case SecondaryProjectileTypeId.ROCKET_MINIGUN:
+                        damage = x87_pc24_add(x87_pc24_mul(entry.speed, 20.0), 40.0)
+                    case _:
+                        damage = 150.0
 
-                # Native `projectile_update` applies hit visuals before
-                # `creature_apply_damage` for secondary projectiles.
-                damage = x87_pc24_add(
-                    x87_pc24_mul(entry.speed, float(damage_speed_mul)),
-                    float(damage_base),
-                )
                 inv_dt = f32(1.0 / float(dt))
                 impulse = Vec2(
                     x87_pc24_mul(inv_dt, entry.vel.x),
@@ -578,54 +477,46 @@ class SecondaryProjectilePool:
                 )
                 creature_spatial.sync_index(int(hit_idx))
 
+                # Each rocket type detonates at its own scale, with freeze shards or scorch decals.
+                center = creatures[hit_idx].pos
+                match type_id:
+                    case SecondaryProjectileTypeId.ROCKET:
+                        det_scale, shard_pos, decal_count = 1.0, entry.pos, 20
+                        shard_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_FREEZE_SHARD_ANGLE
+                        angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE
+                        radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS
+                        radius_mod = 90
+                    case SecondaryProjectileTypeId.HOMING_ROCKET:
+                        det_scale, shard_pos, decal_count = 0.35, entry.pos, 10
+                        shard_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE
+                        angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE
+                        radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS
+                        radius_mod = 64
+                    case SecondaryProjectileTypeId.ROCKET_MINIGUN:
+                        det_scale, shard_pos, decal_count = 0.25, center, 3
+                        shard_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_FREEZE_SHARD_ANGLE
+                        angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE
+                        radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS
+                        radius_mod = 44
+                    case _:
+                        det_scale, shard_pos, decal_count = 0.5, entry.pos, 0
+                        shard_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_FREEZE_SHARD_ANGLE
+                        angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE
+                        radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS
+                        radius_mod = 1
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel = Vec2(0.0, f32(det_scale))
                 entry.detonation_t = 0.0
                 entry.detonation_scale = f32(det_scale)
-
-                # Extra debris/scorch decals (or freeze shards) on detonation.
                 if freeze_active:
-                    shard_pos = entry.pos
-                    freeze_angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_FREEZE_SHARD_ANGLE
-                    if isinstance(rule, HomingRocketRule):
-                        freeze_angle_caller = (
-                            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_FREEZE_SHARD_ANGLE
-                        )
-                    elif isinstance(rule, RocketMinigunRule):
-                        freeze_angle_caller = (
-                            RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_FREEZE_SHARD_ANGLE
-                        )
-                    if freeze_shard_target_pos:
-                        shard_pos = creatures[hit_idx].pos
                     for _ in range(8):
-                        shard_angle = float(rng.rand_tagged(freeze_angle_caller) % 612) * 0.01
-                        effects.spawn_freeze_shard(
-                            pos=shard_pos,
-                            angle=shard_angle,
-                            rng=rng,
-                            detail_preset=int(detail_preset),
-                        )
+                        shard_angle = float(rng.rand_tagged(shard_caller) % 612) * 0.01
+                        effects.spawn_freeze_shard(pos=shard_pos, angle=shard_angle, rng=rng, detail_preset=detail_preset)
                 else:
-                    if extra_decals > 0:
-                        center = creatures[hit_idx].pos
-                        angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_ANGLE
-                        radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_DECAL_RADIUS
-                        if isinstance(rule, HomingRocketRule):
-                            angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_ANGLE
-                            radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_SEEKER_ROCKET_DECAL_RADIUS
-                        elif isinstance(rule, RocketMinigunRule):
-                            angle_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE
-                            radius_caller = RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_RADIUS
-                        for _ in range(int(extra_decals)):
-                            angle = float(rng.rand_tagged(angle_caller) % 628) * 0.01
-                            if isinstance(rule, HomingRocketRule):
-                                radius = float(rng.rand_tagged(radius_caller) & 0x3F)
-                            else:
-                                radius = float(rng.rand_tagged(radius_caller) % max(1, int(extra_radius)))
-                            fx_queue.add_random(
-                                pos=center + Vec2.from_angle(angle) * radius,
-                                rng=rng,
-                            )
+                    for _ in range(decal_count):
+                        angle = float(rng.rand_tagged(angle_caller) % 628) * 0.01
+                        radius = float(rng.rand_tagged(radius_caller) % radius_mod)
+                        fx_queue.add_random(pos=center + Vec2.from_angle(angle) * radius, rng=rng)
 
                 step = math.tau / 10.0
                 for idx in range(10):
