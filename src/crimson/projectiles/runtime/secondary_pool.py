@@ -422,8 +422,6 @@ class SecondaryProjectilePool:
                     shots_hit = runtime_state.shots_hit
                     shots_hit[owner_player_index] += 1
 
-                step_runtime.play_secondary_rocket_hit_audio(entry.pos)
-
                 if freeze_active:
                     for _ in range(4):
                         shard_angle = (
@@ -463,6 +461,8 @@ class SecondaryProjectilePool:
                         damage = x87_pc24_add(x87_pc24_mul(entry.speed, 20.0), 40.0)
                     case _:
                         damage = 150.0
+
+                step_runtime.play_secondary_rocket_hit_audio(entry.pos)
 
                 inv_dt = f32(1.0 / float(dt))
                 impulse = Vec2(

@@ -763,3 +763,29 @@ def test_secondary_homing_rocket_hit_tags_exact_freeze_callers() -> None:
         * 8
         + [RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_DETONATION_SPRITE_MAG] * 10
     )
+
+
+def test_first_rocket_hit_picks_the_game_tune_after_the_pre_hit_decals() -> None:
+    pool = SecondaryProjectilePool()
+    world = _world_with([_creature(pos=Vec2(0.0, -9.0), hp=1000.0)])
+    rng = _recording_rng(world)
+    step_runtime = make_step_runtime(world)
+    world.state.game_tune_started = False
+    pool.spawn_from_spec(
+        SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET_MINIGUN, time_to_live=2.0),
+    )
+
+    pool.step(SecondaryStepCtx(step_runtime=step_runtime, dt=0.1))
+
+    assert step_runtime.trigger_game_tune
+    assert world.state.game_tune_started
+    allowed = {
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
+        RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
+    }
+    assert _secondary_callers(rng, allowed)[:3] == [
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_DECAL_DY_3,
+        RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK,
+        RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_ROCKET_MINIGUN_DECAL_ANGLE,
+    ]

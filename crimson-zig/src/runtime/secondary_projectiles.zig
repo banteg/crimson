@@ -343,16 +343,6 @@ pub const SecondaryProjectilePool = struct {
                     }
                 }
 
-                // Native plays the hit audio first: the first hit outside rush
-                // picks the game tune (one playlist draw) before the hit
-                // decals and lethal damage consume the RNG.
-                if (state.game_mode != .rush and !state.game_tune_started) {
-                    state.game_tune_started = true;
-                    _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
-                } else {
-                    state.hit_sfx.append(.explosion_medium);
-                }
-
                 // Native preserves the incoming type in a local before the
                 // entry becomes a detonation and uses it for every post-hit
                 // type-specific branch.
@@ -397,6 +387,15 @@ pub const SecondaryProjectilePool = struct {
                     SecondaryProjectileTypeId.rocket_minigun => narrowF32(entry.speed * 20.0 + 40.0),
                     else => 150.0,
                 };
+                // Native plays the hit audio after the pre-hit decals and the
+                // damage switch: the first hit outside rush picks the game
+                // tune (one playlist draw), otherwise the explosion sound.
+                if (state.game_mode != .rush and !state.game_tune_started) {
+                    state.game_tune_started = true;
+                    _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
+                } else {
+                    state.hit_sfx.append(.explosion_medium);
+                }
                 const inv_dt = narrowF32(1.0 / @as(f64, dt_f32));
                 _ = creatures.applyDamage(
                     state,
@@ -582,7 +581,7 @@ test "homing rocket spawn preserves native trig store order" {
     try std.testing.expectEqual(@as(f32, 99.52806091308594), pool.entries[index].vel.y);
 }
 
-test "secondary rocket hit consumes tune draw before lethal damage rng" {
+test "secondary rocket hit picks the tune after the pre-hit decals and before lethal damage" {
     const HitTrace = struct {
         const Self = @This();
 
@@ -641,11 +640,15 @@ test "secondary rocket hit consumes tune draw before lethal damage rng" {
     );
 
     var tune_index: ?usize = null;
+    var last_decal_index: ?usize = null;
     var death_index: ?usize = null;
     for (trace.draws[0..@min(trace.count, trace.draws.len)], 0..) |draw, idx| {
         const caller = draw.caller orelse continue;
         if (caller == rng_callers.sfx_play_exclusive_playlist_pick and tune_index == null) {
             tune_index = idx;
+        }
+        if (caller == rng_callers.secondary_projectile_update_pre_hit_decal_dy_3 and last_decal_index == null) {
+            last_decal_index = idx;
         }
         if (caller == rng_callers.creature_apply_damage_death_sfx and death_index == null) {
             death_index = idx;
@@ -654,6 +657,8 @@ test "secondary rocket hit consumes tune draw before lethal damage rng" {
 
     try std.testing.expect(tune_index != null);
     try std.testing.expect(death_index != null);
+    try std.testing.expect(last_decal_index != null);
+    try std.testing.expect(last_decal_index.? < tune_index.?);
     try std.testing.expect(tune_index.? < death_index.?);
     try std.testing.expect(state.game_tune_started);
     try std.testing.expect(!state.rng.consumeMissingTraceCaller());
