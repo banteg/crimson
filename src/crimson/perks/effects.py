@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..creatures.runtime import creature_find_in_radius
+from ..collision_math import creature_find_in_radius
 from ..effects import FxQueue
 from ..gameplay import experience_plus_reward
 from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub

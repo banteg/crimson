@@ -9,6 +9,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_types import SfxRequest
 
+from ...collision_math import within_native_find_radius
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import EffectPool
@@ -34,7 +35,6 @@ from ..types import (
 )
 from .collision import (
     _apply_damage_to_creature,
-    _within_native_find_radius,
     creature_find_nearest_active,
 )
 
@@ -99,7 +99,7 @@ def _linger_ion_aoe(
         if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         # Native uses the strict sqrt-form predicate from creature_find_in_radius.
-        if _within_native_find_radius(
+        if within_native_find_radius(
             origin=proj.pos,
             target=creature.pos,
             radius=float(radius),

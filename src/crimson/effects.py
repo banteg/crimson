@@ -11,9 +11,9 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, CrandLike
 
+from .collision_math import creature_find_in_radius
 from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
-from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import (
     NATIVE_PI,
@@ -213,33 +213,6 @@ class ParticlePool:
         sprite_effects = step_runtime.world.state.sprite_effects
         rng = step_runtime.world.state.rng
 
-        def _creature_find_in_radius(*, pos: Vec2, radius: float) -> int:
-            max_index = min(len(creatures), 0x180)
-            radius = f32(float(radius))
-
-            for creature_idx in range(max_index):
-                creature = creatures[creature_idx]
-                if not creature.active:
-                    continue
-                # Native particle `creature_find_in_radius` is lifecycle-gated,
-                # not HP-gated: freshly killed creatures (hp<=0, stage>5) can still
-                # receive same-tick style-0 damage callbacks.
-                if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
-                    continue
-
-                size = f32(float(creature.size))
-                dx = f32(float(creature.pos.x) - float(pos.x))
-                dy = f32(float(creature.pos.y) - float(pos.y))
-                dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
-                dist = f32(f32(math.sqrt(float(dist_sq))) - float(radius))
-                threshold = f32(f32(float(size) * 0.14285715) + 3.0)
-                # Native acceptance is strict (`dist < threshold`); reject equality.
-                if float(threshold) <= float(dist):
-                    continue
-                return int(creature_idx)
-
-            return -1
-
         expired: list[int] = []
 
         for idx, entry in enumerate(self._entries):
@@ -303,7 +276,9 @@ class ParticlePool:
             # Native only updates scale_x/scale_y; scale_z stays at its spawn value (1.0).
 
             if entry.render_flag:
-                hit_idx = _creature_find_in_radius(pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0)
+                hit_idx = creature_find_in_radius(
+                    creatures, pos=entry.pos, radius=max(float(entry.intensity), 0.0) * 8.0, start_index=0,
+                )
                 if hit_idx != -1:
                     entry.render_flag = False
                     creature = creatures[hit_idx]

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 
-from ...collision_math import native_find_size_margin, within_native_find_radius
+from ...collision_math import native_find_size_margin
 from ...creatures.damage import creature_apply_damage
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
@@ -14,30 +14,6 @@ from ...owner_ref import OwnerRef
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
     from ...sim.world_state import WorldStepRuntime
-
-def _hit_radius_for(creature: CreatureState) -> float:
-    """Return the native size term used by the radius predicates.
-
-    The native code compares `distance - radius < creature.size * 0.14285715 + 3.0`.
-    """
-
-    return native_find_size_margin(float(creature.size))
-
-
-def _within_native_find_radius(*, origin: Vec2, target: Vec2, radius: float, target_size: float) -> bool:
-    """Mirror native `creature_find_in_radius` / `player_find_in_radius` predicate.
-
-    Native uses:
-      sqrt(dx*dx + dy*dy) - radius < size * 0.14285715 + 3.0
-    """
-
-    return within_native_find_radius(
-        origin=origin,
-        target=target,
-        radius=radius,
-        target_size=target_size,
-    )
-
 
 def creature_find_nearest_alive(
     *,
@@ -112,8 +88,6 @@ def _apply_damage_to_creature(
 
 __all__ = [
     "_apply_damage_to_creature",
-    "_hit_radius_for",
-    "_within_native_find_radius",
     "creature_find_nearest_active",
     "creature_find_nearest_alive",
     "native_find_size_margin",

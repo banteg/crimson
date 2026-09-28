@@ -20,7 +20,6 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses import BonusId
 from ..bonuses.pool import BONUS_SPAWN_MARGIN
-from ..collision_math import within_native_find_radius
 from ..effects import EffectPool, FxQueue, FxQueueRotated
 from ..gameplay import (
     experience_plus_reward,
@@ -59,7 +58,6 @@ from .lifecycle import (
     CreatureLifecyclePhase,
     classify_creature_lifecycle,
     creature_lifecycle_is_alive,
-    creature_lifecycle_is_collidable,
 )
 from .spawn import (
     HAS_SPAWN_SLOT_FLAG,
@@ -308,21 +306,6 @@ class CreatureState(msgspec.Struct):
     @ranged_projectile_type.setter
     def ranged_projectile_type(self, projectile_type: int) -> None:
         self.orbit_radius = f32_from_bits(projectile_type)
-
-
-def creature_find_in_radius(creatures: Sequence[CreatureState], *, pos: Vec2, radius: float, start_index: int) -> int:
-    """Port of `creature_find_in_radius` (0x004206a0): the first collidable creature touching the circle."""
-
-    for idx in range(start_index, min(len(creatures), CREATURE_POOL_SIZE)):
-        creature = creatures[idx]
-        if not creature.active:
-            continue
-        if not within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
-            continue
-        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
-            continue
-        return idx
-    return -1
 
 
 class CreatureDeath(msgspec.Struct, frozen=True):

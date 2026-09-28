@@ -10,6 +10,7 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 
+from ...collision_math import within_native_find_radius
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import SpriteEffectPool
@@ -32,7 +33,7 @@ from ..types import (
     SecondaryProjectile,
     SecondaryProjectileTypeId,
 )
-from .collision import _apply_damage_to_creature, _within_native_find_radius, creature_find_nearest_alive
+from .collision import _apply_damage_to_creature, creature_find_nearest_alive
 from .secondary_rules import (
     DetonationRule,
     HomingRocketRule,
@@ -447,7 +448,7 @@ class SecondaryProjectilePool:
                 creature = creatures[int(idx)]
                 if not _creature_is_collidable(creature):
                     continue
-                if _within_native_find_radius(
+                if within_native_find_radius(
                     origin=entry.pos,
                     target=creature.pos,
                     radius=8.0,

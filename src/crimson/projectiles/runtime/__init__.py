@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from .collision import _within_native_find_radius
 from .primary_rules import PRIMARY_PROJECTILE_RULE_BY_TYPE_ID, PrimaryProjectileRule, primary_rule_for_type_id
 from .projectile_pool import (
     PrimaryStepCtx,
@@ -19,7 +18,6 @@ __all__ = [
     "SecondaryProjectilePool",
     "SecondarySpawnSpec",
     "SecondaryStepCtx",
-    "_within_native_find_radius",
     "primary_rule_for_type_id",
     "projectile_collision_profile",
     "secondary_rule_for_type_id",

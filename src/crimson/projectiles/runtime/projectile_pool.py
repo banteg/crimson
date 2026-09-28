@@ -7,6 +7,7 @@ import msgspec
 
 from grim.geom import Vec2
 
+from ...collision_math import within_native_find_radius
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
@@ -36,7 +37,7 @@ from .behaviors import (
     _ProjectileHitInfo,
     _ProjectileUpdateCtx,
 )
-from .collision import _apply_damage_to_creature, _within_native_find_radius
+from .collision import _apply_damage_to_creature
 from .primary_rules import primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
@@ -297,7 +298,7 @@ class ProjectilePool:
                         creature = creatures[idx]
                         if not _creature_is_collidable(creature):
                             continue
-                        if _within_native_find_radius(
+                        if within_native_find_radius(
                             origin=proj.pos,
                             target=creature.pos,
                             radius=float(proj.hit_radius),
@@ -332,7 +333,7 @@ class ProjectilePool:
                                     continue
                                 if float(player.health) <= 0.0:
                                     continue
-                                if _within_native_find_radius(
+                                if within_native_find_radius(
                                     origin=proj.pos,
                                     target=player.pos,
                                     radius=float(proj.hit_radius),

@@ -6,7 +6,7 @@ from typing import Any
 from syrupy import SnapshotAssertion
 
 import crimson.projectiles.runtime.projectile_pool as projectile_pool_runtime
-from crimson.collision_math import native_find_size_margin
+from crimson.collision_math import native_find_size_margin, within_native_find_radius
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_sub
@@ -19,7 +19,6 @@ from crimson.projectiles.runtime import (
     SecondaryStepCtx,
     projectile_collision_profile,
 )
-from crimson.projectiles.runtime.collision import _within_native_find_radius
 from crimson.projectiles.types import (
     ProjectileCollisionProfile,
     ProjectileHit,
@@ -213,7 +212,7 @@ def test_within_native_find_radius_uses_strict_boundary() -> None:
     threshold = radius + native_find_size_margin(target_size)
 
     assert (
-        _within_native_find_radius(
+        within_native_find_radius(
             origin=origin,
             target=Vec2(threshold - 0.0001, 0.0),
             radius=radius,
@@ -222,7 +221,7 @@ def test_within_native_find_radius_uses_strict_boundary() -> None:
         is True
     )
     assert (
-        _within_native_find_radius(
+        within_native_find_radius(
             origin=origin,
             target=Vec2(threshold + 0.0006, 0.0),
             radius=radius,
@@ -237,7 +236,7 @@ def test_within_native_find_radius_keeps_x87_pc24_boundary_decisions() -> None:
 
     # Host-double evaluation accepts this point, but the native PC=24
     # distance-minus-radius equals the size margin and the comparison is strict.
-    assert not _within_native_find_radius(
+    assert not within_native_find_radius(
         origin=origin,
         target=Vec2(-9.429215431213379, -91.945556640625),
         radius=66.75615692138672,
@@ -246,7 +245,7 @@ def test_within_native_find_radius_keeps_x87_pc24_boundary_decisions() -> None:
 
     # Rounding each x87 operation also admits points that a single host-double
     # expression puts just outside the boundary.
-    assert _within_native_find_radius(
+    assert within_native_find_radius(
         origin=origin,
         target=Vec2(-18.60686492919922, 56.534645080566406),
         radius=36.1519889831543,
