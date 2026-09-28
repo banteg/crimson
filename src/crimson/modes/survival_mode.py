@@ -21,7 +21,7 @@ from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
-from ..sim.sessions import DeterministicSession, DeterministicSessionTick
+from ..sim.sessions import DeterministicSessionTick
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS
@@ -54,8 +54,6 @@ class SurvivalMode(BaseGameplayMode):
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.SURVIVAL,
-            quest_fail_retry_count=0,
-            hardcore=False,
             config=config,
             console=console,
             audio=audio,
@@ -67,7 +65,6 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
-        self._sim_session: DeterministicSession | None = None
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return self._session_elapsed_ms()

@@ -84,8 +84,6 @@ class BaseGameplayMode:
         ctx: ViewContext,
         *,
         default_game_mode_id: GameMode,
-        quest_fail_retry_count: int = 0,
-        hardcore: bool = False,
         config: CrimsonConfig,
         console: ConsoleState | None = None,
         audio: AudioState | None = None,
@@ -114,13 +112,14 @@ class BaseGameplayMode:
         )
 
         self.assets_dir = ctx.assets_dir
+        # The next run's flags; the run spec carries them into the gameplay state.
+        self.hardcore = False
+        self.quest_fail_retry_count = 0
         self.audio = audio
         self.audio_rng = audio_rng
         self.rtx_mode = RtxRenderMode.CLASSIC
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
-            quest_fail_retry_count=int(quest_fail_retry_count),
-            hardcore=bool(hardcore),
             preserve_bugs=bool(ctx.preserve_bugs),
             config=self.config,
             audio=self.audio,
@@ -173,23 +172,6 @@ class BaseGameplayMode:
     @camera.setter
     def camera(self, value: Vec2) -> None:
         self._world_runtime.camera = value
-
-    # Run flags live on the world runtime, which applies them at every reset.
-    @property
-    def quest_fail_retry_count(self) -> int:
-        return self._world_runtime.quest_fail_retry_count
-
-    @quest_fail_retry_count.setter
-    def quest_fail_retry_count(self, value: int) -> None:
-        self._world_runtime.quest_fail_retry_count = int(value)
-
-    @property
-    def hardcore(self) -> bool:
-        return self._world_runtime.hardcore
-
-    @hardcore.setter
-    def hardcore(self, value: bool) -> None:
-        self._world_runtime.hardcore = bool(value)
 
     @property
     def preserve_bugs(self) -> bool:

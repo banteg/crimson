@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.game_modes import GameMode
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.input import PlayerInput
+from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.session_builders import build_quest_session
-from crimson.sim.sessions import IllegalCommandError
+from crimson.sim.sessions import DeterministicSession, IllegalCommandError
 from crimson.world import audio_bridge
 from crimson.world.audio_bridge import AudioBridge
 from grim.audio import AudioState
@@ -74,14 +75,11 @@ def test_quest_audio_requests_survive_render_partitions(
     expected_music,
     ticks_per_frame,
 ) -> None:
-    session, spawn = build_quest_session(
-        world=make_world(),
-        apply_world_dt_steps=True,
-        spawn_entries=(),
-        quest_level=None,
-        start_weapon_id=None,
+    world = make_world()
+    world.state.game_mode = GameMode.QUESTS
+    session = DeterministicSession(
+        world=world, perk_progression_enabled=True, mode_state=QuestSpawnState(completion_transition_ms=start_ms),
     )
-    spawn.completion_transition_ms = start_ms
     outputs = [
         session.step_tick(dt=1 / 60, inputs=(PlayerInput(),)).presentation
         for tick_count in ticks_per_frame

@@ -306,8 +306,6 @@ class ReplayPlaybackMode:
         self._register_replay_audio_commands()
         self._load_game_tune_queue()
 
-        quest_fail_retry_count = int(replay.run.quest_fail_retry_count)
-        hardcore = bool(replay.run.hardcore)
         preserve_bugs = bool(replay.run.preserve_bugs)
         rtx_mode = mode_from_rtx_flag(self._rtx)
         replay_config = msgspec.structs.replace(
@@ -320,8 +318,6 @@ class ReplayPlaybackMode:
 
         runtime = WorldRuntime(
             assets_dir=self._ctx.assets_dir,
-            quest_fail_retry_count=int(quest_fail_retry_count),
-            hardcore=bool(hardcore),
             preserve_bugs=bool(preserve_bugs),
             config=replay_config,
             audio=self._audio,

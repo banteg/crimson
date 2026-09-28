@@ -11,16 +11,13 @@ from ..quests.runtime import build_quest_spawn_table
 from ..quests.status import tracked_quest_games_counter_index
 from ..quests.types import QuestContext, QuestDefinition, SpawnEntry
 from ..rng_caller_static import RngCallerStatic
+from ..tutorial import reset_tutorial_state
+from ..typo.state import reset_typo_state
+from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
 from .bootstrap import TerrainSetup, advance_explicit_terrain, advance_gameplay_reset_rng, advance_unlock_terrain
+from .mode_updates import ModeState, QuestSpawnState, RushSpawnState, SurvivalSpawnState
 from .run_spec import RunSpec
-from .session_builders import (
-    build_quest_session,
-    build_rush_session,
-    build_survival_session,
-    build_tutorial_session,
-    build_typo_session,
-)
 from .sessions import DeterministicSession
 from .world_reset import CreatureSlotResidue, apply_creature_pool_residue, reset_world_players
 from .world_state import WorldState
@@ -77,14 +74,14 @@ def initialize_run(
     terrain = advance_unlock_terrain(
         world.state.rng, unlock_index=spec.status.quest_unlock_index,
     )
+    world.state.game_mode = spec.game_mode_id
     highscore_tag = 0
+    mode_state: ModeState = None
     match spec.game_mode_id:
         case GameMode.SURVIVAL:
-            session, _ = build_survival_session(
-                world=world, apply_world_dt_steps=apply_world_dt_steps,
-            )
+            mode_state = SurvivalSpawnState()
         case GameMode.RUSH:
-            session, _ = build_rush_session(world=world)
+            mode_state = RushSpawnState()
         case GameMode.QUESTS:
             assert quest is not None
             # Native burns the score tag between generic and quest terrain setup.
@@ -95,24 +92,35 @@ def initialize_run(
             generated_entries = build_quest_spawn_table(
                 quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore, rng=world.state.rng),
             )
-            session, _ = build_quest_session(
-                world=world, apply_world_dt_steps=apply_world_dt_steps,
-                quest_level=quest.level,
-                start_weapon_id=quest.start_weapon_id if start_weapon_id is None else start_weapon_id,
-                spawn_entries=generated_entries if spawn_entries is None else spawn_entries,
-            )
+            world.state.quest_level = quest.level
+            weapon_id = quest.start_weapon_id if start_weapon_id is None else start_weapon_id
+            if weapon_id == WeaponId.NONE:
+                weapon_id = WeaponId.PISTOL
+            for player in world.players:
+                weapon_assign_player(player, weapon_id, state=world.state)
+            mode_state = QuestSpawnState(spawn_entries=generated_entries if spawn_entries is None else spawn_entries)
             index = tracked_quest_games_counter_index(quest.level)
             if index is not None:
                 world.state.status.increment_quest_play_count(index)
         case GameMode.TYPO:
-            session = build_typo_session(
-                world=world,
-                dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
+            reset_typo_state(
+                world.state.typo,
+                creature_capacity=len(world.creatures.entries),
+                dictionary_words=spec.typo_dictionary_words,
+                highscore_names=spec.typo_highscore_names,
             )
         case GameMode.TUTORIAL:
-            session = build_tutorial_session(world=world)
+            weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
+            reset_tutorial_state(world.state.tutorial, world.state.tutorial_overlay)
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")
+    session = DeterministicSession(
+        world=world,
+        # `gameplay_update_and_render` levels up outside Rush; Typ-o runs its own frame.
+        perk_progression_enabled=spec.game_mode_id not in (GameMode.RUSH, GameMode.TYPO),
+        apply_world_dt_steps=apply_world_dt_steps,
+        mode_state=mode_state,
+    )
     # Run setup happens inside a frame; `game_frame_update` ends it with its discarded draw.
     world.state.rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
     return PreparedRun(session=session, terrain=terrain, quest=quest, quest_highscore_random_tag=highscore_tag)

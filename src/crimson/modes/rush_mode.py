@@ -14,8 +14,6 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..replay import Replay, ReplayRecorder
-from ..sim.mode_updates import RushSpawnState
-from ..sim.sessions import DeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from .base_gameplay_mode import (
@@ -40,25 +38,18 @@ class RushMode(BaseGameplayMode):
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.RUSH,
-            quest_fail_retry_count=0,
-            hardcore=False,
             config=config,
             console=console,
             audio=audio,
             audio_rng=audio_rng,
         )
         self._replay_recorder: ReplayRecorder | None = None
-        self._spawn_state = RushSpawnState()
-        self._sim_session: DeterministicSession | None = None
 
     def open(self) -> None:
         super().open()
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.RUSH)
         self._sim_session = prepared.session
-        spawn_state = prepared.session.mode_state
-        assert isinstance(spawn_state, RushSpawnState)
-        self._spawn_state = spawn_state
 
     def close(self) -> None:
         self._sim_session = None

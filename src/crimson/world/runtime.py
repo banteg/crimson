@@ -32,8 +32,6 @@ class WorldRuntime:
         self,
         *,
         assets_dir: Path,
-        quest_fail_retry_count: int = 0,
-        hardcore: bool = False,
         preserve_bugs: bool = False,
         config: CrimsonConfig | None = None,
         audio_rng: CrandLike,
@@ -41,8 +39,6 @@ class WorldRuntime:
         rtx_mode: RtxRenderMode = RtxRenderMode.CLASSIC,
     ) -> None:
         self.assets_dir = Path(assets_dir)
-        self.quest_fail_retry_count = int(quest_fail_retry_count)
-        self.hardcore = bool(hardcore)
         self.preserve_bugs = bool(preserve_bugs)
         self.config = config
         self.audio = audio
@@ -100,8 +96,6 @@ class WorldRuntime:
         self.world = build_reset_world(
             seed=seed,
             player_count=player_count,
-            hardcore=self.hardcore,
-            quest_fail_retry_count=self.quest_fail_retry_count,
             preserve_bugs=self.preserve_bugs,
         )
         self.presentation_elapsed_ms = 0.0

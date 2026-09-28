@@ -202,7 +202,7 @@ The Rush distinction matters when a time transform is active; with no transform,
 raw and simulation cadence coincide. This is a source-level difference, not a
 claim that normal Rush play can acquire every slow-motion state.
 
-Python's `build_typo_session` sets `perk_progression_enabled=False`, and
+Python's `initialize_run` sets `perk_progression_enabled=False` for Typ-o, and
 `typo_post_step` clears the timer/latch and bonus pool. It uses the unified
 `_session_timing` and `WorldState.step`, so the residual native branch is not
 reproduced literally for artificially introduced slow-motion state. This is

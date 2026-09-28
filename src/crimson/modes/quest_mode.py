@@ -28,7 +28,6 @@ from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import QuestSpawnState
 from ..sim.run_result import RunOutcome
-from ..sim.sessions import DeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.quest_run import (
@@ -81,8 +80,6 @@ class QuestMode(BaseGameplayMode):
         super().__init__(
             ctx,
             default_game_mode_id=GameMode.QUESTS,
-            quest_fail_retry_count=0,
-            hardcore=False,
             config=config,
             console=console,
             audio=audio,
@@ -97,7 +94,6 @@ class QuestMode(BaseGameplayMode):
         self._perk_prompt = PerkPromptState()
         self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
         self._quest_spawn_state = QuestSpawnState()
-        self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
 
     def open(self) -> None:

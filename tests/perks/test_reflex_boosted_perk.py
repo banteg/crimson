@@ -6,7 +6,8 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.input import PlayerInput
-from crimson.sim.session_builders import build_survival_session
+from crimson.sim.mode_updates import SurvivalSpawnState
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
@@ -61,8 +62,8 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
     player = PlayerState(index=0, pos=Vec2())
     world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
     world.players.append(player)
-    session, spawn = build_survival_session(world=world)
-    spawn.spawn_cooldown_ms = 1000.0
+    spawn = SurvivalSpawnState(spawn_cooldown_ms=1000.0)
+    session = DeterministicSession(world=world, perk_progression_enabled=True, mode_state=spawn)
 
     tick = session.step_tick(dt=0.1, inputs=[PlayerInput()])
 
@@ -114,7 +115,7 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
     world.players.append(PlayerState(index=0, pos=Vec2()))
     world.state.time_scale_active = True
     world.state.bonuses.reflex_boost = f32(3.0)
-    session, _spawn = build_survival_session(world=world)
+    session = DeterministicSession(world=world, perk_progression_enabled=True, mode_state=SurvivalSpawnState())
 
     dt_sim = f32(f32(0.09) * f32(0.3))
     post_player_dt = _player_roundtrip_dt(dt_sim, reflex_boost=world.state.bonuses.reflex_boost)
