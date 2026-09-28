@@ -6,7 +6,7 @@ import msgspec
 
 from ..perks.availability import build_perk_availability
 from ..persistence.save_status import GameStatus
-from ..quests import all_quests
+from ..quests.level import QUEST_COUNT
 from ..sim.run_spec import RunSpec, RunStatus
 from ..weapon_runtime.availability import build_weapon_availability
 
@@ -25,7 +25,7 @@ def unranked_reasons(run: RunSpec) -> list[str]:
         reasons.append("detail_preset")
     if run.violence_disabled:
         reasons.append("violence_disabled")
-    quest_count = len(all_quests())
+    quest_count = QUEST_COUNT
     full = msgspec.structs.replace(
         run.status,
         quest_unlock_index=quest_count,

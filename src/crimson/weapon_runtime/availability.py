@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..persistence.save_status import GameStatus
-from ..quests import all_quests
+from ..quests import QUESTS
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
 from ..weapon_usage import weapon_usage_slot_for_weapon_id
@@ -35,7 +35,7 @@ def build_weapon_availability(
         available[pistol_id] = True
 
     if unlock_index > 0:
-        quests = all_quests()
+        quests = QUESTS
         for quest in quests[:unlock_index]:
             weapon_id = quest.unlock_weapon_id
             if weapon_id is not None and 0 < weapon_id < len(available):

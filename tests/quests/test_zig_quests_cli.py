@@ -25,8 +25,7 @@ def test_zig_quests_json_matches_python_spawn_table() -> None:
     assert quest is not None
     expected_entries = build_quest_spawn_table(
         quest,
-        QuestContext(player_count=player_count),
-        rng=Crand(seed),
+        QuestContext(player_count=player_count, rng=Crand(seed)),
         )
 
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
@@ -83,8 +82,7 @@ def test_zig_quests_spawn_tables_match_python_exactly(level: QuestLevel) -> None
     for seed, player_count, hardcore in _EXACT_CASES:
         rng = Crand(seed)
         expected_entries = quest.builder(
-            QuestContext(player_count=player_count, hardcore=hardcore),
-            rng=rng,
+            QuestContext(player_count=player_count, hardcore=hardcore, rng=rng),
             )
         result = dbg_record._run_process(
             [
@@ -127,8 +125,7 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
     assert quest is not None
     expected_entries = build_quest_spawn_table(
         quest,
-        QuestContext(player_count=1),
-        rng=Crand(0),
+        QuestContext(player_count=1, rng=Crand(0)),
         )
     env = SpawnEnv(
         hardcore=False,

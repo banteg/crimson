@@ -3,13 +3,10 @@ from __future__ import annotations
 import math
 
 from grim.geom import Vec2
-from grim.rand import CrandLike
 
 from ..creatures.spawn import SpawnId
 from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
-from ..perks import PerkId
 from ..sim.state_types import TERRAIN_SIZE
-from ..weapons import WeaponId
 from .helpers import (
     NATIVE_CENTER,
     angle_step,
@@ -18,27 +15,13 @@ from .helpers import (
     ring_points,
     spawn,
 )
-from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
 
-@register_quest(
-    level="5.1",
-    title="The Beating",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_weapon_id=WeaponId.ION_SHOTGUN,
-)
-def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_the_beating(_ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(Vec2(256.0, 256.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
-        spawn(
-            Vec2(TERRAIN_SIZE + 32.0, float(TERRAIN_SIZE // 2)),
-            heading=0.0,
-            spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
-            trigger_ms=8000,
-            count=3,
-        ),
+        spawn(Vec2(256.0, 256.0), SpawnId.ALIEN_BONUS_CARRIER_27, 500, 1),
+        spawn(Vec2(TERRAIN_SIZE + 32.0, float(TERRAIN_SIZE // 2)), SpawnId.ALIEN_BIG_GRAY_29, 8000, 3),
     ]
 
     trigger = 10000
@@ -47,88 +30,44 @@ def build_5_1_the_beating(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEnt
         entries.append(
             spawn(
                 Vec2(float(TERRAIN_SIZE + x_offset), float(TERRAIN_SIZE // 2)),
-                heading=0.0,
-                spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
-                trigger_ms=trigger,
-                count=8,
+                SpawnId.ALIEN_SMALL_GREEN_MAN_25,
+                trigger,
+                8,
             ),
         )
         trigger += 100
         x_offset += 0x20
 
-    entries.append(
-        spawn(
-            Vec2(-32.0, float(TERRAIN_SIZE // 2)),
-            heading=0.0,
-            spawn_id=SpawnId.ALIEN_BIG_GRAY_29,
-            trigger_ms=18000,
-            count=3,
-        ),
-    )
+    entries.append(spawn(Vec2(-32.0, float(TERRAIN_SIZE // 2)), SpawnId.ALIEN_BIG_GRAY_29, 18000, 3))
 
     trigger = 20000
     x = -64
     for _ in range(8):
-        entries.append(
-            spawn(
-                Vec2(float(x), float(TERRAIN_SIZE // 2)),
-                heading=0.0,
-                spawn_id=SpawnId.ALIEN_SMALL_GREEN_MAN_25,
-                trigger_ms=trigger,
-                count=8,
-            ),
-        )
+        entries.append(spawn(Vec2(float(x), float(TERRAIN_SIZE // 2)), SpawnId.ALIEN_SMALL_GREEN_MAN_25, trigger, 8))
         trigger += 100
         x -= 32
 
     trigger = 40000
     y = -64
     for _ in range(6):
-        entries.append(
-            spawn(
-                Vec2(float(TERRAIN_SIZE // 2), float(y)),
-                heading=0.0,
-                spawn_id=SpawnId.ALIEN_GHOST_0F,
-                trigger_ms=trigger,
-                count=4,
-            ),
-        )
+        entries.append(spawn(Vec2(float(TERRAIN_SIZE // 2), float(y)), SpawnId.ALIEN_GHOST_0F, trigger, 4))
         trigger += 100
         y -= 42
 
     trigger = 40000
     y = TERRAIN_SIZE + 0x2C
     for _ in range(6):
-        entries.append(
-            spawn(
-                Vec2(float(TERRAIN_SIZE // 2), float(y)),
-                heading=0.0,
-                spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
-                trigger_ms=trigger,
-                count=2,
-            ),
-        )
+        entries.append(spawn(Vec2(float(TERRAIN_SIZE // 2), float(y)), SpawnId.FORMATION_RING_ALIEN_8_12, trigger, 2))
         trigger += 100
         y += 0x20
 
     return entries
 
 
-@register_quest(
-    level="5.2",
-    title="The Spanking Of The Dead",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_perk_id=PerkId.DEATH_CLOCK,
-)
-def build_5_2_the_spanking_of_the_dead(
-    ctx: QuestContext,
-    *,
-    rng: CrandLike,
-) -> list[SpawnEntry]:
+def quest_build_the_spanking_of_the_dead(_ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(Vec2(256.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
-        spawn(Vec2(768.0, 512.0), heading=0.0, spawn_id=SpawnId.ALIEN_BONUS_CARRIER_27, trigger_ms=500, count=1),
+        spawn(Vec2(256.0, 512.0), SpawnId.ALIEN_BONUS_CARRIER_27, 500, 1),
+        spawn(Vec2(768.0, 512.0), SpawnId.ALIEN_BONUS_CARRIER_27, 500, 1),
     ]
 
     trigger = 5000
@@ -137,72 +76,27 @@ def build_5_2_the_spanking_of_the_dead(
         angle = angle_step(step_index, 0.33333334)
         radius = x87_pc24_sub(512.0, x87_pc24_mul(float(step_index), f32(3.8)))
         pos = ring_point(NATIVE_CENTER, radius, angle)
-        entries.append(
-            spawn(
-                pos,
-                heading=angle,
-                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
-                trigger_ms=trigger,
-                count=1,
-            ),
-        )
+        entries.append(spawn(pos, SpawnId.ZOMBIE_RANDOM_41, trigger, 1, heading=angle))
         trigger += 300
         step_index += 1
 
     offset = step_index * 300
-    entries.append(
-        spawn(
-            Vec2(1280.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
-            trigger_ms=offset + 10000,
-            count=16,
-        ),
-    )
-    entries.append(
-        spawn(
-            Vec2(-256.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
-            trigger_ms=offset + 20000,
-            count=16,
-        ),
-    )
+    entries.append(spawn(Vec2(1280.0, 512.0), SpawnId.ZOMBIE_SMALL_WHITE_42, offset + 10000, 16))
+    entries.append(spawn(Vec2(-256.0, 512.0), SpawnId.ZOMBIE_SMALL_WHITE_42, offset + 20000, 16))
     return entries
 
 
-@register_quest(
-    level="5.3",
-    title="The Fortress",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
-)
-def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_the_fortress(_ctx: QuestContext) -> list[SpawnEntry]:
     half_height = TERRAIN_SIZE * 0.5
     entries: list[SpawnEntry] = [
-        spawn(
-            Vec2(-50.0, half_height),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
-            trigger_ms=100,
-            count=6,
-        ),
+        spawn(Vec2(-50.0, half_height), SpawnId.SPIDER_SMALL_BLUE_40, 100, 6),
     ]
 
     trigger = 1100
     y_seed = 0x200
     while trigger < 0x14B4:
         y = x87_pc24_add(x87_pc24_mul(float(y_seed), 0.125), 256.0)
-        entries.append(
-            spawn(
-                Vec2(768.0, y),
-                heading=0.0,
-                spawn_id=SpawnId.DEN_ALIEN_WEAK_SMALL_09,
-                trigger_ms=trigger,
-                count=1,
-            ),
-        )
+        entries.append(spawn(Vec2(768.0, y), SpawnId.DEN_ALIEN_WEAK_SMALL_09, trigger, 1))
         trigger += 600
         y_seed += 0x200
 
@@ -215,15 +109,7 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEn
             if row != 1 or x_seed not in (0x480, 0x600):
                 x = x87_pc24_add(x87_pc24_mul(float(x_seed), one_sixth), 256.0)
                 y = x87_pc24_sub(512.0, x87_pc24_mul(float(row * 0x180), one_sixth))
-                entries.append(
-                    spawn(
-                        Vec2(x, y),
-                        heading=0.0,
-                        spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
-                        trigger_ms=trigger,
-                        count=1,
-                    ),
-                )
+                entries.append(spawn(Vec2(x, y), SpawnId.DEN_SPIDER_BASIC_0A, trigger, 1))
                 trigger += 600
                 entry_count += 1
         x_seed += 0x180
@@ -231,100 +117,32 @@ def build_5_3_the_fortress(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEn
     return entries
 
 
-@register_quest(
-    level="5.4",
-    title="The Gang Wars",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_weapon_id=WeaponId.GAUSS_SHOTGUN,
-)
-def build_5_4_the_gang_wars(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_the_gang_wars(_ctx: QuestContext) -> list[SpawnEntry]:
     half_height = TERRAIN_SIZE * 0.5
     entries: list[SpawnEntry] = [
-        spawn(
-            Vec2(-150.0, half_height),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
-            trigger_ms=100,
-            count=1,
-        ),
-        spawn(
-            Vec2(1174.0, half_height),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
-            trigger_ms=2500,
-            count=1,
-        ),
+        spawn(Vec2(-150.0, half_height), SpawnId.FORMATION_RING_ALIEN_8_12, 100, 1),
+        spawn(Vec2(1174.0, half_height), SpawnId.FORMATION_RING_ALIEN_8_12, 2500, 1),
     ]
 
     trigger = 5500
     for _ in range(10):
-        entries.append(
-            spawn(
-                Vec2(1174.0, half_height),
-                heading=0.0,
-                spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
-                trigger_ms=trigger,
-                count=2,
-            ),
-        )
+        entries.append(spawn(Vec2(1174.0, half_height), SpawnId.FORMATION_RING_ALIEN_8_12, trigger, 2))
         trigger += 4000
 
-    entries.append(
-        spawn(
-            Vec2(512.0, 1152.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
-            trigger_ms=50500,
-            count=1,
-        ),
-    )
+    entries.append(spawn(Vec2(512.0, 1152.0), SpawnId.FORMATION_CHAIN_ALIEN_10_13, 50500, 1))
 
     trigger = 59500
     while trigger < 0x184AC:
-        entries.append(
-            spawn(
-                Vec2(-150.0, half_height),
-                heading=0.0,
-                spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
-                trigger_ms=trigger,
-                count=2,
-            ),
-        )
+        entries.append(spawn(Vec2(-150.0, half_height), SpawnId.FORMATION_RING_ALIEN_8_12, trigger, 2))
         trigger += 4000
 
-    entries.append(
-        spawn(
-            Vec2(512.0, 1152.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
-            trigger_ms=107500,
-            count=3,
-        ),
-    )
+    entries.append(spawn(Vec2(512.0, 1152.0), SpawnId.FORMATION_CHAIN_ALIEN_10_13, 107500, 3))
     return entries
 
 
-@register_quest(
-    level="5.5",
-    title="Knee-deep in the Dead",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_perk_id=PerkId.BANDAGE,
-)
-def build_5_5_knee_deep_in_the_dead(
-    ctx: QuestContext,
-    *,
-    rng: CrandLike,
-) -> list[SpawnEntry]:
+def quest_build_knee_deep_in_the_dead(_ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(
-            Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
-            heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
-            trigger_ms=100,
-            count=1,
-        ),
+        spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5)), SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43, 100, 1),
     ]
 
     trigger = 500
@@ -332,63 +150,30 @@ def build_5_5_knee_deep_in_the_dead(
     while trigger < 0x178F4:
         if wave % 8 == 0:
             entries.append(
-                spawn(
-                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
-                    heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
-                    trigger_ms=trigger - 2,
-                    count=1,
-                ),
+                spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5)), SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43, trigger - 2, 1),
             )
         count = 2 if wave > 0x20 else 1
-        entries.append(
-            spawn(
-                Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
-                heading=0.0,
-                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
-                trigger_ms=trigger,
-                count=count,
-            ),
-        )
+        entries.append(spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5)), SpawnId.ZOMBIE_RANDOM_41, trigger, count))
         if trigger > 0x30D4:
             entries.append(
-                spawn(
-                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 + 158.0)),
-                    heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
-                    trigger_ms=trigger + 500,
-                    count=1,
-                ),
+                spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5 + 158.0)), SpawnId.ZOMBIE_RANDOM_41, trigger + 500, 1),
             )
         if trigger > 0x5FB4:
             entries.append(
-                spawn(
-                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 - 158.0)),
-                    heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
-                    trigger_ms=trigger + 1000,
-                    count=1,
-                ),
+                spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5 - 158.0)), SpawnId.ZOMBIE_RANDOM_41, trigger + 1000, 1),
             )
         if trigger > 0x8E94:
             entries.append(
                 spawn(
                     Vec2(-50.0, float(TERRAIN_SIZE * 0.5 - 258.0)),
-                    heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
-                    trigger_ms=trigger + 0x514,
-                    count=1,
+                    SpawnId.ZOMBIE_SMALL_WHITE_42,
+                    trigger + 0x514,
+                    1,
                 ),
             )
         if trigger > 0xBD74:
             entries.append(
-                spawn(
-                    Vec2(-50.0, float(TERRAIN_SIZE * 0.5 + 258.0)),
-                    heading=0.0,
-                    spawn_id=SpawnId.ZOMBIE_SMALL_WHITE_42,
-                    trigger_ms=trigger + 300,
-                    count=1,
-                ),
+                spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5 + 258.0)), SpawnId.ZOMBIE_SMALL_WHITE_42, trigger + 300, 1),
             )
         trigger += 0x5DC
         wave += 1
@@ -396,186 +181,40 @@ def build_5_5_knee_deep_in_the_dead(
     return entries
 
 
-@register_quest(
-    level="5.6",
-    title="Cross Fire",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_perk_id=PerkId.ANGRY_RELOADER,
-)
-def build_5_6_cross_fire(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_cross_fire(_ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(
-            Vec2(1074.0, float(TERRAIN_SIZE * 0.5)),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
-            trigger_ms=100,
-            count=6,
-        ),
-        spawn(
-            Vec2(-40.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=5500,
-            count=4,
-        ),
-        spawn(
-            Vec2(-40.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=15500,
-            count=6,
-        ),
-        spawn(
-            Vec2(512.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
-            trigger_ms=18500,
-            count=2,
-        ),
-        spawn(
-            Vec2(-100.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=25500,
-            count=8,
-        ),
-        spawn(
-            Vec2(512.0, 1152.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
-            trigger_ms=26000,
-            count=6,
-        ),
-        spawn(
-            Vec2(512.0, -128.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SMALL_BLUE_40,
-            trigger_ms=26000,
-            count=6,
-        ),
+        spawn(Vec2(1074.0, float(TERRAIN_SIZE * 0.5)), SpawnId.SPIDER_SMALL_BLUE_40, 100, 6),
+        spawn(Vec2(-40.0, 512.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 5500, 4),
+        spawn(Vec2(-40.0, 512.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 15500, 6),
+        spawn(Vec2(512.0, 512.0), SpawnId.SPIDER_SP2_SPLITTER_01, 18500, 2),
+        spawn(Vec2(-100.0, 512.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 25500, 8),
+        spawn(Vec2(512.0, 1152.0), SpawnId.SPIDER_SMALL_BLUE_40, 26000, 6),
+        spawn(Vec2(512.0, -128.0), SpawnId.SPIDER_SMALL_BLUE_40, 26000, 6),
     ]
 
 
-@register_quest(
-    level="5.7",
-    title="Army of Three",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-)
-def build_5_7_army_of_three(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_army_of_three(_ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(Vec2(-64.0, 256.0), heading=0.0, spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15, trigger_ms=500, count=1),
-        spawn(
-            Vec2(-64.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
-            trigger_ms=5500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 768.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
-            trigger_ms=15000,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 768.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
-            trigger_ms=19500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
-            trigger_ms=22500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 256.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
-            trigger_ms=26500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 256.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
-            trigger_ms=35500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
-            trigger_ms=39500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-64.0, 768.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
-            trigger_ms=42500,
-            count=1,
-        ),
-        spawn(
-            Vec2(512.0, 1152.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
-            trigger_ms=52500,
-            count=3,
-        ),
-        spawn(
-            Vec2(512.0, -256.0),
-            heading=0.0,
-            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
-            trigger_ms=56500,
-            count=3,
-        ),
+        spawn(Vec2(-64.0, 256.0), SpawnId.FORMATION_GRID_ALIEN_WHITE_15, 500, 1),
+        spawn(Vec2(-64.0, 512.0), SpawnId.FORMATION_GRID_ALIEN_WHITE_15, 5500, 1),
+        spawn(Vec2(-64.0, 768.0), SpawnId.FORMATION_GRID_ALIEN_WHITE_15, 15000, 1),
+        spawn(Vec2(-64.0, 768.0), SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17, 19500, 1),
+        spawn(Vec2(-64.0, 512.0), SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17, 22500, 1),
+        spawn(Vec2(-64.0, 256.0), SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17, 26500, 1),
+        spawn(Vec2(-64.0, 256.0), SpawnId.FORMATION_GRID_LIZARD_WHITE_16, 35500, 1),
+        spawn(Vec2(-64.0, 512.0), SpawnId.FORMATION_GRID_LIZARD_WHITE_16, 39500, 1),
+        spawn(Vec2(-64.0, 768.0), SpawnId.FORMATION_GRID_LIZARD_WHITE_16, 42500, 1),
+        spawn(Vec2(512.0, 1152.0), SpawnId.FORMATION_GRID_ALIEN_WHITE_15, 52500, 3),
+        spawn(Vec2(512.0, -256.0), SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17, 56500, 3),
     ]
 
 
-@register_quest(
-    level="5.8",
-    title="Monster Blues",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_perk_id=PerkId.ION_GUN_MASTER,
-)
-def build_5_8_monster_blues(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_monster_blues(_ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(
-            Vec2(-50.0, float(TERRAIN_SIZE * 0.5)),
-            heading=0.0,
-            spawn_id=SpawnId.LIZARD_RANDOM_04,
-            trigger_ms=500,
-            count=10,
-        ),
-        spawn(
-            Vec2(1074.0, float(TERRAIN_SIZE * 0.5)),
-            heading=0.0,
-            spawn_id=SpawnId.ALIEN_RANDOM_06,
-            trigger_ms=7500,
-            count=10,
-        ),
-        spawn(
-            Vec2(512.0, 1088.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_RANDOM_03,
-            trigger_ms=17500,
-            count=12,
-        ),
-        spawn(
-            Vec2(512.0, -64.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP1_RANDOM_03,
-            trigger_ms=17500,
-            count=12,
-        ),
+        spawn(Vec2(-50.0, float(TERRAIN_SIZE * 0.5)), SpawnId.LIZARD_RANDOM_04, 500, 10),
+        spawn(Vec2(1074.0, float(TERRAIN_SIZE * 0.5)), SpawnId.ALIEN_RANDOM_06, 7500, 10),
+        spawn(Vec2(512.0, 1088.0), SpawnId.SPIDER_SP1_RANDOM_03, 17500, 12),
+        spawn(Vec2(512.0, -64.0), SpawnId.SPIDER_SP1_RANDOM_03, 17500, 12),
     ]
 
     trigger = 27500
@@ -587,34 +226,19 @@ def build_5_8_monster_blues(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnE
         else:
             spawn_id = SpawnId.SPIDER_SP2_RANDOM_05
         count = idx // 8 + 2
-        entries.append(
-            spawn(
-                Vec2(-64.0, 512.0),
-                heading=0.0,
-                spawn_id=spawn_id,
-                trigger_ms=trigger,
-                count=count,
-            ),
-        )
+        entries.append(spawn(Vec2(-64.0, 512.0), spawn_id, trigger, count))
         trigger += 900
     return entries
 
 
-@register_quest(
-    level="5.9",
-    title="Nagolipoli",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_perk_id=PerkId.STATIONARY_RELOADER,
-)
-def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_nagolipoli(_ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
     for pos, angle in ring_points(NATIVE_CENTER, 128.0, 8, step=0.7853982):
-        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=2000, count=1))
+        entries.append(spawn(pos, SpawnId.SPIDER_SMALL_BLUE_40, 2000, 1, heading=angle))
 
     for pos, angle in ring_points(NATIVE_CENTER, 178.0, 12, step=0.5235988):
-        entries.append(spawn(pos, heading=angle, spawn_id=SpawnId.SPIDER_SMALL_BLUE_40, trigger_ms=8000, count=1))
+        entries.append(spawn(pos, SpawnId.SPIDER_SMALL_BLUE_40, 8000, 1, heading=angle))
 
     trigger = 13000
     wave = 0
@@ -622,34 +246,10 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntr
         count = wave // 8 + 1
         entries.extend(
             [
-                spawn(
-                    Vec2(-64.0, -64.0),
-                    heading=1.0471976,
-                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
-                    trigger_ms=trigger,
-                    count=count,
-                ),
-                spawn(
-                    Vec2(1088.0, -64.0),
-                    heading=-1.0471976,
-                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
-                    trigger_ms=trigger,
-                    count=count,
-                ),
-                spawn(
-                    Vec2(-64.0, 1088.0),
-                    heading=-1.0471976,
-                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
-                    trigger_ms=trigger,
-                    count=count,
-                ),
-                spawn(
-                    Vec2(1088.0, 1088.0),
-                    heading=3.926991,
-                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
-                    trigger_ms=trigger,
-                    count=count,
-                ),
+                spawn(Vec2(-64.0, -64.0), SpawnId.AI1_LIZARD_BLUE_TINT_1C, trigger, count, heading=1.0471976),
+                spawn(Vec2(1088.0, -64.0), SpawnId.AI1_LIZARD_BLUE_TINT_1C, trigger, count, heading=-1.0471976),
+                spawn(Vec2(-64.0, 1088.0), SpawnId.AI1_LIZARD_BLUE_TINT_1C, trigger, count, heading=-1.0471976),
+                spawn(Vec2(1088.0, 1088.0), SpawnId.AI1_LIZARD_BLUE_TINT_1C, trigger, count, heading=3.926991),
             ],
         )
         trigger += 800
@@ -658,174 +258,53 @@ def build_5_9_nagolipoli(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntr
     last_wave = max(wave - 1, 0)
     base_left = (last_wave + 0x97 + wave * 4) * 0xA0
     for pos in line_points(Vec2(64.0, 256.0), Vec2(0.0, 85.333336), 6):
-        entries.append(
-            spawn(
-                pos,
-                heading=0.0,
-                spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
-                trigger_ms=base_left,
-                count=1,
-            ),
-        )
+        entries.append(spawn(pos, SpawnId.DEN_SPIDER_BASIC_0A, base_left, 1))
         base_left += 100
 
     base_right = wave * 800 + 25000
     for pos in line_points(Vec2(960.0, 256.0), Vec2(0.0, 85.333336), 6):
-        entries.append(
-            spawn(
-                pos,
-                heading=0.0,
-                spawn_id=SpawnId.DEN_SPIDER_BASIC_0A,
-                trigger_ms=base_right,
-                count=1,
-            ),
-        )
+        entries.append(spawn(pos, SpawnId.DEN_SPIDER_BASIC_0A, base_right, 1))
         base_right += 100
 
     base_mid = (last_wave + 0xB0 + wave * 4) * 0xA0
-    entries.append(
-        spawn(
-            Vec2(512.0, 256.0),
-            heading=math.pi,
-            spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
-            trigger_ms=base_mid,
-            count=1,
-        ),
-    )
-    entries.append(
-        spawn(
-            Vec2(512.0, 768.0),
-            heading=math.pi,
-            spawn_id=SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B,
-            trigger_ms=base_mid,
-            count=1,
-        ),
-    )
+    entries.append(spawn(Vec2(512.0, 256.0), SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B, base_mid, 1, heading=math.pi))
+    entries.append(spawn(Vec2(512.0, 768.0), SpawnId.DEN_SPIDER_PLASMA_SHOOTERS_0B, base_mid, 1, heading=math.pi))
 
     base_vertical = wave * 800 + 0x6F54
-    entries.append(
-        spawn(
-            Vec2(512.0, 1088.0),
-            heading=3.926991,
-            spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
-            trigger_ms=base_vertical,
-            count=8,
-        ),
-    )
-    entries.append(
-        spawn(
-            Vec2(512.0, -64.0),
-            heading=3.926991,
-            spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
-            trigger_ms=base_vertical,
-            count=8,
-        ),
-    )
+    entries.append(spawn(Vec2(512.0, 1088.0), SpawnId.AI1_LIZARD_BLUE_TINT_1C, base_vertical, 8, heading=3.926991))
+    entries.append(spawn(Vec2(512.0, -64.0), SpawnId.AI1_LIZARD_BLUE_TINT_1C, base_vertical, 8, heading=3.926991))
     return entries
 
 
-@register_quest(
-    level="5.10",
-    title="The Gathering",
-    time_limit_ms=480000,
-    start_weapon_id=WeaponId.PISTOL,
-    unlock_weapon_id=WeaponId.PLASMA_CANNON,
-)
-def build_5_10_the_gathering(ctx: QuestContext, *, rng: CrandLike) -> list[SpawnEntry]:
+def quest_build_the_gathering(_ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(Vec2(256.0, 512.0), heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=500, count=1),
-        spawn(Vec2(768.0, 512.0), heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=9500, count=2),
-        spawn(
-            Vec2(256.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_BOSS_3A,
-            trigger_ms=15500,
-            count=2,
-        ),
-        spawn(
-            Vec2(768.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_BOSS_3A,
-            trigger_ms=24500,
-            count=2,
-        ),
-        spawn(
-            Vec2(256.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
-            trigger_ms=30500,
-            count=2,
-        ),
-        spawn(
-            Vec2(768.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
-            trigger_ms=39500,
-            count=2,
-        ),
-        spawn(
-            Vec2(64.0, 64.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=54500,
-            count=2,
-        ),
-        spawn(
-            Vec2(960.0, 64.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=54500,
-            count=1,
-        ),
-        spawn(
-            Vec2(64.0, 960.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=54500,
-            count=2,
-        ),
-        spawn(
-            Vec2(960.0, 960.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-            trigger_ms=54500,
-            count=1,
-        ),
-        spawn(
-            Vec2(-128.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_BOSS_3A,
-            trigger_ms=90500,
-            count=6,
-        ),
-        spawn(
-            Vec2(1152.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
-            trigger_ms=99500,
-            count=4,
-        ),
-        spawn(
-            Vec2(1152.0, 512.0),
-            heading=0.0,
-            spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
-            trigger_ms=109500,
-            count=2,
-        ),
+        spawn(Vec2(256.0, 512.0), SpawnId.SPIDER_SP2_SPLITTER_01, 500, 1),
+        spawn(Vec2(768.0, 512.0), SpawnId.SPIDER_SP2_SPLITTER_01, 9500, 2),
+        spawn(Vec2(256.0, 512.0), SpawnId.SPIDER_BOSS_3A, 15500, 2),
+        spawn(Vec2(768.0, 512.0), SpawnId.SPIDER_BOSS_3A, 24500, 2),
+        spawn(Vec2(256.0, 512.0), SpawnId.ZOMBIE_BOSS_SPAWNER_00, 30500, 2),
+        spawn(Vec2(768.0, 512.0), SpawnId.ZOMBIE_BOSS_SPAWNER_00, 39500, 2),
+        spawn(Vec2(64.0, 64.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 54500, 2),
+        spawn(Vec2(960.0, 64.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 54500, 1),
+        spawn(Vec2(64.0, 960.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 54500, 2),
+        spawn(Vec2(960.0, 960.0), SpawnId.SPIDER_PLASMA_SHOOTER_3C, 54500, 1),
+        spawn(Vec2(-128.0, 512.0), SpawnId.SPIDER_BOSS_3A, 90500, 6),
+        spawn(Vec2(1152.0, 512.0), SpawnId.SPIDER_SP2_SPLITTER_01, 99500, 4),
+        spawn(Vec2(1152.0, 512.0), SpawnId.SPIDER_SP2_SPLITTER_01, 109500, 2),
     ]
 
 
 __all__ = [
     "QuestContext",
     "SpawnEntry",
-    "build_5_1_the_beating",
-    "build_5_2_the_spanking_of_the_dead",
-    "build_5_3_the_fortress",
-    "build_5_4_the_gang_wars",
-    "build_5_5_knee_deep_in_the_dead",
-    "build_5_6_cross_fire",
-    "build_5_7_army_of_three",
-    "build_5_8_monster_blues",
-    "build_5_9_nagolipoli",
-    "build_5_10_the_gathering",
+    "quest_build_army_of_three",
+    "quest_build_cross_fire",
+    "quest_build_knee_deep_in_the_dead",
+    "quest_build_monster_blues",
+    "quest_build_nagolipoli",
+    "quest_build_the_beating",
+    "quest_build_the_fortress",
+    "quest_build_the_gang_wars",
+    "quest_build_the_gathering",
+    "quest_build_the_spanking_of_the_dead",
 ]

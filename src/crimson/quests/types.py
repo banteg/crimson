@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol
+from collections.abc import Callable
 
 import msgspec
 
@@ -14,7 +14,10 @@ from ..weapons import WeaponId
 
 
 class QuestContext(msgspec.Struct, frozen=True):
+    """The globals native quest builders read: `config_blob.player_count`, `config_hardcore` and `crt_rand`."""
+
     player_count: int
+    rng: CrandLike
     hardcore: bool = False
 
 
@@ -26,13 +29,7 @@ class SpawnEntry(msgspec.Struct, frozen=True, kw_only=True):
     count: int
 
 
-class QuestBuilder(Protocol):
-    def __call__(
-        self,
-        ctx: QuestContext,
-        *,
-        rng: CrandLike,
-    ) -> list[SpawnEntry]: ...
+type QuestBuilder = Callable[[QuestContext], list[SpawnEntry]]
 
 
 class QuestDefinition(msgspec.Struct, frozen=True, kw_only=True):

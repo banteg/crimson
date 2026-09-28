@@ -5,7 +5,7 @@ from typing import cast
 from syrupy import SnapshotAssertion
 from syrupy.types import PropertyMatcher
 
-from crimson.quests import QuestContext, all_quests
+from crimson.quests import QUESTS, QuestContext
 from grim.rand import Crand
 
 
@@ -15,8 +15,8 @@ def _round_matcher(data: object, **_: object) -> object:
     return data
 
 
-def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, object]]:
-    entries = builder(ctx, rng=Crand(seed))
+def _build_entries(builder, seed: int) -> list[dict[str, object]]:
+    entries = builder(QuestContext(player_count=1, rng=Crand(seed)))
     return [
         {
             "x": entry.pos.x,
@@ -31,9 +31,8 @@ def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, obje
 
 
 def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
-    ctx = QuestContext(player_count=1)
     matcher = cast(PropertyMatcher, _round_matcher)
-    for quest in all_quests():
+    for quest in QUESTS:
         payload = {
             "level": quest.level.text,
             "title": quest.title,
@@ -42,7 +41,7 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "unlock_perk_id": quest.unlock_perk_id,
             "unlock_weapon_id": quest.unlock_weapon_id,
             "terrain_slots": quest.terrain_slots,
-            "entries": _build_entries(quest.builder, ctx, seed=1337),
+            "entries": _build_entries(quest.builder, seed=1337),
         }
         snapshot(name=f"quest_{quest.level.text}", matcher=matcher).assert_match(
             payload,

@@ -15,7 +15,7 @@ import re
 
 import pytest
 
-from crimson.quests import all_quests
+from crimson.quests import QUESTS
 from crimson.quests.types import QuestContext, QuestDefinition
 from crimson.sim.state_types import TERRAIN_SIZE
 from grim.rand import CrtRand
@@ -49,7 +49,7 @@ def _native_builder_name(quest: QuestDefinition) -> str:
     return "quest_build_" + re.sub(r"[^a-z0-9]+", "_", quest.title.lower()).strip("_")
 
 
-@pytest.mark.parametrize("quest", all_quests(), ids=lambda quest: quest.level.text)
+@pytest.mark.parametrize("quest", QUESTS, ids=lambda quest: quest.level.text)
 def test_quest_builder_matches_native(oracle, quest: QuestDefinition) -> None:
     builder = oracle.resolve(_native_builder_name(quest))
     entries = oracle.alloc(_ENTRY_STRIDE * _ENTRY_CAPACITY)
@@ -71,8 +71,7 @@ def test_quest_builder_matches_native(oracle, quest: QuestDefinition) -> None:
             oracle.call(builder, entries, count_ptr)
 
             rng = CrtRand(seed)
-            ctx = QuestContext(player_count=player_count, hardcore=hardcore)
-            python_entries = quest.builder(ctx, rng=rng)
+            python_entries = quest.builder(QuestContext(player_count=player_count, hardcore=hardcore, rng=rng))
 
             native_count = oracle.read_i32(count_ptr)
             if native_count != len(python_entries):

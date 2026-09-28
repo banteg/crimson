@@ -18,7 +18,7 @@ from crimson.game_modes import GameMode
 from crimson.movement_controls import MovementControlType
 from crimson.perks.ids import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
-from crimson.quests import all_quests
+from crimson.quests import QUESTS
 from crimson.quests.level import QUEST_COUNT
 from crimson.screens.panels.controls_labels import RebindRowSpec, controls_rebind_plan
 from crimson.sim.input import PlayerInput
@@ -99,7 +99,7 @@ def _zig_fire_weapons() -> set[str]:
 
 
 def _python_quest_start_weapon_ids() -> dict[int, int]:
-    quests = all_quests()
+    quests = QUESTS
     assert len(quests) == QUEST_COUNT
     return {int(quest.level.major) * 100 + int(quest.level.minor): int(quest.start_weapon_id) for quest in quests}
 
@@ -255,7 +255,7 @@ def test_zig_quest_start_weapons_match_python_port() -> None:
 
 
 def test_zig_quest_titles_match_python_port() -> None:
-    assert _zig_quest_titles() == [quest.title for quest in all_quests()]
+    assert _zig_quest_titles() == [quest.title for quest in QUESTS]
 
 
 def test_zig_controls_rebind_rows_match_python_port() -> None:

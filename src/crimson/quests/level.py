@@ -47,12 +47,9 @@ class QuestLevel(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 
     @property
     def title(self) -> str:
-        from .registry import quest_by_level
+        from .database import quest_by_level
 
-        quest = quest_by_level(self)
-        if quest is None:
-            raise KeyError(f"unknown quest level: {self.text}")
-        return str(quest.title)
+        return quest_by_level(self).title
 
     def __str__(self) -> str:
         return self.text

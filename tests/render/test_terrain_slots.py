@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.quests import all_quests
+from crimson.quests import QUESTS
 from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.terrain_slots import (
@@ -75,7 +75,7 @@ def test_choose_unlock_terrain_slots_can_fall_to_mid_tiers() -> None:
 
 
 def test_all_produced_terrain_slots_map_without_fallback_logic() -> None:
-    produced_slots: set[TerrainSlotTriplet] = {quest.terrain_slots for quest in all_quests()}
+    produced_slots: set[TerrainSlotTriplet] = {quest.terrain_slots for quest in QUESTS}
 
     for unlock_index in range(51):
         for roll in range(8):

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
 from ..persistence.save_status import GameStatus
-from ..quests import all_quests
+from ..quests import QUESTS
 from ..quests.level import QuestLevel
 from ..sim.state_types import PERK_COUNT_SIZE
 from .ids import PERK_BY_ID, PerkFlags, PerkId
@@ -37,7 +37,7 @@ def build_perk_availability(*, status: GameStatus | None) -> list[bool]:
             available[perk_id] = True
 
     if unlock_index > 0:
-        quests = all_quests()
+        quests = QUESTS
         for quest in quests[:unlock_index]:
             perk_id = quest.unlock_perk_id
             if perk_id is not None and 0 < perk_id < len(available):

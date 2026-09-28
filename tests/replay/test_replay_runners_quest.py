@@ -58,7 +58,6 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     quest = quest_by_level(QuestLevel(1, 3))
     assert quest is not None
 
-    ctx = QuestContext(player_count=int(replay.run.player_count), hardcore=bool(replay.run.hardcore))
     rng = Crand(int(replay.run.seed))
     advance_gameplay_reset_rng(rng)
     advance_unlock_terrain(
@@ -71,12 +70,9 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
         rng,
         terrain_slots=quest.terrain_slots,
     )
-    spawn_entries = tuple(
-        build_quest_spawn_table(
-            quest,
-            ctx,
-            rng=rng,
-            ),
+    spawn_entries = build_quest_spawn_table(
+        quest,
+        QuestContext(player_count=int(replay.run.player_count), hardcore=bool(replay.run.hardcore), rng=rng),
     )
     rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
     expected_rng_state = int(rng.state)

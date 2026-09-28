@@ -23,8 +23,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
     entries = tuple(
         build_quest_spawn_table(
             quest,
-            QuestContext(player_count=1),
-            rng=Crand(int(seed)),
+            QuestContext(player_count=1, rng=Crand(int(seed))),
             ),
     )
     spawn_state = QuestSpawnState(spawn_entries=entries)

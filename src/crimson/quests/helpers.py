@@ -136,19 +136,7 @@ def line_points(start: Vec2, step: Vec2, count: int) -> Iterator[Vec2]:
         )
 
 
-def spawn(
-    point: Vec2,
-    *,
-    heading: float = 0.0,
-    spawn_id: SpawnId,
-    trigger_ms: int,
-    count: int,
-) -> SpawnEntry:
-    # `quest_spawn_entry_t` position and heading are float32 fields.
-    return SpawnEntry(
-        pos=f32_vec2(point),
-        heading=f32(heading),
-        spawn_id=spawn_id,
-        trigger_ms=trigger_ms,
-        count=count,
-    )
+def spawn(pos: Vec2, spawn_id: SpawnId, trigger_ms: int, count: int, *, heading: float = 0.0) -> SpawnEntry:
+    """One `quest_spawn_entry_t`, set in native field order; position and heading are float32 fields."""
+
+    return SpawnEntry(pos=f32_vec2(pos), heading=f32(heading), spawn_id=spawn_id, trigger_ms=trigger_ms, count=count)

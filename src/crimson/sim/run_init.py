@@ -93,10 +93,9 @@ def initialize_run(
             terrain = advance_explicit_terrain(
                 world.state.rng, terrain_slots=quest.terrain_slots,
             )
-            generated_entries = tuple(build_quest_spawn_table(
-                quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore),
-                rng=world.state.rng,
-            ))
+            generated_entries = build_quest_spawn_table(
+                quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore, rng=world.state.rng),
+            )
             session, _ = build_quest_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
                 apply_world_dt_steps=apply_world_dt_steps,

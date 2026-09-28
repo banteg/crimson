@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import msgspec
 
-from grim.rand import CrandLike
-
 from ..creatures.spawn import SpawnId
 from .types import QuestContext, QuestDefinition, SpawnEntry
 
@@ -34,15 +32,10 @@ def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[Spa
     return adjusted
 
 
-def build_quest_spawn_table(
-    quest: QuestDefinition,
-    ctx: QuestContext,
-    *,
-    rng: CrandLike,
-) -> tuple[SpawnEntry, ...]:
+def build_quest_spawn_table(quest: QuestDefinition, ctx: QuestContext) -> tuple[SpawnEntry, ...]:
     """Build the quest spawn script from the active startup RNG state."""
 
-    entries = quest.builder(ctx, rng=rng)
+    entries = quest.builder(ctx)
     if ctx.hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)

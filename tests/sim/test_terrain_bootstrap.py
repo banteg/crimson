@@ -32,11 +32,9 @@ def test_advance_explicit_terrain_returns_render_boundary_and_mutates_rng() -> N
 
 
 def test_advance_unlock_terrain_matches_native_rng_ordering() -> None:
-    from crimson.quests import all_quests as _all_quests
     from crimson.sim.bootstrap import advance_unlock_terrain
     from crimson.terrain_slots import choose_unlock_terrain_slots
 
-    _ = _all_quests
     seed = 0xBEEF
     unlock_index = 0x28
     rng = Crand(seed)
@@ -62,11 +60,9 @@ def test_advance_unlock_terrain_matches_native_rng_ordering() -> None:
 
 
 def test_advance_unlock_terrain_burns_hidden_random_prelude_before_unlock_rolls() -> None:
-    from crimson.quests import all_quests as _all_quests
     from crimson.sim.bootstrap import advance_unlock_terrain
     from crimson.terrain_slots import Q2_TERRAIN_SLOTS
 
-    _ = _all_quests
     rng = ScriptedCrand([3, 0, 0, 0, 0, 3], fallback=ScriptedCrand.Fallback.ZERO)
 
     terrain = advance_unlock_terrain(

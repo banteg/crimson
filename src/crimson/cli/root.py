@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 
 @cache
 def _quest_defs() -> dict[str, QuestDefinition]:
-    from ..quests import all_quests
+    from ..quests import QUESTS
 
-    return {quest.level.text: quest for quest in all_quests()}
+    return {quest.level.text: quest for quest in QUESTS}
 
 
 _SEP_RE = re.compile(r"[\\/]+")
@@ -143,9 +143,7 @@ def cmd_quests(
         raise typer.Exit(code=1)
     builder = quest.builder
     title = quest.title
-    ctx = QuestContext(player_count=player_count)
-    rng = Crand(seed) if seed is not None else Crand()
-    entries = builder(ctx, rng=rng)
+    entries = builder(QuestContext(player_count=player_count, rng=Crand(seed) if seed is not None else Crand()))
     if sort:
         entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.pos.x, e.pos.y))
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")

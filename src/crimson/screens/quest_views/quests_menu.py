@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from crimson.quests import all_quests
-from crimson.quests.level import QuestLevel
+from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_cursor, ensure_menu_ground, menu_ground_camera
@@ -139,7 +138,7 @@ class QuestsMenuView:
 
         if debug_enabled() and rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
             # Every quest completed, 5.10's reward included.
-            unlock = len(all_quests())
+            unlock = QUEST_COUNT
             if int(status.quest_unlock_index) < unlock:
                 status.quest_unlock_index = unlock
             if int(status.quest_unlock_index_full) < unlock:
