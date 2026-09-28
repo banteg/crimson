@@ -75,7 +75,7 @@ pub fn updatePlayerFromGameInputWithPlayers(
 
     var phase_sign: f32 = 1.0;
     var delta: state_mod.Vec2 = undefined;
-    const player_controlled_movement = !state.demo_mode_active and move_mode != movement_control_computer;
+    const player_controlled_movement = move_mode != movement_control_computer;
 
     if (player_controlled_movement and move_mode == movement_control_relative) {
         const turning_left = flags.turn_left_pressed orelse false;

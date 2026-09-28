@@ -37,7 +37,6 @@ def test_zig_spawn_plan_json_matches_python_summary() -> None:
                 "0xBEEF",
                 "--pos",
                 "512,512",
-                "--no-demo-mode-active",
             ],
             cwd=dbg_record._REPO_ROOT,
         )
@@ -49,7 +48,6 @@ def test_zig_spawn_plan_json_matches_python_summary() -> None:
         assert payload["template_id"] == int(template_id)
         assert payload["active_count"] == len(expected.creatures)
         assert payload["spawn_slot_count"] == len(expected.spawn_slots)
-        assert payload["demo_mode_active"] is False
         assert payload["effect_count"] == sum(effect.count for effect in expected.effects)
 
 
@@ -71,7 +69,7 @@ def test_zig_spawn_plan_human_output_includes_summary() -> None:
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)
 
     result = dbg_record._run_process(
-        [str(dbg_record._ZIG_BIN), "spawn-plan", "0x12", "--no-demo-mode-active"],
+        [str(dbg_record._ZIG_BIN), "spawn-plan", "0x12"],
         cwd=dbg_record._REPO_ROOT,
     )
 

@@ -23,8 +23,8 @@ crimson-zig/zig-out/bin/crimson-zig --help
 
 The desktop shell implements boot, menu, gameplay, pause, results, high scores,
 statistics and options/controls. Survival, Rush, Quests, Typ-o and Tutorial can
-be launched from the shell or direct-start flags. `--demo` enables shareware
-limits. Inspect `crimson-zig-window --help` for current launch options.
+be launched from the shell or direct-start flags. Inspect
+`crimson-zig-window --help` for current launch options.
 
 The default build also installs archive smoke/extraction tools. Rendering and
 audio use original archive resources; config and status codecs read the native
@@ -59,6 +59,6 @@ Python/Frida/Zig artifact boundary.
 
 These gates establish their tested behavior. They do not establish complete
 native replay parity or a visually verified boot-to-results walkthrough.
-Product-shell, demo/trial, visual and audio differences need concrete capture or
+Product-shell, visual and audio differences need concrete capture or
 walkthrough evidence before being declared closed. Keep individual investigation
 results with their artifacts as described in the [evidence policy](../verification/evidence-ledger/index.md).

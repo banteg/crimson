@@ -352,10 +352,10 @@ pub const SecondaryProjectilePool = struct {
                     }
                 }
 
-                // Native plays the hit audio first: the first hit outside demo
-                // and rush picks the game tune (one playlist draw) before the
-                // hit decals and lethal damage consume the RNG.
-                if (!state.demo_mode_active and state.game_mode != .rush and !state.game_tune_started) {
+                // Native plays the hit audio first: the first hit outside rush
+                // picks the game tune (one playlist draw) before the hit
+                // decals and lethal damage consume the RNG.
+                if (state.game_mode != .rush and !state.game_tune_started) {
                     state.game_tune_started = true;
                     _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
                 } else {

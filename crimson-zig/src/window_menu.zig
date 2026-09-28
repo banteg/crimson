@@ -29,7 +29,6 @@ const menu_scale_large_max: i32 = 1024;
 const menu_scale_small: f32 = 0.8;
 const menu_scale_large: f32 = 1.2;
 const menu_scale_shift: f32 = 10.0;
-pub const demo_idle_start_ms: i32 = 23_000;
 
 pub const label_row_play_game: i32 = 1;
 pub const label_row_options: i32 = 2;
@@ -47,14 +46,12 @@ pub const Action = enum {
     open_statistics,
     open_mods,
     open_other_games,
-    start_demo,
     quit,
 };
 
 pub const Flags = struct {
     mods_available: bool = false,
     other_games_enabled: bool = false,
-    demo_enabled: bool = false,
 };
 
 pub const State = struct {
@@ -63,16 +60,12 @@ pub const State = struct {
     focus_timer_ms: i32 = 0,
     hovered_index: ?usize = null,
     panel_open_sfx_played: bool = false,
-    idle_ms: i32 = 0,
-    last_mouse_pos: rl.Vector2 = .{ .x = 0.0, .y = 0.0 },
     hover_amounts: [6]i32 = [_]i32{0} ** 6,
     closing: bool = false,
     close_action: ?Action = null,
 
     pub fn reset(self: *State) void {
-        self.* = .{
-            .last_mouse_pos = rl.getMousePosition(),
-        };
+        self.* = .{};
     }
 
     pub fn openRoot(self: *State) void {
@@ -137,10 +130,6 @@ fn advanceRootTimeline(state: *State, frame_dt: f32, root_entries: []const RootE
     return .{ .dt_ms = dt_ms };
 }
 
-fn rootInteractive(state: *const State, root_entries: []const RootEntry) bool {
-    return !state.closing and state.timeline_ms >= rootTimelineMaxMs(root_entries);
-}
-
 pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_assets.RuntimeAssets, flags: Flags) UpdateResult {
     const root_entries = rootEntries(flags);
     if (root_entries.len == 0) return .{};
@@ -152,23 +141,6 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
     }
     const dt_ms = timeline_update.dt_ms;
     if (state.closing) return .{};
-
-    if (dt_ms > 0) {
-        const mouse = rl.getMousePosition();
-        const mouse_moved = mouse.x != state.last_mouse_pos.x or mouse.y != state.last_mouse_pos.y;
-        if (mouse_moved) state.last_mouse_pos = mouse;
-
-        if (rl.getKeyPressed() != .null or rl.isMouseButtonPressed(.left) or rl.isMouseButtonPressed(.right) or mouse_moved) {
-            state.idle_ms = 0;
-        } else {
-            state.idle_ms += dt_ms;
-        }
-    }
-
-    if (flags.demo_enabled and rootInteractive(state, entries) and state.idle_ms >= demo_idle_start_ms) {
-        beginRootClose(state, .start_demo);
-        return .{};
-    }
 
     if (runtime_assets == null) {
         state.hovered_index = null;
@@ -217,32 +189,6 @@ pub fn update(state: *State, frame_dt: f32, runtime_assets: ?*const window_asset
     return result;
 }
 
-test "root menu demo idle starts attract mode in demo builds" {
-    const entries = rootEntries(.{ .demo_enabled = true });
-    var state: State = .{
-        .timeline_ms = rootTimelineMaxMs(entries.slice()),
-        .idle_ms = demo_idle_start_ms,
-    };
-    const result = update(&state, 0.0, null, .{ .demo_enabled = true });
-    try std.testing.expectEqual(@as(?Action, null), result.action);
-    try std.testing.expect(state.closing);
-    try std.testing.expectEqual(@as(?Action, .start_demo), state.close_action);
-
-    state.timeline_ms = 0;
-    const closed = update(&state, 0.01, null, .{ .demo_enabled = true });
-    try std.testing.expectEqual(Action.start_demo, closed.action.?);
-}
-
-test "root menu demo idle is ignored in full builds" {
-    var state: State = .{
-        .timeline_ms = 10_000,
-        .idle_ms = demo_idle_start_ms,
-    };
-    const result = update(&state, 0.0, null, .{ .demo_enabled = false });
-    try std.testing.expectEqual(@as(?Action, null), result.action);
-    try std.testing.expect(!state.closing);
-}
-
 test "root menu close timeline gates action dispatch" {
     const entries = rootEntries(.{});
     const max_ms = rootTimelineMaxMs(entries.slice());
@@ -252,7 +198,6 @@ test "root menu close timeline gates action dispatch" {
     };
 
     beginRootClose(&state, .open_options);
-    try std.testing.expect(!rootInteractive(&state, entries.slice()));
     try std.testing.expect(state.closing);
     try std.testing.expectEqual(@as(?Action, .open_options), state.close_action);
 

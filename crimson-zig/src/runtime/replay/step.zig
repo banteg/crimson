@@ -538,7 +538,7 @@ pub fn stepTick(
             }
 
             const spawn_table_empty_now = spawn_mod.questSpawnTableEmpty(context.questSpawnEntries());
-            if (!context.state.demo_mode_active and context.quest_creatures_none_active and spawn_table_empty_now) {
+            if (context.quest_creatures_none_active and spawn_table_empty_now) {
                 context.state.bonuses.reflex_boost = 0.0;
                 context.state.time_scale_active = false;
             }

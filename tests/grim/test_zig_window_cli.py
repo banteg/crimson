@@ -25,7 +25,7 @@ def test_zig_window_is_installed_by_default_build(window_bin: Path) -> None:
     )
 
     assert result.returncode == 0, dbg_record._command_detail(result)
-    assert "usage: crimson-zig-window [--demo] [--debug] [--preserve-bugs] [--no-intro] [--seed N]" in result.stderr
+    assert "usage: crimson-zig-window [--debug] [--preserve-bugs] [--no-intro] [--seed N]" in result.stderr
     assert "[--smoke-start]" in result.stderr
 
 

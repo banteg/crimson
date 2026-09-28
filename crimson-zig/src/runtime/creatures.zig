@@ -175,7 +175,6 @@ pub const CreaturePool = struct {
     kill_count: i32 = 0,
     update_tick: i32 = 0,
     hardcore: bool = false,
-    demo_mode_active: bool = false,
     quest_fail_retry_count: i32 = 0,
     effects: ?*effects_mod.EffectPool = null,
     single_player_dormant_target: state_mod.PlayerState = .{ .index = 1, .pos = .{} },
@@ -190,7 +189,6 @@ pub const CreaturePool = struct {
         self.kill_count = 0;
         self.update_tick = 0;
         self.hardcore = false;
-        self.demo_mode_active = false;
         self.quest_fail_retry_count = 0;
         self.effects = null;
         self.single_player_dormant_target = .{ .index = 1, .pos = .{} };
@@ -2074,8 +2072,7 @@ pub const CreaturePool = struct {
         if (findSpawnTemplateTailIndex(self, &was_active)) |tail_idx| {
             if (state) |game_state| {
                 const tail_pos = self.entries[tail_idx].pos;
-                if (!game_state.demo_mode_active and
-                    terrain_size > 0.0 and
+                if (terrain_size > 0.0 and
                     tail_pos.x > 0.0 and tail_pos.x < terrain_size and
                     tail_pos.y > 0.0 and tail_pos.y < terrain_size)
                 {
@@ -3941,7 +3938,7 @@ pub fn consumeHitSfxRng(
     projectile_type_id: i32,
 ) HitSfxPlan {
     // Mirrors plan_hit_sfx_keys: first eligible hit starts tune and consumes one RNG draw.
-    if (!state.demo_mode_active and state.game_mode != .rush and !game_tune_started.*) {
+    if (state.game_mode != .rush and !game_tune_started.*) {
         game_tune_started.* = true;
         return .{
             .trigger_game_tune = true,

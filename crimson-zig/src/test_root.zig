@@ -41,7 +41,6 @@ test {
     _ = cz.dbg_verify_native;
     _ = cz.effects;
     _ = cz.terrain_fx;
-    _ = cz.demo_trial;
     _ = cz.hash;
     _ = cz.formats;
     _ = cz.helpers;
@@ -73,7 +72,6 @@ test {
     _ = cz.window_atlas;
     _ = @import("window_assets.zig");
     _ = @import("window_cursor.zig");
-    _ = @import("window_demo_trial.zig");
     _ = @import("window_ground.zig");
     _ = @import("window_main.zig");
     _ = @import("window_menu.zig");
@@ -206,9 +204,8 @@ test "native movement dispatcher ignores computer aim" {
     try std.testing.expectApproxEqAbs(@as(f32, 0.5), player.move_speed, 1e-6);
 }
 
-test "native demo movement accepts sub-deadzone vectors" {
+test "native computer movement accepts sub-deadzone vectors" {
     var state = cz.state.GameplayState.init(1);
-    state.demo_mode_active = true;
     var player: cz.state.PlayerState = .{ .index = 0, .pos = .{} };
     const input: cz.movement.GameInput = .{
         .move_x = 0.05,
@@ -219,7 +216,7 @@ test "native demo movement accepts sub-deadzone vectors" {
             .fire_down = false,
             .fire_pressed = false,
             .reload_pressed = false,
-            .move_mode = cz.local_input.movement_control_dual_action_pad,
+            .move_mode = cz.local_input.movement_control_computer,
         },
     };
 
@@ -1037,7 +1034,7 @@ test "spawn-slot child templates resolve the native random-heading sentinel" {
     }
 }
 
-test "demo creature templates resolve the native random-heading sentinel" {
+test "random-heading creature templates resolve the native sentinel" {
     const template_ids = [_]i32{ 0x34, 0x35, 0x38, 0x41 };
 
     for (template_ids, 0..) |template_id, idx| {
@@ -1315,8 +1312,9 @@ test "hardcore template spawn clears shared quest retry state" {
     var pool: cz.creatures.CreaturePool = .{};
     pool.hardcore = true;
     pool.quest_fail_retry_count = 4;
+    var effects: cz.effects.EffectPool = .{};
+    pool.effects = &effects;
     var state = cz.state.GameplayState.init(1);
-    state.demo_mode_active = true;
     state.quest_fail_retry_count = 4;
     var rng = cz.spawn.Crand.init(0xBEEF);
 

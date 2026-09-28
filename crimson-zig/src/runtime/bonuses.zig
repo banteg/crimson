@@ -107,7 +107,6 @@ pub const BonusPool = struct {
         players: []const state_mod.PlayerState,
         world_size: f32,
     ) ?*BonusEntry {
-        if (state.demo_mode_active) return null;
         if (state.game_mode == .rush or state.game_mode == .typo or state.game_mode == .tutorial) return null;
         if (state.bonus_spawn_guard) return null;
         if (players.len == 0) return null;
@@ -1412,25 +1411,14 @@ test "bonus pool spawn-on-kill can materialize weapon drop" {
     try std.testing.expect(spawned);
 }
 
-test "bonus spawn-on-kill is suppressed in typo rush tutorial and demo modes" {
+test "bonus spawn-on-kill is suppressed in typo rush and tutorial modes" {
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 256.0, .y = 256.0 } },
     };
 
-    const cases = [_]struct {
-        game_mode: GameModeId,
-        demo_mode_active: bool,
-    }{
-        .{ .game_mode = .typo, .demo_mode_active = false },
-        .{ .game_mode = .rush, .demo_mode_active = false },
-        .{ .game_mode = .tutorial, .demo_mode_active = false },
-        .{ .game_mode = .survival, .demo_mode_active = true },
-    };
-
-    for (cases) |case| {
+    for ([_]GameModeId{ .typo, .rush, .tutorial }) |game_mode| {
         var state = state_mod.GameplayState.init(123);
-        state.game_mode = case.game_mode;
-        state.demo_mode_active = case.demo_mode_active;
+        state.game_mode = game_mode;
         var pool: BonusPool = .{};
         const spawned = pool.trySpawnOnKill(
             .{ .x = 300.0, .y = 300.0 },
@@ -1864,9 +1852,8 @@ test "weapon refresh available unlocks quest weapon ids by unlock index" {
     try std.testing.expect(!state.weapon_available.get(.shotgun));
 }
 
-test "weapon refresh keeps full version unlocks in demo mode" {
+test "weapon refresh available uses the full version unlock index outside quests" {
     var state = state_mod.GameplayState.init(1);
-    state.demo_mode_active = true;
     state.status_quest_unlock_index_full = 0x28;
 
     weaponRefreshAvailable(&state);

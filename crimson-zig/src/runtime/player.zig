@@ -64,7 +64,6 @@ pub fn incrementWeaponUsage(
     state: *GameplayState,
     weapon_id: WeaponId,
 ) void {
-    if (state.demo_mode_active) return;
     const current = state.status_weapon_usage_counts.get(weapon_id);
     state.status_weapon_usage_counts.set(weapon_id, current +% 1);
 }

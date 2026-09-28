@@ -449,7 +449,6 @@ pub fn stepPlayerForTickWithEffects(
     // reloads back-to-back as each one completes.
     const manual_reload_allowed =
         (input_flags.reload_down or input_flags.reload_pressed) and
-        !state.demo_mode_active and
         !has_alt_weapon_perk and
         input_flags.move_mode != movement_control_mouse_point_click and
         input_flags.single_player_mode and

@@ -267,7 +267,6 @@ pub const GameplayState = struct {
     plaguebearer_infection_count: i32 = 0,
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},
-    demo_mode_active: bool = false,
     game_tune_started: bool = false,
     hardcore: bool = false,
     preserve_bugs: bool = false,

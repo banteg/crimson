@@ -22,7 +22,6 @@ const SpawnPlanRequest = struct {
     pos: spawn_runtime.Vec2 = .{ .x = 512.0, .y = 512.0 },
     heading: f32 = 0.0,
     terrain_size: f32 = 1024.0,
-    demo_mode_active: bool = true,
     hardcore: bool = false,
     quest_fail_retry_count: i32 = 0,
 };
@@ -79,7 +78,6 @@ const SpawnPlanPayload = struct {
     },
     heading: f32,
     terrain_size: f32,
-    demo_mode_active: bool,
     hardcore: bool,
     quest_fail_retry_count: i32,
     active_count: usize,
@@ -113,7 +111,6 @@ fn runSpawnPlanRequest(
     pool.effects = &effects;
 
     var state = state_runtime.GameplayState.init(request.seed);
-    state.demo_mode_active = request.demo_mode_active;
     state.hardcore = request.hardcore;
     state.quest_fail_retry_count = request.quest_fail_retry_count;
 
@@ -164,8 +161,8 @@ fn buildHumanOutput(
         .{ request.pos.x, request.pos.y, request.heading, request.seed, rng_state },
     );
     try writer.print(
-        "active={d} slots={d} effects={d} demo_mode_active={} terrain_size={d:.1} hardcore={} quest_fail_retry_count={d}\n\n",
-        .{ pool.activeCount(), pool.spawn_slot_count, effect_count, request.demo_mode_active, request.terrain_size, request.hardcore, request.quest_fail_retry_count },
+        "active={d} slots={d} effects={d} terrain_size={d:.1} hardcore={} quest_fail_retry_count={d}\n\n",
+        .{ pool.activeCount(), pool.spawn_slot_count, effect_count, request.terrain_size, request.hardcore, request.quest_fail_retry_count },
     );
 
     try writer.writeAll("creatures:\n");
@@ -262,7 +259,6 @@ fn buildJsonOutput(
         .pos = .{ .x = request.pos.x, .y = request.pos.y },
         .heading = request.heading,
         .terrain_size = request.terrain_size,
-        .demo_mode_active = request.demo_mode_active,
         .hardcore = request.hardcore,
         .quest_fail_retry_count = request.quest_fail_retry_count,
         .active_count = creature_len,
@@ -343,14 +339,6 @@ fn parseArgs(args: []const []const u8) ParseOutcome {
         }
         if (std.mem.startsWith(u8, arg, "--terrain-size=")) {
             request.terrain_size = parsePositiveFloat(arg["--terrain-size=".len..]) orelse return .{ .invalid = "invalid --terrain-size value" };
-            continue;
-        }
-        if (std.mem.eql(u8, arg, "--demo-mode-active")) {
-            request.demo_mode_active = true;
-            continue;
-        }
-        if (std.mem.eql(u8, arg, "--no-demo-mode-active")) {
-            request.demo_mode_active = false;
             continue;
         }
         if (std.mem.eql(u8, arg, "--hardcore")) {
@@ -441,7 +429,6 @@ test "spawn-plan parser accepts json options" {
         "--heading",
         "1.5",
         "--terrain-size=2048",
-        "--no-demo-mode-active",
         "--hardcore",
         "--quest-fail-retry-count=2",
     });
@@ -454,7 +441,6 @@ test "spawn-plan parser accepts json options" {
     try std.testing.expectEqual(@as(f32, 200.0), request.pos.y);
     try std.testing.expectEqual(@as(f32, 1.5), request.heading);
     try std.testing.expectEqual(@as(f32, 2048.0), request.terrain_size);
-    try std.testing.expect(!request.demo_mode_active);
     try std.testing.expect(request.hardcore);
     try std.testing.expectEqual(@as(i32, 2), request.quest_fail_retry_count);
 }
@@ -477,11 +463,11 @@ test "spawn-plan invalid template detail avoids unsupported wording" {
     try std.testing.expect(std.mem.indexOf(u8, output.stderr, "unsupported") == null);
 }
 
-test "spawn-plan counts runtime burst effects outside demo mode" {
+test "spawn-plan counts runtime burst effects" {
     var arena = std.heap.ArenaAllocator.init(std.testing.allocator);
     defer arena.deinit();
 
-    const output = try runSpawnPlan(arena.allocator(), &.{ "0x24", "--json", "--no-demo-mode-active" });
+    const output = try runSpawnPlan(arena.allocator(), &.{ "0x24", "--json" });
     try std.testing.expectEqual(@as(u8, 0), output.exit_code);
     try std.testing.expect(std.mem.indexOf(u8, output.stdout, "\"effect_count\":8") != null);
 }
