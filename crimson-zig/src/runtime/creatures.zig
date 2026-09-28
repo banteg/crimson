@@ -181,6 +181,9 @@ pub const CreaturePool = struct {
     single_player_dormant_target: state_mod.PlayerState = .{ .index = 1, .pos = .{} },
     spawn_slots: [max_spawn_slots]spawn_mod.SpawnSlotInit = [_]spawn_mod.SpawnSlotInit{empty_spawn_slot} ** max_spawn_slots,
     spawn_slot_count: usize = 0,
+    /// Counts every slot allocation, so lookups built over the pool can tell
+    /// when a creature appeared since they last looked.
+    alloc_count: u32 = 0,
 
     pub fn reset(self: *CreaturePool) void {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
@@ -231,8 +234,14 @@ pub const CreaturePool = struct {
         return null;
     }
 
-    pub fn spawnInit(self: *CreaturePool, init: spawn_mod.CreatureInit) ?usize {
+    fn allocSlot(self: *CreaturePool) ?usize {
         const slot = self.findFreeSlot() orelse return null;
+        self.alloc_count +%= 1;
+        return slot;
+    }
+
+    pub fn spawnInit(self: *CreaturePool, init: spawn_mod.CreatureInit) ?usize {
+        const slot = self.allocSlot() orelse return null;
         return self.spawnInitAt(slot, init);
     }
 
@@ -1456,7 +1465,7 @@ pub const CreaturePool = struct {
             @intFromEnum(spawn_mod.SpawnId.unused_02) => {
                 // No template body: native falls through to the "Unhandled
                 // creatureType" block, so the root keeps its recycled stats.
-                const slot = self.findFreeSlot() orelse return;
+                const slot = self.allocSlot() orelse return;
                 const stale = self.entries[slot];
                 _ = self.spawnFromStats(
                     rng,
@@ -3122,7 +3131,7 @@ pub const CreaturePool = struct {
         set_heading: bool,
         preserve_max_health: bool,
     ) ?usize {
-        const slot = self.findFreeSlot() orelse return null;
+        const slot = self.allocSlot() orelse return null;
         const phase_seed = drawAllocPhaseSeed(rng);
         if (set_heading) {
             _ = drawResolvedSpawnHeadingAfterAlloc(rng, heading);
@@ -4146,7 +4155,7 @@ fn spawnSplitChildrenOnDeath(
 fn allocCreatureSlot(
     self: *CreaturePool,
 ) ?usize {
-    return self.findFreeSlot();
+    return self.allocSlot();
 }
 
 fn emitBonusOnKillBurst(

@@ -421,7 +421,7 @@ class SecondaryProjectilePool:
         effects = runtime_state.effects
         sprite_effects = runtime_state.sprite_effects
 
-        creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
+        creature_spatial = CreatureSpatialHash(pool=step_runtime.world.creatures, is_collidable=_creature_is_collidable)
         hit_count = 0
 
         for entry in self._entries:

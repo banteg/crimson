@@ -564,6 +564,9 @@ class CreaturePool:
         self.spawn_slots: list[SpawnSlotInit] = []
         self.kill_count = 0
         self.spawned_count = 0
+        # Counts every slot allocation, so lookups built over the pool can tell
+        # when a creature appeared since they last looked.
+        self.alloc_count = 0
         self._update_tick = 0
         self._single_player_dormant_target: PlayerState | None = None
 
@@ -618,6 +621,7 @@ class CreaturePool:
         for i, entry in enumerate(self._entries):
             if not entry.active:
                 entry.generation += 1
+                self.alloc_count += 1
                 return i
         return None
 

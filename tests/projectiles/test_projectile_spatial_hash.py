@@ -14,13 +14,18 @@ def _is_collidable(creature: CreatureState) -> bool:
     return bool(creature.active) and float(creature.lifecycle_stage) > 5.0
 
 
+def _spatial_over(creatures: list[CreatureState]) -> tuple[list[CreatureState], CreatureSpatialHash]:
+    world = make_world()
+    entries = place_creatures(world, creatures)
+    return entries, CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
+
+
 def test_creature_spatial_hash_returns_sorted_candidates_across_cells() -> None:
     # Keep the lower index in a later cell so bucket traversal order differs from index order.
-    creatures: list[CreatureState] = [
+    _, spatial = _spatial_over([
         _creature(pos=Vec2(130.0, 0.0), hp=1.0),
         _creature(pos=Vec2(70.0, 0.0), hp=1.0),
-    ]
-    spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_is_collidable)
+    ])
 
     candidates = spatial.candidate_indices(pos=Vec2(96.0, 0.0), radius=8.0)
 
@@ -28,8 +33,7 @@ def test_creature_spatial_hash_returns_sorted_candidates_across_cells() -> None:
 
 
 def test_creature_spatial_hash_sync_updates_membership() -> None:
-    creatures: list[CreatureState] = [_creature(pos=Vec2(16.0, 16.0), hp=1.0)]
-    spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_is_collidable)
+    creatures, spatial = _spatial_over([_creature(pos=Vec2(16.0, 16.0), hp=1.0)])
 
     assert 0 in spatial.candidate_indices(pos=Vec2(16.0, 16.0), radius=8.0)
 
@@ -70,8 +74,7 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
 
 
 def test_same_cell_size_growth_updates_query_margin() -> None:
-    creatures = [_creature(pos=Vec2(128.0, 0.0), hp=1.0, size=10.0)]
-    spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_is_collidable)
+    creatures, spatial = _spatial_over([_creature(pos=Vec2(128.0, 0.0), hp=1.0, size=10.0)])
     assert spatial.candidate_indices(pos=Vec2(), radius=1.0) == []
     creatures[0].size = 1000.0
     spatial.sync_index(0)
@@ -92,10 +95,22 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     parent.max_hp = 400.0
     parent.size = 40.0
     step_runtime = make_step_runtime(world)
-    spatial = CreatureSpatialHash(creatures=world.creatures.entries, is_collidable=_is_collidable)
+    spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
     explosion = SecondaryProjectile(active=True, pos=parent.pos, detonation_scale=1.0)
     ctx = SecondaryStepCtx(step_runtime=step_runtime, dt=0.1)
     _step_detonation(explosion, ctx, dt=0.1, creature_spatial=spatial, rng=world.state.rng)
     children = [c for c in world.creatures.entries[1:] if c.active]
     assert len(children) >= 2
     assert all(c.hp < 100.0 for c in children)
+
+
+def test_creature_spatial_hash_sees_slots_allocated_after_it_was_built() -> None:
+    world = make_world()
+    spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
+    assert spatial.candidate_indices(pos=Vec2(300.0, 300.0), radius=8.0) == []
+
+    index = world.creatures._alloc_slot()
+    assert index is not None
+    world.creatures.entries[index] = _creature(pos=Vec2(300.0, 300.0), hp=1.0)
+
+    assert spatial.candidate_indices(pos=Vec2(300.0, 300.0), radius=8.0) == [index]

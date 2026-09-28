@@ -10,20 +10,27 @@ import msgspec
 from grim.geom import Vec2
 
 from ...collision_math import native_find_size_margin
-from ...creatures.spawn_ids import CreatureFlags
 
 if TYPE_CHECKING:
-    from ...creatures.runtime import CreatureState
+    from ...creatures.runtime import CreaturePool, CreatureState
 
 _SPATIAL_BUCKET_SIZE = 64.0
 _NATIVE_FIND_RADIUS_MARGIN_EPS = 0.001
 
 
 class CreatureSpatialHash(msgspec.Struct):
-    creatures: Sequence[CreatureState]
+    """Bucketed stand-in for native `creature_find_in_radius`'s index scan.
+
+    Native scans every slot's live state per query. The buckets agree with that
+    as long as they see every change: callers sync the creatures they move, and
+    any slot allocation (split children born mid-pass) rebuilds the buckets
+    before the next query.
+    """
+
+    pool: CreaturePool
     is_collidable: Callable[[CreatureState], bool]
     bucket_size: float = _SPATIAL_BUCKET_SIZE
-    _scan_live_pool: bool = False
+    _built_alloc_count: int = -1
     _cells: dict[tuple[int, int], list[int]] = msgspec.field(default_factory=dict)
     _cell_by_index: list[tuple[int, int] | None] = msgspec.field(default_factory=list)
     _max_find_margin: float = 0.0
@@ -33,20 +40,19 @@ class CreatureSpatialHash(msgspec.Struct):
             self.bucket_size = _SPATIAL_BUCKET_SIZE
         self.rebuild()
 
+    @property
+    def creatures(self) -> Sequence[CreatureState]:
+        return self.pool.entries
+
     def rebuild(self) -> None:
         cells: dict[tuple[int, int], list[int]] = defaultdict(list)
         cell_by_index: list[tuple[int, int] | None] = [None] * len(self.creatures)
         max_find_margin = 0.0
-        self._scan_live_pool = False
+        self._built_alloc_count = self.pool.alloc_count
 
         for idx, creature in enumerate(self.creatures):
             if not self.is_collidable(creature):
                 continue
-            # Death can replace other slots while a query is being consumed.
-            # A native index scan sees those children immediately, including
-            # children born later in the same explosion loop.
-            if creature.flags & CreatureFlags.SPLIT_ON_DEATH:
-                self._scan_live_pool = True
             cell = self._cell_for_pos(creature.pos)
             cells[cell].append(int(idx))
             cell_by_index[int(idx)] = cell
@@ -84,8 +90,8 @@ class CreatureSpatialHash(msgspec.Struct):
 
 
     def candidate_indices(self, *, pos: Vec2, radius: float) -> list[int]:
-        if self._scan_live_pool:
-            return list(range(len(self.creatures)))
+        if self.pool.alloc_count != self._built_alloc_count:
+            self.rebuild()
         if not self._cells:
             return []
         proj_cell_x = int(math.floor(float(pos.x) / self.bucket_size))

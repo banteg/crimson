@@ -188,27 +188,24 @@ pub const ProjectilePool = struct {
         }
         var hit_audio_game_tune_started = state.game_tune_started;
         var tick_stats: ProjectileTickStats = .{};
-        // Mirror Python/native spatial-hash behavior for one projectile update pass:
-        // candidate slots are seeded from collidable-at-pass-start state and only
-        // synced for indices touched by damage resolution.
+        // Bucketed stand-in for native `creature_find_in_radius`, as in Python:
+        // candidate slots are seeded from collidable-at-pass-start state, synced
+        // for indices touched by damage resolution, and rebuilt after any slot
+        // allocation.
         var collidable_snapshot = [_]bool{false} ** creatures_mod.max_creatures;
         var candidate_cell_x = [_]i32{0} ** creatures_mod.max_creatures;
         var candidate_cell_y = [_]i32{0} ** creatures_mod.max_creatures;
         var candidate_has_cell = [_]bool{false} ** creatures_mod.max_creatures;
-        var max_find_margin: f32 = 0.0;
         const bucket_size: f32 = 64.0;
-        for (creatures.entries, 0..) |creature, idx| {
-            collidable_snapshot[idx] = creature.active and
-                creature_lifecycle.isCollidable(creature.lifecycle_stage);
-            if (!collidable_snapshot[idx]) continue;
-            candidate_has_cell[idx] = true;
-            candidate_cell_x[idx] = @intFromFloat(@floor(creature.pos.x / bucket_size));
-            candidate_cell_y[idx] = @intFromFloat(@floor(creature.pos.y / bucket_size));
-            const find_margin = narrowF32(creature.size * 0.14285715 + 3.0);
-            if (find_margin > max_find_margin) {
-                max_find_margin = find_margin;
-            }
-        }
+        var max_find_margin = snapshotCandidates(
+            creatures,
+            bucket_size,
+            &collidable_snapshot,
+            &candidate_cell_x,
+            &candidate_cell_y,
+            &candidate_has_cell,
+        );
+        var built_alloc_count = creatures.alloc_count;
 
         for (&self.entries, 0..) |*proj, proj_idx| {
             if (!proj.active) continue;
@@ -296,6 +293,19 @@ pub const ProjectilePool = struct {
                 acc = .{};
 
                 var hit_idx: ?usize = null;
+                // Native scans every slot's live state per query; a slot allocated
+                // mid-pass (split children) must reach the buckets before this one.
+                if (creatures.alloc_count != built_alloc_count) {
+                    built_alloc_count = creatures.alloc_count;
+                    max_find_margin = snapshotCandidates(
+                        creatures,
+                        bucket_size,
+                        &collidable_snapshot,
+                        &candidate_cell_x,
+                        &candidate_cell_y,
+                        &candidate_has_cell,
+                    );
+                }
                 const proj_cell_x: i32 = @intFromFloat(@floor(proj.pos.x / bucket_size));
                 const proj_cell_y: i32 = @intFromFloat(@floor(proj.pos.y / bucket_size));
                 const max_axis_delta = narrowF32(proj.hit_radius + max_find_margin + 0.001);
@@ -1215,6 +1225,32 @@ fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
     return weapon_data.weapon_stats.get(weapon_id).travel_budget;
 }
 
+/// Seed the bucketed stand-in for native `creature_find_in_radius` from the
+/// pool's live state; returns the largest find margin.
+fn snapshotCandidates(
+    creatures: *const creatures_mod.CreaturePool,
+    bucket_size: f32,
+    collidable: *[creatures_mod.max_creatures]bool,
+    cell_x: *[creatures_mod.max_creatures]i32,
+    cell_y: *[creatures_mod.max_creatures]i32,
+    has_cell: *[creatures_mod.max_creatures]bool,
+) f32 {
+    var max_find_margin: f32 = 0.0;
+    for (creatures.entries, 0..) |creature, idx| {
+        collidable[idx] = creature.active and
+            creature_lifecycle.isCollidable(creature.lifecycle_stage);
+        has_cell[idx] = collidable[idx];
+        if (!collidable[idx]) continue;
+        cell_x[idx] = @intFromFloat(@floor(creature.pos.x / bucket_size));
+        cell_y[idx] = @intFromFloat(@floor(creature.pos.y / bucket_size));
+        const find_margin = narrowF32(creature.size * 0.14285715 + 3.0);
+        if (find_margin > max_find_margin) {
+            max_find_margin = find_margin;
+        }
+    }
+    return max_find_margin;
+}
+
 fn damageScaleFromRawId(raw_id: i32) f32 {
     const weapon_id = weapon_data.weaponIdFromInt(raw_id);
     return weapon_data.weapon_stats.get(weapon_id).damage_scale;
@@ -1677,7 +1713,7 @@ test "plague spreader hit infects the target before damage" {
     try std.testing.expect(creatures.entries[0].plague_infected);
 }
 
-test "projectile hit pass does not retarget newly spawned split children in new slots" {
+test "projectile hit pass hits split children born earlier in the same pass" {
     var state = state_mod.GameplayState.init(1);
     state.bonus_spawn_guard = true;
     var players = [_]state_mod.PlayerState{
@@ -1721,9 +1757,9 @@ test "projectile hit pass does not retarget newly spawned split children in new 
     try std.testing.expect(tick.hit_count > 2);
     try std.testing.expect(creatures.entries[39].active);
     try std.testing.expect(creatures.entries[39].hp < 0.0);
-    // Child spawned into previously inactive index 0 should not be retargeted until next update pass.
-    try std.testing.expect(creatures.entries[0].active);
-    try expectFloatClose(100.0, creatures.entries[0].hp);
+    // Native `creature_find_in_radius` scans live slots, so the child born into
+    // the lower index 0 takes the projectile's remaining hits in the same pass.
+    try std.testing.expect(creatures.entries[0].hp < 100.0);
 }
 
 test "poison bullets sets weak self-damage flag when rng roll hits" {

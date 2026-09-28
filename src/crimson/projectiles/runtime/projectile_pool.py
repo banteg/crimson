@@ -187,7 +187,7 @@ class ProjectilePool:
                 return False
             return creature_lifecycle_is_collidable(creature.lifecycle_stage)
 
-        creature_spatial = CreatureSpatialHash(creatures=creatures, is_collidable=_creature_is_collidable)
+        creature_spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_creature_is_collidable)
 
         def _damage_scale(type_id: int) -> float:
             return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).damage_scale)
