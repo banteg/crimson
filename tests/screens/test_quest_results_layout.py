@@ -74,7 +74,8 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     )
     ui.phase = int(phase)
     ui.rank = 0
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.QUEST_RESULTS)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.QUEST_RESULTS))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     ui.breakdown = QuestFinalTime(
         base_time_ms=17_610,
         life_bonus_ms=0,
@@ -171,18 +172,20 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) 
         config=_test_config(shadows_enabled=0),
     )
 
-    ui._closing = True
-    ui._intro_ms = 0.0
+    ui.timeline.closing = True
+    ui.timeline.timeline_ms = int(0.0)
     assert ui.world_entity_alpha() == 0.0
 
-    ui._intro_ms = ui_element_timeline_window(28)[1] * 0.5
+    ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
     assert ui.world_entity_alpha() == 0.5
 
     # The UI timeline stops at 400 ms, so closing starts from 400 / 500.
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.QUEST_RESULTS)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.QUEST_RESULTS))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
+    ui.timeline.closing = True
     assert ui.world_entity_alpha() == 0.8
 
-    ui._closing = False
+    ui.timeline.closing = False
     assert ui.world_entity_alpha() == 1.0
 
 

@@ -39,9 +39,9 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     state.resources = _resources_stub()
     view = PauseMenuView(state)
     view._is_open = True
-    view._transition.closing = True
-    view._transition.action = Route.MENU
-    view._transition.timeline_ms = ui_element_timeline_window(28)[1] // 2
+    view.state.ui.closing = True
+    view.state.ui.pending = Route.MENU
+    view.state.ui.timeline_ms = ui_element_timeline_window(28)[1] // 2
 
     mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
@@ -66,9 +66,9 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     state.resources = _resources_stub()
     view = PauseMenuView(state)
     view._is_open = True
-    view._transition.closing = True
-    view._transition.action = Route.BACK
-    view._transition.timeline_ms = 0
+    view.state.ui.closing = True
+    view.state.ui.pending = Route.BACK
+    view.state.ui.timeline_ms = 0
 
     mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)

@@ -67,7 +67,8 @@ def _resources_for_score_card() -> RuntimeResources:
 
 def test_game_over_panel_layout_uses_native_panel_anchor(tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
 
     layout_640 = ui._panel_layout(screen_w=640.0)
     assert layout_640.top_left.y == 29.0
@@ -82,7 +83,8 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
     ui.phase = 1
     ui.rank = 0
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     button_update = mocker.patch.object(game_over_module, "button_update", return_value=False)
@@ -105,7 +107,8 @@ def test_game_over_phase1_button_x_uses_native_banner_anchor(monkeypatch, patch_
 def test_game_over_name_entry_flushes_buffered_text_input(monkeypatch, patch_raylib_module, tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
     ui.phase = -1
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     record = HighScoreRecord.blank()
@@ -149,7 +152,8 @@ def test_game_over_name_entry_waits_for_controls_release(patch_raylib_module, tm
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
     ui.phase = 0
     ui.rank = 0
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     ui.input_text = "user"
     ui.input_caret = len(ui.input_text)
     ui._defer_name_input_until_controls_released = True
@@ -184,7 +188,8 @@ def test_game_over_name_entry_uses_shared_ui_text_input_typeclick_caller(
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config(game_mode=1))
     ui.phase = 0
     ui.rank = 0
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     ui._panel_open_sfx_played = True
     ui.input_text = "user"
     ui.input_caret = len(ui.input_text)
@@ -222,7 +227,8 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     )
     ui.phase = 1
     ui.rank = 0
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER)
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     draw_classic_menu_panel = mocker.patch.object(game_over_module, "draw_classic_menu_panel")
@@ -251,13 +257,13 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
 def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=_test_config())
 
-    ui._closing = True
-    ui._intro_ms = ui_element_timeline_window(28)[1] * 0.5
+    ui.timeline.closing = True
+    ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
     assert ui.world_entity_alpha() == 0.5
 
-    ui._intro_ms = -1.0
+    ui.timeline.timeline_ms = int(-1.0)
     assert ui.world_entity_alpha() == 0.0
 
-    ui._closing = False
-    ui._intro_ms = 0.0
+    ui.timeline.closing = False
+    ui.timeline.timeline_ms = int(0.0)
     assert ui.world_entity_alpha() == 1.0

@@ -281,6 +281,9 @@ class BaseGameplayMode:
 
     def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
+        if fade is not None:
+            # The game-over panel runs on the one menu timeline (`game_state_set(GAME_OVER)`).
+            self._game_over_ui.timeline = fade.ui
 
     def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None:
         self.audio = audio

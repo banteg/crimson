@@ -31,7 +31,7 @@ class ModsMenuView(PanelMenuView):
 
     def _content_layout(self) -> _ModsContentLayout:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )

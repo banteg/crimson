@@ -6,7 +6,6 @@ from crimson.game_states import GameStateId
 from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline, world_fade_alpha
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -45,8 +44,6 @@ class PauseMenuView:
         self._selected_index = 0
         self._focus_timer_ms = 0
         self._hovered_index: int | None = None
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = 0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._panel_open_sfx_played = False
@@ -68,13 +65,12 @@ class PauseMenuView:
         self._selected_index = 0 if self._menu_entries else -1
         self._focus_timer_ms = 0
         self._hovered_index = None
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.PAUSE_MENU)
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.PAUSE_MENU))
         self._panel_open_sfx_played = False
         self._is_open = True
 
     def resume(self) -> None:
-        self._transition.reset()
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.PAUSE_MENU))
         self._hovered_index = None
         self._panel_open_sfx_played = False
 
@@ -88,13 +84,13 @@ class PauseMenuView:
             update_audio(self.state.audio, dt)
 
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             return
 
         if dt_ms > 0:
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
-            if self._transition.timeline_ms >= self._transition.duration_ms:
+            if self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
                 self.state.menu_sign_locked = True
                 if (not self._panel_open_sfx_played) and (self.state.audio is not None):
                     play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -151,13 +147,13 @@ class PauseMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=self.state.menu_sign_locked,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "PauseMenuView must be opened before use"
@@ -165,9 +161,9 @@ class PauseMenuView:
     def _pause_background_entity_alpha(self) -> float:
         # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
         # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
-        if (not self._transition.closing) or (self._transition.action != Route.MENU):
+        if (not self.state.ui.closing) or (self.state.ui.pending != Route.MENU):
             return 1.0
-        return world_fade_alpha(self._transition.timeline_ms)
+        return world_fade_alpha(self.state.ui.timeline_ms)
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):
@@ -191,9 +187,9 @@ class PauseMenuView:
         return None
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)
@@ -218,7 +214,7 @@ class PauseMenuView:
         return None
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._transition.timeline_ms >= ui_element_timeline_window(entry.slot + 23)[1]
+        return self.state.ui.timeline_ms >= ui_element_timeline_window(entry.slot + 23)[1]
 
     def _draw_menu_items(self) -> None:
         if not self._menu_entries:
@@ -230,7 +226,7 @@ class PauseMenuView:
             entry = self._menu_entries[idx]
             pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
             angle_rad, slide_x = ui_element_anim(
-                self._transition.timeline_ms,
+                self.state.ui.timeline_ms,
                 index=entry.slot + 23,
                 width=item_w,
             )

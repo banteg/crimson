@@ -4,7 +4,6 @@ from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -80,9 +79,6 @@ class HighScoresView:
         self._ground: GroundRenderer | None = None
         self._dt = 0.0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES)
-        self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -99,8 +95,7 @@ class HighScoresView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES)
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.HIGHSCORES))
         self._scroll_index = 0
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
@@ -138,10 +133,10 @@ class HighScoresView:
         self._dt = min(dt, 0.1)
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        enabled = self._transition.timeline_ms >= self._transition.duration_ms
+        enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self._dropdown is not None:
@@ -157,13 +152,13 @@ class HighScoresView:
         # Compute animated panel positions so hit-tests match the draw path even while sliding.
         panel_w = MENU_PANEL_WIDTH
         _angle_rad, left_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=9,
             width=panel_w,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=33,
             width=panel_w,
             direction_flag=1,
@@ -251,7 +246,7 @@ class HighScoresView:
                 self._scroll_index = max_scroll
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
         if action == Route.BACK and self._return_context is not None:
             self._return_context.restore(self.state.config)
@@ -267,7 +262,7 @@ class HighScoresView:
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _start_selected_game(self) -> None:
         request = self._request
@@ -581,13 +576,13 @@ class HighScoresView:
         shadows_enabled = self.state.config.display.shadows_enabled
         panel_w = MENU_PANEL_WIDTH
         _angle_rad, left_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=9,
             width=panel_w,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=33,
             width=panel_w,
             direction_flag=1,
@@ -640,9 +635,9 @@ class HighScoresView:
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def _world_entity_alpha(self) -> float:
-        if not self._transition.closing:
+        if not self.state.ui.closing:
             return 1.0
-        alpha = float(self._transition.timeline_ms) / ui_elements_max_timeline(GameStateId.HIGHSCORES)
+        alpha = float(self.state.ui.timeline_ms) / ui_elements_max_timeline(GameStateId.HIGHSCORES)
         if alpha < 0.0:
             return 0.0
         if alpha > 1.0:
@@ -651,7 +646,7 @@ class HighScoresView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "HighScoresView must be opened before use"

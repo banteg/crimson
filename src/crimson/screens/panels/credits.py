@@ -5,7 +5,6 @@ import msgspec
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -220,8 +219,6 @@ class CreditsView:
         self._ground: GroundRenderer | None = None
 
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.CREDITS)
 
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
@@ -238,8 +235,7 @@ class CreditsView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.CREDITS)
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.CREDITS))
 
         self._lines, self._line_max_index, self._secret_line_base_index = _credits_build_lines()
         self._secret_unlock = False
@@ -260,15 +256,15 @@ class CreditsView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "CreditsView must be opened before use"
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _panel_top_left(self) -> Vec2:
         return Vec2(
@@ -297,7 +293,7 @@ class CreditsView:
 
     def _panel_slide_x(self) -> float:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
@@ -411,13 +407,13 @@ class CreditsView:
         dt_clamped = min(float(dt), 0.1)
         dt_ms = int(dt_clamped * 1000.0)
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
         self._scroll_time_s += dt_clamped
         self._update_scroll_window()
 
-        interactive = self._transition.timeline_ms >= self._transition.duration_ms
+        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
@@ -536,6 +532,6 @@ class CreditsView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         ui_cursor_render(resources, dt=self.state.frame_dt)

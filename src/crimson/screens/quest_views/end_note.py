@@ -51,10 +51,6 @@ class EndNoteView:
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._ground: GroundRenderer | None = None
-        self._action: ScreenAction | None = None
-        self._timeline_ms = 0
-        self._closing = False
-        self._close_action: ScreenAction | None = None
 
         self._survival_button = UiButtonState("Survival", force_wide=True)
         self._rush_button = UiButtonState("  Rush  ", force_wide=True)
@@ -62,16 +58,11 @@ class EndNoteView:
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def open(self) -> None:
-        self._action = None
-        self._timeline_ms = 0
-        self._closing = False
-        self._close_action = None
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE))
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
 
     def close(self) -> None:
         self._ground = None
-        self._closing = False
-        self._close_action = None
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
@@ -80,21 +71,14 @@ class EndNoteView:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
         dt_ms = int(dt_step * 1000.0)
-        if self._closing:
-            if dt_ms > 0 and self._action is None:
-                self._timeline_ms -= dt_ms
-                if self._timeline_ms < 0 and self._close_action is not None:
-                    self._action = self._close_action
-                    self._close_action = None
+        panel_was_hidden = not self.state.ui.opened
+        if not self.state.ui.advance(int(dt_ms)):
             return
-        if dt_ms > 0:
-            panel_was_hidden = self._timeline_ms < ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE)
-            self._timeline_ms = min(ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE), self._timeline_ms + dt_ms)
-            if panel_was_hidden and self._timeline_ms >= ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE) and self.state.audio is not None:
-                # ui_element_update clicks as the panel element becomes enabled.
-                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
+        if panel_was_hidden and self.state.ui.opened and self.state.audio is not None:
+            # ui_element_update clicks as the panel element becomes enabled.
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
-        enabled = self._timeline_ms >= ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE)
+        enabled = self.state.ui.opened
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(Route.MENU)
             return
@@ -232,33 +216,30 @@ class EndNoteView:
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
-        action = self._action
-        self._action = None
-        return action
+        return self.state.ui.take_action()
 
     def _panel_top_left(self) -> Vec2:
         # game_update_victory_screen offsets the panel and its text by slot 35's slide.
-        slide_x = ui_element_anim(self._timeline_ms, index=35, width=END_NOTE_PANEL_W)[1]
+        slide_x = ui_element_anim(self.state.ui.timeline_ms, index=35, width=END_NOTE_PANEL_W)[1]
         return Vec2(
             END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X + slide_x,
             END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + menu_widescreen_y_shift(float(canvas.width())),
         )
 
     def _world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self.state.ui.closing:
             return 1.0
-        return world_fade_alpha(self._timeline_ms)
+        return world_fade_alpha(self.state.ui.timeline_ms)
 
     def _begin_close_transition(self, action: ScreenAction, *, fade_to_black: bool = False) -> None:
-        if self._closing:
+        if self.state.ui.closing:
             return
         if fade_to_black:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._closing = True
-        self._close_action = action
+        self.state.ui.begin(action)
 
 
 __all__ = ["EndNoteView"]

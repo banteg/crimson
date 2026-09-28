@@ -5,7 +5,6 @@ from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -81,8 +80,6 @@ class QuestsMenuView:
 
         self._stage = 1
         self._dirty = False
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.QUEST_SELECT)
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -93,8 +90,7 @@ class QuestsMenuView:
         self._init_ground()
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.QUEST_SELECT)
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.QUEST_SELECT))
         self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
@@ -123,10 +119,10 @@ class QuestsMenuView:
             self._ground.process_pending()
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        if dt_ms > 0 and self._transition.timeline_ms >= self._transition.duration_ms:
+        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
             self.state.menu_sign_locked = True
             if (not self._panel_open_sfx_played) and (self.state.audio is not None):
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -143,7 +139,7 @@ class QuestsMenuView:
                 status.quest_unlock_index_full = unlock
             self.state.console.log.log("debug: unlocked everything")
 
-        enabled = self._transition.timeline_ms >= self._transition.duration_ms
+        enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(Route.BACK)
@@ -215,14 +211,14 @@ class QuestsMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=self.state.menu_sign_locked,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         self._draw_contents()
         ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "QuestsMenuView must be opened before use"
@@ -232,7 +228,7 @@ class QuestsMenuView:
 
     def _layout(self) -> _QuestMenuLayout:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=37,
             width=MENU_PANEL_WIDTH,
         )
@@ -541,7 +537,7 @@ class QuestsMenuView:
 
     def _draw_panel(self) -> None:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=37,
             width=MENU_PANEL_WIDTH,
         )
@@ -558,14 +554,14 @@ class QuestsMenuView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
         if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
 
 __all__ = ["QuestsMenuView"]

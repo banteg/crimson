@@ -83,7 +83,7 @@ def test_reset_of_other_players_keeps_player_one_globals(pad_connected: bool) ->
 def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuView:
     view = ControlsMenuView(make_game_state(resources=screen_resources))
     view.open()
-    view._transition.timeline_ms = view._transition.duration_ms
+    view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
     return view
 
 
@@ -124,4 +124,4 @@ def test_reset_button_resets_saves_and_logs(
     assert state.console.log.lines[-1] == log
     saved = load_crimson_cfg(state.config.path)
     assert saved.controls == state.config.controls
-    assert not controls_view._transition.closing
+    assert not controls_view.state.ui.closing

@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -71,8 +70,6 @@ class PanelMenuView:
         self._hovered = False
         self._menu_screen_width = 0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = 0
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -81,14 +78,13 @@ class PanelMenuView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(self._game_state)
+        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
         self._panel_open_sfx_played = False
         self._init_ground()
         self._is_open = True
 
     def resume(self) -> None:
-        self._transition.reset()
+        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
         self._hovered = False
         self._panel_open_sfx_played = False
 
@@ -108,10 +104,10 @@ class PanelMenuView:
         if self._ground is not None:
             self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return False
 
-        if dt_ms > 0 and self._transition.timeline_ms >= self._transition.duration_ms:
+        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
             self.state.menu_sign_locked = True
             if play_open_sfx and (not self._panel_open_sfx_played) and (self.state.audio is not None):
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -158,14 +154,14 @@ class PanelMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         self._draw_contents()
         ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
@@ -183,14 +179,14 @@ class PanelMenuView:
             y += 22
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
         if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _init_ground(self) -> None:
         if self.state.pause_background is not None:
@@ -201,7 +197,7 @@ class PanelMenuView:
     def _draw_panel(self) -> None:
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
@@ -235,14 +231,14 @@ class PanelMenuView:
     def _back_button_pos(self, entry: MenuEntry, resources: RuntimeResources) -> Vec2:
         item_w = float(resources.texture(TextureId.UI_MENU_ITEM).width)
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=self._back_element,
             width=item_w * back_button_scale(self._menu_screen_width)[0],
         )
         return Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
 
     def _entry_enabled(self) -> bool:
-        return self._transition.timeline_ms >= ui_element_timeline_window(self._back_element)[1]
+        return self.state.ui.timeline_ms >= ui_element_timeline_window(self._back_element)[1]
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         mouse = canvas.mouse_position()

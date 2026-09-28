@@ -140,6 +140,7 @@ class QuestResultsView:
             base_dir=self.state.base_dir,
             config=self.state.config,
             preserve_bugs=bool(self.state.preserve_bugs),
+            timeline=self.state.ui,
         )
         self._ui.open(
             record=record,

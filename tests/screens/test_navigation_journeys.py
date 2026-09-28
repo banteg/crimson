@@ -69,7 +69,7 @@ def test_menu_options_controls_back_preserves_parent_and_config(loop, mocker) ->
     finish_transition(loop)
     assert loop.state.screens.active is options
     assert options._slider_sfx.value == 3
-    assert not options._transition.closing
+    assert not options.state.ui.closing
     controls_close.assert_called_once()
     options._begin_close_transition(Route.BACK)
     finish_transition(loop)
@@ -295,7 +295,7 @@ def test_play_game_panel_navigates_with_a_pad(loop, mocker) -> None:
 
     _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
     loop.update(0.016)
-    assert panel._transition.closing
+    assert panel.state.ui.closing
     assert state.config.gameplay.mode == GameMode(int(entries[1].game_mode))
 
 

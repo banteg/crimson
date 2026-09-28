@@ -5,7 +5,6 @@ import datetime as dt
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -94,8 +93,6 @@ class StatisticsMenuView:
         self._ground: GroundRenderer | None = None
 
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.STATISTICS_MENU)
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -107,8 +104,7 @@ class StatisticsMenuView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.STATISTICS_MENU)
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -128,8 +124,7 @@ class StatisticsMenuView:
         self._ground = None
 
     def resume(self) -> None:
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.STATISTICS_MENU)
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
@@ -140,7 +135,7 @@ class StatisticsMenuView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "StatisticsMenuView must be opened before use"
@@ -152,14 +147,14 @@ class StatisticsMenuView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def update(self, dt: float) -> None:
         self._assert_open()
         if self.state.audio is not None:
-            if not self._transition.closing:
+            if not self.state.ui.closing:
                 play_music(self.state.audio, "shortie_monk")
             update_audio(self.state.audio, dt)
         self.state.stats_menu_easter_egg_roll = _stats_menu_easter_roll(
@@ -170,10 +165,10 @@ class StatisticsMenuView:
             self._ground.process_pending()
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        interactive = self._transition.timeline_ms >= self._transition.duration_ms
+        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
             if self.state.audio is not None:
@@ -185,7 +180,7 @@ class StatisticsMenuView:
             return
 
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=39,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
@@ -236,7 +231,7 @@ class StatisticsMenuView:
         resources = require_runtime_resources(self.state)
 
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=39,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,

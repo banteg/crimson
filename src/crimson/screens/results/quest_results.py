@@ -8,6 +8,7 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
+from crimson.screens.ui_timeline import UiTimeline
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
@@ -110,10 +111,10 @@ class QuestResultsUi(msgspec.Struct):
     input_caret: int = 0
     _saved: bool = False
 
-    _intro_ms: float = 0.0
+    # Shares GameState.ui in the game; the default only serves standalone use.
+    timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
     _dt: float = 0.0
     _panel_open_sfx_played: bool = False
-    _closing: bool = False
     _close_action: ResultAction | None = None
     _consume_enter: bool = False
     _defer_name_input_until_controls_released: bool = False
@@ -185,9 +186,8 @@ class QuestResultsUi(msgspec.Struct):
         self.save_error = None
         self.input_caret = len(self.input_text)
 
-        self._intro_ms = 0.0
+        self.timeline.enter(ui_elements_max_timeline(GameStateId.QUEST_RESULTS))
         self._panel_open_sfx_played = False
-        self._closing = False
         self._close_action = None
         self._consume_enter = True
         self._defer_name_input_until_controls_released = False
@@ -197,10 +197,10 @@ class QuestResultsUi(msgspec.Struct):
         return None
 
     def _begin_close_transition(self, action: ResultAction) -> None:
-        if self._closing:
+        if self.timeline.closing:
             return
-        self._closing = True
         self._close_action = action
+        self.timeline.begin()
 
     def _arm_name_input_after_control_release(self) -> None:
         self._defer_name_input_until_controls_released = True
@@ -209,9 +209,9 @@ class QuestResultsUi(msgspec.Struct):
         rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
 
     def world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self.timeline.closing:
             return 1.0
-        return world_fade_alpha(self._intro_ms)
+        return world_fade_alpha(self.timeline.timeline_ms)
 
     def _text_width(self, font: SmallFontData, text: str) -> float:
         return float(measure_small_text_width(font, text))
@@ -220,7 +220,7 @@ class QuestResultsUi(msgspec.Struct):
         draw_small_text(font, text, pos, color)
 
     def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
-        panel_slide_x = ui_element_anim(self._intro_ms, index=35, width=QUEST_RESULTS_PANEL_W)[1]
+        panel_slide_x = ui_element_anim(self.timeline.timeline_ms, index=35, width=QUEST_RESULTS_PANEL_W)[1]
 
         panel_pos = Vec2(QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x, 0.0)
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
@@ -248,17 +248,14 @@ class QuestResultsUi(msgspec.Struct):
         if self.record is None or self.breakdown is None:
             return None
 
-        if self._closing:
-            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
-            if self._intro_ms <= 1e-3 and self._close_action is not None:
+        if not self.timeline.advance(int(dt_ms)):
+            if self.timeline.ready and self._close_action is not None:
                 action = self._close_action
                 self._close_action = None
-                self._closing = False
                 return action
             return None
 
-        self._intro_ms = min(ui_elements_max_timeline(GameStateId.QUEST_RESULTS), self._intro_ms + dt_ms)
-        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= ui_elements_max_timeline(GameStateId.QUEST_RESULTS):
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self.timeline.opened:
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
         if self._consume_enter:

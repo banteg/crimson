@@ -82,8 +82,8 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
 
     view = EndNoteView(state)
     view.open()
-    view._closing = True
-    view._timeline_ms = ui_element_timeline_window(28)[1] // 2
+    view.state.ui.closing = True
+    view.state.ui.timeline_ms = int(ui_element_timeline_window(28)[1] // 2)
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

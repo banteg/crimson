@@ -3,28 +3,30 @@ from __future__ import annotations
 import pytest
 
 from crimson.screens.actions import Route
-from crimson.screens.transitions import ScreenTransition
+from crimson.screens.ui_timeline import UiTimeline
 from crimson.ui.animation import ui_element_anim
 
 
-@pytest.mark.parametrize("duration", [300, 900])
-def test_close_crosses_zero_once_and_resume_restarts_only_animation(duration) -> None:
-    transition = ScreenTransition(duration)
-    transition.advance(duration + 50)
-    assert transition.timeline_ms == duration
-    transition.begin(Route.BACK)
-    transition.begin(Route.MENU)
-    assert not transition.advance(duration)
-    assert transition.take_action() is None  # zero is still the last visible frame
-    assert not transition.advance(1)
-    assert transition.take_action() is Route.BACK
-    assert transition.take_action() is None
-    transition.advance(100)
-    assert transition.timeline_ms == -1
-    transition.reset()
-    assert transition.advance(16)
-    assert transition.timeline_ms == 16
-    assert transition.duration_ms == duration
+@pytest.mark.parametrize("max_timeline", [300, 900])
+def test_close_crosses_zero_once_and_reentering_rewinds(max_timeline) -> None:
+    timeline = UiTimeline()
+    timeline.enter(max_timeline)
+    timeline.advance(max_timeline + 50)
+    assert timeline.timeline_ms == max_timeline
+    assert timeline.opened
+    timeline.begin(Route.BACK)
+    timeline.begin(Route.MENU)
+    assert not timeline.advance(max_timeline)
+    assert timeline.take_action() is None  # zero is still the last visible frame
+    assert not timeline.advance(1)
+    assert timeline.take_action() is Route.BACK
+    assert timeline.take_action() is None
+    timeline.advance(100)
+    assert timeline.timeline_ms == -1
+    timeline.enter(max_timeline)
+    assert timeline.advance(16)
+    assert timeline.timeline_ms == 16
+    assert timeline.max_timeline_ms == max_timeline
 
 
 @pytest.mark.parametrize(("timeline", "expected"), [(0, -510), (100, -510), (250, -255), (400, 0), (500, 0)])

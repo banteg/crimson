@@ -110,13 +110,13 @@ def test_quest_failed_panel_slides_in_from_left(monkeypatch, quest_failed_state,
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
     base = view._panel_origin()
 
-    view._intro_ms = 0.0
+    view.state.ui.timeline_ms = int(0.0)
     assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W
 
-    view._intro_ms = 250.0
+    view.state.ui.timeline_ms = int(250.0)
     assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W * 0.5
 
-    view._intro_ms = 400.0
+    view.state.ui.timeline_ms = int(400.0)
     assert view._panel_top_left().x == base.x
 
 
@@ -251,8 +251,8 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     mocker.patch.object(view, "_draw_score_preview", side_effect=lambda *_args, **_kwargs: None)
 
     view.open()
-    view._closing = True
-    view._intro_ms = ui_element_timeline_window(28)[1] * 0.5
+    view.state.ui.closing = True
+    view.state.ui.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

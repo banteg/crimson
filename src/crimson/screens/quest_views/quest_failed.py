@@ -58,20 +58,13 @@ class QuestFailedView:
         self._record: HighScoreRecord | None = None
         self._dt = 0.0
         self._quest_title: str = ""
-        self._action: ScreenAction | None = None
-        self._intro_ms = 0.0
-        self._closing = False
-        self._close_action: ScreenAction | None = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def open(self) -> None:
-        self._action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._intro_ms = 0.0
-        self._closing = False
-        self._close_action = None
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.QUEST_FAILED))
         self._quest_title = ""
         self._record = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
@@ -93,7 +86,7 @@ class QuestFailedView:
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
-            if not self._closing:
+            if not self.state.ui.closing:
                 play_music(self.state.audio, "shortie_monk")
             update_audio(self.state.audio, dt)
         if self._ground is not None:
@@ -101,15 +94,10 @@ class QuestFailedView:
         dt_step = min(float(dt), 0.1)
         self._dt = dt_step
         dt_ms = dt_step * 1000.0
-        if self._closing:
-            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
-            if self._intro_ms <= 1e-3 and self._close_action is not None:
-                self._action = self._close_action
-                self._close_action = None
+        panel_was_hidden = not self.state.ui.opened
+        if not self.state.ui.advance(int(dt_ms)):
             return
-        panel_was_hidden = self._intro_ms < ui_elements_max_timeline(GameStateId.QUEST_FAILED)
-        self._intro_ms = min(ui_elements_max_timeline(GameStateId.QUEST_FAILED), self._intro_ms + dt_ms)
-        if panel_was_hidden and self._intro_ms >= ui_elements_max_timeline(GameStateId.QUEST_FAILED) and self.state.audio is not None:
+        if panel_was_hidden and self.state.ui.opened and self.state.audio is not None:
             # ui_element_update clicks as the panel element becomes enabled.
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
@@ -226,9 +214,7 @@ class QuestFailedView:
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
-        action = self._action
-        self._action = None
-        return action
+        return self.state.ui.take_action()
 
     def _panel_origin(self) -> Vec2:
         screen_w = float(canvas.width())
@@ -239,12 +225,12 @@ class QuestFailedView:
         )
 
     def _world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self.state.ui.closing:
             return 1.0
-        return world_fade_alpha(self._intro_ms)
+        return world_fade_alpha(self.state.ui.timeline_ms)
 
     def _panel_top_left(self) -> Vec2:
-        return self._panel_origin().offset(dx=ui_element_anim(self._intro_ms, index=35, width=QUEST_FAILED_PANEL_W)[1])
+        return self._panel_origin().offset(dx=ui_element_anim(self.state.ui.timeline_ms, index=35, width=QUEST_FAILED_PANEL_W)[1])
 
     def _failure_message(self) -> str:
         retry_count = int(self.state.quest_fail_retry_count)
@@ -318,10 +304,7 @@ class QuestFailedView:
         self._begin_close(Route.MENU)
 
     def _begin_close(self, action: ScreenAction) -> None:
-        if self._closing:
-            return
-        self._closing = True
-        self._close_action = action
+        self.state.ui.begin(action)
 
     def _draw_score_preview(self, *, panel_top_left: Vec2) -> None:
         if self._record is None:

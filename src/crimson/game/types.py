@@ -13,6 +13,7 @@ from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
 from ..screens.stack import ScreenStack
+from ..screens.ui_timeline import UiTimeline
 
 
 def _default_rtx_render_mode() -> RtxRenderMode:
@@ -108,6 +109,7 @@ class GameState(msgspec.Struct):
     screen_fade_ramp: bool = False
     # Native `frame_dt` as the menus see it (clamped to 0.1s), set once per frame by the loop.
     frame_dt: float = 0.0
+    ui: UiTimeline = msgspec.field(default_factory=UiTimeline)
 
     @property
     def pause_background(self) -> PauseBackground | None:

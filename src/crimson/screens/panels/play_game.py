@@ -96,7 +96,7 @@ class PlayGameMenuView(PanelMenuView):
             return
         self._update_back_button(dt, enter=False)
         entry = self._entry
-        if self._transition.closing or entry is None or not self._entry_enabled():
+        if self.state.ui.closing or entry is None or not self._entry_enabled():
             return
         dt_ms = int(min(dt, 0.1) * 1000.0)
 
@@ -157,7 +157,7 @@ class PlayGameMenuView(PanelMenuView):
 
     def _content_layout(self) -> _PlayGameContentLayout:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )

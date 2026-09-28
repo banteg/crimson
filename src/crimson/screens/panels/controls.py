@@ -292,7 +292,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _left_panel_top_left(self) -> Vec2:
         _, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
@@ -306,7 +306,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _right_panel_top_left(self) -> Vec2:
         _, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=40,
             width=MENU_PANEL_WIDTH,
             direction_flag=1,

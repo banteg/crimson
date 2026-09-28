@@ -6,7 +6,6 @@ import os
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -50,8 +49,6 @@ class MenuView:
         self._selected_index = 0
         self._focus_timer_ms = 0
         self._hovered_index: int | None = None
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = 0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._panel_open_sfx_played = False
@@ -67,11 +64,8 @@ class MenuView:
         self._selected_index = 0 if self._menu_entries else -1
         self._focus_timer_ms = 0
         self._hovered_index = None
-        self._transition.reset()
+        self._enter_timeline()
         self._panel_open_sfx_played = False
-        self._transition.duration_ms = ui_elements_max_timeline(
-            GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
-        )
         self._init_ground()
         if self.state.audio is not None:
             if self.state.audio.music.active_track != "crimson_theme":
@@ -80,8 +74,15 @@ class MenuView:
         self._is_open = True
 
     def resume(self) -> None:
-        self._transition.reset()
+        self._enter_timeline()
         self._panel_open_sfx_played = False
+
+    def _enter_timeline(self) -> None:
+        self.state.ui.enter(
+            ui_elements_max_timeline(
+                GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
+            ),
+        )
 
     def close(self) -> None:
         self._is_open = False
@@ -90,19 +91,19 @@ class MenuView:
     def update(self, dt: float) -> None:
         self._assert_open()
         if self.state.audio is not None:
-            if not self._transition.closing:
+            if not self.state.ui.closing:
                 play_music(self.state.audio, "crimson_theme")
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
             return
 
         if dt_ms > 0:
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
-            if self._transition.timeline_ms >= self._transition.duration_ms:
+            if self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
                 self.state.menu_sign_locked = True
                 if (not self._panel_open_sfx_played) and (self.state.audio is not None):
                     play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -153,13 +154,13 @@ class MenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=self.state.menu_sign_locked,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "MenuView must be opened before use"
@@ -186,9 +187,9 @@ class MenuView:
             self._begin_close_transition(Route.OTHER_GAMES)
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _begin_quit_transition(self) -> None:
         self.state.menu_sign_locked = False
@@ -257,7 +258,7 @@ class MenuView:
             entry = self._menu_entries[idx]
             pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
             angle_rad, slide_x = ui_element_anim(
-                self._transition.timeline_ms,
+                self.state.ui.timeline_ms,
                 index=entry.slot + 2,
                 width=item_w,
             )
@@ -308,7 +309,7 @@ class MenuView:
         return None
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._transition.timeline_ms >= ui_element_timeline_window(entry.slot + 2)[1]
+        return self.state.ui.timeline_ms >= ui_element_timeline_window(entry.slot + 2)[1]
 
     def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
         item = resources.texture(TextureId.UI_MENU_ITEM)

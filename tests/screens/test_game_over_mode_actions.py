@@ -115,8 +115,8 @@ def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
 
 def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode._game_over_ui._closing = True
-    mode._game_over_ui._intro_ms = ui_element_timeline_window(28)[1] * 0.5
+    mode._game_over_ui.timeline.closing = True
+    mode._game_over_ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
 
     world_draw = mocker.patch.object(mode, "_draw_world")
 

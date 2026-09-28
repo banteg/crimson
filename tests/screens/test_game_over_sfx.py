@@ -56,7 +56,8 @@ def _runtime_resources_stub(*, tex: rl.Texture | None = None) -> RuntimeResource
 def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.phase = 1
-    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER) - 60.0
+    ui.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
+    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms - 60
     ui._panel_open_sfx_played = False
 
     play_sfx = mocker.Mock()
@@ -170,8 +171,8 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
 
     view = HighScoresView(state, ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))
     view.open()
-    view._transition.closing = True
-    view._transition.timeline_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES) // 2
+    view.state.ui.closing = True
+    view.state.ui.timeline_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES) // 2
     view.draw()
 
     draw_pause_background_mock.assert_called()

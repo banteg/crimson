@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -45,8 +44,6 @@ class _DatabaseBaseView:
         self._ground: GroundRenderer | None = None
 
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = ui_elements_max_timeline(self._game_state)
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -54,8 +51,7 @@ class _DatabaseBaseView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._transition.reset()
-        self._transition.duration_ms = ui_elements_max_timeline(self._game_state)
+        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -69,7 +65,7 @@ class _DatabaseBaseView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
@@ -81,9 +77,9 @@ class _DatabaseBaseView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -93,10 +89,10 @@ class _DatabaseBaseView:
             self._ground.process_pending()
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        enabled = self._transition.timeline_ms >= self._transition.duration_ms
+        enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             if self.state.audio is not None:
@@ -138,13 +134,13 @@ class _DatabaseBaseView:
         shadows_enabled = self.state.config.display.shadows_enabled
 
         _angle_rad, left_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
+            self.state.ui.timeline_ms,
             index=33,
             width=MENU_PANEL_WIDTH,
             direction_flag=1,
@@ -187,7 +183,7 @@ class _DatabaseBaseView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
