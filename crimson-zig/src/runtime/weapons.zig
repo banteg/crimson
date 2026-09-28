@@ -4,7 +4,6 @@ const native_math = @import("native_math.zig");
 
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const fire_recipes = @import("fire_recipes.zig");
 const owner_ref = @import("owner_ref.zig");
 const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
@@ -40,16 +39,6 @@ pub const PlayerDamageRuntime = struct {
 };
 
 const movement_control_mouse_point_click: i32 = 4;
-
-const MuzzleSpriteSpec = struct {
-    speed: f32,
-    scale: f32,
-    alpha: f32,
-};
-
-const fire_bullets_muzzle_specs = [_]MuzzleSpriteSpec{
-    .{ .speed = 25.0, .scale = 1.0, .alpha = 0.413 },
-};
 
 inline fn weaponId(value: i32) WeaponId {
     return weapon_data.weaponIdFromInt(value);
@@ -658,17 +647,8 @@ fn tryFireWeaponWithGate(
     var shot_cooldown = shot_cooldown_base;
 
     const is_fire_bullets = player.fire_bullets_timer > 0.0;
-    var projectile_spawn_credit_multiplier: i32 = 1;
-    var uses_primary_projectile_spawn = false;
-    var shot_count = computeShotCount(player.weapon.weapon_id);
-    // Native increments the accuracy counter only inside projectile_spawn /
-    // fx_spawn_secondary_projectile; particle weapons never count toward
-    // shots fired. Per-weapon usage keeps counting for most-used tracking.
-    var counts_accuracy_shots = true;
-    if (is_fire_bullets) {
-        shot_count = pellet_count;
-    }
-    if (shot_count <= 0) return false;
+    // Fire Bullets on a weapon without pellets (the unused ids) does not fire.
+    if (is_fire_bullets and pellet_count == 0) return false;
 
     const aim_heading = player.aim_heading;
     const muzzle_xy = native_math.fireMuzzlePos(player.pos.x, player.pos.y, aim_heading);
@@ -729,147 +709,239 @@ fn tryFireWeaponWithGate(
         dir_roll,
         mag_roll,
     );
-    if (!is_fire_bullets) {
-        // fire SFX variant selection.
+    var shot: ShotSpawner = .{
+        .state = state,
+        .projectiles = projectiles,
+        .secondary_projectiles = secondary_projectiles,
+        .sprite_effects = sprite_effects,
+        .muzzle = muzzle,
+        .aim_heading = aim_heading,
+        .owner = projectile_owner,
+        .hits_players = projectile_hits_players,
+        .fire_bullets_override = projectile_spawn_override,
+    };
+    var ammo_cost: f32 = 1.0;
+    var shot_count: i32 = 1;
+    // Native increments the accuracy counter only inside projectile_spawn /
+    // fx_spawn_secondary_projectile; particle weapons never count toward
+    // shots fired. Per-weapon usage keeps counting for most-used tracking.
+    var counts_accuracy_shots = true;
+
+    if (is_fire_bullets) {
+        for (0..@as(usize, @intCast(pellet_count))) |_| {
+            const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_fire_bullets_pellet_jitter) % 200)) - 100;
+            _ = shot.projectile(.fire_bullets, pelletAngle(shot_angle, jitter, 0.0015));
+        }
+        shot_count = pellet_count;
+        shot.muzzleSprite(25.0, 1.0, 0.413);
+    } else {
+        // Native draws the shot SFX variant on every non-Fire-Bullets shot.
         _ = state.rng.randTagged(rng_callers.player_update_shot_sfx);
-    }
 
-    const spawn_muzzle_after_projectile = is_fire_bullets or
-        player.weapon.weapon_id == WeaponId.pistol or
-        player.weapon.weapon_id == WeaponId.shrinkifier_5k;
-    if (!spawn_muzzle_after_projectile) {
-        spawnNativeFireMuzzleSprites(state, sprite_effects, player.weapon.weapon_id, muzzle, aim_heading, is_fire_bullets);
-    }
-
-    const recipe = fire_recipes.resolveFireRecipe(
-        player.weapon.weapon_id,
-        pellet_count,
-        is_fire_bullets,
-    );
-    var ammo_cost = recipe.ammo_cost;
-
-    switch (recipe.mode) {
-        .primary_pellets => |mode| {
-            uses_primary_projectile_spawn = true;
-            const type_id = projectileSpawnType(mode.type_id, projectile_spawn_override);
-            if (type_id != mode.type_id) projectile_spawn_credit_multiplier = 2;
-            const type_id_i32 = @intFromEnum(type_id);
-            const pellets = @max(0, mode.count);
-            shot_count = pellets;
-            const meta = projectileTravelBudgetFromTypeId(type_id);
-            for (0..@as(usize, @intCast(pellets))) |_| {
-                const angle = applyPelletJitter(state, shot_angle, player.weapon.weapon_id, is_fire_bullets, mode.jitter);
-                const id = projectiles.spawn(
-                    muzzle,
-                    angle,
-                    type_id_i32,
-                    projectile_owner,
-                    meta,
-                    projectile_hits_players,
-                );
-                applySpeedScaleRule(state, projectiles, id, player.weapon.weapon_id, is_fire_bullets, mode.speed_scale);
-            }
-        },
-        .secondary_shot => |mode| {
-            const target_hint = if (mode.targeting == .use_aim_target_hint) player.aim else null;
-            _ = secondary_projectiles.spawn(
-                muzzle,
-                narrowF32(shot_angle),
-                mode.type_id,
-                projectile_owner,
-                2.0,
-                target_hint,
-                if (target_hint != null) creatures else null,
-            );
-            shot_count = 1;
-        },
-        .particle_stream => |mode| {
-            counts_accuracy_shots = false;
-            // Native passes the unwrapped `heading - 1.5707964f`: the shot angle
-            // for Bubblegun (0x0041744a), the aim heading for the flamers
-            // (stored at 0x00415a29).
-            if (mode.slow) {
-                _ = particles.spawnParticleSlow(
-                    state,
-                    muzzle,
-                    native_math.pc24Sub(shot_angle, native_math.native_half_pi),
-                    owner_ref.OwnerRef.fromLocalPlayer(0),
-                );
-            } else {
-                const particle_id = particles.spawnParticle(
+        switch (weapon_id) {
+            .shrinkifier_5k, .pistol => {
+                _ = shot.projectile(@enumFromInt(@intFromEnum(weapon_id)), shot_angle);
+                shot.muzzleSprite(25.0, 1.0, 0.23);
+                shot.muzzleSprite(15.0, 2.0, 0.213);
+            },
+            .assault_rifle, .submachine_gun => {
+                shot.muzzleSprite(25.0, 1.0, 0.23);
+                shot.muzzleSprite(15.0, 2.0, 0.213);
+                _ = shot.projectile(@enumFromInt(@intFromEnum(weapon_id)), shot_angle);
+            },
+            .shotgun => {
+                shot.muzzleSprite(25.0, 1.0, 0.25);
+                shot.muzzleSprite(15.0, 2.0, 0.223);
+                for (0..12) |_| {
+                    const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_shotgun_pellet_jitter) % 200)) - 100;
+                    const pellet = shot.projectile(.shotgun, pelletAngle(shot_angle, jitter, 0.0013));
+                    const speed = state.rng.randTagged(rng_callers.player_update_shotgun_pellet_speed_scale) % 100;
+                    projectiles.entries[pellet].speed_scale = pelletSpeedScale(speed, 1.0);
+                }
+                shot_count = 12;
+            },
+            .jackhammer => {
+                shot.muzzleSprite(15.0, 2.0, 0.223);
+                for (0..4) |_| {
+                    const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_jackhammer_pellet_jitter) % 200)) - 100;
+                    const pellet = shot.projectile(.shotgun, pelletAngle(shot_angle, jitter, 0.0013));
+                    const speed = state.rng.randTagged(rng_callers.player_update_jackhammer_pellet_speed_scale) % 100;
+                    projectiles.entries[pellet].speed_scale = pelletSpeedScale(speed, 1.0);
+                }
+                shot_count = 4;
+            },
+            .sawed_off_shotgun => {
+                shot.muzzleSprite(25.0, 1.0, 0.26);
+                shot.muzzleSprite(15.0, 2.0, 0.233);
+                for (0..12) |_| {
+                    const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_sawed_off_shotgun_pellet_jitter) % 200)) - 100;
+                    const pellet = shot.projectile(.shotgun, pelletAngle(shot_angle, jitter, 0.004));
+                    const speed = state.rng.randTagged(rng_callers.player_update_sawed_off_shotgun_pellet_speed_scale) % 100;
+                    projectiles.entries[pellet].speed_scale = pelletSpeedScale(speed, 1.0);
+                }
+                shot_count = 12;
+            },
+            // Native passes the unwrapped `heading - 1.5707964f`: the aim heading
+            // for the flamers (stored at 0x00415a29), the shot angle for Bubblegun
+            // (0x0041744a).
+            .flamethrower => {
+                _ = particles.spawnParticle(
                     state,
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
                     owner_ref.OwnerRef.fromLocalPlayer(0),
                 );
-                if (mode.style) |style| {
-                    particles.entries[particle_id].style_id = style;
-                }
-            }
-            shot_count = 1;
-        },
-        .multi_plasma_fan => {
-            uses_primary_projectile_spawn = true;
-            shot_count = 5;
-            const spread_small: f32 = 0.31415927;
-            const spread_large: f32 = 0.5235988;
-            const rifle_type_id = projectileSpawnType(.plasma_rifle, projectile_spawn_override);
-            const minigun_type_id = projectileSpawnType(.plasma_minigun, projectile_spawn_override);
-            if (rifle_type_id != .plasma_rifle or minigun_type_id != .plasma_minigun) {
-                projectile_spawn_credit_multiplier = 2;
-            }
-            const rifle_meta = projectileTravelBudgetFromTypeId(rifle_type_id);
-            const minigun_meta = projectileTravelBudgetFromTypeId(minigun_type_id);
-            _ = projectiles.spawn(muzzle, native_math.pc24Sub(shot_angle, spread_small), @intFromEnum(rifle_type_id), projectile_owner, rifle_meta, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, native_math.pc24Sub(shot_angle, spread_large), @intFromEnum(minigun_type_id), projectile_owner, minigun_meta, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, narrowF32(shot_angle), @intFromEnum(rifle_type_id), projectile_owner, rifle_meta, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_large), @intFromEnum(minigun_type_id), projectile_owner, minigun_meta, projectile_hits_players);
-            _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_small), @intFromEnum(rifle_type_id), projectile_owner, rifle_meta, projectile_hits_players);
-        },
-        .no_spawn => shot_count = 0,
-        .swarmer_dump => {
-            // Native spawns one rocket per integer counter step below the float
-            // ammo value (ceil), and zero rockets when firing with an
-            // empty/negative clip; the full clip value is subtracted either way.
-            const clip_ammo = player.weapon.ammo;
-            const rocket_count: i32 = if (clip_ammo > 0.0) @intFromFloat(@ceil(clip_ammo)) else 0;
-            const step = if (state.preserve_bugs)
-                narrowF32(clip_ammo * (native_pi / 3.0))
-            else if (rocket_count <= 1)
-                0.0
-            else
-                narrowF32((native_pi * (2.0 / 3.0)) / @as(f32, @floatFromInt(rocket_count - 1)));
-            var angle = if (state.preserve_bugs)
-                narrowF32((shot_angle - native_pi) - step * clip_ammo * 0.5)
-            else
-                narrowF32(shot_angle - native_pi * (1.0 / 3.0));
-            for (0..@as(usize, @intCast(rocket_count))) |_| {
-                _ = secondary_projectiles.spawn(
+                counts_accuracy_shots = false;
+                ammo_cost = 0.1;
+            },
+            .hr_flamer => {
+                const particle = particles.spawnParticle(
+                    state,
                     muzzle,
-                    angle,
-                    secondary_projectiles_mod.SecondaryProjectileTypeId.homing_rocket,
-                    projectile_owner,
-                    2.0,
-                    player.aim,
-                    creatures,
+                    native_math.pc24Sub(aim_heading, native_math.native_half_pi),
+                    1.0,
+                    owner_ref.OwnerRef.fromLocalPlayer(0),
                 );
-                angle = narrowF32(angle + step);
-            }
-            ammo_cost = clip_ammo;
-            shot_count = rocket_count;
-        },
-    }
-
-    if (spawn_muzzle_after_projectile) {
-        spawnNativeFireMuzzleSprites(state, sprite_effects, player.weapon.weapon_id, muzzle, aim_heading, is_fire_bullets);
+                particles.entries[particle].style_id = .hr_flamer;
+                counts_accuracy_shots = false;
+                ammo_cost = 0.1;
+            },
+            .blow_torch => {
+                const particle = particles.spawnParticle(
+                    state,
+                    muzzle,
+                    native_math.pc24Sub(aim_heading, native_math.native_half_pi),
+                    1.0,
+                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                );
+                particles.entries[particle].style_id = .blow_torch;
+                counts_accuracy_shots = false;
+                ammo_cost = 0.05;
+            },
+            .plasma_rifle,
+            .pulse_gun,
+            .blade_gun,
+            .splitter_gun,
+            .ion_rifle,
+            .ion_minigun,
+            .ion_cannon,
+            .plasma_cannon,
+            .plasma_minigun,
+            .plague_spreader_gun,
+            .rainbow_gun,
+            => {
+                _ = shot.projectile(@enumFromInt(@intFromEnum(weapon_id)), shot_angle);
+            },
+            .multi_plasma => {
+                _ = shot.projectile(.plasma_rifle, native_math.pc24Sub(shot_angle, @as(f32, 0.31415927)));
+                _ = shot.projectile(.plasma_minigun, native_math.pc24Sub(shot_angle, @as(f32, 0.5235988)));
+                _ = shot.projectile(.plasma_rifle, shot_angle);
+                _ = shot.projectile(.plasma_minigun, native_math.pc24Add(shot_angle, @as(f32, 0.5235988)));
+                _ = shot.projectile(.plasma_rifle, native_math.pc24Add(shot_angle, @as(f32, 0.31415927)));
+                shot_count = 5;
+            },
+            .ion_shotgun => {
+                for (0..8) |_| {
+                    const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_ion_shotgun_pellet_jitter) % 200)) - 100;
+                    const pellet = shot.projectile(.ion_minigun, pelletAngle(shot_angle, jitter, 0.0026));
+                    const speed = state.rng.randTagged(rng_callers.player_update_ion_shotgun_pellet_speed_scale) % 80;
+                    projectiles.entries[pellet].speed_scale = pelletSpeedScale(speed, 1.4);
+                }
+                shot_count = 8;
+            },
+            .gauss_shotgun => {
+                shot.muzzleSprite(25.0, 1.0, 0.33);
+                shot.muzzleSprite(15.0, 2.0, 0.263);
+                for (0..6) |_| {
+                    const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_gauss_shotgun_pellet_jitter) % 200)) - 100;
+                    const pellet = shot.projectile(.gauss_gun, pelletAngle(shot_angle, jitter, 0.002));
+                    const speed = state.rng.randTagged(rng_callers.player_update_gauss_shotgun_pellet_speed_scale) % 80;
+                    projectiles.entries[pellet].speed_scale = pelletSpeedScale(speed, 1.4);
+                }
+                shot_count = 6;
+            },
+            .gauss_gun => {
+                shot.muzzleSprite(25.0, 1.0, 0.33);
+                shot.muzzleSprite(15.0, 2.0, 0.263);
+                _ = shot.projectile(.gauss_gun, shot_angle);
+            },
+            .rocket_launcher => {
+                shot.muzzleSprite(25.0, 1.0, 0.34);
+                shot.muzzleSprite(15.0, 2.0, 0.283);
+                shot.secondary(.rocket, shot_angle, null, null);
+            },
+            .mini_rocket_swarmers => {
+                shot.muzzleSprite(25.0, 1.0, 0.34);
+                shot.muzzleSprite(15.0, 2.0, 0.283);
+                // Fires the full clip in a spread. Native spawns one rocket per
+                // integer counter step below the float ammo value (ceil), and
+                // zero rockets on an empty/negative clip.
+                const clip_ammo = player.weapon.ammo;
+                const rocket_count: i32 = if (clip_ammo > 0.0) @intFromFloat(@ceil(clip_ammo)) else 0;
+                // Native bug: the step scales by ammo (`ammo * pi/3`); the port
+                // fix spreads the clip evenly over 120 degrees.
+                const step = if (state.preserve_bugs)
+                    narrowF32(clip_ammo * (native_pi / 3.0))
+                else if (rocket_count <= 1)
+                    0.0
+                else
+                    narrowF32((native_pi * (2.0 / 3.0)) / @as(f32, @floatFromInt(rocket_count - 1)));
+                var angle = if (state.preserve_bugs)
+                    narrowF32((shot_angle - native_pi) - step * clip_ammo * 0.5)
+                else
+                    narrowF32(shot_angle - native_pi * (1.0 / 3.0));
+                for (0..@as(usize, @intCast(rocket_count))) |_| {
+                    shot.secondary(.homing_rocket, angle, player.aim, creatures);
+                    angle = narrowF32(angle + step);
+                }
+                // Native subtracts the full clip value, even when fractional or negative.
+                ammo_cost = clip_ammo;
+                shot_count = rocket_count;
+            },
+            .rocket_minigun => {
+                shot.muzzleSprite(25.0, 1.0, 0.34);
+                shot.secondary(.rocket_minigun, shot_angle, null, null);
+            },
+            .seeker_rockets => {
+                shot.muzzleSprite(25.0, 1.0, 0.31);
+                shot.muzzleSprite(15.0, 2.0, 0.243);
+                shot.secondary(.homing_rocket, shot_angle, player.aim, creatures);
+            },
+            .mean_minigun => {
+                _ = shot.projectile(.pistol, shot_angle);
+            },
+            .plasma_shotgun => {
+                for (0..14) |_| {
+                    const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_plasma_shotgun_pellet_jitter) & 0xff)) - 0x80;
+                    const pellet = shot.projectile(.plasma_minigun, pelletAngle(shot_angle, jitter, 0.002));
+                    const speed = state.rng.randTagged(rng_callers.player_update_plasma_shotgun_pellet_speed_scale) % 100;
+                    projectiles.entries[pellet].speed_scale = pelletSpeedScale(speed, 1.0);
+                }
+                shot_count = 14;
+            },
+            .bubblegun => {
+                _ = particles.spawnParticleSlow(
+                    state,
+                    muzzle,
+                    native_math.pc24Sub(shot_angle, native_math.native_half_pi),
+                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                );
+                counts_accuracy_shots = false;
+                ammo_cost = 0.15;
+            },
+            // Native `player_update` has no branch for the other ids (Spider
+            // Plasma, Fire Bullets as a weapon, the unused weapons): the shot
+            // costs its cooldown, sound and ammo but spawns nothing.
+            else => shot_count = 0,
+        }
     }
 
     const player_idx = player.index;
-    const projectile_spawn_shot_count = if (uses_primary_projectile_spawn and !uses_player_projectile_path)
+    const projectile_spawn_shot_count = if (shot.spawned_primary and !uses_player_projectile_path)
         0
     else
-        shot_count * projectile_spawn_credit_multiplier;
+        shot_count * shot.credit_multiplier;
     if (player_idx >= 0 and player_idx < state.shots_fired.len) {
         const idx: usize = @intCast(player_idx);
         if (counts_accuracy_shots) {
@@ -1160,154 +1232,64 @@ fn spawnPerkProjectile(
     }
 }
 
-fn applyPelletJitter(
-    state: *state_mod.GameplayState,
-    shot_angle: f32,
-    weapon_id: WeaponId,
-    fire_bullets_active: bool,
-    rule: fire_recipes.PelletJitterRule,
-) f32 {
-    return switch (rule) {
-        .none => shot_angle,
-        .modulo_centered => |jitter| {
-            const caller: rng_callers.Caller = if (fire_bullets_active)
-                rng_callers.player_update_fire_bullets_pellet_jitter
-            else switch (weapon_id) {
-                .shotgun => rng_callers.player_update_shotgun_pellet_jitter,
-                .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_jitter,
-                .jackhammer => rng_callers.player_update_jackhammer_pellet_jitter,
-                .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_jitter,
-                .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_jitter,
-                else => unreachable,
-            };
-            const jitter_roll = state.rng.randTagged(caller);
-            return shot_angle + narrowF32(
-                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll % jitter.modulo)) - jitter.center)) * jitter.step,
-            );
-        },
-        .mask_centered => |jitter| {
-            const caller: rng_callers.Caller = if (fire_bullets_active)
-                rng_callers.player_update_fire_bullets_pellet_jitter
-            else switch (weapon_id) {
-                .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_jitter,
-                else => unreachable,
-            };
-            const jitter_roll = state.rng.randTagged(caller);
-            return shot_angle + narrowF32(
-                @as(f32, @floatFromInt(@as(i32, @intCast(jitter_roll & jitter.mask)) - jitter.center)) * jitter.step,
-            );
-        },
-    };
-}
-
-fn applySpeedScaleRule(
+/// The muzzle, owner and pools every `player_update` fire branch spawns into.
+const ShotSpawner = struct {
     state: *state_mod.GameplayState,
     projectiles: *projectiles_mod.ProjectilePool,
-    projectile_idx: usize,
-    weapon_id: WeaponId,
-    fire_bullets_active: bool,
-    rule: fire_recipes.SpeedScaleRule,
-) void {
-    switch (rule) {
-        .none => {},
-        .modulo => |speed| {
-            const speed_roll = if (fire_bullets_active)
-                state.rng.rand()
-            else blk: {
-                const caller: rng_callers.Caller = switch (weapon_id) {
-                    .shotgun => rng_callers.player_update_shotgun_pellet_speed_scale,
-                    .sawed_off_shotgun => rng_callers.player_update_sawed_off_shotgun_pellet_speed_scale,
-                    .jackhammer => rng_callers.player_update_jackhammer_pellet_speed_scale,
-                    .ion_shotgun => rng_callers.player_update_ion_shotgun_pellet_speed_scale,
-                    .gauss_shotgun => rng_callers.player_update_gauss_shotgun_pellet_speed_scale,
-                    .plasma_shotgun => rng_callers.player_update_plasma_shotgun_pellet_speed_scale,
-                    else => unreachable,
-                };
-                break :blk state.rng.randTagged(caller);
-            };
-            projectiles.entries[projectile_idx].speed_scale = narrowF32(
-                speed.base + @as(f32, @floatFromInt(speed_roll % speed.modulo)) * speed.step,
-            );
-        },
-    }
-}
-
-fn spawnNativeFireMuzzleSprites(
-    state: *state_mod.GameplayState,
+    secondary_projectiles: *secondary_projectiles_mod.SecondaryProjectilePool,
     sprite_effects: *effects_mod.SpriteEffectPool,
-    weapon_id: WeaponId,
     muzzle: state_mod.Vec2,
     aim_heading: f32,
-    fire_bullets_active: bool,
-) void {
-    const specs = if (fire_bullets_active)
-        fire_bullets_muzzle_specs[0..]
-    else
-        muzzleSpriteSpecs(weapon_id);
-    for (specs) |spec| {
-        _ = sprite_effects.spawn(
-            state,
-            muzzle,
-            state_mod.Vec2.fromAngle(aim_heading).mul(spec.speed),
-            spec.scale,
-            .{ .r = 0.5, .g = 0.5, .b = 0.5, .a = spec.alpha },
+    owner: owner_ref.OwnerRef,
+    hits_players: bool,
+    /// Another player's Fire Bullets turns primary shots into fire bullets.
+    fire_bullets_override: bool,
+    spawned_primary: bool = false,
+    credit_multiplier: i32 = 1,
+
+    fn projectile(self: *ShotSpawner, type_id: ProjectileTypeId, angle: f32) usize {
+        const spawn_type = projectileSpawnType(type_id, self.fire_bullets_override);
+        if (spawn_type != type_id) self.credit_multiplier = 2;
+        self.spawned_primary = true;
+        return self.projectiles.spawn(
+            self.muzzle,
+            angle,
+            @intFromEnum(spawn_type),
+            self.owner,
+            projectileTravelBudgetFromTypeId(spawn_type),
+            self.hits_players,
         );
     }
+
+    fn secondary(
+        self: *ShotSpawner,
+        type_id: secondary_projectiles_mod.SecondaryProjectileTypeId,
+        angle: f32,
+        target_hint: ?state_mod.Vec2,
+        creatures: ?*const creatures_mod.CreaturePool,
+    ) void {
+        _ = self.secondary_projectiles.spawn(self.muzzle, angle, type_id, self.owner, 2.0, target_hint, creatures);
+    }
+
+    fn muzzleSprite(self: *ShotSpawner, speed: f32, scale: f32, alpha: f32) void {
+        _ = self.sprite_effects.spawn(
+            self.state,
+            self.muzzle,
+            state_mod.Vec2.fromAngle(self.aim_heading).mul(speed),
+            scale,
+            .{ .r = 0.5, .g = 0.5, .b = 0.5, .a = alpha },
+        );
+    }
+};
+
+/// Native pellet loops (e.g. shotgun @ 0x00416378): `fild roll; fmul float step; fadd shot_angle`.
+fn pelletAngle(shot_angle: f32, roll: i32, step: f32) f32 {
+    return shot_angle + @as(f32, @floatFromInt(roll)) * step;
 }
 
-fn muzzleSpriteSpecs(weapon_id: WeaponId) []const MuzzleSpriteSpec {
-    return switch (weapon_id) {
-        .pistol,
-        .assault_rifle,
-        .submachine_gun,
-        .shrinkifier_5k,
-        => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.23 },
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.213 },
-        },
-        .shotgun => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.25 },
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.223 },
-        },
-        .sawed_off_shotgun => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.26 },
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.233 },
-        },
-        .gauss_gun, .gauss_shotgun => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.33 },
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.263 },
-        },
-        .rocket_launcher,
-        .mini_rocket_swarmers,
-        => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.34 },
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.283 },
-        },
-        .rocket_minigun => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.34 },
-        },
-        .seeker_rockets => &.{
-            .{ .speed = 25.0, .scale = 1.0, .alpha = 0.31 },
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.243 },
-        },
-        .jackhammer => &.{
-            .{ .speed = 15.0, .scale = 2.0, .alpha = 0.223 },
-        },
-        else => &.{},
-    };
-}
-
-fn computeShotCount(weapon_id: WeaponId) i32 {
-    return switch (weapon_id) {
-        .multi_plasma => 5,
-        .plasma_shotgun => 14,
-        // The swarmer_dump branch derives the real rocket count from the live
-        // clip value (zero rockets on an empty/negative clip, like native).
-        .mini_rocket_swarmers => 1,
-        .gauss_shotgun => 6,
-        .ion_shotgun => 8,
-        else => @max(1, weapon_data.weapon_stats.get(weapon_id).pellet_count),
-    };
+/// Native (e.g. shotgun @ 0x004163b1): `fild roll; fmul 0.01f; fadd base`.
+fn pelletSpeedScale(roll: u32, base: f32) f32 {
+    return base + @as(f32, @floatFromInt(roll)) * 0.01;
 }
 
 fn weaponUsesFireAmmoClass(weapon_id: game_ids.WeaponId) bool {
@@ -2813,19 +2795,6 @@ test "pistol fire consumes native casing+jitter+sfx rng draws" {
     player_runtime.weaponAssignPlayer(&player, game_ids.WeaponId.pistol);
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expect(projectiles.entries[0].active);
-}
-
-test "pellet jitter none does not require shotgun caller mapping" {
-    var state = state_mod.GameplayState.init(1);
-    const shot_angle: f32 = 1.25;
-    const angle = applyPelletJitter(
-        &state,
-        shot_angle,
-        .pistol,
-        false,
-        .none,
-    );
-    try expectFloatClose(shot_angle, angle);
 }
 
 test "fastshot scales shot cooldown" {

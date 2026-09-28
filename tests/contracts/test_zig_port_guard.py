@@ -30,10 +30,9 @@ from tests.support.factories import fire_player_weapon
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ZIG_CREATURES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "creatures.zig"
-ZIG_FIRE_RECIPES = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "fire_recipes.zig"
 ZIG_GAME_IDS = REPO_ROOT / "crimson-zig" / "src" / "game_ids.zig"
 ZIG_QUEST_SPAWN_DIR = REPO_ROOT / "crimson-zig" / "src" / "quest_spawn"
-ZIG_WEAPON_DATA = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "weapon_data.zig"
+ZIG_WEAPONS = REPO_ROOT / "crimson-zig" / "src" / "runtime" / "weapons.zig"
 ZIG_WINDOW_MENU_PANELS = REPO_ROOT / "crimson-zig" / "src" / "window_menu_panels.zig"
 ZIG_WINDOW_OPTIONS = REPO_ROOT / "crimson-zig" / "src" / "window_options.zig"
 
@@ -72,8 +71,9 @@ def _zig_supported_spawn_ids() -> set[int]:
     return supported
 
 
-def _python_supported_fire_weapons() -> set[str]:
-    supported: set[str] = set()
+def _python_fire_weapons() -> set[str]:
+    """Weapons whose native `player_update` fire branch spawns something."""
+    fired: set[str] = set()
     for weapon_id in WeaponId:
         if int(weapon_id) <= 0 or weapon_id not in WEAPON_BY_ID:
             continue
@@ -81,29 +81,21 @@ def _python_supported_fire_weapons() -> set[str]:
         player = world.players[0]
         player.pos = Vec2(512.0, 512.0)
         weapon_assign_player(player, weapon_id, state=world.state)
-        try:
-            fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(600.0, 512.0)), 0.016)
-        except ValueError:
-            continue
-        supported.add(weapon_id.name.lower())
-    return supported
+        result = fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(600.0, 512.0)), 0.016)
+        if result.shot_count > 0:
+            fired.add(weapon_id.name.lower())
+    return fired
 
 
-def _zig_supported_fire_weapons() -> set[str]:
-    fire_recipes_source = ZIG_FIRE_RECIPES.read_text()
-    weapon_data_source = ZIG_WEAPON_DATA.read_text()
-
-    supported = set(re.findall(r"\n\s*\.([a-z0-9_]+)\s*=>\s*\.?\{", fire_recipes_source))
-    switch_match = re.search(
-        r"pub fn projectileTypeIdFromWeaponId\(weapon_id: WeaponId\) \?ProjectileTypeId \{\n\s*return switch \(weapon_id\) \{(.*?)\n\s*\};\n\}",
-        weapon_data_source,
-        re.DOTALL,
-    )
-    assert switch_match is not None
-    for name, rhs in re.findall(r"\.([a-z0-9_]+)\s*=>\s*([^,\n]+)", switch_match.group(1)):
-        if rhs.strip() != "null":
-            supported.add(name)
-    return supported
+def _zig_fire_weapons() -> set[str]:
+    """Weapon ids with an arm in the Zig fire switch (its `else` spawns nothing)."""
+    source = ZIG_WEAPONS.read_text()
+    switch_start = source.index("switch (weapon_id) {", source.index("fn tryFireWeaponWithGate("))
+    arms = source[switch_start : source.index("else =>", switch_start)]
+    fired: set[str] = set()
+    for labels in re.findall(r"((?:\.[a-z0-9_]+,\s*)*\.[a-z0-9_]+),?\s*=>", arms):
+        fired.update(re.findall(r"\.([a-z0-9_]+)", labels))
+    return fired
 
 
 def _python_quest_start_weapon_ids() -> dict[int, int]:
@@ -228,9 +220,8 @@ def test_python_supported_spawn_templates_are_ported_in_zig() -> None:
     assert missing == []
 
 
-def test_python_supported_fire_weapons_are_ported_in_zig() -> None:
-    missing = sorted(_python_supported_fire_weapons() - _zig_supported_fire_weapons())
-    assert missing == []
+def test_zig_fire_switch_matches_python_fire_weapons() -> None:
+    assert _zig_fire_weapons() == _python_fire_weapons()
 
 
 def test_zig_weapon_ids_match_python_port() -> None:
