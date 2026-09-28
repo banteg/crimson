@@ -31,38 +31,39 @@ under ignored artifact directories. The archive retained four images from the
 
 ## Release inventory
 
-Every version below has contemporary evidence that it was published. A version
-is "recovered" only when a package survives and its contents confirm the number.
+✅ Found means a package has been recovered and its contents confirm the version
+number. ❌ Missing means a release is documented, but its package has not been
+recovered. The 1.0.x row represents unspecified early releases.
 
 ### Freeware (2002)
 
 | Version | State | Evidence |
 | --- | --- | --- |
-| 1.0.x | missing | The 2002-05-13 news entry says older headlines were deleted; 1.0.2 is the only 1.0.x number known. |
-| 1.0.2 | recovered | Original ZIP preserved on the project asset host. |
-| 1.1.1 | missing | Release notes on the 2002 page (2002-05-09, patch only). |
-| 1.1.6 | missing | Release notes on the 2002 page (2002-05-13, patch only). |
-| 1.1.7 | missing | Release notes plus Pelit catalog record `CLAND117.ZIP`, dated 2002-05-23; no payload survives there. |
-| 1.2.1 | missing | Release notes on the 2002 page (2002-05-28, update). |
-| 1.2.2 | missing | Full and no-music links survive; Wayback only retained later 404 responses. |
-| 1.2.4 | missing | Mentioned retrospectively by the 1.3.0 and 1.4.0 readmes. |
-| 1.3.0 | recovered | Original ZIP and readme dated 2002-07-11; Pelit catalog record `CLAND130.ZIP` is dated 2002-07-24. |
-| 1.3.1 | recovered | `crimsonland_v131.zip` on the Computer Gaming World December 2002 disc; executable reads `v1.3.1`, readme dated 2002-09-08. |
-| 1.4.0 | recovered | Original ZIP and readme dated 2002-09-16; the last freeware release. |
+| 1.0.x | ❌ Missing | The 2002-05-13 news entry says older headlines were deleted; 1.0.2 is the only 1.0.x number known. |
+| 1.0.2 | ✅ Found | Original ZIP preserved on the project asset host. |
+| 1.1.1 | ❌ Missing | Release notes on the 2002 page (2002-05-09, patch only). |
+| 1.1.6 | ❌ Missing | Release notes on the 2002 page (2002-05-13, patch only). |
+| 1.1.7 | ❌ Missing | Release notes plus Pelit catalog record `CLAND117.ZIP`, dated 2002-05-23; no payload survives there. |
+| 1.2.1 | ❌ Missing | Release notes on the 2002 page (2002-05-28, update). |
+| 1.2.2 | ❌ Missing | Full and no-music links survive; Wayback only retained later 404 responses. |
+| 1.2.4 | ❌ Missing | Mentioned retrospectively by the 1.3.0 and 1.4.0 readmes. |
+| 1.3.0 | ✅ Found | Original ZIP and readme dated 2002-07-11; Pelit catalog record `CLAND130.ZIP` is dated 2002-07-24. |
+| 1.3.1 | ✅ Found | `crimsonland_v131.zip` on the Computer Gaming World December 2002 disc; executable reads `v1.3.1`, readme dated 2002-09-08. |
+| 1.4.0 | ✅ Found | Original ZIP and readme dated 2002-09-16; the last freeware release. |
 
 ### Commercial (2003-2010)
 
 | Version | State | Evidence |
 | --- | --- | --- |
-| 1.8.7 | recovered | Game.EXE June 2003 disc installer; executable reads `crimsonland v.1.8.7` (built 2003-04-22). |
-| 1.9.0 | recovered | PC Gamer August 2003 disc installer; executable reads `crimsonland v.1.9.0` (built 2003-05-21), with matching release notes. |
-| 1.9.1 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `crimsonland v.1.9.1` (built 2003-06-09). |
-| 1.9.3 | recovered | L'Encyclopedie Des Jeux Video 8 installer; executable reads `Crimsonland 1.9.3` (built 2003-06-30), with matching release notes. The PC Gamer October 2003 installer contains the same executable. |
-| 1.9.8 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `Crimsonland 1.9.8` (built 2003-08-18). |
-| 1.9.9 | recovered | Suomipelit ZIP dated 2008-12-07; crimsonland.com news of 2008-11-20. |
-| 1.9.91 | missing | Listed in the 1.9.93 `whatsupdated.txt`; the 2009 news post counts from "1.9.90". |
-| 1.9.92 | recovered | Reflexive installer from the RuTracker Reflexive Arcade corpus; the unwrapped `crimsonland.exe` reads `Crimsonland 1.9.92` (built 2009-02-23). crimsonland.com news of 2009-03-06. |
-| 1.9.93 | recovered | The GOG Classic 2.0.0.4 build decompiled by this project; crimsonland.com news of 2010-06-30. |
+| 1.8.7 | ✅ Found | Game.EXE June 2003 disc installer; executable reads `crimsonland v.1.8.7` (built 2003-04-22). |
+| 1.9.0 | ✅ Found | PC Gamer August 2003 disc installer; executable reads `crimsonland v.1.9.0` (built 2003-05-21), with matching release notes. |
+| 1.9.1 | ✅ Found | Reflexive installer; the payload's `crimsonland.exe` reads `crimsonland v.1.9.1` (built 2003-06-09). |
+| 1.9.3 | ✅ Found | L'Encyclopedie Des Jeux Video 8 installer; executable reads `Crimsonland 1.9.3` (built 2003-06-30), with matching release notes. The PC Gamer October 2003 installer contains the same executable. |
+| 1.9.8 | ✅ Found | Reflexive installer; the payload's `crimsonland.exe` reads `Crimsonland 1.9.8` (built 2003-08-18). |
+| 1.9.9 | ✅ Found | Suomipelit ZIP dated 2008-12-07; crimsonland.com news of 2008-11-20. |
+| 1.9.91 | ❌ Missing | Listed in the 1.9.93 `whatsupdated.txt`; the 2009 news post counts from "1.9.90". |
+| 1.9.92 | ✅ Found | Reflexive installer from the RuTracker Reflexive Arcade corpus; the unwrapped `crimsonland.exe` reads `Crimsonland 1.9.92` (built 2009-02-23). crimsonland.com news of 2009-03-06. |
+| 1.9.93 | ✅ Found | The GOG Classic 2.0.0.4 build decompiled by this project; crimsonland.com news of 2010-06-30. |
 
 Recovered packages are deliberately stored under ignored `game_bins/`, with
 their retrieval URLs, sizes, and SHA-256 hashes committed in the manifest.
