@@ -123,6 +123,7 @@ fn runSpawnPlanRequest(
         &state.rng,
         &state,
         request.terrain_size,
+        5,
     ) catch |err| switch (err) {
         error.InvalidSpawnTemplate => return buildInvalidOutput(allocator, "invalid spawn template id"),
     };

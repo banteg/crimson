@@ -122,7 +122,7 @@ pub fn postStep(
             active_before[idx] = entry.active;
         }
 
-        try creatures.spawnTemplateCallWithRuntimeContext(call, &state.rng, state, world_size);
+        try creatures.spawnTemplateCallWithRuntimeContext(call, &state.rng, state, world_size, detail_preset);
         if (!result.actions.stage5_bonus_carrier_drop_active) continue;
         if (call.template_id != @intFromEnum(spawn_mod.SpawnId.alien_bonus_carrier_27)) continue;
 

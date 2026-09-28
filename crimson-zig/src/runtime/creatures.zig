@@ -362,6 +362,7 @@ pub const CreaturePool = struct {
             rng,
             null,
             0.0,
+            5,
         );
     }
 
@@ -371,6 +372,7 @@ pub const CreaturePool = struct {
         rng: *spawn_mod.Crand,
         state: ?*state_mod.GameplayState,
         terrain_size: f32,
+        detail_preset: i32,
     ) CreatureRuntimeError!void {
         if (!isKnownTemplateId(call.template_id)) return error.InvalidSpawnTemplate;
         // Native returns the one-past-the-pool sentinel when all 384 entries are
@@ -2132,7 +2134,7 @@ pub const CreaturePool = struct {
                         @constCast(game_state),
                         tail_pos,
                         8,
-                        5,
+                        detail_preset,
                         0.4,
                         null,
                         .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
@@ -2417,6 +2419,7 @@ pub const CreaturePool = struct {
                                 &state.rng,
                                 state,
                                 world_size,
+                                detail_preset,
                             );
                         }
                     }
@@ -2537,7 +2540,7 @@ pub const CreaturePool = struct {
                         state,
                         creature.pos,
                         6,
-                        5,
+                        detail_preset,
                         0.4,
                         null,
                         .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
@@ -6264,23 +6267,32 @@ test "spawn slot allocator reuses free entries and overwrites the final entry" {
 }
 
 test "runtime-context template spawn enqueues presentation burst" {
-    var pool: CreaturePool = .{};
-    var effects: effects_mod.EffectPool = .{};
-    var state = state_mod.GameplayState.init(1);
-    pool.effects = &effects;
+    const Spawned = struct { free_len: usize, rng_state: u32 };
+    var spawned: [2]Spawned = undefined;
+    for ([_]i32{ 5, 1 }, &spawned) |detail_preset, *result| {
+        var pool: CreaturePool = .{};
+        var effects: effects_mod.EffectPool = .{};
+        var state = state_mod.GameplayState.init(1);
+        pool.effects = &effects;
 
-    try pool.spawnTemplateCallWithRuntimeContext(
-        .{
-            .template_id = 0x24,
-            .pos = .{ .x = 512.0, .y = 512.0 },
-            .heading = 0.0,
-        },
-        &state.rng,
-        &state,
-        1024.0,
-    );
+        try pool.spawnTemplateCallWithRuntimeContext(
+            .{
+                .template_id = 0x24,
+                .pos = .{ .x = 512.0, .y = 512.0 },
+                .heading = 0.0,
+            },
+            &state.rng,
+            &state,
+            1024.0,
+            detail_preset,
+        );
+        result.* = .{ .free_len = effects.free_len, .rng_state = state.rng.state };
+    }
 
-    try std.testing.expectEqual(effects_mod.effect_pool_size - @as(usize, 8), effects.free_len);
+    try std.testing.expectEqual(effects_mod.effect_pool_size - @as(usize, 8), spawned[0].free_len);
+    // Low detail skips every other effect but still draws for each one.
+    try std.testing.expectEqual(effects_mod.effect_pool_size - @as(usize, 4), spawned[1].free_len);
+    try std.testing.expectEqual(spawned[0].rng_state, spawned[1].rng_state);
 }
 
 test "creature update fails on invalid spawn slot child template" {

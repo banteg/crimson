@@ -1296,6 +1296,7 @@ test "hardcore template spawn clears shared quest retry state" {
         &rng,
         &state,
         1024.0,
+        5,
     );
 
     try std.testing.expectEqual(@as(i32, 0), pool.quest_fail_retry_count);

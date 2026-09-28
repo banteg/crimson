@@ -485,6 +485,7 @@ pub fn stepTick(
                         &context.state.rng,
                         &context.state,
                         context.world_size,
+                        context.detail_preset,
                     );
                 }
                 frame.rng_after_stage_spawns = context.state.rng.state;
@@ -541,6 +542,7 @@ pub fn stepTick(
                     &context.state.rng,
                     &context.state,
                     context.world_size,
+                    context.detail_preset,
                 );
             }
 
