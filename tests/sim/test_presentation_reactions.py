@@ -203,7 +203,6 @@ def test_audio_plan_captures_typo_post_step_bonus_reset() -> None:
     session = initialize_run(RunSpec(game_mode_id=GameMode.TYPO, seed=1)).session
     session.world.state.bonuses.reflex_boost = 1.0
     tick = session.step_tick(dt=1 / 60, inputs=(PlayerInput(),))
-    assert sfx_ids(tick.presentation.sfx)  # Initial loadout enforcement requests reload audio.
     assert session.world.state.bonuses.reflex_boost == 0.0
     assert tick.presentation.reflex_boost_timer == 0.0
 

@@ -1,31 +1,23 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from grim.geom import Vec2
 
 from ..sim.input import PlayerInput
 from ..sim.state_types import PlayerState
-from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
-
-if TYPE_CHECKING:
-    from crimson.sim.gameplay_state import GameplayState
-
 
 TYPO_WEAPON_ID = WeaponId.SHOTGUN
 
 
-def enforce_typo_player_frame(player: PlayerState, *, state: GameplayState) -> None:
+def enforce_typo_player_frame(player: PlayerState) -> None:
     """Match Typ-o Shooter's bespoke player loop (`player_fire_weapon @ 0x00444980`).
 
-    Typ-o forces the native shotgun (weapon id 3), resets timers, and tops up
-    ammo each frame, so typing speed (not weapon cooldown) controls rate of fire.
+    Each frame a living player's cooldown, spread and reload are cleared and the
+    clip refilled, so typing speed (not weapon cooldown) controls rate of fire.
     """
 
-    if player.weapon.weapon_id != TYPO_WEAPON_ID:
-        weapon_assign_player(player, TYPO_WEAPON_ID, state=state)
-
+    if player.health <= 0.0:
+        return
     player.weapon.shot_cooldown = 0.0
     player.spread_heat = 0.0
     player.weapon.ammo = float(max(0, int(player.weapon.clip_size)))

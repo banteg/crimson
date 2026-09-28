@@ -2,18 +2,13 @@ from __future__ import annotations
 
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
-from crimson.typo.player import TYPO_WEAPON_ID, build_typo_player_input, enforce_typo_player_frame
+from crimson.typo.player import build_typo_player_input, enforce_typo_player_frame
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 
 
-def test_typo_weapon_matches_native_shotgun_id() -> None:
-    assert TYPO_WEAPON_ID == WeaponId.SHOTGUN
-    assert int(TYPO_WEAPON_ID) == 3
-
-
-def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
+def test_enforce_typo_player_frame_resets_a_living_player_without_reassigning() -> None:
     state = GameplayState()
     player = PlayerState(index=0, pos=Vec2())
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
@@ -24,15 +19,25 @@ def test_enforce_typo_player_frame_resets_timers_and_ammo() -> None:
     player.weapon.reload_timer = 1.25
     player.weapon.reload_timer_max = 1.25
 
-    enforce_typo_player_frame(player, state=state)
+    enforce_typo_player_frame(player)
 
-    assert player.weapon.weapon_id == WeaponId.SHOTGUN
+    # Native stomps the shotgun id after firing; the reset keeps the weapon.
+    assert player.weapon.weapon_id == WeaponId.PISTOL
     assert player.weapon.shot_cooldown == 0.0
     assert player.spread_heat == 0.0
     assert player.weapon.reload_active is False
     assert player.weapon.reload_timer == 0.0
     assert player.weapon.reload_timer_max == 0.0
     assert player.weapon.ammo == player.weapon.clip_size
+
+
+def test_enforce_typo_player_frame_skips_a_dead_player() -> None:
+    player = PlayerState(index=0, pos=Vec2(), health=0.0)
+    player.weapon.shot_cooldown = 0.5
+
+    enforce_typo_player_frame(player)
+
+    assert player.weapon.shot_cooldown == 0.5
 
 
 def test_build_typo_player_input_pulses_fire() -> None:

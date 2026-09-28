@@ -15,7 +15,7 @@ from ..rng_caller_static import RngCallerStatic
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
 from ..sim.world_state import WorldState
-from .player import enforce_typo_player_frame
+from .player import TYPO_WEAPON_ID, enforce_typo_player_frame
 from .spawns import tick_typo_spawns
 
 if TYPE_CHECKING:
@@ -74,10 +74,15 @@ def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspa
 
 def typo_before_step(world: WorldState) -> None:
     for player in world.players:
-        enforce_typo_player_frame(player, state=world.state)
+        enforce_typo_player_frame(player)
 
 
 def typo_mid_step(ctx: MidStepContext) -> None:
+    # After firing, native stomps player 0 to the shotgun with 30 ammo, without
+    # `weapon_assign_player`: the reset pistol's clip stays.
+    player = ctx.world.players[0]
+    player.weapon.weapon_id = TYPO_WEAPON_ID
+    player.weapon.ammo = 30.0
     typo = ctx.world.state.typo
     cooldown, spawns = tick_typo_spawns(
         elapsed_ms=int(ctx.elapsed_before_ms),

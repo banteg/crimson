@@ -188,12 +188,11 @@ class TypoShooterMode(BaseGameplayMode):
         alive = self.player.health > 0.0
         show_gameplay_ui = alive and (not self._game_over_active)
 
-        entity_alpha = self._world_entity_alpha()
-        self._draw_world(entity_alpha=entity_alpha)
+        self._draw_world(entity_alpha=self._world_entity_alpha())
         self._draw_screen_fade()
-        self._draw_aim_indicators(show_aim=show_gameplay_ui, entity_alpha=entity_alpha)
-
-        if show_gameplay_ui:
+        # Native `typo_gameplay_update_and_render` draws the name labels right after
+        # the world, living player or not, and never calls `ui_render_aim_indicators`.
+        if not self._game_over_active:
             self._draw_name_labels()
 
         if show_gameplay_ui:
