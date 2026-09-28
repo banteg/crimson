@@ -21,7 +21,7 @@ from .session_builders import (
     build_tutorial_session,
     build_typo_session,
 )
-from .sessions import DeterministicSession, enforce_rush_loadout
+from .sessions import DeterministicSession
 from .world_reset import CreatureSlotResidue, apply_creature_pool_residue, reset_world_players
 from .world_state import WorldState
 
@@ -83,7 +83,6 @@ def initialize_run(
                 apply_world_dt_steps=apply_world_dt_steps,
             )
         case GameMode.RUSH:
-            enforce_rush_loadout(world)
             session, _ = build_rush_session(
                 world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
             )

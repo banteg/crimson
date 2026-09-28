@@ -22,9 +22,8 @@ from ..quests.runtime import tick_quest_completion_transition
 from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
 from ..quests.types import SpawnEntry
 from ..rng_caller_static import RngCallerStatic
-from ..tutorial.runtime import tutorial_before_step, tutorial_input_transform, tutorial_post_step
+from ..tutorial.runtime import tutorial_input_transform, tutorial_post_step
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
-from ..weapon_runtime import weapon_assign_player
 from ..weapon_runtime.availability import prepare_weapon_availability
 from ..weapons import WeaponId
 from .commands import (
@@ -109,14 +108,6 @@ class QuestSpawnState(msgspec.Struct):
     play_completion_music: bool = False
 
 
-def enforce_rush_loadout(world: WorldState) -> None:
-    for player in world.players:
-        if player.weapon.weapon_id != RUSH_WEAPON_ID:
-            weapon_assign_player(player, RUSH_WEAPON_ID, state=world.state)
-        # Native `rush_mode_update` forces assault rifle + 30 ammo every frame.
-        player.weapon.ammo = float(RUSH_FORCED_AMMO)
-
-
 def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
     state = ctx.world.state
     survival_update_weapon_handouts(
@@ -152,6 +143,12 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
 
 def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
     state = ctx.world.state
+    # Native `rush_mode_update` stomps the weapon id and ammo every frame, after
+    # the player update and without `weapon_assign_player`: the run starts on the
+    # reset pistol (its clip and 0.8 s cooldown), and a manual reload still runs.
+    for player in ctx.world.players:
+        player.weapon.weapon_id = RUSH_WEAPON_ID
+        player.weapon.ammo = RUSH_FORCED_AMMO
     cooldown, spawns = tick_rush_mode_spawns(
         spawn.spawn_cooldown_ms,
         ctx.dt_raw_ms,
@@ -210,10 +207,6 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
     spawn.completed = bool(completed)
     spawn.play_hit_sfx = bool(play_hit_sfx)
     spawn.play_completion_music = bool(play_completion_music)
-
-
-def rush_input_transform(inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
-    return [msgspec.structs.replace(inp, reload_pressed=False) if inp.reload_pressed else inp for inp in inputs]
 
 
 # Per-mode spawn state. Typ-o and tutorial keep theirs in the gameplay state.
@@ -328,17 +321,11 @@ class DeterministicSession(msgspec.Struct):
 
     def _mode_before_step(self) -> None:
         match self.game_mode:
-            case GameMode.RUSH:
-                enforce_rush_loadout(self.world)
             case GameMode.TYPO:
                 typo_before_step(self.world)
-            case GameMode.TUTORIAL:
-                tutorial_before_step(self.world)
 
     def _mode_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
         match self.game_mode:
-            case GameMode.RUSH:
-                return rush_input_transform(inputs)
             case GameMode.TYPO:
                 return typo_input_transform(self.world, inputs)
             case GameMode.TUTORIAL:
@@ -531,6 +518,11 @@ class DeterministicSession(msgspec.Struct):
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
 
+        creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
+
+        # Native culls corpses while rendering the world, before
+        # `tutorial_timeline_update` reads its bonus carrier.
+        self.world.creatures.finalize_post_render_lifecycle()
         self._mode_after_step(
             PostStepContext(
                 world=self.world,
@@ -539,10 +531,6 @@ class DeterministicSession(msgspec.Struct):
                 detail_preset=self.detail_preset,
             ),
         )
-
-        creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
-
-        self.world.creatures.finalize_post_render_lifecycle()
 
         dt_elapsed = dt_raw_ms if self.elapsed_uses_raw_dt else dt_sim_ms
         self.elapsed_ms = elapsed_before_ms + dt_elapsed
