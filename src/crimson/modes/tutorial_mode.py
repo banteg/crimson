@@ -265,11 +265,10 @@ class TutorialMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._draw_world(
-            draw_aim_indicators=not perk_menu_active,
-            entity_alpha=self._world_entity_alpha(),
-        )
+        entity_alpha = self._world_entity_alpha()
+        self._draw_world(entity_alpha=entity_alpha)
         self._draw_screen_fade()
+        self._draw_aim_indicators(show_aim=not perk_menu_active, entity_alpha=entity_alpha)
 
         hud_bottom = 0.0
         if not perk_menu_active:

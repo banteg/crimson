@@ -249,13 +249,29 @@ class SurvivalMode(BaseGameplayMode):
             pulse_time=float(self._cursor_pulse_time),
         )
 
+    def _draw_perk_prompt(self) -> None:
+        self._perk_prompt.draw(
+            ctx=self._perk_menu_ui_context(),
+            pending_count=self._ui_pending_perk_count(),
+            any_alive=self._any_player_alive(),
+            menu_active=self._perk_menu.active,
+            config=self.config,
+            ui_text_width=self._ui_text_width,
+            text_color=UI_TEXT_COLOR,
+        )
+
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        self._draw_world(
-            draw_aim_indicators=(not self._game_over_active) and (not perk_menu_active),
-            entity_alpha=self._world_entity_alpha(),
-        )
+        entity_alpha = self._world_entity_alpha()
+        self._draw_world(entity_alpha=entity_alpha)
         self._draw_screen_fade()
+        # Native order: perk prompt, aim indicators, then the HUD over both.
+        if not self._game_over_active:
+            self._draw_perk_prompt()
+        self._draw_aim_indicators(
+            show_aim=(not self._game_over_active) and (not perk_menu_active),
+            entity_alpha=entity_alpha,
+        )
 
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active):
@@ -313,15 +329,6 @@ class SurvivalMode(BaseGameplayMode):
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
         if not self._game_over_active:
-            self._perk_prompt.draw(
-                ctx=self._perk_menu_ui_context(),
-                pending_count=self._ui_pending_perk_count(),
-                any_alive=self._any_player_alive(),
-                menu_active=self._perk_menu.active,
-                config=self.config,
-                ui_text_width=self._ui_text_width,
-                text_color=UI_TEXT_COLOR,
-            )
             self._perk_menu.draw(
                 self._perk_menu_ui_context(),
                 perk_selection_prepared_choices(self.state),

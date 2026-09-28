@@ -311,7 +311,6 @@ def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mock
             "draw_creatures",
             "draw_freeze_overlay",
             "bonus_render",
-            "draw_aim_ui",
         )
     ]
     for name in ("begin_blend_mode", "rl_set_texture", "rl_begin", "rl_end", "end_blend_mode", "rl_tex_coord2f"):

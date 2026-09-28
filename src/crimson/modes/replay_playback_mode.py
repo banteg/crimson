@@ -177,14 +177,11 @@ class ReplayPlaybackMode:
             return
         self._console.exec_line("exec music/game_tunes.txt")
 
-    def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
+    def _draw_world(self, *, entity_alpha: float = 1.0) -> None:
         runtime = self._runtime
         if runtime is None:
             return
-        runtime.draw(
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
+        runtime.draw(entity_alpha=entity_alpha)
 
     def _replay_widget_metrics(self) -> tuple[float, float, float, float, float]:
         screen_w = float(canvas.width())
@@ -605,7 +602,8 @@ class ReplayPlaybackMode:
         world = runtime.world
         players = world.players
         assert players, "Replay runtime must have at least one player before draw"
-        self._draw_world(draw_aim_indicators=True)
+        self._draw_world()
+        runtime.draw_aim_indicators(show_aim=True)
         mode_id = replay.run.game_mode_id
         show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
         hud_flags = hud_flags_for_game_mode(mode_id)

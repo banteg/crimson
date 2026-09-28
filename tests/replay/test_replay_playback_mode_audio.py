@@ -135,11 +135,11 @@ def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, repl
     _set_private(view, "_small", font)
     _set_private(view, "_runtime", runtime)
 
-    view._draw_world(draw_aim_indicators=False, entity_alpha=0.5)
+    view._draw_world(entity_alpha=0.5)
     view._draw_ui_text("replay", pos, color)
     width = view._measure_ui_text_width("replay")
 
-    runtime.draw.assert_called_once_with(draw_aim_indicators=False, entity_alpha=0.5)
+    runtime.draw.assert_called_once_with(entity_alpha=0.5)
     draw_text.assert_called_once_with(font, "replay", pos, color)
     measure_text.assert_called_once_with(font, "replay")
     assert width == 42.0

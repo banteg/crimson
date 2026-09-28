@@ -125,11 +125,10 @@ class RushMode(BaseGameplayMode):
         )
 
     def draw(self) -> None:
-        self._draw_world(
-            draw_aim_indicators=(not self._game_over_active),
-            entity_alpha=self._world_entity_alpha(),
-        )
+        entity_alpha = self._world_entity_alpha()
+        self._draw_world(entity_alpha=entity_alpha)
         self._draw_screen_fade()
+        self._draw_aim_indicators(show_aim=not self._game_over_active, entity_alpha=entity_alpha)
 
         hud_bottom = 0.0
         if not self._game_over_active:

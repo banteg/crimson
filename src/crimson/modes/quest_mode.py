@@ -331,14 +331,26 @@ class QuestMode(BaseGameplayMode):
             recorder=self._replay_recorder,
         )
 
+    def _draw_perk_prompt(self) -> None:
+        self._perk_prompt.draw(
+            ctx=self._perk_menu_ui_context(),
+            pending_count=self._ui_pending_perk_count(),
+            any_alive=self._any_player_alive(),
+            menu_active=self._perk_menu.active,
+            config=self.config,
+            ui_text_width=self._ui_text_width,
+            text_color=UI_TEXT_COLOR,
+        )
+
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
         debug_overlay_height = 0.0
-        self._draw_world(
-            draw_aim_indicators=not perk_menu_active,
-            entity_alpha=self._world_entity_alpha(),
-        )
+        entity_alpha = self._world_entity_alpha()
+        self._draw_world(entity_alpha=entity_alpha)
         self._draw_screen_fade()
+        # Native order: perk prompt, aim indicators, then the HUD over both.
+        self._draw_perk_prompt()
+        self._draw_aim_indicators(show_aim=not perk_menu_active, entity_alpha=entity_alpha)
 
         hud_bottom = 0.0
         if not perk_menu_active:
@@ -379,15 +391,6 @@ class QuestMode(BaseGameplayMode):
         self._draw_quest_title()
         self._draw_quest_complete_banner()
 
-        self._perk_prompt.draw(
-            ctx=self._perk_menu_ui_context(),
-            pending_count=self._ui_pending_perk_count(),
-            any_alive=self._any_player_alive(),
-            menu_active=self._perk_menu.active,
-            config=self.config,
-            ui_text_width=self._ui_text_width,
-            text_color=UI_TEXT_COLOR,
-        )
         self._perk_menu.draw(
             self._perk_menu_ui_context(),
             perk_selection_prepared_choices(self.state),

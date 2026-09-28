@@ -13,7 +13,7 @@ from ..render.frame import RenderFrame
 from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
 from ..render.world.context import WorldRenderCtx
-from ..render.world.draw import draw_world
+from ..render.world.draw import draw_world, ui_render_aim_indicators
 from ..sim.world_reset import build_reset_world
 from ..sim.world_state import WorldState
 from .audio_bridge import AudioBridge
@@ -150,18 +150,15 @@ class WorldRuntime:
             screen_size=screen_size,
         )
 
-    def draw(
-        self,
-        *,
-        draw_aim_indicators: bool = True,
-        entity_alpha: float = 1.0,
-    ) -> None:
+    def draw(self, *, entity_alpha: float = 1.0) -> None:
         self.render_resources.process_ground_pending()
-        draw_world(
-            WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform()),
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
+        draw_world(self._render_ctx(), entity_alpha=entity_alpha)
+
+    def draw_aim_indicators(self, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
+        ui_render_aim_indicators(self._render_ctx(), show_aim=show_aim, entity_alpha=entity_alpha)
+
+    def _render_ctx(self) -> WorldRenderCtx:
+        return WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform())
 
     def view_transform(self) -> viewport.ViewTransform:
         return viewport.view_transform(

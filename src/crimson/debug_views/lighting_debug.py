@@ -1296,7 +1296,8 @@ class LightingDebugView:
         return self._runtime.render_resources.resources.texture(texture_id)
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._runtime.draw(draw_aim_indicators=draw_aim_indicators, entity_alpha=entity_alpha)
+        self._runtime.draw(entity_alpha=entity_alpha)
+        self._runtime.draw_aim_indicators(show_aim=draw_aim_indicators, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self._runtime.world_to_screen(pos)

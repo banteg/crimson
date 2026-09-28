@@ -212,11 +212,11 @@ class BaseGameplayMode:
     ) -> None:
         self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=seed)
 
-    def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
-        self._world_runtime.draw(
-            draw_aim_indicators=draw_aim_indicators,
-            entity_alpha=entity_alpha,
-        )
+    def _draw_world(self, *, entity_alpha: float = 1.0) -> None:
+        self._world_runtime.draw(entity_alpha=entity_alpha)
+
+    def _draw_aim_indicators(self, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
+        self._world_runtime.draw_aim_indicators(show_aim=show_aim, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self._world_runtime.world_to_screen(pos)
@@ -703,7 +703,7 @@ class BaseGameplayMode:
             alpha = 0.0
         elif alpha > 1.0:
             alpha = 1.0
-        self._draw_world(draw_aim_indicators=False, entity_alpha=self._world_entity_alpha() * alpha)
+        self._draw_world(entity_alpha=self._world_entity_alpha() * alpha)
 
     def steal_ground_for_menu(self):
         ground = self.render_resources.ground

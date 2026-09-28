@@ -66,12 +66,9 @@ class WorldDrawContext(msgspec.Struct, frozen=True):
     poison_src: rl.Rectangle | None = None
 
 
-def draw_world(
-    render_ctx: WorldRenderCtx,
-    *,
-    draw_aim_indicators: bool = True,
-    entity_alpha: float = 1.0,
-) -> None:
+def draw_world(render_ctx: WorldRenderCtx, *, entity_alpha: float = 1.0) -> None:
+    """Port of `gameplay_render_world`: terrain, players, creatures, projectiles, bonuses."""
+
     entity_alpha = clamp(float(entity_alpha), 0.0, 1.0)
     view = render_ctx.view
     with profile_pass("background"):
@@ -100,8 +97,6 @@ def draw_world(
             projectile_render(render_ctx, alpha=draw_ctx.entity_alpha)
         with profile_pass("bonus_render"):
             bonus_render(render_ctx, ctx=draw_ctx)
-        with profile_pass("aim_ui"):
-            draw_aim_ui(render_ctx, ctx=draw_ctx, draw_aim_indicators_enabled=draw_aim_indicators)
 
 
 def draw_background(
@@ -501,13 +496,19 @@ def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
         draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
 
 
-def draw_aim_ui(
-    render_ctx: WorldRenderCtx,
-    *,
-    ctx: WorldDrawContext,
-    draw_aim_indicators_enabled: bool,
-) -> None:
-    if draw_aim_indicators_enabled:
+def ui_render_aim_indicators(render_ctx: WorldRenderCtx, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
+    """Port of `ui_render_aim_indicators`: after the perk prompt, before the HUD."""
+
+    with render_ctx.frame.resources.alpha_test.scope():
+        _draw_aim_ui(
+            render_ctx,
+            ctx=build_draw_context(render_ctx, entity_alpha=clamp(float(entity_alpha), 0.0, 1.0)),
+            show_aim=show_aim,
+        )
+
+
+def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim: bool) -> None:
+    if show_aim:
         with profile_pass("aim_indicators"):
             draw_aim_indicators(render_ctx, ctx=ctx)
 
@@ -520,7 +521,7 @@ def draw_aim_ui(
             alpha=ctx.entity_alpha,
         )
 
-    if draw_aim_indicators_enabled:
+    if show_aim:
         with profile_pass("aim_enhancements"):
             draw_aim_enhancements(render_ctx, ctx=ctx)
 
@@ -530,4 +531,5 @@ __all__ = [
     "draw_aim_enhancements",
     "draw_aim_indicators",
     "draw_world",
+    "ui_render_aim_indicators",
 ]

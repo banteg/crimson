@@ -207,8 +207,10 @@ frame or UVs a pass inherits from the previous one), the Fire Bullets glow gate
 that reads a stale pointer to slot 95, and the muzzle-glow pass that reads the
 player slot past the last player.
 
-The aim circle, direction arrows and aim enhancement follow, still inside world
-rendering; native draws them later, after the perk prompt.
+The aim circle, direction arrows and aim enhancement are not part of the world
+pass. Like native `gameplay_update_and_render`, each mode draws the world, then
+the perk prompt, then `ui_render_aim_indicators`, then the HUD over them, then
+the perk menu and other UI.
 
 ## Camera and viewport math
 

@@ -123,7 +123,6 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker, mak
     mode.draw_pause_background()
 
     world_draw.assert_called_once()
-    assert world_draw.call_args.kwargs["draw_aim_indicators"] is False
     assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
 
 
