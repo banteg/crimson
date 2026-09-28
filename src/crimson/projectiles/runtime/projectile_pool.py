@@ -8,6 +8,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ...collision_math import within_native_find_radius
+from ...creatures.damage import creatures_apply_radius_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
@@ -34,11 +35,17 @@ from ..types import (
     ProjectileTemplateId,
 )
 from .behaviors import (
+    _post_hit_ion_common,
+    _post_hit_ion_rifle,
+    _post_hit_plague_spreader,
+    _post_hit_plasma_cannon,
+    _post_hit_pulse_gun,
+    _post_hit_shrinkifier,
+    _pre_hit_splitter,
     _ProjectileHitInfo,
     _ProjectileUpdateCtx,
 )
 from .collision import _apply_damage_to_creature
-from .primary_rules import primary_rule_for_type_id
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -175,7 +182,8 @@ class ProjectilePool:
         barrel_greaser_active = PerkId.BARREL_GREASER in perks
         ion_gun_master_active = PerkId.ION_GUN_MASTER in perks
         poison_bullets_active = PerkId.POISON_BULLETS in perks
-        ion_scale = 1.2 if ion_gun_master_active else 1.0
+        # Native `ion_damage_scale` is the float 1.2f under Ion Gun Master.
+        ion_scale = f32(1.2) if ion_gun_master_active else 1.0
 
         effects = runtime_state.effects
         sfx_queue = runtime_state.sfx_queue
@@ -206,7 +214,6 @@ class ProjectilePool:
             pool=self,
             creatures=creatures,
             dt=float(dt),
-            ion_scale=float(ion_scale),
             detail_preset=int(detail_preset),
             rng=rng,
             runtime_state=runtime_state,
@@ -225,8 +232,6 @@ class ProjectilePool:
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
-            rule = primary_rule_for_type_id(ProjectileTemplateId(proj.type_id))
-
             if proj.life_timer <= 0.0:
                 proj.active = False
                 # Native `projectile_update` clears the active flag but still
@@ -234,9 +239,31 @@ class ProjectilePool:
                 # can apply one final linger AoE pass.
 
             if proj.life_timer < 0.4:
-                if rule.reset_shock_chain_on_linger:
-                    _reset_shock_chain_if_owner(proj_index)
-                rule.linger(update_ctx, proj)
+                match proj.type_id:
+                    case ProjectileTemplateId.ION_RIFLE | ProjectileTemplateId.ION_MINIGUN:
+                        _reset_shock_chain_if_owner(proj_index)
+                        proj.life_timer = x87_pc24_sub(proj.life_timer, dt)
+                        if proj.type_id == ProjectileTemplateId.ION_RIFLE:
+                            radius, damage = x87_pc24_mul(ion_scale, 88.0), x87_pc24_mul(dt, 100.0)
+                        else:
+                            radius, damage = x87_pc24_mul(ion_scale, 60.0), x87_pc24_mul(dt, 40.0)
+                        creatures_apply_radius_damage(
+                            step_runtime, proj.pos, radius, damage, CreatureDamageType.ION, proj.owner,
+                        )
+                    case ProjectileTemplateId.ION_CANNON:
+                        proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.7)))
+                        creatures_apply_radius_damage(
+                            step_runtime,
+                            proj.pos,
+                            x87_pc24_mul(ion_scale, 128.0),
+                            x87_pc24_mul(dt, 300.0),
+                            CreatureDamageType.ION,
+                            proj.owner,
+                        )
+                    case ProjectileTemplateId.GAUSS_GUN:
+                        proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.1)))
+                    case _:
+                        proj.life_timer = x87_pc24_sub(proj.life_timer, dt)
                 continue
 
             if (
@@ -366,7 +393,8 @@ class ProjectilePool:
                     ):
                         creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
-                    rule.pre_hit(update_ctx, proj, int(hit_idx))
+                    if type_id == ProjectileTemplateId.SPLITTER_GUN:
+                        _pre_hit_splitter(update_ctx, proj, int(hit_idx))
 
                     # Native increments the global shots-hit counter for any
                     # owner (creature-owned splitter children included) when the
@@ -388,7 +416,12 @@ class ProjectilePool:
                     hits.append(hit)
                     hit_presentation = step_runtime.begin_hit_presentation(hit)
 
-                    if proj.life_timer != 0.25 and rule.stop_on_hit:
+                    stop_on_hit = type_id not in (
+                        ProjectileTemplateId.FIRE_BULLETS,
+                        ProjectileTemplateId.GAUSS_GUN,
+                        ProjectileTemplateId.BLADE_GUN,
+                    )
+                    if proj.life_timer != 0.25 and stop_on_hit:
                         proj.life_timer = 0.25
                         jitter = rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER) & 3
                         # Native rounds the multiply and add as separate PC24 operations.
@@ -399,16 +432,22 @@ class ProjectilePool:
 
                     dist = _damage_distance_f32(proj.origin, proj.pos)
 
-                    rule.post_hit(
-                        update_ctx,
-                        _ProjectileHitInfo(
-                            proj_index=int(proj_index),
-                            proj=proj,
-                            hit_idx=int(hit_idx),
-                            move=move,
-                            target=target,
-                        ),
+                    hit_info = _ProjectileHitInfo(
+                        proj_index=int(proj_index), proj=proj, hit_idx=int(hit_idx), move=move, target=target,
                     )
+                    match type_id:
+                        case ProjectileTemplateId.ION_MINIGUN | ProjectileTemplateId.ION_CANNON:
+                            _post_hit_ion_common(update_ctx, hit_info)
+                        case ProjectileTemplateId.ION_RIFLE:
+                            _post_hit_ion_rifle(update_ctx, hit_info)
+                        case ProjectileTemplateId.PLASMA_CANNON:
+                            _post_hit_plasma_cannon(update_ctx, hit_info)
+                        case ProjectileTemplateId.SHRINKIFIER:
+                            _post_hit_shrinkifier(update_ctx, hit_info)
+                        case ProjectileTemplateId.PULSE_GUN:
+                            _post_hit_pulse_gun(update_ctx, hit_info)
+                        case ProjectileTemplateId.PLAGUE_SPREADER:
+                            _post_hit_plague_spreader(update_ctx, hit_info)
 
                     damage_scale = _damage_scale(type_id)
                     damage_amount = _projectile_damage_amount_f32(dist, damage_scale)
@@ -465,7 +504,7 @@ class ProjectilePool:
                     # Pre-hit splatter uses the collision point. Native post-hit
                     # effects/audio read the live positions after jitter and damage.
                     post_hit = msgspec.structs.replace(hit, hit=proj.pos, target=creatures[hit_idx].pos)
-                    if proj.life_timer == 0.25 and rule.stop_on_hit:
+                    if proj.life_timer == 0.25 and stop_on_hit:
                         if hit_presentation is not None:
                             step_runtime.finish_hit_presentation(post_hit, hit_presentation)
                         break

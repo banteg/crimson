@@ -8,12 +8,14 @@ from grim.rand import CrandLike
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
+from ..collision_math import within_native_find_radius
 from ..effects_atlas import EffectId
 from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from .damage_types import CreatureDamageType
+from .lifecycle import creature_lifecycle_is_collidable
 from .spawn import CreatureFlags, CreatureTypeId
 
 if TYPE_CHECKING:
@@ -218,3 +220,20 @@ def creature_apply_damage(
         if sound is not None:
             step_runtime.sfx.append(SfxRequest(sound, creature.pos))
     return True
+
+
+def creatures_apply_radius_damage(
+    step_runtime: WorldStepRuntime,
+    pos: Vec2,
+    radius: float,
+    damage: float,
+    damage_type: int,
+    owner: OwnerRef,
+) -> None:
+    """Port of `creatures_apply_radius_damage`: damage every collidable creature touching the circle."""
+
+    for creature_idx, creature in enumerate(step_runtime.world.creatures.entries):
+        if not creature.active or not creature_lifecycle_is_collidable(creature.lifecycle_stage):
+            continue
+        if within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
+            creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2(), owner)

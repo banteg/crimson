@@ -9,9 +9,6 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_types import SfxRequest
 
-from ...collision_math import within_native_find_radius
-from ...creatures.damage_types import CreatureDamageType
-from ...creatures.lifecycle import creature_lifecycle_is_collidable
 from ...effects import EffectPool
 from ...math_parity import (
     f32,
@@ -34,7 +31,6 @@ from ..types import (
     ProjectileTemplateId,
 )
 from .collision import (
-    _apply_damage_to_creature,
     creature_find_nearest_active,
 )
 
@@ -50,7 +46,6 @@ class _ProjectileUpdateCtx(msgspec.Struct):
     pool: ProjectilePool
     creatures: Sequence[CreatureState]
     dt: float
-    ion_scale: float
     detail_preset: int
     rng: CrandLike
     runtime_state: GameplayState
@@ -66,83 +61,6 @@ class _ProjectileHitInfo(msgspec.Struct):
     hit_idx: int
     move: Vec2
     target: Vec2
-
-
-def _life_timer_sub_f32(life_timer: float, amount: float) -> float:
-    return x87_pc24_sub(life_timer, amount)
-
-
-def _linger_default(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    proj.life_timer = _life_timer_sub_f32(float(proj.life_timer), float(ctx.dt))
-
-
-def _linger_gauss_gun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    decay = x87_pc24_mul(ctx.dt, f32(0.1))
-    proj.life_timer = _life_timer_sub_f32(proj.life_timer, decay)
-
-
-def _linger_ion_aoe(
-    ctx: _ProjectileUpdateCtx,
-    proj: Projectile,
-    *,
-    life_decay_scale: float,
-    damage_per_second: float,
-    base_radius: float,
-) -> None:
-    decay = x87_pc24_mul(ctx.dt, f32(life_decay_scale))
-    proj.life_timer = _life_timer_sub_f32(proj.life_timer, decay)
-    damage = x87_pc24_mul(ctx.dt, f32(damage_per_second))
-    radius = x87_pc24_mul(f32(ctx.ion_scale), f32(base_radius))
-    for creature_idx, creature in enumerate(ctx.creatures):
-        if not creature.active:
-            continue
-        if not creature_lifecycle_is_collidable(creature.lifecycle_stage):
-            continue
-        # Native uses the strict sqrt-form predicate from creature_find_in_radius.
-        if within_native_find_radius(
-            origin=proj.pos,
-            target=creature.pos,
-            radius=float(radius),
-            target_size=float(creature.size),
-        ):
-            _apply_damage_to_creature(
-                creature_idx,
-                damage,
-                damage_type=CreatureDamageType.ION,
-                impulse=Vec2(),
-                owner=proj.owner,
-                step_runtime=ctx.step_runtime,
-            )
-
-
-def _linger_ion_minigun(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    _linger_ion_aoe(
-        ctx,
-        proj,
-        life_decay_scale=1.0,
-        damage_per_second=40.0,
-        base_radius=60.0,
-    )
-
-
-def _linger_ion_rifle(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    _linger_ion_aoe(
-        ctx,
-        proj,
-        life_decay_scale=1.0,
-        damage_per_second=100.0,
-        base_radius=88.0,
-    )
-
-
-def _linger_ion_cannon(ctx: _ProjectileUpdateCtx, proj: Projectile) -> None:
-    _linger_ion_aoe(
-        ctx,
-        proj,
-        life_decay_scale=0.7,
-        damage_per_second=300.0,
-        base_radius=128.0,
-    )
 
 
 def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int) -> None:
