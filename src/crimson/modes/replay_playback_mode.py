@@ -119,7 +119,6 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
 
         self._driver: PlaybackDriver | None = None
-        self._quest_total_spawn_count = 0
 
         self._audio: AudioState | None = None
         self._audio_rng: Crand | None = None
@@ -358,9 +357,6 @@ class ReplayPlaybackMode:
             self._quest_title = str(quest.title)
             self._quest_level = quest.level
             self._grim_mono = load_grim_mono_font(self._ctx.assets_dir)
-            self._quest_total_spawn_count = int(driver.quest_total_spawn_count)
-        else:
-            self._quest_total_spawn_count = 0
 
     def close(self) -> None:
         self._small = None
@@ -606,7 +602,8 @@ class ReplayPlaybackMode:
         elapsed_ms = float(runtime.presentation_elapsed_ms)
         match mode_id:
             case GameMode.QUESTS:
-                total = int(self._quest_total_spawn_count)
+                quest_spawn = None if self._driver is None else self._driver.quest_spawn_state
+                total = 0 if quest_spawn is None else quest_spawn.total_creatures
                 kills = int(world.creatures.kill_count)
                 quest_progress_ratio = float(kills) / float(total) if total > 0 else None
                 driver = self._driver

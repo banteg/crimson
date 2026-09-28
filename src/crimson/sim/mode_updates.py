@@ -8,8 +8,9 @@ import msgspec
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..gameplay import survival_update_weapon_handouts
+from ..math_parity import f32
 from ..quests.runtime import tick_quest_completion_transition
-from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
+from ..quests.timeline import quest_spawn_table_empty, quest_spawn_timeline_update
 from ..quests.types import SpawnEntry
 from ..weapons import WeaponId
 
@@ -31,6 +32,8 @@ class RushSpawnState(msgspec.Struct):
 
 class QuestSpawnState(msgspec.Struct):
     spawn_entries: tuple[SpawnEntry, ...] = ()
+    # Native `quest_spawn_total_creatures`, summed once at quest start.
+    total_creatures: int = 0
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = -1.0
@@ -99,32 +102,15 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     # modes' mid-steps. The scaled dt keeps the timeline (the quest score), the
     # stall timer, and the completion transition slowed under Reflex Boost.
     state = world.state
+    if any(c.active for c in world.creatures.entries) or not quest_spawn_table_empty(spawn.spawn_entries):
+        spawn.spawn_timeline_ms = f32(f32(spawn.spawn_timeline_ms) + f32(dt_ms))
+    quest_spawn_timeline_update(world, spawn, dt_ms=dt_ms)
+
     creatures_none_active = not any(c.active for c in world.creatures.entries)
-
-    entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
-        spawn.spawn_entries,
-        quest_spawn_timeline_ms=spawn.spawn_timeline_ms,
-        frame_dt_ms=float(dt_ms),
-        creatures_none_active=creatures_none_active,
-        no_creatures_timer_ms=spawn.no_creatures_timer_ms,
-    )
-    spawn.spawn_entries = entries
-    spawn.spawn_timeline_ms = float(timeline_ms)
-    spawn.no_creatures_timer_ms = float(no_creatures_timer_ms)
     spawn_table_empty_now = quest_spawn_table_empty(spawn.spawn_entries)
-
     if creatures_none_active and spawn_table_empty_now:
         state.bonuses.reflex_boost = 0.0
         state.time_scale_active = False
-
-    for call in spawns:
-        world.creatures.spawn_template(
-            call.template_id,
-            call.pos,
-            float(call.heading),
-            state=state,
-            detail_preset=state.detail_preset,
-        )
 
     # Native quest_mode_update has no player-alive gate on the completion
     # transition: if the timer crosses 2500 ms while the death animation is

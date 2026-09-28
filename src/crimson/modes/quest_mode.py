@@ -87,7 +87,6 @@ class QuestMode(BaseGameplayMode):
         )
         self._quest_def: QuestDefinition | None = None
         self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
-        self._quest_total_spawn_count: int = 0
         self._quest_highscore_random_tag: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._grim_mono: GrimMonoFont | None = None
@@ -100,7 +99,6 @@ class QuestMode(BaseGameplayMode):
         super().open()
         self._quest_def = None
         self._quest_level = self.config.gameplay.quest_level or QuestLevel(1, 1)
-        self._quest_total_spawn_count = 0
         self._quest_highscore_random_tag = 0
         self._outcome = None
         self._grim_mono = load_grim_mono_font(self._assets_root)
@@ -181,7 +179,6 @@ class QuestMode(BaseGameplayMode):
         if quest is None:
             self._quest_def = None
             self._quest_level = level
-            self._quest_total_spawn_count = 0
             self._quest_highscore_random_tag = 0
             self._sim_session = None
             return
@@ -212,7 +209,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_highscore_random_tag = prepared.quest_highscore_random_tag & UNI_NUM_MASK
         self._quest_def = prepared.quest
         self._quest_level = quest.level
-        self._quest_total_spawn_count = sum(entry.count for entry in spawn_state.spawn_entries)
         self._reset_gameplay_frame_clock()
 
     def _handle_input(self) -> None:
@@ -351,7 +347,7 @@ class QuestMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if not perk_menu_active:
-            total = int(self._quest_total_spawn_count)
+            total = self._quest_spawn_state.total_creatures
             kills = int(self.creatures.kill_count)
             quest_progress_ratio = float(kills) / float(total) if total > 0 else None
             hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())

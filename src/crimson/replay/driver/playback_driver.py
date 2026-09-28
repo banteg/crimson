@@ -140,9 +140,6 @@ class SessionPlaybackDriver:
         self._quest_definition = prepared.quest
         mode_state = self.session.mode_state
         self._quest_spawn_state = mode_state if isinstance(mode_state, QuestSpawnState) else None
-        self._quest_total_spawn_count = (
-            sum(entry.count for entry in self._quest_spawn_state.spawn_entries) if self._quest_spawn_state is not None else 0
-        )
         self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()
 
         self.tick_limit = self.tick_count if self.max_ticks is None else min(self.tick_count, max(0, int(self.max_ticks)))
@@ -268,10 +265,6 @@ class SessionPlaybackDriver:
     @property
     def quest_definition(self) -> QuestDefinition | None:
         return self._quest_definition
-
-    @property
-    def quest_total_spawn_count(self) -> int:
-        return int(self._quest_total_spawn_count)
 
     @property
     def terrain_setup(self) -> TerrainSetup | None:

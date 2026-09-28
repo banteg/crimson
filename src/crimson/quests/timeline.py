@@ -1,75 +1,16 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import msgspec
 
-from ..creatures.spawn import SpawnTemplateCall
 from ..math_parity import f32
 from ..sim.state_types import TERRAIN_SIZE
 from .types import SpawnEntry
 
-
-def tick_quest_spawn_timeline(
-    entries: tuple[SpawnEntry, ...],
-    quest_spawn_timeline_ms: float,
-    frame_dt_ms: float,
-    *,
-    creatures_none_active: bool,
-    no_creatures_timer_ms: float,
-) -> tuple[tuple[SpawnEntry, ...], bool, float, tuple[SpawnTemplateCall, ...]]:
-    """Advance quest spawn-table firing (pure model of `quest_spawn_timeline_update` / 0x00434250).
-
-    Returns:
-      (updated_entries, creatures_none_active, no_creatures_timer_ms, spawn_calls)
-    """
-    timeline_ms = f32(quest_spawn_timeline_ms)
-    dt_ms = f32(frame_dt_ms)
-
-    if not creatures_none_active:
-        no_creatures_timer_ms = 0.0
-    else:
-        no_creatures_timer_ms = f32(no_creatures_timer_ms + dt_ms)
-
-    force_spawn = creatures_none_active and no_creatures_timer_ms > 3000.0 and timeline_ms > 0x6A4
-
-    start_idx: int | None = None
-    for idx, entry in enumerate(entries):
-        if entry.count <= 0:
-            continue
-        if f32(entry.trigger_ms) < timeline_ms or force_spawn:
-            start_idx = idx
-            break
-
-    if start_idx is None:
-        return entries, creatures_none_active, no_creatures_timer_ms, ()
-
-    spawns: list[SpawnTemplateCall] = []
-    updated_entries = list(entries)
-
-    trigger_ms = entries[start_idx].trigger_ms
-    for idx in range(start_idx, len(entries)):
-        entry = entries[idx]
-        if entry.trigger_ms != trigger_ms:
-            break
-
-        base_pos = entry.pos
-        offscreen_x = base_pos.x < 0.0 or base_pos.x > TERRAIN_SIZE
-
-        for spawn_idx in range(int(entry.count)):
-            magnitude = f32(spawn_idx * 0x28)
-            offset = magnitude if (spawn_idx & 1) == 0 else -magnitude
-            if offscreen_x:
-                pos = base_pos.offset(dy=offset)
-            else:
-                pos = base_pos.offset(dx=offset)
-            spawns.append(SpawnTemplateCall(template_id=entry.spawn_id, pos=pos, heading=f32(entry.heading)))
-
-        if entry.count != 0:
-            updated_entries[idx] = msgspec.structs.replace(entry, count=0)
-
-    # After spawning, the original forces the "none active" flag off.
-    creatures_none_active = False
-
-    return tuple(updated_entries), creatures_none_active, float(no_creatures_timer_ms), tuple(spawns)
+if TYPE_CHECKING:
+    from ..sim.mode_updates import QuestSpawnState
+    from ..sim.world_state import WorldState
 
 
 def quest_spawn_table_empty(entries: tuple[SpawnEntry, ...]) -> bool:
@@ -77,36 +18,45 @@ def quest_spawn_table_empty(entries: tuple[SpawnEntry, ...]) -> bool:
     return all(entry.count <= 0 for entry in entries)
 
 
-def tick_quest_mode_spawns(
-    entries: tuple[SpawnEntry, ...],
-    quest_spawn_timeline_ms: float,
-    frame_dt_ms: float,
-    *,
-    creatures_none_active: bool,
-    no_creatures_timer_ms: float,
-) -> tuple[tuple[SpawnEntry, ...], float, bool, float, tuple[SpawnTemplateCall, ...]]:
-    """Advance quest-mode spawning (spawn timeline + table firing).
+def quest_spawn_timeline_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float) -> None:
+    """Port of `quest_spawn_timeline_update` (0x00434250): spawn the first due trigger group.
 
-    Modeled after the spawning portion of `quest_mode_update` (0x004070e0), which:
-      - Advances `quest_spawn_timeline` unless the quest is idle-complete (no creatures active and
-        the spawn table is empty).
-      - Calls `quest_spawn_timeline_update` to fire spawn entries.
-
-    Returns:
-      (updated_entries, quest_spawn_timeline_ms, creatures_none_active, no_creatures_timer_ms, spawn_calls)
+    Entries sharing the group's trigger time spawn together, `count` creatures each, spread
+    40 apart along x (or y for entries off the sides of the arena); the table then zeroes them.
+    After 3 s with no creatures active and 0x6A4 ms of timeline, the next group spawns early.
     """
-    timeline_ms = f32(quest_spawn_timeline_ms)
-    dt_ms = f32(frame_dt_ms)
 
-    if (not creatures_none_active) or (not quest_spawn_table_empty(entries)):
-        timeline_ms = f32(timeline_ms + dt_ms)
+    creatures_none_active = not any(creature.active for creature in world.creatures.entries)
+    if creatures_none_active:
+        spawn.no_creatures_timer_ms = f32(spawn.no_creatures_timer_ms + f32(dt_ms))
+    else:
+        spawn.no_creatures_timer_ms = 0.0
+    timeline_ms = f32(spawn.spawn_timeline_ms)
+    force_spawn = creatures_none_active and spawn.no_creatures_timer_ms > 3000.0 and timeline_ms > 0x6A4
 
-    entries, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_spawn_timeline(
-        entries,
-        quest_spawn_timeline_ms=timeline_ms,
-        frame_dt_ms=dt_ms,
-        creatures_none_active=creatures_none_active,
-        no_creatures_timer_ms=no_creatures_timer_ms,
-    )
+    entries = list(spawn.spawn_entries)
+    start_idx = None
+    for idx, entry in enumerate(entries):
+        if entry.count > 0 and (f32(entry.trigger_ms) < timeline_ms or force_spawn):
+            start_idx = idx
+            break
+    if start_idx is None:
+        return
 
-    return entries, float(timeline_ms), creatures_none_active, no_creatures_timer_ms, spawns
+    trigger_ms = entries[start_idx].trigger_ms
+    for idx in range(start_idx, len(entries)):
+        entry = entries[idx]
+        if entry.trigger_ms != trigger_ms:
+            break
+        offscreen_x = entry.pos.x < 0.0 or entry.pos.x > TERRAIN_SIZE
+        for spawn_idx in range(entry.count):
+            offset = f32(spawn_idx * 0x28)
+            if spawn_idx & 1:
+                offset = -offset
+            pos = entry.pos.offset(dy=offset) if offscreen_x else entry.pos.offset(dx=offset)
+            world.creatures.spawn_template(
+                entry.spawn_id, pos, f32(entry.heading), state=world.state, detail_preset=world.state.detail_preset,
+            )
+        if entry.count != 0:
+            entries[idx] = msgspec.structs.replace(entry, count=0)
+    spawn.spawn_entries = tuple(entries)

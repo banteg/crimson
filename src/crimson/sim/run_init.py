@@ -98,7 +98,8 @@ def initialize_run(
                 weapon_id = WeaponId.PISTOL
             for player in world.players:
                 weapon_assign_player(player, weapon_id, state=world.state)
-            mode_state = QuestSpawnState(spawn_entries=generated_entries if spawn_entries is None else spawn_entries)
+            entries = generated_entries if spawn_entries is None else spawn_entries
+            mode_state = QuestSpawnState(spawn_entries=entries, total_creatures=sum(entry.count for entry in entries))
             index = tracked_quest_games_counter_index(quest.level)
             if index is not None:
                 world.state.status.increment_quest_play_count(index)
