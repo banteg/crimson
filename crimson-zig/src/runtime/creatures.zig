@@ -2677,18 +2677,18 @@ pub const CreaturePool = struct {
                 if (damagePerkActive(state, players, PerkId.uranium_filled_bullets)) {
                     damage_amount += damage_amount;
                 }
-                if (damagePerkActive(state, players, PerkId.barrel_greaser)) {
-                    damage_amount *= 1.4;
-                }
-                if (damagePerkActive(state, players, PerkId.doctor)) {
-                    damage_amount *= 1.2;
-                }
                 if (damagePerkActive(state, players, PerkId.living_fortress)) {
                     for (players) |player| {
                         if (player.health > 0.0 and player.living_fortress_timer > 0.0) {
                             damage_amount *= player.living_fortress_timer * 0.05 + 1.0;
                         }
                     }
+                }
+                if (damagePerkActive(state, players, PerkId.barrel_greaser)) {
+                    damage_amount *= 1.4;
+                }
+                if (damagePerkActive(state, players, PerkId.doctor)) {
+                    damage_amount *= 1.2;
                 }
                 // Ping-pong animated creatures skip the heading jitter and its draw.
                 if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
@@ -7735,6 +7735,30 @@ test "living fortress scales projectile damage by alive player timers" {
         10_000.0,
     );
     try expectFloatClose(70.0, pool.entries[0].hp);
+}
+
+test "living fortress scales bullet damage before doctor" {
+    var pool: CreaturePool = .{};
+    var state = state_mod.GameplayState.init(1);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{}, .health = 100.0, .living_fortress_timer = 0.5 },
+    };
+    players[0].perk_counts.set(PerkId.living_fortress, 1);
+    players[0].perk_counts.set(PerkId.doctor, 1);
+    pool.entries[0] = .{
+        .active = true,
+        .hp = 13.0,
+        .max_hp = 100.0,
+        .size = 50.0,
+        .flags = spawn_mod.CreatureFlags.anim_ping_pong,
+    };
+
+    _ = pool.applyDamage(&state, players[0..], &bonuses, &terrain_fx, 0, 10.0, .bullet, .{}, owner_local_player, 0.016, 1024.0);
+
+    // Python creature_apply_damage on the same inputs; doctor first gives 0x3f333340.
+    try std.testing.expectEqual(@as(u32, 0x3f333330), @as(u32, @bitCast(pool.entries[0].hp)));
 }
 
 test "barrel greaser increases projectile damage by 40 percent" {
