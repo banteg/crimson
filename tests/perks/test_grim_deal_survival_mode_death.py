@@ -6,7 +6,7 @@ from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
-from crimson.perks.runtime.apply import perk_apply
+from crimson.perks.apply import perk_apply
 from crimson.quests.level import QuestLevel
 from grim.rand import Crand
 from grim.view import ViewContext

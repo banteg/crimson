@@ -55,6 +55,7 @@ class PlayerState(msgspec.Struct):
     aim: Vec2 = Vec2()
     aim_heading: float = 0.0
     aim_dir: Vec2 = Vec2(1.0, 0.0)
+    doctor_target_creature: int = -1
     evil_eyes_target_creature: int = -1
     auto_target: int = -1
 

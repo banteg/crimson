@@ -6,12 +6,17 @@ See: `docs/crimsonland-exe/player-damage.md`.
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
+from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from .math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
+from .creatures.damage import creature_apply_damage_with_lethal_followup
+from .creatures.damage_types import CreatureDamageType
+from .math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
+from .owner_ref import OwnerRef
 from .perks import PerkId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import PlayerState
@@ -29,6 +34,57 @@ _PLAYER_PAIN_SFX: tuple[SfxId, ...] = (
 )
 _PLAYER_DEATH_SFX: tuple[SfxId, ...] = (SfxId.TROOPER_DIE_01, SfxId.TROOPER_DIE_02)
 _THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
+
+
+def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
+    """The Final Revenge blast of native `player_take_damage`: 5 damage per unit inside 512 of the dying player."""
+
+    world = step_runtime.world
+    state = world.state
+    state.effects.spawn_explosion_burst(
+        pos=player.pos, scale=1.8, rng=state.rng, detail_preset=step_runtime.detail_preset,
+    )
+    state.bonus_spawn_guard = True
+    on_lethal = partial(
+        world.creatures.record_death,
+        state=state,
+        players=world.players,
+        rng=state.rng,
+        dt=step_runtime.dt,
+        detail_preset=step_runtime.detail_preset,
+        fx_queue=step_runtime.fx_queue,
+        deaths=step_runtime.deaths,
+        sfx=state.sfx_queue,
+    )
+    for creature_idx, creature in enumerate(world.creatures.entries):
+        if not creature.active:
+            continue
+        dx = x87_pc24_sub(creature.pos.x, player.pos.x)
+        dy = x87_pc24_sub(creature.pos.y, player.pos.y)
+        if abs(dx) > 512.0 or abs(dy) > 512.0:
+            continue
+        blast = x87_pc24_sub(512.0, x87_pc24_hypot(dx, dy))
+        if blast <= 0.0:
+            continue
+        creature_apply_damage_with_lethal_followup(
+            creature,
+            creature_index=creature_idx,
+            damage_amount=x87_pc24_mul(blast, 5.0),
+            damage_type=CreatureDamageType.EXPLOSION,
+            impulse=Vec2(),
+            owner=OwnerRef.from_player(player.index),
+            dt=step_runtime.dt,
+            players=world.players,
+            perks=state.perks,
+            rng=state.rng,
+            preserve_bugs=state.preserve_bugs,
+            effects=state.effects,
+            detail_preset=step_runtime.detail_preset,
+            on_lethal=on_lethal,
+        )
+    state.bonus_spawn_guard = False
+    state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, player.pos))
+    state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, player.pos))
 
 
 def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, damage: float, *, dt: float) -> float:
@@ -112,7 +168,7 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
                 ),
             )
         else:
-            step_runtime.on_player_lethal(player, dt=float(dt))
+            _final_revenge(step_runtime, player)
 
     if not dodged:
         if PerkId.UNSTOPPABLE not in state.perks:

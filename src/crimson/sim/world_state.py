@@ -21,10 +21,10 @@ from ..gameplay import (
     player_update,
     survival_progression_update,
 )
+from ..math_parity import f32, x87_pc24_mul
 from ..owner_ref import OwnerRef
-from ..perks.impl.final_revenge import apply_final_revenge_on_player_death
-from ..perks.impl.reflex_boosted import apply_reflex_boosted_dt
-from ..perks.runtime.effects import perks_update_effects
+from ..perks import PerkId
+from ..perks.effects import perks_update_effects
 from ..perks.selection import perk_selection_open_choices
 from ..player_damage import player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
@@ -202,18 +202,6 @@ class WorldStepRuntime(msgspec.Struct):
         if sfx_id is not None:
             self.sfx.append(SfxRequest(sfx_id, self.world.creatures.entries[idx].pos))
 
-    def on_player_lethal(self, player: PlayerState, *, dt: float) -> None:
-        apply_final_revenge_on_player_death(
-            state=self.world.state,
-            creatures=self.world.creatures,
-            players=self.world.players,
-            player=player,
-            dt=float(dt),
-            detail_preset=int(self.detail_preset),
-            fx_queue=self.fx_queue,
-            deaths=self.deaths,
-        )
-
     def build_events(
         self,
         *,
@@ -258,7 +246,10 @@ class WorldState(msgspec.Struct):
         )
 
     def world_dt_after_perk_steps(self, dt: float) -> float:
-        return float(apply_reflex_boosted_dt(dt=float(dt), perks=self.state.perks))
+        # Native `game_frame_update` scales frame_dt by 0.9 under Reflex Boosted.
+        if dt > 0.0 and PerkId.REFLEX_BOOSTED in self.state.perks:
+            return x87_pc24_mul(f32(dt), f32(0.9))
+        return dt
 
     def step(
         self,

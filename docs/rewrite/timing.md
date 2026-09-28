@@ -185,8 +185,8 @@ for the input/presentation boundary.
 | `reflex_boost_time_scale_factor` | Native-style bonus easing with PC24 operation boundaries. |
 
 `_session_timing` in `src/crimson/sim/sessions.py` computes these once per tick.
-`WorldState.world_dt_after_perk_steps` in `src/crimson/sim/world_state.py` delegates
-the outer transform to `src/crimson/perks/impl/reflex_boosted.py`.
+`WorldState.world_dt_after_perk_steps` in `src/crimson/sim/world_state.py` applies
+the outer Reflex Boosted transform.
 `src/crimson/gameplay.py` implements the movement remap and arithmetic restore
 in `_player_reflex_movement_dt`, `_player_reflex_restored_dt`, and
 `player_frame_dt_after_roundtrip`. The world passes the returned player delta

@@ -21,8 +21,6 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..local_input import LocalInputInterpreter
-from ..perks import PerkId
-from ..perks.runtime.effects_context import creature_find_in_radius
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
@@ -247,25 +245,10 @@ class BaseGameplayMode:
         if not creatures:
             return
 
-        target_indices: list[int] = []
-        target_players = self.world.players[:1] if self.state.preserve_bugs else self.world.players
-        for target_player in target_players:
-            if not self.state.preserve_bugs and float(target_player.health) <= 0.0:
-                continue
-            if self.state.perks[PerkId.DOCTOR] <= 0:
-                continue
-            target_idx = creature_find_in_radius(
-                creatures,
-                pos=target_player.aim,
-                radius=12.0,
-                start_index=0,
-            )
-            if target_idx == -1:
-                continue
-            if target_idx in target_indices:
-                continue
-            target_indices.append(int(target_idx))
-
+        # `perks_update_effects` picks the Doctor targets during the update.
+        target_indices = list(dict.fromkeys(
+            player.doctor_target_creature for player in self.world.players if player.doctor_target_creature != -1
+        ))
         for target_idx in target_indices:
             creature = creatures[target_idx]
             if not creature.active:

@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.creatures.runtime import CreaturePool
 from crimson.effects import FxQueue
 from crimson.perks import PerkId
-from crimson.perks.runtime.effects import perks_update_effects
+from crimson.perks.effects import perks_update_effects
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2

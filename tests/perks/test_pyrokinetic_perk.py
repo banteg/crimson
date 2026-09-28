@@ -4,7 +4,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.math_parity import f32
 from crimson.perks import PerkId
-from crimson.perks.runtime.effects import perks_update_effects
+from crimson.perks.effects import perks_update_effects
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState

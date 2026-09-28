@@ -7,11 +7,12 @@ import pytest
 import crimson.sim.world_state as world_state_mod
 from crimson.bonuses import BonusId
 from crimson.creatures.damage_types import CreatureDamageType
-from crimson.creatures.runtime import CreatureDeath
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreatureDeath
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
+from crimson.perks import PerkId
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.rng_caller_static import RngCallerStatic
@@ -735,39 +736,28 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
     player.aim = Vec2(128.0, 256.0)
     world.players.append(player)
+    world.state.perks[PerkId.DOCTOR] = 1
+    creature = world.creatures.entries[3]
+    creature.active = True
+    creature.pos = Vec2(128.0, 256.0)
+    creature.hp = 100.0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    seen: dict[str, Vec2] = {}
-    original_perk_update = world_state_mod.perks_update_effects
+    world.step(
+        0.016,
+        inputs=[PlayerInput(aim=Vec2(900.0, 900.0))],
+        detail_preset=5,
+        fx_queue=FxQueue(),
+        fx_queue_rotated=FxQueueRotated(),
+        game_mode=GameMode.SURVIVAL,
+        perk_progression_enabled=False,
+        mode_update=None,
+        violence_disabled=0,
+        game_tune_started=False,
+    )
 
-    def _fake_perk_update(
-        state: object,
-        players: list[PlayerState],
-        dt: float,
-        *,
-        creatures: object | None = None,
-        fx_queue: object | None = None,
-    ) -> None:
-        _ = state, dt, creatures, fx_queue
-        seen["aim"] = players[0].aim
-
-    world_state_mod.perks_update_effects = cast(Any, _fake_perk_update)
-    try:
-        world.step(
-            0.016,
-            inputs=[PlayerInput(aim=Vec2(900.0, 900.0))],
-            detail_preset=5,
-            fx_queue=FxQueue(),
-            fx_queue_rotated=FxQueueRotated(),
-            game_mode=GameMode.SURVIVAL,
-            perk_progression_enabled=False,
-            mode_update=None,
-            violence_disabled=0,
-            game_tune_started=False,
-        )
-    finally:
-        world_state_mod.perks_update_effects = original_perk_update
-
-    assert seen["aim"] == Vec2(128.0, 256.0)
+    # `perks_update_effects` searched around the aim from before `player_update` moved it.
+    assert player.doctor_target_creature == 3
     assert player.aim == Vec2(900.0, 900.0)
 
 

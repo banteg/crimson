@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.perks import PerkId
-from crimson.perks.runtime.apply import perk_apply
+from crimson.perks.apply import perk_apply
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2

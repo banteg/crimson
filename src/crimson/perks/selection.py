@@ -8,9 +8,9 @@ from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WeaponId
+from .apply import perk_apply
 from .availability import perk_can_offer
 from .ids import PERK_BY_ID, PerkFlags, PerkId
-from .runtime.apply import perk_apply
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState

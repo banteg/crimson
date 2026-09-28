@@ -18,7 +18,7 @@ The implementation owners are:
 | Responsibility | Python source |
 | --- | --- |
 | IDs, names, availability and choices | `src/crimson/perks/` |
-| Immediate application and player/global ticks | `src/crimson/perks/runtime/`, `src/crimson/perks/impl/` |
+| Immediate application and player/global ticks | `src/crimson/perks/apply.py`, `src/crimson/perks/effects.py`, `src/crimson/gameplay.py` |
 | Player integration | `src/crimson/gameplay.py`, `src/crimson/player_damage.py` |
 | Weapon assignment, reload and firing | `src/crimson/weapon_runtime/` |
 | Creature damage and synchronous death | `src/crimson/creatures/damage.py`, `src/crimson/creatures/runtime.py` |

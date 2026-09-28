@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -15,8 +16,10 @@ from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PerkCounts, PlayerState
 from .damage_types import CreatureDamageType
-from .runtime import CreatureState
 from .spawn import CreatureFlags, CreatureTypeId
+
+if TYPE_CHECKING:
+    from .runtime import CreatureState
 
 # The callback must handle death synchronously, then invoke the supplied
 # follow-up before returning: native impulse/SFX/shock RNG runs in that order.

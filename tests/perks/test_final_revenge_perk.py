@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
+from crimson.math_parity import f32
 from crimson.perks import PerkId
-from crimson.perks.impl.final_revenge import apply_final_revenge_on_player_death
-from crimson.sim.gameplay_state import GameplayState
+from crimson.player_damage import player_take_damage
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_state import WorldState
@@ -13,6 +13,7 @@ from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
+from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
 from tests.support.helpers import assert_float_close
 
 
@@ -169,84 +170,37 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
     assert SfxId.SHOCKWAVE not in sfx_ids(events.sfx)
 
 
-def test_final_revenge_aoe_includes_active_non_positive_hp_entries(mocker) -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    state.perks[int(PerkId.FINAL_REVENGE)] = 1
-
-    pool = CreaturePool()
-    active_dead = pool.entries[0]
-    active_dead.active = True
-    active_dead.hp = 0.0
-    active_dead.pos = Vec2(100.0, 100.0)
-
-    active_alive = pool.entries[1]
-    active_alive.active = True
-    active_alive.hp = 10.0
-    active_alive.pos = Vec2(100.0, 100.0)
-
-    active_far = pool.entries[2]
-    active_far.active = True
-    active_far.hp = 10.0
-    active_far.pos = Vec2(2000.0, 2000.0)
-
-    touched: list[int] = []
-
-    def _record_apply(creature, **_kwargs):
-        touched.append(pool.entries.index(creature))
-        return False
-
-    mocker.patch(
-        "crimson.creatures.damage.creature_apply_damage_with_lethal_followup",
-        side_effect=_record_apply,
-    )
-
-    apply_final_revenge_on_player_death(
-        state=state,
-        creatures=pool,
-        players=[player],
-        player=player,
-        dt=0.1,
-        detail_preset=5,
-        fx_queue=None,
-        deaths=[],
-    )
-
-    assert touched == [0, 1]
+def _die_with_final_revenge(world: WorldState, player: PlayerState) -> None:
+    world.state.perks[PerkId.FINAL_REVENGE] = 1
+    world.players.append(player)
+    player_take_damage(make_step_runtime(world), player, 1000.0, dt=0.1)
 
 
-def test_final_revenge_damage_uses_native_pc24_arithmetic(mocker) -> None:
-    state = GameplayState()
-    state.bonus_spawn_guard = True
-    player = PlayerState(index=0, pos=Vec2())
-    state.perks[int(PerkId.FINAL_REVENGE)] = 1
+def test_final_revenge_aoe_includes_active_non_positive_hp_entries() -> None:
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
+    active_dead, active_alive, active_far = place_creatures(
+        world,
+        [
+            make_creature_state(pos=Vec2(100.0, 100.0), hp=0.0, max_hp=10.0),
+            make_creature_state(pos=Vec2(100.0, 100.0), hp=10000.0),
+            make_creature_state(pos=Vec2(2000.0, 2000.0), hp=10.0),
+        ],
+    )[:3]
 
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = True
-    creature.pos = Vec2(155.231201171875, 295.6527099609375)
+    _die_with_final_revenge(world, PlayerState(index=0, pos=Vec2(100.0, 100.0)))
 
-    damage_amounts: list[float] = []
+    assert active_dead.hit_flash_timer > 0.0
+    assert_float_close(active_alive.hp, 7440.0)  # 10000 - (512 - 0) * 5
+    assert active_far.hit_flash_timer == 0.0
 
-    def _record_apply(_creature, **kwargs):
-        damage_amounts.append(float(kwargs["damage_amount"]))
-        return False
 
-    mocker.patch(
-        "crimson.creatures.damage.creature_apply_damage_with_lethal_followup",
-        side_effect=_record_apply,
-    )
+def test_final_revenge_damage_uses_native_pc24_arithmetic() -> None:
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
+    creature = place_creatures(
+        world, [make_creature_state(pos=Vec2(155.231201171875, 295.6527099609375), hp=10000.0)],
+    )[0]
 
-    apply_final_revenge_on_player_death(
-        state=state,
-        creatures=pool,
-        players=[player],
-        player=player,
-        dt=0.1,
-        detail_preset=0,
-        fx_queue=None,
-        deaths=[],
-    )
+    _die_with_final_revenge(world, PlayerState(index=0, pos=Vec2()))
 
-    assert damage_amounts == [890.364990234375]
-    assert not state.bonus_spawn_guard
+    assert creature.hp == f32(10000.0 - 890.364990234375)
+    assert not world.state.bonus_spawn_guard

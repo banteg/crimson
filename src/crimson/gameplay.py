@@ -4,6 +4,7 @@ import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
@@ -13,9 +14,12 @@ from .aim_schemes import AimScheme
 from .math_parity import (
     NATIVE_HALF_PI,
     NATIVE_PI,
+    NATIVE_QUARTER_PI,
     NATIVE_TAU,
     f32,
     native_aim_point_from_heading,
+    native_fire_muzzle_pos,
+    native_shot_angle_from_jitter_draws,
     x87_fpatan,
     x87_pc24_add,
     x87_pc24_crt_pow,
@@ -27,7 +31,6 @@ from .math_parity import (
 )
 from .movement_controls import MovementControlType
 from .perks import PerkId
-from .perks.runtime.player_ticks import apply_player_perk_ticks
 from .perks.state import PerkSelectionState
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
@@ -41,9 +44,6 @@ from .weapon_runtime import (
 )
 from .weapon_runtime import (
     fire_weapon as _fire_weapon,
-)
-from .weapon_runtime import (
-    owner_ref_for_player as _owner_ref_for_player,
 )
 from .weapon_runtime import (
     owner_ref_for_player_projectiles as _owner_ref_for_player_projectiles,
@@ -530,6 +530,89 @@ def _player_update_aim_by_scheme(
     player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
 
 
+def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[PlayerState], dt: float) -> None:
+    """The perk timers of native `player_update`: Man Bomb, Living Fortress, Fire Cough, Hot Tempered."""
+
+    rng = state.rng
+    intervals = state.perk_intervals
+
+    if PerkId.MAN_BOMB in state.perks:
+        player.man_bomb_timer = x87_pc24_add(player.man_bomb_timer, dt)
+        if player.man_bomb_timer > intervals.man_bomb:
+            owner = _owner_ref_for_player_projectiles(state, player.index)
+            for idx in range(8):
+                if idx & 1:
+                    type_id = ProjectileTemplateId.ION_RIFLE
+                    caller = RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_RIFLE_ANGLE
+                else:
+                    type_id = ProjectileTemplateId.ION_MINIGUN
+                    caller = RngCallerStatic.PLAYER_UPDATE_MAN_BOMB_ION_MINIGUN_ANGLE
+                # player_update 0x41394d: PC24 multiply, multiply, add, subtract.
+                angle = x87_pc24_sub(
+                    x87_pc24_add(
+                        x87_pc24_mul(float(rng.rand_tagged(caller) % 50), f32(0.01)),
+                        x87_pc24_mul(float(idx), NATIVE_QUARTER_PI),
+                    ),
+                    0.25,
+                )
+                _projectile_spawn(
+                    state, players=players, pos=player.pos, angle=angle, type_id=type_id, owner=owner,
+                    owner_player_index=player.index,
+                )
+            state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
+            player.man_bomb_timer = x87_pc24_sub(player.man_bomb_timer, intervals.man_bomb)
+            intervals.man_bomb = f32(4.0)
+    else:
+        player.man_bomb_timer = 0.0
+
+    if PerkId.LIVING_FORTRESS in state.perks:
+        player.living_fortress_timer = min(f32(30.0), x87_pc24_add(player.living_fortress_timer, dt))
+    else:
+        player.living_fortress_timer = 0.0
+
+    if PerkId.FIRE_CAUGH in state.perks:
+        player.fire_cough_timer = x87_pc24_add(player.fire_cough_timer, dt)
+        if player.fire_cough_timer > intervals.fire_cough:
+            owner = _owner_ref_for_player_projectiles(state, player.index)
+            state.sfx_queue.append(SfxRequest(SfxId.AUTORIFLE_FIRE, player.pos))
+            state.sfx_queue.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, player.pos))
+            muzzle = native_fire_muzzle_pos(player.pos, player.aim_heading)
+            dir_roll = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_DIR)
+            mag_roll = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_SPREAD_MAG)
+            angle = native_shot_angle_from_jitter_draws(
+                aim=player.aim, player_pos=player.pos, spread_heat=player.spread_heat, dir_draw=dir_roll,
+                mag_draw=mag_roll,
+            )
+            _projectile_spawn(
+                state, players=[player], pos=muzzle, angle=angle, type_id=ProjectileTemplateId.FIRE_BULLETS,
+                owner=owner, owner_player_index=player.index,
+            )
+            state.sprite_effects.spawn(
+                pos=muzzle, vel=Vec2.from_angle(player.aim_heading) * 25.0, scale=1.0,
+                color=RGBA(0.5, 0.5, 0.5, 0.413), rng=rng,
+            )
+            player.fire_cough_timer = x87_pc24_sub(player.fire_cough_timer, intervals.fire_cough)
+            intervals.fire_cough = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_COUGH_INTERVAL_RESET) % 4) + 2.0
+    else:
+        player.fire_cough_timer = 0.0
+
+    if PerkId.HOT_TEMPERED in state.perks:
+        player.hot_tempered_timer = x87_pc24_add(player.hot_tempered_timer, dt)
+        if player.hot_tempered_timer > intervals.hot_tempered:
+            owner = _owner_ref_for_player_projectiles(state, player.index)
+            for idx in range(8):
+                type_id = ProjectileTemplateId.PLASMA_RIFLE if idx & 1 else ProjectileTemplateId.PLASMA_MINIGUN
+                _projectile_spawn(
+                    state, players=players, pos=player.pos, angle=x87_pc24_mul(float(idx), NATIVE_QUARTER_PI),
+                    type_id=type_id, owner=owner, owner_player_index=player.index,
+                )
+            state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
+            player.hot_tempered_timer = x87_pc24_sub(player.hot_tempered_timer, intervals.hot_tempered)
+            intervals.hot_tempered = float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_HOT_TEMPERED_INTERVAL_RESET) % 8) + 2.0
+    else:
+        player.hot_tempered_timer = 0.0
+
+
 def _player_tick_low_health(
     player: PlayerState,
     state: GameplayState,
@@ -943,16 +1026,7 @@ def player_update(
     if state.time_scale_active:
         movement_dt = _player_reflex_movement_dt(dt, time_scale_factor)
 
-    apply_player_perk_ticks(
-        player=player,
-        player_pos_before_move=prev_pos,
-        dt=dt,
-        state=state,
-        players=players,
-        owner_ref_for_player=_owner_ref_for_player,
-        owner_ref_for_player_projectiles=_owner_ref_for_player_projectiles,
-        projectile_spawn=_projectile_spawn,
-    )
+    _player_tick_perks(player, state, players, dt)
 
     _player_move(
         player, input_state, state, movement_dt, move_mode,
@@ -977,7 +1051,7 @@ def player_update(
     )
 
     # Native cools spread after perk timers/movement but before weapon fire.
-    # Keeping this below `apply_player_perk_ticks` preserves Fire Cough spread
+    # Keeping this below `_player_tick_perks` preserves Fire Cough spread
     # sampling order while still applying cooldown before `player_fire_weapon`.
     if PerkId.SHARPSHOOTER in state.perks:
         player.spread_heat = f32(0.02)

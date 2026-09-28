@@ -3,18 +3,18 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-from ...math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
-from ...rng_caller_static import RngCallerStatic
-from ...sim.state_types import PlayerState
-from ...weapon_runtime.assign import weapon_assign_player
-from ...weapon_runtime.availability import weapon_pick_random_available
-from ...weapons import WeaponId
-from ..ids import PerkId
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
+from ..rng_caller_static import RngCallerStatic
+from ..sim.state_types import PlayerState
+from ..weapon_runtime.assign import weapon_assign_player
+from ..weapon_runtime.availability import weapon_pick_random_available
+from ..weapons import WeaponId
+from .ids import PerkId
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from ...creatures.runtime import CreatureState
+    from ..creatures.runtime import CreatureState
 
 # Native f32 literals.
 _THICK_SKINNED_FRACTION = float(f32(0.33333334))

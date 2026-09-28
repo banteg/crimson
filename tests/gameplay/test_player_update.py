@@ -31,7 +31,7 @@ from crimson.math_parity import (
 from crimson.movement_controls import MovementControlType
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
-from crimson.perks.runtime.effects import perks_update_effects
+from crimson.perks.effects import perks_update_effects
 from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
