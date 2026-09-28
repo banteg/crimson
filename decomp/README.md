@@ -8,7 +8,7 @@ share function bodies. Tooling, scratch notes and experiments stay under
 ```
 decomp/
   builds.json      every known build: package, image pins, compilers, family
-  1.9/             family 1.9: builds 1.9.1, 1.9.8, 1.9.9, 1.9.93 (canonical)
+  1.9/             family 1.9: builds 1.9.1, 1.9.8, 1.9.9, 1.9.92, 1.9.93 (canonical)
     crimsonland/   crimsonland.exe, one directory per inferred translation unit
     grim/          grim.dll, one directory per inferred subsystem
 ```
@@ -37,7 +37,7 @@ rebuilds the trees from them and checks every image against its pin. 1.9.93 is t
 | 1.9.1 | 2003-06 | `crimsonland.exe` | 23 (C2 8966) | 1.9 |
 | 1.9.8 | 2003-08 | `crimsonland.exe` | 24 (C2 9044) | 1.9 |
 | 1.9.9 | 2008-10 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | 1.9 |
-| 1.9.92 | 2009-02 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | unassigned |
+| 1.9.92 | 2009-02 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | 1.9 |
 | 1.9.93 | 2011-02 | `crimsonland.exe` | 34 (C2 9782, with runtime) | 1.9 |
 
 The game grew from one C++ object into two dozen source files, and it never

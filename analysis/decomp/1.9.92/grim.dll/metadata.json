@@ -1,0 +1,7 @@
+{
+  "canonical_build": "1.9.93",
+  "canonical_sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
+  "file_path": "game_bins/crimsonland/1.9.92/grim.dll",
+  "image_base": "0x10000000",
+  "sha256": "1900861e65c17f072497415982918f16cc47e05f8398c2c71cfd67ee3e506811"
+}
