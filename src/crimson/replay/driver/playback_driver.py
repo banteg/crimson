@@ -9,7 +9,6 @@ from grim.rand import CallerStatic, CrtRand, RecordedCallerStatic, RngTraceSink
 from grim.sfx_map import SfxId
 
 from ...game_modes import GameMode
-from ...quests import quest_by_level
 from ...quests.types import QuestDefinition, SpawnEntry
 from ...replay import REPLAY_TICK_DT, Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
@@ -28,15 +27,6 @@ from ...weapons import WeaponId
 from .setup import ReplayRunnerError
 
 type RngTraceDraw = tuple[int, int, int, RecordedCallerStatic]
-
-
-def resolve_quest_definition(run: RunSpec) -> QuestDefinition:
-    if run.quest_level is None:
-        raise ReplayRunnerError("quest replays require a quest_level")
-    quest = quest_by_level(run.quest_level)
-    if quest is None:
-        raise ReplayRunnerError(f"unsupported quest replay: unknown quest_level={run.quest_level.text!r}")
-    return quest
 
 
 @contextmanager

@@ -383,7 +383,7 @@ Notes:
     `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
 
   - Tests: `tests/modes/test_tutorial_timeline_spawns.py`
-- Quest timeline (pure model): `src/crimson/quests/timeline.py`
-  - `tick_quest_spawn_timeline`, `tick_quest_mode_spawns`, `quest_spawn_table_empty`
-  - Tests: `tests/modes/test_quest_spawn_timeline.py`, `tests/modes/test_quest_mode_spawns.py`
+- Quest timeline: `src/crimson/quests/timeline.py`
+  - `quest_spawn_timeline_update` (spawns into the world), `quest_spawn_table_empty`
+  - Tests: `tests/modes/test_quest_spawn_timeline.py`
 - MSVCRT-compatible RNG for deterministic replays: `src/grim/rand.py` (`Crand`)

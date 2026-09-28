@@ -68,6 +68,19 @@ def _resolve_replay_path(replay_file: Path, *, base_dir: Path) -> tuple[Path, tu
     return path, tuple(tried)
 
 
+def _require_replay_path(replay_file: Path, *, base_dir: Path) -> Path:
+    """The replay file `replay_file` names, or exit reporting where it was looked for."""
+
+    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
+    if not replay_path.is_file():
+        message = f"replay file not found: {tried[0]}"
+        if len(tried) > 1:
+            message += f" (also tried: {tried[1]})"
+        typer.echo(message, err=True)
+        raise typer.Exit(code=1)
+    return replay_path
+
+
 def _default_replay_render_output_path(replay_path: Path) -> Path:
     return Path(replay_path).with_suffix(".render.mp4")
 
@@ -757,13 +770,7 @@ def cmd_replay_play(
     if assets_dir is None:
         assets_dir = base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
-    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
-    if not replay_path.is_file():
-        message = f"replay file not found: {tried[0]}"
-        if len(tried) > 1:
-            message += f" (also tried: {tried[1]})"
-        typer.echo(message, err=True)
-        raise typer.Exit(code=1)
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
     cfg = ensure_crimson_cfg(base_dir)
     if width is None:
         width = cfg.display.width
@@ -911,13 +918,7 @@ def cmd_replay_verify(
     from ..replay.ranked import unranked_reasons
     from ..sim.run_result import run_result_mismatches
 
-    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
-    if not replay_path.is_file():
-        message = f"replay file not found: {tried[0]}"
-        if len(tried) > 1:
-            message += f" (also tried: {tried[1]})"
-        typer.echo(message, err=True)
-        raise typer.Exit(code=1)
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
 
     try:
         replay_payload = inflate_replay_payload(Path(replay_path).read_bytes())
@@ -1020,13 +1021,7 @@ def cmd_replay_info(
     from ..replay.driver.replay_info import collect_replay_info, event_counts_by_kind
     from ..replay.driver.setup import ReplayRunnerError
 
-    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
-    if not replay_path.is_file():
-        message = f"replay file not found: {tried[0]}"
-        if len(tried) > 1:
-            message += f" (also tried: {tried[1]})"
-        typer.echo(message, err=True)
-        raise typer.Exit(code=1)
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
 
     replay_bytes = Path(replay_path).read_bytes()
     try:
@@ -1175,13 +1170,7 @@ def cmd_replay_benchmark(
     )
     from ..replay.driver.setup import ReplayRunnerError
 
-    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
-    if not replay_path.is_file():
-        message = f"replay file not found: {tried[0]}"
-        if len(tried) > 1:
-            message += f" (also tried: {tried[1]})"
-        typer.echo(message, err=True)
-        raise typer.Exit(code=1)
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
 
     replay_bytes = Path(replay_path).read_bytes()
     resolved_runs = runs if runs is not None else (1 if mode == "render" else 5)
@@ -1447,13 +1436,7 @@ def cmd_replay_render(
     from ..replay.driver.replay_render import ReplayRenderError, run_replay_render_video
     from ..replay.driver.setup import ReplayRunnerError
 
-    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
-    if not replay_path.is_file():
-        message = f"replay file not found: {tried[0]}"
-        if len(tried) > 1:
-            message += f" (also tried: {tried[1]})"
-        typer.echo(message, err=True)
-        raise typer.Exit(code=1)
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
 
     output_path = Path(out) if out is not None else _default_replay_render_output_path(replay_path)
 
@@ -1542,13 +1525,7 @@ def cmd_replay_verify_checkpoints(
     from ..sim.hooks import TickResult
     from ..sim.world_state import WorldState
 
-    replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
-    if not replay_path.is_file():
-        message = f"replay file not found: {tried[0]}"
-        if len(tried) > 1:
-            message += f" (also tried: {tried[1]})"
-        typer.echo(message, err=True)
-        raise typer.Exit(code=1)
+    replay_path = _require_replay_path(replay_file, base_dir=base_dir)
 
     replay_bytes = Path(replay_path).read_bytes()
     try:
