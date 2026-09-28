@@ -133,9 +133,13 @@ class DeterministicSession(msgspec.Struct):
             case GameMode.SURVIVAL:
                 return RunOutcome.DEATH if death_transition_ready(players) else None
             case GameMode.QUESTS:
+                # `gameplay_update_and_render` checks for death after `quest_mode_update`, so a
+                # death replaces pending quest results.
+                if death_transition_ready(players):
+                    return RunOutcome.DEATH
                 if isinstance(self.mode_state, QuestSpawnState) and self.mode_state.completed:
                     return RunOutcome.QUEST_COMPLETED
-                return RunOutcome.DEATH if death_transition_ready(players) else None
+                return None
             case GameMode.RUSH | GameMode.TYPO:
                 # No death-animation hold: Rush and Typ-o stop simulating on death.
                 return RunOutcome.DEATH if all_players_dead(players) else None

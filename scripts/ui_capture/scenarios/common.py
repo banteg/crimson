@@ -91,3 +91,20 @@ def small_menu(main, panel):
         for name, pos in main.items():
             steps += hover(f"main_{name}", pos)
     return steps + nav(f"{panel}_in", main[panel])
+
+
+def doom_player():
+    """Park a hard-hitting creature on player 1 so they die inside the next tick, as in play."""
+
+    def run(gs):
+        w = world(gs)
+        player = w.players[0]
+        player.health = 1.0
+        attacker = w.creatures.entries[0]
+        attacker.active = True
+        attacker.hp = 100.0
+        attacker.size = 50.0
+        attacker.pos = player.pos
+        attacker.contact_damage = 100.0
+
+    return ("hook", run)

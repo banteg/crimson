@@ -64,7 +64,7 @@ class RushMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
-            self._action = Route.PAUSE
+            self._request_pause()
             return
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
@@ -85,7 +85,8 @@ class RushMode(BaseGameplayMode):
             return
 
         any_alive = self._any_player_alive()
-        sim_dt = float(frame.dt) if ((not self._paused) and any_alive) else 0.0
+        # The world runs on after the last death while the HUD fades out.
+        sim_dt = float(frame.dt) if ((not self._paused) and (any_alive or self._run_ending)) else 0.0
         session = self._sim_session
 
         if sim_dt <= 0.0:

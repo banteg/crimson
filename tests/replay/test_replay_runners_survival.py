@@ -191,14 +191,24 @@ def test_survival_runner_menu_open_allows_same_tick_perk_pick() -> None:
     assert driver.world.state.perk_selection.pending_count == 0
 
 
-def test_survival_runner_rejects_ticks_after_run_end() -> None:
-    replay = finish_replay(_blank_survival_replay(ticks=3, seed=0x1234))
+def test_survival_runner_allows_the_run_down_then_rejects_further_ticks() -> None:
+    # The world runs on while the HUD fades out: the end tick and 31 more ticks of 16ms (500ms).
+    run_down = finish_replay(_blank_survival_replay(ticks=32, seed=0x1234))
+    driver = PlaybackDriver(run_down)
+    for player in driver.world.players:
+        player.health = 0.0
+        player.death_timer = 0.0
+    assert driver.run().outcome == RunOutcome.DEATH
+
+    replay = finish_replay(_blank_survival_replay(ticks=33, seed=0x1234))
     driver = PlaybackDriver(replay)
     for player in driver.world.players:
         player.health = 0.0
         player.death_timer = 0.0
 
-    with pytest.raises(ReplayRunnerError, match=r"run ended \(death\) at tick 0 but the replay has 3 ticks"):
+    with pytest.raises(
+        ReplayRunnerError, match=r"run ended \(death\) at tick 0 and wound down by tick 31 but the replay has 33 ticks",
+    ):
         driver.run()
 
 

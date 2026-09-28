@@ -103,7 +103,7 @@ class TutorialMode(BaseGameplayMode):
             self._paused = not self._paused
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
-            self._action = Route.PAUSE
+            self._request_pause()
             return
 
     def _build_input(self) -> PlayerInput:

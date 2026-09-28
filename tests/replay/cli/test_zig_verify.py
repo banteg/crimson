@@ -582,7 +582,8 @@ def test_zig_replay_verify_rejects_ticks_after_the_run_ended(
     zig_bin: Path,
     survival_death_replay: Replay,
 ) -> None:
-    replay_path = write_replay(tmp_path, replay=with_idle_ticks(survival_death_replay, 2), name="after-end.crd")
+    # The end tick may be followed by the 500ms run-down (31 more ticks of 16ms), not one tick more.
+    replay_path = write_replay(tmp_path, replay=with_idle_ticks(survival_death_replay, 32), name="after-end.crd")
     last_tick = len(survival_death_replay.ticks) - 1
 
     python_result = _run_python_verify([str(replay_path), "--format", "json"])
@@ -592,7 +593,7 @@ def test_zig_replay_verify_rejects_ticks_after_the_run_ended(
     assert zig_result.returncode == 1
     assert zig_result.stderr == (
         f"replay verification failed: run ended (death) at tick {last_tick} "
-        f"but the replay has {last_tick + 3} ticks\n"
+        f"and wound down by tick {last_tick + 31} but the replay has {last_tick + 33} ticks\n"
     )
     assert zig_result.stderr == python_result.output
 

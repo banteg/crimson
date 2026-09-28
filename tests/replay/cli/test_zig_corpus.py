@@ -275,7 +275,8 @@ def _rush_death(root: Path) -> MaterializedReplay:
 
 
 def _ticks_after_end(root: Path) -> MaterializedReplay:
-    replay = with_idle_ticks(_rush_death_replay(), 1)
+    # One tick past the 500ms run-down that may follow the end tick.
+    replay = with_idle_ticks(_rush_death_replay(), 32)
     return MaterializedReplay(write_replay(root, replay=replay, name="invalid-ticks-after-end.crd"), None)
 
 

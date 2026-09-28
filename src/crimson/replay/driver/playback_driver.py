@@ -18,7 +18,7 @@ from ...sim.bootstrap import TerrainSetup
 from ...sim.hooks import TickResult
 from ...sim.mode_updates import QuestSpawnState
 from ...sim.run_init import initialize_run
-from ...sim.run_result import RunOutcome, RunResult, build_run_result
+from ...sim.run_result import RunDown, RunOutcome, RunResult, build_run_result
 from ...sim.run_spec import RunSpec
 from ...sim.sessions import DeterministicSessionTick, IllegalCommandError
 from ...sim.world_reset import CreatureSlotResidue
@@ -112,6 +112,7 @@ class SessionPlaybackDriver:
         self.trace_rng = bool(trace_rng)
         self.strict_rng_trace = bool(strict_rng_trace)
         self.strict_end = bool(strict_end)
+        self._run_down: RunDown | None = None
 
         try:
             prepared = initialize_run(
@@ -182,9 +183,18 @@ class SessionPlaybackDriver:
         except IllegalCommandError as exc:
             raise ReplayRunnerError(f"tick {tick_index}: {exc}") from exc
         outcome = session_tick.outcome
-        if self.strict_end and outcome is not None and tick_index < self.tick_count - 1:
+        if self._run_down is None and outcome is not None:
+            self._run_down = RunDown(outcome=outcome, end_tick=tick_index)
+        run_down = self._run_down
+        if (
+            self.strict_end
+            and run_down is not None
+            and run_down.tick(session_tick.dt_sim)
+            and tick_index < self.tick_count - 1
+        ):
             raise ReplayRunnerError(
-                f"run ended ({outcome}) at tick {tick_index} but the replay has {self.tick_count} ticks",
+                f"run ended ({run_down.outcome}) at tick {run_down.end_tick} and wound down by tick {tick_index} "
+                f"but the replay has {self.tick_count} ticks",
             )
         self._last_tick_rng_rows = tuple(tick_rng_rows)
         return TickResult(tick_index=tick_index, payload=session_tick)

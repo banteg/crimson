@@ -95,12 +95,13 @@ class PerkMenuController:
     @property
     def active(self) -> bool:
         """Open, or still sliding out: gameplay resumes once the timeline drops below 0."""
-        return self._open or (self.timeline.closing and not self.timeline.ready)
+        return self._open or self._closing
 
     def reset(self) -> None:
         self._layout = PerkMenuLayout()
         self._cancel_button = UiButtonState(self._cancel_label)
         self._open = False
+        self._closing = False
         self._selected_index = 0
         self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
@@ -163,6 +164,7 @@ class PerkMenuController:
         if not self._open:
             return
         self._open = False
+        self._closing = True
         self.timeline.begin()
         self._runtime.on_close()
 
@@ -177,7 +179,8 @@ class PerkMenuController:
 
     def tick_timeline(self) -> None:
         """Once the panel has slid out, the pending state is gameplay: `game_state_set(GAME_STATE_GAMEPLAY)`."""
-        if self.timeline.closing and self.timeline.ready:
+        if self._closing and self.timeline.ready:
+            self._closing = False
             self.timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
 
     def handle_input(

@@ -13,6 +13,7 @@ from ..typo.state import typo_shot_counts
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..weapons import WeaponId
 from .state_types import PlayerState
+from .timing import ftol_ms_i32
 
 if TYPE_CHECKING:
     from .sessions import DeterministicSession
@@ -44,6 +45,24 @@ class RunResult(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     # Only set for completed quests: base time minus life and unpicked-perk bonuses.
     quest_final_ms: int | None
     players: tuple[PlayerRunResult, ...]
+
+
+# Native keeps simulating after the run ends while the gameplay timeline (`ui_element_table[28]`, 0..500ms)
+# runs down, by the same whole milliseconds per frame. A recording may go on for at most that long.
+RUN_DOWN_MS = 500
+
+
+class RunDown(msgspec.Struct):
+    """How long a recording may keep going after the run ended; `RunEndedEarly` past that."""
+
+    outcome: RunOutcome
+    end_tick: int
+    remaining_ms: int = RUN_DOWN_MS
+
+    def tick(self, dt_sim: float) -> bool:
+        """Spend one tick of simulated time; True once the run-down is over."""
+        self.remaining_ms -= ftol_ms_i32(dt_sim)
+        return self.remaining_ms < 0
 
 
 def all_players_dead(players: Sequence[PlayerState]) -> bool:

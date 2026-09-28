@@ -161,8 +161,10 @@ the clock caps an incoming render-frame duration at 100 ms, accumulates the
 remainder, and can request multiple simulation ticks per render frame. This
 differs from native's single variable-delta callback and capped game-facing
 delta. Each granted tick is built by `LiveTickSource` in
-`src/crimson/replay/ticks.py`, recorded, then stepped; the frame stops early at
-the run's final tick or when a mode callback ends the batch.
+`src/crimson/replay/ticks.py`, recorded, then stepped. Once the run ends (or Esc
+asks for the pause menu) the world keeps ticking while the gameplay timeline runs
+down by each tick's simulated milliseconds; the frame stops when that run-down is
+over and the mode leaves gameplay, or when a mode callback ends the batch.
 
 Replay execution reaches the same session through
 `src/crimson/replay/driver/playback_driver.py`; playback pacing is separate from

@@ -238,9 +238,11 @@ pub const DeterministicSession = struct {
             // Rush and Typ-o end as soon as nobody is alive; there is no
             // death animation hold (Typ-o plays it outside ticks).
             .rush, .typo => if (allPlayersDead(players_list)) .death else null,
-            .quests => if (self.quest_completed)
-                .quest_completed
-            else if (deathTransitionReady(players_list)) .death else null,
+            // `gameplay_update_and_render` checks for death after `quest_mode_update`,
+            // so a death replaces pending quest results.
+            .quests => if (deathTransitionReady(players_list))
+                .death
+            else if (self.quest_completed) .quest_completed else null,
             .tutorial => null,
         };
     }
@@ -396,6 +398,9 @@ test "terminal and end outcomes follow each mode's end condition" {
     try std.testing.expectEqual(replay_codec.RunOutcome.death, quest.endOutcome());
     quest.quest_completed = true;
     try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .quest_completed), quest.terminalOutcome());
+    quest.players()[0].health = 0.0;
+    quest.players()[0].death_timer = -1.0;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .death), quest.terminalOutcome());
 
     var tutorial = try DeterministicSession.init(testConfig(.tutorial), .{});
     tutorial.players()[0].health = 0.0;
