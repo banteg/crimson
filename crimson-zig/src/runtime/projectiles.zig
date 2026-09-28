@@ -511,16 +511,7 @@ pub const ProjectilePool = struct {
                     proj.life_timer = 0.25;
                     creatures.entries[hit_idx.?].size = new_size;
                     if (new_size < 16.0) {
-                        _ = creatures.handleKeepCorpseDeath(
-                            state,
-                            players,
-                            bonuses,
-                            terrain_fx,
-                            hit_idx.?,
-                            proj.owner,
-                            dt,
-                            world_size,
-                        );
+                        _ = creatures.handleDeath(state, players, bonuses, terrain_fx, hit_idx.?, true, dt, world_size);
                     }
                 } else if (proj.type_id == @intFromEnum(game_ids.ProjectileTypeId.plague_spreader)) {
                     creatures.entries[hit_idx.?].plague_infected = true;
@@ -540,13 +531,14 @@ pub const ProjectilePool = struct {
                     const remaining = proj.damage_pool - 1.0;
                     proj.damage_pool = remaining;
                     if (remaining <= 0.0) {
-                        _ = creatures.applyProjectileDamage(
+                        _ = creatures.applyDamage(
                             state,
                             players,
                             bonuses,
                             terrain_fx,
                             hit_idx.?,
                             narrowF32(damage_amount),
+                            .bullet,
                             impulse,
                             proj.owner,
                             narrowF32(dt),
@@ -556,13 +548,14 @@ pub const ProjectilePool = struct {
                             proj.life_timer = 0.25;
                         }
                     } else {
-                        _ = creatures.applyProjectileDamage(
+                        _ = creatures.applyDamage(
                             state,
                             players,
                             bonuses,
                             terrain_fx,
                             hit_idx.?,
                             remaining,
+                            .bullet,
                             impulse,
                             proj.owner,
                             narrowF32(dt),
@@ -781,13 +774,14 @@ fn applyIonLingerDamage(
         const creature_radius = creatureHitRadius(creature.size);
         const hit_radius = radius + creature_radius;
         if (runtime_helpers.distanceSq(proj.pos, creature.pos) <= hit_radius * hit_radius) {
-            _ = creatures.applyIonDamage(
+            _ = creatures.applyDamage(
                 state,
                 players,
                 bonus_pool,
                 terrain_fx,
                 idx,
                 narrowF32(damage),
+                .ion,
                 .{},
                 proj.owner,
                 dt,

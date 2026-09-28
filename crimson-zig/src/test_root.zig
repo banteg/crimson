@@ -513,13 +513,14 @@ test "creature death xp source follows bug mode" {
             .contact_damage = 0.0,
         });
 
-        const gained = creatures.applyProjectileDamage(
+        const gained = creatures.applyDamage(
             &state,
             players[0..],
             &bonuses,
             &terrain_fx,
             0,
             20.0,
+            .bullet,
             .{},
             .{ .player = .{ .index = 1 } },
             1.0 / 60.0,

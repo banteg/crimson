@@ -64,6 +64,16 @@ fn unpackBonusOnDeathArgs(link_index: i32) ?struct { bonus_id: game_ids.BonusId,
     };
 }
 
+/// Native `creature_apply_damage` damage categories.
+pub const DamageType = enum(i32) {
+    self_tick = 0,
+    bullet = 1,
+    melee = 2,
+    explosion = 3,
+    fire = 4,
+    ion = 7,
+};
+
 pub const CreatureState = struct {
     generation: i32 = 0,
     active: bool = false,
@@ -2241,6 +2251,7 @@ pub const CreaturePool = struct {
                         terrain_fx,
                         idx,
                         self_tick_damage,
+                        .self_tick,
                         .{},
                         creature.last_hit_owner,
                         dt_f32,
@@ -2295,16 +2306,7 @@ pub const CreaturePool = struct {
                     creature.hp = native_math.pc24Sub(creature.hp, 15.0);
                     if (creature.hp < 0.0) {
                         state.plaguebearer_infection_count += 1;
-                        _ = self.handleSecondaryDetonationDeathFollowup(
-                            state,
-                            players,
-                            bonus_pool,
-                            terrain_fx,
-                            idx,
-                            creature.last_hit_owner,
-                            dt_f32,
-                            world_size,
-                        );
+                        _ = self.handleDeath(state, players, bonus_pool, terrain_fx, idx, true, dt_f32, world_size);
                         // Plague timer kills play one contact SFX.
                         emitContactSfx(state, creature.type_id);
                     }
@@ -2326,13 +2328,14 @@ pub const CreaturePool = struct {
             if (ai_update.self_damage) |self_damage| {
                 // Link-death cleanup is creature_apply_damage(idx, 1000.0, 1,
                 // zero): the full bullet path, heading-jitter draw included.
-                _ = self.applyProjectileDamage(
+                _ = self.applyDamage(
                     state,
                     players,
                     bonus_pool,
                     terrain_fx,
                     idx,
                     self_damage,
+                    .bullet,
                     .{},
                     creature.last_hit_owner,
                     dt_f32,
@@ -2542,28 +2545,8 @@ pub const CreaturePool = struct {
                     );
                     state.step_sfx.append(.ui_bonus);
                     state.bonus_spawn_guard = true;
-                    emitDeathPrelude(
-                        state,
-                        bonus_pool,
-                        effect_pool,
-                        creature.flags,
-                        creature.link_index,
-                        &creature.pos,
-                        @floatCast(world_size),
-                    );
-                    emitDeathSideEffects(
-                        state,
-                        players,
-                        bonus_pool,
-                        effect_pool,
-                        terrain_fx,
-                        &creature.pos,
-                        @floatCast(world_size),
-                    );
+                    _ = self.handleDeath(state, players, bonus_pool, terrain_fx, idx, false, dt_f32, world_size);
                     state.bonus_spawn_guard = false;
-                    const xp_gained = awardExperienceFromReward(state, player, creature.reward_value);
-                    self.recordDeath(idx, creature.type_id, creature.reward_value, xp_gained, creature.last_hit_owner);
-                    creature.active = false;
                 }
             }
 
@@ -2585,6 +2568,7 @@ pub const CreaturePool = struct {
                         terrain_fx,
                         idx,
                         25.0,
+                        .melee,
                         .{},
                         owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index)),
                         dt_f32,
@@ -2667,7 +2651,8 @@ pub const CreaturePool = struct {
         }
     }
 
-    pub fn applyProjectileDamage(
+    /// Native `creature_apply_damage`. Returns the XP a killing hit awarded.
+    pub fn applyDamage(
         self: *CreaturePool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
@@ -2675,123 +2660,159 @@ pub const CreaturePool = struct {
         terrain_fx: *terrain_fx_mod.TerrainFxScratch,
         creature_index: usize,
         damage: f32,
+        damage_type: DamageType,
         impulse: state_mod.Vec2,
         owner: owner_ref.OwnerRef,
         dt: f32,
         world_size: f32,
     ) i32 {
-        if (creature_index < self.entries.len) {
-            var creature = &self.entries[creature_index];
-            // Ping-pong animated creatures skip the heading jitter and its draw.
-            if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
-                const jitter_rand = state.rng.randTagged(rng_callers.creature_apply_damage_heading_jitter);
-                const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
-                const jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.002));
-                const size = @max(@as(f32, 1e-6), creature.size);
-                var turn = native_math.pc24Div(jitter, native_math.pc24Mul(size, @as(f32, 0.025)));
-                // Native clamps against the f32 literal 1.5707964.
-                const half_pi: f32 = native_math.roundF32(native_math.native_half_pi);
-                if (turn > half_pi) turn = half_pi;
-                creature.heading = native_math.pc24Add(creature.heading, turn);
-            }
-        }
-        var damage_amount = damage;
-        if (damagePerkActive(state, players, PerkId.uranium_filled_bullets)) {
-            damage_amount *= 2.0;
-        }
-        if (damagePerkActive(state, players, PerkId.barrel_greaser)) {
-            damage_amount *= 1.4;
-        }
-        if (damagePerkActive(state, players, PerkId.doctor)) {
-            damage_amount *= 1.2;
-        }
-        if (damagePerkActive(state, players, PerkId.living_fortress)) {
-            for (players) |player| {
-                if (!(player.health > 0.0)) continue;
-                if (!(player.living_fortress_timer > 0.0)) continue;
-                const scale = narrowF32(player.living_fortress_timer * 0.05 + 1.0);
-                damage_amount = narrowF32(damage_amount * scale);
-            }
-        }
-        return self.applyDamage(
-            state,
-            players,
-            bonus_pool,
-            terrain_fx,
-            creature_index,
-            damage_amount,
-            impulse,
-            owner,
-            dt,
-            world_size,
-        );
-    }
+        const creature = &self.entries[creature_index];
+        creature.hit_flash_timer = 0.2;
+        if (players.len == 0 or !creature.active) return 0;
+        creature.last_hit_owner = owner;
 
-    pub fn applyIonDamage(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        damage: f32,
-        impulse: state_mod.Vec2,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-    ) i32 {
         var damage_amount = damage;
-        if (damagePerkActive(state, players, PerkId.ion_gun_master)) {
-            damage_amount *= 1.2;
+        switch (damage_type) {
+            .bullet => {
+                if (damagePerkActive(state, players, PerkId.uranium_filled_bullets)) {
+                    damage_amount += damage_amount;
+                }
+                if (damagePerkActive(state, players, PerkId.barrel_greaser)) {
+                    damage_amount *= 1.4;
+                }
+                if (damagePerkActive(state, players, PerkId.doctor)) {
+                    damage_amount *= 1.2;
+                }
+                if (damagePerkActive(state, players, PerkId.living_fortress)) {
+                    for (players) |player| {
+                        if (player.health > 0.0 and player.living_fortress_timer > 0.0) {
+                            damage_amount *= player.living_fortress_timer * 0.05 + 1.0;
+                        }
+                    }
+                }
+                // Ping-pong animated creatures skip the heading jitter and its draw.
+                if ((creature.flags & spawn_mod.CreatureFlags.anim_ping_pong) == 0) {
+                    const jitter_rand = state.rng.randTagged(rng_callers.creature_apply_damage_heading_jitter);
+                    const jitter_i32: i32 = @as(i32, @intCast(jitter_rand & 0x7f)) - 0x40;
+                    const jitter = native_math.pc24Mul(@as(f32, @floatFromInt(jitter_i32)), @as(f32, 0.002));
+                    const size = @max(@as(f32, 1e-6), creature.size);
+                    // Native clamps against the f32 literal 1.5707964.
+                    const turn = @min(
+                        native_math.pc24Div(jitter, native_math.pc24Mul(size, @as(f32, 0.025))),
+                        native_math.roundF32(native_math.native_half_pi),
+                    );
+                    creature.heading = native_math.pc24Add(creature.heading, turn);
+                }
+            },
+            .ion => if (damagePerkActive(state, players, PerkId.ion_gun_master)) {
+                damage_amount *= 1.2;
+            },
+            else => {},
         }
-        return self.applyDamage(
-            state,
-            players,
-            bonus_pool,
-            terrain_fx,
-            creature_index,
-            damage_amount,
-            impulse,
-            owner,
-            dt,
-            world_size,
-        );
-    }
 
-    pub fn applyFireDamage(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        damage: f32,
-        impulse: state_mod.Vec2,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-    ) i32 {
-        var damage_amount = damage;
-        // Native checks positive health before the fire perk and its RNG draw.
-        if (creature_index < self.entries.len and
-            self.entries[creature_index].hp > 0.0 and
-            damagePerkActive(state, players, PerkId.pyromaniac))
-        {
+        if (!(creature.hp > 0.0)) {
+            if (dt > 0.0) {
+                creature.lifecycle_stage -= dt * 15.0;
+            }
+            return 0;
+        }
+        if (damage_type == .fire and damagePerkActive(state, players, PerkId.pyromaniac)) {
             damage_amount *= 1.5;
             _ = state.rng.randTagged(rng_callers.creature_apply_damage_pyromaniac);
         }
-        return self.applyDamage(
+        creature.hp -= damage_amount;
+        creature.vel = .{
+            .x = creature.vel.x - impulse.x,
+            .y = creature.vel.y - impulse.y,
+        };
+        if (creature.hp > 0.0) return 0;
+
+        creature.lifecycle_stage -= if (dt > 0.0) dt else 0.001;
+        // The lethal branch is gated on entry health alone: a creature whose
+        // death started with hp still positive (Shrinkifier shrink-death,
+        // Energizer eat) dies again here.
+        const xp_gained = self.handleDeath(state, players, bonus_pool, terrain_fx, creature_index, true, dt, world_size);
+        applyCreatureDamagePostDeathImpulse(creature, impulse);
+        emitCreatureApplyDamageFollowup(
             state,
-            players,
-            bonus_pool,
-            terrain_fx,
-            creature_index,
-            damage_amount,
-            impulse,
-            owner,
-            dt,
-            world_size,
+            self.effects orelse unreachable,
+            creature.flags,
+            creature.type_id,
+            creature.pos,
         );
+        return xp_gained;
+    }
+
+    /// Native `creature_handle_death`. Returns the XP the kill awarded.
+    pub fn handleDeath(
+        self: *CreaturePool,
+        state: *state_mod.GameplayState,
+        players: []state_mod.PlayerState,
+        bonus_pool: *bonus_runtime.BonusPool,
+        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+        creature_index: usize,
+        keep_corpse: bool,
+        dt: f32,
+        world_size: f32,
+    ) i32 {
+        const effects = self.effects orelse unreachable;
+        const creature = &self.entries[creature_index];
+        if ((creature.flags & spawn_mod.CreatureFlags.bonus_on_death) != 0) {
+            // bonus_spawn_at clamps through the creature position pointer.
+            creature.pos = bonus_runtime.clampSpawnPosition(creature.pos, world_size);
+            if (unpackBonusOnDeathArgs(creature.link_index)) |drop| {
+                _ = bonus_pool.spawnAt(creature.pos, drop.bonus_id, drop.amount_override, state, world_size);
+                if (state.game_mode != .rush) {
+                    effects.spawnBurstWithCallers(
+                        state,
+                        creature.pos,
+                        16,
+                        5,
+                        0.5,
+                        null,
+                        .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+                        effects_mod.EffectPool.bonus_spawn_at_burst_callers,
+                    );
+                }
+            }
+            // Native drops the carried bonus again on every re-entry.
+            if (!state.preserve_bugs) {
+                creature.flags &= ~spawn_mod.CreatureFlags.bonus_on_death;
+            }
+        }
+        survival_progression.survivalRecordRecentDeath(state, creature.pos);
+        if (!creature.active) {
+            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
+            return 0;
+        }
+
+        self.disableSpawnSlotForCreature(creature);
+        spawnSplitChildrenOnDeath(self, state, creature);
+        if (keep_corpse) {
+            creature.lifecycle_stage = native_math.pc24Sub(creature.lifecycle_stage, dt);
+        } else {
+            creature.active = false;
+        }
+
+        const xp_gained = awardExperienceForOwner(state, players, creature.last_hit_owner, creature.reward_value);
+        self.recordDeath(creature_index, creature.type_id, creature.reward_value, xp_gained, creature.last_hit_owner);
+
+        if (bonus_pool.trySpawnOnKill(creature.pos, state, players, world_size) != null) {
+            emitBonusOnKillBurst(state, effects, creature.pos);
+        }
+
+        if (state.bonuses.freeze > 0.0) {
+            for (0..8) |_| {
+                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
+                effects.spawnFreezeShard(state, creature.pos, angle, 5);
+            }
+            const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
+            effects.spawnFreezeShatter(state, creature.pos, shatter_angle, 5);
+            self.kill_count += 1;
+            creature.active = false;
+            _ = terrain_fx.decals.addRandom(state, creature.pos);
+        }
+        return xp_gained;
     }
 
     /// Run Final Revenge at the native `player_take_damage` callsite.
@@ -2833,19 +2854,7 @@ pub const CreaturePool = struct {
             const remaining = native_math.pc24Sub(512.0, distance);
             if (!(remaining > 0.0)) continue;
             const damage = native_math.pc24Mul(remaining, 5.0);
-            _ = self.applyExplosionDamage(
-                state,
-                players,
-                bonuses,
-                terrain_fx,
-                idx,
-                damage,
-                .{},
-                owner,
-                dt,
-                world_size,
-                null,
-            );
+            _ = self.applyDamage(state, players, bonuses, terrain_fx, idx, damage, .explosion, .{}, owner, dt, world_size);
         }
         // Native stores a literal zero rather than restoring the incoming guard.
         state.bonus_spawn_guard = false;
@@ -2853,6 +2862,7 @@ pub const CreaturePool = struct {
         state.sfx_queue.append(.shockwave);
     }
 
+    /// `applyDamage(.explosion)` in the shape the Nuke pickup still calls.
     pub fn applyExplosionDamage(
         self: *CreaturePool,
         state: *state_mod.GameplayState,
@@ -2867,281 +2877,9 @@ pub const CreaturePool = struct {
         world_size: f32,
         killed_out: ?*bool,
     ) i32 {
-        if (killed_out) |k| {
-            k.* = false;
-        }
-        if (creature_index >= self.entries.len) return 0;
-        self.entries[creature_index].hit_flash_timer = 0.2;
-        if (players.len == 0) return 0;
-
-        var creature = &self.entries[creature_index];
-        if (!creature.active) return 0;
-        creature.last_hit_owner = owner;
-
-        // Native nuke path applies damage to active corpse entries as well.
-        if (!(creature.hp > 0.0)) {
-            if (dt > 0.0) {
-                creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt * 15.0);
-            }
-            return 0;
-        }
-
-        creature.hp = narrowF32(creature.hp - damage);
-        creature.vel = .{
-            .x = creature.vel.x - impulse.x,
-            .y = creature.vel.y - impulse.y,
-        };
-        if (creature.hp > 0.0) return 0;
-        if (killed_out) |k| {
-            k.* = true;
-        }
-
-        if (dt > 0.0) {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
-        } else {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - 0.001);
-        }
-        // Native creature_apply_damage gates the lethal branch on entry health
-        // alone: a creature whose death started with hp still positive
-        // (Shrinkifier shrink-death, Energizer eat) dies again here.
-        emitDeathPrelude(
-            state,
-            bonus_pool,
-            self.effects orelse unreachable,
-            creature.flags,
-            creature.link_index,
-            &creature.pos,
-            world_size,
-        );
-        self.disableSpawnSlotForCreature(creature);
-        const split_can_reuse_slot =
-            (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
-            creature.size > 35.0;
-        const death_size = creature.size;
-        const death_type_id = creature.type_id;
-        const death_reward_value = creature.reward_value;
-        spawnSplitChildrenOnDeath(self, state, creature);
-        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        emitDeathSideEffects(
-            state,
-            players,
-            bonus_pool,
-            self.effects orelse unreachable,
-            terrain_fx,
-            &creature.pos,
-            world_size,
-        );
-        if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - dt);
-        }
-
-        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
-        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
-        if (state.bonuses.freeze > 0.0) {
-            self.kill_count += 1;
-            if (!slot_reused_by_child) {
-                creature.active = false;
-            }
-        }
-        applyCreatureDamagePostDeathImpulse(creature, impulse);
-        emitCreatureApplyDamageFollowup(
-            state,
-            self.effects orelse unreachable,
-            creature.flags,
-            death_type_id,
-            creature.pos,
-        );
-        return xp_gained;
-    }
-
-    pub fn handleSecondaryDetonationDeathFollowup(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-    ) i32 {
-        if (creature_index >= self.entries.len) return 0;
-        if (players.len == 0) return 0;
-
-        var creature = &self.entries[creature_index];
-        if (creature.hp > 0.0) return 0;
-        emitDeathPrelude(
-            state,
-            bonus_pool,
-            self.effects orelse unreachable,
-            creature.flags,
-            creature.link_index,
-            &creature.pos,
-            world_size,
-        );
-        if (!creature.active) {
-            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
-            return 0;
-        }
-        const split_can_reuse_slot =
-            (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
-            creature.size > 35.0;
-        const death_size = creature.size;
-        const death_type_id = creature.type_id;
-        const death_reward_value = creature.reward_value;
-
-        creature.last_hit_owner = owner;
-        spawnSplitChildrenOnDeath(self, state, creature);
-        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        emitDeathSideEffects(
-            state,
-            players,
-            bonus_pool,
-            self.effects orelse unreachable,
-            terrain_fx,
-            &creature.pos,
-            world_size,
-        );
-        if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
-        }
-
-        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
-        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
-        if (state.bonuses.freeze > 0.0) {
-            self.kill_count += 1;
-            if (!slot_reused_by_child) {
-                creature.active = false;
-            }
-        }
-        return xp_gained;
-    }
-
-    /// Native `creature_handle_death(creature_id, true)`: run the ordinary
-    /// death body without requiring damage to have reduced health first, and
-    /// keep the creature record active as a corpse unless Freeze removes it.
-    pub fn handleKeepCorpseDeath(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-    ) i32 {
-        if (creature_index >= self.entries.len) return 0;
-        if (players.len == 0) return 0;
-
-        var creature = &self.entries[creature_index];
-        emitDeathPrelude(
-            state,
-            bonus_pool,
-            self.effects orelse unreachable,
-            creature.flags,
-            creature.link_index,
-            &creature.pos,
-            world_size,
-        );
-        if (!creature.active) {
-            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
-            return 0;
-        }
-        const split_can_reuse_slot =
-            (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
-            creature.size > 35.0;
-        const death_size = creature.size;
-        const death_type_id = creature.type_id;
-        const death_reward_value = creature.reward_value;
-
-        creature.last_hit_owner = owner;
-        self.disableSpawnSlotForCreature(creature);
-        spawnSplitChildrenOnDeath(self, state, creature);
-        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        emitDeathSideEffects(
-            state,
-            players,
-            bonus_pool,
-            self.effects orelse unreachable,
-            terrain_fx,
-            &creature.pos,
-            world_size,
-        );
-        if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage = narrowF32(creature.lifecycle_stage - narrowF32(dt));
-        }
-
-        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
-        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
-        if (state.bonuses.freeze > 0.0) {
-            self.kill_count += 1;
-            if (!slot_reused_by_child) {
-                creature.active = false;
-            }
-        }
-        return xp_gained;
-    }
-
-    pub fn killNoCorpse(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-    ) i32 {
-        if (creature_index >= self.entries.len) return 0;
-        if (players.len == 0) return 0;
-
-        var creature = &self.entries[creature_index];
-        emitDeathPrelude(
-            state,
-            bonus_pool,
-            self.effects orelse unreachable,
-            creature.flags,
-            creature.link_index,
-            &creature.pos,
-            world_size,
-        );
-        if (!creature.active) {
-            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
-            return 0;
-        }
-        const split_can_reuse_slot =
-            (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
-            creature.size > 35.0;
-        const death_size = creature.size;
-        const death_type_id = creature.type_id;
-        const death_reward_value = creature.reward_value;
-
-        creature.last_hit_owner = owner;
-
-        spawnSplitChildrenOnDeath(self, state, creature);
-        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        emitDeathSideEffects(
-            state,
-            players,
-            bonus_pool,
-            self.effects orelse unreachable,
-            terrain_fx,
-            &creature.pos,
-            world_size,
-        );
-
-        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
-        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
-
-        if (dt > 0.0 and state.bonuses.freeze > 0.0) {
-            self.kill_count += 1;
-        }
-
-        if (!slot_reused_by_child) {
-            creature.active = false;
-        }
+        const was_alive = self.entries[creature_index].hp > 0.0;
+        const xp_gained = self.applyDamage(state, players, bonus_pool, terrain_fx, creature_index, damage, .explosion, impulse, owner, dt, world_size);
+        if (killed_out) |killed| killed.* = was_alive and !(self.entries[creature_index].hp > 0.0);
         return xp_gained;
     }
 
@@ -3419,99 +3157,6 @@ pub const CreaturePool = struct {
         }
 
         return best_idx;
-    }
-
-    fn applyDamage(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        damage: f32,
-        impulse: state_mod.Vec2,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-    ) i32 {
-        if (creature_index >= self.entries.len) return 0;
-        self.entries[creature_index].hit_flash_timer = 0.2;
-        if (players.len == 0) return 0;
-
-        var creature = &self.entries[creature_index];
-        if (!creature.active) return 0;
-        // Native damage path records the incoming owner even on corpse hits.
-        creature.last_hit_owner = owner;
-        if (!(creature.hp > 0.0)) {
-            if (dt > 0.0) {
-                creature.lifecycle_stage -= dt * 15.0;
-            }
-            return 0;
-        }
-
-        creature.hp -= damage;
-        creature.vel = .{
-            .x = creature.vel.x - impulse.x,
-            .y = creature.vel.y - impulse.y,
-        };
-        if (creature.hp > 0.0) return 0;
-
-        if (dt > 0.0) {
-            creature.lifecycle_stage -= dt;
-        } else {
-            creature.lifecycle_stage -= 0.001;
-        }
-        // Native creature_apply_damage gates the lethal branch on entry health
-        // alone: a creature whose death started with hp still positive
-        // (Shrinkifier shrink-death, Energizer eat) dies again here.
-        emitDeathPrelude(
-            state,
-            bonus_pool,
-            self.effects orelse unreachable,
-            creature.flags,
-            creature.link_index,
-            &creature.pos,
-            world_size,
-        );
-        self.disableSpawnSlotForCreature(creature);
-        const split_can_reuse_slot =
-            (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
-            creature.size > 35.0;
-        const death_size = creature.size;
-        const death_type_id = creature.type_id;
-        const death_reward_value = creature.reward_value;
-        spawnSplitChildrenOnDeath(self, state, creature);
-        const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
-        emitDeathSideEffects(
-            state,
-            players,
-            bonus_pool,
-            self.effects orelse unreachable,
-            terrain_fx,
-            &creature.pos,
-            world_size,
-        );
-        if (dt > 0.0 and !slot_reused_by_child) {
-            creature.lifecycle_stage -= dt;
-        }
-
-        const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
-        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
-        if (state.bonuses.freeze > 0.0) {
-            self.kill_count += 1;
-            if (!slot_reused_by_child) {
-                creature.active = false;
-            }
-        }
-        applyCreatureDamagePostDeathImpulse(creature, impulse);
-        emitCreatureApplyDamageFollowup(
-            state,
-            self.effects orelse unreachable,
-            creature.flags,
-            death_type_id,
-            creature.pos,
-        );
-        return xp_gained;
     }
 };
 
@@ -4182,7 +3827,7 @@ fn spawnSplitChildrenOnDeath(
 
     const heading_offsets = [_]f32{ -native_half_pi, native_half_pi };
     for (heading_offsets) |heading_offset| {
-        const child_idx = allocCreatureSlot(self) orelse continue;
+        const child_idx = self.allocSlot() orelse continue;
         // Native creature_alloc_slot draws a phase seed (rand & 0x17f) that the
         // struct copy from the parent immediately overwrites; only the draw
         // itself matters for the stream.
@@ -4215,12 +3860,6 @@ fn spawnSplitChildrenOnDeath(
     );
 }
 
-fn allocCreatureSlot(
-    self: *CreaturePool,
-) ?usize {
-    return self.allocSlot();
-}
-
 fn emitBonusOnKillBurst(
     state: *state_mod.GameplayState,
     effects: *effects_mod.EffectPool,
@@ -4236,74 +3875,6 @@ fn emitBonusOnKillBurst(
         .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
         effects_mod.EffectPool.bonus_on_kill_burst_callers,
     );
-}
-
-fn emitDeathPrelude(
-    state: *state_mod.GameplayState,
-    bonus_pool: *bonus_runtime.BonusPool,
-    effects: *effects_mod.EffectPool,
-    creature_flags: u32,
-    creature_link_index: i32,
-    death_pos: *state_mod.Vec2,
-    world_size: f32,
-) void {
-    if ((creature_flags & spawn_mod.CreatureFlags.bonus_on_death) != 0) {
-        death_pos.* = bonus_runtime.clampSpawnPosition(death_pos.*, world_size);
-        if (unpackBonusOnDeathArgs(creature_link_index)) |drop| {
-            _ = bonus_pool.spawnAt(
-                death_pos.*,
-                drop.bonus_id,
-                drop.amount_override,
-                state,
-                world_size,
-            );
-            if (state.game_mode != .rush) {
-                effects.spawnBurstWithCallers(
-                    state,
-                    death_pos.*,
-                    16,
-                    5,
-                    0.5,
-                    null,
-                    .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
-                    effects_mod.EffectPool.bonus_spawn_at_burst_callers,
-                );
-            }
-        }
-    }
-    survival_progression.survivalRecordRecentDeath(state, death_pos.*);
-}
-
-fn emitDeathSideEffects(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    bonus_pool: *bonus_runtime.BonusPool,
-    effects: *effects_mod.EffectPool,
-    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-    death_pos: *state_mod.Vec2,
-    world_size: f32,
-) void {
-    const spawned_bonus = bonus_pool.trySpawnOnKill(
-        .{
-            .x = narrowF32(death_pos.x),
-            .y = narrowF32(death_pos.y),
-        },
-        state,
-        players,
-        world_size,
-    );
-    if (spawned_bonus) |_| {
-        emitBonusOnKillBurst(state, effects, death_pos.*);
-    }
-    if (state.bonuses.freeze > 0.0) {
-        for (0..8) |_| {
-            const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shard_angle) % 612)) * 0.01;
-            effects.spawnFreezeShard(state, death_pos.*, angle, 5);
-        }
-        const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_handle_death_freeze_shatter_angle) % 612)) * 0.01;
-        effects.spawnFreezeShatter(state, death_pos.*, shatter_angle, 5);
-        _ = terrain_fx.decals.addRandom(state, death_pos.*);
-    }
 }
 
 fn emitCreatureApplyDamageFollowup(
@@ -4705,36 +4276,29 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
         }
     };
 
-    var state = state_mod.GameplayState.init(1);
-    state.bonus_spawn_guard = true;
-    var bonuses: bonus_runtime.BonusPool = .{};
-    var effects: effects_mod.EffectPool = .{};
+    // An inactive carrier stops at the active gate, isolating the prelude.
+    const carrier: CreatureState = .{
+        .flags = spawn_mod.CreatureFlags.bonus_on_death,
+        .link_index = packBonusOnDeathArgs(.points, 5),
+        .pos = .{ .x = 5.0, .y = 1010.0 },
+    };
     var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
-    var death_pos: state_mod.Vec2 = .{ .x = 5.0, .y = 1010.0 };
+
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
+    pool.entries[0] = carrier;
+    var state = state_mod.GameplayState.init(1);
+    state.preserve_bugs = true;
+    var bonuses: bonus_runtime.BonusPool = .{};
     var trace: BurstTrace = .{};
     state.rng.setTraceSink(&trace, BurstTrace.onDraw, true);
 
-    emitDeathPrelude(
-        &state,
-        &bonuses,
-        &effects,
-        spawn_mod.CreatureFlags.bonus_on_death,
-        packBonusOnDeathArgs(.points, 5),
-        &death_pos,
-        1024.0,
-    );
-    emitDeathSideEffects(
-        &state,
-        &.{},
-        &bonuses,
-        &effects,
-        &terrain_fx,
-        &death_pos,
-        1024.0,
-    );
+    _ = pool.handleDeath(&state, &.{}, &bonuses, &terrain_fx, 0, true, 1.0 / 60.0, 1024.0);
 
-    try expectFloatClose(32.0, death_pos.x);
-    try expectFloatClose(992.0, death_pos.y);
+    try expectFloatClose(32.0, pool.entries[0].pos.x);
+    try expectFloatClose(992.0, pool.entries[0].pos.y);
+    try std.testing.expectEqual(spawn_mod.CreatureFlags.bonus_on_death, pool.entries[0].flags);
     try std.testing.expectEqual(@as(i32, 1), state.survival_recent_death_count);
     try expectFloatClose(32.0, state.survival_recent_death_pos[0].x);
     try expectFloatClose(992.0, state.survival_recent_death_pos[0].y);
@@ -4750,32 +4314,27 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
     try std.testing.expectEqual(rng_callers.bonus_spawn_at_burst_scale_step, trace.draws[3].caller.?);
     try std.testing.expect(!state.rng.consumeMissingTraceCaller());
 
+    // The port drops the carried bonus once; native re-drops it on re-entry.
+    var fixed_pool: CreaturePool = .{};
+    var fixed_effects: effects_mod.EffectPool = .{};
+    fixed_pool.effects = &fixed_effects;
+    fixed_pool.entries[0] = carrier;
+    var fixed_state = state_mod.GameplayState.init(1);
+    var fixed_bonuses: bonus_runtime.BonusPool = .{};
+    _ = fixed_pool.handleDeath(&fixed_state, &.{}, &fixed_bonuses, &terrain_fx, 0, true, 1.0 / 60.0, 1024.0);
+    try std.testing.expectEqual(@as(u32, 0), fixed_pool.entries[0].flags);
+    try std.testing.expectEqual(@as(usize, 1), fixed_bonuses.activeCount());
+
+    var rush_pool: CreaturePool = .{};
+    var rush_effects: effects_mod.EffectPool = .{};
+    rush_pool.effects = &rush_effects;
+    rush_pool.entries[0] = carrier;
     var rush_state = state_mod.GameplayState.init(1);
     rush_state.game_mode = .rush;
-    rush_state.bonus_spawn_guard = true;
     var rush_bonuses: bonus_runtime.BonusPool = .{};
-    var rush_effects: effects_mod.EffectPool = .{};
-    var rush_pos: state_mod.Vec2 = .{ .x = 5.0, .y = 1010.0 };
-    emitDeathPrelude(
-        &rush_state,
-        &rush_bonuses,
-        &rush_effects,
-        spawn_mod.CreatureFlags.bonus_on_death,
-        packBonusOnDeathArgs(.points, 5),
-        &rush_pos,
-        1024.0,
-    );
-    emitDeathSideEffects(
-        &rush_state,
-        &.{},
-        &rush_bonuses,
-        &rush_effects,
-        &terrain_fx,
-        &rush_pos,
-        1024.0,
-    );
-    try expectFloatClose(32.0, rush_pos.x);
-    try expectFloatClose(992.0, rush_pos.y);
+    _ = rush_pool.handleDeath(&rush_state, &.{}, &rush_bonuses, &terrain_fx, 0, true, 1.0 / 60.0, 1024.0);
+    try expectFloatClose(32.0, rush_pool.entries[0].pos.x);
+    try expectFloatClose(992.0, rush_pool.entries[0].pos.y);
     try std.testing.expectEqual(@as(i32, 1), rush_state.survival_recent_death_count);
     try expectFloatClose(32.0, rush_state.survival_recent_death_pos[0].x);
     try expectFloatClose(992.0, rush_state.survival_recent_death_pos[0].y);
@@ -4783,7 +4342,7 @@ test "bonus-on-death forced drop clamps the corpse and emits its native burst" {
     try std.testing.expectEqual(effects_mod.effect_pool_size, rush_effects.free_len);
 }
 
-test "secondary death followup records history before its inactive guard" {
+test "death records history before its inactive guard" {
     var pool: CreaturePool = .{};
     var effects: effects_mod.EffectPool = .{};
     pool.effects = &effects;
@@ -4804,13 +4363,13 @@ test "secondary death followup records history before its inactive guard" {
         .{ .index = 0, .pos = .{}, .experience = 10 },
     };
 
-    const gained = pool.handleSecondaryDetonationDeathFollowup(
+    const gained = pool.handleDeath(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
-        owner_local_player,
+        true,
         1.0 / 60.0,
         1024.0,
     );
@@ -4825,7 +4384,7 @@ test "secondary death followup records history before its inactive guard" {
     try std.testing.expectEqual(effects_mod.effect_pool_size, effects.free_len);
 }
 
-test "kill no corpse preserves native active-corpse reentry" {
+test "no-corpse death preserves native active-corpse reentry" {
     var pool: CreaturePool = .{};
     var effects: effects_mod.EffectPool = .{};
     pool.effects = &effects;
@@ -4844,13 +4403,13 @@ test "kill no corpse preserves native active-corpse reentry" {
         .{ .index = 0, .pos = .{} },
     };
 
-    const gained = pool.killNoCorpse(
+    const gained = pool.handleDeath(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
-        owner_local_player,
+        false,
         1.0 / 60.0,
         1024.0,
     );
@@ -4940,13 +4499,13 @@ test "direct no-corpse death does not run creature damage followup" {
         .{ .index = 0, .pos = .{} },
     };
 
-    _ = pool.killNoCorpse(
+    _ = pool.handleDeath(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
-        owner_local_player,
+        false,
         1.0 / 60.0,
         1024.0,
     );
@@ -5005,6 +4564,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
         &terrain_fx,
         0,
         50.0,
+        .self_tick,
         .{},
         owner_local_player,
         1.0 / 60.0,
@@ -5111,18 +4671,18 @@ test "explosion xp uses pre-split reward when a full pool declines children" {
     };
     players[0].perk_counts.set(PerkId.bloody_mess_quick_learner, 1);
 
-    const gained = pool.applyExplosionDamage(
+    const gained = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .explosion,
         .{ .x = 1.0, .y = 2.0 },
         owner_local_player,
         1.0 / 60.0,
         1024.0,
-        null,
     );
     try std.testing.expectEqual(@as(i32, 171), gained);
     // The lethal impulse still applies to the source record, but a failed
@@ -5167,61 +4727,13 @@ test "applyDamage runs death side effects for a hit on a positive-hp non-alive c
         &terrain_fx,
         0,
         10.0,
+        .self_tick,
         .{},
         owner_local_player,
         1.0 / 60.0,
         1024.0,
     );
 
-    try std.testing.expectEqual(@as(i32, 131), gained);
-    try std.testing.expectEqual(@as(i32, 231), players[0].experience);
-    try std.testing.expect(pool.entries[1].active);
-}
-
-test "applyExplosionDamage runs death side effects for a hit on a positive-hp non-alive creature" {
-    // Native creature_apply_damage gates the lethal branch on entry hp only, so
-    // a creature whose death started with hp still positive (lifecycle below
-    // the alive sentinel, e.g. a Shrinkifier corpse) runs the death again.
-    var pool: CreaturePool = .{};
-    pool.entries[0] = .{
-        .active = true,
-        .flags = spawn_mod.CreatureFlags.split_on_death,
-        .hp = 5.0,
-        .max_hp = 400.0,
-        .size = 40.0,
-        .reward_value = 131.687241,
-        .lifecycle_stage = 15.0,
-    };
-
-    var state = state_mod.GameplayState.init(1234);
-    var effects: effects_mod.EffectPool = .{};
-    pool.effects = &effects;
-    var bonuses: bonus_runtime.BonusPool = .{};
-    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
-    var players = [_]state_mod.PlayerState{
-        .{
-            .index = 0,
-            .pos = .{},
-            .experience = 100,
-        },
-    };
-
-    var killed_now = false;
-    const gained = pool.applyExplosionDamage(
-        &state,
-        players[0..],
-        &bonuses,
-        &terrain_fx,
-        0,
-        10.0,
-        .{},
-        owner_local_player,
-        1.0 / 60.0,
-        1024.0,
-        &killed_now,
-    );
-
-    try std.testing.expect(killed_now);
     try std.testing.expectEqual(@as(i32, 131), gained);
     try std.testing.expectEqual(@as(i32, 231), players[0].experience);
     try std.testing.expect(pool.entries[1].active);
@@ -5508,19 +5020,7 @@ test "damage refreshes hit flash for native live corpse and zero damage witnesse
             .hit_flash_timer = row.hit_flash,
             .lifecycle_stage = row.lifecycle,
         };
-        const apply: ?@TypeOf(&CreaturePool.applyDamage) = switch (case.input.damage_type) {
-            0 => &CreaturePool.applyDamage,
-            1 => &CreaturePool.applyProjectileDamage,
-            4 => &CreaturePool.applyFireDamage,
-            7 => &CreaturePool.applyIonDamage,
-            3 => null,
-            else => unreachable,
-        };
-        if (apply) |damage_fn| {
-            _ = damage_fn(&pool, &state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, .{}, owner_local_player, case.input.dt, 1024);
-        } else {
-            _ = pool.applyExplosionDamage(&state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, .{}, owner_local_player, case.input.dt, 1024, null);
-        }
+        _ = pool.applyDamage(&state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, @enumFromInt(case.input.damage_type), .{}, owner_local_player, case.input.dt, 1024);
         try std.testing.expectEqual(case.timer_bits, @as(u32, @bitCast(pool.entries[row.index].hit_flash_timer)));
     }
 }
@@ -8063,13 +7563,14 @@ test "doctor increases projectile damage by 20 percent" {
         .contact_damage = 4.0,
     });
 
-    _ = pool.applyProjectileDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .bullet,
         .{},
         owner_local_player,
         0.016,
@@ -8130,13 +7631,14 @@ test "pyromaniac increases fire damage and consumes rng" {
     });
 
     const before_rng = state.rng.state;
-    _ = pool.applyFireDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .fire,
         .{},
         owner_local_player,
         0.016,
@@ -8174,13 +7676,14 @@ test "fire damage without pyromaniac keeps base damage and rng state" {
     });
 
     const before_rng = state.rng.state;
-    _ = pool.applyFireDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .fire,
         .{},
         owner_local_player,
         0.016,
@@ -8218,13 +7721,14 @@ test "living fortress scales projectile damage by alive player timers" {
         .contact_damage = 4.0,
     });
 
-    _ = pool.applyProjectileDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .bullet,
         .{},
         owner_local_player,
         0.016,
@@ -8257,13 +7761,14 @@ test "barrel greaser increases projectile damage by 40 percent" {
         .contact_damage = 4.0,
     });
 
-    _ = pool.applyProjectileDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .bullet,
         .{},
         owner_local_player,
         0.016,
@@ -8296,13 +7801,14 @@ test "ion gun master increases ion damage by 20 percent" {
         .contact_damage = 4.0,
     });
 
-    _ = pool.applyIonDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .ion,
         .{},
         owner_local_player,
         0.016,
@@ -8335,13 +7841,14 @@ test "uranium filled bullets doubles projectile damage" {
         .contact_damage = 4.0,
     });
 
-    _ = pool.applyProjectileDamage(
+    _ = pool.applyDamage(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
         10.0,
+        .bullet,
         .{},
         owner_local_player,
         0.016,
@@ -8377,13 +7884,13 @@ test "split on death spawns two smaller children" {
     });
     pool.entries[0].target_heading = -0.75;
 
-    _ = pool.killNoCorpse(
+    _ = pool.handleDeath(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
-        owner_local_player,
+        false,
         0.016,
         10_000.0,
     );
@@ -8411,7 +7918,7 @@ test "split on death spawns two smaller children" {
     try expectFloatClose(60.0, child2.reward_value);
 }
 
-test "kill no corpse awards player zero for non-player owner" {
+test "no-corpse death awards player zero for non-player owner" {
     var pool: CreaturePool = .{};
     var effects: effects_mod.EffectPool = .{};
     pool.effects = &effects;
@@ -8435,20 +7942,61 @@ test "kill no corpse awards player zero for non-player owner" {
         .reward_value = 90.0,
         .contact_damage = 10.0,
     });
+    pool.entries[0].last_hit_owner = owner_ref.OwnerRef.fromCreature(0);
 
-    const gained = pool.killNoCorpse(
+    const gained = pool.handleDeath(
         &state,
         players[0..],
         &bonuses,
         &terrain_fx,
         0,
-        owner_ref.OwnerRef.fromCreature(0),
+        false,
         0.016,
         10_000.0,
     );
 
     try std.testing.expectEqual(@as(i32, 90), gained);
     try std.testing.expectEqual(@as(i32, 90), players[0].experience);
+}
+
+test "energizer eat of a spawn-slot owner releases the slot" {
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
+    var state = state_mod.GameplayState.init(1);
+    state.bonuses.energizer = 5.0;
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 305.0, .y = 400.0 }, .health = 100.0 },
+    };
+    pool.entries[0] = .{
+        .active = true,
+        .hp = 100.0,
+        .max_hp = 100.0,
+        .size = 40.0,
+        .reward_value = 10.0,
+        .pos = .{ .x = 300.0, .y = 400.0 },
+        .flags = spawn_mod.CreatureFlags.anim_ping_pong,
+        .link_index = 0,
+        .ai_mode = .orbit_player,
+    };
+    pool.spawn_slot_count = 1;
+    pool.spawn_slots[0] = .{
+        .owner_creature = 0,
+        .timer = 1.0,
+        .count = 0,
+        .limit = 1,
+        .interval = 1.0,
+        .child_template_id = 0x1D,
+    };
+
+    try pool.update(&state, &players, 0.016, 1024.0, &bonuses);
+
+    try std.testing.expect(!pool.entries[0].active);
+    try std.testing.expectEqual(@as(i32, -1), pool.spawn_slots[0].owner_creature);
+    // The eat stores reward directly, then creature_handle_death awards it again.
+    try std.testing.expectEqual(@as(i32, 20), players[0].experience);
+    try std.testing.expect(!state.bonus_spawn_guard);
 }
 
 test "ranged shock creature queues projectile along heading not direct aim" {

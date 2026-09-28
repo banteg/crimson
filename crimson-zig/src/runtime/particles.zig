@@ -181,18 +181,9 @@ pub const ParticlePool = struct {
                             if (creatures_mod.deathSfxBank(creatures.entries[target_idx].type_id)) |bank| {
                                 state.step_sfx.append(bank[sound_slot]);
                             }
+                            creatures.entries[target_idx].last_hit_owner = entry.owner;
                         }
-                        // Death history and forced bonuses precede the native active check.
-                        _ = creatures.killNoCorpse(
-                            state,
-                            players,
-                            bonuses,
-                            terrain_fx,
-                            target_idx,
-                            entry.owner,
-                            dt_f32,
-                            world_size,
-                        );
+                        _ = creatures.handleDeath(state, players, bonuses, terrain_fx, target_idx, false, dt_f32, world_size);
                     }
                 }
                 continue;
@@ -281,13 +272,14 @@ pub const ParticlePool = struct {
 
                         const damage = @max(0.0, entry.intensity * 10.0);
                         if (damage > 0.0) {
-                            _ = creatures.applyFireDamage(
+                            _ = creatures.applyDamage(
                                 state,
                                 players,
                                 bonuses,
                                 terrain_fx,
                                 target_idx,
                                 damage,
+                                .fire,
                                 .{},
                                 entry.owner,
                                 dt_f32,

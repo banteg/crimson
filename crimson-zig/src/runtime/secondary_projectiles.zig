@@ -211,33 +211,24 @@ pub const SecondaryProjectilePool = struct {
                     const hp_before = target.hp;
                     const direction = directionTo(entry.pos, target.pos);
                     const impulse = direction.mul(detonation_impulse_scale);
-                    var killed_now = false;
-                    _ = creatures.applyExplosionDamage(
+                    _ = creatures.applyDamage(
                         state,
                         players,
                         bonuses,
                         terrain_fx,
                         idx,
                         damage,
+                        .explosion,
                         impulse,
                         entry.owner,
                         dt_f32,
                         world_size,
-                        &killed_now,
                     );
-                    if (hp_before > 0.0 and killed_now) {
+                    // Native runs two more decals and a second death call on the kill.
+                    if (hp_before > 0.0 and !(creatures.entries[idx].hp > 0.0)) {
                         _ = terrain_fx.decals.addRandom(state, target.pos);
                         _ = terrain_fx.decals.addRandom(state, target.pos);
-                        _ = creatures.handleSecondaryDetonationDeathFollowup(
-                            state,
-                            players,
-                            bonuses,
-                            terrain_fx,
-                            idx,
-                            entry.owner,
-                            dt_f32,
-                            world_size,
-                        );
+                        _ = creatures.handleDeath(state, players, bonuses, terrain_fx, idx, true, dt_f32, world_size);
                     }
                 }
                 continue;
@@ -407,13 +398,14 @@ pub const SecondaryProjectilePool = struct {
                     else => 150.0,
                 };
                 const inv_dt = narrowF32(1.0 / @as(f64, dt_f32));
-                _ = creatures.applyExplosionDamage(
+                _ = creatures.applyDamage(
                     state,
                     players,
                     bonuses,
                     terrain_fx,
                     idx,
                     damage,
+                    .explosion,
                     .{
                         .x = native_math.pc24Mul(inv_dt, entry.vel.x),
                         .y = native_math.pc24Mul(inv_dt, entry.vel.y),
@@ -421,7 +413,6 @@ pub const SecondaryProjectilePool = struct {
                     entry.owner,
                     dt_f32,
                     world_size,
-                    null,
                 );
 
                 entry.type_id = SecondaryProjectileTypeId.detonation;
