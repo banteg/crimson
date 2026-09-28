@@ -8,15 +8,9 @@ from crimson.screens.chrome import draw_screen_cursor, ensure_menu_ground, menu_
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.layout import menu_widescreen_y_shift
-from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
+from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
-    MENU_ITEM_OFFSET_X,
-    MENU_ITEM_OFFSET_Y,
     MENU_LABEL_BASE_Y,
-    MENU_LABEL_HEIGHT,
-    MENU_LABEL_OFFSET_X,
-    MENU_LABEL_OFFSET_Y,
-    MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_MODS,
     MENU_LABEL_ROW_OPTIONS,
     MENU_LABEL_ROW_OTHER_GAMES,
@@ -24,16 +18,16 @@ from crimson.ui.menu_layout import (
     MENU_LABEL_ROW_QUIT,
     MENU_LABEL_ROW_STATISTICS,
     MENU_LABEL_STEP,
-    MENU_LABEL_WIDTH,
     MenuEntry,
     label_alpha,
     main_menu_item_scale,
+    menu_item_bounds,
     menu_slot_end_ms,
     menu_slot_pos_x,
     menu_slot_start_ms,
+    update_menu_item_timers,
 )
 from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
-from crimson.ui.shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
@@ -148,8 +142,7 @@ class MenuView:
 
         if activated_index is not None:
             self._activate_menu_entry(activated_index)
-        self._update_ready_timers(dt_ms)
-        self._update_hover_amounts(dt_ms)
+        update_menu_item_timers(self._menu_entries, self._hovered_index, dt_ms)
 
     def draw(self) -> None:
         self._assert_open()
@@ -260,10 +253,7 @@ class MenuView:
     def _draw_menu_items(self, resources: RuntimeResources) -> None:
         if not self._menu_entries:
             return
-        item = resources.texture(TextureId.UI_MENU_ITEM)
-        label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
-        item_w = float(item.width)
-        item_h = float(item.height)
+        item_w = float(resources.texture(TextureId.UI_MENU_ITEM).width)
         shadows_enabled = self.state.config.display.shadows_enabled
         # Matches ui_elements_update_and_render reverse table iteration:
         # later entries draw first, earlier entries draw last (on top).
@@ -279,74 +269,26 @@ class MenuView:
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             item_scale, local_y_shift = main_menu_item_scale(self._menu_screen_width, entry.slot)
-            offset_x = MENU_ITEM_OFFSET_X * item_scale
-            offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
-            dst = rl.Rectangle(
-                pos.x,
-                pos.y,
-                item_w * item_scale,
-                item_h * item_scale,
-            )
-            origin = rl.Vector2(-offset_x, -offset_y)
-            rotation_deg = math.degrees(angle_rad)
-            if shadows_enabled:
-                draw_ui_quad_shadow(
-                    texture=item,
-                    src=rl.Rectangle(0.0, 0.0, item_w, item_h),
-                    dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
-                    origin=origin,
-                    rotation_deg=rotation_deg,
-                )
-            draw_ui_quad(
-                texture=item,
-                src=rl.Rectangle(0.0, 0.0, item_w, item_h),
-                dst=dst,
-                origin=origin,
-                rotation_deg=rotation_deg,
-                tint=rl.WHITE,
-            )
             counter_value = entry.hover_amount
             if idx == self._selected_index and self._focus_timer_ms > 0:
                 counter_value = self._focus_timer_ms
             alpha = label_alpha(counter_value)
-            tint = rl.Color(255, 255, 255, alpha)
-            src = rl.Rectangle(
-                0.0,
-                float(entry.row) * MENU_LABEL_ROW_HEIGHT,
-                MENU_LABEL_WIDTH,
-                MENU_LABEL_ROW_HEIGHT,
-            )
-            label_offset_x = MENU_LABEL_OFFSET_X * item_scale
-            label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
-            label_dst = rl.Rectangle(
-                pos.x,
-                pos.y,
-                MENU_LABEL_WIDTH * item_scale,
-                MENU_LABEL_HEIGHT * item_scale,
-            )
-            label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
-            draw_ui_quad(
-                texture=label_tex,
-                src=src,
-                dst=label_dst,
-                origin=label_origin,
-                rotation_deg=rotation_deg,
-                tint=tint,
-            )
+            glow_alpha = None
             if self._menu_entry_enabled(entry):
                 glow_alpha = alpha
                 if 0 <= entry.ready_timer_ms < 0x100:
                     glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
-                rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-                draw_ui_quad(
-                    texture=label_tex,
-                    src=src,
-                    dst=label_dst,
-                    origin=label_origin,
-                    rotation_deg=rotation_deg,
-                    tint=rl.Color(255, 255, 255, glow_alpha),
-                )
-                rl.end_blend_mode()
+            draw_menu_item(
+                resources,
+                pos=pos,
+                row=entry.row,
+                item_scale=item_scale,
+                local_y_shift=local_y_shift,
+                rotation_deg=math.degrees(angle_rad),
+                alpha=alpha,
+                glow_alpha=glow_alpha,
+                shadows=shadows_enabled,
+            )
 
     def _mods_available(self) -> bool:
         mods_dir = self.state.base_dir / "mods"
@@ -371,43 +313,18 @@ class MenuView:
                 return idx
         return None
 
-    def _update_ready_timers(self, dt_ms: int) -> None:
-        for entry in self._menu_entries:
-            if entry.ready_timer_ms < 0x100:
-                entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
-
-    def _update_hover_amounts(self, dt_ms: int) -> None:
-        hovered_index = self._hovered_index
-        for idx, entry in enumerate(self._menu_entries):
-            hover = hovered_index is not None and idx == hovered_index
-            if hover:
-                entry.hover_amount += dt_ms * 6
-            else:
-                entry.hover_amount -= dt_ms * 2
-            entry.hover_amount = max(0, min(1000, entry.hover_amount))
-
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
         return self._transition.timeline_ms >= menu_slot_start_ms(entry.slot)
 
     def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
-        # ui_element_layout_calc: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
         item = resources.texture(TextureId.UI_MENU_ITEM)
-        item_w = float(item.width)
-        item_h = float(item.height)
         item_scale, local_y_shift = main_menu_item_scale(self._menu_screen_width, entry.slot)
-        offset_min = Vec2(
-            MENU_ITEM_OFFSET_X * item_scale,
-            MENU_ITEM_OFFSET_Y * item_scale - local_y_shift,
+        return menu_item_bounds(
+            Vec2(menu_slot_pos_x(entry.slot), entry.y),
+            Vec2(float(item.width), float(item.height)),
+            item_scale,
+            local_y_shift,
         )
-        offset_max = Vec2(
-            (MENU_ITEM_OFFSET_X + item_w) * item_scale,
-            (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift,
-        )
-        size = offset_max - offset_min
-        pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
-        top_left = pos + Vec2(offset_min.x + size.x * 0.54, offset_min.y + size.y * 0.28)
-        bottom_right = pos + Vec2(offset_max.x - size.x * 0.05, offset_max.y - size.y * 0.10)
-        return Rect.from_pos_size(top_left, bottom_right - top_left)
 
     @staticmethod
     def _menu_max_timeline_ms(mods_available: bool, other_games: bool) -> int:

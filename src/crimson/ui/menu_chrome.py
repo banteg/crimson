@@ -8,6 +8,13 @@ from grim.raylib_api import rl
 
 from .animation import ui_element_anim
 from .menu_layout import (
+    MENU_ITEM_OFFSET_X,
+    MENU_ITEM_OFFSET_Y,
+    MENU_LABEL_HEIGHT,
+    MENU_LABEL_OFFSET_X,
+    MENU_LABEL_OFFSET_Y,
+    MENU_LABEL_ROW_HEIGHT,
+    MENU_LABEL_WIDTH,
     MENU_SCALE_SMALL_THRESHOLD,
     MENU_SIGN_HEIGHT,
     MENU_SIGN_OFFSET_X,
@@ -31,6 +38,46 @@ def draw_ui_quad(
     tint: rl.Color,
 ) -> None:
     rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
+
+
+def draw_menu_item(
+    resources: RuntimeResources,
+    *,
+    pos: Vec2,
+    row: int,
+    item_scale: float,
+    local_y_shift: float,
+    rotation_deg: float,
+    alpha: int,
+    glow_alpha: int | None,
+    shadows: bool,
+) -> None:
+    """`ui_element_render` for a menu item: the quad, its label row, then the additive label glow."""
+
+    item = resources.texture(TextureId.UI_MENU_ITEM)
+    label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
+    item_src = rl.Rectangle(0.0, 0.0, float(item.width), float(item.height))
+    dst = rl.Rectangle(pos.x, pos.y, float(item.width) * item_scale, float(item.height) * item_scale)
+    origin = rl.Vector2(-MENU_ITEM_OFFSET_X * item_scale, -(MENU_ITEM_OFFSET_Y * item_scale - local_y_shift))
+    if shadows:
+        draw_ui_quad_shadow(
+            texture=item,
+            src=item_src,
+            dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
+            origin=origin,
+            rotation_deg=rotation_deg,
+        )
+    rl.draw_texture_pro(item, item_src, dst, origin, rotation_deg, rl.WHITE)
+    label_src = rl.Rectangle(0.0, float(row) * MENU_LABEL_ROW_HEIGHT, MENU_LABEL_WIDTH, MENU_LABEL_ROW_HEIGHT)
+    label_dst = rl.Rectangle(pos.x, pos.y, MENU_LABEL_WIDTH * item_scale, MENU_LABEL_HEIGHT * item_scale)
+    label_origin = rl.Vector2(-MENU_LABEL_OFFSET_X * item_scale, -(MENU_LABEL_OFFSET_Y * item_scale - local_y_shift))
+    rl.draw_texture_pro(label_tex, label_src, label_dst, label_origin, rotation_deg, rl.Color(255, 255, 255, alpha))
+    if glow_alpha is not None:
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
+        rl.draw_texture_pro(
+            label_tex, label_src, label_dst, label_origin, rotation_deg, rl.Color(255, 255, 255, glow_alpha),
+        )
+        rl.end_blend_mode()
 
 
 def draw_menu_sign(

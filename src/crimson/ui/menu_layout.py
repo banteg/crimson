@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import msgspec
 
+from grim.geom import Rect, Vec2
+
 MENU_LABEL_WIDTH = 122.0
 MENU_LABEL_HEIGHT = 28.0
 MENU_LABEL_ROW_HEIGHT = 32.0
@@ -49,6 +51,33 @@ class MenuEntry(msgspec.Struct):
     y: float
     hover_amount: int = 0
     ready_timer_ms: int = 0x100
+
+
+def menu_item_bounds(pos: Vec2, item_size: Vec2, item_scale: float, local_y_shift: float) -> Rect:
+    """`ui_element_layout_calc`: the clickable inset of a menu item quad at `pos`."""
+
+    offset_min = Vec2(MENU_ITEM_OFFSET_X * item_scale, MENU_ITEM_OFFSET_Y * item_scale - local_y_shift)
+    offset_max = Vec2(
+        (MENU_ITEM_OFFSET_X + item_size.x) * item_scale,
+        (MENU_ITEM_OFFSET_Y + item_size.y) * item_scale - local_y_shift,
+    )
+    size = offset_max - offset_min
+    top_left = pos + Vec2(offset_min.x + size.x * 0.54, offset_min.y + size.y * 0.28)
+    bottom_right = pos + Vec2(offset_max.x - size.x * 0.05, offset_max.y - size.y * 0.10)
+    return Rect.from_pos_size(top_left, bottom_right - top_left)
+
+
+def update_menu_item_timers(entries: list[MenuEntry], hovered_index: int | None, dt_ms: int) -> None:
+    """`ui_element_update`: the ready glow ramp and the hover fade of each item."""
+
+    for idx, entry in enumerate(entries):
+        if entry.ready_timer_ms < 0x100:
+            entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
+        if hovered_index is not None and idx == hovered_index:
+            entry.hover_amount += dt_ms * 6
+        else:
+            entry.hover_amount -= dt_ms * 2
+        entry.hover_amount = max(0, min(1000, entry.hover_amount))
 
 
 def label_alpha(counter_value: int) -> int:
