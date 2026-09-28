@@ -586,18 +586,18 @@ fn applyBonus(
                 ));
                 const damage_base = native_math.pc24Sub(@as(f32, 256.0), distance);
                 if (!(damage_base > 0.0)) continue;
-                _ = step.creatures.applyExplosionDamage(
+                _ = step.creatures.applyDamage(
                     state,
                     players,
                     pool,
                     step.terrain_fx,
                     idx,
                     native_math.pc24Mul(damage_base, @as(f32, 5.0)),
+                    .explosion,
                     .{},
                     damage_owner,
                     step.dt,
                     step.world_size,
-                    null,
                 );
             }
             state.bonus_spawn_guard = false;

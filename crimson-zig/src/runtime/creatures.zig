@@ -2864,27 +2864,6 @@ pub const CreaturePool = struct {
         state.sfx_queue.append(.shockwave);
     }
 
-    /// `applyDamage(.explosion)` in the shape the Nuke pickup still calls.
-    pub fn applyExplosionDamage(
-        self: *CreaturePool,
-        state: *state_mod.GameplayState,
-        players: []state_mod.PlayerState,
-        bonus_pool: *bonus_runtime.BonusPool,
-        terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-        creature_index: usize,
-        damage: f32,
-        impulse: state_mod.Vec2,
-        owner: owner_ref.OwnerRef,
-        dt: f32,
-        world_size: f32,
-        killed_out: ?*bool,
-    ) i32 {
-        const was_alive = self.entries[creature_index].hp > 0.0;
-        const xp_gained = self.applyDamage(state, players, bonus_pool, terrain_fx, creature_index, damage, .explosion, impulse, owner, dt, world_size);
-        if (killed_out) |killed| killed.* = was_alive and !(self.entries[creature_index].hp > 0.0);
-        return xp_gained;
-    }
-
     fn spawnFromStats(
         self: *CreaturePool,
         rng: *spawn_mod.Crand,
