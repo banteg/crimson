@@ -1,0 +1,539 @@
+{
+  "canonical": {
+    "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+    "ratio": 0.9122807017543859,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 113,
+    "prefix": 51,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": false,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": null
+  },
+  "plain_guard": {
+    "source_sha256": "ca9ac4167854d337abc5aebb4ef726134bf63c9e3decc57497fda2bfcbcb4d89",
+    "ratio": 0.991304347826087,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 115,
+    "prefix": 88,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": true,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": [
+      {
+        "target": "fadd dword [esi+0x4]",
+        "candidate": "fadd dword [edi+-0x8]"
+      }
+    ]
+  },
+  "delete_guard": {
+    "source_sha256": "b72a4d0d8de51d66bb92b5344bd72f354911f93e3a4fccff7f54264753027b78",
+    "ratio": 0.8157894736842105,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 113,
+    "prefix": 13,
+    "references": [
+      11,
+      0,
+      0
+    ],
+    "triplet": false,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": null
+  },
+  "reverse_guard": {
+    "source_sha256": "c4279d3fe93658006edd3013d1198359910f49b3044a5bc4955f35fb9565ab17",
+    "ratio": 0.8157894736842105,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 113,
+    "prefix": 13,
+    "references": [
+      11,
+      0,
+      0
+    ],
+    "triplet": false,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": null
+  },
+  "live_named_pointer": {
+    "source_sha256": "3ff1a2b6e3eda2967c13e8141d5efb11398d8048f59db99f7658d61568b1f0d5",
+    "ratio": 0.8157894736842105,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 113,
+    "prefix": 13,
+    "references": [
+      11,
+      0,
+      0
+    ],
+    "triplet": false,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": null
+  },
+  "direct_address": {
+    "source_sha256": "9cb63496079ea880a8cfe92fc63a52ec64b484b5e26b2cf3303627b8884154d4",
+    "ratio": 0.991304347826087,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 115,
+    "prefix": 88,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": true,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": [
+      {
+        "target": "fadd dword [esi+0x4]",
+        "candidate": "fadd dword [edi+-0x8]"
+      }
+    ]
+  },
+  "equal_count": {
+    "source_sha256": "a40107a83cf342ca0a770df1ec6f0d61cb8f5c29aec6fa951a9dce7c3c658c67",
+    "ratio": 0.991304347826087,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 115,
+    "prefix": 88,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": true,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": [
+      {
+        "target": "fadd dword [esi+0x4]",
+        "candidate": "fadd dword [edi+-0x8]"
+      }
+    ]
+  },
+  "less_than_one": {
+    "source_sha256": "a2bd7cece8bacd20610593842fb510a67ee21aba76a6ff03f7179c412c77366e",
+    "ratio": 0.9098712446351931,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 118,
+    "prefix": 51,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": false,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": null
+  },
+  "live_null_check": {
+    "source_sha256": "5b77638227637ff01e9fa1a5866f448d2bfc3b2a68238fdc3210021f3184756a",
+    "ratio": 0.9783549783549783,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 116,
+    "prefix": 53,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": false,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": null
+  },
+  "scoped_counter": {
+    "source_sha256": "8337c304f8327dad43b65551892c2594b0a2509dbab84fbe489853d65adef454",
+    "ratio": 0.8608695652173913,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 115,
+    "prefix": 14,
+    "references": [
+      12,
+      0,
+      0
+    ],
+    "triplet": true,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": [
+      {
+        "target": "xor ebx, ebx",
+        "candidate": "xor ebp, ebp"
+      },
+      {
+        "target": "xor ebp, ebp",
+        "candidate": "test edi, edi"
+      },
+      {
+        "target": "cmp edi, ebx",
+        "candidate": "mov dword [ADDR], esi"
+      },
+      {
+        "target": "mov dword [ADDR], esi",
+        "candidate": "jle L66"
+      },
+      {
+        "target": "jle L66",
+        "candidate": "mov ecx, dword [ADDR]"
+      },
+      {
+        "target": "mov ecx, dword [ADDR]",
+        "candidate": "mov eax, ADDR"
+      },
+      {
+        "target": "mov eax, ADDR",
+        "candidate": "mov ebx, dword [eax+0x4]"
+      },
+      {
+        "target": "cmp dword [eax+0x4], ebx",
+        "candidate": "test ebx, ebx"
+      },
+      {
+        "target": "jl L41",
+        "candidate": "jl L3f"
+      },
+      {
+        "target": "cmp eax, ebx",
+        "candidate": "xor ebx, ebx"
+      },
+      {
+        "target": "mov dword [esp+0x14], ecx",
+        "candidate": "test eax, eax"
+      },
+      {
+        "target": "mov dword [esp+0x18], edx",
+        "candidate": "mov dword [esp+0x14], ecx"
+      },
+      {
+        "target": "jle L143",
+        "candidate": "mov dword [esp+0x18], edx"
+      },
+      {
+        "target": "lea edi, dword [esi+0xc]",
+        "candidate": "jle L145"
+      },
+      {
+        "target": "mov dword [esp+0x10], edi",
+        "candidate": "lea edi, dword [esi+0xc]"
+      },
+      {
+        "target": "mov dword [esp+0x10], ebx",
+        "candidate": "mov dword [esp+0x10], edi"
+      },
+      {
+        "target": "fld dword [esi]",
+        "candidate": "mov dword [esp+0x10], ebx"
+      },
+      {
+        "target": "fcomp dword [ADDR]",
+        "candidate": "fld dword [esi]"
+      },
+      {
+        "target": "fnstsw ax",
+        "candidate": "fcomp dword [ADDR]"
+      },
+      {
+        "target": "test ah, 0x1",
+        "candidate": "fnstsw ax"
+      },
+      {
+        "target": "jne Le6",
+        "candidate": "test ah, 0x1"
+      },
+      {
+        "target": "fild dword [ADDR]",
+        "candidate": "jne Le8"
+      },
+      {
+        "target": "fcomp dword [esi]",
+        "candidate": "fild dword [ADDR]"
+      },
+      {
+        "target": "fnstsw ax",
+        "candidate": "fcomp dword [esi]"
+      },
+      {
+        "target": "test ah, 0x1",
+        "candidate": "fnstsw ax"
+      },
+      {
+        "target": "jne Le6",
+        "candidate": "test ah, 0x1"
+      },
+      {
+        "target": "fild dword [esp+0x10]",
+        "candidate": "jne Le8"
+      },
+      {
+        "target": "test bl, 0x1",
+        "candidate": "fild dword [esp+0x10]"
+      },
+      {
+        "target": "fstp dword [esp+0x14]",
+        "candidate": "test bl, 0x1"
+      },
+      {
+        "target": "je Lfd",
+        "candidate": "fstp dword [esp+0x14]"
+      },
+      {
+        "target": "fld dword [esp+0x14]",
+        "candidate": "je Lff"
+      },
+      {
+        "target": "fchs",
+        "candidate": "fld dword [esp+0x14]"
+      },
+      {
+        "target": "fstp dword [esp+0x14]",
+        "candidate": "fchs"
+      },
+      {
+        "target": "jmp Lfd",
+        "candidate": "fstp dword [esp+0x14]"
+      },
+      {
+        "target": "fild dword [esp+0x10]",
+        "candidate": "jmp Lff"
+      },
+      {
+        "target": "test bl, 0x1",
+        "candidate": "fild dword [esp+0x10]"
+      },
+      {
+        "target": "fstp dword [esp+0x18]",
+        "candidate": "test bl, 0x1"
+      },
+      {
+        "target": "je Lfd",
+        "candidate": "fstp dword [esp+0x18]"
+      },
+      {
+        "target": "fld dword [esp+0x18]",
+        "candidate": "je Lff"
+      },
+      {
+        "target": "fchs",
+        "candidate": "fld dword [esp+0x18]"
+      },
+      {
+        "target": "fstp dword [esp+0x18]",
+        "candidate": "fchs"
+      },
+      {
+        "target": "fld dword [esp+0x14]",
+        "candidate": "fstp dword [esp+0x18]"
+      },
+      {
+        "target": "fadd dword [esi]",
+        "candidate": "fld dword [esp+0x14]"
+      },
+      {
+        "target": "mov eax, dword [edi+-0x4]",
+        "candidate": "fadd dword [esi]"
+      },
+      {
+        "target": "mov edx, dword [edi]",
+        "candidate": "mov eax, dword [edi+-0x4]"
+      },
+      {
+        "target": "lea ecx, dword [esp+0x24]",
+        "candidate": "mov edx, dword [edi]"
+      },
+      {
+        "target": "push eax",
+        "candidate": "lea ecx, dword [esp+0x24]"
+      },
+      {
+        "target": "fstp dword [esp+0x28]",
+        "candidate": "push eax"
+      },
+      {
+        "target": "fld dword [esp+0x1c]",
+        "candidate": "fstp dword [esp+0x28]"
+      },
+      {
+        "target": "fadd dword [esi+0x4]",
+        "candidate": "fld dword [esp+0x1c]"
+      },
+      {
+        "target": "push ecx",
+        "candidate": "fadd dword [edi+-0x8]"
+      },
+      {
+        "target": "push edx",
+        "candidate": "push ecx"
+      },
+      {
+        "target": "fstp dword [esp+0x34]",
+        "candidate": "push edx"
+      },
+      {
+        "target": "call ADDR",
+        "candidate": "fstp dword [esp+0x34]"
+      },
+      {
+        "target": "mov ecx, dword [esp+0x1c]",
+        "candidate": "call ADDR"
+      },
+      {
+        "target": "mov eax, dword [esi+0x14]",
+        "candidate": "mov ecx, dword [esp+0x1c]"
+      },
+      {
+        "target": "add esp, 0xc",
+        "candidate": "mov eax, dword [esi+0x14]"
+      },
+      {
+        "target": "inc ebx",
+        "candidate": "add esp, 0xc"
+      },
+      {
+        "target": "add ecx, 0x28",
+        "candidate": "inc ebx"
+      },
+      {
+        "target": "cmp ebx, eax",
+        "candidate": "add ecx, 0x28"
+      },
+      {
+        "target": "mov dword [esp+0x10], ecx",
+        "candidate": "cmp ebx, eax"
+      },
+      {
+        "target": "jl Laf",
+        "candidate": "mov dword [esp+0x10], ecx"
+      },
+      {
+        "target": "mov edi, dword [ADDR]",
+        "candidate": "jl Lb1"
+      },
+      {
+        "target": "lea eax, dword [edi+-0x1]",
+        "candidate": "mov edi, dword [ADDR]"
+      },
+      {
+        "target": "xor ebx, ebx",
+        "candidate": "lea eax, dword [edi+-0x1]"
+      },
+      {
+        "target": "cmp ebp, eax",
+        "candidate": "mov dword [esi+0x14], 0x0"
+      },
+      {
+        "target": "mov dword [esi+0x14], ebx",
+        "candidate": "cmp ebp, eax"
+      },
+      {
+        "target": "mov byte [ADDR], bl",
+        "candidate": "mov byte [ADDR], 0x0"
+      }
+    ]
+  },
+  "y_pointer": {
+    "source_sha256": "b6d370fed89e4f32b92e2f647b8b35b1535aac9f2bb6f609e31b097cf8aa8f60",
+    "ratio": 0.991304347826087,
+    "exact": false,
+    "body_byte_exact": false,
+    "instructions": 115,
+    "prefix": 82,
+    "references": [
+      13,
+      0,
+      0
+    ],
+    "triplet": true,
+    "frame": "sub esp, 0x1c",
+    "different_instructions": [
+      {
+        "target": "mov eax, dword [edi+-0x4]",
+        "candidate": "mov eax, dword [esi+0x8]"
+      }
+    ]
+  },
+  "trace": {
+    "transitions": [
+      {
+        "pass": "merge_parallel_induction_variables#2",
+        "tuples": [
+          "    + kc ty2004 ln43 tag0 | [2:#326c3z4f0] <= [2:#295c3z4f1] [7:=-8] ",
+          "  cmp kc ty2004 ln43 tag0 | [1:#86c3z0f0] <= [2:#326c3z4f0] [7:=0] "
+        ]
+      },
+      {
+        "pass": "strength_reduce_address_operands",
+        "tuples": [
+          "    = kc ty2004 ln43 tag0 | [2:#326c3z4f0] <= [2:#216c3z4f0] ",
+          "  cmp kc ty2004 ln43 tag0 | [1:#86c3z0f0] <= [2:#326c3z4f0] [7:=0] "
+        ]
+      },
+      {
+        "pass": "globopt_dead_code_elim_last",
+        "tuples": [
+          "    = kc ty2004 ln43 tag0 | [2:#326c3z4f0] <= [2:#216c3z4f0] ",
+          "  cmp kc ty2004 ln43 tag0 | [1:#86c3z0f0] <= [2:#326c3z4f0] [7:=0] "
+        ]
+      },
+      {
+        "pass": "rebuild_flow_graph_after_dce",
+        "tuples": [
+          "    = kc ty2004 ln43 tag0 | [2:#326c3z4f0] <= [2:#216c3z4f0] "
+        ]
+      }
+    ],
+    "demotion": "DEMOTE #326c3z4 T op=1 ln=43 | [1:2004 #326c3z4 @#0c2z0] <= [1:2004 #216c3z4 @#0c2z0] ",
+    "receipts": [
+      {
+        "source_sha256": "ca9ac4167854d337abc5aebb4ef726134bf63c9e3decc57497fda2bfcbcb4d89",
+        "normalized_coff_sha256": "5544e2eda29af6513989f1231bf3bdd62021f341dcfb252a76c544809b497beb",
+        "whole_coff_equal_except_timestamp": true,
+        "missing_stream_rejected": true,
+        "compiler_decisions_modified": false,
+        "metrics": {
+          "ratio": 0.991304347826087,
+          "target_instructions": 115,
+          "candidate_instructions": 115,
+          "prefix_instructions": 88,
+          "references_ok": 13,
+          "reference_problems": 0,
+          "exact": false,
+          "body_byte_exact": false
+        }
+      },
+      {
+        "source_sha256": "ca9ac4167854d337abc5aebb4ef726134bf63c9e3decc57497fda2bfcbcb4d89",
+        "normalized_coff_sha256": "5544e2eda29af6513989f1231bf3bdd62021f341dcfb252a76c544809b497beb",
+        "whole_coff_equal_except_timestamp": true,
+        "missing_stream_rejected": true,
+        "compiler_decisions_modified": false,
+        "metrics": {
+          "ratio": 0.991304347826087,
+          "target_instructions": 115,
+          "candidate_instructions": 115,
+          "prefix_instructions": 88,
+          "references_ok": 13,
+          "reference_problems": 0,
+          "exact": false,
+          "body_byte_exact": false
+        }
+      }
+    ]
+  }
+}

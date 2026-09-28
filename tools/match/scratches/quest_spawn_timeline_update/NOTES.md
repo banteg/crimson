@@ -1,5 +1,25 @@
 # quest_spawn_timeline_update
 
+## Plain comparison temporary: one-instruction diagnostic residual (2026-09-28)
+
+[The new source-only witness](../../evidence/quest-plain-guard-2026-09-28/README.md)
+reaches **99.130435%**, 115/115 instructions, prefix 88, 13/0/0 references,
+and the native 28-byte frame. It has the correct `esi + 12` pointer, dead
+pointer/zero store pair, and shared EBX zero. Only the y load differs:
+`[edi-8]` instead of `[esi+4]`. A coordinate-pointer control instead leaves
+only the heading load different.
+
+The witness uses a deliberately redundant pointer/count guard, so it is
+diagnostic evidence and is not installed. Preserving C2 traces show that the
+dead home belongs to an unnamed class-3 comparison temporary, not a named
+local. Flow-graph cleanup removes its final comparison after the last DCE.
+Thus neither an opaque copy nor a flagged winning IV is required for this
+second plain-source route. Eleven controls and both trace receipts reproduce.
+
+Canonical source stays at **91.228070%**. Investigation is parked while the
+user and Claude reorganize the executable's 23 translation units; remeasure
+the canonical function in that source context before resuming these probes.
+
 ## 1.9.8 sources and the 8966 dead-store route (2026-09-28)
 
 [These sources](../../evidence/quest-history-sources-2026-09-28/README.md)

@@ -1,5 +1,16 @@
 # quest_spawn_timeline_update: the dead pointer-store triplet (C2.DLL 8966)
 
+**2026-09-28 correction:** the dead home need not belong to a named local,
+and an opaque copy is not required. A
+[plain pointer-comparison witness](../../evidence/quest-plain-guard-2026-09-28/README.md)
+leaves an unnamed class-3 unsigned temporary dead after the final flow-graph
+rebuild. Its definition is demoted through the same path below. With the
+spawn counter outside the group loop, the stock build is 99.130435%, differing
+only in the y-coordinate base. The guard is artificial, so this is not a
+canonical match. The older exclusivity claims in sections 1, 3, 5 and 6 are
+superseded by this preserving trace and Claude's separate
+[indexed-source CSE route](../../evidence/quest-history-sources-2026-09-28/README.md).
+
 Native `quest_spawn_timeline_update` (0x00434250) has three instructions that the canonical scratch
 lacks, right after the positive-count guard:
 

@@ -1,0 +1,14 @@
+--- target
+
++++ candidate
+
+@@ -86,7 +86,7 @@
+
+ push eax
+ fstp dword [esp+0x28]
+ fld dword [esp+0x1c]
+-fadd dword [esi+0x4]
++fadd dword [edi+-0x8]
+ push ecx
+ push edx
+ fstp dword [esp+0x34]
