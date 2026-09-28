@@ -477,7 +477,11 @@ def _creature_texture(resources: RuntimeResources, asset_name: str | None) -> rl
 
 def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
     """`bonus_render`'s passes: pickups and the aim label, then the particle,
-    detonation, sprite-effect and effect pools (`effects_render`) over them."""
+    detonation, sprite-effect and effect pools (`effects_render`) over them.
+
+    Only the pickups take the transition alpha; the label and the pools draw
+    at their own colors.
+    """
 
     camera = render_ctx.view.camera
     view_scale = render_ctx.view.view_scale
@@ -485,15 +489,15 @@ def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
     with profile_pass("bonus_pickups"):
         draw_bonus_pickups(render_ctx, camera=camera, view_scale=view_scale, scale=render_ctx.view.scale, alpha=alpha)
     with profile_pass("bonus_labels"):
-        draw_bonus_hover_labels(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+        draw_bonus_hover_labels(render_ctx, camera=camera, view_scale=view_scale)
     with profile_pass("particle_pool"):
-        draw_particle_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+        draw_particle_pool(render_ctx, camera=camera, view_scale=view_scale)
     with profile_pass("secondary_detonations"):
-        secondary_detonation_pass(render_ctx, alpha=alpha)
+        secondary_detonation_pass(render_ctx)
     with profile_pass("sprite_effect_pool"):
-        draw_sprite_effect_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+        draw_sprite_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
     with profile_pass("effect_pool"):
-        draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+        draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
 
 
 def ui_render_aim_indicators(render_ctx: WorldRenderCtx, *, show_aim: bool, entity_alpha: float = 1.0) -> None:

@@ -5,7 +5,6 @@ import math
 from grim.assets import TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.raylib_api import rl
 
 from ...effects import EffectEntry, ParticleStyleId
@@ -20,11 +19,7 @@ def draw_particle_pool(
     *,
     camera: Vec2,
     view_scale: Vec2,
-    alpha: float = 1.0,
 ) -> None:
-    alpha = clamp(float(alpha), 0.0, 1.0)
-    if alpha <= 1e-3:
-        return
     frame = render_ctx.frame
     texture = frame.resources.texture(TextureId.PARTICLES)
 
@@ -64,7 +59,7 @@ def draw_particle_pool(
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
 
     if flame_glow_enabled and src_large is not None:
-        alpha_byte = int(clamp(alpha * 0.065, 0.0, 1.0) * 255.0 + 0.5)
+        alpha_byte = int(0.065 * 255.0 + 0.5)
         tint = rl.Color(255, 255, 255, alpha_byte)
         for idx, entry in enumerate(particles):
             if not entry.active or (idx % 2) or int(entry.style_id) == int(ParticleStyleId.BUBBLEGUN):
@@ -93,10 +88,9 @@ def draw_particle_pool(
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(entry.spin) * _RAD_TO_DEG
-        tint = RGBA(entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age) * alpha).to_rl()
+        tint = RGBA(entry.scale_x, entry.scale_y, entry.scale_z, float(entry.age)).to_rl()
         rl.draw_texture_pro(texture, src_normal, dst, origin, rotation_deg, tint)
 
-    alpha_byte = int(clamp(alpha, 0.0, 1.0) * 255.0 + 0.5)
     for entry in particles:
         if not entry.active or int(entry.style_id) != int(ParticleStyleId.BUBBLEGUN):
             continue
@@ -110,7 +104,7 @@ def draw_particle_pool(
         screen = viewport.world_to_screen_with(entry.pos, camera=camera, view_scale=view_scale)
         dst = rl.Rectangle(screen.x, screen.y, w, h)
         origin = rl.Vector2(w * 0.5, h * 0.5)
-        tint = rl.Color(255, 255, 255, int(float(entry.age) * alpha_byte + 0.5))
+        tint = rl.Color(255, 255, 255, int(float(entry.age) * 255.0 + 0.5))
         rl.draw_texture_pro(texture, src_style_8, dst, origin, 0.0, tint)
 
     rl.end_blend_mode()
@@ -121,11 +115,7 @@ def draw_sprite_effect_pool(
     *,
     camera: Vec2,
     view_scale: Vec2,
-    alpha: float = 1.0,
 ) -> None:
-    alpha = clamp(float(alpha), 0.0, 1.0)
-    if alpha <= 1e-3:
-        return
     frame = render_ctx.frame
     if frame.config is not None and not frame.config.display.smoke_enabled:
         return
@@ -160,7 +150,7 @@ def draw_sprite_effect_pool(
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
-        tint = entry.color.scaled_alpha(alpha).to_rl()
+        tint = entry.color.to_rl()
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
     rl.end_blend_mode()
 
@@ -170,11 +160,7 @@ def draw_effect_pool(
     *,
     camera: Vec2,
     view_scale: Vec2,
-    alpha: float = 1.0,
 ) -> None:
-    alpha = clamp(float(alpha), 0.0, 1.0)
-    if alpha <= 1e-3:
-        return
     frame = render_ctx.frame
     texture = frame.resources.texture(TextureId.PARTICLES)
 
@@ -229,7 +215,7 @@ def draw_effect_pool(
             return
 
         rotation_deg = float(entry.rotation) * _RAD_TO_DEG
-        tint = entry.color.scaled_alpha(alpha).to_rl()
+        tint = entry.color.to_rl()
 
         dst = rl.Rectangle(screen.x, screen.y, float(w), float(h))
         origin = rl.Vector2(float(w) * 0.5, float(h) * 0.5)

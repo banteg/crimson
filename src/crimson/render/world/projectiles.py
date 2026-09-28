@@ -635,7 +635,7 @@ def _secondary_flame_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
     rl.end_blend_mode()
 
 
-def secondary_detonation_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> None:
+def secondary_detonation_pass(render_ctx: WorldRenderCtx) -> None:
     """Detonation flashes; `bonus_render` draws them after the particle pool."""
 
     texture = render_ctx.frame.resources.texture(TextureId.PARTICLES)
@@ -646,7 +646,7 @@ def secondary_detonation_pass(render_ctx: WorldRenderCtx, *, alpha: float) -> No
         if not proj.active or int(proj.type_id) != SecondaryProjectileTypeId.DETONATION:
             continue
         t = clamp(float(proj.detonation_t), 0.0, 1.0)
-        fade = (1.0 - t) * alpha
+        fade = 1.0 - t
         screen = render_ctx.world_to_screen(proj.pos)
         det_scale = float(proj.detonation_scale)
         _draw_quad(texture, src, pos=screen, size=det_scale * t * 64.0 * scale, rgba=RGBA(1.0, 0.6, 0.1, fade))

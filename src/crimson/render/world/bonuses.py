@@ -145,19 +145,18 @@ def draw_bonus_hover_labels(
     *,
     camera: Vec2,
     view_scale: Vec2,
-    alpha: float = 1.0,
 ) -> None:
-    alpha = clamp(float(alpha), 0.0, 1.0)
-    if alpha <= 1e-3:
-        return
+    """`bonus_render`'s label for the bonus under each living player's aim.
+
+    Native draws it once in white at a fixed 0.7 alpha, whatever the transition.
+    """
 
     frame = render_ctx.frame
     font = frame.resources.small_font
     text_scale = 1.0
     screen_w = float(canvas.width())
 
-    shadow = rl.Color(0, 0, 0, int(180 * alpha + 0.5))
-    color = rl.Color(230, 230, 230, int(255 * alpha + 0.5))
+    color = rl.Color(255, 255, 255, int(0.7 * 255.0))
 
     for player in frame.players:
         if player.health <= 0.0:
@@ -183,8 +182,6 @@ def draw_bonus_hover_labels(
             x = max(0.0, screen_w - text_w)
 
         if font is not None:
-            draw_small_text(font, label, Vec2(x + 1.0, y + 1.0), shadow)
             draw_small_text(font, label, Vec2(x, y), color)
         else:
-            rl.draw_text(label, int(x) + 1, int(y) + 1, int(18 * text_scale), shadow)
             rl.draw_text(label, int(x), int(y), int(18 * text_scale), color)

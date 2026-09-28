@@ -102,7 +102,6 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         render_ctx,
         camera=Vec2(),
         view_scale=Vec2(1.0, 1.0),
-        alpha=1.0,
     )
 
     assert raylib_stub.begin_blend_mode.call_count == 2
