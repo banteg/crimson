@@ -514,7 +514,7 @@ test "crimson_verify_replay_json returns required size and copies payload for su
     );
     try std.testing.expectEqual(@as(i32, @intCast(required_len)), copied);
     try std.testing.expectEqual(@as(i32, 0), crimson_last_error_json(0, 0));
-    try std.testing.expect(std.mem.indexOf(u8, out, "\"schema_version\":3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, out, "\"schema_version\":4") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"status\":\"ok\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"replay\":\"<wasm>\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, out, "\"result\":") != null);

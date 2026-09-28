@@ -3,11 +3,14 @@ const std = @import("std");
 
 const cdt_trace = @import("cdt_trace.zig");
 const hash = @import("hash.zig");
+const quest_level = @import("quest_level.zig");
 const replay_codec = @import("replay_codec.zig");
+const bonus_runtime = @import("runtime/bonuses.zig");
+const perks = @import("runtime/perks.zig");
 const replay_runner = @import("runtime/replay_runner.zig");
 const runtime_paths = @import("runtime_paths.zig");
 
-const replay_schema_version: i32 = 3;
+const replay_schema_version: i32 = 4;
 
 pub const CommandOutput = struct {
     stdout: []u8,
@@ -66,7 +69,39 @@ const VerifyPayload = struct {
     result: replay_codec.RunResult,
     recorded: replay_codec.RunResult,
     mismatched_fields: []const []const u8,
+    /// Whether the run was played in the leaderboard's ranked profile.
+    ranked: bool,
+    unranked_reasons: []const []const u8,
 };
+
+/// Why a verified run falls outside the ranked profile; empty when it ranks.
+///
+/// Effect detail and violence change which effect and blood draws the gameplay
+/// RNG makes, so ranked runs are played at full detail with violence on. They
+/// also start from a save with every quest unlock, so weapon and perk offers
+/// match. See docs/rewrite/parity/environment-rng.md.
+fn unrankedReasons(reasons: *[3][]const u8, run: replay_codec.RunSpec) []const []const u8 {
+    var count: usize = 0;
+    if (run.detail_preset != 5) {
+        reasons[count] = "detail_preset";
+        count += 1;
+    }
+    if (run.violence_disabled != 0) {
+        reasons[count] = "violence_disabled";
+        count += 1;
+    }
+    const status = run.status;
+    const full = quest_level.quest_count;
+    const weapons = bonus_runtime.buildWeaponAvailabilityForStatus(run.game_mode, status.quest_unlock_index, status.quest_unlock_index_full);
+    const full_weapons = bonus_runtime.buildWeaponAvailabilityForStatus(run.game_mode, full, full);
+    const perk_offers = perks.buildPerkAvailabilityForUnlockIndex(status.quest_unlock_index);
+    const full_perk_offers = perks.buildPerkAvailabilityForUnlockIndex(full);
+    if (!std.meta.eql(weapons, full_weapons) or !std.meta.eql(perk_offers, full_perk_offers)) {
+        reasons[count] = "unlocks";
+        count += 1;
+    }
+    return reasons[0..count];
+}
 
 pub fn runReplayVerify(
     allocator: std.mem.Allocator,
@@ -201,6 +236,8 @@ fn runVerifyWithReplayBytes(
 
     var payload_sha256: [64]u8 = undefined;
     hash.sha256HexLower(payload, &payload_sha256);
+    var reason_buf: [3][]const u8 = undefined;
+    const unranked = unrankedReasons(&reason_buf, replay.run);
     const payload_report: VerifyPayload = .{
         .status = status,
         .replay = replay_path,
@@ -211,6 +248,8 @@ fn runVerifyWithReplayBytes(
         .result = run.result,
         .recorded = replay.result,
         .mismatched_fields = mismatched_fields,
+        .ranked = unranked.len == 0,
+        .unranked_reasons = unranked,
     };
     const report = try std.json.Stringify.valueAlloc(allocator, payload_report, .{});
     defer allocator.free(report);
@@ -249,6 +288,13 @@ fn runVerifyWithReplayBytes(
             for (mismatched_fields, 0..) |field, index| {
                 if (index != 0) try writer.writeByte(',');
                 try writer.writeAll(field);
+            }
+        }
+        if (unranked.len > 0) {
+            try writer.writeAll("; unranked=");
+            for (unranked, 0..) |reason, index| {
+                if (index != 0) try writer.writeByte(',');
+                try writer.writeAll(reason);
             }
         }
         try writer.writeByte('\n');
@@ -745,7 +791,7 @@ test "verify reports ok, the payload hash and both results for a matching replay
     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, output.stdout, .{});
     defer parsed.deinit();
     const object = parsed.value.object;
-    try std.testing.expectEqual(@as(i64, 3), object.get("schema_version").?.integer);
+    try std.testing.expectEqual(@as(i64, 4), object.get("schema_version").?.integer);
     try std.testing.expectEqualStrings("ok", object.get("status").?.string);
     try std.testing.expectEqual(@as(usize, 64), object.get("payload_sha256").?.string.len);
     try std.testing.expectEqual(@as(i64, 2), object.get("ticks").?.integer);

@@ -23,8 +23,8 @@ recorded in the replay and pinned for ranked runs. Add newly found gates here.
 |---|---|---|---|
 | Audio | see [Audio](#audio) | fixed: assumes audio works | rejected when closed |
 | Game tune latch | global, cleared by every other track | per-run flag, clear at run start | checked clear at run start |
-| Detail preset (1..5) | effect spawns draw per preset | recorded in `RunSpec.detail_preset` | recorded |
-| Violence disabled | blood and particle paths draw or skip | recorded in `RunSpec.violence_disabled` | recorded |
+| Detail preset (1..5) | effect spawns draw per preset | recorded; ranked runs need 5 | recorded |
+| Violence disabled | blood and particle paths draw or skip | recorded; ranked runs need violence on | recorded |
 | Attract mode | `demo_mode_active` skips the game tune | removed: runs are never attract mode | not captured |
 | Frames outside gameplay | one discarded draw per frame | fixed: none | prelude frame counts |
 
@@ -61,10 +61,12 @@ then, because no creatures are left.
 
 ## Detail and violence
 
-Both are recorded run inputs, so replays verify under any value. Ranked runs with
-different values still play out differently. The ranked profile calls for full
-detail, but nothing enforces it yet. Pinning both for ranked runs would treat them
-like audio.
+Both are recorded run inputs, so replays verify under any value and a run at low
+detail plays exactly as the original does at low detail. The leaderboard ranks
+only runs in the ranked profile: `replay verify` in both ports reports `ranked`
+and `unranked_reasons` (`detail_preset` unless 5, `violence_disabled`, and
+`unlocks` unless the save's weapon and perk offers match a save with every quest
+completed). Runs outside it still verify; they just do not rank.
 
 ## Frames outside gameplay
 

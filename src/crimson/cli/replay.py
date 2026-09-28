@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from ..replay.driver.replay_info import ReplayInfoResult, ReplayInfoTimelineEvent
     from ..sim.run_result import RunResult
 
-_REPLAY_VERIFY_SCHEMA_VERSION = 3
+_REPLAY_VERIFY_SCHEMA_VERSION = 4
 _REPLAY_INFO_SCHEMA_VERSION = 2
 _REPLAY_BENCHMARK_SCHEMA_VERSION = 3
 _REPLAY_VERIFY_MISMATCH_EXIT_CODE = 3
@@ -243,6 +243,9 @@ class _ReplayVerifyPayload(msgspec.Struct, forbid_unknown_fields=True):
     result: RunResult
     recorded: RunResult
     mismatched_fields: list[str]
+    # Whether the run was played in the leaderboard's ranked profile.
+    ranked: bool
+    unranked_reasons: list[str]
 
 
 class _ReplayInfoSummaryPayload(msgspec.Struct, forbid_unknown_fields=True):
@@ -905,6 +908,7 @@ def cmd_replay_verify(
     from ..replay import ReplayCodecError, ReplayGameVersionError, decode_replay_payload, inflate_replay_payload
     from ..replay.driver.playback_driver import build_verify_playback_driver
     from ..replay.driver.setup import ReplayRunnerError
+    from ..replay.ranked import unranked_reasons
     from ..sim.run_result import run_result_mismatches
 
     replay_path, tried = _resolve_replay_path(replay_file, base_dir=base_dir)
@@ -932,6 +936,7 @@ def cmd_replay_verify(
         status = "result_mismatch"
     else:
         status = "ok"
+    unranked = unranked_reasons(replay.run)
     payload = _ReplayVerifyPayload(
         schema_version=_REPLAY_VERIFY_SCHEMA_VERSION,
         status=status,
@@ -943,6 +948,8 @@ def cmd_replay_verify(
         result=result,
         recorded=replay.result,
         mismatched_fields=mismatched_fields,
+        ranked=not unranked,
+        unranked_reasons=unranked,
     )
     payload_json = msgspec.json.encode(payload)
 
@@ -965,6 +972,8 @@ def cmd_replay_verify(
             message += f" quest_final_ms={result.quest_final_ms}"
         if mismatched_fields:
             message += f"; mismatches={','.join(mismatched_fields)}"
+        if unranked:
+            message += f"; unranked={','.join(unranked)}"
         typer.echo(message)
 
     if status == "result_mismatch":

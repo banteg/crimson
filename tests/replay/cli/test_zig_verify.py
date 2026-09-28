@@ -411,7 +411,7 @@ def test_zig_replay_verify_reports_payload_hash_and_game_version(tmp_path: Path,
     raw_payload = zstd.ZstdDecompressor().decompress(replay_path.read_bytes())
     assert payload["payload_sha256"] == hashlib.sha256(raw_payload).hexdigest()
     assert payload["game_version"] == replay.game_version
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
 
 
 def _health_bytes(value: float) -> bytes:
