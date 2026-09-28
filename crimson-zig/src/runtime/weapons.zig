@@ -827,6 +827,7 @@ fn tryFireWeaponWithGate(
             _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_large), @intFromEnum(minigun_type_id), projectile_owner, minigun_meta, projectile_hits_players);
             _ = projectiles.spawn(muzzle, native_math.pc24Add(shot_angle, spread_small), @intFromEnum(rifle_type_id), projectile_owner, rifle_meta, projectile_hits_players);
         },
+        .no_spawn => shot_count = 0,
         .swarmer_dump => {
             // Native spawns one rocket per integer counter step below the float
             // ammo value (ceil), and zero rockets when firing with an
@@ -2482,27 +2483,40 @@ test "plasma shotgun consumes one ammo per shot" {
     try expectFloatClose(start_ammo - 1.0, player.weapon.ammo);
 }
 
-test "spider plasma uses the native primary projectile mapping" {
-    var state = state_mod.GameplayState.init(1);
-    var projectiles: projectiles_mod.ProjectilePool = .{};
-    var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
-    var creatures: creatures_mod.CreaturePool = .{};
-    var particles: particles_mod.ParticlePool = .{};
-    var player: state_mod.PlayerState = .{
-        .index = 0,
-        .pos = .{},
-        .aim = .{ .x = 200.0, .y = 0.0 },
-        .aim_dir = .{ .x = 1.0, .y = 0.0 },
-        .spread_heat = 0.0,
-    };
+test "weapons without a native fire branch spend the shot but spawn nothing" {
+    for ([_]WeaponId{
+        .spider_plasma,
+        .evil_scythe,
+        .flameburst,
+        .raygun,
+        .grim_weapon,
+        .fire_bullets,
+        .transmutator,
+        .blaster_r_300,
+        .lightning_rifle,
+        .nuke_launcher,
+    }) |weapon_id| {
+        var state = state_mod.GameplayState.init(1);
+        var projectiles: projectiles_mod.ProjectilePool = .{};
+        var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
+        var creatures: creatures_mod.CreaturePool = .{};
+        var particles: particles_mod.ParticlePool = .{};
+        var player: state_mod.PlayerState = .{
+            .index = 0,
+            .pos = .{},
+            .aim = .{ .x = 200.0, .y = 0.0 },
+            .aim_dir = .{ .x = 1.0, .y = 0.0 },
+            .spread_heat = 0.0,
+        };
 
-    player_runtime.weaponAssignPlayer(&player, .spider_plasma);
-    try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
+        player_runtime.weaponAssignPlayer(&player, weapon_id);
+        const ammo = player.weapon.ammo;
+        try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
-    try std.testing.expectEqual(@as(usize, 1), activeProjectileCount(&projectiles));
-    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.spider_plasma), projectiles.entries[0].type_id);
-    try expectFloatClose(weapon_data.weapon_stats.get(.spider_plasma).travel_budget, projectiles.entries[0].travel_budget);
-    try std.testing.expectEqual(@as(i32, 1), state.weapon_shots_fired[0][@intFromEnum(game_ids.WeaponId.spider_plasma)]);
+        try std.testing.expectEqual(@as(usize, 0), activeProjectileCount(&projectiles));
+        try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
+        try expectFloatClose(ammo - 1.0, player.weapon.ammo);
+    }
 }
 
 test "shotgun family fires expected pellet counts and formulas" {
@@ -3110,50 +3124,6 @@ test "ammunition within fire ammo class costs less health and spends fractional 
     try expectFloatClose(narrowF32(9.85), player.health);
     try std.testing.expect(particles.entries[0].active);
     try expectFloatClose(4.9, player.weapon.ammo);
-}
-
-test "same-id primary dev weapons fire through the main projectile pool" {
-    const cases = [_]WeaponId{
-        .evil_scythe,
-        .flameburst,
-        .raygun,
-        .grim_weapon,
-        .transmutator,
-        .blaster_r_300,
-        .lightning_rifle,
-        .nuke_launcher,
-    };
-
-    for (cases) |weapon_id| {
-        var state = state_mod.GameplayState.init(1);
-        var projectiles: projectiles_mod.ProjectilePool = .{};
-        var secondary_projectiles: secondary_projectiles_mod.SecondaryProjectilePool = .{};
-        var creatures: creatures_mod.CreaturePool = .{};
-        var particles: particles_mod.ParticlePool = .{};
-        var player: state_mod.PlayerState = .{
-            .index = 0,
-            .pos = .{},
-            .aim = .{ .x = 200.0, .y = 0.0 },
-            .aim_dir = .{ .x = 1.0, .y = 0.0 },
-            .spread_heat = 0.0,
-        };
-
-        player_runtime.weaponAssignPlayer(&player, weapon_id);
-        try std.testing.expect(try tryFireWeapon(
-            &state,
-            &player,
-            &projectiles,
-            &secondary_projectiles,
-            &creatures,
-            &particles,
-        ));
-
-        try std.testing.expectEqual(@as(usize, 1), activeProjectileCount(&projectiles));
-        try std.testing.expectEqual(@as(usize, 0), activeSecondaryProjectileCount(&secondary_projectiles));
-        try std.testing.expect(!particles.entries[0].active);
-        try std.testing.expectEqual(@intFromEnum(weapon_id), projectiles.entries[0].type_id);
-        try std.testing.expectEqual(@as(i32, 1), state.weapon_shots_fired[0][@intCast(@intFromEnum(weapon_id))]);
-    }
 }
 
 test "mini rocket swarmers preserve bugged spread when requested" {

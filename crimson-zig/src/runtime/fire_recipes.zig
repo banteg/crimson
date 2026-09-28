@@ -58,6 +58,9 @@ pub const FireMode = union(enum) {
     particle_stream: ParticleStreamMode,
     multi_plasma_fan: void,
     swarmer_dump: void,
+    /// Native `player_update` has no branch for the weapon: the shot costs its
+    /// cooldown, sound and ammo but spawns nothing.
+    no_spawn: void,
 };
 
 pub const FireRecipe = struct {
@@ -116,6 +119,28 @@ pub fn resolveFireRecipe(
     }
 
     return switch (weapon_id) {
+        .spider_plasma,
+        .evil_scythe,
+        .flameburst,
+        .raygun,
+        .unused_34,
+        .unused_35,
+        .unused_36,
+        .unused_37,
+        .unused_38,
+        .unused_39,
+        .unused_40,
+        .grim_weapon,
+        .fire_bullets,
+        .unused_46,
+        .unused_47,
+        .unused_48,
+        .unused_49,
+        .transmutator,
+        .blaster_r_300,
+        .lightning_rifle,
+        .nuke_launcher,
+        => .{ .mode = .no_spawn },
         .rocket_launcher => .{
             .mode = .{
                 .secondary_shot = .{
