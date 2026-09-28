@@ -21,12 +21,12 @@ or GPU textures and does not enter this pipeline.
 
 ## Top-level frame flow
 
-The same world renderer is used by gameplay modes, demo, replay playback, and
-the main debug views.
+The same world renderer is used by gameplay modes, replay playback, and the main
+debug views.
 
 ```mermaid
 flowchart LR
-    A["Gameplay / Demo / Replay / Debug"] --> B["WorldRuntime.draw()"]
+    A["Gameplay / Replay / Debug"] --> B["WorldRuntime.draw()"]
     B --> C["RenderFrame + ViewTransform"]
     C --> D["WorldRenderCtx"]
     D --> E["draw_world()"]

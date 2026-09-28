@@ -55,7 +55,7 @@ and completion music. Consumers do not reconstruct reactions from current quest
 state. Replay fast-forward can suppress audio without changing simulation RNG.
 
 Sound requests carry their ID, event position (or `None` for centered UI audio),
-and gain. Their plan captures demo attenuation and the Reflex Boost pitch timer.
+and gain. Their plan captures the Reflex Boost pitch timer.
 The consumer uses the viewport before each tick's camera update, so deferred
 sounds never read a later player's or creature's position.
 
