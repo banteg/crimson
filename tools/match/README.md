@@ -308,7 +308,7 @@ Create `tools/match/scratches/<function>/` with:
 
 `SOURCE` is resolved relative to the scratch directory and may point at a
 shared canonical body elsewhere in the repository. This is how
-`tools/native/recovered/grim/` keeps recovered source centralized while each
+`decomp/1.9/grim/` keeps recovered source centralized while each
 function retains its own matcher configuration and evidence. Omitting
 `SOURCE` keeps the `scratch.cpp` default.
 

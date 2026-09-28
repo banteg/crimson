@@ -1,6 +1,7 @@
 # Recovered Grim source layout
 
-This tree is the canonical home for recovered, project-owned Grim source.
+This tree is the canonical home for recovered, project-owned Grim source of the
+1.9 build family (canonical build 1.9.93; see [../../README.md](../../README.md)).
 Matcher scratch directories retain their `scratch.conf`, notes, experiments,
 and build evidence, but their `SOURCE` fields point here instead of carrying a
 second copy of the source body.

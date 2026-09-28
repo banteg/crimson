@@ -42,10 +42,10 @@ and [float policy](float-parity-policy.md). For execution ownership, see the
 
 Native sources:
 
-- `tools/native/recovered/grim/timing/init.cpp`,
-  `tools/native/recovered/grim/timing/update.cpp`, and
-  `tools/native/recovered/grim/timing/get_frame_dt.cpp`.
-- `tools/native/recovered/grim/app/run_loop.cpp` for input timing and frame dispatch.
+- `decomp/1.9/grim/timing/init.cpp`,
+  `decomp/1.9/grim/timing/update.cpp`, and
+  `decomp/1.9/grim/timing/get_frame_dt.cpp`.
+- `decomp/1.9/grim/app/run_loop.cpp` for input timing and frame dispatch.
 - `tools/match/scratches/game_frame_update/scratch.cpp`,
   `tools/match/scratches/gameplay_update_and_render/scratch.cpp`, and
   `tools/match/scratches/player_update/scratch.cpp` for delta mutation order.
@@ -220,9 +220,9 @@ belong to the outer mode/UI pump, not to session timing.
 
 Grim's FPS estimate samples accumulated frames after more than 500 ms, then
 subtracts 500 ms from the sample accumulator. It is a reporting cadence.
-`tools/native/recovered/grim/app/app_tick.cpp` contains a separate 30 ms
+`decomp/1.9/grim/app/app_tick.cpp` contains a separate 30 ms
 accumulator with a modulo remainder; its callback in
-`tools/native/recovered/grim/app/app_on_tick.cpp` is empty. Neither establishes
+`decomp/1.9/grim/app/app_on_tick.cpp` is empty. Neither establishes
 a fixed gameplay timestep in the original.
 
 ## Existing regression references

@@ -25,7 +25,7 @@ does not present it as unresolved byte debt. No additional credit is claimed.
 
 ## Grim state tables
 
-`tools/native/recovered/grim/state/state_init.cpp` supplies explicit typed
+`decomp/1.9/grim/state/state_init.cpp` supplies explicit typed
 declarations, loop bounds, and consumers for these engine-owned arrays:
 
 | Object | Native address | Type | Bytes |

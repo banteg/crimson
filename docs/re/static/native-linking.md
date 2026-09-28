@@ -19,7 +19,7 @@ constructor ordering, and static symbol changes cannot disturb established
 evidence.
 
 Recovered Grim-owned bodies now live under
-`tools/native/recovered/grim/`. The module directories form a plausible
+`decomp/1.9/grim/`. The module directories form a plausible
 logical source layout, not a claim about historical filenames or physical
 objects. They cover all 139 canonical Grim functions and 41 additional
 recovered platform/provider functions. Scratch directories keep their matcher

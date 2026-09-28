@@ -2,7 +2,7 @@
 
 This audit repeats the [exe plausibility audit](PLAUSIBILITY-AUDIT-2026-09-25.md)
 for `grim.dll`. It read all 171 recovered sources under
-`tools/native/recovered/grim`: 180 function bindings, which are the 139
+`decomp/1.9/grim`: 180 function bindings, which are the 139
 port-scope functions plus the platform-replaced dialogs, window, device and
 input code. It looked for constructs that only exist to steer the compiler and
 tried plainer source for each one. A rewrite was kept only when normalized

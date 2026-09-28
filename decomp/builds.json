@@ -1,0 +1,400 @@
+{
+  "schema": 1,
+  "kind": "crimson-decomp-builds",
+  "cl_build": "CL_BUILD macro value: major*10000 + minor*100 + patch",
+  "profiles": {
+    "8966": "msvc6.5",
+    "9044": "msvc6.5pp",
+    "9782": "msvc6.5 (msvc6.6 ties on every scratch)"
+  },
+  "families": [
+    {
+      "id": "1.9",
+      "root": "decomp/1.9",
+      "canonical_build": "1.9.93",
+      "builds": [
+        "1.9.1",
+        "1.9.8",
+        "1.9.9",
+        "1.9.93"
+      ]
+    }
+  ],
+  "builds": [
+    {
+      "id": "1.0.2",
+      "family": null,
+      "cl_build": 10002,
+      "distribution": "freeware",
+      "package": {
+        "path": "game_bins/crimsonland/historical/freeware/crimsonland_v1.0.2.zip",
+        "format": "zip",
+        "size": 2308947,
+        "sha256": "e9c1fc02e00c3b070f173ca54df98f6e549aa407204478b0c949cc21b40689e0"
+      },
+      "images": [
+        {
+          "name": "crimson.exe",
+          "member": "crimsonland_v1.0.2/crimson.exe",
+          "size": 143360,
+          "sha256": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe",
+          "linked": "2002-05-06",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 1
+            },
+            {
+              "c2": 8047,
+              "count": 6
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        },
+        {
+          "name": "grim.dll",
+          "member": "crimsonland_v1.0.2/grim.dll",
+          "size": 540672,
+          "sha256": "e068f330ea4e9f1a060d99a9c8f53d77f4b89e7dd187d6858cdc6c6d1fbb4e10",
+          "linked": "2002-05-02",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 3
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1.3.0",
+      "family": null,
+      "cl_build": 10300,
+      "distribution": "freeware",
+      "package": {
+        "path": "game_bins/crimsonland/historical/freeware/crimsonland_v1.3.0.zip",
+        "format": "zip",
+        "size": 9852180,
+        "sha256": "82153fe1c023945161c8bafb961856f992e469269e5023031f7cc9467a04c426"
+      },
+      "images": [
+        {
+          "name": "crimson.exe",
+          "member": "crimsonland_v1.3.0/crimson.exe",
+          "size": 200704,
+          "sha256": "5c56641e7205631f4ea87394d8cbfd87bfc88f8211d199d439eae0a5ca6ad4d8",
+          "linked": "2002-07-11",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 2
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        },
+        {
+          "name": "grim.dll",
+          "member": "crimsonland_v1.3.0/grim.dll",
+          "size": 552960,
+          "sha256": "4ce04684bf7f989e5c3d0b4dbd72507ce4e1ee9a384ae1c9bdcb06b405e7c241",
+          "linked": "2001-07-09",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 5
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1.4.0",
+      "family": null,
+      "cl_build": 10400,
+      "distribution": "freeware",
+      "package": {
+        "path": "game_bins/crimsonland/historical/freeware/crimsonland_v1.4.0.zip",
+        "format": "zip",
+        "size": 7860441,
+        "sha256": "fc8f786a0553b9807d2a4d247e4932280cc57ffd18dfea6c859b542fed38acfb"
+      },
+      "images": [
+        {
+          "name": "crimson.exe",
+          "member": "crimsonland_v1.4.0/crimson.exe",
+          "size": 229376,
+          "sha256": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
+          "linked": "2002-09-15",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 7
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        },
+        {
+          "name": "grim.dll",
+          "member": "crimsonland_v1.4.0/grim.dll",
+          "size": 544768,
+          "sha256": "5a98d52ad7c814986c06978e8ed8bc25ad263cb0b4a6d3487af503373a46b6fb",
+          "linked": "2002-09-15",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 5
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1.9.1",
+      "family": "1.9",
+      "cl_build": 10901,
+      "distribution": "shareware",
+      "package": {
+        "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2003.exe",
+        "format": "inno",
+        "size": 7291066,
+        "sha256": "f3f85f1ea647b5173583d49eea80cba28fd449ba84d90736b4e845ff082e6e2b"
+      },
+      "images": [
+        {
+          "name": "crimsonland.exe",
+          "member": "app/crimsonland.exe",
+          "size": 499712,
+          "sha256": "4893b64fb1468c08dd2a21e2ab02fd8b3984280e8cde59b4a37921b5f876edc1",
+          "linked": "2003-06-09",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 23
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        },
+        {
+          "name": "grim.dll",
+          "member": "app/grim.dll",
+          "size": 663552,
+          "sha256": "82351e734c7079c94ecaa440879cc5dec3d8b8618dcb9be5880ffb1573b6cd64",
+          "linked": "2003-06-09",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 34
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1.9.8",
+      "family": "1.9",
+      "cl_build": 10908,
+      "distribution": "shareware",
+      "package": {
+        "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2004.exe",
+        "format": "inno",
+        "size": 7271169,
+        "sha256": "3be3fc79f2d5611c2bb5820035f29b4bced1e6410d0a2af14ddf73ddbdda8a2d"
+      },
+      "images": [
+        {
+          "name": "crimsonland.exe",
+          "member": "app/crimsonland.exe",
+          "size": 524288,
+          "sha256": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
+          "linked": "2003-08-18",
+          "cpp_objects": [
+            {
+              "c2": 9044,
+              "count": 24
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5pp"
+          ]
+        },
+        {
+          "name": "grim.dll",
+          "member": "app/grim.dll",
+          "size": 667648,
+          "sha256": "00f2c3c6ead7fb34b105fb8b5d16e5da036a6b5567bcf02245fb5ccbfcc78da8",
+          "linked": "2003-08-14",
+          "cpp_objects": [
+            {
+              "c2": 8966,
+              "count": 25
+            },
+            {
+              "c2": 9044,
+              "count": 9
+            },
+            {
+              "c2": 8047,
+              "count": 10
+            }
+          ],
+          "profiles": [
+            "msvc6.5",
+            "msvc6.5pp"
+          ],
+          "note": "Incremental build: 9 C++ objects were recompiled with the Processor Pack after 1.9.1, so their functions mark the source files changed since 1.9.1."
+        }
+      ]
+    },
+    {
+      "id": "1.9.9",
+      "family": "1.9",
+      "cl_build": 10909,
+      "distribution": "shareware",
+      "package": {
+        "path": "game_bins/crimsonland/historical/shareware/cland199.zip",
+        "format": "zip+inno",
+        "size": 6708111,
+        "sha256": "deeb915660fdc78df6eeff343aa7a5c894704eac1b04c71a69a44692de401522"
+      },
+      "images": [
+        {
+          "name": "crimsonland.exe",
+          "member": "app/crimsonland.RWG (unwrapped)",
+          "size": 532480,
+          "sha256": "7874ec312d73807cb541709586ec54e056c5c3b53daf60143650fcd045fadb62",
+          "linked": "2008-10-31",
+          "cpp_objects": [
+            {
+              "c2": 9782,
+              "count": 36
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ],
+          "note": "The shipped crimsonland.exe is the Reflexive Arcade wrapper. crimsonland.RWG (sha256 8f4c81a2e06f8d75867516d77929510da272b98ad35737da6fcd93ad56d1e0cf) is the game image with .text encrypted from just past the entry point (0x462a86) to the section end; the pinned image is the output of `reflexive extract --unwrap` (github.com/banteg/reflexive)."
+        },
+        {
+          "name": "grim.dll",
+          "member": "app/grim.dll",
+          "size": 581632,
+          "sha256": "8809fab709d8f1ef4fda173df0fd5c0f55a9b814873cbe9b2b8083b8e0bdba02",
+          "linked": "2008-10-29",
+          "cpp_objects": [
+            {
+              "c2": 9782,
+              "count": 35
+            },
+            {
+              "c2": 8047,
+              "count": 2
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1.9.93",
+      "family": "1.9",
+      "cl_build": 10993,
+      "distribution": "GOG (Crimsonland Classic)",
+      "package": {
+        "path": "game_bins/crimsonland/1.9.93-gog",
+        "format": "directory"
+      },
+      "images": [
+        {
+          "name": "crimsonland.exe",
+          "member": "crimsonland.exe",
+          "size": 532480,
+          "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+          "linked": "2011-02-01",
+          "cpp_objects": [
+            {
+              "c2": 9782,
+              "count": 34
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        },
+        {
+          "name": "grim.dll",
+          "member": "grim.dll",
+          "size": 581632,
+          "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70",
+          "linked": "2011-02-01",
+          "cpp_objects": [
+            {
+              "c2": 9782,
+              "count": 33
+            },
+            {
+              "c2": 8047,
+              "count": 2
+            }
+          ],
+          "profiles": [
+            "msvc6.5"
+          ]
+        }
+      ]
+    }
+  ]
+}

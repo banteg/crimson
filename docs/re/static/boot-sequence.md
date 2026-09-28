@@ -229,7 +229,7 @@ input/hotkey pass here is `game_frame_update` (`0x0040c1c0`).
 The early `grim_clear_color` calls clear the target; config ID `0x36` invokes
 `IDirect3DDevice8::Present`. The subsequent loading and logo draw loop is
 `game_startup_init`, described above. See the [Grim config API](../../grim2d/api.md)
-and `tools/native/recovered/grim/config/set_var.cpp` for state-ID semantics.
+and `decomp/1.9/grim/config/set_var.cpp` for state-ID semantics.
 
 For visual verification, compare logo/loading/ESRB geometry, layering and fades
 at the target resolution. `load\loading.jaz` is the 128×32 loading label shown

@@ -472,7 +472,7 @@
           "note": "The pinned DirectX 8.1 SDK dinput8 archive supplies the canonical DirectInput data-format objects."
         },
         {
-          "path": "tools/native/recovered/grim/input/mouse_init.cpp",
+          "path": "decomp/1.9/grim/input/mouse_init.cpp",
           "note": "The exact recovered input initializers retain the SDK data-format references."
         }
       ],
@@ -503,7 +503,7 @@
           "note": "The pinned DirectX 8.1 SDK supplies the exact DirectInput GUID and data-format definitions referenced by the recovered input backends."
         },
         {
-          "path": "tools/native/recovered/grim/input/mouse_init.cpp",
+          "path": "decomp/1.9/grim/input/mouse_init.cpp",
           "note": "The exact recovered input initializers retain the SDK GUID and data-format references."
         }
       ],

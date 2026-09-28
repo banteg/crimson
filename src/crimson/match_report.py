@@ -35,9 +35,9 @@ def _input_path(path: str) -> bool:
         return True
     if path.startswith("src/crimson/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
-    if path.startswith(("tools/match/", "tools/native/", "third_party/")):
+    if path.startswith(("tools/match/", "tools/native/", "third_party/", "decomp/")):
         return p.suffix in {".c", ".cpp", ".cc", ".h", ".hpp", ".inc", ".conf", ".sh", ".py"} or (
-            path.startswith("tools/native/") and p.suffix == ".json"
+            path.startswith(("tools/native/", "decomp/")) and p.suffix == ".json"
         )
     return path.startswith("analysis/ghidra/maps/") or (
         path.startswith("analysis/ida/raw/") and p.name in {"functions.json", "metadata.json", "imports.json"}

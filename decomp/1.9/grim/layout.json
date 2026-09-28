@@ -2,14 +2,14 @@
   "schema": 1,
   "kind": "crimson-recovered-source-layout",
   "image": "grim.dll",
-  "root": "tools/native/recovered/grim",
+  "root": "decomp/1.9/grim",
   "modules": [
     {
       "name": "api",
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/api/dll_main.cpp",
+          "path": "decomp/1.9/grim/api/dll_main.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -18,7 +18,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/api/get_interface.cpp",
+          "path": "decomp/1.9/grim/api/get_interface.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -33,7 +33,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/app/app_cleanup.cpp",
+          "path": "decomp/1.9/grim/app/app_cleanup.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -42,7 +42,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/app_init.cpp",
+          "path": "decomp/1.9/grim/app/app_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -51,7 +51,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/app_on_tick.cpp",
+          "path": "decomp/1.9/grim/app/app_on_tick.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -60,7 +60,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/app_pump.cpp",
+          "path": "decomp/1.9/grim/app/app_pump.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -69,7 +69,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/app_shutdown.cpp",
+          "path": "decomp/1.9/grim/app/app_shutdown.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -78,7 +78,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/app_tick.cpp",
+          "path": "decomp/1.9/grim/app/app_tick.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -87,7 +87,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/default_device_callback.cpp",
+          "path": "decomp/1.9/grim/app/default_device_callback.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -96,7 +96,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/get_version.cpp",
+          "path": "decomp/1.9/grim/app/get_version.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -105,7 +105,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/init_system.cpp",
+          "path": "decomp/1.9/grim/app/init_system.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -114,7 +114,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/missing_frame_callback.cpp",
+          "path": "decomp/1.9/grim/app/missing_frame_callback.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -123,7 +123,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/noop.cpp",
+          "path": "decomp/1.9/grim/app/noop.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -132,7 +132,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/release.cpp",
+          "path": "decomp/1.9/grim/app/release.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -141,7 +141,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/run_loop.cpp",
+          "path": "decomp/1.9/grim/app/run_loop.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -150,7 +150,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/set_paused.cpp",
+          "path": "decomp/1.9/grim/app/set_paused.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -159,7 +159,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/app/shutdown.cpp",
+          "path": "decomp/1.9/grim/app/shutdown.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -174,7 +174,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/codec/decode_jaz_texture.cpp",
+          "path": "decomp/1.9/grim/codec/decode_jaz_texture.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -183,7 +183,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/codec/jaz_decode.cpp",
+          "path": "decomp/1.9/grim/codec/jaz_decode.cpp",
           "physical_ownership": {
             "kind": "native-translation-unit",
             "cluster": "grim-jaz-decode-island"
@@ -196,7 +196,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/codec/jaz_jpeg_error_exit.cpp",
+          "path": "decomp/1.9/grim/codec/jaz_jpeg_error_exit.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -205,7 +205,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/codec/lookup_blob_find.cpp",
+          "path": "decomp/1.9/grim/codec/lookup_blob_find.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -214,7 +214,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/codec/lookup_blob_load.cpp",
+          "path": "decomp/1.9/grim/codec/lookup_blob_load.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -223,7 +223,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/codec/lookup_blob_size_for_path.cpp",
+          "path": "decomp/1.9/grim/codec/lookup_blob_size_for_path.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -232,7 +232,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/codec/path_has_extension.cpp",
+          "path": "decomp/1.9/grim/codec/path_has_extension.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -247,7 +247,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/config/advanced_dialog.cpp",
+          "path": "decomp/1.9/grim/config/advanced_dialog.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -256,7 +256,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/apply.cpp",
+          "path": "decomp/1.9/grim/config/apply.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -265,7 +265,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/apply_settings.cpp",
+          "path": "decomp/1.9/grim/config/apply_settings.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -274,7 +274,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/blob_load.cpp",
+          "path": "decomp/1.9/grim/config/blob_load.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -283,7 +283,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/blob_save.cpp",
+          "path": "decomp/1.9/grim/config/blob_save.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -292,7 +292,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/defaults_init.cpp",
+          "path": "decomp/1.9/grim/config/defaults_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -301,7 +301,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/defaults_init_thunk.cpp",
+          "path": "decomp/1.9/grim/config/defaults_init_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -310,7 +310,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/dialog.cpp",
+          "path": "decomp/1.9/grim/config/dialog.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -319,7 +319,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/get_float.cpp",
+          "path": "decomp/1.9/grim/config/get_float.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -328,7 +328,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/get_var.cpp",
+          "path": "decomp/1.9/grim/config/get_var.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -337,7 +337,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/parental_lock_dialog.cpp",
+          "path": "decomp/1.9/grim/config/parental_lock_dialog.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -346,7 +346,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/populate_display_modes.cpp",
+          "path": "decomp/1.9/grim/config/populate_display_modes.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -355,7 +355,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/config/set_var.cpp",
+          "path": "decomp/1.9/grim/config/set_var.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -370,7 +370,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/device/apply_render_state.cpp",
+          "path": "decomp/1.9/grim/device/apply_render_state.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -379,7 +379,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/clear_color.cpp",
+          "path": "decomp/1.9/grim/device/clear_color.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -388,7 +388,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/create_geometry_buffers.cpp",
+          "path": "decomp/1.9/grim/device/create_geometry_buffers.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -397,7 +397,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/d3d_init.cpp",
+          "path": "decomp/1.9/grim/device/d3d_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -406,7 +406,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/d3d_shutdown.cpp",
+          "path": "decomp/1.9/grim/device/d3d_shutdown.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -415,7 +415,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/get_error_text.cpp",
+          "path": "decomp/1.9/grim/device/get_error_text.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -424,7 +424,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/is_texture_format_supported.cpp",
+          "path": "decomp/1.9/grim/device/is_texture_format_supported.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -433,7 +433,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/release_geometry_buffers.cpp",
+          "path": "decomp/1.9/grim/device/release_geometry_buffers.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -442,7 +442,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/restore_after_activation.cpp",
+          "path": "decomp/1.9/grim/device/restore_after_activation.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -451,7 +451,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/set_render_target.cpp",
+          "path": "decomp/1.9/grim/device/set_render_target.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -460,7 +460,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/set_texture_stage_ops.cpp",
+          "path": "decomp/1.9/grim/device/set_texture_stage_ops.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -469,7 +469,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/device/try_reset.cpp",
+          "path": "decomp/1.9/grim/device/try_reset.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -484,7 +484,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/input/flush_input.cpp",
+          "path": "decomp/1.9/grim/input/flush_input.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -493,7 +493,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_joystick_pov.cpp",
+          "path": "decomp/1.9/grim/input/get_joystick_pov.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -502,7 +502,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_joystick_x.cpp",
+          "path": "decomp/1.9/grim/input/get_joystick_x.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -511,7 +511,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_joystick_y.cpp",
+          "path": "decomp/1.9/grim/input/get_joystick_y.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -520,7 +520,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_joystick_z.cpp",
+          "path": "decomp/1.9/grim/input/get_joystick_z.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -529,7 +529,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_key_char.cpp",
+          "path": "decomp/1.9/grim/input/get_key_char.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -538,7 +538,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_dx.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_dx.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -547,7 +547,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_dx_indexed.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_dx_indexed.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -556,7 +556,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_dy.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_dy.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -565,7 +565,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_dy_indexed.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_dy_indexed.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -574,7 +574,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_wheel_delta.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_wheel_delta.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -583,7 +583,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_x.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_x.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -592,7 +592,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/get_mouse_y.cpp",
+          "path": "decomp/1.9/grim/input/get_mouse_y.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -601,7 +601,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/is_joystick_button_down.cpp",
+          "path": "decomp/1.9/grim/input/is_joystick_button_down.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -610,7 +610,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/is_key_active.cpp",
+          "path": "decomp/1.9/grim/input/is_key_active.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -619,7 +619,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/is_key_down.cpp",
+          "path": "decomp/1.9/grim/input/is_key_down.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -628,7 +628,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/is_mouse_button_down.cpp",
+          "path": "decomp/1.9/grim/input/is_mouse_button_down.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -637,7 +637,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_button_down.cpp",
+          "path": "decomp/1.9/grim/input/joystick_button_down.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -646,7 +646,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_configure_axis.cpp",
+          "path": "decomp/1.9/grim/input/joystick_configure_axis.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -655,7 +655,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_down_active.cpp",
+          "path": "decomp/1.9/grim/input/joystick_down_active.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -664,7 +664,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_enum_device.cpp",
+          "path": "decomp/1.9/grim/input/joystick_enum_device.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -673,7 +673,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_init.cpp",
+          "path": "decomp/1.9/grim/input/joystick_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -682,7 +682,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_left_active.cpp",
+          "path": "decomp/1.9/grim/input/joystick_left_active.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -691,7 +691,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_poll.cpp",
+          "path": "decomp/1.9/grim/input/joystick_poll.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -700,7 +700,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_right_active.cpp",
+          "path": "decomp/1.9/grim/input/joystick_right_active.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -709,7 +709,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_shutdown.cpp",
+          "path": "decomp/1.9/grim/input/joystick_shutdown.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -718,7 +718,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/joystick_up_active.cpp",
+          "path": "decomp/1.9/grim/input/joystick_up_active.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -727,7 +727,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/keyboard_init.cpp",
+          "path": "decomp/1.9/grim/input/keyboard_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -736,7 +736,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/keyboard_key_down.cpp",
+          "path": "decomp/1.9/grim/input/keyboard_key_down.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -745,7 +745,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/keyboard_poll.cpp",
+          "path": "decomp/1.9/grim/input/keyboard_poll.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -754,7 +754,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/keyboard_shutdown.cpp",
+          "path": "decomp/1.9/grim/input/keyboard_shutdown.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -763,7 +763,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/mouse_button_down.cpp",
+          "path": "decomp/1.9/grim/input/mouse_button_down.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -772,7 +772,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/mouse_init.cpp",
+          "path": "decomp/1.9/grim/input/mouse_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -781,7 +781,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/mouse_poll.cpp",
+          "path": "decomp/1.9/grim/input/mouse_poll.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -790,7 +790,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/mouse_shutdown.cpp",
+          "path": "decomp/1.9/grim/input/mouse_shutdown.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -799,7 +799,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/set_key_char_buffer.cpp",
+          "path": "decomp/1.9/grim/input/set_key_char_buffer.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -808,7 +808,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/set_mouse_pos.cpp",
+          "path": "decomp/1.9/grim/input/set_mouse_pos.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -817,7 +817,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/was_key_pressed.cpp",
+          "path": "decomp/1.9/grim/input/was_key_pressed.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -826,7 +826,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/input/was_mouse_button_pressed.cpp",
+          "path": "decomp/1.9/grim/input/was_mouse_button_pressed.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -841,7 +841,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/render/begin_batch.cpp",
+          "path": "decomp/1.9/grim/render/begin_batch.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -850,7 +850,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/bind_texture.cpp",
+          "path": "decomp/1.9/grim/render/bind_texture.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -859,7 +859,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_circle_filled.cpp",
+          "path": "decomp/1.9/grim/render/draw_circle_filled.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -868,7 +868,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_circle_outline.cpp",
+          "path": "decomp/1.9/grim/render/draw_circle_outline.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -877,7 +877,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_fullscreen_color.cpp",
+          "path": "decomp/1.9/grim/render/draw_fullscreen_color.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -886,7 +886,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_fullscreen_quad.cpp",
+          "path": "decomp/1.9/grim/render/draw_fullscreen_quad.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -895,7 +895,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_quad.cpp",
+          "path": "decomp/1.9/grim/render/draw_quad.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -904,7 +904,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_quad_rotated_matrix.cpp",
+          "path": "decomp/1.9/grim/render/draw_quad_rotated_matrix.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -913,7 +913,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_quad_xy.cpp",
+          "path": "decomp/1.9/grim/render/draw_quad_xy.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -922,7 +922,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_rect_filled.cpp",
+          "path": "decomp/1.9/grim/render/draw_rect_filled.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -931,7 +931,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_rect_outline.cpp",
+          "path": "decomp/1.9/grim/render/draw_rect_outline.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -940,7 +940,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_text_mono_fmt.cpp",
+          "path": "decomp/1.9/grim/render/draw_text_mono_fmt.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -949,7 +949,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_text_small.cpp",
+          "path": "decomp/1.9/grim/render/draw_text_small.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -958,7 +958,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/draw_text_small_fmt.cpp",
+          "path": "decomp/1.9/grim/render/draw_text_small_fmt.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -967,7 +967,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/end_batch.cpp",
+          "path": "decomp/1.9/grim/render/end_batch.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -976,7 +976,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/flush_batch.cpp",
+          "path": "decomp/1.9/grim/render/flush_batch.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -985,7 +985,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/line.cpp",
+          "path": "decomp/1.9/grim/render/line.cpp",
           "physical_ownership": {
             "kind": "native-translation-unit",
             "cluster": "grim-draw-line-island"
@@ -997,7 +997,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/measure_text_width.cpp",
+          "path": "decomp/1.9/grim/render/measure_text_width.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1006,7 +1006,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/mono_text.cpp",
+          "path": "decomp/1.9/grim/render/mono_text.cpp",
           "physical_ownership": {
             "kind": "native-translation-unit",
             "cluster": "grim-mono-text-island"
@@ -1017,7 +1017,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_atlas_frame.cpp",
+          "path": "decomp/1.9/grim/render/set_atlas_frame.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1026,7 +1026,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_color.cpp",
+          "path": "decomp/1.9/grim/render/set_color.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1035,7 +1035,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_color_ptr.cpp",
+          "path": "decomp/1.9/grim/render/set_color_ptr.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1044,7 +1044,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_color_slot.cpp",
+          "path": "decomp/1.9/grim/render/set_color_slot.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1053,7 +1053,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_rotation.cpp",
+          "path": "decomp/1.9/grim/render/set_rotation.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1062,7 +1062,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_sub_rect.cpp",
+          "path": "decomp/1.9/grim/render/set_sub_rect.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1071,7 +1071,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_uv.cpp",
+          "path": "decomp/1.9/grim/render/set_uv.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1080,7 +1080,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/set_uv_point.cpp",
+          "path": "decomp/1.9/grim/render/set_uv_point.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1089,7 +1089,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/submit_quad_raw.cpp",
+          "path": "decomp/1.9/grim/render/submit_quad_raw.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1098,7 +1098,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/submit_vertex_raw.cpp",
+          "path": "decomp/1.9/grim/render/submit_vertex_raw.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1107,7 +1107,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/submit_vertices_offset.cpp",
+          "path": "decomp/1.9/grim/render/submit_vertices_offset.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1116,7 +1116,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/submit_vertices_offset_color.cpp",
+          "path": "decomp/1.9/grim/render/submit_vertices_offset_color.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1125,7 +1125,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/submit_vertices_transform.cpp",
+          "path": "decomp/1.9/grim/render/submit_vertices_transform.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1134,7 +1134,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/render/submit_vertices_transform_color.cpp",
+          "path": "decomp/1.9/grim/render/submit_vertices_transform_color.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1149,7 +1149,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_01.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_01.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1158,7 +1158,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_01_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_01_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1167,7 +1167,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_02.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_02.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1176,7 +1176,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_02_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_02_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1185,7 +1185,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_03.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_03.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1194,7 +1194,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_03_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_03_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1203,7 +1203,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_04.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_04.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1212,7 +1212,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_04_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_04_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1221,7 +1221,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_05.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_05.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1230,7 +1230,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_05_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_05_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1239,7 +1239,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_06.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_06.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1248,7 +1248,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_06_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_06_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1257,7 +1257,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_07.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_07.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1266,7 +1266,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_07_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_07_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1275,7 +1275,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_08.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_08.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1284,7 +1284,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_08_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_08_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1293,7 +1293,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_09.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_09.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1302,7 +1302,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_09_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_09_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1311,7 +1311,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_10.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_10.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1320,7 +1320,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_10_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_10_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1329,7 +1329,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_12.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_12.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1338,7 +1338,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/runtime/empty_initializer_slot_12_thunk.cpp",
+          "path": "decomp/1.9/grim/runtime/empty_initializer_slot_12_thunk.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1353,7 +1353,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/state/slot_state.cpp",
+          "path": "decomp/1.9/grim/state/slot_state.cpp",
           "physical_ownership": {
             "kind": "native-translation-unit",
             "cluster": "grim-slot-state-accessors"
@@ -1366,7 +1366,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/state/state_init.cpp",
+          "path": "decomp/1.9/grim/state/state_init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1381,7 +1381,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/texture/backup.cpp",
+          "path": "decomp/1.9/grim/texture/backup.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1390,7 +1390,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/create_texture.cpp",
+          "path": "decomp/1.9/grim/texture/create_texture.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1399,7 +1399,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/destroy_texture.cpp",
+          "path": "decomp/1.9/grim/texture/destroy_texture.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1408,7 +1408,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/find_by_name.cpp",
+          "path": "decomp/1.9/grim/texture/find_by_name.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1417,7 +1417,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/find_free_slot.cpp",
+          "path": "decomp/1.9/grim/texture/find_free_slot.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1426,7 +1426,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/get_handle.cpp",
+          "path": "decomp/1.9/grim/texture/get_handle.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1435,7 +1435,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/init.cpp",
+          "path": "decomp/1.9/grim/texture/init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1444,7 +1444,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/load.cpp",
+          "path": "decomp/1.9/grim/texture/load.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1453,7 +1453,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/load_file.cpp",
+          "path": "decomp/1.9/grim/texture/load_file.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1462,7 +1462,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/load_internal.cpp",
+          "path": "decomp/1.9/grim/texture/load_internal.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1471,7 +1471,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/name_equals.cpp",
+          "path": "decomp/1.9/grim/texture/name_equals.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1480,7 +1480,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/recreate.cpp",
+          "path": "decomp/1.9/grim/texture/recreate.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1489,7 +1489,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/release.cpp",
+          "path": "decomp/1.9/grim/texture/release.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1498,7 +1498,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/restore.cpp",
+          "path": "decomp/1.9/grim/texture/restore.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1507,7 +1507,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/save_screenshot.cpp",
+          "path": "decomp/1.9/grim/texture/save_screenshot.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1516,7 +1516,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/save_texture.cpp",
+          "path": "decomp/1.9/grim/texture/save_texture.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1525,7 +1525,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/texture/select_format.cpp",
+          "path": "decomp/1.9/grim/texture/select_format.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1540,7 +1540,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/timing/get_fps.cpp",
+          "path": "decomp/1.9/grim/timing/get_fps.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1549,7 +1549,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/timing/get_frame_dt.cpp",
+          "path": "decomp/1.9/grim/timing/get_frame_dt.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1558,7 +1558,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/timing/get_time_ms.cpp",
+          "path": "decomp/1.9/grim/timing/get_time_ms.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1567,7 +1567,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/timing/init.cpp",
+          "path": "decomp/1.9/grim/timing/init.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1576,7 +1576,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/timing/set_time_ms.cpp",
+          "path": "decomp/1.9/grim/timing/set_time_ms.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1585,7 +1585,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/timing/update.cpp",
+          "path": "decomp/1.9/grim/timing/update.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1600,7 +1600,7 @@
       "layout_evidence": "inferred-subsystem",
       "sources": [
         {
-          "path": "tools/native/recovered/grim/window/create.cpp",
+          "path": "decomp/1.9/grim/window/create.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1609,7 +1609,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/window/destroy.cpp",
+          "path": "decomp/1.9/grim/window/destroy.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },
@@ -1618,7 +1618,7 @@
           ]
         },
         {
-          "path": "tools/native/recovered/grim/window/window_proc.cpp",
+          "path": "decomp/1.9/grim/window/window_proc.cpp",
           "physical_ownership": {
             "kind": "unproven-isolated-object"
           },

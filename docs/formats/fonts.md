@@ -66,7 +66,7 @@ https://www.dafont.com/pixel-arial-11.font
   v1.9.93 GOG PAQ: both decode to the same 512×496 RGBA pixels. The decoded
   pixel SHA256 is `99fa4d1ae9d8a5bb3e6e9b3aae203b93996f2fab929a11dac30b1d235091b47a`
   (checked 2026-09-05). The native load is in
-  `tools/native/recovered/grim/device/d3d_init.cpp`; Python uses the PAQ entry
+  `decomp/1.9/grim/device/d3d_init.cpp`; Python uses the PAQ entry
   in `src/grim/fonts/grim_mono.py`.
 
 ### Behavior

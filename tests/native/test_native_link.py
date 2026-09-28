@@ -547,7 +547,7 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
 
 def test_recovered_grim_source_layout_preserves_evidence_boundaries() -> None:
     layout_path = (
-        matchlib.REPO_ROOT / "tools/native/recovered/grim/layout.json"
+        matchlib.REPO_ROOT / "decomp/1.9/grim/layout.json"
     )
     payload = json.loads(layout_path.read_text(encoding="utf-8"))
     root = (matchlib.REPO_ROOT / payload["root"]).resolve()

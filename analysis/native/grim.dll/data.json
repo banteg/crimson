@@ -1,5 +1,5 @@
 {
-  "audit_digest": "e69c93908282c681d5556d4f524a67d2a9d35b112a887ddb71cab466f7c99f41",
+  "audit_digest": "9a04995c44d5dc62dcfb935c105c91a482b1fba083196345093a395030730ec0",
   "entries": [
     {
       "address": 268747320,
@@ -6663,7 +6663,7 @@
       "section_offset": 26476,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 4,
-      "size_source": "tools/native/recovered/grim/device/create_geometry_buffers.cpp: extern unsigned int; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
+      "size_source": "decomp/1.9/grim/device/create_geometry_buffers.cpp: extern unsigned int; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
       "type": null
     },
     {
@@ -8374,7 +8374,7 @@
       "section_offset": 35800,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 44,
-      "size_source": "tools/native/recovered/grim/app/app_init.cpp: recovered MyApp layout; tools/native/abi/grim.dll/abi_assertions.cpp: my_app_is_0x2c",
+      "size_source": "decomp/1.9/grim/app/app_init.cpp: recovered MyApp layout; tools/native/abi/grim.dll/abi_assertions.cpp: my_app_is_0x2c",
       "type": "MyApp"
     },
     {
@@ -8849,7 +8849,7 @@
       "section_offset": 39132,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 4,
-      "size_source": "tools/native/recovered/grim/render/draw_quad.cpp: extern unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "size_source": "decomp/1.9/grim/render/draw_quad.cpp: extern unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
       "type": null
     },
     {
@@ -8910,7 +8910,7 @@
       "section_offset": 39160,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 4,
-      "size_source": "tools/native/recovered/grim/state/state_init.cpp: extern char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/grim/state/state_init.cpp: extern char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "type": null
     },
     {
@@ -9473,7 +9473,7 @@
       "section_offset": 41416,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 16,
-      "size_source": "tools/native/recovered/grim/app/app_init.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
+      "size_source": "decomp/1.9/grim/app/app_init.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
       "type": "GrimClientRect"
     },
     {
@@ -9637,7 +9637,7 @@
       "section_offset": 41917,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 1,
-      "size_source": "tools/native/recovered/grim/render/draw_quad.cpp: extern unsigned char",
+      "size_source": "decomp/1.9/grim/render/draw_quad.cpp: extern unsigned char",
       "type": null
     },
     {
@@ -9779,7 +9779,7 @@
       "section_offset": 41972,
       "section_source": "analysis/ida/raw/grim.dll/segments.json",
       "size": 1,
-      "size_source": "tools/native/recovered/grim/render/draw_quad.cpp: extern unsigned char",
+      "size_source": "decomp/1.9/grim/render/draw_quad.cpp: extern unsigned char",
       "type": null
     },
     {
@@ -10947,7 +10947,7 @@
     },
     "data_map_sha256": "5d2bc13040a175a87e23fe318a048de602f6e1d97514a51f365f8099a824eca2",
     "definitions": "tools/native/data_definitions/grim.dll.json",
-    "definitions_sha256": "4ff5ddd6a9e3993e744a5eb4ba4803ee7d50fba79bad52f4252cf6ccf21e4b02",
+    "definitions_sha256": "915d9dfa0f4c5f6b42dee3287ed40b1e5cb13a4760483b9f2f62b5e50531bc0b",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/grim.dll",
       "sha256": "373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70"

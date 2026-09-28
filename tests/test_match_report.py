@@ -136,6 +136,8 @@ def test_missing_reference_images_fail_even_when_ci_lacks_compilers(monkeypatch:
 def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("tools/match/scratches/new_function/scratch.conf")
     assert report._input_path("tools/match/include/shared.h")
+    assert report._input_path("decomp/1.9/grim/app/app_init.cpp")
+    assert report._input_path("decomp/builds.json")
     assert report._input_path("analysis/ida/raw/grim.dll/functions.json")
     assert report._input_path("analysis/matching_scope.json")
     assert report._input_path("tools/native/data_candidates.json")

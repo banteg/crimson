@@ -2355,7 +2355,7 @@
     {
       "address": 268811224,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/native/recovered/grim/app/app_init.cpp: recovered MyApp layout; tools/native/abi/grim.dll/abi_assertions.cpp: my_app_is_0x2c",
+      "extent_evidence": "decomp/1.9/grim/app/app_init.cpp: recovered MyApp layout; tools/native/abi/grim.dll/abi_assertions.cpp: my_app_is_0x2c",
       "image": "grim.dll",
       "name": "grim_app",
       "owners": [
@@ -16762,7 +16762,7 @@
     {
       "address": 268801900,
       "blocker": "missing-type",
-      "extent_evidence": "tools/native/recovered/grim/device/create_geometry_buffers.cpp: extern unsigned int; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
+      "extent_evidence": "decomp/1.9/grim/device/create_geometry_buffers.cpp: extern unsigned int; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_int_is_32_bit",
       "image": "grim.dll",
       "name": "grim_vertex_capacity",
       "owners": [
@@ -17476,7 +17476,7 @@
     {
       "address": 268814556,
       "blocker": "missing-type",
-      "extent_evidence": "tools/native/recovered/grim/render/draw_quad.cpp: extern unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
+      "extent_evidence": "decomp/1.9/grim/render/draw_quad.cpp: extern unsigned long; tools/native/abi/grim.dll/abi_assertions.cpp: unsigned_long_is_32_bit",
       "image": "grim.dll",
       "name": "grim_vertex_count",
       "owners": [
@@ -17504,7 +17504,7 @@
     {
       "address": 268814584,
       "blocker": "missing-type",
-      "extent_evidence": "tools/native/recovered/grim/state/state_init.cpp: extern char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/grim/state/state_init.cpp: extern char pointer; tools/native/abi/grim.dll/abi_assertions.cpp: pointer_is_32_bit",
       "image": "grim.dll",
       "name": "grim_error_text",
       "owners": [
@@ -20304,7 +20304,7 @@
     {
       "address": 268817341,
       "blocker": "missing-type",
-      "extent_evidence": "tools/native/recovered/grim/render/draw_quad.cpp: extern unsigned char",
+      "extent_evidence": "decomp/1.9/grim/render/draw_quad.cpp: extern unsigned char",
       "image": "grim.dll",
       "name": "grim_render_disabled",
       "owners": [
@@ -20318,7 +20318,7 @@
     {
       "address": 268817396,
       "blocker": "missing-type",
-      "extent_evidence": "tools/native/recovered/grim/render/draw_quad.cpp: extern unsigned char",
+      "extent_evidence": "decomp/1.9/grim/render/draw_quad.cpp: extern unsigned char",
       "image": "grim.dll",
       "name": "grim_batch_active",
       "owners": [
@@ -30287,7 +30287,7 @@
     {
       "address": 268816840,
       "blocker": "matched",
-      "extent_evidence": "tools/native/recovered/grim/app/app_init.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
+      "extent_evidence": "decomp/1.9/grim/app/app_init.cpp: recovered GrimClientRect overlay; tools/native/abi/grim.dll/abi_assertions.cpp: client_rect_is_0x10",
       "image": "grim.dll",
       "name": "grim_client_rect",
       "owners": [

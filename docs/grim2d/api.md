@@ -266,7 +266,7 @@ state names (partial list):
 | `0x58` | `GRIM_CFG_DITHER_ENABLE` | Supplies `D3DRS_DITHERENABLE` during render-state setup | Reapplied after device creation/reset. |
 
 Additional switch cases are recovered in
-`tools/native/recovered/grim/config/set_var.cpp`:
+`decomp/1.9/grim/config/set_var.cpp`:
 
 | ID | Behavior |
 | --- | --- |
@@ -403,7 +403,7 @@ These offsets appear with keycodes or input-related values:
 
 The native ABI declarations live in `tools/match/include/grim2d_abi.h` and
 `tools/match/include/grim2d_cpp.h`. Recovered implementations live under
-`tools/native/recovered/grim/` and the remaining matching scratches. Use
+`decomp/1.9/grim/` and the remaining matching scratches. Use
 [API evidence](api-evidence.md) for function-specific proof and
 `tools/match/STATUS.md` for current match status. Runtime notes are dated evidence,
 not a list of methods still waiting to be ported.
