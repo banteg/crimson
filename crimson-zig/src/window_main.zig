@@ -4867,8 +4867,9 @@ fn drawAssetlessPickups(runner: *const live_runner.LiveRunner, entity_alpha: f32
 }
 
 /// Native `bonus_render`: pickups and the aim label, then the particle,
-/// detonation, sprite-effect and effect pools over them. Called inside the world
-/// camera, which it leaves for the screen-space label.
+/// detonation, sprite-effect and effect pools over them. Only the pickups take
+/// the transition alpha. Called inside the world camera, which it leaves for the
+/// screen-space label.
 fn bonusRender(
     runner: *const live_runner.LiveRunner,
     camera: rl.Camera2D,
@@ -4877,16 +4878,14 @@ fn bonusRender(
     smoke_enabled: bool,
 ) void {
     const assets = projectile_ctx.assets;
-    const entity_alpha = projectile_ctx.entity_alpha;
-    drawBonusPickups(runner, assets, projectile_ctx.render_time_s, entity_alpha);
+    drawBonusPickups(runner, assets, projectile_ctx.render_time_s, projectile_ctx.entity_alpha);
     camera.end();
-    drawBonusHoverLabels(runner, assets, transform, entity_alpha);
+    drawBonusHoverLabels(runner, assets, transform);
     camera.begin();
 
     const effects_ctx: window_effects.DrawCtx = .{
         .session = &runner.session,
         .assets = assets,
-        .entity_alpha = entity_alpha,
         .flame_glow_enabled = projectile_ctx.flame_glow_enabled,
         .smoke_enabled = smoke_enabled,
     };
@@ -5013,10 +5012,9 @@ fn drawBonusHoverLabels(
     runner: *const live_runner.LiveRunner,
     runtime_assets: *const window_assets.RuntimeAssets,
     transform: window_viewport.ViewTransform,
-    entity_alpha: f32,
 ) void {
-    const shadow = rl.Color.init(0, 0, 0, @intFromFloat(180.0 * entity_alpha + 0.5));
-    const color = rl.Color.init(230, 230, 230, @intFromFloat(255.0 * entity_alpha + 0.5));
+    // Native draws it once in white at a fixed 0.7 alpha, whatever the transition.
+    const color = rl.Color.init(255, 255, 255, @intFromFloat(@trunc(0.7 * 255.0)));
     const screen_w: f32 = @floatFromInt(rl.getScreenWidth());
 
     for (runner.session.playersConst()) |player| {
@@ -5034,7 +5032,6 @@ fn drawBonusHoverLabels(
         if (pos.x + text_w > screen_w) {
             pos.x = @max(0.0, screen_w - text_w);
         }
-        drawSmallText(runtime_assets, label, pos.x + 1.0, pos.y + 1.0, shadow);
         drawSmallText(runtime_assets, label, pos.x, pos.y, color);
     }
 }

@@ -48,7 +48,7 @@ pub fn secondaryDetonationPass(ctx: DrawCtx) void {
     for (ctx.session.secondary_projectiles.entries) |projectile| {
         if (!projectile.active or projectile.type_id != .detonation) continue;
         const t = std.math.clamp(projectile.detonation_t, @as(f32, 0.0), @as(f32, 1.0));
-        const fade = (1.0 - t) * ctx.entity_alpha;
+        const fade = 1.0 - t;
         const center = toRlVec(projectile.pos);
         const size = projectile.detonation_scale * t;
         drawSprite(texture, src, center, size * 64.0, 0.0, tint(1.0, 0.6, 0.1, fade));

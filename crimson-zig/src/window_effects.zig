@@ -13,7 +13,6 @@ const state_mod = cz.state;
 pub const DrawCtx = struct {
     session: *const runtime_session.DeterministicSession,
     assets: *const window_assets.RuntimeAssets,
-    entity_alpha: f32 = 1.0,
     flame_glow_enabled: bool = true,
     smoke_enabled: bool = true,
 };
@@ -36,7 +35,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
                 radius * 2.0,
                 radius * 2.0,
                 0.0,
-                colorWithAlpha(rl.Color.white, 0.065 * ctx.entity_alpha),
+                colorWithAlpha(rl.Color.white, 0.065),
             );
         }
     }
@@ -53,7 +52,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
             radius * 2.0,
             radius * 2.0,
             radiansToDegrees(entry.spin),
-            rlColorFromRgbAlpha(entry.scale_x, entry.scale_y, entry.scale_z, entry.age * ctx.entity_alpha),
+            rlColorFromRgbAlpha(entry.scale_x, entry.scale_y, entry.scale_z, entry.age),
         );
     }
 
@@ -69,7 +68,7 @@ pub fn drawParticlePool(ctx: DrawCtx) void {
             half_w * 2.0,
             half_h * 2.0,
             0.0,
-            colorWithAlpha(rl.Color.white, entry.age * ctx.entity_alpha),
+            colorWithAlpha(rl.Color.white, entry.age),
         );
     }
     rl.endBlendMode();
@@ -90,7 +89,7 @@ pub fn drawSpriteEffectPool(ctx: DrawCtx) void {
             entry.scale,
             entry.scale,
             radiansToDegrees(entry.rotation),
-            rlColorFromRgbAlpha(entry.color.r, entry.color.g, entry.color.b, entry.color.a * ctx.entity_alpha),
+            rlColorFromRgbAlpha(entry.color.r, entry.color.g, entry.color.b, entry.color.a),
         );
     }
     rl.endBlendMode();
@@ -102,19 +101,19 @@ pub fn drawEffectPool(ctx: DrawCtx) void {
     rl.beginBlendMode(.alpha);
     for (ctx.session.effects.entries) |entry| {
         if (entry.flags == 0 or entry.age < 0.0 or (entry.flags & 0x40) == 0) continue;
-        drawEffectEntryScaled(texture, entry, ctx.entity_alpha);
+        drawEffectEntryScaled(texture, entry);
     }
     rl.endBlendMode();
 
     rl.beginBlendMode(.additive);
     for (ctx.session.effects.entries) |entry| {
         if (entry.flags == 0 or entry.age < 0.0 or (entry.flags & 0x40) != 0) continue;
-        drawEffectEntryScaled(texture, entry, ctx.entity_alpha);
+        drawEffectEntryScaled(texture, entry);
     }
     rl.endBlendMode();
 }
 
-fn drawEffectEntryScaled(texture: rl.Texture, entry: effects_runtime.EffectEntry, entity_alpha: f32) void {
+fn drawEffectEntryScaled(texture: rl.Texture, entry: effects_runtime.EffectEntry) void {
     const src = window_atlas.effectRectById(texture.width, texture.height, entry.effect_id) orelse return;
     drawTextureRegionCenteredRotated(
         texture,
@@ -123,7 +122,7 @@ fn drawEffectEntryScaled(texture: rl.Texture, entry: effects_runtime.EffectEntry
         entry.half_width * 2.0 * entry.scale,
         entry.half_height * 2.0 * entry.scale,
         radiansToDegrees(entry.rotation),
-        rlColorFromRgbAlpha(entry.color.r, entry.color.g, entry.color.b, entry.color.a * entity_alpha),
+        rlColorFromRgbAlpha(entry.color.r, entry.color.g, entry.color.b, entry.color.a),
     );
 }
 
