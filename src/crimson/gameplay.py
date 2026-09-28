@@ -107,18 +107,6 @@ def _player_reflex_restored_dt(movement_dt: float, time_scale_factor: float) -> 
     return x87_pc24_mul(x87_pc24_mul(time_scale_factor, movement_dt), _REFLEX_RESTORE_DT_SCALE)
 
 
-def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
-    """Grant XP while honoring active bonus multipliers."""
-
-    xp = int(amount)
-    if xp <= 0:
-        return 0
-    if state.bonuses.double_experience > 0.0:
-        xp *= 2
-    player.experience += xp
-    return xp
-
-
 def experience_plus_reward(experience: int, reward_value: float) -> int:
     """Native kill XP sum `__ftol(fild experience + reward)`.
 
@@ -128,21 +116,6 @@ def experience_plus_reward(experience: int, reward_value: float) -> int:
     """
 
     return int(x87_pc24_add(float(experience), f32(reward_value)))
-
-
-def _award_experience_once_from_reward(player: PlayerState, reward_value: float) -> int:
-    before = int(player.experience)
-    player.experience = experience_plus_reward(before, reward_value)
-    return player.experience - before
-
-
-def award_experience_from_reward(state: GameplayState, player: PlayerState, reward_value: float) -> int:
-    """Grant kill XP from floating reward values; Double Experience repeats the award (0x0041eba2)."""
-
-    gained = _award_experience_once_from_reward(player, reward_value)
-    if state.bonuses.double_experience > 0.0:
-        gained += _award_experience_once_from_reward(player, reward_value)
-    return gained
 
 
 _SURVIVAL_LEVEL_EXPONENT = f32(1.8)

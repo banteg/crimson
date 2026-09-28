@@ -7,7 +7,7 @@ See: `docs/creatures/update.md`.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -23,9 +23,6 @@ from ..bonuses.pool import BONUS_SPAWN_MARGIN
 from ..collision_math import within_native_find_radius
 from ..effects import EffectPool, FxQueue, FxQueueRotated
 from ..gameplay import (
-    _award_experience_once_from_reward,
-    award_experience,
-    award_experience_from_reward,
     experience_plus_reward,
     survival_record_recent_death,
 )
@@ -341,206 +338,6 @@ class _TargetPlayerResolution(msgspec.Struct, frozen=True):
     target_player: int
     auto_target_player: int
     native_auto_target_distance: float | None = None
-
-
-class _CreatureInteractionCtx(msgspec.Struct):
-    step_runtime: WorldStepRuntime
-    creature_index: int
-    creature: CreatureState
-    player: PlayerState
-    # `creature_update_all` runs on the f32-rounded frame dt.
-    dt: float
-    skip_creature: bool = False
-    contact_distance: float = 0.0
-
-    @property
-    def pool(self) -> CreaturePool:
-        return self.step_runtime.world.creatures
-
-    @property
-    def state(self) -> GameplayState:
-        return self.step_runtime.world.state
-
-    @property
-    def players(self) -> list[PlayerState]:
-        return self.step_runtime.world.players
-
-    @property
-    def rng(self) -> CrandLike:
-        return self.step_runtime.world.state.rng
-
-    @property
-    def detail_preset(self) -> int:
-        return self.step_runtime.detail_preset
-
-    @property
-    def fx_queue(self) -> FxQueue:
-        return self.step_runtime.fx_queue
-
-    @property
-    def deaths(self) -> list[CreatureDeath]:
-        return self.step_runtime.deaths
-
-    @property
-    def sfx(self) -> list[SfxRequest]:
-        return self.step_runtime.sfx
-
-
-_CreatureInteractionStep = Callable[[_CreatureInteractionCtx], None]
-
-
-def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
-    creature = ctx.creature
-    # Decompile parity (`creature_update_all`, 0x00426f65..0x00426f9c): reuse
-    # the stored creature->target-player distance scalar for interaction gates.
-    if ctx.contact_distance >= 20.0:
-        return
-
-    # Native stores `vel` as per-tick delta (not per-second). It applies movement
-    # as `pos += vel`, so reverting the just-applied movement subtracts `vel`
-    # with no bounds clamp.
-    creature.pos = Vec2(
-        x87_pc24_sub(creature.pos.x, creature.vel.x),
-        x87_pc24_sub(creature.pos.y, creature.vel.y),
-    )
-
-    # Native reverts the just-applied movement whenever a creature gets within
-    # 20 units of the target player, regardless of Energizer.
-    if float(ctx.state.bonuses.energizer) <= 0.0:
-        return
-    if float(creature.max_hp) >= 380.0:
-        return
-
-    # Native double-pays the eat kill: a direct `exp += reward` store here,
-    # plus creature_handle_death's own award below.
-    _award_experience_once_from_reward(ctx.players[0], float(creature.reward_value))
-
-    ctx.state.effects.spawn_burst(
-        pos=creature.pos,
-        count=6,
-        rng=ctx.rng,
-        detail_preset=int(ctx.detail_preset),
-    )
-    ctx.sfx.append(SfxRequest(SfxId.UI_BONUS, ctx.creature.pos, gain=0.8))
-
-    ctx.state.bonus_spawn_guard = True
-    ctx.step_runtime.handle_creature_death(ctx.creature_index, keep_corpse=False)
-    ctx.state.bonus_spawn_guard = False
-
-
-def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
-    # Native has no aliveness re-check here: a creature plague-killed earlier
-    # in the same tick can still bite (the alive branch was chosen at tick
-    # start), drawing the attack-SFX rand and damaging the player.
-    creature = ctx.creature
-    if float(creature.size) <= 16.0:
-        return
-    if float(ctx.state.bonuses.energizer) > 0.0:
-        return
-
-    if ctx.contact_distance >= 30.0:
-        return
-    if float(ctx.player.health) <= 0.0:
-        return
-    if float(creature.attack_cooldown) > 0.0:
-        return
-
-    # Native contact-damage path consumes one `crt_rand()` draw for attack SFX
-    # (creature_type_table[*].sfx_bank_b[rand & 1]) before applying damage.
-    options = _CREATURE_CONTACT_SFX.get(creature.type_id)
-    if options is not None:
-        ctx.sfx.append(
-            SfxRequest(
-                options[ctx.rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX) & 1], ctx.creature.pos,
-            ),
-        )
-
-
-    if PerkId.MR_MELEE in ctx.state.perks:
-        creature_apply_damage(
-            ctx.step_runtime,
-            ctx.creature_index,
-            25.0,
-            CreatureDamageType.MELEE,
-            Vec2(),
-            OwnerRef.from_player(ctx.player.index),
-        )
-
-    if float(ctx.player.shield_timer) <= 0.0:
-        if PerkId.TOXIC_AVENGER in ctx.state.perks:
-            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
-        elif PerkId.VEINS_OF_POISON in ctx.state.perks:
-            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
-
-    player_take_damage(ctx.step_runtime, ctx.player, float(creature.contact_damage), dt=ctx.dt)
-
-    push_dir = x87_d3dx_vec2_normalize(
-        Vec2(
-            x87_pc24_sub(ctx.player.pos.x, creature.pos.x),
-            x87_pc24_sub(ctx.player.pos.y, creature.pos.y),
-        ),
-    )
-    ctx.fx_queue.add_random(
-        pos=Vec2(
-            x87_pc24_add(ctx.player.pos.x, x87_pc24_mul(push_dir.x, f32(3.0))),
-            x87_pc24_add(ctx.player.pos.y, x87_pc24_mul(push_dir.y, f32(3.0))),
-        ),
-        rng=ctx.rng,
-    )
-
-    creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
-
-
-def _creature_interaction_plaguebearer_contact_flag(ctx: _CreatureInteractionCtx) -> None:
-    # Native nests this inside the contact gates: size > 16, distance < 30,
-    # target player alive, and no Energizer.
-    creature = ctx.creature
-    if float(creature.size) <= 16.0:
-        return
-    if ctx.contact_distance >= 30.0:
-        return
-    if float(ctx.player.health) <= 0.0:
-        return
-    if float(ctx.state.bonuses.energizer) > 0.0:
-        return
-
-    if (
-        bool(ctx.player.plaguebearer_active)
-        and float(creature.hp) < 150.0
-        and int(ctx.state.plaguebearer_infection_count) < 0x32
-    ):
-        creature.plague_infected = True
-
-
-def _creature_interaction_contact_kill_small(ctx: _CreatureInteractionCtx) -> None:
-    """Kill small creatures that make contact, matching native `creature_update_all`.
-
-    Native logic (see decompile around 0x004276d6) sets `health = 0.0` and
-    decrements lifecycle_stage by frame_dt whenever:
-    - distance to the target player is < 30.0, and
-    - creature `size` is <= 30.0.
-
-    This path does not call `creature_handle_death`, so it intentionally skips XP
-    awards + bonus spawns. The corpse staging still increments kill_count later.
-    """
-
-    creature = ctx.creature
-    if ctx.contact_distance >= 30.0:
-        return
-    if float(creature.size) > 30.0:
-        return
-
-    creature.hp = 0.0
-    creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(ctx.dt))
-    ctx.skip_creature = True
-
-
-_CREATURE_INTERACTION_STEPS: tuple[_CreatureInteractionStep, ...] = (
-    _creature_interaction_energizer_eat,
-    _creature_interaction_contact_damage,
-    _creature_interaction_plaguebearer_contact_flag,
-    _creature_interaction_contact_kill_small,
-)
 
 
 class CreaturePool:
@@ -1319,20 +1116,63 @@ class CreaturePool:
                             f32(creature.attack_cooldown),
                         )
 
-            interaction_ctx = _CreatureInteractionCtx(
-                step_runtime=step_runtime,
-                creature_index=int(idx),
-                creature=creature,
-                player=player,
-                dt=dt,
-                contact_distance=float(target_dist),
-            )
-            for step in _CREATURE_INTERACTION_STEPS:
-                step(interaction_ctx)
-                if interaction_ctx.skip_creature:
-                    break
-            if interaction_ctx.skip_creature:
-                continue
+            # `creature_update_all` 0x00426f65..0x004276d6: the contact interactions reuse the stored
+            # creature-to-target distance.
+            if target_dist < 20.0:
+                # Native stores `vel` as the per-tick delta, so this undoes the move just applied.
+                creature.pos = Vec2(
+                    x87_pc24_sub(creature.pos.x, creature.vel.x),
+                    x87_pc24_sub(creature.pos.y, creature.vel.y),
+                )
+                if creature.max_hp < 380.0 and state.bonuses.energizer > 0.0:
+                    # Native double-pays the eat kill: this direct store plus creature_handle_death's award.
+                    players[0].experience = experience_plus_reward(players[0].experience, creature.reward_value)
+                    state.effects.spawn_burst(pos=creature.pos, count=6, rng=rng, detail_preset=detail_preset)
+                    sfx.append(SfxRequest(SfxId.UI_BONUS, creature.pos, gain=0.8))
+                    state.bonus_spawn_guard = True
+                    step_runtime.handle_creature_death(idx, keep_corpse=False)
+                    state.bonus_spawn_guard = False
+
+            # Native has no aliveness re-check here: a creature plague-killed earlier in the tick
+            # can still bite.
+            if (
+                creature.size > 16.0 and target_dist < 30.0 and player.health > 0.0 and state.bonuses.energizer <= 0.0
+            ):
+                if creature.attack_cooldown <= 0.0:
+                    contact_sfx = _CREATURE_CONTACT_SFX.get(creature.type_id)
+                    if contact_sfx is not None:
+                        roll = rng.rand_tagged(RngCallerStatic.CREATURE_UPDATE_ALL_CONTACT_SFX)
+                        sfx.append(SfxRequest(contact_sfx[roll & 1], creature.pos))
+                    if PerkId.MR_MELEE in state.perks:
+                        creature_apply_damage(
+                            step_runtime, idx, 25.0, CreatureDamageType.MELEE, Vec2(), OwnerRef.from_player(player.index),
+                        )
+                    if player.shield_timer <= 0.0:
+                        if PerkId.TOXIC_AVENGER in state.perks:
+                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK | CreatureFlags.SELF_DAMAGE_TICK_STRONG
+                        elif PerkId.VEINS_OF_POISON in state.perks:
+                            creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
+                    player_take_damage(step_runtime, player, creature.contact_damage, dt=dt)
+                    push_dir = x87_d3dx_vec2_normalize(
+                        Vec2(x87_pc24_sub(player.pos.x, creature.pos.x), x87_pc24_sub(player.pos.y, creature.pos.y)),
+                    )
+                    fx_queue.add_random(
+                        pos=Vec2(
+                            x87_pc24_add(player.pos.x, x87_pc24_mul(push_dir.x, f32(3.0))),
+                            x87_pc24_add(player.pos.y, x87_pc24_mul(push_dir.y, f32(3.0))),
+                        ),
+                        rng=rng,
+                    )
+                    creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
+
+                if player.plaguebearer_active and creature.hp < 150.0 and state.plaguebearer_infection_count < 0x32:
+                    creature.plague_infected = True
+
+            # Small creatures die on contact without creature_handle_death (no XP, no bonus drop);
+            # the corpse staging still counts the kill later.
+            if target_dist < 30.0 and creature.size <= 30.0:
+                creature.hp = 0.0
+                creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
 
     def handle_death(
         self,
@@ -1709,10 +1549,17 @@ class CreaturePool:
                 player_index = 0
         killer = players[player_index]
 
+        experience_before = killer.experience
         if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
-            xp_awarded = award_experience(state, killer, quick_learner_kill_xp(creature.reward_value))
+            killer.experience += quick_learner_kill_xp(creature.reward_value)
         else:
-            xp_awarded = award_experience_from_reward(state, killer, float(creature.reward_value))
+            killer.experience = experience_plus_reward(killer.experience, creature.reward_value)
+        if state.bonuses.double_experience > 0.0:
+            if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
+                killer.experience += quick_learner_kill_xp(creature.reward_value)
+            else:
+                killer.experience = experience_plus_reward(killer.experience, creature.reward_value)
+        xp_awarded = killer.experience - experience_before
 
         state.bonus_pool.try_spawn_on_kill(
             pos=creature.pos,
