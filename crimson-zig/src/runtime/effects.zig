@@ -470,13 +470,12 @@ pub const EffectPool = struct {
         );
     }
 
+    /// Reflex Boost / Freeze pickup ring from `bonus_apply`.
     pub fn spawnRing(
         self: *EffectPool,
         pos: state_mod.Vec2,
         detail_preset: i32,
         color: Color,
-        lifetime: f32,
-        scale_step: f32,
     ) void {
         _ = self.spawn(
             @intFromEnum(EffectId.ring),
@@ -487,11 +486,11 @@ pub const EffectPool = struct {
             32.0,
             32.0,
             0.0,
-            lifetime,
+            0.25,
             0x19,
             color,
             0.0,
-            scale_step,
+            50.0,
             detail_preset,
         );
     }

@@ -594,11 +594,20 @@ pub fn stepTick(
     survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
     cameraShakeUpdate(&context.state, dt_after_player);
     context.tick_bonus_pickups = .{};
+    const bonus_step: bonus_runtime.BonusStep = .{
+        .creatures = &context.creatures,
+        .projectiles = &context.projectiles,
+        .effects = &context.effects,
+        .terrain_fx = &context.terrain_fx,
+        .dt = dt_after_player,
+        .world_size = context.world_size,
+        .detail_preset = context.detail_preset,
+    };
     try bonus_runtime.telekineticUpdate(
         &context.bonuses,
         &context.state,
         players,
-        dt_after_player,
+        bonus_step,
         &context.tick_bonus_pickups,
     );
     // XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
@@ -610,41 +619,8 @@ pub fn stepTick(
         &context.bonuses,
         &context.state,
         players,
-        dt_after_player,
+        bonus_step,
         &context.tick_bonus_pickups,
-    );
-    // Bonus effects apply during the pickup update; the pickup FX follow.
-    var freeze_pickup_seen = false;
-    for (context.tick_bonus_pickups.constSlice()) |pickup| {
-        if (pickup.bonus_id == .freeze) {
-            freeze_pickup_seen = true;
-            break;
-        }
-    }
-    if (freeze_pickup_seen) {
-        bonus_runtime.applyFreezePickupCorpseEffects(
-            &context.state,
-            &context.creatures,
-            &context.effects,
-            context.detail_preset,
-        );
-    }
-    bonus_runtime.applyPendingBonusEffectsWithEffects(
-        &context.state,
-        players,
-        &context.projectiles,
-        &context.creatures,
-        &context.bonuses,
-        &context.effects,
-        &context.terrain_fx,
-        dt_after_player,
-        context.world_size,
-    );
-    bonus_runtime.emitBonusPickupEffects(
-        &context.state,
-        context.tick_bonus_pickups.constSlice(),
-        &context.effects,
-        context.detail_preset,
     );
     frame.rng_after_bonus_update = context.state.rng.state;
     // The world step ends here; the mode's post-step queues into the next tick.

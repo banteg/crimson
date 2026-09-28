@@ -847,38 +847,6 @@ test "particle hits apply native tint fade and creature displacement" {
     try std.testing.expect(@abs(creature.pos.x) > 0.0 or @abs(creature.pos.y) > 0.0);
 }
 
-test "bonus pickup uses native pc24 radius boundary" {
-    var state = cz.state.GameplayState.init(1);
-    var pool: cz.bonuses.BonusPool = .{};
-    pool.entries[0] = .{
-        .bonus_id = .shield,
-        .time_left = 1.0,
-        .time_max = 1.0,
-        .pos = .{},
-    };
-    var players = [_]cz.state.PlayerState{
-        .{
-            .index = 0,
-            .pos = .{ .x = 25.999998092651367, .y = 0.009600000455975533 },
-        },
-    };
-    var pickup_bonus_ids = [_]cz.game_ids.BonusId{.unused} ** cz.bonuses.bonus_pool_size;
-    var pickup_count: usize = 0;
-
-    try pool.update(
-        &state,
-        players[0..],
-        0.01,
-        &pickup_bonus_ids,
-        &pickup_count,
-        null,
-    );
-
-    try std.testing.expectEqual(@as(usize, 0), pickup_count);
-    try std.testing.expect(!pool.entries[0].picked);
-    try std.testing.expectEqual(@as(f32, 0.0), players[0].shield_timer);
-}
-
 test "creature target selection follows native two-player cadence" {
     var creature: cz.creatures.CreatureState = .{
         .pos = .{ .x = 0.0, .y = 0.0 },

@@ -2,7 +2,6 @@ const std = @import("std");
 const game_ids = @import("../game_ids.zig");
 const native_math = @import("native_math.zig");
 
-const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
 const owner_ref = @import("owner_ref.zig");
@@ -232,17 +231,15 @@ pub const BonusPool = struct {
         self: *BonusPool,
         state: *state_mod.GameplayState,
         players: []state_mod.PlayerState,
-        dt: f32,
-        pickup_bonus_ids: *[bonus_pool_size]BonusId,
-        pickup_count: *usize,
+        step: BonusStep,
         pickup_records: ?*BonusPickupBuffer,
     ) BonusRuntimeError!void {
-        if (!(dt > 0.0)) return;
+        if (!(step.dt > 0.0)) return;
 
         for (&self.entries) |*entry| {
             if (isEmpty(entry.*)) continue;
 
-            const decay = dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0);
+            const decay = step.dt * (if (entry.picked) bonus_pickup_decay_rate else 1.0);
             entry.time_left -= decay;
             if (!entry.picked and state.game_mode == .tutorial) {
                 entry.time_left = 5.0;
@@ -266,8 +263,7 @@ pub const BonusPool = struct {
             for (players) |*player| {
                 if (!withinNativeRadius(entry.pos, player.pos, bonus_pickup_radius)) continue;
 
-                try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
-                appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
+                try applyBonus(state, self, step, player, players, entry.bonus_id, entry.amount, entry.pos);
                 appendPickupRecord(pickup_records, .{
                     .bonus_id = entry.bonus_id,
                     .amount = entry.amount,
@@ -306,152 +302,86 @@ pub fn updatePrePickupTimers(
     }
 }
 
+/// The world step state that pickups and `bonus_apply` reach beyond the
+/// gameplay state.
+pub const BonusStep = struct {
+    creatures: *creatures_mod.CreaturePool,
+    projectiles: *projectiles_mod.ProjectilePool,
+    effects: *effects_mod.EffectPool,
+    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
+    dt: f32,
+    world_size: f32,
+    detail_preset: i32,
+};
+
 /// Telekinetic pickups, which native applies in `bonus_render`, ahead of the
 /// level-up check and `bonus_update`.
 pub fn telekineticUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f32,
+    step: BonusStep,
     pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
-    var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
-    var pickup_count: usize = 0;
-    try bonusTelekineticUpdate(pool, state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
+    if (!(step.dt > 0.0)) return;
+    // bonus_render (0x004295f0) accumulates the int `frame_dt_ms`.
+    const dt_ms: f32 = @floatFromInt(timing.ftolMsI32(step.dt));
+    for (players) |*player| {
+        if (!(player.health > 0.0)) continue;
+
+        const hovered = bonusFindAimHoverEntry(player.*, pool) orelse {
+            player.bonus_aim_hover_index = -1;
+            player.bonus_aim_hover_timer_ms = 0.0;
+            continue;
+        };
+
+        player.bonus_aim_hover_index = @intCast(hovered.index);
+        player.bonus_aim_hover_timer_ms += dt_ms;
+
+        if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
+        // Native calls the singleton perk_count_get here, so player zero owns
+        // the perk gate even though the iterated player receives the pickup.
+        const perk_player = if (state.preserve_bugs and players.len > 0) players[0] else player.*;
+        if (!perkActive(perk_player, PerkId.telekinetic)) continue;
+
+        var entry = &pool.entries[hovered.index];
+        if (entry.picked or entry.bonus_id == .unused) continue;
+
+        try applyBonus(state, pool, step, player, players, entry.bonus_id, entry.amount, entry.pos);
+        appendPickupRecord(pickup_records, .{
+            .bonus_id = entry.bonus_id,
+            .amount = entry.amount,
+            .player_index = player.index,
+            .pos = entry.pos,
+        });
+        entry.picked = true;
+        entry.time_left = narrowF32(bonus_pickup_linger);
+        player.bonus_aim_hover_index = -1;
+        player.bonus_aim_hover_timer_ms = 0.0;
+        break;
+    }
 }
 
 pub fn bonusUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    dt: f32,
+    step: BonusStep,
     pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
-    var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
-    var pickup_count: usize = 0;
-    try pool.update(state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
+    try pool.update(state, players, step, pickup_records);
 
-    if (dt > 0.0) {
+    if (step.dt > 0.0) {
         if (state.bonuses.double_experience <= 0.0) {
             state.bonuses.double_experience = 0.0;
         } else {
-            state.bonuses.double_experience -= dt;
+            state.bonuses.double_experience -= step.dt;
         }
 
         if (state.bonuses.freeze <= 0.0) {
             state.bonuses.freeze = 0.0;
         } else {
-            state.bonuses.freeze -= dt;
-        }
-    }
-}
-
-pub fn applyPendingBonusEffects(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    projectiles: *projectiles_mod.ProjectilePool,
-    creatures: *creatures_mod.CreaturePool,
-    bonuses: *BonusPool,
-    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-    dt: f32,
-    world_size: f32,
-) void {
-    var effects: effects_mod.EffectPool = .{};
-    applyPendingBonusEffectsWithEffects(
-        state,
-        players,
-        projectiles,
-        creatures,
-        bonuses,
-        &effects,
-        terrain_fx,
-        dt,
-        world_size,
-    );
-}
-
-pub fn applyPendingBonusEffectsWithEffects(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    projectiles: *projectiles_mod.ProjectilePool,
-    creatures: *creatures_mod.CreaturePool,
-    bonuses: *BonusPool,
-    effects: *effects_mod.EffectPool,
-    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-    dt: f32,
-    world_size: f32,
-) void {
-    const pending_fireblast_count_i32 = @min(state.pending_fireblast_count, @as(i32, @intCast(state.pending_fireblast_origins.len)));
-    var pending_fireblast_idx: i32 = 0;
-    while (pending_fireblast_idx < pending_fireblast_count_i32) : (pending_fireblast_idx += 1) {
-        const origin = state.pending_fireblast_origins[@intCast(pending_fireblast_idx)];
-        applyFireblastBonus(state, projectiles, origin);
-    }
-    state.pending_fireblast_count = 0;
-
-    const pending_shock_chain_count_i32 = @min(state.pending_shock_chain_count, @as(i32, @intCast(state.pending_shock_chain_origins.len)));
-    var pending_shock_chain_idx: i32 = 0;
-    while (pending_shock_chain_idx < pending_shock_chain_count_i32) : (pending_shock_chain_idx += 1) {
-        const origin = state.pending_shock_chain_origins[@intCast(pending_shock_chain_idx)];
-        applyShockChainBonus(state, projectiles, creatures, origin);
-    }
-    state.pending_shock_chain_count = 0;
-
-    const pending_count_i32 = @min(state.pending_nuke_count, @as(i32, @intCast(state.pending_nuke_origins.len)));
-    var pending_idx: i32 = 0;
-    while (pending_idx < pending_count_i32) : (pending_idx += 1) {
-        const origin = state.pending_nuke_origins[@intCast(pending_idx)];
-        applyNukeBonus(
-            state,
-            players,
-            projectiles,
-            creatures,
-            bonuses,
-            effects,
-            terrain_fx,
-            origin,
-            dt,
-            world_size,
-        );
-    }
-    state.pending_nuke_count = 0;
-}
-
-pub fn emitBonusPickupEffects(
-    state: *state_mod.GameplayState,
-    pickups: []const BonusPickupRecord,
-    effects: *effects_mod.EffectPool,
-    detail_preset: i32,
-) void {
-    for (pickups) |pickup| {
-        if (pickup.bonus_id != .nuke) {
-            effects.spawnBurstWithCallers(
-                state,
-                pickup.pos,
-                12,
-                detail_preset,
-                0.4,
-                0.1,
-                .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
-                effects_mod.EffectPool.bonus_pickup_burst_callers,
-            );
-        }
-        switch (pickup.bonus_id) {
-            .reflex_boost => effects.spawnRing(
-                pickup.pos,
-                detail_preset,
-                .{ .r = 0.6, .g = 0.6, .b = 1.0, .a = 1.0 },
-                1.0,
-                45.0,
-            ),
-            .freeze => effects.spawnRing(
-                pickup.pos,
-                detail_preset,
-                .{ .r = 0.3, .g = 0.5, .b = 0.8, .a = 1.0 },
-                1.0,
-                45.0,
-            ),
-            else => {},
+            state.bonuses.freeze -= step.dt;
         }
     }
 }
@@ -482,219 +412,6 @@ pub fn applyPendingCreatureProjectiles(
     state.pending_creature_projectile_count = 0;
 }
 
-pub fn applyFreezePickupCorpseEffects(
-    state: *state_mod.GameplayState,
-    creatures: *creatures_mod.CreaturePool,
-    effects: *effects_mod.EffectPool,
-    detail_preset: i32,
-) void {
-    for (&creatures.entries) |*creature| {
-        if (!creature.active or creature.hp > 0.0) continue;
-        for (0..8) |_| {
-            const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shard_angle) % 612)) * 0.01;
-            effects.spawnFreezeShard(state, creature.pos, angle, detail_preset);
-        }
-        const shatter_angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shatter_angle) % 612)) * 0.01;
-        effects.spawnFreezeShatter(state, creature.pos, shatter_angle, detail_preset);
-        creature.active = false;
-    }
-}
-
-fn bonusTelekineticUpdate(
-    pool: *BonusPool,
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    dt: f32,
-    pickup_bonus_ids: *[bonus_pool_size]BonusId,
-    pickup_count: *usize,
-    pickup_records: ?*BonusPickupBuffer,
-) BonusRuntimeError!void {
-    if (!(dt > 0.0)) return;
-    // bonus_render (0x004295f0) accumulates the int `frame_dt_ms`.
-    const dt_ms: f32 = @floatFromInt(timing.ftolMsI32(dt));
-    for (players) |*player| {
-        if (!(player.health > 0.0)) continue;
-
-        const hovered = bonusFindAimHoverEntry(player.*, pool) orelse {
-            player.bonus_aim_hover_index = -1;
-            player.bonus_aim_hover_timer_ms = 0.0;
-            continue;
-        };
-
-        player.bonus_aim_hover_index = @intCast(hovered.index);
-        player.bonus_aim_hover_timer_ms += dt_ms;
-
-        if (player.bonus_aim_hover_timer_ms <= bonus_telekinetic_pickup_ms) continue;
-        // Native calls the singleton perk_count_get here, so player zero owns
-        // the perk gate even though the iterated player receives the pickup.
-        const perk_player = if (state.preserve_bugs and players.len > 0) players[0] else player.*;
-        if (!perkActive(perk_player, PerkId.telekinetic)) continue;
-
-        var entry = &pool.entries[hovered.index];
-        if (entry.picked or entry.bonus_id == .unused) continue;
-
-        try applyBonus(state, player, players, entry.bonus_id, entry.amount, entry.pos);
-        appendPickupBonusId(pickup_bonus_ids, pickup_count, entry.bonus_id);
-        appendPickupRecord(pickup_records, .{
-            .bonus_id = entry.bonus_id,
-            .amount = entry.amount,
-            .player_index = player.index,
-            .pos = entry.pos,
-        });
-        entry.picked = true;
-        entry.time_left = narrowF32(bonus_pickup_linger);
-        player.bonus_aim_hover_index = -1;
-        player.bonus_aim_hover_timer_ms = 0.0;
-        break;
-    }
-}
-
-fn applyFireblastBonus(
-    state: *state_mod.GameplayState,
-    projectiles: *projectiles_mod.ProjectilePool,
-    origin: state_mod.Vec2,
-) void {
-    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
-    state.bonus_spawn_guard = true;
-
-    const count: usize = 16;
-    const step = std.math.tau / @as(f32, @floatFromInt(count));
-    for (0..count) |idx| {
-        const angle = @as(f32, @floatFromInt(idx)) * step;
-        const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
-        const meta = projectileTravelBudgetFromRawId(type_id);
-        _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-    }
-    state.bonus_spawn_guard = false;
-}
-
-fn applyShockChainBonus(
-    state: *state_mod.GameplayState,
-    projectiles: *projectiles_mod.ProjectilePool,
-    creatures: *creatures_mod.CreaturePool,
-    origin: state_mod.Vec2,
-) void {
-    if (creatures.entries.len == 0) return;
-
-    var best_idx: ?usize = null;
-    var best_dist_sq: f32 = 1e12;
-    for (creatures.entries, 0..) |creature, idx| {
-        if (!creature.active) continue;
-        if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) continue;
-        const d_sq = distanceSq(origin, creature.pos);
-        if (d_sq < best_dist_sq) {
-            best_dist_sq = d_sq;
-            best_idx = idx;
-        }
-    }
-    const target_idx = best_idx orelse return;
-
-    const target = creatures.entries[target_idx];
-    const angle = projectiles_mod.chainAngleFromDelta(state_mod.Vec2.sub(target.pos, origin));
-    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
-    const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
-    const meta = projectileTravelBudgetFromRawId(type_id);
-
-    state.bonus_spawn_guard = true;
-
-    state.shock_chain_links_left = 0x20;
-    const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-    state.shock_chain_projectile_id = @intCast(proj_idx);
-    state.bonus_spawn_guard = false;
-}
-
-fn applyNukeBonus(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-    projectiles: *projectiles_mod.ProjectilePool,
-    creatures: *creatures_mod.CreaturePool,
-    bonuses: *BonusPool,
-    effects: *effects_mod.EffectPool,
-    terrain_fx: *terrain_fx_mod.TerrainFxScratch,
-    origin: state_mod.Vec2,
-    dt: f32,
-    world_size: f32,
-) void {
-    if (players.len == 0) return;
-    const player = &players[0];
-    const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
-    const damage_owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
-    var nuke_kill_count: i32 = 0;
-    state.camera_shake_pulses = 0x14;
-    state.camera_shake_timer = 0.2;
-
-    var bullet_count: i32 = @intCast(state.rng.randTagged(rng_callers.bonus_apply_nuke_bullet_count) & 3);
-    bullet_count += 4;
-    var bullet_idx: i32 = 0;
-    while (bullet_idx < bullet_count) : (bullet_idx += 1) {
-        const angle = native_math.pc24Mul(
-            @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 0x274)),
-            @as(f32, 0.01),
-        );
-        var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
-        applyPlayerProjectileSpawnRules(state, players, projectile_owner, 0, &type_id);
-        const meta = projectileTravelBudgetFromRawId(type_id);
-        const proj_idx = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-        const speed_scale = native_math.pc24Add(
-            native_math.pc24Mul(
-                @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 0x32)),
-                @as(f32, 0.01),
-            ),
-            @as(f32, 0.5),
-        );
-        projectiles.entries[proj_idx].speed_scale = native_math.pc24Mul(
-            projectiles.entries[proj_idx].speed_scale,
-            speed_scale,
-        );
-    }
-
-    for (0..2) |gauss_idx| {
-        const angle_caller = if (gauss_idx == 0) rng_callers.bonus_apply_nuke_gauss_angle_1 else rng_callers.bonus_apply_nuke_gauss_angle_2;
-        const angle = native_math.pc24Mul(
-            @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)),
-            @as(f32, 0.01),
-        );
-        var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
-        applyPlayerProjectileSpawnRules(state, players, projectile_owner, 0, &type_id);
-        const meta = projectileTravelBudgetFromRawId(type_id);
-        _ = projectiles.spawn(origin, narrowF32(angle), type_id, projectile_owner, meta, false);
-    }
-
-    effects.spawnExplosionBurst(state, origin, 1.0, 5);
-
-    state.bonus_spawn_guard = true;
-
-    for (creatures.entries, 0..) |creature, idx| {
-        if (!creature.active) continue;
-        const dx = native_math.pc24Sub(creature.pos.x, origin.x);
-        const dy = native_math.pc24Sub(creature.pos.y, origin.y);
-        if (@abs(dx) > 256.0 or @abs(dy) > 256.0) continue;
-        const distance_sq = native_math.pc24Add(
-            native_math.pc24Mul(dx, dx),
-            native_math.pc24Mul(dy, dy),
-        );
-        const distance = native_math.pc24Sqrt(distance_sq);
-        const damage_base = native_math.pc24Sub(@as(f32, 256.0), distance);
-        if (!(damage_base > 0.0)) continue;
-        const damage = native_math.pc24Mul(damage_base, @as(f32, 5.0));
-        const xp = creatures.applyExplosionDamage(
-            state,
-            players,
-            bonuses,
-            terrain_fx,
-            idx,
-            damage,
-            .{},
-            damage_owner,
-            dt,
-            world_size,
-            null,
-        );
-        if (xp > 0) nuke_kill_count += 1;
-    }
-    state.bonus_spawn_guard = false;
-}
-
 fn bonusFindAimHoverEntry(
     player: state_mod.PlayerState,
     pool: *const BonusPool,
@@ -709,119 +426,204 @@ fn bonusFindAimHoverEntry(
     return null;
 }
 
+/// Port of `bonus_apply` (0x00409890).
 fn applyBonus(
     state: *state_mod.GameplayState,
+    pool: *BonusPool,
+    step: BonusStep,
     player: *state_mod.PlayerState,
     players: []state_mod.PlayerState,
     bonus_id: BonusId,
     amount: i32,
-    origin_pos: ?state_mod.Vec2,
+    origin: state_mod.Vec2,
 ) BonusRuntimeError!void {
-    if (bonus_id == .unused) return;
-
-    var effective_amount = amount;
-    if (effective_amount < 0) effective_amount = 0;
-    if (effective_amount == 0) {
-        effective_amount = defaultBonusAmount(bonus_id);
-    }
-
+    const player_index: usize = @intCast(player.index);
     // Native perk_count_get always reads player slot zero, even when player one
     // is the pickup owner. Corrected mode keeps intuitive per-player ownership.
-    const perk_player = if (state.preserve_bugs and players.len > 0) players[0] else player.*;
-    const economist_multiplier: f32 = if (perkActive(perk_player, PerkId.bonus_economist)) 1.5 else 1.0;
+    const perk_player = if (state.preserve_bugs) players[0] else player.*;
+    const multiplier: f32 = if (perkActive(perk_player, PerkId.bonus_economist)) 1.5 else 1.0;
+    // Native encodes friendly fire in the owner id (-1 - player_index).
+    const player_owner = if (state.friendly_fire_enabled)
+        owner_ref.OwnerRef.fromPlayer(player_index)
+    else
+        owner_ref.OwnerRef.fromLocalPlayer(0);
 
     switch (bonus_id) {
-        .points => {
-            const target = if (players.len > 0) &players[0] else player;
-            if (effective_amount > 0) {
-                target.experience += effective_amount;
-            }
-        },
-        .energizer => {
-            state.bonuses.energizer = narrowF32(state.bonuses.energizer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
-        },
-        .weapon_power_up => {
-            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
-            player.weapon_reset_latch = 0;
-            player.weapon.shot_cooldown = 0.0;
-            player.weapon.reload_timer = 0.0;
-            player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
-        },
-        .double_experience => {
-            state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
-        },
-        .reflex_boost => {
-            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
-            for (players) |*target| {
-                target.weapon.ammo = @floatFromInt(target.weapon.clip_size);
-                target.weapon.reload_timer = 0.0;
-            }
-        },
-        .shield => {
-            player.shield_timer = narrowF32(player.shield_timer + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
-        },
-        .freeze => {
-            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
-            state.sfx_queue.append(.shockwave);
+        .weapon => {
+            // The old weapon is never stashed: the alt slot is preloaded with
+            // a pistol at player reset.
+            player_runtime.weaponAssignPlayerWithState(player, weapon_data.weaponIdFromInt(amount), state);
         },
         .medikit => {
             if (player.health < 100.0) {
                 player.health = @min(100.0, player.health + 10.0);
             }
         },
-        .speed => {
-            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f32, @floatFromInt(effective_amount)) * economist_multiplier);
+        .reflex_boost => {
+            state.bonuses.reflex_boost = narrowF32(state.bonuses.reflex_boost + @as(f32, @floatFromInt(amount)) * multiplier);
+            for (players) |*target| {
+                target.weapon.ammo = @floatFromInt(target.weapon.clip_size);
+                target.weapon.reload_timer = 0.0;
+            }
+            step.effects.spawnRing(origin, step.detail_preset, .{ .r = 0.6, .g = 0.6, .b = 1.0, .a = 1.0 });
         },
-        .fire_bullets => {
-            player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + bonusApplySeconds(bonus_id, effective_amount) * economist_multiplier);
+        .weapon_power_up => {
+            state.bonuses.weapon_power_up = narrowF32(state.bonuses.weapon_power_up + @as(f32, @floatFromInt(amount)) * multiplier);
             player.weapon_reset_latch = 0;
             player.weapon.shot_cooldown = 0.0;
             player.weapon.reload_timer = 0.0;
             player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
         },
-        .weapon => {
-            // Native weapon pickup is just weapon_assign_player: the old
-            // weapon is never stashed (the alt slot is preloaded with a
-            // pistol at player reset).
-            const weapon_id = weapon_data.weaponIdFromInt(effective_amount);
-            player_runtime.weaponAssignPlayerWithState(player, weapon_id, state);
+        .speed => {
+            player.speed_bonus_timer = narrowF32(player.speed_bonus_timer + @as(f32, @floatFromInt(amount)) * multiplier);
+        },
+        .freeze => {
+            state.bonuses.freeze = narrowF32(state.bonuses.freeze + @as(f32, @floatFromInt(amount)) * multiplier);
+            // Every active corpse shatters, including kills earlier in this
+            // tick and entries below the normal despawn threshold.
+            for (&step.creatures.entries) |*creature| {
+                if (!creature.active or creature.hp > 0.0) continue;
+                for (0..8) |_| {
+                    const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shard_angle) % 612)) * 0.01;
+                    step.effects.spawnFreezeShard(state, creature.pos, angle, step.detail_preset);
+                }
+                const angle = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_freeze_shatter_angle) % 612)) * 0.01;
+                step.effects.spawnFreezeShatter(state, creature.pos, angle, step.detail_preset);
+                creature.active = false;
+            }
+            step.effects.spawnRing(origin, step.detail_preset, .{ .r = 0.3, .g = 0.5, .b = 0.8, .a = 1.0 });
+            state.sfx_queue.append(.shockwave);
+        },
+        .shield => {
+            player.shield_timer = narrowF32(player.shield_timer + @as(f32, @floatFromInt(amount)) * multiplier);
+        },
+        .shock_chain => {
+            if (projectiles_mod.creatureFindNearestAlive(step.creatures, origin, state.preserve_bugs)) |target_idx| {
+                const target = step.creatures.entries[target_idx];
+                const angle = projectiles_mod.chainAngleFromDelta(.{
+                    .x = native_math.pc24Sub(target.pos.x, origin.x),
+                    .y = native_math.pc24Sub(target.pos.y, origin.y),
+                });
+                const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
+                state.bonus_spawn_guard = true;
+                state.shock_chain_links_left = 0x20;
+                const proj_idx = step.projectiles.spawn(origin, angle, type_id, player_owner, projectileTravelBudgetFromRawId(type_id), false);
+                state.shock_chain_projectile_id = @intCast(proj_idx);
+                state.bonus_spawn_guard = false;
+                state.sfx_queue.append(.shock_hit_01);
+            }
+        },
+        .fireblast => {
+            const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle);
+            state.bonus_spawn_guard = true;
+            for (0..16) |ring_idx| {
+                const angle = @as(f32, @floatFromInt(ring_idx)) * 0.39269909;
+                _ = step.projectiles.spawn(origin, angle, type_id, player_owner, projectileTravelBudgetFromRawId(type_id), false);
+            }
+            state.bonus_spawn_guard = false;
+            state.sfx_queue.append(.explosion_medium);
+        },
+        .fire_bullets => {
+            player.fire_bullets_timer = narrowF32(player.fire_bullets_timer + 5.0 * multiplier);
+            player.weapon_reset_latch = 0;
+            player.weapon.shot_cooldown = 0.0;
+            player.weapon.reload_timer = 0.0;
+            player.weapon.ammo = @floatFromInt(player.weapon.clip_size);
+        },
+        .energizer => {
+            state.bonuses.energizer = narrowF32(state.bonuses.energizer + 8.0 * multiplier);
+        },
+        .double_experience => {
+            state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + 6.0 * multiplier);
         },
         .nuke => {
-            if (state.pending_nuke_count < state.pending_nuke_origins.len) {
-                const slot: usize = @intCast(state.pending_nuke_count);
-                state.pending_nuke_origins[slot] = origin_pos orelse player.pos;
-                state.pending_nuke_count += 1;
+            const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
+            const bullet_count = (state.rng.randTagged(rng_callers.bonus_apply_nuke_bullet_count) & 3) + 4;
+            for (0..bullet_count) |_| {
+                const angle = native_math.pc24Mul(
+                    @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_angle) % 628)),
+                    @as(f32, 0.01),
+                );
+                var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
+                applyPlayerProjectileSpawnRules(state, players, projectile_owner, player_index, &type_id);
+                const proj_idx = step.projectiles.spawn(origin, angle, type_id, projectile_owner, projectileTravelBudgetFromRawId(type_id), false);
+                const speed_scale = native_math.pc24Add(
+                    native_math.pc24Mul(
+                        @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 50)),
+                        @as(f32, 0.01),
+                    ),
+                    @as(f32, 0.5),
+                );
+                step.projectiles.entries[proj_idx].speed_scale = native_math.pc24Mul(
+                    step.projectiles.entries[proj_idx].speed_scale,
+                    speed_scale,
+                );
             }
+            inline for (.{ rng_callers.bonus_apply_nuke_gauss_angle_1, rng_callers.bonus_apply_nuke_gauss_angle_2 }) |angle_caller| {
+                const angle = native_math.pc24Mul(
+                    @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 628)),
+                    @as(f32, 0.01),
+                );
+                var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
+                applyPlayerProjectileSpawnRules(state, players, projectile_owner, player_index, &type_id);
+                _ = step.projectiles.spawn(origin, angle, type_id, projectile_owner, projectileTravelBudgetFromRawId(type_id), false);
+            }
+            step.effects.spawnExplosionBurst(state, origin, 1.0, step.detail_preset);
+            state.camera_shake_pulses = 0x14;
+            state.camera_shake_timer = 0.2;
+
+            state.bonus_spawn_guard = true;
+            const damage_owner = owner_ref.OwnerRef.fromPlayer(player_index);
+            for (step.creatures.entries, 0..) |creature, idx| {
+                // Corpses take the blast too, which shrinks them faster.
+                if (!creature.active) continue;
+                const dx = native_math.pc24Sub(creature.pos.x, origin.x);
+                const dy = native_math.pc24Sub(creature.pos.y, origin.y);
+                if (@abs(dx) > 256.0 or @abs(dy) > 256.0) continue;
+                const distance = native_math.pc24Sqrt(native_math.pc24Add(
+                    native_math.pc24Mul(dx, dx),
+                    native_math.pc24Mul(dy, dy),
+                ));
+                const damage_base = native_math.pc24Sub(@as(f32, 256.0), distance);
+                if (!(damage_base > 0.0)) continue;
+                _ = step.creatures.applyExplosionDamage(
+                    state,
+                    players,
+                    pool,
+                    step.terrain_fx,
+                    idx,
+                    native_math.pc24Mul(damage_base, @as(f32, 5.0)),
+                    .{},
+                    damage_owner,
+                    step.dt,
+                    step.world_size,
+                    null,
+                );
+            }
+            state.bonus_spawn_guard = false;
             state.sfx_queue.append(.explosion_large);
             state.sfx_queue.append(.shockwave);
         },
-        .shock_chain => {
-            if (state.pending_shock_chain_count < state.pending_shock_chain_origins.len) {
-                const slot: usize = @intCast(state.pending_shock_chain_count);
-                state.pending_shock_chain_origins[slot] = origin_pos orelse player.pos;
-                state.pending_shock_chain_count += 1;
-            }
-            state.sfx_queue.append(.shock_hit_01);
-        },
-        .fireblast => {
-            if (state.pending_fireblast_count < state.pending_fireblast_origins.len) {
-                const slot: usize = @intCast(state.pending_fireblast_count);
-                state.pending_fireblast_origins[slot] = origin_pos orelse player.pos;
-                state.pending_fireblast_count += 1;
-            }
-            state.sfx_queue.append(.explosion_medium);
+        .points => {
+            players[0].experience += amount;
         },
         .unused => {},
     }
-}
 
-fn bonusApplySeconds(bonus_id: BonusId, amount: i32) f32 {
-    return switch (bonus_id) {
-        .energizer => 8.0,
-        .double_experience => 6.0,
-        .fire_bullets => 5.0,
-        else => @as(f32, @floatFromInt(amount)),
-    };
+    // The pickup burst draws RNG before `bonus_apply` returns, so it precedes
+    // any later pickup applied in the same pass.
+    if (bonus_id != .nuke) {
+        step.effects.spawnBurstWithCallers(
+            state,
+            origin,
+            12,
+            step.detail_preset,
+            0.4,
+            0.1,
+            .{ .r = 0.4, .g = 0.5, .b = 1.0, .a = 0.5 },
+            effects_mod.EffectPool.bonus_pickup_burst_callers,
+        );
+    }
 }
 
 fn defaultBonusAmount(bonus_id: BonusId) i32 {
@@ -1255,16 +1057,6 @@ test "player projectile spawn rules preserve global fire bullets timer" {
     try std.testing.expectEqual(@as(i32, 1), corrected_state.shots_fired_total);
 }
 
-fn appendPickupBonusId(
-    pickup_bonus_ids: *[bonus_pool_size]BonusId,
-    pickup_count: *usize,
-    bonus_id: BonusId,
-) void {
-    if (pickup_count.* >= pickup_bonus_ids.len) return;
-    pickup_bonus_ids[pickup_count.*] = bonus_id;
-    pickup_count.* += 1;
-}
-
 fn appendPickupRecord(
     pickup_records: ?*BonusPickupBuffer,
     record: BonusPickupRecord,
@@ -1457,19 +1249,12 @@ test "bonus pickup uses native pc24 radius boundary" {
             .pos = .{ .x = 25.999998092651367, .y = 0.009600000455975533 },
         },
     };
-    var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
-    var pickup_count: usize = 0;
+    var world: TestBonusWorld = .{};
+    var pickups: BonusPickupBuffer = .{};
 
-    try pool.update(
-        &state,
-        players[0..],
-        0.01,
-        &pickup_bonus_ids,
-        &pickup_count,
-        null,
-    );
+    try pool.update(&state, players[0..], world.step(0.01), &pickups);
 
-    try std.testing.expectEqual(@as(usize, 0), pickup_count);
+    try std.testing.expectEqual(@as(usize, 0), pickups.len);
     try std.testing.expect(!pool.entries[0].picked);
     try std.testing.expectEqual(@as(f32, 0.0), players[0].shield_timer);
 }
@@ -1588,13 +1373,12 @@ test "bonus economist extends double experience timer" {
         .pos = .{},
     };
     var base_players = [_]state_mod.PlayerState{base_player};
-    try applyBonus(
+    try applyTestBonus(
         &base_state,
         &base_player,
         base_players[0..],
         .double_experience,
         10,
-        null,
     );
     try std.testing.expectApproxEqAbs(@as(f32, 6.0), base_state.bonuses.double_experience, 1e-6);
 
@@ -1605,13 +1389,12 @@ test "bonus economist extends double experience timer" {
     };
     perk_player.perk_counts.set(PerkId.bonus_economist, 1);
     var perk_players = [_]state_mod.PlayerState{perk_player};
-    try applyBonus(
+    try applyTestBonus(
         &perk_state,
         &perk_player,
         perk_players[0..],
         .double_experience,
         10,
-        null,
     );
     try std.testing.expectApproxEqAbs(@as(f32, 9.0), perk_state.bonuses.double_experience, 1e-6);
 }
@@ -1625,26 +1408,24 @@ test "bonus economist keeps native player zero ownership in bug mode" {
     };
     players[0].perk_counts.set(PerkId.bonus_economist, 1);
 
-    try applyBonus(
+    try applyTestBonus(
         &state,
         &players[1],
         players[0..],
         .double_experience,
         10,
-        null,
     );
     try std.testing.expectApproxEqAbs(@as(f32, 9.0), state.bonuses.double_experience, 1e-6);
 
     state.bonuses.double_experience = 0.0;
     players[0].perk_counts.set(PerkId.bonus_economist, 0);
     players[1].perk_counts.set(PerkId.bonus_economist, 1);
-    try applyBonus(
+    try applyTestBonus(
         &state,
         &players[1],
         players[0..],
         .double_experience,
         10,
-        null,
     );
     try std.testing.expectApproxEqAbs(@as(f32, 6.0), state.bonuses.double_experience, 1e-6);
 }
@@ -1657,13 +1438,12 @@ test "bonus economist keeps pickup owner in corrected mode" {
     };
     players[1].perk_counts.set(PerkId.bonus_economist, 1);
 
-    try applyBonus(
+    try applyTestBonus(
         &state,
         &players[1],
         players[0..],
         .double_experience,
         10,
-        null,
     );
     try std.testing.expectApproxEqAbs(@as(f32, 9.0), state.bonuses.double_experience, 1e-6);
 }
@@ -1680,13 +1460,12 @@ test "alternate weapon starts with preloaded pistol alt slot" {
     const player = &players[0];
     player.perk_counts.set(PerkId.alternate_weapon, 1);
 
-    try applyBonus(
+    try applyTestBonus(
         &state,
         player,
         players[0..],
         .weapon,
         @intFromEnum(game_ids.WeaponId.assault_rifle),
-        null,
     );
 
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon.weapon_id);
@@ -1908,23 +1687,54 @@ fn setTestBonusEntry(
     };
 }
 
+const TestBonusWorld = struct {
+    creatures: creatures_mod.CreaturePool = .{},
+    projectiles: projectiles_mod.ProjectilePool = .{},
+    effects: effects_mod.EffectPool = .{},
+    terrain_fx: terrain_fx_mod.TerrainFxScratch = .{},
+
+    fn step(self: *TestBonusWorld, dt: f32) BonusStep {
+        self.creatures.effects = &self.effects;
+        return .{
+            .creatures = &self.creatures,
+            .projectiles = &self.projectiles,
+            .effects = &self.effects,
+            .terrain_fx = &self.terrain_fx,
+            .dt = dt,
+            .world_size = 1024.0,
+            .detail_preset = 5,
+        };
+    }
+
+    fn activeProjectileCount(self: *const TestBonusWorld, type_id: game_ids.ProjectileTypeId) usize {
+        var count: usize = 0;
+        for (self.projectiles.entries) |entry| {
+            if (entry.active and entry.type_id == @intFromEnum(type_id)) count += 1;
+        }
+        return count;
+    }
+};
+
+fn applyTestBonus(
+    state: *state_mod.GameplayState,
+    player: *state_mod.PlayerState,
+    players: []state_mod.PlayerState,
+    bonus_id: BonusId,
+    amount: i32,
+) !void {
+    var world: TestBonusWorld = .{};
+    var pool: BonusPool = .{};
+    try applyBonus(state, &pool, world.step(0.016), player, players, bonus_id, amount, player.pos);
+}
+
 fn runTelekineticUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
     dt: f32,
 ) BonusRuntimeError!void {
-    var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
-    var pickup_count: usize = 0;
-    try bonusTelekineticUpdate(
-        pool,
-        state,
-        players,
-        dt,
-        &pickup_bonus_ids,
-        &pickup_count,
-        null,
-    );
+    var world: TestBonusWorld = .{};
+    try telekineticUpdate(pool, state, players, world.step(dt), null);
 }
 
 test "telekinetic picks up bonus after hover timer threshold" {
@@ -1935,7 +1745,7 @@ test "telekinetic picks up bonus after hover timer threshold" {
         0,
         .points,
         .{ .x = 100.0, .y = 100.0 },
-        0,
+        500,
     );
 
     const base_player: state_mod.PlayerState = .{
@@ -2059,16 +1869,10 @@ test "telekinetic keeps secondary player ownership in corrected mode" {
     try std.testing.expectEqual(@as(i32, 0), players[1].experience);
 }
 
-test "telekinetic nuke stores pending origin from bonus position" {
+test "telekinetic nuke detonates inline at the bonus position" {
     var state = state_mod.GameplayState.init(1);
     var pool: BonusPool = .{};
-    setTestBonusEntry(
-        &pool,
-        0,
-        .nuke,
-        .{ .x = 100.0, .y = 100.0 },
-        1,
-    );
+    setTestBonusEntry(&pool, 0, .nuke, .{ .x = 100.0, .y = 100.0 }, 1);
 
     var player: state_mod.PlayerState = .{
         .index = 0,
@@ -2079,36 +1883,15 @@ test "telekinetic nuke stores pending origin from bonus position" {
     player.perk_counts.set(PerkId.telekinetic, 1);
     var players = [_]state_mod.PlayerState{player};
 
-    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
-    try std.testing.expectEqual(@as(i32, 1), state.pending_nuke_count);
-    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_nuke_origins[0].x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_nuke_origins[0].y, 1e-6);
-}
-
-test "telekinetic shock chain stores pending origin from bonus position" {
-    var state = state_mod.GameplayState.init(1);
-    var pool: BonusPool = .{};
-    setTestBonusEntry(
-        &pool,
-        0,
-        .shock_chain,
-        .{ .x = 100.0, .y = 100.0 },
-        1,
-    );
-
-    var player: state_mod.PlayerState = .{
-        .index = 0,
-        .pos = .{},
-        .health = 100.0,
-        .aim = .{ .x = 100.0, .y = 100.0 },
-    };
-    player.perk_counts.set(PerkId.telekinetic, 1);
-    var players = [_]state_mod.PlayerState{player};
-
-    try runTelekineticUpdate(&pool, &state, players[0..], 0.7);
-    try std.testing.expectEqual(@as(i32, 1), state.pending_shock_chain_count);
-    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_shock_chain_origins[0].x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 100.0), state.pending_shock_chain_origins[0].y, 1e-6);
+    var world: TestBonusWorld = .{};
+    try telekineticUpdate(&pool, &state, players[0..], world.step(0.7), null);
+    try std.testing.expect(pool.entries[0].picked);
+    try std.testing.expectEqual(@as(usize, 2), world.activeProjectileCount(.gauss_gun));
+    for (world.projectiles.entries) |entry| {
+        if (!entry.active) continue;
+        try std.testing.expectEqual(@as(f32, 100.0), entry.origin.x);
+        try std.testing.expectEqual(@as(f32, 100.0), entry.origin.y);
+    }
 }
 
 test "telekinetic picks only one bonus per frame across players" {
@@ -2214,127 +1997,108 @@ fn runQuestSuppressionCase(
     try std.testing.expectEqual(expected_bonus_id, bonus_id);
 }
 
-test "pending fireblast spawns sixteen plasma rifle projectiles" {
+test "fireblast spawns sixteen plasma rifle projectiles owned by the picker under friendly fire" {
     var state = state_mod.GameplayState.init(1);
-    state.bonus_spawn_guard = true;
+    state.friendly_fire_enabled = true;
     var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles: projectiles_mod.ProjectilePool = .{};
-    var creatures: creatures_mod.CreaturePool = .{};
-    var bonuses: BonusPool = .{};
-    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var world: TestBonusWorld = .{};
+    var pool: BonusPool = .{};
 
-    state.pending_fireblast_origins[0] = players[0].pos;
-    state.pending_fireblast_count = 1;
+    try applyBonus(&state, &pool, world.step(0.016), &players[1], players[0..], .fireblast, 1, players[1].pos);
 
-    applyPendingBonusEffects(
-        &state,
-        players[0..],
-        &projectiles,
-        &creatures,
-        &bonuses,
-        &terrain_fx,
-        0.016,
-        1024.0,
-    );
-
-    var active_count: i32 = 0;
-    for (projectiles.entries) |entry| {
+    try std.testing.expectEqual(@as(usize, 16), world.activeProjectileCount(.plasma_rifle));
+    for (world.projectiles.entries) |entry| {
         if (!entry.active) continue;
-        active_count += 1;
-        try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), entry.type_id);
+        try std.testing.expectEqual(@as(?usize, 1), entry.owner.playerIndex());
     }
-    try std.testing.expectEqual(@as(i32, 16), active_count);
-    try std.testing.expectEqual(@as(i32, 0), state.pending_fireblast_count);
+    try std.testing.expectEqual(@as(i32, 0), state.shots_fired_total);
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
-test "pending shock chain spawns ion rifle and clears native guard" {
+test "shock chain targets the nearest live creature and clears the native guard" {
     var state = state_mod.GameplayState.init(1);
-    state.bonus_spawn_guard = true;
     var players = [_]state_mod.PlayerState{
         .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles: projectiles_mod.ProjectilePool = .{};
-    var creatures: creatures_mod.CreaturePool = .{};
-    var bonuses: BonusPool = .{};
-    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var world: TestBonusWorld = .{};
+    var pool: BonusPool = .{};
+    world.creatures.entries[0] = .{ .active = true, .pos = .{ .x = 700.0, .y = 512.0 }, .hp = 100.0 };
+    world.creatures.entries[1] = .{ .active = true, .pos = .{ .x = 600.0, .y = 512.0 }, .hp = 100.0 };
+    world.creatures.entries[2] = .{ .active = true, .pos = .{ .x = 520.0, .y = 512.0 }, .hp = 0.0, .lifecycle_stage = 5.0 };
 
-    creatures.entries[0].active = true;
-    creatures.entries[0].pos = .{ .x = 600.0, .y = 512.0 };
-    creatures.entries[0].hp = 100.0;
-    creatures.entries[0].max_hp = 100.0;
-    state.pending_shock_chain_origins[0] = players[0].pos;
-    state.pending_shock_chain_count = 1;
-
-    applyPendingBonusEffects(
-        &state,
-        players[0..],
-        &projectiles,
-        &creatures,
-        &bonuses,
-        &terrain_fx,
-        0.016,
-        1024.0,
-    );
+    try applyBonus(&state, &pool, world.step(0.016), &players[0], players[0..], .shock_chain, 1, players[0].pos);
 
     const projectile_id: usize = @intCast(state.shock_chain_projectile_id);
-    try std.testing.expect(projectiles.entries[projectile_id].active);
+    const projectile = world.projectiles.entries[projectile_id];
+    try std.testing.expect(projectile.active);
+    try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.ion_rifle), projectile.type_id);
     try std.testing.expectEqual(
-        @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        projectiles.entries[projectile_id].type_id,
+        projectiles_mod.chainAngleFromDelta(.{ .x = 88.0, .y = 0.0 }),
+        projectile.angle,
     );
     try std.testing.expectEqual(@as(i32, 0x20), state.shock_chain_links_left);
-    try std.testing.expectEqual(@as(i32, 0), state.pending_shock_chain_count);
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
-test "pending nuke spawns pistol and gauss projectiles with native meta ranges" {
+test "nuke spawns pistol and gauss projectiles and credits the picker's shots" {
     var state = state_mod.GameplayState.init(1);
-    state.bonus_spawn_guard = true;
     var players = [_]state_mod.PlayerState{
-        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 } },
+        .{ .index = 0, .pos = .{} },
+        .{ .index = 1, .pos = .{ .x = 512.0, .y = 512.0 } },
     };
-    var projectiles: projectiles_mod.ProjectilePool = .{};
-    var creatures: creatures_mod.CreaturePool = .{};
-    var bonuses: BonusPool = .{};
-    var terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
+    var world: TestBonusWorld = .{};
+    var pool: BonusPool = .{};
 
-    state.pending_nuke_origins[0] = players[0].pos;
-    state.pending_nuke_count = 1;
+    try applyBonus(&state, &pool, world.step(0.016), &players[1], players[0..], .nuke, 1, players[1].pos);
 
-    applyPendingBonusEffects(
-        &state,
-        players[0..],
-        &projectiles,
-        &creatures,
-        &bonuses,
-        &terrain_fx,
-        0.016,
-        1024.0,
-    );
-
-    var pistol_count: i32 = 0;
-    var gauss_count: i32 = 0;
-    for (projectiles.entries) |entry| {
+    const pistol_count = world.activeProjectileCount(.pistol);
+    try std.testing.expect(pistol_count >= 4 and pistol_count <= 7);
+    try std.testing.expectEqual(@as(usize, 2), world.activeProjectileCount(.gauss_gun));
+    for (world.projectiles.entries) |entry| {
         if (!entry.active) continue;
+        try std.testing.expectEqual(owner_ref.OwnerRef.fromLocalPlayer(0), entry.owner);
         if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.pistol)) {
-            pistol_count += 1;
             try std.testing.expectApproxEqAbs(@as(f32, 55.0), entry.travel_budget, 1e-6);
-            try std.testing.expect(entry.speed_scale >= 0.5);
-            try std.testing.expect(entry.speed_scale < 1.0);
-        } else if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun)) {
-            gauss_count += 1;
+            try std.testing.expect(entry.speed_scale >= 0.5 and entry.speed_scale < 1.0);
+        } else {
             try std.testing.expectApproxEqAbs(@as(f32, 215.0), entry.travel_budget, 1e-6);
-            try std.testing.expectApproxEqAbs(@as(f32, 1.0), entry.speed_scale, 1e-6);
+            try std.testing.expectEqual(@as(f32, 1.0), entry.speed_scale);
         }
     }
-
-    try std.testing.expect(pistol_count >= 4);
-    try std.testing.expect(pistol_count <= 7);
-    try std.testing.expectEqual(@as(i32, 2), gauss_count);
+    const shots: i32 = @intCast(pistol_count + 2);
+    try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
+    try std.testing.expectEqual(shots, state.shots_fired[1]);
+    try std.testing.expectEqual(shots, state.shots_fired_total);
     try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "nuke then freeze in one pickup pass shatters the nuke's kill" {
+    // Mirrors the Python port driving `bonus_update` over the same state
+    // (seed 0x1234, Nuke slot 0, Freeze slot 1, dt 0.016).
+    var state = state_mod.GameplayState.init(0x1234);
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 512.0, .y = 512.0 }, .health = 100.0 },
+    };
+    var world: TestBonusWorld = .{};
+    var pool: BonusPool = .{};
+    world.creatures.entries[0] = .{ .active = true, .pos = .{ .x = 600.0, .y = 512.0 }, .hp = 10.0, .max_hp = 10.0, .size = 50.0 };
+    world.creatures.entries[1] = .{ .active = true, .pos = .{ .x = 400.0, .y = 512.0 }, .hp = 0.0, .size = 50.0, .lifecycle_stage = 5.0 };
+    setTestBonusEntry(&pool, 0, .nuke, .{ .x = 512.0, .y = 512.0 }, 1);
+    setTestBonusEntry(&pool, 1, .freeze, .{ .x = 520.0, .y = 512.0 }, 5);
+
+    var pickups: BonusPickupBuffer = .{};
+    try bonusUpdate(&pool, &state, players[0..], world.step(0.016), &pickups);
+
+    try std.testing.expectEqual(@as(usize, 2), pickups.len);
+    try std.testing.expect(!world.creatures.entries[0].active);
+    try std.testing.expect(!world.creatures.entries[1].active);
+    try std.testing.expectEqual(@as(f32, -830.0), world.creatures.entries[0].hp);
+    try std.testing.expectEqual(@as(f32, 4.984000205993652), state.bonuses.freeze);
+    try std.testing.expectEqual(@as(i32, 6), state.shots_fired_total);
+    try std.testing.expectEqual(@as(u32, 0x40db2b34), state.rng.state);
 }
 
 test "pending creature projectile queue materializes hostile shots before projectile step" {
@@ -2362,18 +2126,20 @@ test "pending creature projectile queue materializes hostile shots before projec
 
 test "Freeze shatters every current active corpse regardless of lifecycle" {
     var state = state_mod.GameplayState.init(1);
-    var creatures: creatures_mod.CreaturePool = .{};
-    var effects: effects_mod.EffectPool = .{};
-    creatures.entries[0].active = true;
-    creatures.entries[0].hp = 0.0;
-    creatures.entries[1].active = true;
-    creatures.entries[1].hp = -1.0;
-    creatures.entries[1].lifecycle_stage = -100.0;
-    creatures.entries[2].active = true;
-    creatures.entries[2].hp = 10.0;
-    applyFreezePickupCorpseEffects(&state, &creatures, &effects, 5);
-    try std.testing.expect(!creatures.entries[0].active);
-    try std.testing.expect(!creatures.entries[1].active);
-    try std.testing.expect(creatures.entries[2].active);
-    try std.testing.expectEqual(@as(usize, 32), effects.entries.len - effects.free_len);
+    var players = [_]state_mod.PlayerState{.{ .index = 0, .pos = .{} }};
+    var world: TestBonusWorld = .{};
+    var pool: BonusPool = .{};
+    world.creatures.entries[0].active = true;
+    world.creatures.entries[0].hp = 0.0;
+    world.creatures.entries[1].active = true;
+    world.creatures.entries[1].hp = -1.0;
+    world.creatures.entries[1].lifecycle_stage = -100.0;
+    world.creatures.entries[2].active = true;
+    world.creatures.entries[2].hp = 10.0;
+    try applyBonus(&state, &pool, world.step(0.016), &players[0], players[0..], .freeze, 5, players[0].pos);
+    try std.testing.expect(!world.creatures.entries[0].active);
+    try std.testing.expect(!world.creatures.entries[1].active);
+    try std.testing.expect(world.creatures.entries[2].active);
+    // Two corpses of 16 shard/shatter effects, the ring and the pickup burst.
+    try std.testing.expectEqual(@as(usize, 2 * 16 + 1 + 12), world.effects.entries.len - world.effects.free_len);
 }

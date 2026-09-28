@@ -1175,6 +1175,29 @@ pub fn chainAngleFromDelta(delta: state_mod.Vec2) f32 {
     );
 }
 
+/// `creature_find_nearest(origin, -1, 0.0)`: the nearest active creature
+/// that is still alive.
+pub fn creatureFindNearestAlive(
+    creatures: *const creatures_mod.CreaturePool,
+    origin: state_mod.Vec2,
+    preserve_bugs: bool,
+) ?usize {
+    var best_idx: ?usize = if (preserve_bugs) 0 else null;
+    var best_distance: f32 = 1_000_000.0;
+    for (creatures.entries, 0..) |creature, idx| {
+        if (!creature.active) continue;
+        if (!creature_lifecycle.isAlive(creature.lifecycle_stage)) continue;
+        const dx = native_math.pc24Sub(origin.x, creature.pos.x);
+        const dy = native_math.pc24Sub(origin.y, creature.pos.y);
+        const distance = native_math.pc24Hypot(dx, dy);
+        if (distance < best_distance) {
+            best_distance = distance;
+            best_idx = idx;
+        }
+    }
+    return best_idx;
+}
+
 pub fn creatureFindNearestActive(
     creatures: *const creatures_mod.CreaturePool,
     origin: state_mod.Vec2,
