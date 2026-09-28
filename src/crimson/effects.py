@@ -11,6 +11,8 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.rand import CallerStatic, CrandLike
 
+from .creatures.damage import creature_apply_damage
+from .creatures.damage_types import CreatureDamageType
 from .creatures.lifecycle import creature_lifecycle_is_collidable
 from .effects_atlas import EffectId
 from .math_parity import (
@@ -351,12 +353,8 @@ class ParticlePool:
 
                         damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
                         if damage > 0.0:
-                            step_runtime.apply_creature_damage(
-                                int(hit_idx),
-                                float(damage),
-                                4,
-                                Vec2(),
-                                entry.owner,
+                            creature_apply_damage(
+                                step_runtime, hit_idx, damage, CreatureDamageType.FIRE, Vec2(), entry.owner,
                             )
 
                         tint = creature.tint

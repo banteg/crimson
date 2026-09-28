@@ -8,6 +8,8 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
+from ..creatures.damage import creature_apply_damage
+from ..creatures.damage_types import CreatureDamageType
 from ..math_parity import (
     f32,
     native_chain_angle_from_delta,
@@ -234,10 +236,11 @@ def bonus_apply(
                 distance = x87_pc24_sqrt(x87_pc24_add(x87_pc24_mul(dx, dx), x87_pc24_mul(dy, dy)))
                 damage_base = x87_pc24_sub(256.0, distance)
                 if damage_base > 0.0:
-                    step_runtime.apply_creature_damage(
-                        int(idx),
-                        float(x87_pc24_mul(damage_base, 5.0)),
-                        3,
+                    creature_apply_damage(
+                        step_runtime,
+                        idx,
+                        x87_pc24_mul(damage_base, 5.0),
+                        CreatureDamageType.EXPLOSION,
                         Vec2(),
                         owner_ref_for_player(player.index),
                     )

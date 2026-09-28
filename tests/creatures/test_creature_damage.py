@@ -1,25 +1,20 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-
-import msgspec
-
 from crimson.creatures.damage import (
     creature_apply_damage,
-    creature_apply_damage_with_lethal_followup,
     resolve_native_death_sfx,
 )
 from crimson.creatures.damage_types import CreatureDamageType
-from crimson.creatures.runtime import CreaturePool, CreatureState
+from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
+from tests.support.factories import make_step_runtime, world_with_creature
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -30,17 +25,8 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
     before_calls = rng.calls
     before_state = rng.state
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=10.0,
-        damage_type=1,
-        impulse=Vec2(),
-        owner=OwnerRef.from_creature(38),
-        dt=0.016,
-        players=[player],
-        perks=PerkCounts(),
-        rng=rng,
-    )
+    world = world_with_creature(creature, rng=rng, perks=PerkCounts(), players=[player])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OwnerRef.from_creature(38))
 
     assert killed is False
     assert_rng_progression(
@@ -66,17 +52,10 @@ def test_damage_type1_heading_jitter_rounds_each_x87_operation() -> None:
         heading=-0.054194413125514984,
     )
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=109.99357604980469,
-        damage_type=1,
-        impulse=Vec2(1.0, 1.0),
-        owner=OwnerRef.from_player(0),
-        dt=0.09600000083446503,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=PerkCounts(),
-        rng=ScriptedCrand(2932),
-    )
+    world = world_with_creature(creature, rng=ScriptedCrand(2932, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
+    # Kill drops are out of scope; the guard skips their retry loop on the constant rolls.
+    world.state.bonus_spawn_guard = True
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.09600000083446503), 0, 109.99357604980469, 1, Vec2(1.0, 1.0), OwnerRef.from_player(0))
 
     assert killed
     assert creature.heading == 0.03825003653764725
@@ -95,17 +74,8 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
     before_calls = rng.calls
     before_state = rng.state
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=10.0,
-        damage_type=1,
-        impulse=Vec2(),
-        owner=OwnerRef.from_creature(38),
-        dt=0.016,
-        players=[player],
-        perks=PerkCounts(),
-        rng=rng,
-    )
+    world = world_with_creature(creature, rng=rng, perks=PerkCounts(), players=[player])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OwnerRef.from_creature(38))
 
     assert killed is False
     assert_rng_progression(
@@ -126,17 +96,8 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     perks[PerkId.URANIUM_FILLED_BULLETS] = 1
     perks[PerkId.BARREL_GREASER] = 1
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=73.5593,
-        damage_type=1,
-        impulse=Vec2(),
-        owner=OwnerRef.from_creature(10),
-        dt=0.016,
-        players=[player],
-        perks=perks,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-    )
+    world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=perks, players=[player])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 73.5593, 1, Vec2(), OwnerRef.from_creature(10))
 
     assert killed is True
     assert creature.hp == -131.92474365234375
@@ -154,17 +115,8 @@ def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
     perks[PerkId.BARREL_GREASER] = 1
     perks[PerkId.DOCTOR] = 1
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=261.8189392089844,
-        damage_type=CreatureDamageType.BULLET,
-        impulse=Vec2(),
-        owner=OwnerRef.from_player(0),
-        dt=0.016,
-        players=[player],
-        perks=perks,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-    )
+    world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=perks, players=[player])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 261.8189392089844, CreatureDamageType.BULLET, Vec2(), OwnerRef.from_player(0))
 
     assert killed is True
     assert creature.hp == -3.921539306640625
@@ -173,17 +125,8 @@ def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
 def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
     creature = CreatureState(active=True, hp=554.2709350585938, size=50.0)
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=616.6504260335757,
-        damage_type=CreatureDamageType.EXPLOSION,
-        impulse=Vec2(),
-        owner=OwnerRef.from_player(0),
-        dt=0.016,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=PerkCounts(),
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-    )
+    world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 616.6504260335757, CreatureDamageType.EXPLOSION, Vec2(), OwnerRef.from_player(0))
 
     assert killed is True
     assert creature.hp == -62.3795166015625
@@ -192,24 +135,14 @@ def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
 def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
     creature = CreatureState(active=True, hp=100.0, lifecycle_stage=12.0, size=50.0, flags=CreatureFlags(0))
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=10.0,
-        damage_type=3,
-        impulse=Vec2(),
-        owner=OwnerRef.from_creature(0),
-        dt=0.016,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=PerkCounts(),
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-    )
+    world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 3, Vec2(), OwnerRef.from_creature(0))
 
     assert killed is False
     assert_float_close(creature.lifecycle_stage, 12.0)
 
 
 def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> None:
-    state = GameplayState()
     creature = CreatureState(
         active=True,
         hp=5.0,
@@ -220,47 +153,23 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
         vel=Vec2(10.0, 20.0),
     )
     rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world = world_with_creature(creature, rng=rng)
+    # Kill drops are out of scope here; the guard skips them before any draw.
+    world.state.bonus_spawn_guard = True
+    step_runtime = make_step_runtime(world, dt=0.016)
     before_calls = rng.calls
-    order: list[str] = []
 
-    class _Runtime(msgspec.Struct):
-        def on_creature_lethal(
-            self,
-            creature_index: int,
-            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-        ) -> None:
-            # Native order: `creature_handle_death` draws happen here, before the
-            # shock-burst / death-SFX rands.
-            assert rng.calls - before_calls == 0
-            order.append(f"handle_death:{creature_index}")
-            assert creature.vel == Vec2(9.0, 18.0)
-            assert resolve_damage_followup() == ()
-            assert creature.vel == Vec2(7.0, 14.0)
-            order.append("death_followup")
-
-    killed = creature_apply_damage_with_lethal_followup(
-        creature,
-        creature_index=7,
-        damage_amount=10.0,
-        damage_type=3,
-        impulse=Vec2(1.0, 2.0),
-        owner=OwnerRef.from_creature(0),
-        dt=0.016,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=state.perks,
-        rng=rng,
-        effects=state.effects,
-        detail_preset=5,
-        on_lethal=_Runtime().on_creature_lethal,
-    )
+    killed = creature_apply_damage(step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0), OwnerRef.from_creature(0))
 
     assert killed is True
-    assert order == ["handle_death:7", "death_followup"]
-    active = state.effects.iter_active()
+    assert len(step_runtime.deaths) == 1
+    # The hit's impulse, then the doubled impulse after `creature_handle_death`.
+    assert creature.vel == Vec2(7.0, 14.0)
+    active = world.state.effects.iter_active()
     assert len(active) == 5
     assert all(int(entry.effect_id) == int(EffectId.BURST) for entry in active)
-    assert rng.calls - before_calls == 20
-    assert [record.caller for record in rng.records_since(before_calls)] == [
+    assert step_runtime.sfx == []
+    assert [record.caller for record in rng.records_since(before_calls)][-20:] == [
         RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION,
         RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_X,
         RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y,
@@ -269,64 +178,30 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
 
 
 def test_split_children_inherit_only_initial_damage_impulse() -> None:
-    state = GameplayState()
-    # Kill drops are out of scope here; the guard skips them before any draw.
-    state.bonus_spawn_guard = True
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = True
-    creature.hp = 5.0
-    creature.max_hp = 400.0
-    creature.lifecycle_stage = 16.0
-    creature.size = 40.0
-    creature.flags = CreatureFlags.SPLIT_ON_DEATH
-    creature.vel = Vec2(10.0, 20.0)
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    creature = CreatureState(
+        active=True,
+        hp=5.0,
+        max_hp=400.0,
+        lifecycle_stage=16.0,
+        size=40.0,
+        flags=CreatureFlags.SPLIT_ON_DEATH,
+        vel=Vec2(10.0, 20.0),
+    )
+    world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    world.state.bonus_spawn_guard = True
 
-    class _Runtime(msgspec.Struct):
-        def on_creature_lethal(
-            self,
-            creature_index: int,
-            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-        ) -> None:
-            pool.handle_death(
-                creature_index,
-                state=state,
-                players=[PlayerState(index=0, pos=Vec2())],
-                rng=rng,
-                dt=0.016,
-                fx_queue=None,
-            )
-            assert creature.vel == Vec2(9.0, 18.0)
-            assert pool.entries[1].vel == Vec2(9.0, 18.0)
-            assert pool.entries[2].vel == Vec2(9.0, 18.0)
-
-            resolve_damage_followup()
-
-            assert creature.vel == Vec2(7.0, 14.0)
-            assert pool.entries[1].vel == Vec2(9.0, 18.0)
-            assert pool.entries[2].vel == Vec2(9.0, 18.0)
-
-    killed = creature_apply_damage_with_lethal_followup(
-        creature,
-        creature_index=0,
-        damage_amount=10.0,
-        damage_type=CreatureDamageType.EXPLOSION,
-        impulse=Vec2(1.0, 2.0),
-        owner=OwnerRef.from_player(0),
-        dt=0.016,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=state.perks,
-        rng=rng,
-        effects=state.effects,
-        on_lethal=_Runtime().on_creature_lethal,
+    killed = creature_apply_damage(
+        make_step_runtime(world, dt=0.016), 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0), OwnerRef.from_player(0),
     )
 
     assert killed
+    # The children split off inside `creature_handle_death`, before the doubled impulse.
+    assert creature.vel == Vec2(7.0, 14.0)
+    assert world.creatures.entries[1].vel == Vec2(9.0, 18.0)
+    assert world.creatures.entries[2].vel == Vec2(9.0, 18.0)
 
 
 def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
-    state = GameplayState()
     creature = CreatureState(
         active=True,
         hp=5.0,
@@ -337,49 +212,24 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
         pos=Vec2(10.0, 20.0),
     )
     rng = ScriptedCrand(1, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
+    world = world_with_creature(creature, rng=rng)
+    world.state.bonus_spawn_guard = True
+    step_runtime = make_step_runtime(world, dt=0.016)
     before_calls = rng.calls
-    order: list[str] = []
 
-    class _Runtime(msgspec.Struct):
-        def on_creature_lethal(
-            self,
-            creature_index: int,
-            resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-        ) -> None:
-            assert rng.calls - before_calls == 0
-            order.append("handle_death")
-            assert resolve_damage_followup() == (SfxId.TROOPER_DIE_02,)
-            order.append("death_followup")
-
-    killed = creature_apply_damage_with_lethal_followup(
-        creature,
-        creature_index=0,
-        damage_amount=10.0,
-        damage_type=3,
-        impulse=Vec2(),
-        owner=OwnerRef.from_creature(0),
-        dt=0.016,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=state.perks,
-        rng=rng,
-        effects=state.effects,
-        detail_preset=5,
-        on_lethal=_Runtime().on_creature_lethal,
-    )
+    killed = creature_apply_damage(step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(), OwnerRef.from_creature(0))
 
     assert killed is True
-    assert order == ["handle_death", "death_followup"]
-    assert rng.calls - before_calls == 1
-    assert [record.caller for record in rng.records_since(before_calls)] == [
-        RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX,
-    ]
+    assert len(step_runtime.deaths) == 1
+    assert [request.sfx_id for request in step_runtime.sfx] == [SfxId.TROOPER_DIE_02]
+    assert rng.records_since(before_calls)[-1].caller == RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX
 
 
 def test_resolve_native_death_sfx_default_fixes_trooper_uninitialized_fourth_slot() -> None:
     creature = CreatureState(type_id=CreatureTypeId.TROOPER, flags=CreatureFlags(0))
     rng = ScriptedCrand([0, 1, 2, 3])
 
-    resolved = [resolve_native_death_sfx(creature, rng=rng, preserve_bugs=False)[0] for _ in range(4)]
+    resolved = [resolve_native_death_sfx(creature, rng=rng, preserve_bugs=False) for _ in range(4)]
 
     assert resolved == [
         SfxId.TROOPER_DIE_01,
@@ -398,33 +248,25 @@ def test_resolve_native_death_sfx_preserve_bugs_keeps_trooper_pain_grunt_slot() 
 
     resolved = resolve_native_death_sfx(creature, rng=rng, preserve_bugs=True)
 
-    assert resolved == (SfxId.TROOPER_INPAIN_01,)
+    assert resolved == SfxId.TROOPER_INPAIN_01
     assert [record.caller for record in rng.records] == [
         RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX,
     ]
 
 
-def test_lethal_followup_gates_on_entry_health_not_lifecycle() -> None:
+def test_lethal_branch_gates_on_entry_health_not_lifecycle() -> None:
     # Native creature_apply_damage runs the lethal branch whenever entry hp > 0,
     # even for a creature whose death already started (Shrinkifier corpse with
     # hp still positive); the Zig port mirrors this in applyDamage and
     # applyExplosionDamage.
     creature = CreatureState(active=True, hp=5.0, max_hp=400.0, lifecycle_stage=15.0, size=40.0)
-    lethal: list[int] = []
+    world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
+    world.state.bonus_spawn_guard = True
+    step_runtime = make_step_runtime(world, dt=0.016)
 
-    killed = creature_apply_damage_with_lethal_followup(
-        creature,
-        creature_index=3,
-        damage_amount=10.0,
-        damage_type=int(CreatureDamageType.EXPLOSION),
-        impulse=Vec2(),
-        owner=OwnerRef.from_local_player(0),
-        dt=0.016,
-        players=[PlayerState(index=0, pos=Vec2())],
-        perks=PerkCounts(),
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        on_lethal=lambda index, _followup: lethal.append(index),
+    killed = creature_apply_damage(
+        step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(), OwnerRef.from_local_player(0),
     )
 
     assert killed is True
-    assert lethal == [3]
+    assert len(step_runtime.deaths) == 1

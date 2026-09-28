@@ -11,7 +11,7 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses.update import bonus_telekinetic_update, bonus_update, bonus_update_pre_pickup_timers
 from ..camera import camera_shake_update
-from ..creatures.damage import creature_apply_damage_with_lethal_followup, creature_death_sfx_for_slot
+from ..creatures.damage import creature_death_sfx_for_slot
 from ..creatures.runtime import CreatureDeath, CreaturePool
 from ..effects import FxQueue, FxQueueRotated
 from ..game_modes import GameMode
@@ -73,67 +73,29 @@ class WorldStepRuntime(msgspec.Struct):
             return
         player_take_projectile_damage(self.world.state, self.world.players[idx], float(damage))
 
-    def apply_creature_damage(
-        self,
-        creature_index: int,
-        damage: float,
-        damage_type: int,
-        impulse: Vec2,
-        owner: OwnerRef,
-    ) -> None:
-        idx = int(creature_index)
-        if not (0 <= idx < len(self.world.creatures.entries)):
-            return
-        creature = self.world.creatures.entries[idx]
-        if not creature.active:
-            return
-        creature_apply_damage_with_lethal_followup(
-            creature,
-            creature_index=idx,
-            damage_amount=float(damage),
-            damage_type=int(damage_type),
-            impulse=impulse,
-            owner=owner,
-            dt=float(self.dt),
-            players=self.world.players,
-            perks=self.world.state.perks,
-            rng=self.world.state.rng,
-            preserve_bugs=bool(self.world.state.preserve_bugs),
-            effects=self.world.state.effects,
-            detail_preset=int(self.detail_preset),
-            on_lethal=self.on_creature_lethal,
-        )
+    def handle_creature_death(self, creature_index: int, *, keep_corpse: bool = True) -> None:
+        """`creature_handle_death` for this frame, recording the death event."""
 
-    def on_creature_lethal(
-        self,
-        creature_index: int,
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]],
-    ) -> None:
-        self.world._record_creature_death(
-            creature_index=int(creature_index),
-            dt=float(self.dt),
-            detail_preset=int(self.detail_preset),
-            fx_queue=self.fx_queue,
-            deaths=self.deaths,
-            sfx=self.sfx,
-            resolve_damage_followup=resolve_damage_followup,
+        self.deaths.append(
+            self.world.creatures.handle_death(
+                creature_index,
+                state=self.world.state,
+                players=self.world.players,
+                rng=self.world.state.rng,
+                dt=f32(self.dt),
+                detail_preset=self.detail_preset,
+                fx_queue=self.fx_queue,
+                keep_corpse=keep_corpse,
+            ),
         )
 
     def on_secondary_detonation_kill(self, creature_index: int) -> None:
-        idx = int(creature_index)
-        if not (0 <= idx < len(self.world.creatures.entries)) or float(self.world.creatures.entries[idx].hp) > 0.0:
+        if self.world.creatures.entries[creature_index].hp > 0.0:
             return
         # Native detonation follow-up re-enters creature death handling but does
         # not run a second death-SFX random pick (`creature_apply_damage` only
         # does that on the original killing hit).
-        self.world._record_creature_death(
-            creature_index=idx,
-            dt=float(self.dt),
-            detail_preset=int(self.detail_preset),
-            fx_queue=self.fx_queue,
-            deaths=self.deaths,
-            sfx=self.sfx,
-        )
+        self.handle_creature_death(creature_index)
 
     def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
         return queue_projectile_decals_pre_hit(
@@ -178,21 +140,10 @@ class WorldStepRuntime(msgspec.Struct):
         self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
 
     def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
-        idx = int(creature_index)
-        if not (0 <= idx < len(self.world.creatures.entries)):
-            return
-        creature = self.world.creatures.entries[idx]
+        creature = self.world.creatures.entries[creature_index]
         if creature.active:
             creature.last_hit_owner = owner
-        self.world._record_creature_death(
-            creature_index=idx,
-            dt=float(self.dt),
-            detail_preset=int(self.detail_preset),
-            fx_queue=self.fx_queue,
-            deaths=self.deaths,
-            sfx=self.sfx,
-            keep_corpse=False,
-        )
+        self.handle_creature_death(creature_index, keep_corpse=False)
 
     def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
         idx = int(creature_index)
@@ -363,29 +314,3 @@ class WorldState(msgspec.Struct):
         )
         events.perk_menu_opened = perk_menu_opened
         return events
-
-    def _record_creature_death(
-        self,
-        *,
-        creature_index: int,
-        dt: float,
-        detail_preset: int,
-        fx_queue: FxQueue,
-        deaths: list[CreatureDeath],
-        keep_corpse: bool = True,
-        sfx: list[SfxRequest],
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]] | None = None,
-    ) -> None:
-        self.creatures.record_death(
-            int(creature_index),
-            resolve_damage_followup,
-            state=self.state,
-            players=self.players,
-            rng=self.state.rng,
-            dt=float(dt),
-            detail_preset=int(detail_preset),
-            fx_queue=fx_queue,
-            deaths=deaths,
-            sfx=sfx,
-            keep_corpse=bool(keep_corpse),
-        )

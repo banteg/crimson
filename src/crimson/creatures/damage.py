@@ -1,29 +1,25 @@
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
-from ..effects import EffectPool
 from ..effects_atlas import EffectId
 from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
 from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
-from ..sim.state_types import PerkCounts, PlayerState
 from .damage_types import CreatureDamageType
 from .spawn import CreatureFlags, CreatureTypeId
 
 if TYPE_CHECKING:
+    from ..effects import EffectPool
+    from ..sim.world_state import WorldStepRuntime
     from .runtime import CreatureState
-
-# The callback must handle death synchronously, then invoke the supplied
-# follow-up before returning: native impulse/SFX/shock RNG runs in that order.
-type CreatureLethalHandler = Callable[[int, Callable[[], tuple[SfxId, ...]]], None]
 
 _CREATURE_DEATH_SFX: dict[CreatureTypeId, tuple[SfxId, ...]] = {
     CreatureTypeId.ZOMBIE: (
@@ -86,12 +82,10 @@ def _damage_lethal_ranged_shock_burst(
     *,
     creature: CreatureState,
     rng: CrandLike,
-    effects: EffectPool | None,
+    effects: EffectPool,
     detail_preset: int,
 ) -> None:
     """Port the `creature_apply_damage` lethal branch for `flags & 0x10`."""
-    if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) == 0:
-        return
     for _ in range(5):
         rotation = x87_pc24_mul(
             float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F),
@@ -108,8 +102,6 @@ def _damage_lethal_ranged_shock_burst(
             ),
             f32(0.3),
         )
-        if effects is None:
-            continue
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=creature.pos,
@@ -133,51 +125,48 @@ def resolve_native_death_sfx(
     *,
     rng: CrandLike,
     preserve_bugs: bool = False,
-) -> tuple[SfxId, ...]:
-    """Resolve the native `creature_apply_damage` death sound, if this path owns one."""
-    if (creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK) != 0:
-        return ()
+) -> SfxId | None:
+    """Draw the native `creature_apply_damage` death sound: `sfx_bank_a[crt_rand() % 4]`."""
     roll = rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_DEATH_SFX)
     if creature.type_id == CreatureTypeId.TROOPER:
         if preserve_bugs:
-            return (_TROOPER_DEATH_SFX_PRESERVE_BUGS[roll & 3],)
-        return (_TROOPER_DEATH_SFX[roll % len(_TROOPER_DEATH_SFX)],)
+            return _TROOPER_DEATH_SFX_PRESERVE_BUGS[roll & 3]
+        return _TROOPER_DEATH_SFX[roll % len(_TROOPER_DEATH_SFX)]
     options = _CREATURE_DEATH_SFX.get(creature.type_id)
     if options is None:
-        return ()
-    return (options[roll & 3],)
+        return None
+    return options[roll & 3]
 
 
 def creature_apply_damage(
-    creature: CreatureState,
-    *,
-    damage_amount: float,
+    step_runtime: WorldStepRuntime,
+    creature_index: int,
+    damage: float,
     damage_type: int,
     impulse: Vec2,
     owner: OwnerRef,
-    dt: float,
-    players: list[PlayerState],
-    perks: PerkCounts,
-    rng: CrandLike,
 ) -> bool:
-    """Apply damage to a creature (`creature_apply_damage`), returning True if the hit killed it.
+    """Port of `creature_apply_damage` (0x004207c0), returning whether the creature is dead.
 
-    Notes:
-    - Death side-effects (handle_death, doubled lethal impulse, then shock burst /
-      death SFX) are handled by the caller in native order.
-    - `damage_type` is a native integer category; call sites must supply it.
+    A killing hit runs `creature_handle_death`, then the doubled impulse, then either the
+    shock burst or the death-sound draw, in that order.
     """
 
+    state = step_runtime.world.state
+    perks = state.perks
+    rng = state.rng
+    creature = step_runtime.world.creatures.entries[creature_index]
     creature.last_hit_owner = owner
     creature.hit_flash_timer = f32(0.2)
-    damage = f32(damage_amount)
-    dt = f32(dt)
+    damage = f32(damage)
+    impulse = Vec2(f32(impulse.x), f32(impulse.y))
+    dt = f32(step_runtime.dt)
 
     if damage_type == CreatureDamageType.BULLET:
         if PerkId.URANIUM_FILLED_BULLETS in perks:
             damage = x87_pc24_add(damage, damage)
         if PerkId.LIVING_FORTRESS in perks:
-            for player in players:
+            for player in step_runtime.world.players:
                 timer = float(player.living_fortress_timer)
                 if float(player.health) > 0.0 and timer > 0.0:
                     damage = x87_pc24_mul(damage, x87_pc24_add(x87_pc24_mul(timer, f32(0.05)), 1.0))
@@ -207,78 +196,25 @@ def creature_apply_damage(
         rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_PYROMANIAC)
 
     creature.hp = x87_pc24_sub(creature.hp, damage)
+    creature.vel = Vec2(x87_pc24_sub(creature.vel.x, impulse.x), x87_pc24_sub(creature.vel.y, impulse.y))
+    if creature.hp > 0.0:
+        return False
+
+    if dt > 0.0:
+        creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, dt)
+    else:
+        creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
+    step_runtime.handle_creature_death(creature_index)
     creature.vel = Vec2(
-        x87_pc24_sub(creature.vel.x, f32(impulse.x)),
-        x87_pc24_sub(creature.vel.y, f32(impulse.y)),
+        x87_pc24_sub(creature.vel.x, x87_pc24_mul(impulse.x, 2.0)),
+        x87_pc24_sub(creature.vel.y, x87_pc24_mul(impulse.y, 2.0)),
     )
-
-    if creature.hp <= 0.0:
-        if dt > 0.0:
-            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, dt)
-        else:
-            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
-        return True
-
-    return False
-
-
-def creature_apply_damage_with_lethal_followup(
-    creature: CreatureState,
-    *,
-    creature_index: int,
-    damage_amount: float,
-    damage_type: int,
-    impulse: Vec2,
-    owner: OwnerRef,
-    dt: float,
-    players: list[PlayerState],
-    perks: PerkCounts,
-    rng: CrandLike,
-    preserve_bugs: bool = False,
-    effects: EffectPool | None = None,
-    detail_preset: int = 5,
-    on_lethal: CreatureLethalHandler,
-) -> bool:
-    """Apply damage and run a required lethal follow-up exactly on death transition.
-
-    This helper keeps lethal bookkeeping adjacent to damage application so runtime
-    call sites cannot accidentally skip death handling side effects.
-    """
-
-    # Native gates the lethal branch purely on entry health; a creature whose
-    # death was already handled with hp still positive (shrinkifier shrink-death,
-    # energizer eat) re-enters the full lethal follow-up on a later killing hit.
-    death_start_needed = float(creature.hp) > 0.0
-    native_impulse = Vec2(f32(impulse.x), f32(impulse.y))
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=float(damage_amount),
-        damage_type=int(damage_type),
-        impulse=native_impulse,
-        owner=owner,
-        dt=float(dt),
-        players=players,
-        perks=perks,
-        rng=rng,
-    )
-    if killed and death_start_needed:
-
-        def _resolve_damage_followup() -> tuple[SfxId, ...]:
-            # Native lethal order: `creature_handle_death` runs first, the current
-            # source-slot record receives a second 2x impulse, then either the
-            # shock-burst rand loop (`flags & 0x10`) or the death-SFX rand draw.
-            creature.vel = Vec2(
-                x87_pc24_sub(creature.vel.x, x87_pc24_mul(native_impulse.x, 2.0)),
-                x87_pc24_sub(creature.vel.y, x87_pc24_mul(native_impulse.y, 2.0)),
-            )
-            _damage_lethal_ranged_shock_burst(
-                creature=creature,
-                rng=rng,
-                effects=effects,
-                detail_preset=int(detail_preset),
-            )
-            return resolve_native_death_sfx(creature, rng=rng, preserve_bugs=preserve_bugs)
-
-        on_lethal(int(creature_index), _resolve_damage_followup)
-        return True
-    return False
+    if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
+        _damage_lethal_ranged_shock_burst(
+            creature=creature, rng=rng, effects=state.effects, detail_preset=step_runtime.detail_preset,
+        )
+    else:
+        sound = resolve_native_death_sfx(creature, rng=rng, preserve_bugs=state.preserve_bugs)
+        if sound is not None:
+            step_runtime.sfx.append(SfxRequest(sound, creature.pos))
+    return True

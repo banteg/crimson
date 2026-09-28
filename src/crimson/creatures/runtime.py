@@ -8,7 +8,6 @@ See: `docs/creatures/update.md`.
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
-from functools import partial
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -56,6 +55,7 @@ from ..sim.state_types import TERRAIN_SIZE, PlayerState
 from ..sim.timing import ftol_ms_i32
 from .ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .anim import CREATURE_ANIM, creature_anim_advance_phase
+from .damage import creature_apply_damage
 from .damage_types import CreatureDamageType
 from .lifecycle import (
     CREATURE_LIFECYCLE_ALIVE,
@@ -85,7 +85,6 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ..sim.world_state import WorldStepRuntime
-    from .damage import CreatureLethalHandler
 
 
 __all__ = [
@@ -425,18 +424,7 @@ def _creature_interaction_energizer_eat(ctx: _CreatureInteractionCtx) -> None:
     ctx.sfx.append(SfxRequest(SfxId.UI_BONUS, ctx.creature.pos, gain=0.8))
 
     ctx.state.bonus_spawn_guard = True
-    ctx.deaths.append(
-        ctx.pool.handle_death(
-            ctx.creature_index,
-            state=ctx.state,
-            players=ctx.players,
-            rng=ctx.rng,
-            dt=float(ctx.dt),
-            detail_preset=int(ctx.detail_preset),
-            fx_queue=ctx.fx_queue,
-            keep_corpse=False,
-        ),
-    )
+    ctx.step_runtime.handle_creature_death(ctx.creature_index, keep_corpse=False)
     ctx.state.bonus_spawn_guard = False
 
 
@@ -469,33 +457,13 @@ def _creature_interaction_contact_damage(ctx: _CreatureInteractionCtx) -> None:
 
 
     if PerkId.MR_MELEE in ctx.state.perks:
-        from .damage import creature_apply_damage_with_lethal_followup
-
-        creature_apply_damage_with_lethal_followup(
-            creature,
-            creature_index=int(ctx.creature_index),
-            damage_amount=25.0,
-            damage_type=CreatureDamageType.MELEE,
-            impulse=Vec2(),
-            owner=OwnerRef.from_player(int(ctx.player.index)),
-            dt=ctx.dt,
-            players=ctx.players,
-            perks=ctx.state.perks,
-            rng=ctx.rng,
-            preserve_bugs=bool(ctx.state.preserve_bugs),
-            effects=ctx.state.effects,
-            detail_preset=int(ctx.detail_preset),
-            on_lethal=partial(
-                ctx.pool.record_death,
-                state=ctx.state,
-                players=ctx.players,
-                rng=ctx.rng,
-                dt=float(ctx.dt),
-                detail_preset=int(ctx.detail_preset),
-                fx_queue=ctx.fx_queue,
-                deaths=ctx.deaths,
-                sfx=ctx.sfx,
-            ),
+        creature_apply_damage(
+            ctx.step_runtime,
+            ctx.creature_index,
+            25.0,
+            CreatureDamageType.MELEE,
+            Vec2(),
+            OwnerRef.from_player(ctx.player.index),
         )
 
     if float(ctx.player.shield_timer) <= 0.0:
@@ -924,11 +892,8 @@ class CreaturePool:
         *,
         dt: float,
         step_runtime: WorldStepRuntime,
-        on_lethal: CreatureLethalHandler,
     ) -> bool:
-        state, players = step_runtime.world.state, step_runtime.world.players
-        rng = state.rng
-        detail_preset = int(step_runtime.detail_preset)
+        state = step_runtime.world.state
         if dt <= 0.0 or float(state.bonuses.freeze) > 0.0:
             return False
         damage_amount = 0.0
@@ -940,23 +905,8 @@ class CreaturePool:
         if damage_amount <= 0.0:
             return False
 
-        from .damage import creature_apply_damage_with_lethal_followup
-
-        return creature_apply_damage_with_lethal_followup(
-            creature,
-            creature_index=int(creature_index),
-            damage_amount=float(damage_amount),
-            damage_type=CreatureDamageType.SELF_TICK,
-            impulse=Vec2(),
-            owner=creature.last_hit_owner,
-            dt=dt,
-            players=players,
-            perks=state.perks,
-            rng=rng,
-            preserve_bugs=bool(state.preserve_bugs),
-            effects=state.effects,
-            detail_preset=int(detail_preset),
-            on_lethal=on_lethal,
+        return creature_apply_damage(
+            step_runtime, creature_index, damage_amount, CreatureDamageType.SELF_TICK, Vec2(), creature.last_hit_owner,
         )
 
     def _tick_corpse(
@@ -967,7 +917,6 @@ class CreaturePool:
         dt: float,
         dt_ms: int,
         step_runtime: WorldStepRuntime,
-        on_lethal: CreatureLethalHandler,
         single_player_dormant_target: PlayerState | None,
     ) -> None:
         state, players = step_runtime.world.state, step_runtime.world.players
@@ -981,7 +930,7 @@ class CreaturePool:
         # dead-entry dt * 15 decrement before the usual dt * 28 decay.
         if creature.hp <= 0.0 and creature_lifecycle_is_alive(creature.lifecycle_stage):
             creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
-        self._apply_self_damage_tick(idx, creature, dt=dt, step_runtime=step_runtime, on_lethal=on_lethal)
+        self._apply_self_damage_tick(idx, creature, dt=dt, step_runtime=step_runtime)
         # Native still ticks AI7 link-timer state (and its RNG draws) for
         # dead creatures inside `creature_update_all`.
         if dt > 0.0 and float(state.bonuses.freeze) <= 0.0 and (int(creature.flags) & _FLAG_AI7_LINK_TIMER) != 0:
@@ -1030,7 +979,6 @@ class CreaturePool:
         violence_disabled = int(step_runtime.violence_disabled)
         fx_queue = step_runtime.fx_queue
         fx_queue_rotated = step_runtime.fx_queue_rotated
-        deaths = step_runtime.deaths
         sfx = step_runtime.sfx
         self._update_tick = int(self._update_tick) + 1
         single_player_dormant_target: PlayerState | None = None
@@ -1070,18 +1018,6 @@ class CreaturePool:
         # Native AI7 timer math uses `frame_dt_ms` integer slots with ftol-style
         # truncation semantics.
         dt_ms = ftol_ms_i32(float(dt)) if dt > 0.0 else 0
-        on_lethal = partial(
-            self.record_death,
-            state=state,
-            players=players,
-            rng=rng,
-            dt=float(dt),
-            detail_preset=int(detail_preset),
-            fx_queue=fx_queue,
-            deaths=deaths,
-            sfx=sfx,
-        )
-
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue
@@ -1101,7 +1037,6 @@ class CreaturePool:
                     dt=dt,
                     dt_ms=dt_ms,
                     step_runtime=step_runtime,
-                    on_lethal=on_lethal,
                     single_player_dormant_target=single_player_dormant_target,
                 )
                 continue
@@ -1114,7 +1049,6 @@ class CreaturePool:
                 creature,
                 dt=dt,
                 step_runtime=step_runtime,
-                on_lethal=on_lethal,
             )
             # Native order runs AI7 link timer update after periodic self-damage
             # and before any live-branch kill handling/retargeting.
@@ -1181,17 +1115,7 @@ class CreaturePool:
                     plague_killed = False
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
-                        deaths.append(
-                            self.handle_death(
-                                idx,
-                                state=state,
-                                players=players,
-                                rng=rng,
-                                dt=float(dt),
-                                detail_preset=int(detail_preset),
-                                fx_queue=fx_queue,
-                            ),
-                        )
+                        step_runtime.handle_creature_death(idx)
                         # Native plague-kill path consumes one rand draw for
                         # creature attack SFX bank-b selection after death side effects.
                         contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature.type_id)
@@ -1227,23 +1151,8 @@ class CreaturePool:
                 # Native link-death cleanup calls creature_apply_damage(idx,
                 # 1000.0, 1, zero): the full bullet path with heading-jitter
                 # rand, hit flash, and the lethal death-SFX roll.
-                from .damage import creature_apply_damage_with_lethal_followup
-
-                creature_apply_damage_with_lethal_followup(
-                    creature,
-                    creature_index=int(idx),
-                    damage_amount=float(ai.self_damage),
-                    damage_type=CreatureDamageType.BULLET,
-                    impulse=Vec2(),
-                    owner=creature.last_hit_owner,
-                    dt=float(dt),
-                    players=players,
-                    perks=state.perks,
-                    rng=rng,
-                    preserve_bugs=bool(state.preserve_bugs),
-                    effects=state.effects,
-                    detail_preset=int(detail_preset),
-                    on_lethal=on_lethal,
+                creature_apply_damage(
+                    step_runtime, idx, ai.self_damage, CreatureDamageType.BULLET, Vec2(), creature.last_hit_owner,
                 )
 
             if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
@@ -1424,40 +1333,6 @@ class CreaturePool:
                     break
             if interaction_ctx.skip_creature:
                 continue
-
-    def record_death(
-        self,
-        idx: int,
-        resolve_damage_followup: Callable[[], tuple[SfxId, ...]] | None = None,
-        *,
-        state: GameplayState,
-        players: list[PlayerState],
-        rng: CrandLike,
-        dt: float,
-        detail_preset: int,
-        fx_queue: FxQueue | None,
-        deaths: list[CreatureDeath],
-        sfx: list[SfxRequest],
-        keep_corpse: bool = True,
-    ) -> None:
-        """Handle a death and record it, then play the killing hit's follow-up (native order).
-
-        Serves as the lethal callback of `creature_apply_damage_with_lethal_followup`.
-        """
-        deaths.append(
-            self.handle_death(
-                int(idx),
-                state=state,
-                players=players,
-                rng=rng,
-                dt=float(dt),
-                detail_preset=int(detail_preset),
-                fx_queue=fx_queue,
-                keep_corpse=keep_corpse,
-            ),
-        )
-        if resolve_damage_followup is not None:
-            sfx.extend(SfxRequest(sound, self._entries[int(idx)].pos) for sound in resolve_damage_followup())
 
     def handle_death(
         self,

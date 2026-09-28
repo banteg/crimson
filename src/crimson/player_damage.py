@@ -6,14 +6,13 @@ See: `docs/crimsonland-exe/player-damage.md`.
 
 from __future__ import annotations
 
-from functools import partial
 from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from .creatures.damage import creature_apply_damage_with_lethal_followup
+from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
 from .math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from .owner_ref import OwnerRef
@@ -45,17 +44,6 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
         pos=player.pos, scale=1.8, rng=state.rng, detail_preset=step_runtime.detail_preset,
     )
     state.bonus_spawn_guard = True
-    on_lethal = partial(
-        world.creatures.record_death,
-        state=state,
-        players=world.players,
-        rng=state.rng,
-        dt=step_runtime.dt,
-        detail_preset=step_runtime.detail_preset,
-        fx_queue=step_runtime.fx_queue,
-        deaths=step_runtime.deaths,
-        sfx=state.sfx_queue,
-    )
     for creature_idx, creature in enumerate(world.creatures.entries):
         if not creature.active:
             continue
@@ -66,21 +54,13 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
         blast = x87_pc24_sub(512.0, x87_pc24_hypot(dx, dy))
         if blast <= 0.0:
             continue
-        creature_apply_damage_with_lethal_followup(
-            creature,
-            creature_index=creature_idx,
-            damage_amount=x87_pc24_mul(blast, 5.0),
-            damage_type=CreatureDamageType.EXPLOSION,
-            impulse=Vec2(),
-            owner=OwnerRef.from_player(player.index),
-            dt=step_runtime.dt,
-            players=world.players,
-            perks=state.perks,
-            rng=state.rng,
-            preserve_bugs=state.preserve_bugs,
-            effects=state.effects,
-            detail_preset=step_runtime.detail_preset,
-            on_lethal=on_lethal,
+        creature_apply_damage(
+            step_runtime,
+            creature_idx,
+            x87_pc24_mul(blast, 5.0),
+            CreatureDamageType.EXPLOSION,
+            Vec2(),
+            OwnerRef.from_player(player.index),
         )
     state.bonus_spawn_guard = False
     state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, player.pos))

@@ -11,7 +11,7 @@ from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.builders.session import make_world
-from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
+from tests.support.factories import make_creature_state, make_step_runtime, place_creatures, world_with_creature
 from tests.support.helpers import assert_float_close
 
 
@@ -21,17 +21,8 @@ def test_ion_gun_master_increases_ion_damage() -> None:
     perks = PerkCounts()
     perks[PerkId.ION_GUN_MASTER] = 1
 
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=10.0,
-        damage_type=7,
-        impulse=Vec2(),
-        owner=OwnerRef.from_local_player(0),
-        dt=0.016,
-        players=[player],
-        perks=perks,
-        rng=Crand(0x1234),
-    )
+    world = world_with_creature(creature, rng=Crand(0x1234), perks=perks, players=[player])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 7, Vec2(), OwnerRef.from_local_player(0))
 
     assert killed is False
     assert_float_close(creature.hp, 88.0)

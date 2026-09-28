@@ -3,10 +3,11 @@
 import struct
 from unittest.mock import patch
 
+from crimson.creatures.damage import creature_apply_damage
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
-from crimson.projectiles.runtime import PrimaryStepCtx
+from crimson.projectiles.runtime import PrimaryStepCtx, collision
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -80,16 +81,14 @@ def observe(case):
         splatters.append([[bits(kwargs["pos"].x), bits(kwargs["pos"].y)], bits(kwargs["angle"]), bits(kwargs["age"])])
         return spawn_blood(self, **kwargs)
 
-    apply_damage = WorldStepRuntime.apply_creature_damage
-
-    def record_damage(self, creature_index, damage, damage_type, impulse, owner):
+    def record_damage(step_runtime, creature_index, damage, damage_type, impulse, owner):
         damage_calls.append([creature_index, bits(damage), damage_type, [bits(impulse.x), bits(impulse.y)]])
-        return apply_damage(self, creature_index, damage, damage_type, impulse, owner)
+        return creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner)
 
     with (
         patch.object(FxQueue, "add_random", record_random),
         patch.object(EffectPool, "spawn_blood_splatter", record_blood),
-        patch.object(WorldStepRuntime, "apply_creature_damage", record_damage),
+        patch.object(collision, "creature_apply_damage", record_damage),
     ):
         hits = state.projectiles.step(
             PrimaryStepCtx(step_runtime=runtime, dt=case["dt"]),

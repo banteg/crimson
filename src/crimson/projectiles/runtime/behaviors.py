@@ -7,7 +7,6 @@ import msgspec
 
 from grim.geom import Vec2
 from grim.rand import CrandLike
-from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
 from ...creatures.damage_types import CreatureDamageType
@@ -259,10 +258,6 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
     )
 
 
-def _no_death_sfx() -> tuple[SfxId, ...]:
-    return ()
-
-
 def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> None:
     _spawn_shrinkifier_hit_effects(
         ctx.effects,
@@ -278,7 +273,7 @@ def _post_hit_shrinkifier(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) ->
         # Native calls creature_handle_death directly: no damage pipeline, so no
         # heading-jitter or death-SFX rand draws, and hp stays positive so the
         # generic chip damage after this hook still applies.
-        ctx.step_runtime.on_creature_lethal(int(hit.hit_idx), _no_death_sfx)
+        ctx.step_runtime.handle_creature_death(hit.hit_idx)
     hit.proj.life_timer = 0.25
 
 

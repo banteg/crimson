@@ -6,6 +6,7 @@ import pytest
 
 import crimson.sim.world_state as world_state_mod
 from crimson.bonuses import BonusId
+from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreatureDeath
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
@@ -262,7 +263,8 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
         step_runtime = ctx.step_runtime
-        step_runtime.apply_creature_damage(
+        creature_apply_damage(
+            step_runtime,
             0,
             1000.0,
             CreatureDamageType.BULLET,
@@ -448,17 +450,18 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
     creature.reward_value = 0.0
     creature.lifecycle_stage = 16.0
 
-    record_death = mocker.patch.object(
-        world_state_mod.WorldState,
-        "_record_creature_death",
-        wraps=world_state_mod.WorldState._record_creature_death,
+    handle_death = mocker.patch.object(
+        world_state_mod.WorldStepRuntime,
+        "handle_creature_death",
+        wraps=world_state_mod.WorldStepRuntime.handle_creature_death,
         autospec=True,
     )
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
         ctx = cast("PrimaryStepCtx", _args[0])
         step_runtime = ctx.step_runtime
-        step_runtime.apply_creature_damage(
+        creature_apply_damage(
+            step_runtime,
             0,
             1000.0,
             CreatureDamageType.BULLET,
@@ -468,7 +471,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
         return []
 
     def _fake_particles_update(*_args: object, **_kwargs: object) -> None:
-        assert record_death.call_count == 1
+        assert handle_death.call_count == 1
 
     mocker.patch.object(world.state.projectiles, "step", side_effect=_fake_projectile_step)
     mocker.patch.object(world.state.particles, "update", side_effect=_fake_particles_update)
@@ -485,7 +488,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
         game_tune_started=False,
     )
 
-    assert record_death.call_count == 1
+    assert handle_death.call_count == 1
     assert any(
         key in {SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04}
         for key in sfx_ids(events.sfx)
@@ -562,7 +565,8 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
     def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = kwargs
         ctx = cast("PrimaryStepCtx", args[0])
-        ctx.step_runtime.apply_creature_damage(
+        creature_apply_damage(
+            ctx.step_runtime,
             0,
             1000.0,
             CreatureDamageType.BULLET,

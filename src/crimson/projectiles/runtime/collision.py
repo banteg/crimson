@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...collision_math import native_find_size_margin, within_native_find_radius
+from ...creatures.damage import creature_apply_damage
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from ...owner_ref import OwnerRef
@@ -104,15 +105,9 @@ def _apply_damage_to_creature(
     owner: OwnerRef,
     step_runtime: WorldStepRuntime,
 ) -> None:
-    if damage <= 0.0:
+    if damage <= 0.0 or not step_runtime.world.creatures.entries[creature_index].active:
         return
-    step_runtime.apply_creature_damage(
-        int(creature_index),
-        float(damage),
-        int(damage_type),
-        impulse,
-        owner,
-    )
+    creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner)
 
 
 __all__ = [

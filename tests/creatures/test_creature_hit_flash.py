@@ -14,6 +14,7 @@ from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state, step_creatures
 
 FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-hit-flash.json"
+from tests.support.factories import make_step_runtime, world_with_creature
 
 
 def bits(value: float) -> int:
@@ -60,15 +61,6 @@ def test_damage_hit_flash_matches_native_witnesses() -> None:
             lifecycle_stage=row["lifecycle"],
         )
         creature.hit_flash_timer = row["hit_flash"]
-        creature_apply_damage(
-            creature,
-            damage_amount=case["damage"],
-            damage_type=case["damage_type"],
-            impulse=Vec2(),
-            owner=OwnerRef.from_player(0),
-            dt=case["dt"],
-            players=[PlayerState(index=0, pos=Vec2(), health=100)] if case["players"] else [],
-            perks=PerkCounts(),
-            rng=Crand(case["rng_seed"]),
-        )
+        world = world_with_creature(creature, rng=Crand(case["rng_seed"]), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2(), health=100)] if case["players"] else [])
+        creature_apply_damage(make_step_runtime(world, dt=case["dt"]), 0, case["damage"], case["damage_type"], Vec2(), OwnerRef.from_player(0))
         assert bits(creature.hit_flash_timer) == witness["timer_bits"], case["name"]

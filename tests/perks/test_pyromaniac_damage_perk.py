@@ -8,6 +8,7 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
+from tests.support.factories import make_step_runtime, world_with_creature
 from tests.support.helpers import assert_float_close
 
 
@@ -18,17 +19,8 @@ def test_pyromaniac_increases_fire_damage_and_consumes_rng() -> None:
     perks[PerkId.PYROMANIAC] = 1
 
     rand = RecordingCrand(Crand(0x1234))
-    killed = creature_apply_damage(
-        creature,
-        damage_amount=10.0,
-        damage_type=4,
-        impulse=Vec2(),
-        owner=OwnerRef.from_local_player(0),
-        dt=0.016,
-        players=[player],
-        perks=perks,
-        rng=rand,
-    )
+    world = world_with_creature(creature, rng=rand, perks=perks, players=[player])
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 4, Vec2(), OwnerRef.from_local_player(0))
 
     assert killed is False
     assert_float_close(creature.hp, 85.0)

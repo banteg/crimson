@@ -8,11 +8,14 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.gameplay import player_update
+from crimson.perks.availability import prepare_perk_availability
 from crimson.sim.input import PlayerInput
-from crimson.sim.state_types import PlayerState
+from crimson.sim.state_types import PerkCounts, PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
+from crimson.weapon_runtime import prepare_weapon_availability
 from crimson.weapon_runtime.fire import WeaponFireCtx, WeaponFireResult, capture_fire_gate, fire_weapon
 from grim.geom import Vec2
+from grim.rand import CrandLike
 
 
 def make_creature_state(
@@ -64,6 +67,27 @@ def make_step_runtime(
         deaths=[],
         sfx=[],
     )
+
+
+def world_with_creature(
+    creature: CreatureState,
+    *,
+    rng: CrandLike | None = None,
+    perks: PerkCounts | None = None,
+    players: Sequence[PlayerState] | None = None,
+) -> WorldState:
+    """A world holding `creature` in pool slot 0, for driving `creature_apply_damage` on it."""
+
+    world = WorldState.build(hardcore=False, quest_fail_retry_count=0)
+    prepare_weapon_availability(world.state)
+    prepare_perk_availability(world.state)
+    if rng is not None:
+        world.state.rng = rng
+    if perks is not None:
+        world.state.perks = perks
+    world.players.extend([PlayerState(index=0, pos=Vec2())] if players is None else players)
+    world.creatures.entries[0] = creature
+    return world
 
 
 def place_creatures(world: WorldState, creatures: Sequence[CreatureState]) -> list[CreatureState]:
