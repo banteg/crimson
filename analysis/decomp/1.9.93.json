@@ -42700,12 +42700,12 @@
       "candidate": "source",
       "image": "crimsonland.exe",
       "linked": false,
-      "matched": false,
+      "matched": true,
       "name": "quest_spawn_timeline_update",
       "proof": {
-        "body_byte_exact": false,
-        "candidate_instructions": 113,
-        "candidate_object_sha256": "ddcdcaa27096b8f9b8678fd6b8acdee0e4c0d1d3aec18ff1cc5f54bda7857ed9",
+        "body_byte_exact": true,
+        "candidate_instructions": 115,
+        "candidate_object_sha256": "4da296b740bb435c0fb6cebdb88ae3c0af807aafbaa4f97f0cef38dc24f81a3d",
         "candidate_padding_bytes": 0,
         "compared_target_ranges": [
           [
@@ -42717,15 +42717,15 @@
         "references": {
           "mismatched": 0,
           "ok": 13,
-          "positional": false,
+          "positional": true,
           "unresolved": 0
         },
-        "state": "wip",
+        "state": "match",
         "target_instructions": 115,
         "target_size": 368,
         "unexplained_target_ranges": []
       },
-      "ratio": 0.9122807017543859,
+      "ratio": 1.0,
       "size": 368,
       "source": "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp"
     },
@@ -111459,7 +111459,7 @@
     "decomp/1.9/crimsonland/quests/quest_database_init.cpp": "16ad00fadf477d1276de4377b936c5d05d9c06d0662acadbc99feacb24ccedf8",
     "decomp/1.9/crimsonland/quests/quest_meta_init_entry.cpp": "1452a4ccc1194a222e6e62a915e3c0df193adc56b297e975683032c392006281",
     "decomp/1.9/crimsonland/quests/quest_spawn_table_empty.c": "a1a898383560b7126c952f26726f589c1794f69820936eaf4e9e3e5999cf0154",
-    "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+    "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp": "5106274077be14b7a571b636eda607532f90b147f1dce57e26b5e8dccbbd7aa5",
     "decomp/1.9/crimsonland/quests/quest_start_selected.cpp": "d86e2adcdbdc8fbcc05a322a7b02d1f6ff84e9190119ff3106cc5100a020c16a",
     "decomp/1.9/crimsonland/resource/buffer_reader_find_tag.cpp": "6fe40dba8c0eda71a53df20f83e5efd24979fdc789f96f0e2b7cb494d8b49a3f",
     "decomp/1.9/crimsonland/resource/buffer_reader_init.cpp": "ffae81e277bb962b1fe075b40916795c9c0f399287afe752581fac69aead0545",
@@ -114431,7 +114431,7 @@
     "tools/match/scratches/quest_select_unused_blue_dim_color_destroy/scratch.conf": "e15788116383ebe9794d05701df75414414704b2e23b217a53ff5ef5914244a6",
     "tools/match/scratches/quest_select_unused_orange_color_destroy/scratch.conf": "d6423e39560ed609e3e924fee725beb92ed3f265a27861cef14706731ade6c76",
     "tools/match/scratches/quest_spawn_table_empty/scratch.conf": "ca9526be271a559d5dbb6d127313aa55021718230794dbd2bed9e6b9be2ac6a3",
-    "tools/match/scratches/quest_spawn_timeline_update/scratch.conf": "2c5eb81aebef9448f1d463cd7e8a6a85ef80f32a8eb4a59b2b59fc367f7bc733",
+    "tools/match/scratches/quest_spawn_timeline_update/scratch.conf": "4baa274e12e7841a02c79890b7080c9428f9ea32c8e542c52602554dc11b0a1e",
     "tools/match/scratches/quest_spawn_timeline_update/source-boundary-controls-2026-09-11.py": "200380aac10bd070e9c05d9846828372f0e954415caf7ba0fc3f9f0f7dbbdf1a",
     "tools/match/scratches/quest_spawn_timeline_update/source-shape-controls-2026-09-12.py": "2cb951ab8da653ce326f55be05c79bdc18b6001a08f9d3202716982058cc9c72",
     "tools/match/scratches/quest_start_selected/scratch.conf": "482dd0f4376072c4fc7890731e19f231ce5d9327fed15fd589f9814aaa503f3e",

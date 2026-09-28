@@ -59,7 +59,7 @@
     "source_sha256": "ae69b55ffd089f5a4cd70a99f654defede00a539948171aa295c92111cd54e9c",
     "status": "passed"
   },
-  "audit_digest": "476696ab768d858f7c27167d7143ea881de64a4e260945c81151d63c592bac7c",
+  "audit_digest": "f82d4bc86332ba65ceabaacbb52f87a26ee8857c19029a57e2094c6995984bf4",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -61832,12 +61832,12 @@
         {
           "path": "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp",
           "repository_relative": true,
-          "sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9"
+          "sha256": "5106274077be14b7a571b636eda607532f90b147f1dce57e26b5e8dccbbd7aa5"
         },
         {
           "path": "tools/match/scratches/quest_spawn_timeline_update/scratch.conf",
           "repository_relative": true,
-          "sha256": "2c5eb81aebef9448f1d463cd7e8a6a85ef80f32a8eb4a59b2b59fc367f7bc733"
+          "sha256": "4baa274e12e7841a02c79890b7080c9428f9ea32c8e542c52602554dc11b0a1e"
         },
         {
           "path": "tools/match/cl.sh",
@@ -61872,7 +61872,7 @@
       ],
       "compiler": "msvc6.5",
       "config": "tools/match/scratches/quest_spawn_timeline_update/scratch.conf",
-      "config_sha256": "2c5eb81aebef9448f1d463cd7e8a6a85ef80f32a8eb4a59b2b59fc367f7bc733",
+      "config_sha256": "4baa274e12e7841a02c79890b7080c9428f9ea32c8e542c52602554dc11b0a1e",
       "effective_end": 4408256,
       "end": 4408256,
       "function": "quest_spawn_timeline_update",
@@ -61880,17 +61880,17 @@
         {
           "address": 4407888,
           "canonical_config": "tools/match/scratches/quest_spawn_timeline_update/scratch.conf",
-          "canonical_config_sha256": "2c5eb81aebef9448f1d463cd7e8a6a85ef80f32a8eb4a59b2b59fc367f7bc733",
+          "canonical_config_sha256": "4baa274e12e7841a02c79890b7080c9428f9ea32c8e542c52602554dc11b0a1e",
           "canonical_scratch": "tools/match/scratches/quest_spawn_timeline_update",
           "canonical_source": "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp",
-          "canonical_source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+          "canonical_source_sha256": "5106274077be14b7a571b636eda607532f90b147f1dce57e26b5e8dccbbd7aa5",
           "effective_end": 4408256,
           "end": 4408256,
-          "experiment_epoch": "0a0792c6139e82f2399f4c2cd0a8adfdabf56f4256cfa0348e7ba8df514f7c25",
+          "experiment_epoch": "f93e05b47f65eafb7bf2d9295e322a25207dd00612904eb7af57d693c5f286e5",
           "function": "quest_spawn_timeline_update",
           "match": {
-            "body_byte_exact": false,
-            "candidate_instructions": 113,
+            "body_byte_exact": true,
+            "candidate_instructions": 115,
             "masked_mismatches": 0,
             "masked_ok": 13,
             "masked_unresolved": 0,
@@ -61898,9 +61898,9 @@
               "candidate": 0,
               "target": 0
             },
-            "prefix_instructions": 51,
-            "ratio": 0.9122807017543859,
-            "state": "wip",
+            "prefix_instructions": 115,
+            "ratio": 1.0,
+            "state": "match",
             "target_instructions": 115
           },
           "object_function_symbol": "_quest_spawn_timeline_update",
@@ -61908,8 +61908,8 @@
         }
       ],
       "match": {
-        "body_byte_exact": false,
-        "candidate_instructions": 113,
+        "body_byte_exact": true,
+        "candidate_instructions": 115,
         "masked_mismatches": 0,
         "masked_ok": 13,
         "masked_unresolved": 0,
@@ -61917,17 +61917,17 @@
           "candidate": 0,
           "target": 0
         },
-        "prefix_instructions": 51,
-        "ratio": 0.9122807017543859,
-        "state": "wip",
+        "prefix_instructions": 115,
+        "ratio": 1.0,
+        "state": "match",
         "target_instructions": 115
       },
       "object": "tools/match/scratches/quest_spawn_timeline_update/build/msvc6.5/854c108e66251366/quest_spawn_timeline_update.obj",
       "object_function_symbol": "_quest_spawn_timeline_update",
-      "object_sha256": "ef33f2af6d502cdafa8081922e7ea9ee8f67895141a005bf7197a778189bb61f",
+      "object_sha256": "cad46e1df5b9dfccaa4b8ca2b98bb582d3f0f43c26a40bdb081302815332c902",
       "scratch": "tools/match/scratches/quest_spawn_timeline_update",
       "source": "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp",
-      "source_sha256": "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9",
+      "source_sha256": "5106274077be14b7a571b636eda607532f90b147f1dce57e26b5e8dccbbd7aa5",
       "target_size": 368,
       "translation_unit": {
         "kind": "isolated",
@@ -87425,8 +87425,7 @@
     "translation_unit_policy": "one object per function unless an explicit cluster binds every member symbol and preserves its canonical match"
   },
   "states": {
-    "match": 670,
-    "wip": 1
+    "match": 671
   },
   "translation_units": {
     "cluster_count": 29,

@@ -1,16 +1,16 @@
 # Matching Status
 
-Relocation-aware encoded-body identity: **809/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
+Relocation-aware encoded-body identity: **810/810** evaluated functions. Normalized exactness is reported separately below; recognized terminal padding is excluded.
 
 Scope: `port` from `analysis/matching_scope.json`.
 
 Regenerate with `uv run crimson match checkpoint`.
 
-**809/810** functions matched exactly (**99.9%**), **341624/341992** code bytes (**99.9%**). Byte totals are manifest function extents with terminal padding trimmed.
+**810/810** functions matched exactly (**100.0%**), **341992/341992** code bytes (**100.0%**). Byte totals are manifest function extents with terminal padding trimmed.
 
-Fuzzy-weighted alignment is **341960/341992** code bytes (**100.0%**).
+Fuzzy-weighted alignment is **341992/341992** code bytes (**100.0%**).
 
-Remaining exact-match debt is **1 functions**, **368 code bytes**, and **32 fuzzy-gap bytes**.
+Remaining exact-match debt is **0 functions**, **0 code bytes**, and **0 fuzzy-gap bytes**.
 
 Reproducible candidates cover **810/810** functions and **341992/341992** code bytes (**100.0%**). Candidate coverage includes exact matches and WIPs; it does not claim byte identity.
 
@@ -27,18 +27,6 @@ Generated from `analysis/native/<image>/{objects,closure,data}.json`. Artifact s
 |---|---|---:|---:|---:|---:|---:|---:|
 | crimsonland.exe | excluded_function=71, game_data=0, import=25, toolchain=1 | 0 | 1788 | 1788 | 1788 | 1788 | 1788 |
 | grim.dll | excluded_function=39, game_data=0, import=12, toolchain=2 | 0 | 478 | 433 | 384 | 384 | 384 |
-
-## Residual frontier
-
-**1** non-exact scratch-backed functions hold **32 fuzzy-gap bytes**. The top 5 hold **100.0%** of that gap; the top 10 hold **100.0%**.
-
-Current-baseline experiments cover **0 functions / 0 gap bytes**; **1 / 32** are historical-only; **0 / 0** have no recorded experiments.
-
-Evidence labels are baseline-epoch aware. `current-stalled` means at least three complete, error-free, non-improving mutation sweeps against the current inputs. `historical-only` is not stalled and must not suppress a fresh source analysis. Recovery and residual labels are declarations from scratch.conf, not verified semantic equivalence or proven compiler causes. `semantic-complete` does not exclude a target from the default work queue. Recheck native behavior before attributing a mismatch to the compiler; failed sweeps do not prove exhaustion.
-
-| rank | image | function | fuzzy gap | declared recovery | declared residual | evidence | current/all | streak | flags |
-|---:|---|---|---:|---|---|---|---:|---:|---|
-| 1 | crimsonland.exe | quest_spawn_timeline_update | 32 | semantic-complete | compiler | historical-only | 0/12 | 0 | repeated-variants,variant-errors,historical-only |
 
 ## Function dispositions
 
@@ -108,12 +96,12 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 
 | image | exact functions | exact bytes | exact code | fuzzy-weighted bytes | fuzzy code | candidate functions | candidate bytes | candidate code | scratches |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| crimsonland.exe | 670/671 | 320459/320827 | 99.9% | 320795/320827 | 100.0% | 671/671 | 320827/320827 | 100.0% | 670/671 |
+| crimsonland.exe | 671/671 | 320827/320827 | 100.0% | 320827/320827 | 100.0% | 671/671 | 320827/320827 | 100.0% | 671/671 |
 | grim.dll | 139/139 | 21165/21165 | 100.0% | 21165/21165 | 100.0% | 139/139 | 21165/21165 | 100.0% | 139/139 |
 
 ## crimsonland.exe
 
-**670/671** functions (**99.9%**), **320459/320827** bytes (**99.9%**), **320795/320827** fuzzy-weighted bytes (**100.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **670/671** scratches verified.
+**671/671** functions (**100.0%**), **320827/320827** bytes (**100.0%**), **320827/320827** fuzzy-weighted bytes (**100.0%**), **671/671** reproducible candidates covering **320827/320827** bytes (**100.0%**), **671/671** scratches verified.
 
 | state | function | address | bytes | fuzzy bytes | fuzzy gap | insns | match | prefix | refs ok/?/! | build | note |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|---|
@@ -300,11 +288,11 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | gameplay_run_state_init | 0x004120b0 | 172 | 172/172 | 0 | 44/44 | 100.00% | 44/44 | 20/0/0 |  | gameplay-run-initialization |
 | match | crimson_crt_empty_initializer_slot_09_thunk | 0x00412160 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-09-thunk |
 | match | crimson_crt_empty_initializer_slot_09 | 0x00412170 | 1 | 1/1 | 0 | 1/1 | 100.00% | 1/1 | 0/0/0 |  | evidence-backed-crimson-crt-empty-initializer-slot-09 |
-| match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | quest-metadata-global-lifecycle |
+| match | quest_meta_global_construct_and_register | 0x00412180 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-global-lifecycle |
 | match | quest_meta_init | 0x00412190 | 25 | 25/25 | 0 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-construction |
 | match | quest_meta_entry_init | 0x004121b0 | 45 | 45/45 | 0 | 13/13 | 100.00% | 13/13 | 0/0/0 |  | quest-metadata-entry-defaults |
 | match | quest_meta_entry_release | 0x004121e0 | 15 | 15/15 | 0 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | quest-metadata-owned-name-release |
-| match | quest_meta_register_atexit | 0x004121f0 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | quest-metadata-destructor-registration |
+| match | quest_meta_register_atexit | 0x004121f0 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-destructor-registration |
 | match | quest_meta_table_destroy | 0x00412200 | 20 | 20/20 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | quest-metadata-array-destruction |
 | match | bonus_pool_global_init_thunk | 0x00412220 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | bonus-pool-global-initialization-thunk |
 | match | bonus_pool_global_init | 0x00412230 | 23 | 23/23 | 0 | 7/7 | 100.00% | 7/7 | 1/0/0 |  | bonus-pool-global-initialization |
@@ -314,11 +302,11 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | game_status_global_init | 0x004122a0 | 171 | 171/171 | 0 | 45/45 | 100.00% | 45/45 | 18/0/0 |  | game-status-global-constructor |
 | match | highscore_init_sentinels_thunk | 0x00412350 | 5 | 5/5 | 0 | 1/1 | 100.00% | 1/1 | 1/0/0 |  | tail-thunk-to-highscore-sentinel-init |
 | match | highscore_init_sentinels | 0x00412360 | 96 | 96/96 | 0 | 38/38 | 100.00% | 38/38 | 3/0/0 |  | highscore-sentinels |
-| match | bonus_meta_global_construct_and_register | 0x004123c0 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | bonus-metadata-global-lifecycle |
+| match | bonus_meta_global_construct_and_register | 0x004123c0 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-global-lifecycle |
 | match | bonus_meta_table_init | 0x004123d0 | 25 | 25/25 | 0 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-construction |
 | match | bonus_meta_entry_init | 0x004123f0 | 27 | 27/27 | 0 | 8/8 | 100.00% | 8/8 | 0/0/0 |  | bonus-metadata-entry-defaults |
 | match | bonus_meta_entry_release | 0x00412410 | 36 | 36/36 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | metadata-owned-string-release |
-| match | bonus_meta_register_atexit | 0x00412440 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | bonus-metadata-destructor-registration |
+| match | bonus_meta_register_atexit | 0x00412440 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-destructor-registration |
 | match | bonus_meta_table_destroy | 0x00412450 | 20 | 20/20 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | bonus-metadata-array-destruction |
 | match | bonus_pick_random_type | 0x00412470 | 484 | 484/484 | 0 | 162/162 | 100.00% | 162/162 | 20/0/0 |  | gameplay-bonus-selection |
 | match | bonus_metadata_init | 0x00412660 | 735 | 735/735 | 0 | 131/131 | 100.00% | 131/131 | 109/0/0 |  | bonus-metadata-initialization |
@@ -516,10 +504,10 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | effect_spawn_splitter_hit_burst | 0x0042f3f0 | 333 | 333/333 | 0 | 75/75 | 100.00% | 75/75 | 23/0/0 |  | gameplay-effect-spawn |
 | match | effect_spawn_ion_hit_sparks | 0x0042f540 | 378 | 378/378 | 0 | 86/86 | 100.00% | 86/86 | 31/0/0 |  | gameplay-ion-hit-sparks |
 | match | effect_spawn_explosion_burst | 0x0042f6c0 | 964 | 964/964 | 0 | 182/182 | 100.00% | 182/182 | 75/0/0 |  | gameplay-explosion-burst |
-| match | perk_meta_global_construct_and_register | 0x0042fa90 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 |  | perk-metadata-global-lifecycle |
+| match | perk_meta_global_construct_and_register | 0x0042fa90 | 10 | 10/10 | 0 | 2/2 | 100.00% | 2/2 | 2/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-global-lifecycle |
 | match | perk_meta_table_init | 0x0042faa0 | 28 | 28/28 | 0 | 7/7 | 100.00% | 7/7 | 4/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-construction |
 | match | perk_meta_entry_init | 0x0042fac0 | 27 | 27/27 | 0 | 8/8 | 100.00% | 8/8 | 0/0/0 |  | perk-metadata-entry-defaults |
-| match | perk_meta_register_atexit | 0x0042fae0 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 |  | perk-metadata-destructor-registration |
+| match | perk_meta_register_atexit | 0x0042fae0 | 12 | 12/12 | 0 | 4/4 | 100.00% | 4/4 | 2/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-destructor-registration |
 | match | perk_meta_table_destroy | 0x0042faf0 | 23 | 23/23 | 0 | 6/6 | 100.00% | 6/6 | 3/0/0 | msvc6.5 /O2 /GB /W3 /GR- /GX | perk-metadata-array-destruction |
 | match | perk_can_offer | 0x0042fb10 | 185 | 185/185 | 0 | 55/55 | 100.00% | 55/55 | 17/0/0 |  | gameplay-perk-eligibility |
 | match | perk_select_random | 0x0042fbd0 | 89 | 89/89 | 0 | 32/32 | 100.00% | 32/32 | 8/0/0 |  | gameplay-perk-rng |
@@ -531,7 +519,7 @@ Evidence labels are baseline-epoch aware. `current-stalled` means at least three
 | match | creature_spawn_slot_alloc | 0x00430ad0 | 30 | 30/30 | 0 | 10/10 | 100.00% | 10/10 | 2/0/0 |  | creature-spawn-slot-pool |
 | match | creature_spawn_template | 0x00430af0 | 14099 | 14099/14099 | 0 | 3159/3159 | 100.00% | 3159/3159 | 363/0/0 |  | gameplay-spawn-switch |
 | match | quest_spawn_table_empty | 0x00434220 | 39 | 39/39 | 0 | 16/16 | 100.00% | 16/16 | 2/0/0 |  | quest-spawn-table-exhaustion |
-| wip | quest_spawn_timeline_update | 0x00434250 | 368 | 336/368 | 32 | 113/115 | 91.23% | 51/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
+| match | quest_spawn_timeline_update | 0x00434250 | 368 | 368/368 | 0 | 115/115 | 100.00% | 115/115 | 13/0/0 |  | quest-spawn-timeline-dispatch |
 | match | quest_database_advance_slot | 0x004343c0 | 30 | 30/30 | 0 | 12/12 | 100.00% | 12/12 | 0/0/0 |  | quest-database-slot-advance |
 | match | quest_build_fallback | 0x004343e0 | 150 | 150/150 | 0 | 32/32 | 100.00% | 32/32 | 7/0/0 |  | quest-fallback-append-count |
 | match | quest_build_nagolipoli | 0x00434480 | 983 | 983/983 | 0 | 258/258 | 100.00% | 258/258 | 14/0/0 |  | quest-nagolipoli-rings-waves-lines |
