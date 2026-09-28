@@ -103,6 +103,7 @@ class ReplayPlaybackMode:
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
         self._hud_state = HudState()
+        self._frame_dt_ms = 0.0
         self._grim_mono: GrimMonoFont | None = None
         self._quest_title = ""
         self._quest_level: QuestLevel | None = None
@@ -282,6 +283,7 @@ class ReplayPlaybackMode:
     def open(self) -> None:
         self._small = load_small_font(self._ctx.assets_dir)
         self._hud_state = HudState()
+        self._frame_dt_ms = 0.0
         self._grim_mono = None
         self._quest_title = ""
 
@@ -480,6 +482,7 @@ class ReplayPlaybackMode:
         self._dt_accum = 0.0
 
     def update(self, dt: float) -> None:
+        self._frame_dt_ms = max(0.0, float(dt)) * 1000.0
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.close_requested = True
             return
@@ -638,7 +641,9 @@ class ReplayPlaybackMode:
             players=players,
             bonus_hud=world.state.bonus_hud,
             elapsed_ms=elapsed_ms,
-            frame_dt_ms=float(max(0.0, rl.get_frame_time()) * 1000.0),
+            # The frame's own delta, as live play uses: offline renders must not
+            # depend on how fast the machine draws.
+            frame_dt_ms=self._frame_dt_ms,
             quest_progress_ratio=quest_progress_ratio,
         )
 
