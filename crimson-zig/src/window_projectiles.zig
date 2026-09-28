@@ -10,38 +10,9 @@ const game_ids = cz.game_ids;
 const runtime_helpers = cz.helpers;
 const runtime_perks = cz.perks;
 const runtime_session = cz.session;
-const secondary_projectiles_runtime = cz.secondary_projectiles;
 const state_mod = cz.state;
 
-const SecondaryRocketStyle = struct {
-    base_size: f32,
-    glow_size: f32,
-    glow_rgb: window_atlas.ColorRgbf,
-    glow_alpha_mul: f32,
-};
-
-const secondary_rocket_style_by_type = std.EnumArray(secondary_projectiles_runtime.SecondaryProjectileTypeId, ?SecondaryRocketStyle).init(.{
-    .none = null,
-    .rocket = .{
-        .base_size = 14.0,
-        .glow_size = 60.0,
-        .glow_rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-        .glow_alpha_mul = 0.68,
-    },
-    .homing_rocket = .{
-        .base_size = 10.0,
-        .glow_size = 40.0,
-        .glow_rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-        .glow_alpha_mul = 0.58,
-    },
-    .detonation = null,
-    .rocket_minigun = .{
-        .base_size = 8.0,
-        .glow_size = 30.0,
-        .glow_rgb = .{ .r = 0.7, .g = 0.7, .b = 1.0 },
-        .glow_alpha_mul = 0.158,
-    },
-});
+const ProjectileTypeId = game_ids.ProjectileTypeId;
 
 pub const DrawCtx = struct {
     session: *const runtime_session.DeterministicSession,
@@ -51,510 +22,234 @@ pub const DrawCtx = struct {
     flame_glow_enabled: bool = true,
 };
 
-pub fn drawMainProjectile(
-    projectile: cz.projectiles.Projectile,
-    proj_index: usize,
-    ctx: DrawCtx,
-) bool {
-    if (drawBulletTrail(projectile, ctx)) return true;
-    if (drawPlasmaParticles(projectile, ctx)) return true;
-    if (drawBeamEffect(projectile, ctx)) return true;
-    if (drawPulseGun(projectile, ctx)) return true;
-    if (drawSplitterOrBlade(projectile, proj_index, ctx)) return true;
-    if (drawPlagueSpreader(projectile, proj_index, ctx)) return true;
-    if (window_atlas.projectileKnownFrame(projectile.type_id)) |known| {
-        const rgb = window_atlas.knownProjectileRgb(projectile.type_id);
-        drawAtlasFrameCenteredRotated(
-            ctx.assets.texture(.projs),
-            known.grid,
-            known.frame,
-            toRlVec(projectile.pos),
-            0.6,
-            projectile.angle,
-            colorWithAlpha(
-                rl.Color.init(rgb.r, rgb.g, rgb.b, 255),
-                std.math.clamp(projectile.life_timer / 0.4, @as(f32, 0.0), @as(f32, 1.0)),
-            ),
-        );
-        return true;
-    }
-    return false;
+/// Native `projectile_render`: each pass walks a whole pool with one texture and
+/// blend before the next starts. Only the Gauss trail ignores `entity_alpha`, so
+/// at zero transition it is all that shows.
+pub fn projectileRender(ctx: DrawCtx) void {
+    sharpshooterLaserPass(ctx);
+    bulletTrailPass(ctx);
+    if (ctx.entity_alpha <= 1e-3) return;
+    plasmaGlowPass(ctx);
+    projectileSpritePass(ctx);
+    plaguePass(ctx);
+    fireBulletsGlowPass(ctx);
+    bulletHeadPass(ctx);
+    secondaryGlowPass(ctx);
+    rocketSpritePass(ctx);
+    rocketExhaustPass(ctx);
 }
 
-pub fn drawSecondaryProjectile(
-    projectile: secondary_projectiles_runtime.SecondaryProjectile,
-    ctx: DrawCtx,
-) bool {
-    if (drawSecondaryRocket(projectile, ctx)) return true;
-    if (drawSecondaryDetonation(projectile, ctx)) return true;
-    return false;
-}
-
-fn drawBulletTrail(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool {
-    if (!window_atlas.isBulletTrailType(projectile.type_id)) return false;
-
-    const end = toRlVec(projectile.pos);
-    const alpha = std.math.clamp(projectile.life_timer, @as(f32, 0.0), @as(f32, 1.0)) * ctx.entity_alpha;
-
-    drawBulletTrailQuad(bulletTrailQuad(projectile, ctx.entity_alpha), ctx.assets.texture(.bullet_trail));
-
-    if (projectile.life_timer >= 0.39) {
-        const size = window_atlas.bulletSpriteSize(projectile.type_id);
-        drawTextureCenteredRotated(
-            ctx.assets.texture(.bullet_i),
-            end,
-            size,
-            size,
-            radiansToDegrees(projectile.angle),
-            colorWithAlpha(rl.Color.init(220, 220, 220, 255), alpha),
-        );
-    }
-    return true;
-}
-
-fn drawPlasmaParticles(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool {
-    if (!window_atlas.isPlasmaParticleType(projectile.type_id)) return false;
-
-    const src_rect = window_atlas.effectRect(
-        ctx.assets.texture(.particles).width,
-        ctx.assets.texture(.particles).height,
-        .glow,
-    ) orelse return false;
-    const cfg = window_atlas.plasmaRenderConfig(projectile.type_id);
-    const alpha = if (projectile.life_timer >= 0.4)
-        1.0
-    else
-        std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
-    const origin = toRlVec(projectile.origin);
-    const head = toRlVec(projectile.pos);
-    const direction = vecNormalizeOr(vecSub(head, origin), .{ .x = 0.0, .y = -1.0 });
-
+/// Detonation flashes; native `bonus_render` draws them after the particle pool.
+pub fn secondaryDetonationPass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.particles);
+    const src = glowRect(texture);
     rl.beginBlendMode(.additive);
-    if (projectile.life_timer >= 0.4) {
-        if (ctx.flame_glow_enabled) {
-            var seg_count = @as(i32, @intFromFloat(projectile.travel_budget));
-            if (seg_count < 0) seg_count = 0;
-            seg_count = @divTrunc(seg_count, 5);
-            if (seg_count > cfg.seg_limit) seg_count = cfg.seg_limit;
-
-            var idx: i32 = 0;
-            while (idx < seg_count) : (idx += 1) {
-                const pos = vecAdd(head, vecScale(direction, -@as(f32, @floatFromInt(idx)) * cfg.spacing));
-                drawTextureRegionCenteredRotated(
-                    ctx.assets.texture(.particles),
-                    src_rect,
-                    pos,
-                    cfg.tail_size,
-                    cfg.tail_size,
-                    0.0,
-                    rgbfColor(cfg.rgb, alpha * 0.4 * ctx.entity_alpha),
-                );
-            }
-        }
-
-        drawTextureRegionCenteredRotated(
-            ctx.assets.texture(.particles),
-            src_rect,
-            head,
-            cfg.head_size,
-            cfg.head_size,
-            0.0,
-            rgbfColor(cfg.rgb, alpha * cfg.head_alpha_mul * ctx.entity_alpha),
-        );
-        if (ctx.flame_glow_enabled) {
-            drawTextureRegionCenteredRotated(
-                ctx.assets.texture(.particles),
-                src_rect,
-                head,
-                cfg.aura_size,
-                cfg.aura_size,
-                0.0,
-                rgbfColor(cfg.aura_rgb, alpha * cfg.aura_alpha_mul * ctx.entity_alpha),
-            );
-        }
-    } else {
-        drawTextureRegionCenteredRotated(
-            ctx.assets.texture(.particles),
-            src_rect,
-            head,
-            56.0,
-            56.0,
-            0.0,
-            colorWithAlpha(rl.Color.white, alpha * ctx.entity_alpha),
-        );
+    defer rl.endBlendMode();
+    for (ctx.session.secondary_projectiles.entries) |projectile| {
+        if (!projectile.active or projectile.type_id != .detonation) continue;
+        const t = std.math.clamp(projectile.detonation_t, @as(f32, 0.0), @as(f32, 1.0));
+        const fade = (1.0 - t) * ctx.entity_alpha;
+        const center = toRlVec(projectile.pos);
+        const size = projectile.detonation_scale * t;
+        drawSprite(texture, src, center, size * 64.0, 0.0, tint(1.0, 0.6, 0.1, fade));
+        drawSprite(texture, src, center, size * 200.0, 0.0, tint(1.0, 0.6, 0.1, fade * 0.3));
     }
-    rl.endBlendMode();
-    return true;
 }
 
-fn drawBeamEffect(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool {
-    if (!window_atlas.isBeamType(projectile.type_id)) return false;
+fn sharpshooterLaserPass(ctx: DrawCtx) void {
+    if (ctx.entity_alpha <= 1e-3) return;
+    const players = ctx.session.playersConst();
+    // Native reads the perk from player 0 and draws a laser for every living player.
+    if (players.len == 0 or !runtime_perks.perkActive(&players[0], .sharpshooter)) return;
+    const texture = ctx.assets.texture(.bullet_trail);
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (players) |player| {
+        if (player.health <= 0.0) continue;
+        const heading = player.aim_heading - std.math.pi / 2.0;
+        const start_heading = heading - 0.150915;
+        const pos = toRlVec(player.pos);
+        const start = vecAdd(pos, .{ .x = @cos(start_heading) * 15.0, .y = @sin(start_heading) * 15.0 });
+        const end = vecAdd(pos, .{ .x = @cos(heading) * 512.0, .y = @sin(heading) * 512.0 });
+        const half_width: rl.Vector2 = .{ .x = @cos(player.aim_heading) * 1.1, .y = @sin(player.aim_heading) * 1.1 };
+        drawTrailQuad(.{
+            .points = .{ vecSub(start, half_width), vecAdd(start, half_width), vecAdd(end, half_width), vecSub(end, half_width) },
+            .tail = tint(1.0, 0.0, 0.0, ctx.entity_alpha * 0.5),
+            .head = tint(0.0, 0.0, 0.0, ctx.entity_alpha * 0.2),
+        }, texture);
+    }
+}
 
+fn bulletTrailPass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.bullet_trail);
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (ctx.session.projectiles.entries) |projectile| {
+        if (!projectile.active) continue;
+        if (!(projectile.type_id <= 7 or projectile.type_id == @intFromEnum(ProjectileTypeId.splitter_gun))) continue;
+        drawTrailQuad(bulletTrailQuad(projectile, ctx.entity_alpha), texture);
+    }
+}
+
+const PlasmaGlow = struct {
+    rgb: [3]f32,
+    divisor: f32,
+    step: f32,
+    cap: i32,
+    tail_size: f32,
+    head_size: f32,
+    head_alpha: f32,
+    aura_size: f32,
+    aura_alpha: f32,
+};
+
+fn plasmaGlow(type_id: ProjectileTypeId) ?PlasmaGlow {
+    return switch (type_id) {
+        .plasma_rifle => .{ .rgb = .{ 1.0, 1.0, 1.0 }, .divisor = 2.5, .step = 2.5, .cap = 8, .tail_size = 22.0, .head_size = 56.0, .head_alpha = 0.45, .aura_size = 256.0, .aura_alpha = 0.3 },
+        .plasma_minigun => .{ .rgb = .{ 1.0, 1.0, 1.0 }, .divisor = 2.1, .step = 2.1, .cap = 3, .tail_size = 12.0, .head_size = 16.0, .head_alpha = 0.5, .aura_size = 120.0, .aura_alpha = 0.15 },
+        .plasma_cannon => .{ .rgb = .{ 1.0, 1.0, 1.0 }, .divisor = 3.5, .step = 2.6, .cap = 18, .tail_size = 44.0, .head_size = 84.0, .head_alpha = 0.45, .aura_size = 256.0, .aura_alpha = 0.4 },
+        .spider_plasma => .{ .rgb = .{ 0.3, 1.0, 0.3 }, .divisor = 2.1, .step = 2.1, .cap = 3, .tail_size = 12.0, .head_size = 16.0, .head_alpha = 0.5, .aura_size = 120.0, .aura_alpha = 0.15 },
+        .shrinkifier => .{ .rgb = .{ 0.3, 0.3, 1.0 }, .divisor = 2.1, .step = 2.1, .cap = 3, .tail_size = 12.0, .head_size = 16.0, .head_alpha = 0.5, .aura_size = 120.0, .aura_alpha = 0.15 },
+        else => null,
+    };
+}
+
+/// Native converts the distance and the scaled divisor to integers before dividing.
+fn plasmaSegmentCount(distance: f32, speed_scale: f32, divisor: f32, cap: i32) i32 {
+    const distance_i: i32 = @intFromFloat(distance);
+    const divisor_i: i32 = @intFromFloat(speed_scale * divisor);
+    if (distance_i <= 0 or divisor_i <= 0) return 0;
+    return @min(@divTrunc(distance_i, divisor_i), cap);
+}
+
+fn plasmaGlowPass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.particles);
+    const src = glowRect(texture);
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (ctx.session.projectiles.entries) |projectile| {
+        if (!projectile.active) continue;
+        const type_id = std.enums.fromInt(ProjectileTypeId, projectile.type_id) orelse continue;
+        const glow = plasmaGlow(type_id) orelse continue;
+        const head = toRlVec(projectile.pos);
+        if (projectile.life_timer < 0.4) {
+            const fade = std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
+            drawSprite(texture, src, head, 56.0, 0.0, tint(1.0, 1.0, 1.0, fade * ctx.entity_alpha));
+            continue;
+        }
+        const r, const g, const b = glow.rgb;
+        const segments = plasmaSegmentCount(
+            vecLength(vecSub(toRlVec(projectile.origin), head)),
+            projectile.speed_scale,
+            glow.divisor,
+            glow.cap,
+        );
+        // The stored angle is a quarter turn ahead of travel; the tail steps back along it.
+        const step = runtime_helpers.directionFromHeading(projectile.angle).mul(-projectile.speed_scale * glow.step);
+        var index: i32 = 0;
+        while (index < segments) : (index += 1) {
+            const offset = step.mul(@floatFromInt(index));
+            drawSprite(texture, src, vecAdd(head, toRlVec(offset)), glow.tail_size, 0.0, tint(r, g, b, ctx.entity_alpha * 0.4));
+        }
+        drawSprite(texture, src, head, glow.head_size, 0.0, tint(r, g, b, ctx.entity_alpha * glow.head_alpha));
+        if (ctx.flame_glow_enabled) {
+            drawSprite(texture, src, head, glow.aura_size, 0.0, tint(r, g, b, ctx.entity_alpha * glow.aura_alpha));
+        }
+    }
+}
+
+fn projectileSpritePass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.projs);
+    const alpha = ctx.entity_alpha;
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (ctx.session.projectiles.entries, 0..) |projectile, proj_index| {
+        if (!projectile.active) continue;
+        const type_id = std.enums.fromInt(ProjectileTypeId, projectile.type_id) orelse continue;
+        const life = projectile.life_timer;
+        const center = toRlVec(projectile.pos);
+        const dist = vecLength(vecSub(center, toRlVec(projectile.origin)));
+        switch (type_id) {
+            .pulse_gun => if (life >= 0.4) {
+                drawAtlasCell(texture, 2, 0, center, dist * 0.16, projectile.angle, tint(0.1, 0.6, 0.2, alpha * 0.7));
+            } else {
+                const fade = std.math.clamp(life * 2.5, @as(f32, 0.0), @as(f32, 1.0));
+                drawAtlasCell(texture, 2, 0, center, 56.0, projectile.angle, tint(1.0, 1.0, 1.0, fade * alpha));
+            },
+            .splitter_gun => if (life >= 0.4) {
+                drawAtlasCell(texture, 4, 3, center, @min(dist, 20.0), projectile.angle, tint(1.0, 1.0, 1.0, alpha));
+            },
+            .blade_gun => if (life >= 0.4) {
+                const rotation = @as(f32, @floatFromInt(proj_index)) * 0.1 - ctx.render_time_s * 100.0;
+                drawAtlasCell(texture, 4, 6, center, @min(dist, 20.0), rotation, tint(0.8, 0.8, 0.8, alpha));
+            },
+            .ion_minigun => drawStreak(ctx, texture, projectile, 1.05, true),
+            .ion_rifle => drawStreak(ctx, texture, projectile, 2.2, true),
+            .ion_cannon => drawStreak(ctx, texture, projectile, 3.5, true),
+            .fire_bullets => drawStreak(ctx, texture, projectile, 0.8, false),
+            else => {},
+        }
+    }
+}
+
+/// Ion and Fire Bullets streak: the last 256 units of the path, then its head.
+/// After impact the head dims to a small blue core and an ion shot arcs to every
+/// creature within reach.
+fn drawStreak(
+    ctx: DrawCtx,
+    texture: rl.Texture2D,
+    projectile: cz.projectiles.Projectile,
+    effect_scale: f32,
+    chain: bool,
+) void {
+    const in_flight = projectile.life_timer >= 0.4;
+    const base_alpha = if (in_flight)
+        ctx.entity_alpha
+    else
+        std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0)) * ctx.entity_alpha;
     const origin = toRlVec(projectile.origin);
     const head = toRlVec(projectile.pos);
     const delta = vecSub(head, origin);
     const dist = vecLength(delta);
-    if (!(dist > 1e-6)) return true;
+    if (!(dist > 1e-6)) return;
+    const direction = vecScale(delta, 1.0 / dist);
+    const cell = @as(f32, @floatFromInt(texture.width)) / 4.0;
+    const rgb: [3]f32 = if (chain) .{ 0.5, 0.6, 1.0 } else .{ 1.0, 0.6, 0.1 };
 
-    const direction = vecNormalizeOr(delta, .{ .x = 1.0, .y = 0.0 });
-    const effect_scale = window_atlas.beamEffectScale(projectile.type_id);
     const start = if (dist > 256.0) dist - 256.0 else 0.0;
     const span = dist - start;
     const step = @min(effect_scale * 3.1, 9.0);
-    const base_alpha = if (projectile.life_timer >= 0.4)
-        1.0
-    else
-        std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
-    const streak_rgb = if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets))
-        rl.Color.init(255, 153, 26, 255)
-    else
-        rl.Color.init(128, 153, 255, 255);
-
-    rl.beginBlendMode(.additive);
-    var s: f32 = start;
-    while (s < dist) : (s += step) {
-        const t = if (span > 1e-6) (s - start) / span else 1.0;
-        const seg_alpha = std.math.clamp(t * base_alpha, @as(f32, 0.0), @as(f32, 1.0));
-        if (seg_alpha <= 1e-3) continue;
-        const pos = vecAdd(origin, vecScale(direction, s));
-        drawAtlasFrameCenteredRotated(
-            ctx.assets.texture(.projs),
-            4,
-            2,
-            pos,
-            effect_scale,
-            0.0,
-            colorWithAlpha(streak_rgb, seg_alpha),
-        );
+    var along: f32 = start;
+    while (along < dist) : (along += step) {
+        const t = if (span > 1e-6) (along - start) / span else 1.0;
+        drawAtlasCell(texture, 4, 2, vecAdd(origin, vecScale(direction, along)), cell * effect_scale, 0.0, tint(rgb[0], rgb[1], rgb[2], t * base_alpha));
     }
 
-    const head_rgb = if (projectile.life_timer >= 0.4)
-        rl.Color.init(255, 255, 179, 255)
-    else
-        rl.Color.init(128, 153, 255, 255);
-    drawAtlasFrameCenteredRotated(
-        ctx.assets.texture(.projs),
-        4,
-        2,
-        head,
-        effect_scale,
-        projectile.angle,
-        colorWithAlpha(head_rgb, base_alpha),
-    );
-
-    if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.fire_bullets)) {
-        if (window_atlas.effectRect(ctx.assets.texture(.particles).width, ctx.assets.texture(.particles).height, .glow)) |src_rect| {
-            drawTextureRegionCenteredRotated(
-                ctx.assets.texture(.particles),
-                src_rect,
-                head,
-                64.0,
-                64.0,
-                radiansToDegrees(projectile.angle),
-                colorWithAlpha(rl.Color.white, base_alpha * ctx.entity_alpha),
-            );
-        }
-    } else if (projectile.life_timer < 0.4 and isIonType(projectile.type_id)) {
-        drawIonChains(projectile, effect_scale, base_alpha * ctx.entity_alpha, ctx);
+    if (in_flight) {
+        drawAtlasCell(texture, 4, 2, head, cell * effect_scale, projectile.angle, tint(1.0, 1.0, 0.7, base_alpha));
+        return;
     }
+    // The fading core is one unscaled cell whatever the streak's scale.
+    drawAtlasCell(texture, 4, 2, head, cell, projectile.angle, tint(0.5, 0.6, 1.0, base_alpha));
+    if (!chain) return;
 
-    rl.endBlendMode();
-    return true;
-}
-
-fn drawPulseGun(projectile: cz.projectiles.Projectile, ctx: DrawCtx) bool {
-    if (projectile.type_id != @intFromEnum(game_ids.ProjectileTypeId.pulse_gun)) return false;
-
-    const known = window_atlas.projectileKnownFrame(projectile.type_id) orelse return true;
-    const texture = ctx.assets.texture(.projs);
-    const cell_w = @as(f32, @floatFromInt(texture.width)) / @as(f32, @floatFromInt(known.grid));
-    if (!(cell_w > 1e-6)) return true;
-
-    const alpha: f32 = ctx.entity_alpha;
-    if (projectile.life_timer >= 0.4) {
-        const dist = vecLength(vecSub(toRlVec(projectile.pos), toRlVec(projectile.origin)));
-        const desired_size = dist * 0.16;
-        if (!(desired_size > 1e-3)) return true;
-        rl.beginBlendMode(.additive);
-        drawAtlasFrameCenteredRotated(
-            texture,
-            known.grid,
-            known.frame,
-            toRlVec(projectile.pos),
-            desired_size / cell_w,
-            projectile.angle,
-            colorWithAlpha(rl.Color.init(26, 153, 51, 255), alpha * 0.7),
-        );
-        rl.endBlendMode();
-        return true;
-    }
-
-    const fade_alpha = std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
-    if (fade_alpha <= 1e-3) return true;
-
-    rl.beginBlendMode(.additive);
-    drawAtlasFrameCenteredRotated(
-        texture,
-        known.grid,
-        known.frame,
-        toRlVec(projectile.pos),
-        56.0 / cell_w,
-        projectile.angle,
-        colorWithAlpha(rl.Color.white, fade_alpha),
-    );
-    rl.endBlendMode();
-    return true;
-}
-
-fn drawSplitterOrBlade(projectile: cz.projectiles.Projectile, proj_index: usize, ctx: DrawCtx) bool {
-    if (projectile.type_id != @intFromEnum(game_ids.ProjectileTypeId.splitter_gun) and
-        projectile.type_id != @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
-    {
-        return false;
-    }
-    if (projectile.life_timer < 0.4) return true;
-
-    const known = window_atlas.projectileKnownFrame(projectile.type_id) orelse return true;
-    const texture = ctx.assets.texture(.projs);
-    const cell_w = @as(f32, @floatFromInt(texture.width)) / @as(f32, @floatFromInt(known.grid));
-    if (!(cell_w > 1e-6)) return true;
-
-    const dist = vecLength(vecSub(toRlVec(projectile.pos), toRlVec(projectile.origin)));
-    const desired_size = @min(dist, 20.0);
-    if (!(desired_size > 1e-3)) return true;
-
-    const rotation = if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
-        @as(f32, @floatFromInt(proj_index)) * 0.1 - ctx.render_time_s * 100.0
-    else
-        projectile.angle;
-    const tint = if (projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.blade_gun))
-        rl.Color.init(204, 204, 204, 255)
-    else
-        rl.Color.white;
-
-    drawAtlasFrameCenteredRotated(
-        texture,
-        known.grid,
-        known.frame,
-        toRlVec(projectile.pos),
-        desired_size / cell_w,
-        rotation,
-        tint,
-    );
-    return true;
-}
-
-fn drawPlagueSpreader(projectile: cz.projectiles.Projectile, proj_index: usize, ctx: DrawCtx) bool {
-    if (projectile.type_id != @intFromEnum(game_ids.ProjectileTypeId.plague_spreader)) return false;
-
-    const texture = ctx.assets.texture(.projs);
-    const cell_w = @as(f32, @floatFromInt(texture.width)) / 4.0;
-    if (!(cell_w > 1e-6)) return true;
-
-    if (projectile.life_timer >= 0.4) {
-        const tint = rl.Color.white;
-        rl.beginBlendMode(.multiplied);
-        drawPlagueQuad(texture, toRlVec(projectile.pos), 60.0, tint);
-
-        const offset = runtime_helpers.directionFromHeading(projectile.angle).mul(15.0);
-        drawPlagueQuad(
-            texture,
-            rl.Vector2.init(projectile.pos.x + offset.x, projectile.pos.y + offset.y),
-            60.0,
-            tint,
-        );
-
-        const phase = @as(f32, @floatFromInt(proj_index)) + ctx.render_time_s * 10.0;
-        const cos_phase = std.math.cos(phase);
-        const sin_phase = std.math.sin(phase);
-        drawPlagueQuad(
-            texture,
-            rl.Vector2.init(projectile.pos.x + cos_phase * cos_phase - 5.0, projectile.pos.y + sin_phase * 11.0 - 5.0),
-            52.0,
-            tint,
-        );
-
-        const phase_120 = phase + 2.0943952;
-        drawPlagueQuad(
-            texture,
-            rl.Vector2.init(projectile.pos.x + std.math.cos(phase_120) * 10.0, projectile.pos.y + std.math.sin(phase_120) * 10.0),
-            62.0,
-            tint,
-        );
-
-        const phase_240 = phase + 4.1887903;
-        drawPlagueQuad(
-            texture,
-            rl.Vector2.init(projectile.pos.x + std.math.cos(phase_240) * 10.0, projectile.pos.y + std.math.sin(phase_240) * std.math.sin(phase_120)),
-            62.0,
-            tint,
-        );
-        rl.endBlendMode();
-        return true;
-    }
-
-    const fade = std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
-    if (fade <= 1e-3) return true;
-    rl.beginBlendMode(.multiplied);
-    drawPlagueQuad(
-        texture,
-        toRlVec(projectile.pos),
-        fade * 40.0 + 32.0,
-        colorWithAlpha(rl.Color.white, fade),
-    );
-    rl.endBlendMode();
-    return true;
-}
-
-fn drawSecondaryRocket(
-    projectile: secondary_projectiles_runtime.SecondaryProjectile,
-    ctx: DrawCtx,
-) bool {
-    const style = secondary_rocket_style_by_type.get(projectile.type_id) orelse return false;
-    const texture = ctx.assets.texture(.projs);
-    const cell_w = @as(f32, @floatFromInt(texture.width)) / 4.0;
-    if (!(cell_w > 1e-6)) return true;
-
-    const alpha = secondaryAlpha(projectile);
-    if (ctx.flame_glow_enabled) drawSecondaryRocketGlow(projectile, style, alpha * ctx.entity_alpha, ctx);
-    drawAtlasFrameCenteredRotated(
-        texture,
-        4,
-        3,
-        toRlVec(projectile.pos),
-        style.base_size / cell_w,
-        projectile.angle,
-        colorWithAlpha(rl.Color.init(204, 204, 204, 255), alpha * 0.9 * ctx.entity_alpha),
-    );
-    return true;
-}
-
-fn drawSecondaryRocketGlow(
-    projectile: secondary_projectiles_runtime.SecondaryProjectile,
-    style: SecondaryRocketStyle,
-    alpha: f32,
-    ctx: DrawCtx,
-) void {
-    const src_rect = window_atlas.effectRect(
-        ctx.assets.texture(.particles).width,
-        ctx.assets.texture(.particles).height,
-        .glow,
-    ) orelse return;
-    const direction = runtime_helpers.directionFromHeading(projectile.angle);
-    const center = toRlVec(projectile.pos);
-
-    rl.beginBlendMode(.additive);
-    drawTextureRegionCenteredRotated(
-        ctx.assets.texture(.particles),
-        src_rect,
-        rl.Vector2.init(center.x - direction.x * 5.0, center.y - direction.y * 5.0),
-        140.0,
-        140.0,
-        0.0,
-        colorWithAlpha(rl.Color.white, alpha * 0.48),
-    );
-    drawTextureRegionCenteredRotated(
-        ctx.assets.texture(.particles),
-        src_rect,
-        rl.Vector2.init(center.x - direction.x * 9.0, center.y - direction.y * 9.0),
-        style.glow_size,
-        style.glow_size,
-        0.0,
-        rgbfColor(style.glow_rgb, alpha * style.glow_alpha_mul),
-    );
-    rl.endBlendMode();
-}
-
-fn drawSecondaryDetonation(
-    projectile: secondary_projectiles_runtime.SecondaryProjectile,
-    ctx: DrawCtx,
-) bool {
-    if (projectile.type_id != .detonation) return false;
-
-    const t = std.math.clamp(projectile.detonation_t, @as(f32, 0.0), @as(f32, 1.0));
-    const fade = 1.0 - t;
-    if (fade <= 1e-3 or projectile.detonation_scale <= 1e-6) return true;
-
-    if (window_atlas.effectRect(ctx.assets.texture(.particles).width, ctx.assets.texture(.particles).height, .glow)) |src_rect| {
-        rl.beginBlendMode(.additive);
-        drawTextureRegionCenteredRotated(
-            ctx.assets.texture(.particles),
-            src_rect,
-            toRlVec(projectile.pos),
-            projectile.detonation_scale * t * 64.0,
-            projectile.detonation_scale * t * 64.0,
-            0.0,
-            rgbfColor(.{ .r = 1.0, .g = 0.6, .b = 0.1 }, fade * ctx.entity_alpha),
-        );
-        if (ctx.flame_glow_enabled) {
-            drawTextureRegionCenteredRotated(
-                ctx.assets.texture(.particles),
-                src_rect,
-                toRlVec(projectile.pos),
-                projectile.detonation_scale * t * 200.0,
-                projectile.detonation_scale * t * 200.0,
-                0.0,
-                rgbfColor(.{ .r = 1.0, .g = 0.6, .b = 0.1 }, fade * 0.3 * ctx.entity_alpha),
-            );
-        }
-        rl.endBlendMode();
-    } else {
-        rl.drawCircleLines(
-            @intFromFloat(projectile.pos.x),
-            @intFromFloat(projectile.pos.y),
-            @max(1.0, projectile.detonation_scale * t * 80.0),
-            colorWithAlpha(rl.Color.init(255, 180, 100, 255), fade),
-        );
-    }
-    return true;
-}
-
-fn drawIonChains(
-    projectile: cz.projectiles.Projectile,
-    effect_scale: f32,
-    base_alpha: f32,
-    ctx: DrawCtx,
-) void {
-    const perk_scale: f32 = if (anyIonGunMaster(ctx.session.playersConst())) 1.2 else 1.0;
-    const radius = effect_scale * perk_scale * 40.0;
-    const head = projectile.pos;
-    for (ctx.session.creatures.entries) |creature| {
+    const reach = effect_scale * (if (anyIonGunMaster(ctx.session.playersConst())) @as(f32, 1.2) else 1.0) * 40.0;
+    const chain_tint = tint(0.5, 0.6, 1.0, base_alpha);
+    // Native walks `creature_find_in_radius(pos, reach, 1)`: the inner strip, the
+    // outer strip, then the glow on that creature, one creature at a time.
+    for (ctx.session.creatures.entries[1..]) |creature| {
         if (!creature.active) continue;
         if (!creature_lifecycle.isCollidable(creature.lifecycle_stage)) continue;
-        if (!runtime_helpers.withinNativeFindRadius(head, creature.pos, radius, creature.size)) continue;
-        drawIonChainSegment(head, creature.pos, effect_scale, base_alpha, ctx);
+        if (!runtime_helpers.withinNativeFindRadius(projectile.pos, creature.pos, reach, creature.size)) continue;
+        const target = toRlVec(creature.pos);
+        const to_target = vecSub(target, head);
+        const length = vecLength(to_target);
+        if (!(length > 1e-6)) continue;
+        const side: rl.Vector2 = .{ .x = -to_target.y / length, .y = to_target.x / length };
+        drawIonChainStrip(texture, head, target, side, 10.0 * effect_scale, chain_tint);
+        drawIonChainStrip(texture, head, target, side, 14.0 * effect_scale, chain_tint);
+        drawAtlasCell(texture, 4, 2, target, cell * effect_scale, 0.0, chain_tint);
     }
-}
-
-fn drawIonChainSegment(
-    start_world: state_mod.Vec2,
-    end_world: state_mod.Vec2,
-    effect_scale: f32,
-    base_alpha: f32,
-    ctx: DrawCtx,
-) void {
-    const start = toRlVec(start_world);
-    const end = toRlVec(end_world);
-    const delta = vecSub(end, start);
-    const dist = vecLength(delta);
-    if (!(dist > 1e-6)) return;
-    const direction = vecNormalizeOr(delta, .{ .x = 1.0, .y = 0.0 });
-    const side = rl.Vector2.init(-direction.y, direction.x);
-    const outer_half = 14.0 * effect_scale;
-    const inner_half = 10.0 * effect_scale;
-    const tint = colorWithAlpha(rl.Color.init(128, 153, 255, 255), base_alpha);
-
-    drawIonChainStrip(ctx.assets.texture(.projs), start, end, side, outer_half, tint);
-    drawIonChainStrip(ctx.assets.texture(.projs), start, end, side, inner_half, tint);
-    drawAtlasFrameCenteredRotated(
-        ctx.assets.texture(.projs),
-        4,
-        2,
-        end,
-        effect_scale,
-        0.0,
-        tint,
-    );
 }
 
 fn drawIonChainStrip(
@@ -563,41 +258,132 @@ fn drawIonChainStrip(
     end: rl.Vector2,
     side: rl.Vector2,
     half_width: f32,
-    tint: rl.Color,
+    color: rl.Color,
 ) void {
-    const side_offset = rl.Vector2.init(side.x * half_width, side.y * half_width);
-    const p0 = rl.Vector2.init(start.x - side_offset.x, start.y - side_offset.y);
-    const p1 = rl.Vector2.init(start.x + side_offset.x, start.y + side_offset.y);
-    const p2 = rl.Vector2.init(end.x + side_offset.x, end.y + side_offset.y);
-    const p3 = rl.Vector2.init(end.x - side_offset.x, end.y - side_offset.y);
+    const offset = vecScale(side, half_width);
+    const points = [_]rl.Vector2{ vecSub(start, offset), vecAdd(start, offset), vecAdd(end, offset), vecSub(end, offset) };
+    const vs = [_]f32{ 0.0, 0.25, 0.25, 0.0 };
 
     rl.gl.rlSetTexture(texture.id);
     rl.gl.rlBegin(rl.gl.rl_quads);
-    rl.gl.rlColor4ub(tint.r, tint.g, tint.b, tint.a);
-    rl.gl.rlTexCoord2f(0.625, 0.0);
-    rl.gl.rlVertex2f(p0.x, p0.y);
-    rl.gl.rlTexCoord2f(0.625, 0.25);
-    rl.gl.rlVertex2f(p1.x, p1.y);
-    rl.gl.rlTexCoord2f(0.625, 0.25);
-    rl.gl.rlVertex2f(p2.x, p2.y);
-    rl.gl.rlTexCoord2f(0.625, 0.0);
-    rl.gl.rlVertex2f(p3.x, p3.y);
+    rl.gl.rlColor4ub(color.r, color.g, color.b, color.a);
+    for (points, vs) |point, v| {
+        rl.gl.rlTexCoord2f(0.625, v);
+        rl.gl.rlVertex2f(point.x, point.y);
+    }
     rl.gl.rlEnd();
     rl.gl.rlSetTexture(0);
 }
 
-fn drawPlagueQuad(texture: rl.Texture2D, center: rl.Vector2, desired_size: f32, tint: rl.Color) void {
-    const cell_w = @as(f32, @floatFromInt(texture.width)) / 4.0;
-    if (!(cell_w > 1e-6)) return;
-    drawAtlasFrameCenteredRotated(texture, 4, 2, center, desired_size / cell_w, 0.0, tint);
+fn plaguePass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.projs);
+    const alpha = ctx.entity_alpha;
+    // Native switches to D3D8 SRC=ZERO / DST=INVSRCALPHA: the cloud darkens what lies under it.
+    rl.gl.rlSetBlendFactors(rl.gl.rl_zero, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    rl.beginBlendMode(.custom);
+    rl.gl.rlSetBlendFactors(rl.gl.rl_zero, rl.gl.rl_one_minus_src_alpha, rl.gl.rl_func_add);
+    defer rl.endBlendMode();
+    for (ctx.session.projectiles.entries, 0..) |projectile, proj_index| {
+        if (!projectile.active or projectile.type_id != @intFromEnum(ProjectileTypeId.plague_spreader)) continue;
+        const pos = toRlVec(projectile.pos);
+        if (projectile.life_timer < 0.4) {
+            const fade = std.math.clamp(projectile.life_timer * 2.5, @as(f32, 0.0), @as(f32, 1.0));
+            drawAtlasCell(texture, 4, 2, pos, fade * 40.0 + 32.0, 0.0, tint(1.0, 1.0, 1.0, fade * alpha));
+            continue;
+        }
+        const color = tint(1.0, 1.0, 1.0, alpha);
+        const behind = runtime_helpers.directionFromHeading(projectile.angle).mul(-15.0);
+        const phase = @as(f32, @floatFromInt(proj_index)) + ctx.render_time_s * 10.0;
+        const phase_120 = phase + 2.0943952;
+        const phase_240 = phase + 4.1887903;
+        const puffs = [_]struct { offset: rl.Vector2, size: f32 }{
+            .{ .offset = .{ .x = 0.0, .y = 0.0 }, .size = 60.0 },
+            .{ .offset = toRlVec(behind), .size = 60.0 },
+            .{ .offset = .{ .x = @cos(phase) * @cos(phase) - 5.0, .y = @sin(phase) * 11.0 - 5.0 }, .size = 52.0 },
+            .{ .offset = .{ .x = @cos(phase_120) * 10.0, .y = @sin(phase_120) * 10.0 }, .size = 62.0 },
+            .{ .offset = .{ .x = @cos(phase_240) * 10.0, .y = @sin(phase_240) * @sin(phase_120) }, .size = 62.0 },
+        };
+        for (puffs) |puff| drawAtlasCell(texture, 4, 2, vecAdd(pos, puff.offset), puff.size, 0.0, color);
+    }
 }
 
-fn isIonType(type_id_raw: i32) bool {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return false;
-    return switch (type_id) {
-        .ion_rifle, .ion_minigun, .ion_cannon => true,
-        else => false,
-    };
+fn fireBulletsGlowPass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.particles);
+    const src = glowRect(texture);
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (ctx.session.projectiles.entries) |projectile| {
+        if (!projectile.active or projectile.life_timer < 0.4) continue;
+        if (projectile.type_id != @intFromEnum(ProjectileTypeId.fire_bullets)) continue;
+        drawSprite(texture, src, toRlVec(projectile.pos), 64.0, projectile.angle, tint(1.0, 1.0, 1.0, ctx.entity_alpha));
+    }
+}
+
+fn bulletHeadPass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.bullet_i);
+    const src: window_atlas.AtlasRect = .{ .x = 0.0, .y = 0.0, .width = @floatFromInt(texture.width), .height = @floatFromInt(texture.height) };
+    const color = tint(0.8, 0.8, 0.8, ctx.entity_alpha * 0.9);
+    for (ctx.session.projectiles.entries) |projectile| {
+        if (!projectile.active or projectile.life_timer < 0.4) continue;
+        const size: f32 = switch (projectile.type_id) {
+            @intFromEnum(ProjectileTypeId.plasma_rifle),
+            @intFromEnum(ProjectileTypeId.plasma_minigun),
+            @intFromEnum(ProjectileTypeId.pulse_gun),
+            => continue,
+            @intFromEnum(ProjectileTypeId.pistol) => 6.0,
+            4 => 8.0,
+            else => 4.0,
+        };
+        drawSprite(texture, src, toRlVec(projectile.pos), size, projectile.angle, color);
+    }
+}
+
+fn secondaryGlowPass(ctx: DrawCtx) void {
+    if (!ctx.flame_glow_enabled) return;
+    const texture = ctx.assets.texture(.particles);
+    const src = glowRect(texture);
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (ctx.session.secondary_projectiles.entries) |projectile| {
+        if (!projectile.active) continue;
+        const center = projectile.pos.sub(runtime_helpers.directionFromHeading(projectile.angle).mul(5.0));
+        drawSprite(texture, src, toRlVec(center), 140.0, 0.0, tint(1.0, 1.0, 1.0, ctx.entity_alpha * 0.48));
+    }
+}
+
+fn rocketSpritePass(ctx: DrawCtx) void {
+    const texture = ctx.assets.texture(.projs);
+    const color = tint(0.8, 0.8, 0.8, ctx.entity_alpha * 0.9);
+    for (ctx.session.secondary_projectiles.entries) |projectile| {
+        if (!projectile.active) continue;
+        const size: f32 = switch (projectile.type_id) {
+            .rocket => 14.0,
+            .homing_rocket => 10.0,
+            .rocket_minigun => 8.0,
+            .none, .detonation => continue,
+        };
+        drawAtlasCell(texture, 4, 3, toRlVec(projectile.pos), size, projectile.angle, color);
+    }
+}
+
+fn rocketExhaustPass(ctx: DrawCtx) void {
+    if (!ctx.flame_glow_enabled) return;
+    const texture = ctx.assets.texture(.particles);
+    const src = glowRect(texture);
+    const alpha = ctx.entity_alpha;
+    rl.beginBlendMode(.additive);
+    defer rl.endBlendMode();
+    for (ctx.session.secondary_projectiles.entries) |projectile| {
+        if (!projectile.active) continue;
+        const exhaust: struct { size: f32, color: rl.Color } = switch (projectile.type_id) {
+            .rocket_minigun => .{ .size = 30.0, .color = tint(0.7, 0.7, 1.0, alpha * 0.158) },
+            .rocket => .{ .size = 60.0, .color = tint(1.0, 1.0, 1.0, alpha * 0.68) },
+            .homing_rocket => .{ .size = 40.0, .color = tint(1.0, 1.0, 1.0, alpha * 0.58) },
+            .none, .detonation => continue,
+        };
+        const center = projectile.pos.sub(runtime_helpers.directionFromHeading(projectile.angle).mul(9.0));
+        drawSprite(texture, src, toRlVec(center), exhaust.size, 0.0, exhaust.color);
+    }
 }
 
 fn anyIonGunMaster(players: []const state_mod.PlayerState) bool {
@@ -607,34 +393,28 @@ fn anyIonGunMaster(players: []const state_mod.PlayerState) bool {
     return false;
 }
 
-fn secondaryAlpha(projectile: secondary_projectiles_runtime.SecondaryProjectile) f32 {
-    return switch (projectile.type_id) {
-        .detonation => std.math.clamp(1.0 - projectile.detonation_t * 0.5, @as(f32, 0.15), @as(f32, 1.0)),
-        else => 1.0,
-    };
+/// `particles` effect 13, the glow every additive projectile pass selects.
+fn glowRect(texture: rl.Texture2D) window_atlas.AtlasRect {
+    return window_atlas.effectRect(texture.width, texture.height, .glow).?;
 }
 
 fn toRlVec(vec: state_mod.Vec2) rl.Vector2 {
     return .{ .x = vec.x, .y = vec.y };
 }
 
-fn drawTextureCenteredRotated(texture: rl.Texture2D, center: rl.Vector2, width: f32, height: f32, rotation_deg: f32, tint: rl.Color) void {
-    const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(texture.width), @floatFromInt(texture.height));
-    const dest = rl.Rectangle.init(center.x, center.y, width, height);
-    rl.drawTexturePro(texture, src, dest, rl.Vector2.init(width * 0.5, height * 0.5), rotation_deg, tint);
-}
-
-const BulletTrailQuad = struct {
+/// Two quad corners at the origin (`tail`) and two at the head (`head`), textured
+/// with the top half of the trail texture.
+const TrailQuad = struct {
     points: [4]rl.Vector2,
-    head: rl.Color,
     tail: rl.Color,
+    head: rl.Color,
 };
 
-fn bulletTrailQuad(projectile: cz.projectiles.Projectile, transition_alpha: f32) BulletTrailQuad {
+fn bulletTrailQuad(projectile: cz.projectiles.Projectile, transition_alpha: f32) TrailQuad {
     const side_mul: f32 = switch (projectile.type_id) {
-        @intFromEnum(game_ids.ProjectileTypeId.assault_rifle) => 1.0,
-        @intFromEnum(game_ids.ProjectileTypeId.pistol) => 1.2,
-        @intFromEnum(game_ids.ProjectileTypeId.gauss_gun) => 1.1,
+        @intFromEnum(ProjectileTypeId.assault_rifle) => 1.0,
+        @intFromEnum(ProjectileTypeId.pistol) => 1.2,
+        @intFromEnum(ProjectileTypeId.gauss_gun) => 1.1,
         else => 0.7,
     };
     // Native 0x423108/0x423120 uses stored vel, already scaled by 1.5 at spawn.
@@ -642,7 +422,7 @@ fn bulletTrailQuad(projectile: cz.projectiles.Projectile, transition_alpha: f32)
     const start = toRlVec(projectile.origin);
     const end = toRlVec(projectile.pos);
     const life_alpha = std.math.clamp(projectile.life_timer, @as(f32, 0.0), @as(f32, 1.0));
-    const is_gauss = projectile.type_id == @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
+    const is_gauss = projectile.type_id == @intFromEnum(ProjectileTypeId.gauss_gun);
     // Native 0x42334e overwrites Gauss slots 2/3 with life, without transition.
     return .{
         .points = .{
@@ -659,68 +439,52 @@ fn bulletTrailQuad(projectile: cz.projectiles.Projectile, transition_alpha: f32)
     };
 }
 
-fn drawBulletTrailQuad(quad: BulletTrailQuad, texture: rl.Texture2D) void {
-    if (quad.head.a == 0) return;
-    const head = quad.head;
-    const tail = quad.tail;
+fn drawTrailQuad(quad: TrailQuad, texture: rl.Texture2D) void {
+    if (quad.head.a == 0 and quad.tail.a == 0) return;
+    const colors = [_]rl.Color{ quad.tail, quad.tail, quad.head, quad.head };
+    const uvs = [_][2]f32{ .{ 0.0, 0.0 }, .{ 1.0, 0.0 }, .{ 1.0, 0.5 }, .{ 0.0, 0.5 } };
 
-    rl.beginBlendMode(.additive);
     rl.gl.rlSetTexture(texture.id);
     rl.gl.rlBegin(rl.gl.rl_quads);
-    rl.gl.rlColor4ub(tail.r, tail.g, tail.b, tail.a);
-    rl.gl.rlTexCoord2f(0.0, 0.0);
-    rl.gl.rlVertex2f(quad.points[0].x, quad.points[0].y);
-    rl.gl.rlColor4ub(tail.r, tail.g, tail.b, tail.a);
-    rl.gl.rlTexCoord2f(1.0, 0.0);
-    rl.gl.rlVertex2f(quad.points[1].x, quad.points[1].y);
-    rl.gl.rlColor4ub(head.r, head.g, head.b, head.a);
-    rl.gl.rlTexCoord2f(1.0, 0.5);
-    rl.gl.rlVertex2f(quad.points[2].x, quad.points[2].y);
-    rl.gl.rlColor4ub(head.r, head.g, head.b, head.a);
-    rl.gl.rlTexCoord2f(0.0, 0.5);
-    rl.gl.rlVertex2f(quad.points[3].x, quad.points[3].y);
+    for (quad.points, colors, uvs) |point, color, uv| {
+        rl.gl.rlColor4ub(color.r, color.g, color.b, color.a);
+        rl.gl.rlTexCoord2f(uv[0], uv[1]);
+        rl.gl.rlVertex2f(point.x, point.y);
+    }
     rl.gl.rlEnd();
     rl.gl.rlSetTexture(0);
-    rl.endBlendMode();
 }
 
-fn drawTextureRegionCenteredRotated(
+/// Draw `src` as a `size`-wide square centered on `center`.
+fn drawSprite(
     texture: rl.Texture2D,
-    src_rect: window_atlas.AtlasRect,
+    src: window_atlas.AtlasRect,
     center: rl.Vector2,
-    width: f32,
-    height: f32,
-    rotation_deg: f32,
-    tint: rl.Color,
+    size: f32,
+    rotation_rad: f32,
+    color: rl.Color,
 ) void {
-    const src = rl.Rectangle.init(src_rect.x, src_rect.y, src_rect.width, src_rect.height);
-    const dest = rl.Rectangle.init(center.x, center.y, width, height);
-    rl.drawTexturePro(texture, src, dest, rl.Vector2.init(width * 0.5, height * 0.5), rotation_deg, tint);
+    rl.drawTexturePro(
+        texture,
+        rl.Rectangle.init(src.x, src.y, src.width, src.height),
+        rl.Rectangle.init(center.x, center.y, size, size),
+        rl.Vector2.init(size * 0.5, size * 0.5),
+        rotation_rad * (180.0 / std.math.pi),
+        color,
+    );
 }
 
-fn drawAtlasFrameCenteredRotated(
+/// Draw one cell of a `grid`x`grid` atlas as a `size`-wide square centered on `center`.
+fn drawAtlasCell(
     texture: rl.Texture2D,
     grid: i32,
     frame: i32,
     center: rl.Vector2,
-    scale: f32,
+    size: f32,
     rotation_rad: f32,
-    tint: rl.Color,
+    color: rl.Color,
 ) void {
-    const src_rect = window_atlas.atlasRect(texture.width, texture.height, grid, frame);
-    drawTextureRegionCenteredRotated(
-        texture,
-        src_rect,
-        center,
-        src_rect.width * scale,
-        src_rect.height * scale,
-        radiansToDegrees(rotation_rad),
-        tint,
-    );
-}
-
-fn radiansToDegrees(radians: f32) f32 {
-    return radians * (180.0 / std.math.pi);
+    drawSprite(texture, window_atlas.atlasRect(texture.width, texture.height, grid, frame), center, size, rotation_rad, color);
 }
 
 fn vecSub(a: rl.Vector2, b: rl.Vector2) rl.Vector2 {
@@ -739,12 +503,6 @@ fn vecLength(vec: rl.Vector2) f32 {
     return std.math.sqrt(vec.x * vec.x + vec.y * vec.y);
 }
 
-fn vecNormalizeOr(vec: rl.Vector2, fallback: rl.Vector2) rl.Vector2 {
-    const len = vecLength(vec);
-    if (!(len > 1e-6)) return fallback;
-    return .{ .x = vec.x / len, .y = vec.y / len };
-}
-
 fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     return rl.Color.init(
         color.r,
@@ -754,13 +512,26 @@ fn colorWithAlpha(color: rl.Color, alpha: f32) rl.Color {
     );
 }
 
-fn rgbfColor(rgb: window_atlas.ColorRgbf, alpha: f32) rl.Color {
-    return .{
-        .r = @intFromFloat(std.math.clamp(rgb.r, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-        .g = @intFromFloat(std.math.clamp(rgb.g, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-        .b = @intFromFloat(std.math.clamp(rgb.b, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-        .a = @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0),
-    };
+/// Grim truncates each scaled float channel to a byte.
+fn tint(r: f32, g: f32, b: f32, a: f32) rl.Color {
+    const byte = struct {
+        fn f(value: f32) u8 {
+            return @intFromFloat(std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0)) * 255.0);
+        }
+    }.f;
+    return .{ .r = byte(r), .g = byte(g), .b = byte(b), .a = byte(a) };
+}
+
+test "plasma segment count truncates both operands before dividing" {
+    try std.testing.expectEqual(@as(i32, 8), plasmaSegmentCount(20.9, 1.0, 2.5, 8));
+    try std.testing.expectEqual(@as(i32, 3), plasmaSegmentCount(11.9, 1.55, 2.5, 8));
+    try std.testing.expectEqual(@as(i32, 0), plasmaSegmentCount(100.0, 0.0, 2.1, 3));
+}
+
+test "plasma cannon counts segments by its wider divisor, not its step" {
+    const glow = plasmaGlow(.plasma_cannon).?;
+    // 40 units / int(3.5) = 13 tails; the 2.6 step would have given the cap of 18.
+    try std.testing.expectEqual(@as(i32, 13), plasmaSegmentCount(40.0, 1.0, glow.divisor, glow.cap));
 }
 
 test "bullet trail native widths keep origin at slots zero and one" {

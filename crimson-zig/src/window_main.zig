@@ -51,6 +51,7 @@ const window_height = 768;
 const end_note_timeline_max_ms: i32 = 300;
 
 const bg_color = rl.Color.init(16, 12, 10, 255);
+const world_clear_color = rl.Color.init(10, 10, 12, 255);
 const panel_color = rl.Color.init(37, 24, 20, 255);
 const panel_outline = rl.Color.init(122, 78, 58, 255);
 const accent_color = rl.Color.init(218, 80, 46, 255);
@@ -1671,73 +1672,82 @@ const App = struct {
         window_misc_panels.drawOtherGames(&self.other_games_menu, if (self.runtime_assets) |*assets| assets else null);
     }
 
+    /// Native `gameplay_update_and_render`'s draw order: the world, the perk prompt,
+    /// the aim indicators, the HUD over both, then the perk menu.
     fn drawGameplay(self: *App) void {
-        self.drawGameplayWithEntityAlpha(1.0);
-    }
+        const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*loaded_assets| loaded_assets else null;
+        self.drawGameplayWorld(1.0);
+        const gameplay = if (self.gameplay) |*gameplay| gameplay else return;
+        const runner = &gameplay.runner;
+        const perk_menu_active = gameplay.perk_ui.active();
 
-    fn drawGameplayWithEntityAlpha(self: *App, entity_alpha: f32) void {
-        rl.clearBackground(rl.Color.init(10, 10, 12, 255));
+        if (runtime_assets) |assets| {
+            const transform = gameplayViewTransform(runner, &self.runtime.config, gameplay.camera);
+            if (runner.session.game_mode == .typo) {
+                drawTypoNameLabels(runner, assets, transform, 1.0);
+            }
+            if (!perk_menu_active) {
+                window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
+            }
+            uiRenderAimIndicators(runner, assets, &self.runtime.config, transform, 1.0, !perk_menu_active);
+        }
 
-        if (self.gameplay) |*gameplay| {
-            const runner = &gameplay.runner;
-            const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*loaded_assets| loaded_assets else null;
-            const transform = window_viewport.viewTransform(
-                runner.session.world_size,
-                &self.runtime.config,
-                state_mod.Vec2.add(gameplay.camera, runner.session.state.camera_shake_offset),
-                .{
-                    .x = @floatFromInt(rl.getScreenWidth()),
-                    .y = @floatFromInt(rl.getScreenHeight()),
-                },
-            );
-            const shadows_enabled = self.runtime.config.shadows_enabled != 0;
-            const flame_glow_enabled = self.runtime.config.flame_glow_enabled != 0;
-            const smoke_enabled = self.runtime.config.smoke_enabled != 0;
-            const camera = buildWorldCamera(
-                runner.session.world_size,
-                &self.runtime.config,
-                gameplay.camera,
-                runner.session.state.camera_shake_offset,
-            );
-
-            camera.begin();
-            drawWorld(runner, runtime_assets, if (gameplay.ground) |*ground| ground else null);
-            drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, false);
-            drawCreatures(runner, runtime_assets, entity_alpha, shadows_enabled);
-            drawFreezeOverlay(runner, runtime_assets, entity_alpha);
-            drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, true);
-            drawProjectiles(runner, runtime_assets, gameplay.render_time_s, entity_alpha, flame_glow_enabled);
-            drawWorldEffects(runner, runtime_assets, entity_alpha, flame_glow_enabled, smoke_enabled);
-            drawBonuses(runner, runtime_assets, gameplay.render_time_s, entity_alpha);
-            camera.end();
-
+        if (perk_menu_active) {
+            if (runtime_assets) |assets| {
+                window_perk_menu.drawMenu(&gameplay.perk_ui, assets, runner);
+            }
+        } else {
+            drawGameplayHud(gameplay, runtime_assets);
             if (runtime_assets) |assets| {
                 if (runner.session.game_mode == .typo) {
-                    drawTypoNameLabels(runner, assets, transform, entity_alpha);
-                }
-                drawBonusHoverLabels(runner, assets, transform, entity_alpha);
-                if (!gameplay.perk_ui.active()) {
-                    drawDirectionArrows(runner, assets, &self.runtime.config, transform, entity_alpha);
-                    drawAimEnhancements(runner, assets, transform, entity_alpha);
-                }
-            }
-
-            if (gameplay.perk_ui.active()) {
-                if (runtime_assets) |assets| {
-                    window_perk_menu.drawMenu(&gameplay.perk_ui, assets, runner);
-                }
-            } else {
-                drawGameplayHud(gameplay, runtime_assets);
-                if (runtime_assets) |assets| {
-                    if (runner.session.game_mode == .typo) {
-                        drawTypoTypingBox(gameplay, assets);
-                    } else if (runner.session.game_mode == .tutorial) {
-                        drawTutorialOverlay(gameplay, assets);
-                    }
-                    window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
+                    drawTypoTypingBox(gameplay, assets);
+                } else if (runner.session.game_mode == .tutorial) {
+                    drawTutorialOverlay(gameplay, assets);
                 }
             }
         }
+    }
+
+    /// Native `gameplay_render_world`; the pause, options and controls screens
+    /// redraw it alone behind their panels.
+    fn drawGameplayWorld(self: *App, entity_alpha: f32) void {
+        rl.clearBackground(world_clear_color);
+        const gameplay = if (self.gameplay) |*gameplay| gameplay else return;
+        const runner = &gameplay.runner;
+        const runtime_assets: ?*const window_assets.RuntimeAssets = if (self.runtime_assets) |*loaded_assets| loaded_assets else null;
+        const camera = buildWorldCamera(
+            runner.session.world_size,
+            &self.runtime.config,
+            gameplay.camera,
+            runner.session.state.camera_shake_offset,
+        );
+
+        camera.begin();
+        defer camera.end();
+        drawWorld(runner, runtime_assets, if (gameplay.ground) |*ground| ground else null);
+        drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, false);
+        drawCreatures(runner, runtime_assets, entity_alpha, self.runtime.config.shadows_enabled != 0);
+        drawFreezeOverlay(runner, runtime_assets, entity_alpha);
+        drawPlayers(runner, runtime_assets, gameplay.render_time_s, entity_alpha, true);
+        const assets = runtime_assets orelse {
+            drawAssetlessPickups(runner, entity_alpha);
+            return;
+        };
+        const projectile_ctx: window_projectiles.DrawCtx = .{
+            .session = &runner.session,
+            .assets = assets,
+            .render_time_s = gameplay.render_time_s,
+            .entity_alpha = entity_alpha,
+            .flame_glow_enabled = self.runtime.config.flame_glow_enabled != 0,
+        };
+        window_projectiles.projectileRender(projectile_ctx);
+        bonusRender(
+            runner,
+            camera,
+            gameplayViewTransform(runner, &self.runtime.config, gameplay.camera),
+            projectile_ctx,
+            self.runtime.config.smoke_enabled != 0,
+        );
     }
 
     fn drawPause(self: *App) void {
@@ -1745,7 +1755,7 @@ const App = struct {
             window_pause_menu.pauseBackgroundEntityAlpha(&gameplay.pause_menu)
         else
             1.0;
-        self.drawGameplayWithEntityAlpha(entity_alpha);
+        self.drawGameplayWorld(entity_alpha);
         if (self.gameplay) |*gameplay| {
             window_pause_menu.draw(&gameplay.pause_menu, if (self.runtime_assets) |*assets| assets else null);
         }
@@ -1931,14 +1941,14 @@ const App = struct {
 
     fn drawOptions(self: *const App) void {
         if (self.options_back_to == .pause and self.gameplay != null) {
-            @constCast(self).drawGameplay();
+            @constCast(self).drawGameplayWorld(1.0);
         }
         window_options.drawOptions(&self.options, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
     }
 
     fn drawControls(self: *const App) void {
         if ((self.controls_back_to == .pause or self.options_back_to == .pause) and self.gameplay != null) {
-            @constCast(self).drawGameplay();
+            @constCast(self).drawGameplayWorld(1.0);
         }
         window_options.drawControls(&self.controls, if (self.runtime_assets) |*assets| assets else null, self.runtime.config);
     }
@@ -3359,6 +3369,22 @@ fn loadTypoSourcesIntoState(
 
     try collectTypoHighscoreNames(allocator, base_dir, &highscore_names);
     typo.typo.reset(dictionary_words.items, highscore_names.items);
+}
+
+fn gameplayViewTransform(
+    runner: *const live_runner.LiveRunner,
+    config: *const formats.crimson_cfg.CrimsonCfg,
+    camera_pos: state_mod.Vec2,
+) window_viewport.ViewTransform {
+    return window_viewport.viewTransform(
+        runner.session.world_size,
+        config,
+        state_mod.Vec2.add(camera_pos, runner.session.state.camera_shake_offset),
+        .{
+            .x = @floatFromInt(rl.getScreenWidth()),
+            .y = @floatFromInt(rl.getScreenHeight()),
+        },
+    );
 }
 
 fn buildWorldCamera(
@@ -4822,171 +4848,133 @@ fn drawFreezeOverlay(runner: *const live_runner.LiveRunner, runtime_assets: ?*co
     }
 }
 
-fn drawProjectiles(
-    runner: *const live_runner.LiveRunner,
-    runtime_assets: ?*const window_assets.RuntimeAssets,
-    render_time_s: f32,
-    entity_alpha: f32,
-    flame_glow_enabled: bool,
-) void {
-    for (runner.session.projectiles.entries, 0..) |projectile, proj_index| {
+fn drawAssetlessPickups(runner: *const live_runner.LiveRunner, entity_alpha: f32) void {
+    for (runner.session.projectiles.entries) |projectile| {
         if (!projectile.active) continue;
-        if (runtime_assets) |assets| {
-            if (window_projectiles.drawMainProjectile(projectile, proj_index, .{
-                .session = &runner.session,
-                .assets = assets,
-                .render_time_s = render_time_s,
-                .entity_alpha = entity_alpha,
-                .flame_glow_enabled = flame_glow_enabled,
-            })) continue;
-        }
         rl.drawCircleV(toRlVec(projectile.pos), 3.0, colorWithAlpha(projectile_color, entity_alpha));
-    }
-}
-
-fn drawWorldEffects(
-    runner: *const live_runner.LiveRunner,
-    runtime_assets: ?*const window_assets.RuntimeAssets,
-    entity_alpha: f32,
-    flame_glow_enabled: bool,
-    smoke_enabled: bool,
-) void {
-    if (runtime_assets) |assets| {
-        window_effects.drawParticlePool(.{
-            .session = &runner.session,
-            .assets = assets,
-            .entity_alpha = entity_alpha,
-            .flame_glow_enabled = flame_glow_enabled,
-            .smoke_enabled = smoke_enabled,
-        });
     }
     for (runner.session.secondary_projectiles.entries) |projectile| {
         if (!projectile.active) continue;
-        if (runtime_assets) |assets| {
-            if (window_projectiles.drawSecondaryProjectile(projectile, .{
-                .session = &runner.session,
-                .assets = assets,
-                .entity_alpha = entity_alpha,
-                .flame_glow_enabled = flame_glow_enabled,
-            })) continue;
-        }
         rl.drawCircleV(toRlVec(projectile.pos), 6.0, colorWithAlpha(secondary_projectile_color, entity_alpha));
     }
-    if (runtime_assets) |assets| {
-        window_effects.drawSpriteEffectPool(.{
-            .session = &runner.session,
-            .assets = assets,
-            .entity_alpha = entity_alpha,
-            .flame_glow_enabled = flame_glow_enabled,
-            .smoke_enabled = smoke_enabled,
-        });
-        window_effects.drawEffectPool(.{
-            .session = &runner.session,
-            .assets = assets,
-            .entity_alpha = entity_alpha,
-            .flame_glow_enabled = flame_glow_enabled,
-            .smoke_enabled = smoke_enabled,
-        });
-    }
-}
-
-fn drawBonuses(
-    runner: *const live_runner.LiveRunner,
-    runtime_assets: ?*const window_assets.RuntimeAssets,
-    render_time_s: f32,
-    entity_alpha: f32,
-) void {
-    const bonus_phase = render_time_s * 1.3;
-    for (runner.session.bonuses.entries, 0..) |entry, idx| {
+    for (runner.session.bonuses.entries) |entry| {
         if (entry.bonus_id == .unused) continue;
-        if (runtime_assets) |assets| {
-            const bonuses_texture = assets.texture(.bonuses);
-            const bubble_src = window_atlas.bonusIconRect(bonuses_texture.width, bonuses_texture.height, 0);
-            const fade = window_atlas.bonusFade(entry.time_left, entry.time_max);
-            const bubble_alpha = fade * 0.9 * entity_alpha;
-            const center = toRlVec(entry.pos);
-            drawTextureRegionCenteredRotated(
-                bonuses_texture,
-                bubble_src,
-                center,
-                32.0,
-                32.0,
-                0.0,
-                colorWithAlpha(rl.Color.white, bubble_alpha),
-            );
-
-            if (entry.bonus_id == .weapon) {
-                const weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse {
-                    continue;
-                };
-                const icon_index = weapon_data.weaponIconIndex(weapon_id);
-                if (icon_index >= 0) {
-                    const pulse_sin = std.math.sin(bonus_phase);
-                    const pulse = pulse_sin * pulse_sin * pulse_sin * pulse_sin * 0.25 + 0.75;
-                    const icon_scale = fade * pulse;
-                    if (icon_scale > 1e-3) {
-                        const src_rect = window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index);
-                        drawTextureRegionCenteredRotated(
-                            assets.texture(.ui_wicons),
-                            src_rect,
-                            center,
-                            60.0 * icon_scale,
-                            30.0 * icon_scale,
-                            0.0,
-                            colorWithAlpha(rl.Color.white, bubble_alpha),
-                        );
-                    }
-                }
-                continue;
-            }
-
-            if (window_atlas.bonusIconId(entry)) |icon_id| {
-                const idx_f: f32 = @floatFromInt(idx);
-                const pulse_sin = std.math.sin(idx_f + bonus_phase);
-                const pulse = pulse_sin * pulse_sin * pulse_sin * pulse_sin * 0.25 + 0.75;
-                const icon_scale = fade * pulse;
-                if (icon_scale > 1e-3) {
-                    drawTextureRegionCenteredRotated(
-                        bonuses_texture,
-                        window_atlas.bonusIconRect(bonuses_texture.width, bonuses_texture.height, icon_id),
-                        center,
-                        32.0 * icon_scale,
-                        32.0 * icon_scale,
-                        radiansToDegrees(std.math.sin(idx_f - render_time_s * 3.0) * 0.2),
-                        colorWithAlpha(rl.Color.white, bubble_alpha),
-                    );
-                }
-                continue;
-            }
-        }
         rl.drawRectangleRec(
-            .{
-                .x = entry.pos.x - 8.0,
-                .y = entry.pos.y - 8.0,
-                .width = 16.0,
-                .height = 16.0,
-            },
+            .{ .x = entry.pos.x - 8.0, .y = entry.pos.y - 8.0, .width = 16.0, .height = 16.0 },
             colorWithAlpha(bonus_color, entity_alpha),
         );
     }
 }
 
-fn drawAimEnhancements(
+/// Native `bonus_render`: pickups and the aim label, then the particle,
+/// detonation, sprite-effect and effect pools over them. Called inside the world
+/// camera, which it leaves for the screen-space label.
+fn bonusRender(
     runner: *const live_runner.LiveRunner,
-    runtime_assets: *const window_assets.RuntimeAssets,
+    camera: rl.Camera2D,
     transform: window_viewport.ViewTransform,
+    projectile_ctx: window_projectiles.DrawCtx,
+    smoke_enabled: bool,
+) void {
+    const assets = projectile_ctx.assets;
+    const entity_alpha = projectile_ctx.entity_alpha;
+    drawBonusPickups(runner, assets, projectile_ctx.render_time_s, entity_alpha);
+    camera.end();
+    drawBonusHoverLabels(runner, assets, transform, entity_alpha);
+    camera.begin();
+
+    const effects_ctx: window_effects.DrawCtx = .{
+        .session = &runner.session,
+        .assets = assets,
+        .entity_alpha = entity_alpha,
+        .flame_glow_enabled = projectile_ctx.flame_glow_enabled,
+        .smoke_enabled = smoke_enabled,
+    };
+    window_effects.drawParticlePool(effects_ctx);
+    window_projectiles.secondaryDetonationPass(projectile_ctx);
+    window_effects.drawSpriteEffectPool(effects_ctx);
+    window_effects.drawEffectPool(effects_ctx);
+}
+
+/// Every bubble and bonus icon, then every weapon icon.
+fn drawBonusPickups(
+    runner: *const live_runner.LiveRunner,
+    assets: *const window_assets.RuntimeAssets,
+    render_time_s: f32,
     entity_alpha: f32,
 ) void {
-    const scale = window_viewport.viewScaleAvg(transform.view_scale);
-    for (runner.session.playersConst()) |player| {
-        if (player.health <= 0.0) continue;
-        const aim_screen = worldToScreen(player.aim, transform);
-        window_cursor.drawAimIndicators(runtime_assets, player, aim_screen, scale, entity_alpha);
+    const bonus_phase = render_time_s * 1.3;
+    const bonuses_texture = assets.texture(.bonuses);
+    const bubble_src = window_atlas.bonusIconRect(bonuses_texture.width, bonuses_texture.height, 0);
+    for (runner.session.bonuses.entries, 0..) |entry, idx| {
+        if (entry.bonus_id == .unused) continue;
+        const fade = window_atlas.bonusFade(entry.time_left, entry.time_max);
+        const bubble_alpha = fade * 0.9 * entity_alpha;
+        const center = toRlVec(entry.pos);
+        drawTextureRegionCenteredRotated(bonuses_texture, bubble_src, center, 32.0, 32.0, 0.0, colorWithAlpha(rl.Color.white, bubble_alpha));
+
+        const icon_id = window_atlas.bonusIconId(entry) orelse continue;
+        const idx_f: f32 = @floatFromInt(idx);
+        const pulse_sin = std.math.sin(idx_f + bonus_phase);
+        const icon_scale = fade * (pulse_sin * pulse_sin * pulse_sin * pulse_sin * 0.25 + 0.75);
+        if (icon_scale <= 1e-3) continue;
+        drawTextureRegionCenteredRotated(
+            bonuses_texture,
+            window_atlas.bonusIconRect(bonuses_texture.width, bonuses_texture.height, icon_id),
+            center,
+            32.0 * icon_scale,
+            32.0 * icon_scale,
+            radiansToDegrees(std.math.sin(idx_f - render_time_s * 3.0) * 0.2),
+            colorWithAlpha(rl.Color.white, bubble_alpha),
+        );
     }
-    for (runner.session.playersConst()) |player| {
-        if (player.health <= 0.0) continue;
-        const aim_screen = worldToScreen(player.aim, transform);
-        window_cursor.drawAimReticle(runtime_assets, aim_screen, scale);
+
+    const wicons_texture = assets.texture(.ui_wicons);
+    const pulse_sin = std.math.sin(bonus_phase);
+    const pulse = pulse_sin * pulse_sin * pulse_sin * pulse_sin * 0.25 + 0.75;
+    for (runner.session.bonuses.entries) |entry| {
+        if (entry.bonus_id != .weapon) continue;
+        const weapon_id = std.enums.fromInt(game_ids.WeaponId, entry.amount) orelse continue;
+        const icon_index = weapon_data.weaponIconIndex(weapon_id);
+        if (icon_index < 0) continue;
+        const fade = window_atlas.bonusFade(entry.time_left, entry.time_max);
+        const icon_scale = fade * pulse;
+        if (icon_scale <= 1e-3) continue;
+        drawTextureRegionCenteredRotated(
+            wicons_texture,
+            window_atlas.weaponIconRect(wicons_texture.width, wicons_texture.height, icon_index),
+            toRlVec(entry.pos),
+            60.0 * icon_scale,
+            30.0 * icon_scale,
+            0.0,
+            colorWithAlpha(rl.Color.white, fade * 0.9 * entity_alpha),
+        );
+    }
+}
+
+/// Native `ui_render_aim_indicators`: aim circles and reload gauges, direction
+/// arrows, then the aim enhancement, each over every living player.
+fn uiRenderAimIndicators(
+    runner: *const live_runner.LiveRunner,
+    runtime_assets: *const window_assets.RuntimeAssets,
+    config: *const formats.crimson_cfg.CrimsonCfg,
+    transform: window_viewport.ViewTransform,
+    entity_alpha: f32,
+    show_aim: bool,
+) void {
+    const scale = window_viewport.viewScaleAvg(transform.view_scale);
+    if (show_aim) {
+        for (runner.session.playersConst()) |player| {
+            if (player.health <= 0.0) continue;
+            window_cursor.drawAimIndicators(runtime_assets, player, worldToScreen(player.aim, transform), scale, entity_alpha);
+        }
+    }
+    drawDirectionArrows(runner, runtime_assets, config, transform, entity_alpha);
+    if (show_aim) {
+        for (runner.session.playersConst()) |player| {
+            if (player.health <= 0.0) continue;
+            window_cursor.drawAimReticle(runtime_assets, worldToScreen(player.aim, transform), scale);
+        }
     }
 }
 

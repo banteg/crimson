@@ -3,7 +3,6 @@ const std = @import("std");
 const bonuses_runtime = @import("runtime/bonuses.zig");
 const creature_lifecycle = @import("runtime/lifecycle.zig").CreatureLifecycle;
 const creatures_runtime = @import("runtime/creatures.zig");
-const game_ids = @import("game_ids.zig");
 const native_math = @import("runtime/native_math.zig");
 const runtime_anim = @import("runtime/anim.zig");
 const spawn_runtime = @import("runtime/spawn.zig");
@@ -37,35 +36,6 @@ pub const EffectId = enum(i32) {
     casing = 0x12,
 };
 
-pub const ColorRgb = struct {
-    r: u8,
-    g: u8,
-    b: u8,
-};
-
-pub const ColorRgbf = struct {
-    r: f32,
-    g: f32,
-    b: f32,
-};
-
-pub const KnownProjectileFrame = struct {
-    grid: i32,
-    frame: i32,
-};
-
-pub const PlasmaRenderConfig = struct {
-    rgb: ColorRgbf,
-    spacing: f32,
-    seg_limit: i32,
-    tail_size: f32,
-    head_size: f32,
-    head_alpha_mul: f32,
-    aura_rgb: ColorRgbf,
-    aura_size: f32,
-    aura_alpha_mul: f32,
-};
-
 pub const CreatureTextureKind = enum {
     alien,
     lizard,
@@ -79,18 +49,6 @@ pub const CreatureRenderFrame = struct {
     texture_kind: CreatureTextureKind,
     frame: i32,
     lifecycle: creature_lifecycle.Phase,
-};
-
-const default_plasma_render_config: PlasmaRenderConfig = .{
-    .rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-    .spacing = 2.1,
-    .seg_limit = 3,
-    .tail_size = 12.0,
-    .head_size = 16.0,
-    .head_alpha_mul = 0.5,
-    .aura_rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-    .aura_size = 120.0,
-    .aura_alpha_mul = 0.15,
 };
 
 pub fn atlasRect(texture_width: i32, texture_height: i32, grid: i32, frame: i32) AtlasRect {
@@ -309,119 +267,6 @@ pub fn bonusIconId(entry: bonuses_runtime.BonusEntry) ?i32 {
     };
 }
 
-pub fn projectileKnownFrame(type_id_raw: i32) ?KnownProjectileFrame {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return null;
-    return switch (type_id) {
-        .pulse_gun => .{ .grid = 2, .frame = 0 },
-        .splitter_gun => .{ .grid = 4, .frame = 3 },
-        .blade_gun => .{ .grid = 4, .frame = 6 },
-        .ion_minigun, .ion_cannon, .shrinkifier, .fire_bullets, .ion_rifle => .{ .grid = 4, .frame = 2 },
-        else => null,
-    };
-}
-
-pub fn knownProjectileRgb(type_id_raw: i32) ColorRgb {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return .{ .r = 240, .g = 220, .b = 160 };
-    return switch (type_id) {
-        .ion_rifle, .ion_minigun, .ion_cannon => .{ .r = 120, .g = 200, .b = 255 },
-        .fire_bullets => .{ .r = 255, .g = 170, .b = 90 },
-        .shrinkifier => .{ .r = 160, .g = 255, .b = 170 },
-        .blade_gun => .{ .r = 240, .g = 120, .b = 255 },
-        else => .{ .r = 240, .g = 220, .b = 160 },
-    };
-}
-
-pub fn isBulletTrailType(type_id_raw: i32) bool {
-    return (type_id_raw >= 0 and type_id_raw < 8) or
-        type_id_raw == @intFromEnum(game_ids.ProjectileTypeId.splitter_gun);
-}
-
-pub fn bulletSpriteSize(type_id_raw: i32) f32 {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return 4.0;
-    return switch (type_id) {
-        .assault_rifle => 6.0,
-        .submachine_gun => 8.0,
-        else => 4.0,
-    };
-}
-
-pub fn isBeamType(type_id_raw: i32) bool {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return false;
-    return switch (type_id) {
-        .ion_rifle, .ion_minigun, .ion_cannon, .fire_bullets => true,
-        else => false,
-    };
-}
-
-pub fn beamEffectScale(type_id_raw: i32) f32 {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return 0.8;
-    return switch (type_id) {
-        .ion_minigun => 1.05,
-        .ion_rifle => 2.2,
-        .ion_cannon => 3.5,
-        else => 0.8,
-    };
-}
-
-pub fn isPlasmaParticleType(type_id_raw: i32) bool {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return false;
-    return switch (type_id) {
-        .plasma_rifle, .plasma_minigun, .spider_plasma, .plasma_cannon, .shrinkifier => true,
-        else => false,
-    };
-}
-
-pub fn plasmaRenderConfig(type_id_raw: i32) PlasmaRenderConfig {
-    const type_id = std.enums.fromInt(game_ids.ProjectileTypeId, type_id_raw) orelse return default_plasma_render_config;
-    return switch (type_id) {
-        .plasma_rifle => .{
-            .rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-            .spacing = 2.5,
-            .seg_limit = 8,
-            .tail_size = 22.0,
-            .head_size = 56.0,
-            .head_alpha_mul = 0.45,
-            .aura_rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-            .aura_size = 256.0,
-            .aura_alpha_mul = 0.3,
-        },
-        .plasma_cannon => .{
-            .rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-            .spacing = 2.6,
-            .seg_limit = 18,
-            .tail_size = 44.0,
-            .head_size = 84.0,
-            .head_alpha_mul = 0.45,
-            .aura_rgb = .{ .r = 1.0, .g = 1.0, .b = 1.0 },
-            .aura_size = 256.0,
-            .aura_alpha_mul = 0.4,
-        },
-        .spider_plasma => .{
-            .rgb = .{ .r = 0.3, .g = 1.0, .b = 0.3 },
-            .spacing = default_plasma_render_config.spacing,
-            .seg_limit = default_plasma_render_config.seg_limit,
-            .tail_size = default_plasma_render_config.tail_size,
-            .head_size = default_plasma_render_config.head_size,
-            .head_alpha_mul = default_plasma_render_config.head_alpha_mul,
-            .aura_rgb = .{ .r = 0.3, .g = 1.0, .b = 0.3 },
-            .aura_size = default_plasma_render_config.aura_size,
-            .aura_alpha_mul = default_plasma_render_config.aura_alpha_mul,
-        },
-        .shrinkifier => .{
-            .rgb = .{ .r = 0.3, .g = 0.3, .b = 1.0 },
-            .spacing = default_plasma_render_config.spacing,
-            .seg_limit = default_plasma_render_config.seg_limit,
-            .tail_size = default_plasma_render_config.tail_size,
-            .head_size = default_plasma_render_config.head_size,
-            .head_alpha_mul = default_plasma_render_config.head_alpha_mul,
-            .aura_rgb = .{ .r = 0.3, .g = 0.3, .b = 1.0 },
-            .aura_size = default_plasma_render_config.aura_size,
-            .aura_alpha_mul = default_plasma_render_config.aura_alpha_mul,
-        },
-        else => default_plasma_render_config,
-    };
-}
-
 test "weapon icon rect spans two ui wicon cells" {
     const rect = weaponIconRect(256, 256, 3);
     try std.testing.expectApproxEqAbs(@as(f32, 192.0), rect.x, 1e-6);
@@ -574,12 +419,4 @@ test "bonus icon mapping mirrors metadata" {
     try std.testing.expectEqual(@as(?i32, 7), bonusIconId(.{ .bonus_id = .weapon_power_up }));
     try std.testing.expectEqual(@as(?i32, 13), bonusIconId(.{ .bonus_id = .points, .amount = 1000 }));
     try std.testing.expectEqual(@as(?i32, null), bonusIconId(.{ .bonus_id = .weapon }));
-}
-
-test "projectile lookup tables expose atlas fallback data" {
-    const known = projectileKnownFrame(@intFromEnum(game_ids.ProjectileTypeId.ion_rifle)).?;
-    try std.testing.expectEqual(@as(i32, 4), known.grid);
-    try std.testing.expectEqual(@as(i32, 2), known.frame);
-    try std.testing.expect(isBeamType(@intFromEnum(game_ids.ProjectileTypeId.fire_bullets)));
-    try std.testing.expect(isPlasmaParticleType(@intFromEnum(game_ids.ProjectileTypeId.plasma_cannon)));
 }
