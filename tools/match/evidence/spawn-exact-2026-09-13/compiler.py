@@ -7,7 +7,7 @@ from pathlib import Path
 
 from recover import HERE, recover, sha
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 
 def decode(data, aliases):

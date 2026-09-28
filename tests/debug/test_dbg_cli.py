@@ -7,16 +7,16 @@ import msgspec
 import pytest
 from typer.testing import CliRunner
 
-import crimson.dbg.diff as dbg_diff
-import crimson.dbg.trace as dbg_trace
+import crimson_re.dbg.diff as dbg_diff
+import crimson_re.dbg.trace as dbg_trace
 from crimson.cli import app
-from crimson.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
-from crimson.dbg.trace import TraceReader, load_trace, write_trace
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayRecorder, dump_replay
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
+from crimson_re.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
+from crimson_re.dbg.trace import TraceReader, load_trace, write_trace
 from grim.geom import Vec2
 from tests.support.replay_runner_helpers import finish_replay
 
@@ -36,7 +36,7 @@ def test_dbg_verify_reports_complete_current_format_matrix() -> None:
 
 
 def test_dbg_verify_fails_when_cross_language_contract_drifts(monkeypatch: pytest.MonkeyPatch) -> None:
-    import crimson.dbg.format_contract as format_contract_mod
+    import crimson_re.dbg.format_contract as format_contract_mod
 
     monkeypatch.setattr(format_contract_mod, "format_contract_errors", lambda: ["Zig replay format drifted"])
     result = CliRunner().invoke(app, ["dbg", "verify"])
@@ -185,7 +185,7 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
             ),
         )
 
-    import crimson.dbg.record as dbg_record_mod
+    import crimson_re.dbg.record as dbg_record_mod
 
     monkeypatch.setattr(dbg_record_mod, "record_replay_to_trace", _fake_record_replay_to_trace)
     result = runner.invoke(
@@ -425,7 +425,7 @@ def test_dbg_diff_rejects_empty_or_invalid_windows(tmp_path: Path) -> None:
 
 
 def test_dbg_diff_and_focus_reject_different_replay_identity(tmp_path: Path) -> None:
-    from crimson.dbg.focus import focus_tick
+    from crimson_re.dbg.focus import focus_tick
 
     replay_path = _write_replay(tmp_path / "sample_identity.crd")
     golden_trace = tmp_path / "golden_identity.cdt"

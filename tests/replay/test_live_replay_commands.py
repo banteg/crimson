@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.replay import ReplayRecorder
@@ -11,6 +10,7 @@ from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
+from crimson_re.dbg.state_digest import session_digest
 from grim.geom import Vec2
 from tests.support.replay_runner_helpers import unverified_replay
 

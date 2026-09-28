@@ -12,7 +12,7 @@ sys.path.insert(0, str(HERE.parent / "vc6-timeline-consumers-2026-09-11"))
 import mine
 import probes
 
-from crimson import match
+from crimson_re import match
 
 
 def memory_variants(s):

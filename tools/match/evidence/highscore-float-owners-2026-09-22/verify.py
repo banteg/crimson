@@ -9,7 +9,7 @@ from pathlib import Path
 
 from controls import HERE, WITNESS, build, previous_module, sha, sources
 
-from crimson import match
+from crimson_re import match
 
 prior = previous_module("verify.py")
 audit, reject = prior.audit, prior.reject

@@ -10,8 +10,8 @@ from typing import cast
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.library_match import (
+from crimson_re.cli.match import match_app
+from crimson_re.library_match import (
     AR_MAGIC,
     archive_match_payload,
     archive_reference_bindings_payload,
@@ -21,7 +21,7 @@ from crimson.library_match import (
     render_archive_match_report,
     write_archive_scratch_configs,
 )
-from crimson.match import (
+from crimson_re.match import (
     CoffObject,
     CoffSection,
     CoffSymbol,
@@ -140,7 +140,7 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     mapped = bytearray(0x2000)
     mapped[0x1000:0x1006] = linked_code
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path, image_base=None: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
@@ -286,7 +286,7 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     addend_mapped = bytearray(0x2000)
     addend_mapped[0x1000:0x1006] = bytes.fromhex("a104104000c3")
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path, image_base=None: LoadedImage(
             bytes(addend_mapped),
             0x00400000,
@@ -381,7 +381,7 @@ def test_archive_match_requires_exact_unrelocated_bytes(
     assert "excluded=1 excluded_bytes=6" in render_archive_match_report(excluded_report)
 
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.collect_scratch_statuses",
+        "crimson_re.cli.match.matchlib.collect_scratch_statuses",
         lambda *args, **kwargs: [
             SimpleNamespace(
                 address=0x00401000,
@@ -450,7 +450,7 @@ def test_archive_match_resolves_known_relocation_targets(
     mapped = bytearray(0x2000)
     mapped[0x1000:0x1006] = bytes.fromhex("a100104000c3")
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path, image_base=None: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
@@ -475,7 +475,7 @@ def test_archive_match_resolves_known_relocation_targets(
         },
     )
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_reference_catalog",
+        "crimson_re.library_match.matchlib.load_reference_catalog",
         lambda *args, **kwargs: catalog,
     )
 
@@ -525,7 +525,7 @@ def test_archive_reference_inference_tolerates_duplicate_member_names(
     mapped = bytearray(0x2000)
     mapped[0x1000:0x1006] = linked_code
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path, image_base=None: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
@@ -575,9 +575,9 @@ def test_archive_match_does_not_index_vc_code_packets(
     metadata_path.write_text('{"image_base":"0x00400000"}', encoding="utf-8")
     mapped = bytearray(0x2000)
     mapped[0x1000:0x1009] = code
-    monkeypatch.setattr("crimson.library_match.matchlib.parse_coff_object", lambda data: obj)
+    monkeypatch.setattr("crimson_re.library_match.matchlib.parse_coff_object", lambda data: obj)
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
@@ -619,7 +619,7 @@ def test_archive_match_accepts_zero_valued_linked_relocation(
     mapped = bytearray(0x2000)
     mapped[0x1000:0x1008] = linked_code
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
@@ -662,7 +662,7 @@ def test_archive_match_trims_untargeted_terminal_padding(
     mapped = bytearray(0x2000)
     mapped[0x1000 : 0x1003 + len(padding)] = linked_code + padding
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 
@@ -708,7 +708,7 @@ def test_archive_match_indexes_external_symbol_section_tail(
     mapped = bytearray(0x2000)
     mapped[0x1000:0x1005] = linked_code
     monkeypatch.setattr(
-        "crimson.library_match.matchlib.load_image",
+        "crimson_re.library_match.matchlib.load_image",
         lambda path: LoadedImage(bytes(mapped), 0x00400000, len(mapped)),
     )
 

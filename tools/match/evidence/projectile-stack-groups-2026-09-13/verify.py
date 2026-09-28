@@ -13,9 +13,9 @@ from pathlib import Path
 
 from primary_homes import stack_map
 
-from crimson import match
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 HERE = Path(__file__).resolve().parent
 SOURCE = HERE.parent / "projectile-ownership-and-stack-2026-09-13"

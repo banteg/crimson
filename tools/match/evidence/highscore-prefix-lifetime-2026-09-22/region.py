@@ -4,7 +4,7 @@ import struct
 
 import capstone
 
-from crimson import match
+from crimson_re import match
 
 NBASE, START, END = 0x4423D0, 0x77D, 0x8A9
 STACK_MAPS = {

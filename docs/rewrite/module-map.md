@@ -17,7 +17,7 @@ without requiring the port to reproduce its global layout or virtual interface.
 | Window, loop, debug view protocol | `src/grim/app.py`, `src/grim/view.py` |
 | Archive/image decoding and asset access | `src/grim/paq.py`, `src/grim/jaz.py`, `src/grim/assets.py` |
 | Input, audio, fonts, configuration | `src/grim/input.py`, `src/grim/audio.py`, `src/grim/fonts/`, `src/grim/config.py` |
-| CLI and tools | `src/crimson/cli/` |
+| CLI | `src/crimson/cli/`; the `crimson-re` workspace package adds `match`, `native` and `dbg` |
 | Navigation and application resources | `src/crimson/game/navigation.py`, `src/crimson/game/resources.py` |
 | Screens, typed actions and retained stack | `src/crimson/screens/`, `src/crimson/screens/actions.py`, `src/crimson/screens/stack.py` |
 | Gameplay shell and mode-specific UI | `src/crimson/modes/` |
@@ -29,7 +29,7 @@ without requiring the port to reproduce its global layout or virtual interface.
 | Creature, projectile, perk and bonus behavior | `src/crimson/creatures/`, `src/crimson/projectiles/`, `src/crimson/perks/`, `src/crimson/bonuses/` |
 | Quest content, tutorial and typing rules | `src/crimson/quests/`, `src/crimson/tutorial/`, `src/crimson/typo/` |
 | Saves and high scores | `src/crimson/persistence/` |
-| Trace recording, comparison and state inspection | `src/crimson/dbg/` |
+| Trace recording, comparison and state inspection | `crimson-re/src/crimson_re/dbg/` |
 
 ## Ownership
 

@@ -9,7 +9,7 @@ from typing import Any, cast
 import pytest
 from typer.testing import CliRunner
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.replay import Replay

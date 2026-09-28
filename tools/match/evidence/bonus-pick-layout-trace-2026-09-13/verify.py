@@ -7,8 +7,8 @@ import runpy
 import struct
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2 as c2
+from crimson_re import match
+from crimson_re import match_c2 as c2
 
 HERE = Path(__file__).resolve().parent
 CONTROLS = HERE.parent / "bonus-pick-cold-edge-2026-09-11"

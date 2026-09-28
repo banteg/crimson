@@ -4,12 +4,12 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusPool
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureInit
-from crimson.dbg.record import _entity_samples_for_world
 from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import ProjectilePool, SecondaryProjectilePool, SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
+from crimson_re.dbg.record import _entity_samples_for_world
 from grim.geom import Vec2
 from tests.replay.cli._helpers import build_replay
 

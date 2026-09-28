@@ -11,7 +11,7 @@ from controls import build, sha
 from region import STACK_MAPS, audit
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 ROOT = None
 CODE, STACK = 0x1000000, 0x2000000

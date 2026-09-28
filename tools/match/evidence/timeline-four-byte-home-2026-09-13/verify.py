@@ -11,8 +11,8 @@ from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 
-from crimson import match
-from crimson import match_c2 as c2
+from crimson_re import match
+from crimson_re import match_c2 as c2
 
 HERE = Path(__file__).resolve().parent
 BASE_SHA = "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9"

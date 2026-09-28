@@ -8,9 +8,12 @@ from typing import Self
 import msgspec
 import pytest
 
-from crimson.dbg.capture_replay import CAPTURE_REPLAY_FORMAT_VERSION, CaptureReplay, CaptureTick
-from crimson.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
-from crimson.dbg.schema import (
+from crimson.game_modes import GameMode
+from crimson.persistence.save_status import GameStatusData
+from crimson.sim.run_spec import RunSpec
+from crimson_re.dbg.capture_replay import CAPTURE_REPLAY_FORMAT_VERSION, CaptureReplay, CaptureTick
+from crimson_re.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
+from crimson_re.dbg.schema import (
     TRACE_FORMAT_VERSION,
     TRACE_SCHEMA_VERSION,
     TraceMeta,
@@ -18,9 +21,6 @@ from crimson.dbg.schema import (
     TraceSource,
     TraceTickRange,
 )
-from crimson.game_modes import GameMode
-from crimson.persistence.save_status import GameStatusData
-from crimson.sim.run_spec import RunSpec
 from scripts import import_capture_fixtures
 
 

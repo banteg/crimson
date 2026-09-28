@@ -10,7 +10,7 @@ from pathlib import Path
 
 import capstone
 
-from crimson import match
+from crimson_re import match
 
 BASE = "89dcf708447b44d35cf4f791427a78e2f0ec877e"
 SCRATCH = Path("tools/match/scratches/highscore_screen_update")

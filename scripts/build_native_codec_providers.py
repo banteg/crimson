@@ -11,8 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Any, cast
 
-from crimson import native_link
-from crimson.library_match import match_coff_archive
+from crimson_re import native_link
+from crimson_re.library_match import match_coff_archive
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROVENANCE_PATH = REPO_ROOT / "analysis/library_provenance.json"

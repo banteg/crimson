@@ -17,7 +17,7 @@ from pathlib import Path
 import unicorn
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 PAGE = 4096
 CODE = 0x10000000

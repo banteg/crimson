@@ -10,7 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from crimson import match, match_c2
+from crimson_re import match, match_c2
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location(

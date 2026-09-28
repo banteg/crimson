@@ -13,7 +13,7 @@ from controls import HERE, WITNESS, build, sha
 from unicorn import x86_const as x86
 from verify import IMAGE_SHA, WINDOWS, audit
 
-from crimson import match
+from crimson_re import match
 
 
 def load(name, path):

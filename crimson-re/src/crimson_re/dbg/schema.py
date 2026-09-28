@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import msgspec
 
-from ..persistence.save_status import GameStatusData
-from ..replay.checkpoints import ReplayCheckpoint
+from crimson.persistence.save_status import GameStatusData
+from crimson.replay.checkpoints import ReplayCheckpoint
+
 from .canonical_channels import (
     EntitySamplesSnapshot,
     ReplayStepSnapshot,

@@ -140,12 +140,12 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
 
 @pytest.mark.parametrize("partition", [(1, 1), (2,), (0, 2, 0), (1, 0, 1)])
 def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, tmp_path, partition) -> None:
-    from crimson.dbg.state_digest import session_digest
     from crimson.game_modes import GameMode
     from crimson.math_parity import f32
     from crimson.sim.batch_apply import apply_presentation_plans
     from crimson.sim.sessions import DeterministicSession
     from crimson.world.runtime import WorldRuntime
+    from crimson_re.dbg.state_digest import session_digest
     from grim.geom import Vec2
     from grim.raylib_api import rl
     from tests.support.audio import make_sfx_state, stub_sfx_backend

@@ -11,8 +11,8 @@ from pathlib import Path
 
 import capstone
 
-from crimson import match, match_micro_oracle
-from crimson.match_micro_oracle import evaluate_window
+from crimson_re import match, match_micro_oracle
+from crimson_re.match_micro_oracle import evaluate_window
 
 HERE = Path(__file__).resolve().parent
 

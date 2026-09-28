@@ -15,7 +15,7 @@ from pathlib import Path
 import msgspec
 import pytest
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
 from crimson.replay import Replay

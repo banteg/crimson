@@ -8,7 +8,7 @@ import struct
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 ENGINE = HERE.parent / "plasma-head-alpha-2026-09-10/verify.py"

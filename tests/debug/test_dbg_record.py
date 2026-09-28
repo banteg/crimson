@@ -6,20 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import crimson.dbg.record as dbg_record
-from crimson.dbg.canonical_channels import (
-    EntitySamplesSnapshot,
-    ReplayStepSnapshot,
-    SimStateSnapshot,
-    SnapshotBonusTimers,
-    SnapshotGameplay,
-    SnapshotPlayer,
-    SnapshotVec2,
-    SnapshotWeapon,
-    bonus_timer_ms,
-)
-from crimson.dbg.schema import TRACE_SCHEMA_VERSION
-from crimson.dbg.trace import load_trace
+import crimson_re.dbg.record as dbg_record
 from crimson.game_modes import GameMode
 from crimson.replay import REPLAY_TICK_DT, REPLAY_TICK_RATE
 from crimson.replay.checkpoints import (
@@ -31,6 +18,19 @@ from crimson.replay.checkpoints import (
 )
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.weapons import WeaponId
+from crimson_re.dbg.canonical_channels import (
+    EntitySamplesSnapshot,
+    ReplayStepSnapshot,
+    SimStateSnapshot,
+    SnapshotBonusTimers,
+    SnapshotGameplay,
+    SnapshotPlayer,
+    SnapshotVec2,
+    SnapshotWeapon,
+    bonus_timer_ms,
+)
+from crimson_re.dbg.schema import TRACE_SCHEMA_VERSION
+from crimson_re.dbg.trace import load_trace
 from tests.replay.cli._helpers import build_replay
 
 
@@ -392,9 +392,9 @@ def test_port_replay_trace_reports_the_fixed_step_boundary(tmp_path: Path) -> No
 
 
 def test_capture_replay_trace_reports_the_captured_boundary(tmp_path: Path) -> None:
-    from crimson.dbg.canonical_channels import GameFrameRngAdvanceOperation
-    from crimson.dbg.capture_replay import dump_capture_replay_file
     from crimson.sim.commands import PerkMenuOpenCommand
+    from crimson_re.dbg.canonical_channels import GameFrameRngAdvanceOperation
+    from crimson_re.dbg.capture_replay import dump_capture_replay_file
     from tests.debug.test_capture_replay import build_capture
 
     capture = build_capture(

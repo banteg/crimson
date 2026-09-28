@@ -5,8 +5,8 @@ from itertools import pairwise
 
 import pytest
 
-from crimson import match as matchlib
-from crimson import match_builds
+from crimson_re import match as matchlib
+from crimson_re import match_builds
 
 REGISTRY = match_builds.load_registry()
 MAPPED_IMAGES = match_builds.mapped_images(REGISTRY)

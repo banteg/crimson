@@ -9,7 +9,7 @@ import subprocess
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]

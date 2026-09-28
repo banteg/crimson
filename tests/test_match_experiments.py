@@ -7,8 +7,8 @@ from typing import Any
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.match_experiments import (
+from crimson_re.cli.match import match_app
+from crimson_re.match_experiments import (
     build_mutation_error_audit,
     build_probe_error_audit,
     mutation_error_evidence_sha256,
@@ -389,11 +389,11 @@ def test_experiment_audit_command_appends_digest_bound_review(
         [{"baseline_epoch": current_epoch, **_sweep("failed", [failed])}],
     )
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.load_scratch_config",
+        "crimson_re.cli.match.matchlib.load_scratch_config",
         lambda directory: type("Config", (), {"directory": directory})(),
     )
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.scratch_experiment_epoch",
+        "crimson_re.cli.match.matchlib.scratch_experiment_epoch",
         lambda config, match_root: current_epoch,
     )
 
@@ -442,11 +442,11 @@ def test_experiment_audit_command_dispatches_errored_probes(
     }
     _write_jsonl(log, [failed_probe])
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.load_scratch_config",
+        "crimson_re.cli.match.matchlib.load_scratch_config",
         lambda directory: type("Config", (), {"directory": directory})(),
     )
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.scratch_experiment_epoch",
+        "crimson_re.cli.match.matchlib.scratch_experiment_epoch",
         lambda config, match_root: current_epoch,
     )
 

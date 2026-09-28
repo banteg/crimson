@@ -5,7 +5,7 @@ from collections.abc import Sequence
 
 import msgspec
 
-from ..replay.checkpoints import ReplayCheckpoint
+from .checkpoints import ReplayCheckpoint
 from .payloads import BuiltinObject, to_builtin_object
 from .strict_compare import strict_mismatch_payload
 

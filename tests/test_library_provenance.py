@@ -6,8 +6,8 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.library_provenance import (
+from crimson_re.cli.match import match_app
+from crimson_re.library_provenance import (
     DEFAULT_PROVENANCE_PATH,
     load_library_provenance,
     render_provenance_report,

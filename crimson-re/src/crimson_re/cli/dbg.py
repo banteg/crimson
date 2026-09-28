@@ -6,7 +6,7 @@ from typing import Literal, cast
 
 import typer
 
-from ..dbg.payloads import BuiltinObject, builtin_object_or_empty, coerce_builtin_value
+from crimson.replay.payloads import BuiltinObject, builtin_object_or_empty, coerce_builtin_value
 
 dbg_app = typer.Typer(add_completion=False)
 
@@ -55,9 +55,10 @@ def cmd_dbg_record(
     ),
 ) -> None:
     """Run replay or capture simulation and record a CDT trace."""
+    from crimson.replay.driver.setup import ReplayRunnerError
+
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
-    from ..replay.driver.setup import ReplayRunnerError
 
     warnings_out: list[str] = []
     try:
@@ -162,11 +163,12 @@ def cmd_dbg_health(
 @dbg_app.command("verify")
 def cmd_dbg_verify() -> None:
     """Verify dbg schema/replay parity contract wiring."""
+    from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
+    from crimson.replay.types import REPLAY_FORMAT_VERSION
+
     from ..dbg.format_contract import format_contract_errors
     from ..dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION, FRIDA_RUNTIME_VERSION
     from ..dbg.schema import TRACE_FORMAT_VERSION, TRACE_REQUIRED_CHANNELS, TRACE_SCHEMA_VERSION
-    from ..replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
-    from ..replay.types import REPLAY_FORMAT_VERSION
 
     channels = tuple(str(channel) for channel in TRACE_REQUIRED_CHANNELS)
 

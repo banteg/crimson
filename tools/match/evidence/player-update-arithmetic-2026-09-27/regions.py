@@ -5,7 +5,7 @@ from dataclasses import asdict, replace
 
 import capstone
 
-from crimson import match
+from crimson_re import match
 
 MOVEMENT = (0x4140D8, 0x4140F7, 0x414339, 0x414358, 0x414B80, 0x414B9F, 0x414E45, 0x414E64)
 REGIONS = [(f"movement-{address:x}", address, 5) for address in MOVEMENT] + [

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from verify import HERE, ROOT, compile_control, encoded, reconstruct, sha
 
-from crimson import match_c2
+from crimson_re import match_c2
 
 
 def main():

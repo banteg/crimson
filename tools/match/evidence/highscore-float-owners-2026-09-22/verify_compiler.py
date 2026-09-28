@@ -8,9 +8,9 @@ from unittest.mock import patch
 
 from controls import HERE, WITNESS, build, measure, previous_module, sha, sources
 
-from crimson import match
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 prior = previous_module("verify_compiler.py")
 STOCK = ("scoped-double-x", "scoped-float-x", WITNESS)

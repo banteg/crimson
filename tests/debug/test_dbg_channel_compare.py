@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import cast
 
-from crimson.dbg.canonical_channels import RngStreamRow, TimingSampleRow
-from crimson.dbg.channel_compare import compare_rng_stream, compare_timing_samples
+from crimson_re.dbg.canonical_channels import RngStreamRow, TimingSampleRow
+from crimson_re.dbg.channel_compare import compare_rng_stream, compare_timing_samples
 
 
 def _timing_sample(**overrides: object) -> TimingSampleRow:

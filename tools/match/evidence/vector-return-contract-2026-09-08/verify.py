@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pefile
 
-from crimson import match, match_toolchain
+from crimson_re import match, match_toolchain
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[3]

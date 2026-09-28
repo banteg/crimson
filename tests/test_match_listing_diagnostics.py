@@ -10,9 +10,9 @@ from typing import Any
 import pytest
 from typer.testing import CliRunner
 
-from crimson import match as matchlib
-from crimson.cli.match import match_app
-from crimson.match_listing_diagnostics import (
+from crimson_re import match as matchlib
+from crimson_re.cli.match import match_app
+from crimson_re.match_listing_diagnostics import (
     compiler_stack_residual_payload,
     parse_stack_listing,
     render_stack_local_observations,
@@ -406,7 +406,7 @@ def test_listing_cli_stack_report_is_optional(tmp_path: Path, monkeypatch: pytes
         calls.append(kwargs)
         return {"diagnostic": True}
 
-    monkeypatch.setattr("crimson.cli.match.match_listing_diagnostics.compiler_stack_residual_payload", stack_report)
+    monkeypatch.setattr("crimson_re.cli.match.match_listing_diagnostics.compiler_stack_residual_payload", stack_report)
     args = ["listing", str(tmp_path), "--json", *(["--stack-residuals", "--max-stack-entries", "3"] if enabled else [])]
 
     completed = CliRunner().invoke(match_app, args)

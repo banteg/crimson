@@ -6,7 +6,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 EVIDENCE = match.DEFAULT_MATCH_ROOT / "evidence"
 

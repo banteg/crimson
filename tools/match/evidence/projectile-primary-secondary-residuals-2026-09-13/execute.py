@@ -13,7 +13,7 @@ import capstone
 import unicorn
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 spec = importlib.util.spec_from_file_location(
     "engine",

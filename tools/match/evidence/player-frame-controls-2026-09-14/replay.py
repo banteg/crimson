@@ -10,7 +10,7 @@ import sys
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 SCRATCH = Path("tools/match/scratches/player_update")

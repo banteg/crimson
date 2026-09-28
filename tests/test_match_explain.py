@@ -4,9 +4,9 @@ from dataclasses import asdict
 
 import pytest
 
-from crimson import match as m
-from crimson import match_address_diagnostics as address
-from crimson import match_explain as explain
+from crimson_re import match as m
+from crimson_re import match_address_diagnostics as address
+from crimson_re import match_explain as explain
 
 
 def reference(identity="address:0x0049bf4c", *, kind="disp", explained=True):
@@ -205,7 +205,7 @@ def test_loop_instruction_is_a_control_flow_edge():
 def test_cli_refuses_existing_output_before_compiling(tmp_path, monkeypatch):
     from typer.testing import CliRunner
 
-    from crimson.cli.match import match_app
+    from crimson_re.cli.match import match_app
 
     def unexpected_compile(*args, **kwargs):
         pytest.fail("Must not compile into an existing diagnostic bundle")

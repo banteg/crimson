@@ -267,7 +267,7 @@ def decode(data, _profile):
 
 
 def trace(scratch: Path, out: Path, *, il: bool = False):
-    from crimson import match_c2 as c2
+    from crimson_re import match_c2 as c2
 
     profile = profile_with_hooks(c2, il)
     stock = (c2.load_profile, c2.observer_source, c2.decode_trace)

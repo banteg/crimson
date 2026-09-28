@@ -10,7 +10,7 @@ import unicorn
 from controls import HERE, build, sha
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 CODE, STACK, FAKE = 0x1000000, 0x2000000, 0x3000000
 NSTART, NEND = 0x44340B, 0x44342D

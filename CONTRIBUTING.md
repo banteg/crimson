@@ -6,6 +6,7 @@ We are decompiling and porting an old game. The goal is **deterministic, evidenc
 - Authoritative decompiles: `analysis/`
 - More mature Python rewrite: `src/`
 - Newly started Zig rewrite: `crimson-zig/`
+- Reverse-engineering tools (`crimson match`, `crimson native`, `crimson dbg`): `crimson-re/`, a workspace package kept out of the game wheel
 
 If you are doing **capture-driven** parity work, start with: `docs/frida/differential-playbook.md`
 

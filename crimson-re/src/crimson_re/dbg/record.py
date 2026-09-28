@@ -9,24 +9,25 @@ from typing import Literal
 
 import msgspec
 
-from grim.rand import RecordedCallerStatic
-
-from ..game_modes import GameMode
-from ..math_parity import f32
-from ..persistence.save_status import GameStatusData
-from ..replay import REPLAY_TICK_DT, REPLAY_TICK_RATE, PackedTickInputs, Replay, load_replay_file
-from ..replay.checkpoints import ReplayCheckpoint
-from ..replay.driver.playback_driver import (
+from crimson.game_modes import GameMode
+from crimson.math_parity import f32
+from crimson.persistence.save_status import GameStatusData
+from crimson.replay import REPLAY_TICK_DT, REPLAY_TICK_RATE, PackedTickInputs, Replay, load_replay_file
+from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.driver.playback_driver import (
     PlaybackWalkObserver,
     RngTraceDraw,
     SessionPlaybackDriver,
     build_verify_playback_driver,
 )
-from ..replay.types import current_replay_game_version
-from ..sim.hooks import TickResult
-from ..sim.run_spec import RunSpec
-from ..sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
-from ..sim.world_state import WorldState
+from crimson.replay.payloads import BuiltinObject
+from crimson.replay.types import current_replay_game_version
+from crimson.sim.hooks import TickResult
+from crimson.sim.run_spec import RunSpec
+from crimson.sim.timing import ftol_ms_i32, reflex_boost_time_scale_factor
+from crimson.sim.world_state import WorldState
+from grim.rand import RecordedCallerStatic
+
 from .canonical_channels import (
     BonusEntitySample,
     CreatureEntitySample,
@@ -53,7 +54,6 @@ from .capture_replay import (
     CaptureReplay,
     load_capture_replay_file,
 )
-from .payloads import BuiltinObject
 from .schema import (
     TRACE_FORMAT_VERSION,
     TRACE_SCHEMA_VERSION,
@@ -66,7 +66,7 @@ from .schema import (
 )
 from .trace import TraceError, TraceReader, TraceSummary, write_trace
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 _ZIG_ROOT = _REPO_ROOT / "crimson-zig"
 _ZIG_BIN = _ZIG_ROOT / "zig-out" / "bin" / "crimson-zig"
 _TRACE_CHUNK_TICKS = 256

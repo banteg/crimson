@@ -31,7 +31,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import const_trace as ct
 
-from crimson import match as m
+from crimson_re import match as m
 
 REWRITE = r"""
 static int is_named(unsigned long y, const char *want)

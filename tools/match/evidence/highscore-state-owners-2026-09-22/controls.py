@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location(

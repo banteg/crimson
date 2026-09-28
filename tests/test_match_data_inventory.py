@@ -6,8 +6,8 @@ from typing import Any
 
 import pytest
 
-from crimson import match_data_inventory as inventory
-from crimson import match_data_report, match_report
+from crimson_re import match_data_inventory as inventory
+from crimson_re import match_data_report, match_report
 
 
 def object_row(address: int, size: int, name: str) -> dict[str, Any]:

@@ -8,9 +8,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.match import DisassemblyLine, MaskedReference, MatchResult, ScratchConfig, match_result_payload
-from crimson.match_flow_graph import flow_graph_payload
+from crimson_re.cli.match import match_app
+from crimson_re.match import DisassemblyLine, MaskedReference, MatchResult, ScratchConfig, match_result_payload
+from crimson_re.match_flow_graph import flow_graph_payload
 
 
 def result_for(target: tuple[str, ...], candidate: tuple[str, ...]) -> MatchResult:
@@ -164,7 +164,7 @@ def test_reference_evidence_checked_at_graph_mapped_positions(change: str | None
 
 @pytest.mark.parametrize("args", [[], ["--full"], ["--json"]])
 def test_cli_adds_diagnostic_without_changing_failure_or_scores(monkeypatch: pytest.MonkeyPatch, args: list[str]) -> None:
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: moved_blocks())
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: moved_blocks())
     runner = CliRunner()
     plain = runner.invoke(match_app, ["diff", "candidate.obj", "foo", *args])
     graph = runner.invoke(match_app, ["diff", "candidate.obj", "foo", "--flow-graph", *args])
@@ -181,9 +181,9 @@ def test_cli_adds_diagnostic_without_changing_failure_or_scores(monkeypatch: pyt
 
 def test_scratch_cli_exposes_graph(monkeypatch: pytest.MonkeyPatch) -> None:
     config = ScratchConfig(Path("scratch"), "crimsonland.exe", "foo", "scratch.cpp", "vc6", "", None, None, "")
-    monkeypatch.setattr("crimson.cli.match.matchlib.load_scratch_config", lambda path: config)
-    monkeypatch.setattr("crimson.cli.match.matchlib.compile_scratch", lambda *args: Path("candidate.obj"))
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: moved_blocks())
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.load_scratch_config", lambda path: config)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.compile_scratch", lambda *args: Path("candidate.obj"))
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: moved_blocks())
     completed = CliRunner().invoke(match_app, ["scratch", "scratch", "--flow-graph"])
     assert completed.exit_code == 1
     assert "flow graph: matched" in completed.output

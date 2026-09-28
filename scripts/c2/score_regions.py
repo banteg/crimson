@@ -25,7 +25,7 @@ import shlex
 from dataclasses import dataclass
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 
 @dataclass(frozen=True)

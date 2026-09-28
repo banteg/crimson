@@ -240,7 +240,7 @@ timestamps, and requires exact matches for 18 libjpeg functions plus zlib's
 
 The recovered platform archives (`grim-platform.lib` and
 `crimsonland-platform.lib`) need no manual step. They are built from the exact
-platform scratches by `src/crimson/native_providers.py`, together with a data
+platform scratches by `crimson-re/src/crimson_re/native_providers.py`, together with a data
 object for the globals only those functions reference. That data object
 depends on which globals the audit's own data object already defines, so
 `crimson native link` rebuilds an archive from its fresh audit whenever the

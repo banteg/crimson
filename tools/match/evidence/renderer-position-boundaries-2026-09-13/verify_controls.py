@@ -7,7 +7,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 FIRE_PROOF = HERE.parent / "fire-overlay-lifetimes-2026-09-13/verify.py"

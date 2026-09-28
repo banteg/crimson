@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from controls import COFF_SHA, FRAME_MAP, HERE, SOURCE_SHA, build, inspect, sha, sources, write_json
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 ORIGINAL_OBSERVER = c2.observer_source
 ROLES = ("input-X", "input-Y", "heading")

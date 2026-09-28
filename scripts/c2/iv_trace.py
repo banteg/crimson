@@ -21,7 +21,7 @@ import re
 import sys
 from pathlib import Path
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 BASE = 0x10700000
 STOCK_OBSERVER_SOURCE = c2.observer_source

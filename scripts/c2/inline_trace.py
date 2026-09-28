@@ -29,7 +29,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import iv_trace
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 BASE = 0x10700000
 PREPARE = (0x107580FA, 0x107180FD, "function_prepare_temps")

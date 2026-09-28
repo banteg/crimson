@@ -10,7 +10,7 @@ from pathlib import Path
 
 import capstone
 
-from crimson import match
+from crimson_re import match
 
 REPO = match.REPO_ROOT
 SCRATCH = Path("tools/match/scratches/highscore_sync_worker")

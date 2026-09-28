@@ -6,7 +6,7 @@ import struct
 
 import pytest
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 PROFILE = {"hooks": [{"site": 0x100, "target": 0x200, "return": True}]}
 
@@ -114,7 +114,7 @@ def test_observer_guards_before_restoring_flags():
 def test_trace_cli_selects_observation_scope(monkeypatch, tmp_path, options, expected):
     from typer.testing import CliRunner
 
-    from crimson.cli.match import match_app
+    from crimson_re.cli.match import match_app
 
     scratch, out = tmp_path / "scratch", tmp_path / "trace"
     calls = []

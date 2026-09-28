@@ -17,7 +17,7 @@ flag words) and ordered commands, stepped with the fixed `REPLAY_TICK_DT`.
 `step_replay_tick` in `src/crimson/replay/ticks.py` is the only way live play
 and replays advance a session. Live play packs each tick with `LiveTickSource`,
 records it, then steps that same tick, so the simulation never sees input the
-replay cannot store. Original-capture playback (`crimson.dbg`) keeps its own
+replay cannot store. Original-capture playback (`crimson_re.dbg`) keeps its own
 per-tick native delta and between-tick preludes and postludes.
 
 The session returns one `DeterministicSessionTick` containing:
@@ -116,7 +116,7 @@ controller interpretation, ragged frame times and perk commands, then replays
 the recording and compares complete session state along the way;
 `tests/replay/test_live_run_start.py` compares full session state through
 actual mode startup and recording. Compact checkpoints support native
-comparison but omit state: use `session_digest` in `src/crimson/dbg/state_digest.py`
+comparison but omit state: use `session_digest` in `crimson-re/src/crimson_re/dbg/state_digest.py`
 for same-build port regression checks.
 
 Replay play, verify, info, benchmark and render all use this simulation contract.

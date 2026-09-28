@@ -37,7 +37,7 @@ def test_pc24_control_word_rounds_every_op(oracle) -> None:
 
 
 def test_null_pointer_read_names_instruction_and_symbol(oracle) -> None:
-    from crimson.dbg.native_oracle import NativeTrap
+    from crimson_re.dbg.native_oracle import NativeTrap
 
     oracle.write_u8("creature_pool", 1)
     # Pool full scan -> `creature_alloc_slot` dereferences the unset cv_verbose cvar.
@@ -50,7 +50,7 @@ def test_null_pointer_read_names_instruction_and_symbol(oracle) -> None:
 
 
 def test_unstubbed_import_is_reported_and_stubs_answer(oracle) -> None:
-    from crimson.dbg.native_oracle import NativeTrap
+    from crimson_re.dbg.native_oracle import NativeTrap
 
     # `crt_findclose` (0x004618fd) calls KERNEL32!FindClose.
     with pytest.raises(NativeTrap) as trap:

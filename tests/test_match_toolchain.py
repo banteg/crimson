@@ -5,8 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from crimson import match as matchlib
-from crimson.match_toolchain import file_sha256, tree_set_sha256
+from crimson_re import match as matchlib
+from crimson_re.match_toolchain import file_sha256, tree_set_sha256
 
 
 @pytest.mark.parametrize("dependency", ["Bin/C2.DLL", "Include/sdk.h", "runner"])

@@ -11,7 +11,7 @@ from typing import Literal, cast
 
 import pytest
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 from crimson.game_modes import GameMode
 from crimson.replay import Replay, encode_replay_payload
 from crimson.sim.commands import PerkPickCommand

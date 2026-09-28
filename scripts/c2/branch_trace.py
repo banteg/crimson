@@ -40,7 +40,7 @@ import struct
 from pathlib import Path
 from unittest.mock import patch
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 G_CUR_FUNCTION = 0xAC380
 HOOKS = [

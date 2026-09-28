@@ -6,7 +6,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 CURRENT_SHA = "32bbe80fa55747d431ab5be9b004b157af9f94a5b7b8feea5c6cf80763eab5ca"

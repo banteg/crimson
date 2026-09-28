@@ -8,8 +8,8 @@ from pathlib import Path
 
 import msgspec
 
-from crimson.dbg.diff import diff_report_to_json, diff_traces
-from crimson.dbg.record import record_replay_to_trace
+from crimson_re.dbg.diff import diff_report_to_json, diff_traces
+from crimson_re.dbg.record import record_replay_to_trace
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayClaimedStatsSnapshot, ReplayHeader, ReplayRecorder, dump_replay
 from crimson.replay.driver.playback_driver import build_verify_playback_driver

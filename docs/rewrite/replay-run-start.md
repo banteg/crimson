@@ -159,7 +159,7 @@ When movement diverges, compare `replay_step` first. Matching inputs with a
 different `sim_state` point at integration or state-reset behavior; different
 inputs point at capture or replay-driving data.
 
-For same-build port-to-port regression tests, `crimson.dbg.state_digest`
+For same-build port-to-port regression tests, `crimson_re.dbg.state_digest`
 provides `session_state_bytes` and `session_digest`. These include complete
 player, mode, pool, allocator, RNG, and terrain-queue state, including inactive
 slot residue. Compact checkpoints remain useful for native comparisons and

@@ -6,22 +6,22 @@ from pathlib import Path
 import msgspec
 import zstandard as zstd
 
+from crimson.game_modes import GameMode
+from crimson.math_parity import f32
+from crimson.persistence.save_status import GameStatusData
+from crimson.replay import PackedTickInputs, inflate_replay_payload
+from crimson.replay.driver.playback_driver import SessionPlaybackDriver
+from crimson.replay.driver.setup import ReplayRunnerError
+from crimson.replay.input_codec import unpack_tick_inputs
+from crimson.replay.types import input_flags_validation_error
+from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.commands import PerkPickCommand
+from crimson.sim.run_spec import RunSpec, RunStatus
+from crimson.sim.sessions import DeterministicSessionTick
+from crimson.sim.world_reset import CreatureSlotResidue
 from grim.atomic_write import atomic_write_bytes
 from grim.sfx_map import SfxId
 
-from ..game_modes import GameMode
-from ..math_parity import f32
-from ..persistence.save_status import GameStatusData
-from ..replay import PackedTickInputs, inflate_replay_payload
-from ..replay.driver.playback_driver import SessionPlaybackDriver
-from ..replay.driver.setup import ReplayRunnerError
-from ..replay.input_codec import unpack_tick_inputs
-from ..replay.types import input_flags_validation_error
-from ..rng_caller_static import RngCallerStatic
-from ..sim.commands import PerkPickCommand
-from ..sim.run_spec import RunSpec, RunStatus
-from ..sim.sessions import DeterministicSessionTick
-from ..sim.world_reset import CreatureSlotResidue
 from .canonical_channels import GameFrameRngAdvanceOperation, PostludeOperation, PreludeOperation
 
 CAPTURE_REPLAY_FORMAT_VERSION = 1

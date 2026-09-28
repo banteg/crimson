@@ -1,6 +1,6 @@
 import json
 
-from crimson.dbg.state_digest import session_digest
+from crimson_re.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.perks.ids import PerkId
 from crimson.sim.input import PlayerInput

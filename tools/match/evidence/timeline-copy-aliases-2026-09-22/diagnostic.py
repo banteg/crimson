@@ -13,8 +13,8 @@ from pathlib import Path
 from controls import HERE, TRIPLET, build, sha
 from verify import copied_index, decode_aliases, observer, profile, stack
 
-from crimson import match
-from crimson import match_c2 as c2
+from crimson_re import match
+from crimson_re import match_c2 as c2
 
 
 def source(enable):

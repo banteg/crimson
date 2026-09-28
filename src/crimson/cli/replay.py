@@ -16,8 +16,8 @@ from ..paths import default_runtime_dir
 from ..quests.level import QuestLevel
 
 if TYPE_CHECKING:
-    from ..dbg.checkpoint_diff import ReplayDiffResult
     from ..replay import Replay
+    from ..replay.checkpoint_diff import ReplayDiffResult
     from ..replay.driver.progress import ReplayRenderPhase, ReplayRenderProgress
     from ..replay.driver.replay_benchmark import (
         BenchmarkAggregate,
@@ -159,7 +159,7 @@ def _replay_render_progress_runtime(
 
 
 def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
-    from ..dbg.checkpoint_diff import checkpoint_deepdiff
+    from ..replay.checkpoint_diff import checkpoint_deepdiff
 
     failure = diff.failure
     assert failure is not None
@@ -1529,8 +1529,8 @@ def cmd_replay_verify_checkpoints(
     ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
-    from ..dbg.checkpoint_diff import compare_checkpoints
     from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
+    from ..replay.checkpoint_diff import compare_checkpoints
     from ..replay.checkpoints import (
         ReplayCheckpoint,
         ReplayCheckpointsError,
@@ -1634,7 +1634,7 @@ def cmd_replay_diff_checkpoints(
     actual_file: Path = typer.Argument(..., help="actual checkpoints sidecar (.crd.chk)"),
 ) -> None:
     """Compare two checkpoint sidecars and report the first divergence."""
-    from ..dbg.checkpoint_diff import compare_checkpoints
+    from ..replay.checkpoint_diff import compare_checkpoints
     from ..replay.checkpoints import load_checkpoints_file
 
     expected = load_checkpoints_file(Path(expected_file))

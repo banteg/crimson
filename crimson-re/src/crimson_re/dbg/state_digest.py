@@ -7,14 +7,13 @@ from enum import Enum
 
 import msgspec
 
+from crimson.bonuses.pool import BonusPool
+from crimson.creatures.runtime import CreaturePool
+from crimson.effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
+from crimson.persistence.save_status import GameStatus
+from crimson.projectiles.runtime import ProjectilePool, SecondaryProjectilePool
+from crimson.sim.sessions import DeterministicSession
 from grim.rand import CrtRand, RecordingCrand
-
-from ..bonuses.pool import BonusPool
-from ..creatures.runtime import CreaturePool
-from ..effects import EffectPool, FxQueue, FxQueueRotated, ParticlePool, SpriteEffectPool
-from ..persistence.save_status import GameStatus
-from ..projectiles.runtime import ProjectilePool, SecondaryProjectilePool
-from ..sim.sessions import DeterministicSession
 
 # These pools use ordinary Python objects. Include their complete stored state,
 # including inactive entries, allocation cursors and RNG references. New object

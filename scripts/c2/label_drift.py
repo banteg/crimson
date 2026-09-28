@@ -20,7 +20,7 @@ import difflib
 import re
 from pathlib import Path
 
-from crimson import match as m
+from crimson_re import match as m
 
 LABEL = re.compile(r"\bL([0-9a-f]+)\b")
 

@@ -11,7 +11,7 @@ import unicorn
 from replay import HERE, SCRATCH, baseline, compile_source, sha
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 IMAGE_SHA = "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
 WINDOW = (0x1015, 0x1043)

@@ -7,9 +7,9 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.match import ScratchConfig, ScratchStatus
-from crimson.match_mutation import (
+from crimson_re.cli.match import match_app
+from crimson_re.match import ScratchConfig, ScratchStatus
+from crimson_re.match_mutation import (
     MutationChoice,
     MutationEvaluation,
     MutationReplacement,
@@ -93,9 +93,9 @@ def test_mutation_sweep_selects_encoded_identity_gain(monkeypatch: pytest.Monkey
     config = _config(tmp_path)
     baseline = replace(_status(config, 1.0, prefix=10), body_byte_exact=False)
     exact = replace(baseline, body_byte_exact=True)
-    monkeypatch.setattr("crimson.match.evaluate_scratch", lambda *args, **kwargs: baseline)
+    monkeypatch.setattr("crimson_re.match.evaluate_scratch", lambda *args, **kwargs: baseline)
     monkeypatch.setattr(
-        "crimson.match.evaluate_source_overlay",
+        "crimson_re.match.evaluate_source_overlay",
         lambda config, source, **kwargs: exact if source == "y + x" else baseline,
     )
     spec_path = tmp_path / "spec.json"
@@ -271,8 +271,8 @@ def test_mutation_sweep_evaluates_baseline_once_and_ranks_variants(
         ratio = 0.75 if "y + x" in source_text else 0.6
         return _status(replace(profile, directory=Path("/tmp/shadow")), ratio)
 
-    monkeypatch.setattr("crimson.match_mutation.matchlib.evaluate_scratch", fake_baseline)
-    monkeypatch.setattr("crimson.match_mutation.matchlib.evaluate_source_overlay", fake_overlay)
+    monkeypatch.setattr("crimson_re.match_mutation.matchlib.evaluate_scratch", fake_baseline)
+    monkeypatch.setattr("crimson_re.match_mutation.matchlib.evaluate_source_overlay", fake_overlay)
 
     sweep = evaluate_mutation_sweep(
         config,
@@ -465,7 +465,7 @@ def test_mutate_cli_writes_only_a_tradeoff_free_improving_winner(
         planned_by_changes=(2, 0),
     )
     monkeypatch.setattr(
-        "crimson.cli.match.match_mutation.evaluate_mutation_sweep",
+        "crimson_re.cli.match.match_mutation.evaluate_mutation_sweep",
         lambda *args, **kwargs: sweep,
     )
     output = tmp_path / "winner.cpp"
@@ -531,8 +531,8 @@ def test_sweep_passes_one_deadline_to_baseline_and_variants_and_records_timeout(
         assert kwargs["deadline"] == deadlines[0]
         return replace(_status(profile, None), error="compiler timed out")
 
-    monkeypatch.setattr("crimson.match_mutation.matchlib.evaluate_scratch", baseline)
-    monkeypatch.setattr("crimson.match_mutation.matchlib.evaluate_source_overlay", overlay)
+    monkeypatch.setattr("crimson_re.match_mutation.matchlib.evaluate_scratch", baseline)
+    monkeypatch.setattr("crimson_re.match_mutation.matchlib.evaluate_source_overlay", overlay)
     sweep = evaluate_mutation_sweep(config, spec, source_text="return 1;", match_root=tmp_path, time_budget=1)
     assert deadlines[0] is not None
     assert not sweep.best_improves

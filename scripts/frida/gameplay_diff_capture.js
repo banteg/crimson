@@ -22,7 +22,7 @@ const DEFAULT_CONSOLE_EVENTS =
   "start,ready,capture_shutdown,error,hook_error,hook_skip,tickless_event";
 const CAPTURE_FORMAT_VERSION = 29;
 const REQUIRED_FRIDA_VERSION = "17.15.4";
-// Keep this JSON-compatible: src/crimson/dbg/format_contract.py parses it and
+// Keep this JSON-compatible: crimson-re/src/crimson_re/dbg/format_contract.py parses it and
 // compares every field set with the authoritative Python msgspec structs.
 // BEGIN CAPTURE_FIELD_SETS
 const CAPTURE_FIELD_SETS = {

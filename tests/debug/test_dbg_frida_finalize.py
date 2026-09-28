@@ -8,20 +8,20 @@ from typing import cast
 import pytest
 import zstandard as zstd
 
-from crimson.dbg.canonical_channels import GameFrameRngAdvanceOperation, entity_uid
-from crimson.dbg.capture_replay import load_capture_replay_file
-from crimson.dbg.frida_finalize import (
+from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
+from crimson.replay.types import quantize_f32
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.state_types import TERRAIN_SIZE
+from crimson_re.dbg.canonical_channels import GameFrameRngAdvanceOperation, entity_uid
+from crimson_re.dbg.capture_replay import load_capture_replay_file
+from crimson_re.dbg.frida_finalize import (
     FRIDA_CAPTURE_FORMAT_VERSION,
     FRIDA_RUNTIME_VERSION,
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,
     load_frida_evidence_file,
 )
-from crimson.dbg.trace import load_trace
-from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
-from crimson.replay.types import quantize_f32
-from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from crimson.sim.state_types import TERRAIN_SIZE
+from crimson_re.dbg.trace import load_trace
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 

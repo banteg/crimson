@@ -11,7 +11,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent / "vc6-timeline-consumers-2026-09-11"))
 import probes
 
-from crimson import match
+from crimson_re import match
 
 WITNESS_SHA = "5ad0be6a087969c28411fe3658c58a1dd2863f4611f4e843d684210f0a257cf9"
 

@@ -35,7 +35,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import frame_predict as fp
 import native_slots as ns
 
-from crimson import match
+from crimson_re import match
 
 
 def load(args: argparse.Namespace) -> tuple[fp.Frame, dict[int, str], dict[int, int]]:

@@ -4,7 +4,7 @@ import struct
 
 import msgspec
 
-from crimson.dbg.checkpoint_diff import checkpoint_deepdiff, compare_checkpoints
+from crimson.replay.checkpoint_diff import checkpoint_deepdiff, compare_checkpoints
 from crimson.replay.checkpoints import (
     ReplayCheckpoint,
     ReplayCheckpointVec2,

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from crimson.match import (
+from crimson_re.match import (
     LoadedImage,
     ObjectFunction,
     ObjectRelocationReference,
@@ -15,7 +15,7 @@ from crimson.match import (
     load_image,
     match_function,
 )
-from crimson.match_flow_graph import flow_graph_payload
+from crimson_re.match_flow_graph import flow_graph_payload
 
 
 def literal_candidate(kind: str) -> tuple[bytes, ObjectFunction]:

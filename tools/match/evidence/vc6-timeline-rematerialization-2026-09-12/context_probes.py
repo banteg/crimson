@@ -9,7 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "vc6-timeline-consumers-2026-09-11"))
 import probes
 
-from crimson import match
+from crimson_re import match
 
 c = match.load_scratch_config(match.DEFAULT_MATCH_ROOT / "scratches/quest_spawn_timeline_update")
 s = (c.directory / c.source).read_text()

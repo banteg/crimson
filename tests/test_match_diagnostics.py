@@ -8,8 +8,8 @@ from pathlib import Path
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.match import (
+from crimson_re.cli.match import match_app
+from crimson_re.match import (
     DisassemblyLine,
     MaskedOperandAudit,
     MaskedOperandAuditEntry,
@@ -17,7 +17,7 @@ from crimson.match import (
     ScratchConfig,
     match_result_payload,
 )
-from crimson.match_diagnostics import render_residual_summary, residual_summary_payload
+from crimson_re.match_diagnostics import render_residual_summary, residual_summary_payload
 
 
 def _result(
@@ -204,7 +204,7 @@ def test_residual_summary_cli_preserves_failure_and_is_opt_in(
     args: list[str],
 ) -> None:
     result = _branch_result()
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: result)
     runner = CliRunner()
 
     plain = runner.invoke(match_app, ["diff", "candidate.obj", "foo", *args])
@@ -230,7 +230,7 @@ def test_residual_summary_cannot_hide_reference_debt(monkeypatch: pytest.MonkeyP
     result = _result(("push ADDR",), ("push ADDR",))
     audit = MaskedOperandAudit((MaskedOperandAuditEntry(0, 0, 0, 0, 0x401000, 0, "push ADDR", (), (), "unresolved"),))
     result = replace(result, masked_operand_audit=audit)
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: result)
 
     completed = CliRunner().invoke(
         match_app,
@@ -260,9 +260,9 @@ def test_residual_summary_scratch_cli_uses_same_report(monkeypatch: pytest.Monke
         symbol=None,
         note="",
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.load_scratch_config", lambda path: config)
-    monkeypatch.setattr("crimson.cli.match.matchlib.compile_scratch", lambda *args: Path("candidate.obj"))
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: _branch_result())
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.load_scratch_config", lambda path: config)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.compile_scratch", lambda *args: Path("candidate.obj"))
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: _branch_result())
 
     completed = CliRunner().invoke(match_app, ["scratch", "scratch", "--residual-summary"])
 
@@ -276,7 +276,7 @@ def test_residual_summary_bounds_reference_only_failures(monkeypatch: pytest.Mon
         MaskedOperandAuditEntry(i, i, i, i, 0x401000 + i, i, "push ADDR", (), (), "unresolved") for i in range(10)
     ))
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.run_match", lambda **kwargs: replace(result, masked_operand_audit=audit),
+        "crimson_re.cli.match.matchlib.run_match", lambda **kwargs: replace(result, masked_operand_audit=audit),
     )
 
     completed = CliRunner().invoke(
@@ -290,7 +290,7 @@ def test_residual_summary_bounds_reference_only_failures(monkeypatch: pytest.Mon
 
 def test_residual_summary_preserves_success_exit(monkeypatch: pytest.MonkeyPatch) -> None:
     result = _result(("ret",), ("ret",))
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: result)
 
     completed = CliRunner().invoke(match_app, ["diff", "candidate.obj", "foo", "--residual-summary"])
 

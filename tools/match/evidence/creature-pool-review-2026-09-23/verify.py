@@ -6,9 +6,9 @@ import json
 import shutil
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 HERE = Path(__file__).resolve().parent
 SOURCE_SHA = "7bb97911b09a9e96d60b4b7b93530f07702d92de55d343d75fb5b642b49f44bd"

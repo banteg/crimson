@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from controls import HERE, build, load, sha
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 stack = load("timeline_stack", HERE.parent / "highscore-filter-storage-2026-09-22/verify.py")
 CASES = ("end-pointer", "pair", "guard", "separate-input")

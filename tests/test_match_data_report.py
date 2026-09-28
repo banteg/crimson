@@ -6,9 +6,9 @@ from typing import Any, Self
 
 import pytest
 
-from crimson import match as matchlib
-from crimson import match_data_report as data_report
-from crimson import match_report
+from crimson_re import match as matchlib
+from crimson_re import match_data_report as data_report
+from crimson_re import match_report
 
 
 def _candidate(address: int, size: int, *, image: str = "crimsonland.exe", name: str = "pool") -> dict[str, Any]:

@@ -6,7 +6,7 @@ from typing import Any, cast
 
 import pytest
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 from crimson.creatures.spawn import SpawnEnv, build_spawn_plan
 from crimson.math_parity import f32
 from crimson.quests import quest_by_level

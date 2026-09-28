@@ -11,7 +11,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 LEGACY_REVISION = "dd9e4122083ab82d99dc383b066426bcfc8f5835"
@@ -56,7 +56,7 @@ def main():
     git = shutil.which("git")
     assert git is not None
     old_source = subprocess.run(
-        [git, "show", f"{LEGACY_REVISION}:src/crimson/match.py"],
+        [git, "show", f"{LEGACY_REVISION}:crimson-re/src/crimson_re/match.py"],
         cwd=match.REPO_ROOT, check=True, capture_output=True,
     ).stdout
     old_path = out / "legacy_match.py"

@@ -7,9 +7,9 @@ import struct
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 HERE = Path(__file__).resolve().parent
 SOURCE_SHA = "b27f450cd219a514e9083ddfb87842a3a960130f6d5343b851ae6f7835b9ddae"

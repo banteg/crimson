@@ -9,7 +9,7 @@ from pathlib import Path
 import unicorn
 from recover import HERE, recover, sha
 
-from crimson import match
+from crimson_re import match
 
 PREVIOUS = HERE.parent / "spawn-grid-dispatch-2026-09-11"
 sys.path.insert(0, str(PREVIOUS))

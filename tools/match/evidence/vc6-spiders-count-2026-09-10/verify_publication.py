@@ -14,7 +14,7 @@ from pathlib import Path
 import unicorn
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 FUNCTION = "quest_build_spiders_inc"

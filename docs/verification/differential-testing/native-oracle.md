@@ -7,7 +7,7 @@ tags:
 
 # Native execution oracle
 
-`crimson.dbg.native_oracle` runs functions of the original `crimsonland.exe`
+`crimson_re.dbg.native_oracle` runs functions of the original `crimsonland.exe`
 under Unicorn x86 emulation, so a port function can be checked bit for bit
 against native code without a capture. Use it for float math, spawn stat
 tables and other leaf or near-leaf gameplay code.
@@ -46,7 +46,7 @@ tables and other leaf or near-leaf gameplay code.
   writes. `snapshot()` and `restore()` reset state between cases.
 
 ```python
-from crimson.dbg.native_oracle import NativeOracle
+from crimson_re.dbg.native_oracle import NativeOracle
 
 oracle = NativeOracle()
 oracle.run_static_initializers()

@@ -4,9 +4,10 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.replay.payloads import BuiltinObject, to_builtin_object
+
 from . import trace as trace_io
 from .channel_helpers import entity_samples_channel, rng_stream_channel_required, sim_state_channel
-from .payloads import BuiltinObject, to_builtin_object
 from .schema import CHUNK_KIND_TICK, TRACE_REQUIRED_CHANNELS, TickBlock, TickRecord
 from .trace import TraceError, TraceReader, validate_tick_record
 

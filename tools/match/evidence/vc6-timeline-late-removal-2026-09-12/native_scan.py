@@ -13,7 +13,7 @@ import capstone as cs
 import pefile
 from capstone.x86_const import X86_OP_MEM, X86_REG_EBP, X86_REG_ESP
 
-from crimson import match
+from crimson_re import match
 
 
 def frame(insn):

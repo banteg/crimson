@@ -11,7 +11,7 @@ from pathlib import Path
 
 from controls import HERE, WITNESS, build, sha, sources
 
-from crimson import match
+from crimson_re import match
 
 IMAGE_SHA = "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
 NBASE = 0x4423D0

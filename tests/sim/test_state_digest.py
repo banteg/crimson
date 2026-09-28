@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from crimson.dbg.state_digest import session_digest
 from crimson.persistence.save_status import GameStatus, GameStatusData
+from crimson_re.dbg.state_digest import session_digest
 from grim.rand import RecordingCrand
 from tests.support.builders.session import make_session
 

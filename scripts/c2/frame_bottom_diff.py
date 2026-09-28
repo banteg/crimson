@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import frame_predict as fp
 import residual_map as rm
 
-from crimson import match as m
+from crimson_re import match as m
 
 ESP = re.compile(r"\besp\+0x[0-9a-f]+\]|\besp\]")
 BOTTOM = re.compile(r"B\+(0x[0-9a-f]+)")

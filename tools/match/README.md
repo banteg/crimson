@@ -1078,7 +1078,7 @@ remain visible. `--json` adds a `stack_residuals` field to the existing listing
 payload. Normal listing behavior and match acceptance remain unchanged; a
 successful diagnostic listing can still describe a non-exact match.
 
-For small argument-preparation residuals, `crimson.match_micro_oracle` can
+For small argument-preparation residuals, `crimson_re.match_micro_oracle` can
 compare symbolic effects of straight-line MOV/LEA/PUSH windows. External
 addresses must be resolved before evaluation; unsupported instructions fail
 closed. The stack-call projection preserves ESP, ordered memory writes, and

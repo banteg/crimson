@@ -10,7 +10,7 @@ from pathlib import Path
 
 from controls import HERE, WITNESS, build, sha, sources
 
-from crimson import match
+from crimson_re import match
 
 PREVIOUS = HERE.parent / "highscore-label-bitcopy-2026-09-22/verify.py"
 spec = importlib.util.spec_from_file_location("label_region_audit", PREVIOUS)

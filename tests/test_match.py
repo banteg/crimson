@@ -11,8 +11,8 @@ from typing import cast
 import pytest
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.match import (
+from crimson_re.cli.match import match_app
+from crimson_re.match import (
     DEFAULT_FUNCTIONS_PATH,
     SHARD_PLAN_KIND,
     VC6_LOCAL_JUMP_TABLE_KEY,
@@ -1540,13 +1540,13 @@ def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> No
     image_path = tmp_path / "game.exe"
     image_path.write_bytes(b"image")
 
-    monkeypatch.setattr("crimson.match.load_function_manifest", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr("crimson_re.match.load_function_manifest", lambda *args, **kwargs: manifest)
     monkeypatch.setattr(
-        "crimson.match.load_image",
+        "crimson_re.match.load_image",
         lambda *args, **kwargs: LoadedImage(b"\xc3", 0x401000, 1),
     )
-    monkeypatch.setattr("crimson.match.load_reference_catalog", lambda *args, **kwargs: ReferenceCatalog({}))
-    monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
+    monkeypatch.setattr("crimson_re.match.load_reference_catalog", lambda *args, **kwargs: ReferenceCatalog({}))
+    monkeypatch.setattr("crimson_re.match.parse_coff_object", lambda data: object())
 
     def fake_extract(
         obj,
@@ -1559,7 +1559,7 @@ def test_run_match_forwards_object_boundaries(monkeypatch, tmp_path: Path) -> No
         observed.append((extent, end_symbol, size))
         return ObjectFunction("_probe", b"\xc3", frozenset())
 
-    monkeypatch.setattr("crimson.match.extract_object_function", fake_extract)
+    monkeypatch.setattr("crimson_re.match.extract_object_function", fake_extract)
 
     result = run_match(
         obj_path=obj_path,
@@ -2599,7 +2599,7 @@ def test_diff_command_fails_on_masked_reference_debt(monkeypatch: pytest.MonkeyP
         candidate_lines=("push ADDR",),
         masked_operand_audit=audit,
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: result)
 
     completed = CliRunner().invoke(match_app, ["diff", "candidate.obj", "foo"])
 
@@ -2670,7 +2670,7 @@ def test_diff_command_json_includes_region_evidence(monkeypatch: pytest.MonkeyPa
         image=LoadedImage(mapped=b"", image_base=0x400000, size_of_image=0),
         target_va=0x401000,
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.run_match", lambda **kwargs: result)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.run_match", lambda **kwargs: result)
 
     completed = CliRunner().invoke(
         match_app,
@@ -5402,9 +5402,9 @@ def test_collect_triage_rows_joins_scratches_by_address(monkeypatch: pytest.Monk
         ),
     ]
 
-    monkeypatch.setattr("crimson.match.load_function_manifest", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr("crimson_re.match.load_function_manifest", lambda *args, **kwargs: manifest)
     monkeypatch.setattr(
-        "crimson.match.load_image",
+        "crimson_re.match.load_image",
         lambda *args, **kwargs: LoadedImage(mapped=b"\xc3" * 0x20, image_base=0x401000, size_of_image=0x20),
     )
 
@@ -5449,8 +5449,8 @@ def test_triage_command_filters_and_emits_json(monkeypatch: pytest.MonkeyPatch) 
             scratch_count=0,
         ),
     ]
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
 
     completed = CliRunner().invoke(
         match_app,
@@ -5592,12 +5592,12 @@ def test_match_shard_includes_semantic_complete_alongside_unfinished_recovery(
             best_status=semantic_complete,
         ),
     ]
-    monkeypatch.setattr("crimson.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match._batch_changed_paths", list)
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
-    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match._git_head", lambda: "a" * 40)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match._batch_changed_paths", list)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match._git_head", lambda: "a" * 40)
 
     completed = CliRunner().invoke(
         match_app,
@@ -5717,12 +5717,12 @@ def test_match_shard_semantic_complete_only_queue_and_explicit_recovery_filter(
             best_status=status,
         ),
     ]
-    monkeypatch.setattr("crimson.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match._batch_changed_paths", list)
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
-    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match._git_head", lambda: "a" * 40)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_matching_workspace", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match._batch_changed_paths", list)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_triage_rows", lambda *args, **kwargs: rows)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match._git_head", lambda: "a" * 40)
 
     completed = CliRunner().invoke(
         match_app,
@@ -5859,7 +5859,7 @@ def test_compile_scratch_isolates_profiles_and_resolves_match_root(
         (cwd / "scratch.obj").write_bytes(" ".join(command).encode())
         return subprocess.CompletedProcess(command, 0, stdout="scratch.c\n", stderr=compiler_warning)
 
-    monkeypatch.setattr("crimson.match.run_compiler", fake_run)
+    monkeypatch.setattr("crimson_re.match.run_compiler", fake_run)
     monkeypatch.chdir(tmp_path)
 
     overlay = tmp_path / "overlay"
@@ -6163,7 +6163,7 @@ def test_compile_scratch_stages_auto_inline_boundaries(
         (cwd / "scratch.obj").write_bytes(b"object")
         return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
 
-    monkeypatch.setattr("crimson.match.run_compiler", fake_run)
+    monkeypatch.setattr("crimson_re.match.run_compiler", fake_run)
 
     obj = compile_scratch(config, match_root)
 
@@ -6372,7 +6372,7 @@ def test_source_probe_uses_temporary_shadow_without_touching_scratch(
             error=None,
         )
 
-    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+    monkeypatch.setattr("crimson_re.match.evaluate_scratch", fake_evaluate)
 
     result = evaluate_source_probe(config, "variant\n", match_root=tmp_path, label="scalar-copy")
 
@@ -6426,7 +6426,7 @@ def test_source_probe_fingerprints_resolved_include_tree(
             error=None,
         )
 
-    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+    monkeypatch.setattr("crimson_re.match.evaluate_scratch", fake_evaluate)
     wrapper = '#include "probe_dependency.h"\n'
     first = evaluate_source_probe(config, wrapper, match_root=match_root)
     dependency.write_text("second dependency\n", encoding="utf-8")
@@ -6486,7 +6486,7 @@ def test_source_overlay_can_shadow_an_included_match_header(
             error=None,
         )
 
-    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+    monkeypatch.setattr("crimson_re.match.evaluate_scratch", fake_evaluate)
 
     status = evaluate_source_overlay(
         config,
@@ -6529,7 +6529,7 @@ def test_probe_command_records_jsonl(monkeypatch: pytest.MonkeyPatch, tmp_path: 
     )
     probe = replace(baseline, config=replace(config, directory=Path("/tmp/shadow")), ratio=0.75)
     result = ProbeResult(baseline=baseline, probe=probe, source_sha256="abc", label="trial")
-    monkeypatch.setattr("crimson.cli.match.matchlib.evaluate_source_probe", lambda *args, **kwargs: result)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.evaluate_source_probe", lambda *args, **kwargs: result)
 
     completed = CliRunner().invoke(
         match_app,
@@ -6583,7 +6583,7 @@ def test_profile_matrix_deduplicates_and_ranks_honest_matches(
             masked_ok=2 if exact else 1,
         )
 
-    monkeypatch.setattr("crimson.match.evaluate_scratch", fake_evaluate)
+    monkeypatch.setattr("crimson_re.match.evaluate_scratch", fake_evaluate)
 
     statuses = evaluate_profile_matrix(
         config,
@@ -6719,9 +6719,9 @@ def test_compiler_scan_cli_reports_only_leads_by_default(
             ]
         return [baseline]
 
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", fake_collect)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", fake_collect)
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.available_scratch_compilers",
+        "crimson_re.cli.match.matchlib.available_scratch_compilers",
         lambda match_root: ("msvc6.5", "msvc6.5pp"),
     )
 
@@ -6779,9 +6779,9 @@ def test_compiler_scan_cli_skips_disproven_profiles_by_default(
         calls.append(compiler if isinstance(compiler, str) else None)
         return [baseline]
 
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", fake_collect)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", fake_collect)
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.available_scratch_compilers",
+        "crimson_re.cli.match.matchlib.available_scratch_compilers",
         lambda match_root: ("msvc6.5", "msvc6.5pp"),
     )
 
@@ -6890,8 +6890,8 @@ def test_collect_image_totals_counts_manifest_bytes(monkeypatch: pytest.MonkeyPa
         ),
     ]
 
-    monkeypatch.setattr("crimson.match.load_function_manifest", fake_load_manifest)
-    monkeypatch.setattr("crimson.match.load_image", fake_load_image)
+    monkeypatch.setattr("crimson_re.match.load_function_manifest", fake_load_manifest)
+    monkeypatch.setattr("crimson_re.match.load_image", fake_load_image)
 
     totals = collect_image_totals(statuses)
 
@@ -6955,12 +6955,12 @@ def test_collect_status_overrides_compiler(monkeypatch: pytest.MonkeyPatch, tmp_
         observed["calls"] = observed.get("calls", 0) + 1
         return scratch / "scratch.obj"
 
-    monkeypatch.setattr("crimson.match.load_function_manifest", fake_load_manifest)
-    monkeypatch.setattr("crimson.match.load_image", fake_load_image)
-    monkeypatch.setattr("crimson.match.compile_scratch", fake_compile)
-    monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
+    monkeypatch.setattr("crimson_re.match.load_function_manifest", fake_load_manifest)
+    monkeypatch.setattr("crimson_re.match.load_image", fake_load_image)
+    monkeypatch.setattr("crimson_re.match.compile_scratch", fake_compile)
+    monkeypatch.setattr("crimson_re.match.parse_coff_object", lambda data: object())
     monkeypatch.setattr(
-        "crimson.match.extract_object_function",
+        "crimson_re.match.extract_object_function",
         lambda obj, symbol, *, extent="symbol", end_symbol=None, size=None: ObjectFunction(
             name="foo",
             data=b"\xc3",
@@ -7009,9 +7009,9 @@ def test_collect_status_can_limit_evaluation_to_selected_directories(
     )
     compiled: list[str] = []
 
-    monkeypatch.setattr("crimson.match.load_function_manifest", lambda *args, **kwargs: manifest)
+    monkeypatch.setattr("crimson_re.match.load_function_manifest", lambda *args, **kwargs: manifest)
     monkeypatch.setattr(
-        "crimson.match.load_image",
+        "crimson_re.match.load_image",
         lambda *args, **kwargs: LoadedImage(
             mapped=b"\xc3\xc3",
             image_base=0x401000,
@@ -7031,10 +7031,10 @@ def test_collect_status_can_limit_evaluation_to_selected_directories(
         compiled.append(config.function)
         return config.directory / "scratch.obj"
 
-    monkeypatch.setattr("crimson.match.compile_scratch", fake_compile)
-    monkeypatch.setattr("crimson.match.parse_coff_object", lambda data: object())
+    monkeypatch.setattr("crimson_re.match.compile_scratch", fake_compile)
+    monkeypatch.setattr("crimson_re.match.parse_coff_object", lambda data: object())
     monkeypatch.setattr(
-        "crimson.match.extract_object_function",
+        "crimson_re.match.extract_object_function",
         lambda obj, symbol, **kwargs: ObjectFunction(
             name="selected",
             data=b"\xc3",
@@ -7088,12 +7088,12 @@ def test_inspect_command_evaluates_only_target_scratches(
         )
         return []
 
-    monkeypatch.setattr("crimson.cli.match.matchlib.inspect_match_function", fake_inspect)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.inspect_match_function", fake_inspect)
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.find_scratch_configs_for_target",
+        "crimson_re.cli.match.matchlib.find_scratch_configs_for_target",
         lambda *args, **kwargs: [config],
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.collect_scratch_statuses", fake_collect)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.collect_scratch_statuses", fake_collect)
 
     completed = CliRunner().invoke(
         match_app,
@@ -7250,12 +7250,12 @@ def test_claimed_scratch_changes_reject_out_of_claim_edits(tmp_path: Path) -> No
         [
             "scratches/allowed/scratch.cpp",
             "scratches/not-allowed/scratch.cpp",
-            "src/crimson/match.py",
+            "crimson-re/src/crimson_re/match.py",
         ],
         match_root=tmp_path,
     ) == [
         "scratch change outside claims: scratches/not-allowed",
-        "change outside claims: src/crimson/match.py",
+        "change outside claims: crimson-re/src/crimson_re/match.py",
     ]
     assert validate_claimed_changes(
         claim,
@@ -7402,7 +7402,7 @@ def test_worker_check_writes_ignored_report_without_status(
         encoding="utf-8",
     )
     monkeypatch.setattr(
-        "crimson.cli.match._batch_changed_paths",
+        "crimson_re.cli.match._batch_changed_paths",
         lambda base_commit=None: [],
     )
 
@@ -7476,9 +7476,9 @@ def test_worker_outcome_records_falsification_for_claim(
         candidate_instructions=2,
         error=None,
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.collect_scratch_statuses",
+        "crimson_re.cli.match.matchlib.collect_scratch_statuses",
         lambda *args, **kwargs: [status],
     )
 
@@ -7560,10 +7560,10 @@ def test_worker_check_can_require_batch_scoped_outcomes(
         candidate_instructions=2,
         error=None,
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
-    monkeypatch.setattr("crimson.cli.match._batch_changed_paths", lambda base_commit=None: [])
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.validate_match_claim", lambda *args, **kwargs: [])
+    monkeypatch.setattr("crimson_re.cli.match._batch_changed_paths", lambda base_commit=None: [])
     monkeypatch.setattr(
-        "crimson.cli.match.matchlib.collect_scratch_statuses",
+        "crimson_re.cli.match.matchlib.collect_scratch_statuses",
         lambda *args, **kwargs: [status],
     )
 
@@ -7660,7 +7660,7 @@ def test_body_identity_masks_only_reference_proven_relocations(key: str) -> None
 
 
 def test_encoded_mismatch_diagnostic_ignores_relocations_and_padding(capsys: pytest.CaptureFixture[str]) -> None:
-    from crimson.cli.match import _echo_result
+    from crimson_re.cli.match import _echo_result
 
     result = match_function(
         bytes.fromhex("a1002040008b44080cc3"),
@@ -7721,7 +7721,7 @@ def test_body_identity_resolves_coff_local_rel32(
 
 
 def test_worker_and_mutation_acceptance_reject_the_same_score_tradeoffs(tmp_path: Path) -> None:
-    from crimson.match import scratch_status_payload, status_improves, status_improves_claim_baseline
+    from crimson_re.match import scratch_status_payload, status_improves, status_improves_claim_baseline
 
     config = ScratchConfig(tmp_path, "foo", "crimsonland.exe", "msvc6.5", "/O2", "scratch.cpp", None, None, "")
     before = ScratchStatus(config, 0x401000, 1000, 0.90, 50, 100, 100, None, masked_ok=10)
@@ -7735,7 +7735,7 @@ def test_worker_and_mutation_acceptance_reject_the_same_score_tradeoffs(tmp_path
 
 @pytest.mark.parametrize("previous_identity", [False, None])
 def test_encoded_identity_gain_is_a_worker_improvement(tmp_path: Path, previous_identity: bool | None) -> None:
-    from crimson.match import scratch_status_payload, status_improves, status_improves_claim_baseline
+    from crimson_re.match import scratch_status_payload, status_improves, status_improves_claim_baseline
 
     config = ScratchConfig(tmp_path, "foo", "crimsonland.exe", "msvc6.5", "/O2", "scratch.cpp", None, None, "")
     before = ScratchStatus(config, 0x401000, 1000, 1.0, 100, 100, 100, None, body_byte_exact=previous_identity)

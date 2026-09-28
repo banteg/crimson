@@ -9,8 +9,19 @@ from typing import Any
 import msgspec
 import pytest
 
-import crimson.dbg.trace as dbg_trace
-from crimson.dbg.canonical_channels import (
+import crimson_re.dbg.trace as dbg_trace
+from crimson.math_parity import f32
+from crimson.persistence.save_status import GameStatusData
+from crimson.replay.checkpoints import (
+    ReplayCheckpoint,
+    ReplayCheckpointVec2,
+    ReplayEventSummary,
+    ReplayPerkSnapshot,
+    ReplayPlayerCheckpoint,
+)
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand, TypoSubmitCommand
+from crimson.weapons import WeaponId
+from crimson_re.dbg.canonical_channels import (
     EntitySamplesSnapshot,
     GameFrameRngAdvanceOperation,
     ProjectileEntitySample,
@@ -27,8 +38,8 @@ from crimson.dbg.canonical_channels import (
     TimingSampleRow,
     entity_uid,
 )
-from crimson.dbg.health import summarize_trace_health
-from crimson.dbg.schema import (
+from crimson_re.dbg.health import summarize_trace_health
+from crimson_re.dbg.schema import (
     CHUNK_KIND_FOOTER,
     CHUNK_KIND_META,
     CHUNK_KIND_TICK,
@@ -46,18 +57,7 @@ from crimson.dbg.schema import (
     TraceSource,
     TraceTickRange,
 )
-from crimson.dbg.trace import TraceError, TraceReader, write_trace
-from crimson.math_parity import f32
-from crimson.persistence.save_status import GameStatusData
-from crimson.replay.checkpoints import (
-    ReplayCheckpoint,
-    ReplayCheckpointVec2,
-    ReplayEventSummary,
-    ReplayPerkSnapshot,
-    ReplayPlayerCheckpoint,
-)
-from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand, TypoSubmitCommand
-from crimson.weapons import WeaponId
+from crimson_re.dbg.trace import TraceError, TraceReader, write_trace
 
 
 def _meta(

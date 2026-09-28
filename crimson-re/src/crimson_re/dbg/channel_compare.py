@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from crimson.replay.payloads import BuiltinObject, BuiltinRows, to_builtin_object, to_builtin_value
+from crimson.replay.strict_compare import strict_mismatch_payload
+
 from .canonical_channels import (
     EntitySamplesSnapshot,
     ReplayStepSnapshot,
@@ -8,8 +11,6 @@ from .canonical_channels import (
     TimingSampleRow,
 )
 from .channel_helpers import ENTITY_SAMPLE_KINDS, EntitySampleRow, entity_rows
-from .payloads import BuiltinObject, BuiltinRows, to_builtin_object, to_builtin_value
-from .strict_compare import strict_mismatch_payload
 
 
 def _rng_stream_row_payload(row: RngStreamRow, *, field: str) -> BuiltinObject:

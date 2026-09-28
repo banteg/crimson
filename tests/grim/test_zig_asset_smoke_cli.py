@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import subprocess
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 
 
 def test_zig_asset_smoke_is_installed_by_default_build() -> None:

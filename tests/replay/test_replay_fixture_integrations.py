@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.replay import Replay, load_replay_file
+from crimson.replay.checkpoint_diff import compare_checkpoints
 from crimson.replay.checkpoints import ReplayCheckpoint, load_checkpoints_file
 from crimson.replay.driver.playback_driver import (
     PlaybackDriver,

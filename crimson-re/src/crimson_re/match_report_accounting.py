@@ -38,7 +38,7 @@ def identities(
                 "analysis/matching_scope.json", "analysis/library_provenance.json"}},
         }),
         "scoring": _digest({"policy": SCORING_POLICY, "toolchains": toolchains or {}, "implementation": {
-            p: h for p, h in inputs.items() if p.startswith("src/crimson/match") or p == SCORING_DEPENDENCIES_INPUT
+            p: h for p, h in inputs.items() if p.startswith("crimson-re/src/crimson_re/match") or p == SCORING_DEPENDENCIES_INPUT
         }}),
         "inventory_policy": INVENTORY_POLICY,
         "scoring_policy": SCORING_POLICY,

@@ -8,8 +8,8 @@ import struct
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from crimson import match as m
-from crimson import match_diagnostics, match_flow_graph
+from crimson_re import match as m
+from crimson_re import match_diagnostics, match_flow_graph
 
 
 def sha(data):

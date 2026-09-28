@@ -37,9 +37,9 @@ def evidence_path(version: str) -> Path:
 def _input_path(path: str) -> bool:
     """Pin relevant code/config, including newly staged or removed scratches."""
     p = Path(path)
-    if path in {"analysis/library_provenance.json", "analysis/matching_scope.json", "src/crimson/native_link.py"}:
+    if path in {"analysis/library_provenance.json", "analysis/matching_scope.json", "crimson-re/src/crimson_re/native_link.py"}:
         return True
-    if path.startswith("src/crimson/") and p.suffix == ".py":
+    if path.startswith("crimson-re/src/crimson_re/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
     if path.startswith(("tools/match/", "tools/native/", "third_party/", "decomp/")):
         return p.suffix in {".c", ".cpp", ".cc", ".h", ".hpp", ".inc", ".conf", ".sh", ".py"} or (

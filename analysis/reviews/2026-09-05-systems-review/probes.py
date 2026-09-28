@@ -9,8 +9,8 @@ from unittest.mock import patch
 from crimson.sim.input_providers import PerkPickCommand
 
 from crimson.camera import camera_shake_update
-from crimson.dbg.checkpoint_diff import compare_checkpoints
-from crimson.dbg.state_digest import session_digest
+from crimson.replay.checkpoint_diff import compare_checkpoints
+from crimson_re.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.modes import base_gameplay_mode

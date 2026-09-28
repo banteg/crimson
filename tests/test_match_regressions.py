@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from crimson.match_regressions import FunctionMatch, Manifest, apply_waivers, compare_manifests, parse_manifest
+from crimson_re.match_regressions import FunctionMatch, Manifest, apply_waivers, compare_manifests, parse_manifest
 
 
 def _function(**changes: object) -> FunctionMatch:
@@ -121,7 +121,7 @@ def test_regression_cli_reads_git_base_and_fails_current_exact_loss(
 
     from typer.testing import CliRunner
 
-    from crimson.cli.match import match_app
+    from crimson_re.cli.match import match_app
 
     git = shutil.which("git")
     assert git is not None
@@ -166,7 +166,7 @@ def test_regression_cli_reads_git_base_and_fails_current_exact_loss(
         cwd=root,
         check=True,
     )
-    monkeypatch.setattr("crimson.cli.match.matchlib.REPO_ROOT", root)
+    monkeypatch.setattr("crimson_re.cli.match.matchlib.REPO_ROOT", root)
     runner = CliRunner()
     assert runner.invoke(match_app, ["regressions", "--base", "HEAD"]).exit_code == 0
     manifest["objects"][0]["functions"][0]["match"].update(ratio=0.9, state="wip")

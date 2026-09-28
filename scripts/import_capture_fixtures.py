@@ -5,9 +5,9 @@ import hashlib
 import json
 from pathlib import Path
 
-from crimson.dbg.capture_replay import CAPTURE_REPLAY_SUFFIX, load_capture_replay_file
-from crimson.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
-from crimson.dbg.trace import TraceReader, iter_trace_ticks
+from crimson_re.dbg.capture_replay import CAPTURE_REPLAY_SUFFIX, load_capture_replay_file
+from crimson_re.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
+from crimson_re.dbg.trace import TraceReader, iter_trace_ticks
 
 # Seeds from captures finalized with this run_start source replay our sim's
 # setup draws value-for-value; older captures carry the stale session srand

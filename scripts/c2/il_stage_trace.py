@@ -101,7 +101,7 @@ OPNAMES = {
 def load_modules():
     """Return (match_c2, iv_trace)."""
     sys.path.insert(0, str(HERE))
-    from crimson import match_c2
+    from crimson_re import match_c2
 
     return match_c2, importlib.import_module("iv_trace")
 

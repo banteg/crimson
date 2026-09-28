@@ -37,7 +37,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 def oracle():
     """A fresh oracle with the game's static initializers run (CRT stdio/locale ones trap and are skipped)."""
 
-    from crimson.dbg.native_oracle import NativeOracle
+    from crimson_re.dbg.native_oracle import NativeOracle
 
     oracle = NativeOracle(_EXE)
     oracle.run_static_initializers()

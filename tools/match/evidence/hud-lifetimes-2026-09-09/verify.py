@@ -11,9 +11,9 @@ from pathlib import Path
 import capstone
 import pefile
 
-from crimson import match
-from crimson.match_diagnostics import _residual_alignment, _slots
-from crimson.match_listing_diagnostics import (
+from crimson_re import match
+from crimson_re.match_diagnostics import _residual_alignment, _slots
+from crimson_re.match_listing_diagnostics import (
     _normal_displacement,
     parse_stack_listing,
     stack_local_observations_payload,

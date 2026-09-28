@@ -34,7 +34,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import iv_trace
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 # Driver call sites not already in the stock profile. The stock boundaries (narrow byte lanes,
 # address modes, lowering, parameter homes, live ranges, local colouring, ...) are dumped at entry.

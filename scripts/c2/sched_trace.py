@@ -19,8 +19,8 @@ import struct
 from pathlib import Path
 from unittest.mock import patch
 
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 IMAGE_BASE = 0x10700000
 # Call sites (RVA) of the pinned C2 scheduler loop; profile SHA pinned by match_c2.

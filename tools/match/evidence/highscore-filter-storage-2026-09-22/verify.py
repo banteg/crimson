@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from controls import build, sha
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 HERE = Path(__file__).resolve().parent
 HUD = HERE.parent / "hud-stack-coloring-2026-09-10" / "verify.py"

@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import iv_trace
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 # (call site VA, callee VA, name, return hook, mode)
 HOOKS = (

@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any, cast
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 from crimson.creatures.spawn import SpawnEnv, SpawnId, build_spawn_plan
 from grim.geom import Vec2
 from grim.rand import Crand

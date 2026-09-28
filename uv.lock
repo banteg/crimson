@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.13"
 
+[manifest]
+members = [
+    "crimson-re",
+    "crimsonland",
+]
+
 [[package]]
 name = "altair"
 version = "6.0.0"
@@ -132,6 +138,25 @@ wheels = [
 ]
 
 [[package]]
+name = "crimson-re"
+version = "0.1.0"
+source = { editable = "crimson-re" }
+dependencies = [
+    { name = "capstone" },
+    { name = "crimsonland" },
+    { name = "pefile" },
+    { name = "unicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "capstone", specifier = ">=5.0.9" },
+    { name = "crimsonland", editable = "." },
+    { name = "pefile", specifier = ">=2024.8.26" },
+    { name = "unicorn", specifier = ">=2.1.4" },
+]
+
+[[package]]
 name = "crimsonland"
 version = "0.10.0"
 source = { editable = "." }
@@ -155,14 +180,12 @@ charts = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "capstone" },
-    { name = "pefile" },
+    { name = "crimson-re" },
     { name = "pytest" },
     { name = "pytest-mock" },
     { name = "ruff" },
     { name = "syrupy" },
     { name = "ty" },
-    { name = "unicorn" },
     { name = "zensical" },
 ]
 match-explain = [
@@ -187,14 +210,12 @@ provides-extras = ["charts"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "capstone", specifier = ">=5.0.9" },
-    { name = "pefile", specifier = ">=2024.8.26" },
+    { name = "crimson-re", editable = "crimson-re" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "pytest-mock", specifier = ">=3.15.1" },
     { name = "ruff", specifier = ">=0.16.9" },
     { name = "syrupy", specifier = ">=5.0.0" },
     { name = "ty", specifier = ">=0.0.84" },
-    { name = "unicorn", specifier = ">=2.1.4" },
     { name = "zensical", specifier = ">=0.0.22" },
 ]
 match-explain = [{ name = "asm-differ", git = "https://github.com/simonlindholm/asm-differ?rev=0dd09af8f8008f1f880327cf0aca3b26d2562ea2" }]

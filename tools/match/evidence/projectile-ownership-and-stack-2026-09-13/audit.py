@@ -8,8 +8,8 @@ from pathlib import Path
 
 from recover import HERE, recover, sha
 
-from crimson import match
-from crimson.match_diagnostics import residual_summary_payload
+from crimson_re import match
+from crimson_re.match_diagnostics import residual_summary_payload
 
 WINDOWS = {
     "impulse": (0x42150F, 0x4215A7),

@@ -14,7 +14,6 @@ from pathlib import Path
 import pytest
 
 from crimson import local_input
-from crimson.dbg.state_digest import session_digest
 from crimson.game_modes import GameMode
 from crimson.gamepad_profile import apply_pad_profile
 from crimson.input_codes import PadCode
@@ -22,6 +21,7 @@ from crimson.math_parity import f32
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import load_replay
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
+from crimson_re.dbg.state_digest import session_digest
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext

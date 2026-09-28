@@ -10,7 +10,7 @@ from pathlib import Path
 
 from recover import recover, sha
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 IMAGE_SHA = "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"

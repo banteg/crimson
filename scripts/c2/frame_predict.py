@@ -25,9 +25,9 @@ import sys
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 # (site RVA, target RVA, return hook) for C2.DLL 12.00.8966, image base 0x10700000.
 HOOKS = (

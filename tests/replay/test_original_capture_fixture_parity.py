@@ -6,11 +6,11 @@ from pathlib import Path
 import msgspec
 import pytest
 
-from crimson.dbg.capture_replay import CAPTURE_REPLAY_FORMAT_VERSION, load_capture_replay_file
-from crimson.dbg.diff import diff_traces
-from crimson.dbg.record import record_replay_to_trace
-from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
-from crimson.dbg.trace import TraceReader, iter_trace_ticks
+from crimson_re.dbg.capture_replay import CAPTURE_REPLAY_FORMAT_VERSION, load_capture_replay_file
+from crimson_re.dbg.diff import diff_traces
+from crimson_re.dbg.record import record_replay_to_trace
+from crimson_re.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
+from crimson_re.dbg.trace import TraceReader, iter_trace_ticks
 
 FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "captures"
 MANIFEST_PATH = FIXTURE_DIR / "manifest.json"

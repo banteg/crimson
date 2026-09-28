@@ -5,7 +5,7 @@ import json
 from hashlib import sha256
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 SOURCE_SHA = "a448391479030f257a8e5626e795be585674e2b4ec3e0fdb5e95ff9a08ff44d9"
 

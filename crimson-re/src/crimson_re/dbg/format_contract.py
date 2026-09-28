@@ -6,10 +6,10 @@ from pathlib import Path
 
 import msgspec
 
-from ..replay.checkpoints import (
+from crimson.replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION,
 )
-from ..replay.checkpoints import (
+from crimson.replay.checkpoints import (
     MAX_CHECKPOINTS_FILE_BYTES,
     MAX_CHECKPOINTS_PAYLOAD_BYTES,
     ReplayCheckpoint,
@@ -18,8 +18,9 @@ from ..replay.checkpoints import (
     ReplayPerkSnapshot,
     ReplayPlayerCheckpoint,
 )
-from ..replay.codec import MAX_REPLAY_FILE_BYTES, MAX_REPLAY_PAYLOAD_BYTES
-from ..replay.types import REPLAY_FORMAT_VERSION
+from crimson.replay.codec import MAX_REPLAY_FILE_BYTES, MAX_REPLAY_PAYLOAD_BYTES
+from crimson.replay.types import REPLAY_FORMAT_VERSION
+
 from . import frida_finalize as frida_format
 from .canonical_channels import (
     BonusEntitySample,
@@ -37,7 +38,7 @@ from .canonical_channels import (
 from .frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_RUNTIME_VERSION
 from .schema import TRACE_FORMAT_VERSION, TRACE_REQUIRED_CHANNELS, TRACE_SCHEMA_VERSION
 
-_REPO_ROOT = Path(__file__).resolve().parents[3]
+_REPO_ROOT = Path(__file__).resolve().parents[4]
 _TICK_BOUNDARY_FIELDS = ("dt", "inputs", "prelude", "postlude", "commands")
 
 

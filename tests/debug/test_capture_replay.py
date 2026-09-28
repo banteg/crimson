@@ -6,19 +6,6 @@ import msgspec
 import pytest
 import zstandard as zstd
 
-from crimson.dbg.canonical_channels import GameFrameRngAdvanceOperation, PostludeOperation, PreludeOperation
-from crimson.dbg.capture_replay import (
-    CAPTURE_REPLAY_FORMAT_VERSION,
-    CapturePlaybackDriver,
-    CaptureReplay,
-    CaptureReplayError,
-    CaptureTick,
-    dump_capture_replay,
-    dump_capture_replay_file,
-    load_capture_replay,
-    load_capture_replay_file,
-)
-from crimson.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.persistence.save_status import GameStatusData
@@ -29,6 +16,19 @@ from crimson.sim.commands import PerkMenuOpenCommand
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.sim.world_reset import CreatureSlotResidue
+from crimson_re.dbg.canonical_channels import GameFrameRngAdvanceOperation, PostludeOperation, PreludeOperation
+from crimson_re.dbg.capture_replay import (
+    CAPTURE_REPLAY_FORMAT_VERSION,
+    CapturePlaybackDriver,
+    CaptureReplay,
+    CaptureReplayError,
+    CaptureTick,
+    dump_capture_replay,
+    dump_capture_replay_file,
+    load_capture_replay,
+    load_capture_replay_file,
+)
+from crimson_re.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION
 
 CAPTURE_DT = float(f32(0.016))
 

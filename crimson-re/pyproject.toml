@@ -1,0 +1,26 @@
+[project]
+name = "crimson-re"
+version = "0.1.0"
+description = "Reverse-engineering tools for Crimsonland: matching decomp, native link and original-game traces."
+requires-python = ">=3.13"
+dependencies = [
+    "capstone>=5.0.9",
+    "crimsonland",
+    "pefile>=2024.8.26",
+    "unicorn>=2.1.4",
+]
+
+[project.entry-points."crimson.cli"]
+dbg = "crimson_re.cli.dbg:dbg_app"
+match = "crimson_re.cli.match:match_app"
+native = "crimson_re.cli.native:native_app"
+
+[build-system]
+requires = ["uv_build>=0.9.18,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "crimson_re"
+
+[tool.uv.sources]
+crimsonland = { workspace = true }

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from crimson.dbg.checkpoint_diff import compare_checkpoints
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.replay import ReplayRecorder
+from crimson.replay.checkpoint_diff import compare_checkpoints
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.input_frame import normalize_input_frame

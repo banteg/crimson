@@ -6,7 +6,7 @@ from dataclasses import replace
 from hashlib import sha256
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 
 def main():

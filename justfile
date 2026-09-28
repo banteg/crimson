@@ -18,7 +18,7 @@ test *args:
 
 check *args:
     uv run ruff check .
-    uv run ty check src tests
+    uv run ty check src crimson-re/src tests
     uv run scripts/check_docs.py
     uv run crimson match resolved-name-audit --check
     uv run crimson native verify --require-game-closure --allow-absent-toolchain
@@ -34,7 +34,7 @@ check-zig:
     cd crimson-zig && zig build wasm
 
 ty:
-    uv run ty check src tests
+    uv run ty check src crimson-re/src tests
 
 # Assets
 extract:

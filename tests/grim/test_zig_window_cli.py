@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-import crimson.dbg.record as dbg_record
+import crimson_re.dbg.record as dbg_record
 
 
 @pytest.fixture(scope="module")

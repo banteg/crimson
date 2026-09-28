@@ -7,7 +7,7 @@ from pathlib import Path
 
 import capstone
 
-from crimson import match
+from crimson_re import match
 
 
 def sha(data):

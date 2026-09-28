@@ -12,7 +12,7 @@ from unicorn import UC_ARCH_X86, UC_HOOK_MEM_WRITE, UC_MODE_32, Uc
 from unicorn import x86_const as x86
 from verify import IMAGE_SHA, NBASE, audit
 
-from crimson import match
+from crimson_re import match
 
 CODE, STACK = 0x10000000, 0x20000000
 START, END = 0xD88, 0xDD5

@@ -1,6 +1,6 @@
 import pytest
 
-from crimson.match_micro_oracle import Value, evaluate_window
+from crimson_re.match_micro_oracle import Value, evaluate_window
 
 
 def test_scan_output_rotation_preserves_call_inputs():

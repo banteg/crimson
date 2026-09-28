@@ -7,7 +7,7 @@ import re
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from crimson import match, match_flow_graph
+from crimson_re import match, match_flow_graph
 
 SOURCE_SHA256 = "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42"
 

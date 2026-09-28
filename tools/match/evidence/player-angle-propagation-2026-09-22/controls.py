@@ -7,8 +7,8 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2 as c2
+from crimson_re import match
+from crimson_re import match_c2 as c2
 
 HERE = Path(__file__).resolve().parent
 SOURCE_SHA = "c982bef1d0b1aa82f7aa2f2488fbe0df72959e8d9ffa31f9a69f89762234a72c"

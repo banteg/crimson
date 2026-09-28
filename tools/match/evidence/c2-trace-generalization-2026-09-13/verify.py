@@ -5,8 +5,8 @@ import json
 import shutil
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2 as c2
+from crimson_re import match
+from crimson_re import match_c2 as c2
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--out", type=Path, required=True)

@@ -106,6 +106,8 @@ src/
   crimson/          game logic — modes, weapons, perks, creatures, UI, replay
   grim/             engine layer — raylib wrapper, PAQ/JAZ decoders, audio, fonts
 crimson-zig/        native desktop port, shared runtime, replay/debug CLI, WASM
+crimson-re/         reverse-engineering tools (decomp matching, native link, original-game traces);
+                    not shipped with the game, adds `crimson match|native|dbg` in the dev environment
 analysis/
   ghidra/           name/type maps (source of truth) and structured snapshots
   binary_ninja/     preferred live analysis databases

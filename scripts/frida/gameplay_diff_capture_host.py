@@ -11,7 +11,7 @@ import time
 from pathlib import Path
 from typing import cast
 
-from crimson.dbg.frida_finalize import (
+from crimson_re.dbg.frida_finalize import (
     FRIDA_RUNTIME_VERSION,
     FridaFinalizeError,
     finalize_frida_jsonl_to_traces,

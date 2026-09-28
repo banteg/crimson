@@ -12,7 +12,7 @@ from pathlib import Path
 
 import capstone
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 FUNCTION = "projectile_render"

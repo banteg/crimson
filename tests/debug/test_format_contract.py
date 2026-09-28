@@ -5,16 +5,16 @@ from pathlib import Path
 
 import msgspec
 
-from crimson.dbg.canonical_channels import ReplayStepSnapshot
-from crimson.dbg.format_contract import format_contract_errors
-from crimson.dbg.frida_finalize import (
+from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
+from crimson.replay.types import REPLAY_FORMAT_VERSION
+from crimson_re.dbg.canonical_channels import ReplayStepSnapshot
+from crimson_re.dbg.format_contract import format_contract_errors
+from crimson_re.dbg.frida_finalize import (
     FRIDA_CAPTURE_FORMAT_VERSION,
     FRIDA_EVIDENCE_FORMAT_VERSION,
     FRIDA_RUNTIME_VERSION,
 )
-from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
-from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
-from crimson.replay.types import REPLAY_FORMAT_VERSION
+from crimson_re.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 
 
 def _field_names(struct_type: type[msgspec.Struct]) -> tuple[str, ...]:
@@ -146,7 +146,7 @@ def test_frida_pipeline_has_no_legacy_rng_or_lifecycle_recovery() -> None:
     root = Path(__file__).parents[2]
     agent_source = (root / "scripts" / "frida" / "gameplay_diff_capture.js").read_text()
     host_source = (root / "scripts" / "frida" / "gameplay_diff_capture_host.py").read_text()
-    finalizer_source = (root / "src" / "crimson" / "dbg" / "frida_finalize.py").read_text()
+    finalizer_source = (root / "crimson-re" / "src" / "crimson_re" / "dbg" / "frida_finalize.py").read_text()
 
     for removed_token in ("rng_burn", "session_end", "CRIMSON_FRIDA_APPEND"):
         assert removed_token not in agent_source

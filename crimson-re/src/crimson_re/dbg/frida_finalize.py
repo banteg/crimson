@@ -12,23 +12,23 @@ from typing import Any, BinaryIO, Protocol
 import msgspec
 import zstandard as zstd
 
-from grim.geom import Vec2
-
-from ..game_modes import GameMode
-from ..persistence.save_status import (
+from crimson.game_modes import GameMode
+from crimson.persistence.save_status import (
     QUEST_PLAY_COUNT,
     RESERVED_SEED_WORDS_BYTE_SIZE,
     WEAPON_USAGE_COUNT,
     GameStatusData,
 )
-from ..quests.level import QuestLevel
-from ..replay import PackedTickInputs
-from ..replay.checkpoints import ReplayCheckpoint
-from ..replay.types import quantize_f32
-from ..sim.commands import PerkMenuOpenCommand, PerkPickCommand
-from ..sim.run_spec import RunSpec, RunStatus
-from ..sim.state_types import TERRAIN_SIZE
-from ..sim.world_reset import CreatureSlotResidue
+from crimson.quests.level import QuestLevel
+from crimson.replay import PackedTickInputs
+from crimson.replay.checkpoints import ReplayCheckpoint
+from crimson.replay.types import quantize_f32
+from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
+from crimson.sim.run_spec import RunSpec, RunStatus
+from crimson.sim.state_types import TERRAIN_SIZE
+from crimson.sim.world_reset import CreatureSlotResidue
+from grim.geom import Vec2
+
 from .canonical_channels import (
     EntitySamplesSnapshot,
     GameFrameRngAdvanceOperation,

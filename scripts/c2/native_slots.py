@@ -33,8 +33,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import capstone
 import frame_predict as fp
 
-from crimson import match
-from crimson.match_listing_diagnostics import parse_stack_listing
+from crimson_re import match
+from crimson_re.match_listing_diagnostics import parse_stack_listing
 
 STACK_OPERAND = re.compile(r"([^\s,\[\]]*)\[esp(?:\+(\d+))?\]", re.IGNORECASE)
 

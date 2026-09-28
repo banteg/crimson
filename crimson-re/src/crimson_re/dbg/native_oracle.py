@@ -72,7 +72,7 @@ __all__ = [
     "f32_bits",
 ]
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_EXE_PATH = REPO_ROOT / "game_bins" / "crimsonland" / "1.9.93-gog" / "crimsonland.exe"
 NAME_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "name_map.json"
 DATA_MAP_PATH = REPO_ROOT / "analysis" / "ghidra" / "maps" / "data_map.json"

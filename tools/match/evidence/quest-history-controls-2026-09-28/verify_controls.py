@@ -7,7 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 SCRATCH = match.DEFAULT_MATCH_ROOT / "scratches/quest_spawn_timeline_update"

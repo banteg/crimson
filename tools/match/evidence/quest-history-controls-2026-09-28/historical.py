@@ -14,7 +14,7 @@ from pathlib import Path
 import capstone
 import pefile
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[3]

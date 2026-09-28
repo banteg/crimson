@@ -6,8 +6,8 @@ import json
 import sys
 from pathlib import Path
 
-from crimson import match as m
-from crimson import match_explain as explain
+from crimson_re import match as m
+from crimson_re import match_explain as explain
 
 
 def main() -> None:

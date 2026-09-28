@@ -13,8 +13,8 @@ from unittest.mock import Mock
 
 import pytest
 
-from crimson import match_process
-from crimson.match_process import run_compiler
+from crimson_re import match_process
+from crimson_re.match_process import run_compiler
 
 
 def test_compiler_deadline_kills_descendants(tmp_path: Path) -> None:

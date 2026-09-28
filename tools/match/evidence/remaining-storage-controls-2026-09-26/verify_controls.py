@@ -9,8 +9,8 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2_replay as replay
 
 HERE = Path(__file__).resolve().parent
 ROOT = match.REPO_ROOT

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import probes
 
-from crimson import match
+from crimson_re import match
 
 
 def stack_pairs(lines):

@@ -8,13 +8,13 @@ from pathlib import Path
 import msgspec
 import pytest
 
-import crimson.dbg.record as dbg_record
-from crimson.dbg.diff import diff_traces
-from crimson.dbg.health import summarize_trace_health
-from crimson.dbg.schema import TickRecord
-from crimson.dbg.trace import load_trace, write_trace
+import crimson_re.dbg.record as dbg_record
 from crimson.game_modes import GameMode
 from crimson.replay.codec import dump_replay_file
+from crimson_re.dbg.diff import diff_traces
+from crimson_re.dbg.health import summarize_trace_health
+from crimson_re.dbg.schema import TickRecord
+from crimson_re.dbg.trace import load_trace, write_trace
 from tests.debug.test_dbg_trace import _write_raw_trace, _write_unchecked_trace
 from tests.replay.cli._helpers import build_replay
 

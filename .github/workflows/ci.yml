@@ -49,7 +49,7 @@ jobs:
             use_uv: true
             do_sync: true
             use_zig: false
-            command: uv run --no-sync ty check src tests
+            command: uv run --no-sync ty check src crimson-re/src tests
             sync_args: --group dev
           - task: pytest
             use_uv: true

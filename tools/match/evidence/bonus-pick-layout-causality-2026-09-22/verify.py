@@ -6,9 +6,9 @@ import shutil
 import struct
 from pathlib import Path
 
-from crimson import match, match_flow_graph
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match, match_flow_graph
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 HERE = Path(__file__).resolve().parent
 SOURCE_SHA = "286648fb568fe81709b52093a204a820f7f7e9bf06968ed8e50042c063c26f42"

@@ -31,7 +31,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import sched_trace as st
 
-from crimson import match_c2
+from crimson_re import match_c2
 
 # Call sites (RVA) in the pinned C2; the observer checks opcode and destination of each.
 FUNCTION_ENTRY = st.FUNCTION_ENTRY  # globopt_run, one per function

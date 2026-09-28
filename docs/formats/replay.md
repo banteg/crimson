@@ -169,4 +169,4 @@ Frida captures of the original executable need per-tick native frame deltas,
 the RNG draws of frames outside gameplay, and creature-slot residue left
 by earlier runs. None of these
 exist in port play, so they live in a debug-only capture container under
-`crimson.dbg`, replayed by a Python debug driver. Replays never carry them.
+`crimson_re.dbg`, replayed by a Python debug driver. Replays never carry them.

@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-from crimson import match_report as report
+from crimson_re import match_report as report
 
 
 def _function(address: int, size: int, **changes: Any) -> dict[str, Any]:
@@ -154,7 +154,7 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("analysis/ida/raw/grim.dll/functions.json")
     assert report._input_path("analysis/matching_scope.json")
     assert report._input_path("tools/native/data_candidates.json")
-    assert report._input_path("src/crimson/native_link.py")
+    assert report._input_path("crimson-re/src/crimson_re/native_link.py")
     assert report._input_path("analysis/decomp/1.9.8/crimsonland.exe/data.json")
     assert not report._input_path("analysis/decomp/1.9.93.json")
     assert not report._input_path("analysis/decomp/1.9.8.json")

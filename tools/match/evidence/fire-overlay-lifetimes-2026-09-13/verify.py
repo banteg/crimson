@@ -9,7 +9,7 @@ import struct
 from dataclasses import asdict, replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 PREVIOUS = HERE.parent / "renderer-house-style-2026-09-13"

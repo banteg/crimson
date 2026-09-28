@@ -9,7 +9,7 @@ from pathlib import Path
 from positions import inspect
 from recover import HERE, recover, sha
 
-from crimson import match
+from crimson_re import match
 
 IMAGE_SHA = "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"
 STAGES = {"secondary-y8-x-reference", "frame-ad2-offset-xy", "burst-ag2-x-local"}

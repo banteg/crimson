@@ -127,7 +127,7 @@ def observer(profile, stock_source):
 
 
 def run(scratch: Path, out: Path):
-    from crimson import match_c2 as c2
+    from crimson_re import match_c2 as c2
 
     stock_source = c2.observer_source
     profile = dict(c2.load_profile(), name="msvc6.5-c2-alias-class-census", hooks=HOOKS)

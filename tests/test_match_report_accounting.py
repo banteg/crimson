@@ -3,8 +3,8 @@ from typing import Any
 
 import pytest
 
-from crimson import match_report
-from crimson import match_report_accounting as accounting
+from crimson_re import match_report
+from crimson_re import match_report_accounting as accounting
 
 
 def function() -> dict[str, Any]:
@@ -94,7 +94,7 @@ def test_encoded_tier_and_measurement_delta():
 
 @pytest.mark.parametrize("instruction,kind", [("mov eax, [ADDR]", "disp"), ("call ADDR", "imm")])
 def test_swapped_reference_identities_cannot_cross_instruction_positions(instruction, kind):
-    from crimson import match as matchlib
+    from crimson_re import match as matchlib
 
     def line(index, identity):
         reference = matchlib.MaskedReference(0, kind, "test", None, identity, (identity,), True)

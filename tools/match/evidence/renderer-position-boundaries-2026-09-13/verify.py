@@ -8,7 +8,7 @@ import struct
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 
 def module(name, path):

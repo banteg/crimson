@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.replay.checkpoint_diff import checkpoint_deepdiff
+from crimson.replay.payloads import BuiltinObject, to_builtin_object, to_builtin_value
+
 from .channel_compare import (
     compare_entity_samples,
     compare_replay_step,
@@ -18,9 +21,7 @@ from .channel_helpers import (
     sim_state_channel_required,
     timing_samples_channel_required,
 )
-from .checkpoint_diff import checkpoint_deepdiff
 from .diff import validate_comparison_identity
-from .payloads import BuiltinObject, to_builtin_object, to_builtin_value
 from .schema import TickRecord
 from .trace import TraceReader
 

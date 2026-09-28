@@ -18,7 +18,7 @@ from typing import Any, cast
 from . import match_experiments, match_process, match_toolchain
 from .match_process import run_compiler
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_VERSION = "1.9.93-gog"
 DEFAULT_GAME_DIR = REPO_ROOT / "game_bins" / "crimsonland" / DEFAULT_VERSION
 DEFAULT_IMAGE_NAME = "crimsonland.exe"
@@ -7560,7 +7560,7 @@ def collect_naming_debt(
 
 def _resolved_name_audit_files(repo_root: Path) -> tuple[Path, ...]:
     files: list[Path] = []
-    for relative_root in ("analysis", "crimson-zig", "docs", "src", "scripts", "tools"):
+    for relative_root in ("analysis", "crimson-re", "crimson-zig", "docs", "src", "scripts", "tools"):
         source_root = repo_root / relative_root
         if not source_root.is_dir():
             continue

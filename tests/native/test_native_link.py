@@ -8,9 +8,9 @@ from typing import Any
 
 import pytest
 
-from crimson import match as matchlib
-from crimson.match_toolchain import resolve_wibo_path
-from crimson.native_link import (
+from crimson_re import match as matchlib
+from crimson_re.match_toolchain import resolve_wibo_path
+from crimson_re.native_link import (
     DEFAULT_LINKER_ALIAS_CONFIGS,
     DEFAULT_PROVIDER_CONFIGS,
     DEFAULT_TRANSLATION_UNIT_CONFIGS,

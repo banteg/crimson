@@ -11,9 +11,9 @@ The debugging pipeline has one current contract shared by the three producers
 used for parity work:
 
 1. Original executable capture through Frida JSONL, finalized by
-   `src/crimson/dbg/frida_finalize.py`.
+   `crimson-re/src/crimson_re/dbg/frida_finalize.py`.
 2. Python recording of replays and capture replays through
-   `src/crimson/dbg/record.py`.
+   `crimson-re/src/crimson_re/dbg/record.py`.
 3. Zig replay recording through `crimson-zig/src/cdt_trace.zig`.
 
 Frida JSONL remains a producer-private transport. Once a run becomes a `.cdt`,
@@ -24,11 +24,11 @@ all consumers see the same typed tick data and no producer-specific aliases.
 | Artifact | Current version | Authority |
 | --- | ---: | --- |
 | Frida raw JSONL | 29 | `scripts/frida/gameplay_diff_capture.js` |
-| Frida evidence sidecar | 3 | `src/crimson/dbg/frida_finalize.py` |
-| CDT container | 2 | `src/crimson/dbg/schema.py` |
-| CDT payload schema | 19 | `src/crimson/dbg/schema.py` |
+| Frida evidence sidecar | 3 | `crimson-re/src/crimson_re/dbg/frida_finalize.py` |
+| CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
+| CDT payload schema | 19 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CRD replay | 24 | `src/crimson/replay/types.py` |
-| Capture replay | 1 | `src/crimson/dbg/capture_replay.py` |
+| Capture replay | 1 | `crimson-re/src/crimson_re/dbg/capture_replay.py` |
 
 These artifacts are throwaway debugging data. Readers and finalizers require
 exactly these versions; they do not translate, normalize, or salvage an older
@@ -63,7 +63,7 @@ Schema 19 requires every channel on every tick:
 - `timing_samples`
 
 The core channel types live in
-`src/crimson/dbg/canonical_channels.py`; Zig mirrors the same wire schema in
+`crimson-re/src/crimson_re/dbg/canonical_channels.py`; Zig mirrors the same wire schema in
 `crimson-zig/src/cdt_trace.zig`.
 
 ### Replay-driving evidence

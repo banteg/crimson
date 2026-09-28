@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT / "scripts/c2"))
 import iv_trace
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 GLOBOPT_TAIL = (
     (0x107134E9, 0x107450D7, "loop_opt_per_loop", True, 1),

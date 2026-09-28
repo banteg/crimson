@@ -60,8 +60,8 @@ import frame_predict as fp
 import iv_trace as iv
 import residual_map as rm
 
-from crimson import match as m
-from crimson import match_c2 as c2
+from crimson_re import match as m
+from crimson_re import match_c2 as c2
 
 BASE = 0x10700000
 ALLOCATOR = 0x17EB  # symbol_alloc (class in ecx)

@@ -7,7 +7,7 @@ import random
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--source", type=Path, required=True)

@@ -38,7 +38,7 @@ import re
 from collections import Counter
 from pathlib import Path
 
-from crimson import match as m
+from crimson_re import match as m
 
 LABEL = re.compile(r"\bL[0-9a-f]+\b")
 STACK = re.compile(r"\besp\+0x[0-9a-f]+\b")

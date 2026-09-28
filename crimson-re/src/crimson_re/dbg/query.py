@@ -6,13 +6,14 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.replay.payloads import BuiltinObject, BuiltinValue, coerce_builtin_value, to_builtin_object
+
 from .channel_helpers import (
     ENTITY_SAMPLE_KINDS,
     checkpoint_channel,
     entity_rows,
     entity_samples_channel,
 )
-from .payloads import BuiltinObject, BuiltinValue, coerce_builtin_value, to_builtin_object
 from .schema import TickRecord
 from .trace import TraceReader
 

@@ -9,8 +9,8 @@ from pathlib import Path
 import fixtures
 import observe
 
-from crimson.match_diagnostics import _slots
-from crimson.match_listing_diagnostics import _normal_displacement, stack_local_observations_payload
+from crimson_re.match_diagnostics import _slots
+from crimson_re.match_listing_diagnostics import _normal_displacement, stack_local_observations_payload
 
 HERE = Path(__file__).resolve().parent
 match, sha = observe.match, observe.sha

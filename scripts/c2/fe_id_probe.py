@@ -34,8 +34,8 @@ from concurrent.futures import ThreadPoolExecutor
 from itertools import pairwise
 from pathlib import Path
 
-from crimson import match
-from crimson import match_c2_replay as replay
+from crimson_re import match
+from crimson_re import match_c2_replay as replay
 
 CAPTURE = match.DEFAULT_MATCH_ROOT / "c2/capture.c"
 CFLAGS = "/O2 /G5 /W3"

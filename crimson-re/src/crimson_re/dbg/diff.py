@@ -4,6 +4,9 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.replay.checkpoint_diff import checkpoint_deepdiff
+from crimson.replay.payloads import BuiltinObject, to_builtin_object
+
 from .channel_compare import (
     compare_entity_samples,
     compare_replay_step,
@@ -18,8 +21,6 @@ from .channel_helpers import (
     sim_state_channel_required,
     timing_samples_channel_required,
 )
-from .checkpoint_diff import checkpoint_deepdiff
-from .payloads import BuiltinObject, to_builtin_object
 from .schema import TickRecord
 from .trace import TraceError, TraceReader
 

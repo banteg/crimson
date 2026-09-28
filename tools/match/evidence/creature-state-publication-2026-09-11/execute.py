@@ -9,7 +9,7 @@ import capstone
 import unicorn
 from unicorn import x86_const as x86
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 ENGINE_PATH = match.DEFAULT_MATCH_ROOT / "evidence/plasma-head-alpha-2026-09-10/verify.py"

@@ -6,7 +6,7 @@ import json
 from dataclasses import replace
 from pathlib import Path
 
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 REFERENCE = HERE.parent / "bonus-pick-flow-graph-2026-09-11/verify_controls.py"

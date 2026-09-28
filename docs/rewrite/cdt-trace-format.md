@@ -11,7 +11,7 @@ CDT is Crimson's owned debug-trace container. It is used by
 original Crimsonland asset format.
 
 This document specifies the only supported contract implemented by
-`src/crimson/dbg/schema.py` and `src/crimson/dbg/trace.py`. For producer and
+`crimson-re/src/crimson_re/dbg/schema.py` and `crimson-re/src/crimson_re/dbg/trace.py`. For producer and
 workflow details, see
 [`trace-format-alignment.md`](trace-format-alignment.md).
 

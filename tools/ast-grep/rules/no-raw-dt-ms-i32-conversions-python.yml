@@ -5,7 +5,7 @@ message: Route dt->ms integer conversion through ftol_ms_i32() instead of ad-hoc
 files:
   - src/crimson/sim/**/*.py
   - src/crimson/replay/**/*.py
-  - src/crimson/dbg/**/*.py
+  - crimson-re/src/crimson_re/dbg/**/*.py
 rule:
   any:
     - pattern: int(round($DT * 1000.0))

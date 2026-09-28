@@ -8,15 +8,15 @@ from pathlib import Path
 
 from typer.testing import CliRunner
 
-from crimson.cli.match import match_app
-from crimson.match import (
+from crimson_re.cli.match import match_app
+from crimson_re.match import (
     DEFAULT_IMAGE_PATH,
     IMAGE_REL_I386_REL32,
     LoadedImage,
     ObjectFunction,
     ObjectRelocationReference,
 )
-from crimson.mod_sdk import (
+from crimson_re.mod_sdk import (
     DEFAULT_MOD_SDK_MANIFEST,
     ModSdkOracleFunction,
     ModSdkOracleReport,

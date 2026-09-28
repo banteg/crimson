@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from unittest.mock import patch
 
-from crimson import match_c2 as c2
+from crimson_re import match_c2 as c2
 
 scratch = Path(sys.argv[1]).resolve()
 out = Path(sys.argv[2]).resolve()

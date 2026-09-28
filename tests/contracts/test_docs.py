@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from crimson.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION
-from crimson.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from crimson.replay.types import REPLAY_FORMAT_VERSION
+from crimson_re.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION
+from crimson_re.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from scripts.check_docs import find_broken_markdown_links, find_broken_source_paths
 
 

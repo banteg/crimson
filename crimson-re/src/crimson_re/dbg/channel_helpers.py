@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from ..replay.checkpoints import ReplayCheckpoint
+from crimson.replay.checkpoints import ReplayCheckpoint
+
 from .canonical_channels import (
     BonusEntitySample,
     CreatureEntitySample,

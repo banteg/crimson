@@ -6,8 +6,8 @@ from types import SimpleNamespace
 from typer.testing import CliRunner
 
 from crimson.cli import app
-from crimson.match import NativeLinkStatus
-from crimson.native_link import NativeAuditArtifacts, NativeLinkedImageArtifacts
+from crimson_re.match import NativeLinkStatus
+from crimson_re.native_link import NativeAuditArtifacts, NativeLinkedImageArtifacts
 
 
 def _audit(*, closed: bool):
@@ -51,8 +51,8 @@ def test_native_audit_cli_reports_artifacts(monkeypatch, tmp_path: Path) -> None
         symbol_closure=tmp_path / "closure.json",
         data_manifest=tmp_path / "data.json",
     )
-    monkeypatch.setattr("crimson.cli.native.native_link.build_native_audit", lambda *args, **kwargs: audit)
-    monkeypatch.setattr("crimson.cli.native.native_link.write_native_audit", lambda *args, **kwargs: artifacts)
+    monkeypatch.setattr("crimson_re.cli.native.native_link.build_native_audit", lambda *args, **kwargs: audit)
+    monkeypatch.setattr("crimson_re.cli.native.native_link.write_native_audit", lambda *args, **kwargs: artifacts)
 
     completed = CliRunner().invoke(
         app,
@@ -75,8 +75,8 @@ def test_native_audit_cli_can_require_full_game_closure(monkeypatch, tmp_path: P
         symbol_closure=tmp_path / "closure.json",
         data_manifest=tmp_path / "data.json",
     )
-    monkeypatch.setattr("crimson.cli.native.native_link.build_native_audit", lambda *args, **kwargs: audit)
-    monkeypatch.setattr("crimson.cli.native.native_link.write_native_audit", lambda *args, **kwargs: artifacts)
+    monkeypatch.setattr("crimson_re.cli.native.native_link.build_native_audit", lambda *args, **kwargs: audit)
+    monkeypatch.setattr("crimson_re.cli.native.native_link.write_native_audit", lambda *args, **kwargs: artifacts)
 
     completed = CliRunner().invoke(
         app,
@@ -122,23 +122,23 @@ def test_native_link_cli_reports_structural_artifacts(monkeypatch, tmp_path: Pat
         },
     }
     monkeypatch.setattr(
-        "crimson.cli.native.native_link.build_native_audit",
+        "crimson_re.cli.native.native_link.build_native_audit",
         lambda *args, **kwargs: audit,
     )
     monkeypatch.setattr(
-        "crimson.cli.native.native_link.write_native_audit",
+        "crimson_re.cli.native.native_link.write_native_audit",
         lambda *args, **kwargs: None,
     )
     monkeypatch.setattr(
-        "crimson.cli.native.native_providers.ensure_recovered_provider",
+        "crimson_re.cli.native.native_providers.ensure_recovered_provider",
         lambda *args, **kwargs: None,
     )
     monkeypatch.setattr(
-        "crimson.cli.native.native_link.load_native_provider_config",
+        "crimson_re.cli.native.native_link.load_native_provider_config",
         lambda *args, **kwargs: config,
     )
     monkeypatch.setattr(
-        "crimson.cli.native.native_link.link_native_image",
+        "crimson_re.cli.native.native_link.link_native_image",
         lambda *args, **kwargs: (artifacts, manifest),
     )
 
@@ -175,7 +175,7 @@ def test_native_verify_cli_gates_both_checked_in_images(monkeypatch) -> None:
         ]
 
     monkeypatch.setattr(
-        "crimson.cli.native.matchlib.collect_native_link_statuses",
+        "crimson_re.cli.native.matchlib.collect_native_link_statuses",
         collect,
     )
 
@@ -198,7 +198,7 @@ def test_native_verify_cli_gates_both_checked_in_images(monkeypatch) -> None:
 
 def test_native_verify_cli_rejects_stale_artifacts_before_gate(monkeypatch) -> None:
     monkeypatch.setattr(
-        "crimson.cli.native.matchlib.collect_native_link_statuses",
+        "crimson_re.cli.native.matchlib.collect_native_link_statuses",
         lambda **kwargs: [
             NativeLinkStatus(
                 image="grim.dll",
@@ -226,7 +226,7 @@ def test_native_verify_cli_rejects_stale_artifacts_before_gate(monkeypatch) -> N
 
 def test_native_verify_cli_rejects_open_game_closure(monkeypatch) -> None:
     monkeypatch.setattr(
-        "crimson.cli.native.matchlib.collect_native_link_statuses",
+        "crimson_re.cli.native.matchlib.collect_native_link_statuses",
         lambda **kwargs: [
             NativeLinkStatus(
                 image="grim.dll",

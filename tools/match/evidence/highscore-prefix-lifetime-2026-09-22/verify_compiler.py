@@ -9,8 +9,8 @@ from unittest.mock import patch
 
 from controls import build, sha, sources
 
-from crimson import match_c2 as c2
-from crimson import match_c2_replay as replay
+from crimson_re import match_c2 as c2
+from crimson_re import match_c2_replay as replay
 
 HERE = Path(__file__).resolve().parent
 ORIGINAL_OBSERVER = c2.observer_source

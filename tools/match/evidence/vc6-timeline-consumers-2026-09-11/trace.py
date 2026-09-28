@@ -15,7 +15,7 @@ from unittest.mock import patch
 import probes
 
 from analysis import PARTIAL, analyze, analyze_decisions
-from crimson import match
+from crimson_re import match
 
 HERE = Path(__file__).resolve().parent
 OLD = HERE.parent / "vc6-store-pass-comparison-2026-09-11"
