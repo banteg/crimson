@@ -22,6 +22,13 @@ its grouping is; the native-link tests validate it.
 sha256), with the C++ object counts and C2 builds read from each image's Rich
 header. `profiles` maps a C2 build to the matcher's compiler profile.
 
+Each build also names a `tree`: the unpacked, wrapper-free install under
+`game_bins/crimsonland/<build>/`, where every pinned image sits at
+`<tree>/<name>`. The original packages stay under
+`game_bins/crimsonland/historical/`; `uv run scripts/unpack_game_bins.py`
+rebuilds the trees from them and checks every image against its pin. 1.9.93 is the GOG install itself, so its tree is
+`game_bins/crimsonland/1.9.93-gog`.
+
 | Build | Linked | Game exe | Game C++ objects | Family |
 |---|---|---|---|---|
 | 1.0.2 | 2002-05 | `crimson.exe` | 1 (C2 8966) | unassigned |
@@ -30,6 +37,7 @@ header. `profiles` maps a C2 build to the matcher's compiler profile.
 | 1.9.1 | 2003-06 | `crimsonland.exe` | 23 (C2 8966) | 1.9 |
 | 1.9.8 | 2003-08 | `crimsonland.exe` | 24 (C2 9044) | 1.9 |
 | 1.9.9 | 2008-10 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | 1.9 |
+| 1.9.92 | 2009-02 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | unassigned |
 | 1.9.93 | 2011-02 | `crimsonland.exe` | 34 (C2 9782, with runtime) | 1.9 |
 
 The game grew from one C++ object into two dozen source files, and it never
@@ -46,7 +54,8 @@ Two build quirks are recorded in `builds.json`:
 - 1.9.9 ships the Reflexive Arcade wrapper as `crimsonland.exe`. The game image is
   `crimsonland.RWG`, whose `.text` is encrypted from just past the entry point to
   the section end. The pinned image is the output of
-  [reflexive](https://github.com/banteg/reflexive)'s `extract --unwrap`.
+  [reflexive](https://github.com/banteg/reflexive)'s `extract --unwrap`. 1.9.92
+  ships the same wrapper, and its pinned image is unwrapped the same way.
 
 ## Differences between builds of a family
 
