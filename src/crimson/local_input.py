@@ -10,7 +10,6 @@ from grim import canvas
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
-from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
 from .input_codes import (
     input_axis_value,
@@ -18,11 +17,8 @@ from .input_codes import (
     input_code_is_pressed,
 )
 from .math_parity import (
-    f32,
     native_aim_point_from_heading,
-    x87_pc24_add,
     x87_pc24_hypot,
-    x87_pc24_mul,
     x87_pc24_sub,
 )
 from .movement_controls import MovementControlType
@@ -390,6 +386,8 @@ class LocalInputInterpreter:
         if not _is_finite(heading):
             heading = float(player.aim_heading)
         aim = Vec2(float(player.aim.x), float(player.aim.y))
+        aim_turn_left = False
+        aim_turn_right = False
         computer_auto_fire = False
         if aim_scheme is AimScheme.MOUSE:
             aim = mouse_world
@@ -397,12 +395,9 @@ class LocalInputInterpreter:
             if delta.length_sq() > 1e-9:
                 heading = delta.to_heading()
         elif aim_scheme is AimScheme.KEYBOARD:
-            if move_mode_type in {MovementControlType.RELATIVE, MovementControlType.STATIC}:
-                if input_code_is_down(aim_right_key, player_index=idx):
-                    heading = x87_pc24_add(f32(heading), x87_pc24_mul(f32(dt), _AIM_KEYBOARD_TURN_RATE))
-                if input_code_is_down(aim_left_key, player_index=idx):
-                    heading = x87_pc24_sub(f32(heading), x87_pc24_mul(f32(dt), _AIM_KEYBOARD_TURN_RATE))
-                aim = _aim_point_from_heading(player.pos, heading)
+            # The sim turns the heading (player_update reads `aim_key_left/right`).
+            aim_turn_left = input_code_is_down(aim_left_key, player_index=idx)
+            aim_turn_right = input_code_is_down(aim_right_key, player_index=idx)
         elif aim_scheme is AimScheme.MOUSE_RELATIVE:
             rel = mouse_screen - screen_center
             if rel.length_sq() > 1.0:
@@ -420,11 +415,9 @@ class LocalInputInterpreter:
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
         elif aim_scheme is AimScheme.JOYSTICK:
-            if _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs):
-                heading = x87_pc24_sub(f32(heading), x87_pc24_mul(f32(dt), _AIM_JOYSTICK_TURN_RATE))
-            if _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs):
-                heading = x87_pc24_add(f32(heading), x87_pc24_mul(f32(dt), _AIM_JOYSTICK_TURN_RATE))
-            aim = _aim_point_from_heading(player.pos, heading)
+            # The sim turns the heading (player_update reads `input_aim_pov_left/right_active`).
+            aim_turn_left = _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs)
+            aim_turn_right = _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs)
         elif aim_scheme is AimScheme.COMPUTER:
             target_index = computer_target_index
             if target_index is None and creatures:
@@ -475,6 +468,8 @@ class LocalInputInterpreter:
             reload_pressed=reload_pressed,
             reload_down=reload_down,
             fire_bullets_key_down=input_code_is_down(0x22, player_index=idx),
+            aim_turn_left=aim_turn_left,
+            aim_turn_right=aim_turn_right,
             move_forward_pressed=move_forward_pressed,
             move_backward_pressed=move_backward_pressed,
             turn_left_pressed=turn_left_pressed,

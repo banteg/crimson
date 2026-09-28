@@ -9,7 +9,6 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from .aim_constants import _AIM_JOYSTICK_TURN_RATE, _AIM_KEYBOARD_TURN_RATE
 from .aim_schemes import AimScheme
 from .math_parity import (
     NATIVE_HALF_PI,
@@ -472,24 +471,16 @@ def _player_update_aim_by_scheme(
     if aim_scheme != AimScheme.COMPUTER:
         if aim_scheme == AimScheme.KEYBOARD:
             if movement_mode in (MovementControlType.RELATIVE, MovementControlType.STATIC):
-                if bool(input_state.turn_right_pressed):
-                    player.aim_heading = float(
-                        f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))),
-                    )
-                if bool(input_state.turn_left_pressed):
-                    player.aim_heading = float(
-                        f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_KEYBOARD_TURN_RATE))),
-                    )
+                if input_state.aim_turn_right:
+                    player.aim_heading = f32(player.aim_heading + f32(dt * 3.0))
+                if input_state.aim_turn_left:
+                    player.aim_heading = f32(player.aim_heading - f32(dt * 3.0))
                 target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.JOYSTICK:
-            if bool(input_state.turn_left_pressed):
-                player.aim_heading = float(
-                    f32(float(player.aim_heading) - float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
-                )
-            if bool(input_state.turn_right_pressed):
-                player.aim_heading = float(
-                    f32(float(player.aim_heading) + float(f32(float(dt) * _AIM_JOYSTICK_TURN_RATE))),
-                )
+            if input_state.aim_turn_left:
+                player.aim_heading = f32(player.aim_heading - f32(dt * 4.0))
+            if input_state.aim_turn_right:
+                player.aim_heading = f32(player.aim_heading + f32(dt * 4.0))
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.UNKNOWN:
             target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))

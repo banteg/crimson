@@ -21,6 +21,7 @@ from crimson.math_parity import (
     NATIVE_PI,
     NATIVE_TAU,
     f32,
+    native_aim_point_from_heading,
     native_fire_muzzle_pos,
     x87_fpatan,
     x87_pc24_add,
@@ -1399,19 +1400,13 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
         aim=Vec2(500.0, 500.0),
         move_mode=MovementControlType.STATIC,
         aim_scheme=AimScheme.KEYBOARD,
-        turn_left_pressed=False,
-        turn_right_pressed=True,
-        move_forward_pressed=False,
-        move_backward_pressed=False,
+        aim_turn_right=True,
     )
 
     step_player(world, player, input_state, 0.1)
 
-    assert player.aim != Vec2(500.0, 500.0)
-    assert_float_close(
-        float(f32((player.aim - player.pos).to_heading() % math.tau)),
-        float(f32(float(player.aim_heading) % math.tau)),
-    )
+    # The aim key turned the heading by dt * 3; the aim point sits 60 along it.
+    assert player.aim == native_aim_point_from_heading(Vec2(100.0, 100.0), f32(0.1 * 3.0))
 
 
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:

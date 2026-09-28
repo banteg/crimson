@@ -29,7 +29,10 @@ const movement_control_static: i32 = 2;
 const movement_control_dual_action_pad: i32 = 3;
 const movement_control_mouse_point_click: i32 = 4;
 const movement_control_computer: i32 = 5;
+const aim_scheme_unknown: i32 = -1;
 const aim_scheme_mouse: i32 = 0;
+const aim_scheme_keyboard: i32 = 1;
+const aim_scheme_joystick: i32 = 2;
 const dual_action_pad_deadzone: f32 = 0.2;
 
 pub fn updatePlayerFromGameInput(
@@ -190,10 +193,29 @@ pub fn updatePlayerFromGameInputWithPlayers(
     }
     player.move_phase = narrowF32(player.move_phase + narrowF32(phase_sign * movement_dt * player.move_speed * 19.0));
 
-    player.aim = .{
+    var target_aim: state_mod.Vec2 = .{
         .x = narrowF32(input.aim_x),
         .y = narrowF32(input.aim_y),
     };
+    // Aim reads the frame_dt restored after movement (0x00414f4d).
+    const aim_dt = if (state.time_scale_active) reflexRestoredDt(movement_dt, reflexTimeScaleFactor(state)) else dt;
+    switch (resolveAimSchemeForUpdate(flags)) {
+        // Keyboard aim turns with `aim_key_left/right` in the key movement modes.
+        aim_scheme_keyboard => if (move_mode == movement_control_relative or move_mode == movement_control_static) {
+            if (flags.aim_turn_right) player.aim_heading = player.aim_heading + aim_dt * 3.0;
+            if (flags.aim_turn_left) player.aim_heading = player.aim_heading - aim_dt * 3.0;
+            target_aim = aimPointFromHeading(player.pos, player.aim_heading);
+        },
+        // Joystick aim turns with the POV hat.
+        aim_scheme_joystick => {
+            if (flags.aim_turn_left) player.aim_heading = player.aim_heading - aim_dt * 4.0;
+            if (flags.aim_turn_right) player.aim_heading = player.aim_heading + aim_dt * 4.0;
+            target_aim = aimPointFromHeading(player.pos, player.aim_heading);
+        },
+        aim_scheme_unknown => target_aim = aimPointFromHeading(player.pos, player.aim_heading),
+        else => {},
+    }
+    player.aim = target_aim;
     const aim_dir = normalizeVec2SafeNative(state_mod.Vec2.sub(player.aim, player.pos));
     if (aim_dir.lengthSq() > 0.0) {
         player.aim_dir = aim_dir;
@@ -285,6 +307,11 @@ pub fn resolveMoveModeForUpdate(
         return movement_control_static;
     }
     return movement_control_dual_action_pad;
+}
+
+fn aimPointFromHeading(pos: state_mod.Vec2, heading: f32) state_mod.Vec2 {
+    const point = native_math.aimPointFromHeading(pos.x, pos.y, heading, 60.0);
+    return .{ .x = point[0], .y = point[1] };
 }
 
 pub fn resolveAimSchemeForUpdate(
@@ -768,4 +795,97 @@ test "aim point on the player still recomputes the aim heading" {
     updatePlayerFromGameInput(&player, input, &state, null, 0.016);
     // 0x0041572e: `fpatan(+0, +0) - 1.5707964f`.
     try std.testing.expectEqual(-native_half_pi, player.aim_heading);
+}
+
+test "held aim controls match original player update turn witnesses" {
+    const Witness = struct {
+        position_x: f32,
+        position_y: f32,
+        heading: f32,
+        dt: f32,
+        scheme: i32,
+        left: bool,
+        right: bool,
+        aim_x_bits: u32,
+        aim_y_bits: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { witnesses: []const Witness },
+        std.testing.allocator,
+        @embedFile("testdata/player-aim-turns.json"),
+        .{},
+    );
+    defer parsed.deinit();
+    try std.testing.expectEqual(@as(usize, 240), parsed.value.witnesses.len);
+    const state = state_mod.GameplayState.init(1);
+    for (parsed.value.witnesses, 0..) |witness, index| {
+        errdefer std.debug.print("native aim turn witness {d}\n", .{index});
+        var player: state_mod.PlayerState = .{
+            .index = 0,
+            .pos = .{ .x = witness.position_x, .y = witness.position_y },
+            .aim_heading = witness.heading,
+        };
+        const input: GameInput = .{
+            .move_x = 0.0,
+            .move_y = 0.0,
+            .aim_x = 0.0,
+            .aim_y = 0.0,
+            .flags = .{
+                .fire_down = false,
+                .fire_pressed = false,
+                .reload_pressed = false,
+                .move_mode = movement_control_static,
+                .aim_scheme = witness.scheme,
+                .aim_turn_left = witness.left,
+                .aim_turn_right = witness.right,
+            },
+        };
+        updatePlayerFromGameInput(&player, input, &state, null, witness.dt);
+        try std.testing.expectEqual(witness.aim_x_bits, @as(u32, @bitCast(player.aim.x)));
+        try std.testing.expectEqual(witness.aim_y_bits, @as(u32, @bitCast(player.aim.y)));
+    }
+}
+
+test "keyboard and joystick aim dispatch match original player update witnesses" {
+    const Witness = struct {
+        position_x: f32,
+        position_y: f32,
+        heading: f32,
+        aim_x_bits: u32,
+        aim_y_bits: u32,
+    };
+    const parsed = try std.json.parseFromSlice(
+        struct { witnesses: []const Witness },
+        std.testing.allocator,
+        @embedFile("testdata/player-aim-point.json"),
+        .{},
+    );
+    defer parsed.deinit();
+    const state = state_mod.GameplayState.init(1);
+    for (parsed.value.witnesses, 0..) |witness, index| {
+        errdefer std.debug.print("native aim witness {d}\n", .{index});
+        for ([_]i32{ aim_scheme_keyboard, aim_scheme_joystick }) |scheme| {
+            var player: state_mod.PlayerState = .{
+                .index = 0,
+                .pos = .{ .x = witness.position_x, .y = witness.position_y },
+                .aim_heading = witness.heading,
+            };
+            const input: GameInput = .{
+                .move_x = 0.0,
+                .move_y = 0.0,
+                .aim_x = 0.0,
+                .aim_y = 0.0,
+                .flags = .{
+                    .fire_down = false,
+                    .fire_pressed = false,
+                    .reload_pressed = false,
+                    .move_mode = movement_control_static,
+                    .aim_scheme = scheme,
+                },
+            };
+            updatePlayerFromGameInput(&player, input, &state, null, 0.0);
+            try std.testing.expectEqual(witness.aim_x_bits, @as(u32, @bitCast(player.aim.x)));
+            try std.testing.expectEqual(witness.aim_y_bits, @as(u32, @bitCast(player.aim.y)));
+        }
+    }
 }

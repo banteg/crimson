@@ -8,6 +8,8 @@ from ..math_parity import f32
 from ..sim.commands import GameCommand
 from ..sim.input import PlayerInput
 from .types import (
+    AIM_TURN_LEFT_FLAG,
+    AIM_TURN_RIGHT_FLAG,
     FIRE_BULLETS_KEY_DOWN_FLAG,
     PackedPlayerInput,
     PackedTickInputs,
@@ -30,6 +32,8 @@ def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
         reload_pressed=bool(inp.reload_pressed),
         reload_down=bool(inp.reload_down),
         fire_bullets_key_down=bool(inp.fire_bullets_key_down),
+        aim_turn_left=inp.aim_turn_left,
+        aim_turn_right=inp.aim_turn_right,
         move_mode=inp.move_mode,
         aim_scheme=inp.aim_scheme,
         move_forward_pressed=inp.move_forward_pressed,
@@ -63,6 +67,8 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
         reload_pressed=reload_pressed,
         reload_down=reload_down,
         fire_bullets_key_down=bool(flags & FIRE_BULLETS_KEY_DOWN_FLAG),
+        aim_turn_left=bool(flags & AIM_TURN_LEFT_FLAG),
+        aim_turn_right=bool(flags & AIM_TURN_RIGHT_FLAG),
         move_forward_pressed=move_forward_pressed,
         move_backward_pressed=move_backward_pressed,
         turn_left_pressed=turn_left_pressed,

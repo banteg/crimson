@@ -15,7 +15,7 @@ from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 
-REPLAY_FORMAT_VERSION = 24
+REPLAY_FORMAT_VERSION = 25
 # Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
 REPLAY_TICK_RATE = 60
 REPLAY_TICK_DT = float(f32(1.0 / REPLAY_TICK_RATE))
@@ -25,6 +25,9 @@ FIRE_PRESSED_FLAG = 1 << 1
 RELOAD_PRESSED_FLAG = 1 << 2
 RELOAD_DOWN_FLAG = 1 << 16
 FIRE_BULLETS_KEY_DOWN_FLAG = 1 << 17
+# Held aim-turn controls: the aim keys under keyboard aim, the POV hat under joystick aim.
+AIM_TURN_LEFT_FLAG = 1 << 18
+AIM_TURN_RIGHT_FLAG = 1 << 19
 MOVE_KEYS_PRESENT_FLAG = 1 << 3
 MOVE_FORWARD_FLAG = 1 << 4
 MOVE_BACKWARD_FLAG = 1 << 5
@@ -43,6 +46,8 @@ SUPPORTED_INPUT_FLAGS_MASK = (
     | RELOAD_PRESSED_FLAG
     | RELOAD_DOWN_FLAG
     | FIRE_BULLETS_KEY_DOWN_FLAG
+    | AIM_TURN_LEFT_FLAG
+    | AIM_TURN_RIGHT_FLAG
     | MOVE_KEYS_PRESENT_FLAG
     | MOVE_FORWARD_FLAG
     | MOVE_BACKWARD_FLAG
@@ -151,6 +156,8 @@ def pack_input_flags(
     reload_pressed: bool,
     reload_down: bool = False,
     fire_bullets_key_down: bool = False,
+    aim_turn_left: bool = False,
+    aim_turn_right: bool = False,
     move_mode: MovementControlType | None = None,
     aim_scheme: AimScheme | None = None,
     move_forward_pressed: bool | None = None,
@@ -169,6 +176,10 @@ def pack_input_flags(
         flags |= RELOAD_DOWN_FLAG
     if fire_bullets_key_down:
         flags |= FIRE_BULLETS_KEY_DOWN_FLAG
+    if aim_turn_left:
+        flags |= AIM_TURN_LEFT_FLAG
+    if aim_turn_right:
+        flags |= AIM_TURN_RIGHT_FLAG
     key_fields = (
         move_forward_pressed,
         move_backward_pressed,

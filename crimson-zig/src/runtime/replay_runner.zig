@@ -361,6 +361,8 @@ pub fn mapReplayInputToGameInput(input: replay_codec.PlayerInput) player_runtime
             .reload_pressed = flags.reload_pressed,
             .reload_down = flags.reload_down,
             .fire_bullets_key_down = flags.fire_bullets_key_down,
+            .aim_turn_left = flags.aim_turn_left,
+            .aim_turn_right = flags.aim_turn_right,
             .move_mode = flags.move_mode,
             .aim_scheme = flags.aim_scheme,
             .move_forward_pressed = flags.move_forward_pressed,

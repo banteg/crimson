@@ -7,7 +7,7 @@
 const std = @import("std");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 24;
+pub const replay_format_version: i32 = 25;
 pub const tick_rate: i32 = 60;
 /// Every replay tick advances the simulation by this delta.
 pub const tick_dt: f32 = 1.0 / @as(f32, @floatFromInt(tick_rate));
@@ -36,6 +36,9 @@ pub const fire_pressed_flag: u32 = 1 << 1;
 pub const reload_pressed_flag: u32 = 1 << 2;
 pub const reload_down_flag: u32 = 1 << 16;
 pub const fire_bullets_key_down_flag: u32 = 1 << 17;
+/// Held aim-turn controls: the aim keys under keyboard aim, the POV hat under joystick aim.
+pub const aim_turn_left_flag: u32 = 1 << 18;
+pub const aim_turn_right_flag: u32 = 1 << 19;
 pub const move_keys_present_flag: u32 = 1 << 3;
 pub const move_forward_flag: u32 = 1 << 4;
 pub const move_backward_flag: u32 = 1 << 5;
@@ -52,6 +55,8 @@ const supported_input_flags_mask: u32 = fire_down_flag |
     reload_pressed_flag |
     reload_down_flag |
     fire_bullets_key_down_flag |
+    aim_turn_left_flag |
+    aim_turn_right_flag |
     move_keys_present_flag |
     move_forward_flag |
     move_backward_flag |
@@ -280,6 +285,8 @@ pub const InputFlags = struct {
     reload_pressed: bool,
     reload_down: bool,
     fire_bullets_key_down: bool,
+    aim_turn_left: bool = false,
+    aim_turn_right: bool = false,
     move_mode: ?i32 = null,
     aim_scheme: ?i32 = null,
     move_forward_pressed: ?bool = null,
@@ -295,6 +302,8 @@ pub fn unpackInputFlags(flags: u32) InputFlags {
         .reload_pressed = (flags & reload_pressed_flag) != 0,
         .reload_down = (flags & reload_down_flag) != 0,
         .fire_bullets_key_down = (flags & fire_bullets_key_down_flag) != 0,
+        .aim_turn_left = (flags & aim_turn_left_flag) != 0,
+        .aim_turn_right = (flags & aim_turn_right_flag) != 0,
     };
 
     if ((flags & move_keys_present_flag) != 0) {
@@ -1359,7 +1368,7 @@ test "reader applies the replay validation rules" {
     defer testing.allocator.free(payload);
 
     const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
-        .{ .needle = "\xaeformat_version\x18", .replacement = "\xaeformat_version\x17", .message = "unsupported replay format version: 23" },
+        .{ .needle = "\xaeformat_version\x19", .replacement = "\xaeformat_version\x18", .message = "unsupported replay format version: 24" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x00", .message = "run.game_mode_id 0 is not a replayable mode" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x03", .message = "run.quest_level must be set for quests and only for quests" },
         .{ .needle = "\xaddetail_preset\x05", .replacement = "\xaddetail_preset\x00", .message = "run.detail_preset must be in 1..5" },

@@ -20,6 +20,9 @@ pub const GameInputFlags = struct {
     reload_pressed: bool,
     reload_down: bool = false,
     fire_bullets_key_down: bool = false,
+    // Held aim-turn controls: `aim_key_left/right` under keyboard aim, the POV hat under joystick aim.
+    aim_turn_left: bool = false,
+    aim_turn_right: bool = false,
     move_mode: ?i32 = null,
     aim_scheme: ?i32 = null,
     move_forward_pressed: ?bool = null,

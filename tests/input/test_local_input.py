@@ -493,8 +493,7 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
     )
 
     # Bound aim key 8 should not affect joystick aim scheme; only POV should.
-    assert_float_close(float(out.aim.x), 100.0)
-    assert_float_close(float(out.aim.y), 40.0)
+    assert (out.aim_turn_left, out.aim_turn_right) == (False, False)
 
 
 def test_local_input_joystick_aim_turns_with_pov_input(
@@ -517,10 +516,8 @@ def test_local_input_joystick_aim_turns_with_pov_input(
         creatures=[],
     )
 
-    # Original player_update: POV right, dt=0.1, heading=0, position=(100, 100).
-    expected = Vec2(123.36509704589844, 44.73633575439453)
-    assert_float_close(float(out.aim.x), float(expected.x))
-    assert_float_close(float(out.aim.y), float(expected.y))
+    # player_update turns the heading from the held POV direction.
+    assert (out.aim_turn_left, out.aim_turn_right) == (False, True)
 
 
 def test_local_input_joystick_aim_reads_player_pov_by_default(
@@ -554,10 +551,8 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
         creatures=[],
     )
 
-    # Original player_update: POV right, dt=0.1, heading=0, position=(100, 100).
-    expected = Vec2(123.36509704589844, 44.73633575439453)
-    assert_float_close(float(out.aim.x), float(expected.x))
-    assert_float_close(float(out.aim.y), float(expected.y))
+    # player_update turns the heading from the held POV direction.
+    assert (out.aim_turn_left, out.aim_turn_right) == (False, True)
 
 
 def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
@@ -592,10 +587,8 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
         creatures=[],
     )
 
-    # Original player_update: POV right, dt=0.1, heading=0, position=(100, 100).
-    expected = Vec2(123.36509704589844, 44.73633575439453)
-    assert_float_close(float(out.aim.x), float(expected.x))
-    assert_float_close(float(out.aim.y), float(expected.y))
+    # player_update turns the heading from the held POV direction.
+    assert (out.aim_turn_left, out.aim_turn_right) == (False, True)
 
 
 def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
@@ -627,30 +620,6 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
     # Native radius: 42 + mag * cv_padAimDistMul (default 96).
     assert_float_close(float(out.aim.x), 238.0)
     assert_float_close(float(out.aim.y), 100.0)
-
-
-def test_local_input_keyboard_aim_in_static_mode_reanchors_to_heading(
-    mocker: MockerFixture,
-) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0), aim_heading=0.0)
-    config = _config_with_player_bind_values(range(16), aim_scheme=AimScheme.KEYBOARD)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
-    )
-
-    assert_float_close(float(out.aim.x), 100.0)
-    assert_float_close(float(out.aim.y), 40.0)
 
 
 def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(

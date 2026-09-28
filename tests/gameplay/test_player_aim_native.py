@@ -55,31 +55,6 @@ def test_aim_point_and_gameplay_dispatch_match_native_witnesses() -> None:
             assert _bits(player.aim) == expected, (i, scheme)
 
 
-def test_local_input_dispatch_matches_native_aim_witnesses(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(local_input, "input_code_is_down", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_code_is_pressed", lambda *_args, **_kwargs: False)
-    monkeypatch.setattr(local_input, "input_axis_value", lambda *_args, **_kwargs: 0.0)
-    config = default_crimson_cfg(Path("<memory>"))
-    config.controls.player(0).movement = MovementControlType.STATIC
-    for scheme in (AimScheme.KEYBOARD, AimScheme.JOYSTICK):
-        config.controls.player(0).aim_scheme = scheme
-        for i, row in enumerate(_witnesses()):
-            player = PlayerState(index=0, pos=Vec2(row.position_x, row.position_y), aim_heading=row.heading)
-            interpreter = local_input.LocalInputInterpreter()
-            interpreter.reset(players=[player])
-            result = interpreter.build_player_input(
-                player_index=0,
-                player=player,
-                config=config,
-                mouse_screen=Vec2(),
-                mouse_world=Vec2(),
-                screen_center=Vec2(),
-                dt=0.0,
-                creatures=[],
-            )
-            assert _bits(result.aim) == (row.aim_x_bits, row.aim_y_bits), (i, scheme)
-
-
 class _TurnWitness(_Witness, frozen=True):
     dt: float
     scheme: int
@@ -107,7 +82,7 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
         player = PlayerState(index=0, pos=Vec2(row.position_x, row.position_y), aim_heading=row.heading)
         _player_update_aim_by_scheme(
             player=player,
-            input_state=PlayerInput(move=Vec2(), aim=Vec2(), turn_left_pressed=row.left, turn_right_pressed=row.right),
+            input_state=PlayerInput(move=Vec2(), aim=Vec2(), aim_turn_left=row.left, aim_turn_right=row.right),
             dt=row.dt,
             movement_mode=MovementControlType.STATIC,
             aim_scheme=scheme,
@@ -133,4 +108,5 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
             dt=row.dt,
             creatures=[],
         )
-        assert _bits(result.aim) == expected, (i, "local input")
+        # The live input records the held controls; the sim turns the heading.
+        assert (result.aim_turn_left, result.aim_turn_right) == (row.left, row.right), (i, "local input")
