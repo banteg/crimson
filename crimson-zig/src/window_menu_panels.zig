@@ -670,8 +670,9 @@ fn hardcoreUnlocked(status: formats.game_cfg.Status) bool {
     return status.quest_unlock_index >= quest_hardcore_unlock_index;
 }
 
+/// Unlock everything a save with every quest completed has, 5.10's reward included.
 fn unlockAllQuestsForDebug(status: *formats.game_cfg.Status) bool {
-    const unlock: u16 = 49;
+    const unlock: u16 = @intCast(cz.quest_level.quest_count);
     var dirty = false;
     if (status.quest_unlock_index < unlock) {
         status.quest_unlock_index = unlock;
@@ -690,12 +691,12 @@ test "debug quest unlock raises both normal and hardcore progress" {
     status.quest_unlock_index_full = 12;
 
     try std.testing.expect(unlockAllQuestsForDebug(&status));
-    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index);
-    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index_full);
+    try std.testing.expectEqual(@as(u16, 50), status.quest_unlock_index);
+    try std.testing.expectEqual(@as(u16, 50), status.quest_unlock_index_full);
 
     try std.testing.expect(!unlockAllQuestsForDebug(&status));
-    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index);
-    try std.testing.expectEqual(@as(u16, 49), status.quest_unlock_index_full);
+    try std.testing.expectEqual(@as(u16, 50), status.quest_unlock_index);
+    try std.testing.expectEqual(@as(u16, 50), status.quest_unlock_index_full);
 }
 
 test "quest result dirty flags merge with action results" {
