@@ -1,0 +1,149 @@
+{
+  "schema": 1,
+  "kind": "historical-crimsonland-web-release-search",
+  "retrieved_at": "2026-09-28",
+  "method": "Wayback CDX sweeps of the official, author and Reflexive download hosts; archive.org and DiscMaster disc listings; download portals; community, scene and trainer sources. Candidate installers were retrieved as data, unpacked with innoextract (and reflexive for RWG builds), and identified by executable version strings, PE timestamps, whatsupdated.txt and byte comparison with recovered builds. No installer was executed.",
+  "checked_packages": [
+    {
+      "version": "1.9.3",
+      "source": "https://web.archive.org/web/20030824061541id_/http://www.reflexive.net:80/download.php?CID=3980&CN=Crimsonland.com&AN=Crimsonland&AID=9&FN=CrimsonlandSetup.exe&DCID=0&DID=837192",
+      "size": 7402848,
+      "sha256": "41a4e19fc49e42d6a9878e24fa57018929acbd59ff8f323934a658377688514f",
+      "exe_pe_timestamp": "2003-06-30T15:25:04Z",
+      "exe_sha256": "d965d89fb4bdd3b7c4375c3ae437cc8a28ac9ca129ef4198a6120a33c9051a9a",
+      "grim_sha256": "81ff66e6a1c77d3ccbc84b4f7470b32dcbadbc531ebdb5eddf758075ab2bb54d",
+      "verification": "Game executable is byte-identical to the recovered 1.9.3 executable; only the Reflexive per-download wrapper differs."
+    },
+    {
+      "version": "1.9.3",
+      "source": "https://web.archive.org/web/20030906201858id_/http://www.reflexive.net:80/download.php?CID=4063&CN=AliveGames.com&AN=Crimsonland&AID=9&FN=CrimsonlandSetup.exe&DCID=4063&DID=1166484",
+      "size": 7442324,
+      "sha256": "6a773eedcfeb45874780c3f4dc3fca5df43583aa0a433b9e38684e3a8bac892c",
+      "exe_pe_timestamp": "2003-06-30T15:25:04Z",
+      "exe_sha256": "d965d89fb4bdd3b7c4375c3ae437cc8a28ac9ca129ef4198a6120a33c9051a9a",
+      "grim_sha256": "81ff66e6a1c77d3ccbc84b4f7470b32dcbadbc531ebdb5eddf758075ab2bb54d",
+      "verification": "Game executable is byte-identical to the recovered 1.9.3 executable; captured three days before the 1.9.8 release."
+    },
+    {
+      "version": "1.9.0",
+      "source": "https://web.archive.org/web/20030906152139id_/http://www.reflexive.net:80/Demos/distributors/softwrap/CrimsonlandSetup.exe",
+      "size": 7618430,
+      "sha256": "f040e9636bebac2a80913d9dcf979bb857ba90932351746afb02e71321119ee6",
+      "exe_pe_timestamp": "2003-05-21T17:37:13Z",
+      "exe_sha256": "9dea9c456e96221c9a826b9a342e9c852fb83dc0b2a7cd606fda3103486360cd",
+      "grim_sha256": "e2a6a902625350a83dfd9e3f87e8809f1cb968408b4b7d372362f331bcd5448e",
+      "verification": "Reflexive Softwrap distributor build; game executable is byte-identical to the recovered 1.9.0 executable."
+    },
+    {
+      "version": "1.9.3",
+      "source": "https://archive.org/download/cgwjan-04/CGWJAN04.ISO/CrimsonlandSetup.exe",
+      "size": 7402858,
+      "sha256": "e045c8cd112b5f8014f427d6d5bd8d2a9dbceef9023cd09f41b83035a5a67ba8",
+      "exe_pe_timestamp": "2003-06-30T15:25:04Z",
+      "exe_sha256": "d965d89fb4bdd3b7c4375c3ae437cc8a28ac9ca129ef4198a6120a33c9051a9a",
+      "grim_sha256": "81ff66e6a1c77d3ccbc84b4f7470b32dcbadbc531ebdb5eddf758075ab2bb54d",
+      "verification": "Game executable is byte-identical to the recovered 1.9.3 executable despite a disc file date of 2003-08-15."
+    },
+    {
+      "version": "1.9.9",
+      "source": "https://web.archive.org/web/20081223024545id_/http://d03.gamecentersolution.com:80/download.php?CID=23966&CN=Andrei+Lazutsin&AN=Crimsonland&AID=9&FN=CrimsonlandSetup.exe&DCID=23966&DID=282059232",
+      "size": 6823578,
+      "sha256": "3eca719f8ff3f085d6ff7d20e42ab65e06fe6ffd85481e89042326796de1e912",
+      "wrapper_exe_pe_timestamp": "2008-08-26T22:20:21Z",
+      "rwg_sha256": "8f4c81a2e06f8d75867516d77929510da272b98ad35737da6fcd93ad56d1e0cf",
+      "grim_sha256": "8809fab709d8f1ef4fda173df0fd5c0f55a9b814873cbe9b2b8083b8e0bdba02",
+      "verification": "crimsonland.RWG is byte-identical to the one in the recovered 1.9.9 package and unwraps to the pinned 1.9.9 image."
+    },
+    {
+      "version": "1.9.9",
+      "source": "https://web.archive.org/web/20090105225450id_/http://d03.gamecentersolution.com:80/download.php?CID=22027&CN=10Tons-MythPeople&AN=Crimsonland&AID=9&FN=CrimsonlandSetup.exe&DCID=4341&DID=286563463",
+      "size": 6847220,
+      "sha256": "080528652fb5e81200eb829822cbe12cb8baef407e70c2539846397125223ea1",
+      "wrapper_exe_pe_timestamp": "2008-12-23T23:49:57Z",
+      "rwg_sha256": "7a0e4faf3f8855781df1a11b09cce1608071c163674afc05d5129fa0576471dc",
+      "grim_sha256": "8809fab709d8f1ef4fda173df0fd5c0f55a9b814873cbe9b2b8083b8e0bdba02",
+      "verification": "Rebuilt wrapper around the 1.9.9 game: RWG strings read Crimsonland 1.9.9, whatsupdated.txt stops at 1.9.9, grim.dll matches 1.9.9, and the unwrapped image matches 1.9.9 outside the encrypted range 0x62a86-0x6e937, which the current reflexive unwrapper leaves undecrypted for this wrapper build."
+    },
+    {
+      "version": "1.9.9",
+      "source": "https://archive.org/download/kex0109/kex0109.iso/programy%2Fgry%2Fplatne%2FCrimsonland%2FCrimsonlandSetup.exe",
+      "size": 6828432,
+      "sha256": "7e182f8b152ca70dd8d25e284f463f6dd949018f18107b2f276c16a37eca9acf",
+      "wrapper_exe_pe_timestamp": "2009-01-18T01:00:54Z",
+      "rwg_sha256": "684b3a51241f292a6dd0c0229ec44130f0665f7def93acd1b550126891239030",
+      "grim_sha256": "8809fab709d8f1ef4fda173df0fd5c0f55a9b814873cbe9b2b8083b8e0bdba02",
+      "verification": "Komputer Swiat Twoj Niezbednik 01/2009 DVD; same rebuilt-wrapper 1.9.9 package as the January 2009 Reflexive downloads."
+    },
+    {
+      "version": "1.9.9",
+      "source": "https://web.archive.org/web/20090218125054id_/http://d01.gamecentersolution.com:80/download.php?CID=23425&CN=pixelStorm+entertainment+studios+Inc.&AN=Crimsonland&AID=9&FN=CrimsonlandSetup.exe&DCID=23425&DID=299775158",
+      "size": 6868682,
+      "sha256": "c0625fb6233899963347e19d9b2b5f59174ed8b65e24ec319feee4525fc493ca",
+      "wrapper_exe_pe_timestamp": "2009-01-30T02:22:53Z",
+      "rwg_sha256": "a7dee019d21ca140d93300f7ef776d0a19eefd8df0d9f6c41717fb17c6925824",
+      "grim_sha256": "8809fab709d8f1ef4fda173df0fd5c0f55a9b814873cbe9b2b8083b8e0bdba02",
+      "verification": "Last build served from this download ID before it switched to 1.9.92 (captured 2009-02-21); same rebuilt-wrapper 1.9.9 game."
+    }
+  ],
+  "version_evidence": [
+    {
+      "version": "1.1.7",
+      "source": "https://web.archive.org/web/20020611212645/http://suomipelit.com/nayta_peli.php?id=45",
+      "fact": "Suomipelit offered crimsonland_v117.zip (7.15 MB) in June 2002."
+    },
+    {
+      "version": "1.2.5",
+      "source": "https://web.archive.org/web/20020821105631/http://www.suomipelit.com/nayta_peli.php?id=45",
+      "fact": "Suomipelit offered crimsonland_v125.zip (9.45 MB) in August 2002; the page moved to crimsonland_v140.zip (8.19 MB) by November 2002. The package URL was never captured."
+    },
+    {
+      "version": "1.8.8",
+      "source": "https://ru-board.club/computers/games/small-games/232580.html",
+      "fact": "A 2003-05-09 post quotes the scene release 0508 - Crimsonland.v1.8.8.CRACKED.PLUS1-QUARTEX."
+    },
+    {
+      "version": "1.8.9",
+      "source": "https://ru-board.club/computers/games/small-games/232580.html",
+      "fact": "A 2003-05-09 post says the game updated to 1.8.9 and links http://www.reflexive.net/Demos/crimsonland_update1_3.zip; Reflexive forum posts through 2003-05-30 also name 1.8.9. Neither the update ZIP nor crimsonland_update1.exe has a usable capture."
+    },
+    {
+      "version": "1.9.91",
+      "source": "https://web.archive.org/web/20140630042257/http://crimsongame.ru:80/game/514-chem-otlichayutsya-versii-igry",
+      "fact": "Russian fan site version notes credit 1.9.91 with one new perk, Tough Reloader. The perk string is absent from 1.9.8 and 1.9.9 and present in 1.9.92 and 1.9.93. Every Reflexive installer checked from December 2008 through 2009-02-18 carries the 1.9.9 game."
+    },
+    {
+      "version": "1.9.94",
+      "source": "https://web.archive.org/web/20140630042257/http://crimsongame.ru:80/game/514-chem-otlichayutsya-versii-igry",
+      "fact": "A 2012 free build distributed by the MyPlayCity portal. Treated as a portal build, not an official 10tons release; not pursued."
+    }
+  ],
+  "probably_unreleased": [
+    {
+      "version": "1.9.2",
+      "evidence": "No announcement, forum post, scene release or trainer names it. Reflexive news lists updates on 2003-06-09 (1.9.1) and 2003-06-30 (1.9.3) only."
+    },
+    {
+      "version": "1.9.4-1.9.7",
+      "evidence": "Reflexive news has no update between 2003-06-30 and 2003-09-09 (1.9.8), August 2003 forum users call 1.9.3 the latest version, and every installer checked from that window, including captures from 2003-08-24 and 2003-09-06 and the CGW January 2004 disc, carries the 1.9.3 executable."
+    }
+  ],
+  "open_leads": [
+    {
+      "source": "crimsongame.ru /files/game/ listing (Wayback 2017-05-25)",
+      "note": "Listed Crimsonland 1.9.94.exe and copies of 1.0.2, 1.3.0, 1.3.1, 1.4.0, 1.9.8, 1.9.92 and Russian builds; no binary was captured and the domain now hosts unrelated content."
+    },
+    {
+      "source": "ftp://ftp.tpnet.pl/dn4/d10/demagierII/",
+      "note": "Polish mirror that still serves 1467_crimsonland_v140.exe through dolinagier.pl; its directory was not listed."
+    },
+    {
+      "source": "ftp://ftp.multiplay.co.uk/pub/games/other/crimsonland/fullversion/win32/",
+      "note": "UK mirror named in a 2003-05-18 Reflexive forum post; not archived."
+    },
+    {
+      "source": "http://www.vent.ee/jaak/reapers/",
+      "note": "Estonian 2003 Crimsonland community site with 174 Wayback captures; not examined."
+    }
+  ],
+  "limits": "Wayback sweeps cover indexed captures only; per-download Reflexive installers differ by affiliate, so captures were grouped by date and size before sampling. Freeware 1.0.x-1.2.5 had no surviving package on any checked host, disc or community site."
+}
