@@ -1,21 +1,25 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.color import RGBA
 from grim.geom import Vec2
+from grim.math import clamp01
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
-from ..math_parity import f32, x87_pc24_mul
+from ..creatures.spawn import CreatureTypeId
+from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
 from ..rng_caller_static import RngCallerStatic
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
+from ..sim.state_types import TERRAIN_SIZE
 from .player import TYPO_WEAPON_ID, enforce_typo_player_frame
-from .spawns import tick_typo_spawns
+from .spawns import creature_spawn_tinted
 
 if TYPE_CHECKING:
     from ..sim.world_state import WorldState
@@ -83,60 +87,34 @@ def typo_mode_update(world: WorldState, *, elapsed_ms: float, dt_ms: float) -> N
     player.weapon.weapon_id = TYPO_WEAPON_ID
     player.weapon.ammo = 30.0
     typo = world.state.typo
-    cooldown, spawns = tick_typo_spawns(
-        elapsed_ms=int(elapsed_ms),
-        spawn_cooldown_ms=int(typo.spawn_cooldown_ms),
-        frame_dt_ms=int(dt_ms),
-        player_count=len(world.players),
-    )
-    typo.spawn_cooldown_ms = int(cooldown)
-    for call in spawns:
-        # creature_spawn_tinted allocates via creature_alloc_slot, which seeds
-        # phase_seed = crt_rand() & 0x17f before the heading/size draws.
-        phase_seed = int(world.state.rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
-        # `creature_spawn_tinted` (0x00444810) stores through float fields with
-        # float literals, rounding each x87 op at PC24.
-        heading = x87_pc24_mul(
-            float(world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314),
-            f32(0.01),
+    typo.spawn_cooldown_ms -= int(dt_ms) * len(world.players)
+    while typo.spawn_cooldown_ms < 0:
+        typo.spawn_cooldown_ms = max(100, typo.spawn_cooldown_ms + 3500 - int(elapsed_ms) // 800)
+        # `typo_gameplay_update_and_render` (0x00445af4..0x00445c15): float literals at PC24;
+        # `fsin`/`fcos` stay wide until the next op rounds.
+        tint_t = float(int(elapsed_ms) + 1)
+        tint = RGBA(
+            clamp01(x87_pc24_add(x87_pc24_mul(tint_t, f32(0.00000833333343)), f32(0.3))),
+            clamp01(x87_pc24_add(x87_pc24_mul(tint_t, 10000.0), f32(0.3))),
+            clamp01(x87_pc24_add(math.sin(x87_pc24_mul(tint_t, f32(0.000100000005))), f32(0.3))),
+            1.0,
         )
-        size = float(world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
-        flags = CreatureFlags(0)
-        move_speed = f32(1.7)
-        if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
-            flags |= CreatureFlags.AI7_LINK_TIMER
-            move_speed = x87_pc24_mul(move_speed, f32(1.2))
-            size = x87_pc24_mul(size, f32(0.8))
-
-        creature_idx = world.creatures.spawn_init(
-            CreatureInit(
-                origin_template_id=0,
-                pos=call.pos,
-                heading=float(heading),
-                phase_seed=phase_seed,
-                type_id=call.type_id,
-                flags=flags,
-                ai_mode=CreatureAiMode.CHASE_PLAYER,
-                health=1.0,
-                max_health=1.0,
-                move_speed=float(move_speed),
-                reward_value=1.0,
-                size=float(size),
-                contact_damage=100.0,
-                tint=call.tint_rgba.to_tuple(),
-            ),
-        )
-        if creature_idx is None:
-            continue
-        active_mask = [bool(entry.active) for entry in world.creatures.entries]
-        typo.names.assign_random(
-            int(creature_idx),
-            world.state.rng,
-            score_xp=int(world.state.highscore_score_xp),
-            active_mask=active_mask,
-            dictionary_words=typo.dictionary_words,
-            highscore_names=typo.highscore_names,
-        )
+        y = x87_pc24_add(x87_pc24_cos_mul(x87_pc24_mul(float(int(elapsed_ms)), f32(0.001)), 256.0), TERRAIN_SIZE * 0.5)
+        for pos, type_id in (
+            (Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), y), CreatureTypeId.SPIDER_SP2),
+            (Vec2(-64.0, y), CreatureTypeId.ALIEN),
+        ):
+            creature_idx = creature_spawn_tinted(world, pos, tint, type_id)
+            if creature_idx is None:
+                continue
+            typo.names.assign_random(
+                creature_idx,
+                world.state.rng,
+                score_xp=world.state.highscore_score_xp,
+                active_mask=[entry.active for entry in world.creatures.entries],
+                dictionary_words=typo.dictionary_words,
+                highscore_names=typo.highscore_names,
+            )
 
 
 def typo_post_step(world: WorldState) -> None:

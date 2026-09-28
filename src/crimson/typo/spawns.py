@@ -1,67 +1,50 @@
 from __future__ import annotations
 
-import math
-
-import msgspec
+from typing import TYPE_CHECKING
 
 from grim.color import RGBA
 from grim.geom import Vec2
-from grim.math import clamp01
 
-from ..creatures.spawn import CreatureTypeId
-from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
-from ..sim.state_types import TERRAIN_SIZE
+from ..creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit, CreatureTypeId
+from ..math_parity import f32, x87_pc24_mul
+from ..rng_caller_static import RngCallerStatic
 
-
-class TypoSpawnCall(msgspec.Struct, frozen=True):
-    pos: Vec2
-    type_id: CreatureTypeId
-    tint_rgba: RGBA
+if TYPE_CHECKING:
+    from ..sim.world_state import WorldState
 
 
-def tick_typo_spawns(
-    *,
-    elapsed_ms: int,
-    spawn_cooldown_ms: int,
-    frame_dt_ms: int,
-    player_count: int,
-) -> tuple[int, list[TypoSpawnCall]]:
-    elapsed_ms = int(elapsed_ms)
-    cooldown = int(spawn_cooldown_ms)
-    dt_ms = int(frame_dt_ms)
-    player_count = max(1, int(player_count))
+def creature_spawn_tinted(world: WorldState, pos: Vec2, tint: RGBA, type_id: CreatureTypeId) -> int | None:
+    """Port of `creature_spawn_tinted` (0x00444810): a one-hit Typ-o creature chasing the player.
 
-    cooldown -= dt_ms * player_count
+    Float fields store float literals, each x87 op rounded at PC24.
+    """
 
-    spawns: list[TypoSpawnCall] = []
-    while cooldown < 0:
-        cooldown += 3500 - elapsed_ms // 800
-        cooldown = max(100, cooldown)
-
-        # `typo_gameplay_update_and_render` (0x00445af4..0x00445c15): float
-        # literals at PC24; `fsin`/`fcos` stay wide until the next op rounds.
-        tint_t = float(elapsed_ms + 1)
-        tint_r = clamp01(x87_pc24_add(x87_pc24_mul(tint_t, f32(0.00000833333343)), f32(0.3)))
-        tint_g = clamp01(x87_pc24_add(x87_pc24_mul(tint_t, 10000.0), f32(0.3)))
-        tint_b = clamp01(x87_pc24_add(math.sin(x87_pc24_mul(tint_t, f32(0.000100000005))), f32(0.3)))
-        tint = RGBA(tint_r, tint_g, tint_b, 1.0)
-
-        t = x87_pc24_mul(float(elapsed_ms), f32(0.001))
-        y = x87_pc24_add(x87_pc24_cos_mul(t, 256.0), x87_pc24_mul(TERRAIN_SIZE, 0.5))
-
-        spawns.append(
-            TypoSpawnCall(
-                pos=Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), y),
-                type_id=CreatureTypeId.SPIDER_SP2,
-                tint_rgba=tint,
-            ),
-        )
-        spawns.append(
-            TypoSpawnCall(
-                pos=Vec2(-64.0, y),
-                type_id=CreatureTypeId.ALIEN,
-                tint_rgba=tint,
-            ),
-        )
-
-    return cooldown, spawns
+    rng = world.state.rng
+    # `creature_alloc_slot` seeds phase_seed = crt_rand() & 0x17f before the heading and size draws.
+    phase_seed = rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED) & 0x17F
+    heading = x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314), f32(0.01))
+    size = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
+    flags = CreatureFlags(0)
+    move_speed = f32(1.7)
+    if type_id in (CreatureTypeId.SPIDER_SP1, CreatureTypeId.SPIDER_SP2):
+        flags |= CreatureFlags.AI7_LINK_TIMER
+        move_speed = x87_pc24_mul(move_speed, f32(1.2))
+        size = x87_pc24_mul(size, f32(0.8))
+    return world.creatures.spawn_init(
+        CreatureInit(
+            origin_template_id=0,
+            pos=pos,
+            heading=heading,
+            phase_seed=phase_seed,
+            type_id=type_id,
+            flags=flags,
+            ai_mode=CreatureAiMode.CHASE_PLAYER,
+            health=1.0,
+            max_health=1.0,
+            move_speed=move_speed,
+            reward_value=1.0,
+            size=size,
+            contact_damage=100.0,
+            tint=tint.to_tuple(),
+        ),
+    )
