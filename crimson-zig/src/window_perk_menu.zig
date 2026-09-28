@@ -145,11 +145,8 @@ pub fn update(
             result = updateMenuInput(state, runtime_assets, runner, choices, dt_ui_ms);
         }
     } else {
-        if (promptOpenRequested(state, runtime_assets, config, runner) and runner.openPerkMenu().len > 0) {
-            state.menu_open = true;
-            state.selected_index = 0;
-            result.play_panel_click = true;
-        }
+        // The menu opens mid-tick; `openMenu` follows once the frame reports it.
+        if (promptOpenRequested(state, runtime_assets, config, runner)) runner.requestPerkMenu();
     }
 
     const prompt_visible = pending_count > 0 and any_alive and !state.active();
@@ -161,6 +158,12 @@ pub fn update(
     state.timeline_ms = clampf(state.timeline_ms + timeline_delta, 0.0, perk_menu_transition_ms);
     result.menu_active = state.active();
     return result;
+}
+
+/// Show the menu the runner opened during the frame's ticks.
+pub fn openMenu(state: *State) void {
+    state.menu_open = true;
+    state.selected_index = 0;
 }
 
 pub fn drawPrompt(

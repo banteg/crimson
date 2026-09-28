@@ -1,5 +1,6 @@
 const std = @import("std");
 const game_ids = @import("../game_ids.zig");
+const replay_codec = @import("../replay_codec.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 
 const perks = @import("perks.zig");
@@ -129,6 +130,8 @@ pub const FrameUpdate = struct {
     shots_hit: i32,
     audio: FrameAudioEvents,
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
+    /// A requested perk menu opened during this frame's ticks.
+    perk_menu_opened: bool = false,
 };
 
 pub const LiveRunnerSnapshot = struct {
@@ -155,6 +158,8 @@ pub const LiveRunner = struct {
     quest_level_key: ?i32 = null,
     session: runtime_session.DeterministicSession,
     accumulator: f32 = 0.0,
+    /// The next tick carries a perk menu request, which opens mid-tick as in native.
+    perk_menu_requested: bool = false,
     max_substeps_per_frame: usize = 8,
 
     pub fn init(config: LiveModeConfig) LiveRunnerError!LiveRunner {
@@ -310,6 +315,7 @@ pub const LiveRunner = struct {
         self.accumulator = std.math.clamp(self.accumulator + clamped_dt, @as(f32, 0.0), max_frame_dt);
 
         var ticks_advanced: usize = 0;
+        var perk_menu_opened = false;
         var frame_audio: FrameAudioEvents = .{};
         var frame_terrain_fx: terrain_fx_mod.TerrainFxScratch = .{};
         const tick_inputs = tickInputsForFrame(input, self.session.playersConst().len);
@@ -323,11 +329,13 @@ pub const LiveRunner = struct {
             const before_perk_pending = self.perkPendingCount();
             const before_quest_hit_sfx = self.session.quest_play_hit_sfx;
             const before_quest_completion_music = self.session.quest_play_completion_music;
+            const open_request = [_]replay_codec.Command{.{ .perk_menu_open = .{ .player_index = 0 } }};
+            const before_menu_opens = self.session.perk_menu_open_count;
             const step_result = try replay_step.stepTick(
                 &self.session,
                 self.session.tick_index,
                 tick_inputs.slice(),
-                &.{},
+                if (self.perk_menu_requested) open_request[0..] else &.{},
                 self.session.dt_nominal,
                 .{},
             );
@@ -369,9 +377,17 @@ pub const LiveRunner = struct {
             }
             self.accumulator = @max(0.0, self.accumulator - self.session.dt_nominal);
             ticks_advanced += 1;
+            // The request rode this tick; the menu opened only if native would have.
+            self.perk_menu_requested = false;
+            if (self.session.perk_menu_open_count > before_menu_opens) {
+                perk_menu_opened = true;
+                break;
+            }
         }
 
-        return self.snapshot(ticks_advanced, input.perk_menu_active and self.perkPendingCount() > 0, frame_audio, frame_terrain_fx.takeBatch());
+        var update = self.snapshot(ticks_advanced, input.perk_menu_active and self.perkPendingCount() > 0, frame_audio, frame_terrain_fx.takeBatch());
+        update.perk_menu_opened = perk_menu_opened;
+        return update;
     }
 
     pub fn perkPendingCount(self: *const LiveRunner) i32 {
@@ -385,18 +401,9 @@ pub const LiveRunner = struct {
         );
     }
 
-    pub fn openPerkMenu(self: *LiveRunner) []const game_ids.PerkId {
-        const choices = perks.perkSelectionOpenChoices(
-            &self.session.state,
-            self.session.players(),
-            self.session.game_mode,
-            self.session.player_count,
-            self.session.quest_unlock_index,
-        );
-        if (choices.len > 0) {
-            self.session.perk_menu_open_count += 1;
-        }
-        return choices;
+    /// Ask the next tick to open the perk menu.
+    pub fn requestPerkMenu(self: *LiveRunner) void {
+        self.perk_menu_requested = true;
     }
 
     pub fn currentPerkChoices(self: *LiveRunner) []const game_ids.PerkId {
@@ -790,8 +797,11 @@ test "live survival runner pauses for pending perk picks" {
     try std.testing.expect(blocked.paused_for_perk_pick);
 
     try std.testing.expectEqual(@as(usize, 0), runner.preparedPerkChoices().len);
-    const choices = runner.openPerkMenu();
-    try std.testing.expect(choices.len > 0);
+    runner.requestPerkMenu();
+    const opening = try runner.stepFrame(runner.session.dt_nominal, .{});
+    try std.testing.expectEqual(@as(usize, 1), opening.ticks_advanced);
+    try std.testing.expect(opening.perk_menu_opened);
+    try std.testing.expect(runner.preparedPerkChoices().len > 0);
     try std.testing.expectEqual(@as(usize, 1), runner.session.perk_menu_open_count);
     try std.testing.expect(try runner.pickPerk(0, runner.session.dt_nominal));
     try std.testing.expectEqual(@as(usize, 1), runner.session.perk_pick_count);

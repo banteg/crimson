@@ -999,9 +999,7 @@ const App = struct {
                 gameplay.runner.session.state.tutorial.stage_index == 6 and
                 !gameplay.perk_ui.active())
             {
-                gameplay.perk_ui.menu_open = true;
-                gameplay.perk_ui.selected_index = 0;
-                self.audio.playUiPanelClick();
+                gameplay.runner.requestPerkMenu();
             }
             const perk_ui_update = window_perk_menu.update(
                 &gameplay.perk_ui,
@@ -1023,6 +1021,10 @@ const App = struct {
                 self.finishRun(gameplay, .runtime_error, liveRuntimeErrorDetail(err));
                 return;
             };
+            if (gameplay.last_update.perk_menu_opened) {
+                window_perk_menu.openMenu(&gameplay.perk_ui);
+                self.audio.playUiPanelClick();
+            }
             gameplay.camera = updateGameplayCamera(
                 gameplay.camera,
                 &gameplay.runner.session,
