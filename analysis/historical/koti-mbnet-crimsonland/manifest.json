@@ -138,6 +138,21 @@
         "exe_sha256": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
         "whatsupdated_title": "Crimsonland version 1.9.8"
       }
+    },
+    {
+      "version": "1.9.92",
+      "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2009.exe",
+      "source": "https://reflexive.banteg.xyz/CrimsonlandSetup.exe",
+      "size": 6915797,
+      "sha256": "4cb8f58f9acd1412109315031fcd79dc8142e24ef421c348b2026c79e1d4a607",
+      "wrapper_pe_timestamp": "2009-10-01T21:29:45Z",
+      "payload": {
+        "wrapper": "RuTracker repack around the Reflexive Inno Setup 5.2.3 installer; the game image is crimsonland.RWG behind the Reflexive Arcade wrapper",
+        "exe_version_string": "Crimsonland 1.9.92",
+        "exe_pe_timestamp": "2009-02-23T14:59:43Z",
+        "exe_sha256": "93cdcdc872c836e75122e3a1d41312c74761cf4736181d3541521e82f6cb2031",
+        "whatsupdated_title": "Crimsonland Updates (latest entry 1.9.91)"
+      }
     }
   ],
   "unrecovered": [
@@ -195,11 +210,6 @@
       "version": "1.9.91",
       "evidence": "whatsupdated.txt shipped with 1.9.93",
       "reason": "No package URL or surviving capture found."
-    },
-    {
-      "version": "1.9.92",
-      "evidence": "crimsonland.com news 2009-03-06 and whatsupdated.txt shipped with 1.9.93",
-      "reason": "The one known installer uses a custom self-extractor that has not been unpacked, so its payload is unverified."
     }
   ]
 }

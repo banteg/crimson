@@ -61,19 +61,26 @@ is "recovered" only when a package survives and its contents confirm the number.
 | 1.9.8 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `Crimsonland 1.9.8` (built 2003-08-18). |
 | 1.9.9 | recovered | Suomipelit ZIP dated 2008-12-07; crimsonland.com news of 2008-11-20. |
 | 1.9.91 | missing | Listed in the 1.9.93 `whatsupdated.txt`; the 2009 news post counts from "1.9.90". |
-| 1.9.92 | unverified | crimsonland.com news of 2009-03-06. The one known installer uses a custom self-extractor that has not been unpacked. |
+| 1.9.92 | recovered | Reflexive installer from the RuTracker Reflexive Arcade corpus; the unwrapped `crimsonland.exe` reads `Crimsonland 1.9.92` (built 2009-02-23). crimsonland.com news of 2009-03-06. |
 | 1.9.93 | recovered | The GOG Classic 2.0.0.4 build decompiled by this project; crimsonland.com news of 2010-06-30. |
 
 Recovered packages are deliberately stored under ignored `game_bins/`, with
 their retrieval URLs, sizes, and SHA-256 hashes committed in the manifest.
 
-Both archived Reflexive installers wrap an Inno Setup installer in a Reflexive
-Arcade loader, so their outer PE timestamps (2003-04-25 and 2004-04-08) date the
-loader, not the game. Carving the embedded Inno image (at offset `0x34c04` and
-`0x30e04`) and running `innoextract` recovers the full game tree. The executable
-version strings and each package's `whatsupdated.txt` both identify the builds
-as 1.9.1 and 1.9.8. The 1.9.1 notes still carry an "UPDATE ONLY package" heading,
-although the package holds the complete game.
+The 2003 and 2004 Reflexive installers wrap an Inno Setup installer in a
+Reflexive Arcade loader, so their outer PE timestamps (2003-04-25 and
+2004-04-08) date the loader, not the game. Carving the embedded Inno image (at
+offset `0x34c04` and `0x30e04`) and running `innoextract` recovers the full game
+tree. The executable version strings and each package's `whatsupdated.txt` both
+identify the builds as 1.9.1 and 1.9.8. The 1.9.1 notes still carry an "UPDATE
+ONLY package" heading, although the package holds the complete game.
+
+The 1.9.92 installer ships its game image as an encrypted `crimsonland.RWG`
+behind the Reflexive wrapper, which
+[reflexive](https://github.com/banteg/reflexive) unwraps. Its `whatsupdated.txt`
+still stops at 1.9.91, so the 1.9.92 notes survive only in the 1.9.93 file. A
+third-party WinRAR repack of the same build carries a byte-identical unwrapped
+executable with rewritten 1.9.92 notes.
 
 The 2014 remaster, GOG's "Classic 2.0.0.4" installer label, the Russian "2.0"
 crack bundle built on 1.9.8, and the CL:ONE fan mod releases are separate
