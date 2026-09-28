@@ -3,7 +3,6 @@ const game_ids = @import("../../game_ids.zig");
 const native_math = @import("../native_math.zig");
 const replay_codec = @import("../../replay_codec.zig");
 
-const runtime_bootstrap = @import("../bootstrap.zig");
 const commands = @import("commands.zig");
 const movement = @import("../movement.zig");
 const timing = @import("../timing.zig");
@@ -22,6 +21,7 @@ const state_mod = @import("../state.zig");
 const survival_progression = @import("../survival_progression.zig");
 const terrain_fx_mod = @import("../terrain_fx.zig");
 const tutorial_runtime = @import("../../tutorial/runtime.zig");
+const typo_player = @import("../../typo/player.zig");
 const typo_runtime = @import("../../typo/runtime.zig");
 const weapons_runtime = @import("../weapons.zig");
 
@@ -211,7 +211,6 @@ pub fn stepTick(
     // pre-step hook, but that hook neither draws RNG nor reads the typing
     // state, so applying them here is equivalent.
     callPhaseHook(options.hooks, context, .pre_commands, &frame);
-    if (context.game_mode == .typo) typo_runtime.assignLoadout(&context.state, context.players());
     var open_perk_menu = false;
     for (tick_commands, 0..) |command, index| {
         commands.applyCommand(context, command, frame.dt) catch |err| {
@@ -359,12 +358,10 @@ pub fn stepTick(
     callPhaseHook(options.hooks, context, .post_core_simulation, &frame);
 
     callPhaseHook(options.hooks, context, .pre_player_movement, &frame);
-    if (context.game_mode == .rush) {
-        runtime_bootstrap.enforceRushLoadout(&context.state, players);
-    } else if (context.game_mode == .typo) {
-        typo_runtime.beforeStep(&context.state, players);
+    if (context.game_mode == .typo) {
+        typo_runtime.beforeStep(players);
     } else if (context.game_mode == .tutorial) {
-        tutorial_runtime.beforeStep(&context.state, &context.creatures);
+        tutorial_runtime.beforeStep(&context.state);
     }
     var player_preprocessed_alive = [_]bool{false} ** state_mod.max_players;
     // Each live player's update round-trips the global frame_dt under Reflex
@@ -507,6 +504,13 @@ pub fn stepTick(
             }
         },
         .rush => {
+            // Native `rush_mode_update` stomps the weapon id and ammo every frame,
+            // after the player update and without `weapon_assign_player`: the run
+            // starts on the reset pistol (its clip and 0.8 s cooldown).
+            for (players) |*player| {
+                player.weapon.weapon_id = .assault_rifle;
+                player.weapon.ammo = 30.0;
+            }
             const wave_result = spawn_mod.tickRushModeSpawnsBatch(
                 context.spawn_cooldown,
                 @floatFromInt(frame.dt_ms_i32),
@@ -570,6 +574,10 @@ pub fn stepTick(
             frame.rng_after_wave_spawns = context.state.rng.state;
         },
         .typo => {
+            // After firing, native stomps player 0 to the shotgun with 30 ammo,
+            // without `weapon_assign_player`: the reset pistol's clip stays.
+            players[0].weapon.weapon_id = typo_player.typo_weapon_id;
+            players[0].weapon.ammo = 30.0;
             typo_runtime.midStep(
                 &context.state,
                 players,
@@ -629,6 +637,9 @@ pub fn stepTick(
     var sfx_events = context.state.step_sfx.take();
     sfx_events.appendBuffer(&context.state.sfx_queue);
     context.state.sfx_queue.clear();
+    // Native culls corpses while rendering the world, before
+    // `tutorial_timeline_update` reads its bonus carrier.
+    context.creatures.finalizePostRenderLifecycle();
     if (context.game_mode == .typo) {
         typo_runtime.postStep(&context.state);
     } else if (context.game_mode == .tutorial) {
@@ -645,7 +656,6 @@ pub fn stepTick(
     }
     callPhaseHook(options.hooks, context, .post_bonus_effects, &frame);
 
-    context.creatures.finalizePostRenderLifecycle();
     if (context.game_mode == .rush) {
         context.elapsed_ms_sim_rush += @as(i64, frame.dt_ms_i32);
         context.elapsed_ms_sim = @floatFromInt(context.elapsed_ms_sim_rush);

@@ -181,11 +181,10 @@ test "build tutorial session primes the same pistol for live play and replay" {
     try std.testing.expectEqual(@as(f32, 0), player.weapon.shot_cooldown);
 }
 
-test "build rush session enforces assault rifle loadout" {
+test "build rush session starts on the reset pistol" {
+    // Native `rush_mode_update` stomps the rifle only after the first player update.
     var session = try buildRushSession(testConfig(.rush), .{});
-    const player = session.players()[0];
-    try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, player.weapon.weapon_id);
-    try std.testing.expectEqual(@as(f32, 30.0), player.weapon.ammo);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, session.players()[0].weapon.weapon_id);
 }
 
 test "build quest session assigns requested start weapon and spawn table" {

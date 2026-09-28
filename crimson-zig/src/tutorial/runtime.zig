@@ -16,21 +16,8 @@ pub fn hintText(hint_index: i32, preserve_bugs: bool) []const u8 {
     return timeline.hintText(hint_index, preserve_bugs);
 }
 
-pub fn beforeStep(
-    state: *state_mod.GameplayState,
-    creatures: *const creatures_mod.CreaturePool,
-) void {
+pub fn beforeStep(state: *state_mod.GameplayState) void {
     state.tutorial.preserve_bugs = state.preserve_bugs;
-    const hint_ref = state.tutorial.hint_bonus_creature_ref orelse {
-        state.tutorial.hint_bonus_alive_before_tick = false;
-        return;
-    };
-    if (hint_ref >= creatures.entries.len) {
-        state.tutorial.hint_bonus_alive_before_tick = false;
-        return;
-    }
-    const entry = creatures.entries[hint_ref];
-    state.tutorial.hint_bonus_alive_before_tick = entry.active and entry.hp > 0.0;
 }
 
 pub fn transformPrimaryInput(
@@ -64,12 +51,13 @@ pub fn postStep(
     world_size: f32,
     detail_preset: i32,
 ) !void {
-    const hint_ref = state.tutorial.hint_bonus_creature_ref;
-    const hint_alive_after = if (hint_ref) |idx|
-        idx < creatures.entries.len and creatures.entries[idx].active and creatures.entries[idx].hp > 0.0
-    else
-        false;
-    const hint_bonus_died = state.tutorial.hint_bonus_alive_before_tick and !hint_alive_after;
+    // Native latches once the carrier's slot is inactive (its corpse culled) with
+    // health spent and the bonus-on-death flag still set.
+    const hint_bonus_died = if (state.tutorial.hint_bonus_creature_ref) |idx| blk: {
+        const carrier = creatures.entries[idx];
+        break :blk !carrier.active and !(carrier.hp > 0.0) and
+            (carrier.flags & spawn_mod.CreatureFlags.bonus_on_death) != 0;
+    } else false;
 
     const result = timeline.tickTutorialTimeline(
         state.tutorial,
@@ -84,7 +72,6 @@ pub fn postStep(
     state.tutorial = result.state;
     state.tutorial.move_active_this_tick = false;
     state.tutorial.fire_active_this_tick = false;
-    state.tutorial.hint_bonus_alive_before_tick = false;
     overlayFromActions(&state.tutorial_overlay, result.actions);
 
     if (players.len > 0) {

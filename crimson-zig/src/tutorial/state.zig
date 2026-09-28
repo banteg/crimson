@@ -10,7 +10,6 @@ pub const TutorialState = struct {
     preserve_bugs: bool = false,
     move_active_this_tick: bool = false,
     fire_active_this_tick: bool = false,
-    hint_bonus_alive_before_tick: bool = false,
 };
 
 pub const TutorialOverlayState = struct {

@@ -3,16 +3,13 @@ const game_ids = @import("../game_ids.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 
 const creatures_mod = @import("creatures.zig");
-const player_runtime = @import("player.zig");
 const spawn_mod = @import("spawn.zig");
-const state_mod = @import("state.zig");
 
 const terrain_density_base: u64 = 800;
 const terrain_density_overlay: u64 = 0x23;
 const terrain_density_detail: u64 = 0x0F;
 const terrain_density_shift: u6 = 19;
 const terrain_rand_draws_per_stamp: u64 = 3;
-const rush_forced_ammo: f32 = 30.0;
 
 pub const TerrainSlotTriplet = [3]u8;
 
@@ -99,16 +96,6 @@ pub fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
         .major = major,
         .minor = minor,
     };
-}
-
-pub fn enforceRushLoadout(state: *state_mod.GameplayState, players: []state_mod.PlayerState) void {
-    for (players) |*player| {
-        if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
-            player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
-            player_runtime.queueWeaponAssignSfx(state, game_ids.WeaponId.assault_rifle);
-        }
-        player.weapon.ammo = rush_forced_ammo;
-    }
 }
 
 /// Advance RNG through `gameplay_reset_state()` up to `terrain_generate_random()`:

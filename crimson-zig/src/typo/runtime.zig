@@ -55,23 +55,9 @@ pub fn applySubmitCommand(
     if (std.mem.eql(u8, entered, "reload")) typo.pending_reload = true;
 }
 
-/// The loadout half of Python's `typo_before_step`, which runs before the
-/// tick's typing: the weapon's reload sound precedes the typing sounds.
-pub fn assignLoadout(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-) void {
+pub fn beforeStep(players: []state_mod.PlayerState) void {
     for (players) |*player| {
-        typo_player.assignTypoWeapon(player, state);
-    }
-}
-
-pub fn beforeStep(
-    state: *state_mod.GameplayState,
-    players: []state_mod.PlayerState,
-) void {
-    for (players) |*player| {
-        typo_player.enforceTypoPlayerFrame(player, state);
+        typo_player.enforceTypoPlayerFrame(player);
     }
 }
 

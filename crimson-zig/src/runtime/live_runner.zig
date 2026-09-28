@@ -578,11 +578,13 @@ test "live survival runner bootstraps pistol survival session" {
     try std.testing.expectEqual(game_ids.WeaponId.pistol, runner.session.players()[0].weapon.weapon_id);
 }
 
-test "live runner bootstraps rush session with forced assault rifle" {
+test "live runner rush stomps the assault rifle and ammo each frame" {
     var runner = try LiveRunner.init(.{
         .game_mode = .rush,
     });
     try std.testing.expectEqual(game_ids.GameModeId.rush, runner.session.game_mode);
+    try std.testing.expectEqual(game_ids.WeaponId.pistol, runner.session.players()[0].weapon.weapon_id);
+    _ = try runner.stepFrame(runner.session.dt_nominal, .{});
     try std.testing.expectEqual(game_ids.WeaponId.assault_rifle, runner.session.players()[0].weapon.weapon_id);
     try std.testing.expectEqual(@as(f32, 30.0), runner.session.players()[0].weapon.ammo);
 }
