@@ -23,13 +23,38 @@ from grim.geom import Vec2
 
 class _TextureStub:
     id = 1
+    width = 256
+    height = 256
 
 
 class _RuntimeResourcesStub:
-    def texture(self, texture_id: TextureId) -> _TextureStub | None:
-        if texture_id == TextureId.BULLET_TRAIL:
-            return _TextureStub()
-        return None
+    def texture(self, _texture_id: TextureId) -> _TextureStub:
+        return _TextureStub()
+
+
+_RL_DRAW_CALLS = (
+    "begin_blend_mode",
+    "end_blend_mode",
+    "rl_set_blend_factors_separate",
+    "rl_set_texture",
+    "rl_begin",
+    "rl_end",
+    "rl_color4ub",
+    "rl_tex_coord2f",
+    "rl_vertex2f",
+    "draw_texture_pro",
+)
+
+
+def _mock_rl(mocker) -> dict[str, Any]:
+    return {name: mocker.patch.object(world_projectiles.rl, name) for name in _RL_DRAW_CALLS}
+
+
+def _render_projectiles(render_ctx: WorldRenderCtx, projectiles: list[Projectile], *, alpha: float) -> None:
+    entries = render_ctx.frame.state.projectiles.entries
+    for index, projectile in enumerate(projectiles):
+        entries[index] = structs.replace(projectile, active=True)
+    world_projectiles.projectile_render(render_ctx, alpha=alpha)
 
 
 class _WorldStub:
@@ -94,11 +119,10 @@ def _capture_projectile_trail(
     camera: Vec2 | None = None,
     view_scale: Vec2 | None = None,
 ):
-    for name in ("begin_blend_mode", "rl_set_texture", "rl_begin", "rl_end", "end_blend_mode"):
-        mocker.patch.object(world_projectiles.rl, name)
-    vertices = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
-    colors = mocker.patch.object(world_projectiles.rl, "rl_color4ub")
-    uvs = mocker.patch.object(world_projectiles.rl, "rl_tex_coord2f")
+    rl_calls = _mock_rl(mocker)
+    vertices = rl_calls["rl_vertex2f"]
+    colors = rl_calls["rl_color4ub"]
+    uvs = rl_calls["rl_tex_coord2f"]
     frame = _WorldStub().build_render_frame()
     render_ctx = WorldRenderCtx(
         frame=frame,
@@ -109,7 +133,7 @@ def _capture_projectile_trail(
             out_size=Vec2(1024, 1024),
         ),
     )
-    world_projectiles.draw_projectile(render_ctx, projectile, alpha=transition_alpha)
+    _render_projectiles(render_ctx, [projectile], alpha=transition_alpha)
     return (
         [tuple(call.args) for call in vertices.call_args_list],
         [tuple(call.args) for call in colors.call_args_list],
@@ -292,22 +316,14 @@ def test_bullet_trail_packs_alpha_after_applying_transition(mocker, life, transi
 def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_size, expected_alpha) -> None:
     # Native small heads reuse the initial 0.5*transition value at
     # 0x423ac8, 0x423e37, and 0x423fc1; Rifle/Cannon retain 0.45.
-    texture = mocker.Mock(id=1, width=256, height=256)
-    mocker.patch.object(
-        _RuntimeResourcesStub,
-        "texture",
-        side_effect=lambda texture_id: texture if texture_id == TextureId.PARTICLES else None,
-    )
-    mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
-    mocker.patch.object(world_projectiles.rl, "end_blend_mode")
-    draws = mocker.patch.object(world_projectiles.rl, "draw_texture_pro")
+    draws = _mock_rl(mocker)["draw_texture_pro"]
     frame = _WorldStub().build_render_frame()
     ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
     )
     projectile = Projectile(type_id=type_id, origin=Vec2(50, 90), pos=Vec2(110, 210), life_timer=0.4, speed_scale=2.0)
-    world_projectiles.draw_projectile(ctx, projectile, alpha=0.7)
+    _render_projectiles(ctx, [projectile], alpha=0.7)
     heads = [call.args for call in draws.call_args_list if call.args[2].width == head_size]
     assert len(heads) == 1
     assert heads[0][-1].a == expected_alpha
@@ -329,17 +345,7 @@ def test_sharpshooter_laser_draws_for_each_living_player(
     health,
     expected_centers,
 ) -> None:
-    for name in (
-        "begin_blend_mode",
-        "rl_set_texture",
-        "rl_begin",
-        "rl_color4ub",
-        "rl_tex_coord2f",
-        "rl_end",
-        "end_blend_mode",
-    ):
-        mocker.patch.object(world_projectiles.rl, name)
-    vertices = mocker.patch.object(world_projectiles.rl, "rl_vertex2f")
+    vertices = _mock_rl(mocker)["rl_vertex2f"]
     players = [
         PlayerState(index=0, pos=Vec2(100.0, 150.0), health=health[0]),
         PlayerState(index=1, pos=Vec2(220.0, 210.0), health=health[1]),
@@ -351,12 +357,7 @@ def test_sharpshooter_laser_draws_for_each_living_player(
         frame=frame,
         view=view_transform(config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
     )
-    world_projectiles.draw_sharpshooter_laser_sight(
-        ctx,
-        camera=Vec2(),
-        view_scale=Vec2(1.0, 1.0),
-        alpha=0.7,
-    )
+    world_projectiles.projectile_render(ctx, alpha=0.7)
     points = [call.args for call in vertices.call_args_list]
     assert len(points) == 4 * len(expected_centers)
     # With vertical headings, far-end X identifies the player. The near end

@@ -118,12 +118,7 @@ def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _Native
             out_size=Vec2(1024.0, 1024.0).mul_components(view_scale),
         ),
     )
-    world_projectiles.draw_sharpshooter_laser_sight(
-        ctx,
-        camera=ctx.view.camera,
-        view_scale=view_scale,
-        alpha=case["alpha"],
-    )
+    world_projectiles._sharpshooter_laser_pass(ctx, alpha=case["alpha"])
     actual_words = [
         struct.unpack("<I", struct.pack("<f", value))[0]
         for call in calls["rl_vertex2f"].call_args_list

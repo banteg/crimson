@@ -32,11 +32,11 @@ count on long/high-density scenes.
 ## Rewrite classic path
 
 Current classic implementation lives in
-`src/crimson/render/projectile_draw/primary_beam.py`:
+`src/crimson/render/world/projectiles.py`:
 
-- `draw_beam_effect(...)` computes beam origin/head, segment range, and tint
-- body rendering uses `_draw_beam_body_sprites(...)`, stamping atlas sprites
-  across the beam span
+- `_draw_streak(...)`, called from `projectile_render`'s sprite pass, computes
+  the streak's origin/head, segment range, and tint
+- the body stamps atlas sprites across the streak's last 256 units
 - head/overlay behavior remains on the classic path
 - Ion chain arcs and fade-stage core behavior stay in the shared beam draw path
 

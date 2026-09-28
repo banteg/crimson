@@ -175,60 +175,40 @@ The sprite order mirrors the native pass structure:
 That ordering matters for parity and should not be “simplified” into arbitrary
 sorting.
 
-## Projectile and effect branch
+## Projectile render and bonus render
 
-The projectile/effects branch is the busiest part of the frame.
+The world ends with native `gameplay_render_world`'s last two calls. Each is a
+sequence of passes, and each pass walks a whole pool with one texture and blend
+before the next pass starts, so a layer of one projectile never lands between
+the layers of another.
 
 ```mermaid
 flowchart TD
-    A["draw_projectiles_and_effects()"] --> B["laser_sight"]
-    B --> C["primary_projectiles"]
-    C --> D["particle_pool"]
-    D --> E["secondary_projectiles"]
-    E --> F["sprite_effect_pool"]
-    F --> G["effect_pool"]
+    A["projectile_render()"] --> B["Sharpshooter laser"]
+    B --> C["bullet trails"]
+    C --> D["plasma glows"]
+    D --> E["Pulse / Splitter / Blade sprites, ion and Fire Bullets streaks"]
+    E --> F["Plague Spreader clouds"]
+    F --> G["Fire Bullets glow"]
+    G --> H["bullet heads"]
+    H --> I["secondary glow, rocket sprites, rocket exhaust"]
+    I --> J["bonus_render()"]
+    J --> K["pickup bubbles and icons, weapon icons, aim label"]
+    K --> L["particles, detonations, sprite effects, effects"]
 ```
 
-### Primary / secondary projectile rendering
+Each pass is one `match` on the type ids it draws, in native order, with the
+native sizes and colors inline (`src/crimson/render/world/projectiles.py`,
+`src/crimson/render/world/draw.py`). Only the Gauss trail ignores the world
+transition alpha, so at zero transition it is all `projectile_render` shows.
 
-Projectile draws use a projection-bound render context:
+Not reproduced: native render-state carries between passes (the rotation, atlas
+frame or UVs a pass inherits from the previous one), the Fire Bullets glow gate
+that reads a stale pointer to slot 95, and the muzzle-glow pass that reads the
+player slot past the last player.
 
-```mermaid
-flowchart LR
-    A["WorldRenderCtx"] --> B["with_projection(camera, view_scale)"]
-    B --> C["ProjectileDrawCtx / SecondaryProjectileDrawCtx"]
-    C --> D["registry dispatch"]
-    D --> E["custom renderer if registered"]
-    D --> F["fallback atlas draw"]
-```
-
-Current behavior:
-
-- primary and secondary projectile renderers try the registry path first
-- if no specialized renderer handles the projectile, the code falls back to
-  shared atlas-based drawing
-- bullet trails and the Sharpshooter laser sight use low-level quad drawing
-  rather than only `draw_texture_pro(...)`
-
-Related modules:
-
-- `src/crimson/render/world/projectiles.py`
-- `src/crimson/render/projectile_draw/*`
-- `src/crimson/render/projectile_render_registry.py`
-
-## Bonus and world-UI pass
-
-The final world-space pass is `draw_bonus_and_ui()`.
-
-It currently does:
-
-1. bonus pickup sprites
-2. hovered bonus labels
-3. aim indicators, if enabled and not in demo mode
-4. direction arrows
-5. aim enhancement sprites, if enabled and not in demo mode
-
-This pass is still part of world rendering, not the out-of-world HUD.
+The aim circle, direction arrows and aim enhancement follow, still inside world
+rendering; native draws them later, after the perk prompt.
 
 ## Camera and viewport math
 

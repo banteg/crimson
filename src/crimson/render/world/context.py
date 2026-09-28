@@ -54,10 +54,6 @@ class WorldRenderCtx(msgspec.Struct, frozen=True):
         return self.view.screen_to_world(pos)
 
 
-def is_bullet_trail_type(type_id: int) -> bool:
-    return 0 <= type_id < 8 or type_id == ProjectileTemplateId.SPLITTER_GUN
-
-
 # `projectile_render`'s late pass binds `bullet_i` without resetting the UVs left
 # by the Fire Bullets glow's `effect_select_texture(13)`. It therefore samples the
 # texture's transparent top-right quarter, so bullet heads and plasma cores never

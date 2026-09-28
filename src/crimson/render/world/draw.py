@@ -15,7 +15,6 @@ from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
-from ...projectiles.types import ProjectileTemplateId
 from ...sim.world_defs import CREATURE_ASSET
 from ...ui.cursor import draw_aim_cursor
 from . import viewport
@@ -32,7 +31,7 @@ from .creatures import (
 from .effects import draw_effect_pool, draw_particle_pool, draw_sprite_effect_pool
 from .overlays import draw_aim_circle, draw_clock_gauge, draw_direction_arrows
 from .profile_hooks import profile_pass
-from .projectiles import draw_projectile, draw_secondary_projectile, draw_sharpshooter_laser_sight
+from .projectiles import projectile_render, secondary_detonation_pass
 from .trooper import draw_player_trooper_sprite
 
 if TYPE_CHECKING:
@@ -81,9 +80,7 @@ def draw_world(
         # Native 0x405b95 still calls projectile_render at zero transition;
         # its Gauss slots retain life alpha. Keep that pass inside alpha testing.
         with render_ctx.frame.resources.alpha_test.scope():
-            for proj_index, proj in enumerate(render_ctx.frame.state.projectiles.entries):
-                if proj.active and proj.type_id == ProjectileTemplateId.GAUSS_GUN:
-                    draw_projectile(render_ctx, proj, proj_index=proj_index, alpha=entity_alpha)
+            projectile_render(render_ctx, alpha=entity_alpha)
         return
 
     with render_ctx.frame.resources.alpha_test.scope():
@@ -99,10 +96,12 @@ def draw_world(
             draw_freeze_overlay(render_ctx, ctx=draw_ctx)
         with profile_pass("players_alive"):
             draw_players(render_ctx, ctx=draw_ctx, alive=True)
-        with profile_pass("projectiles_effects"):
-            draw_projectiles_and_effects(render_ctx, ctx=draw_ctx)
-        with profile_pass("bonus_ui"):
-            draw_bonus_and_ui(render_ctx, ctx=draw_ctx, draw_aim_indicators_enabled=draw_aim_indicators)
+        with profile_pass("projectile_render"):
+            projectile_render(render_ctx, alpha=draw_ctx.entity_alpha)
+        with profile_pass("bonus_render"):
+            bonus_render(render_ctx, ctx=draw_ctx)
+        with profile_pass("aim_ui"):
+            draw_aim_ui(render_ctx, ctx=draw_ctx, draw_aim_indicators_enabled=draw_aim_indicators)
 
 
 def draw_background(
@@ -433,52 +432,6 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
     rl.end_blend_mode()
 
 
-def draw_projectiles_and_effects(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
-    frame = render_ctx.frame
-    with profile_pass("laser_sight"):
-        draw_sharpshooter_laser_sight(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            alpha=ctx.entity_alpha,
-        )
-
-    with profile_pass("primary_projectiles"):
-        for proj_index, proj in enumerate(frame.state.projectiles.entries):
-            if not proj.active:
-                continue
-            draw_projectile(render_ctx, proj, proj_index=proj_index, alpha=ctx.entity_alpha)
-
-    with profile_pass("particle_pool"):
-        draw_particle_pool(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            alpha=ctx.entity_alpha,
-        )
-
-    with profile_pass("secondary_projectiles"):
-        for proj in frame.state.secondary_projectiles.entries:
-            if not proj.active:
-                continue
-            draw_secondary_projectile(render_ctx, proj, alpha=ctx.entity_alpha)
-
-    with profile_pass("sprite_effect_pool"):
-        draw_sprite_effect_pool(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            alpha=ctx.entity_alpha,
-        )
-    with profile_pass("effect_pool"):
-        draw_effect_pool(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            alpha=ctx.entity_alpha,
-        )
-
-
 def iter_visible_aim_players(render_ctx: WorldRenderCtx) -> tuple[PlayerState, ...]:
     return tuple(render_ctx.frame.players)
 
@@ -527,30 +480,34 @@ def _creature_texture(resources: RuntimeResources, asset_name: str | None) -> rl
     return resources.texture(texture_id)
 
 
-def draw_bonus_and_ui(
+def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+    """`bonus_render`'s passes: pickups and the aim label, then the particle,
+    detonation, sprite-effect and effect pools (`effects_render`) over them."""
+
+    camera = render_ctx.view.camera
+    view_scale = render_ctx.view.view_scale
+    alpha = ctx.entity_alpha
+    with profile_pass("bonus_pickups"):
+        draw_bonus_pickups(render_ctx, camera=camera, view_scale=view_scale, scale=render_ctx.view.scale, alpha=alpha)
+    with profile_pass("bonus_labels"):
+        draw_bonus_hover_labels(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+    with profile_pass("particle_pool"):
+        draw_particle_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+    with profile_pass("secondary_detonations"):
+        secondary_detonation_pass(render_ctx, alpha=alpha)
+    with profile_pass("sprite_effect_pool"):
+        draw_sprite_effect_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+    with profile_pass("effect_pool"):
+        draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale, alpha=alpha)
+
+
+def draw_aim_ui(
     render_ctx: WorldRenderCtx,
     *,
     ctx: WorldDrawContext,
     draw_aim_indicators_enabled: bool,
 ) -> None:
-    with profile_pass("bonus_pickups"):
-        draw_bonus_pickups(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            scale=render_ctx.view.scale,
-            alpha=ctx.entity_alpha,
-        )
-    with profile_pass("bonus_labels"):
-        draw_bonus_hover_labels(
-            render_ctx,
-            camera=render_ctx.view.camera,
-            view_scale=render_ctx.view.view_scale,
-            alpha=ctx.entity_alpha,
-        )
-
-    draw_world_aim = draw_aim_indicators_enabled
-    if draw_world_aim:
+    if draw_aim_indicators_enabled:
         with profile_pass("aim_indicators"):
             draw_aim_indicators(render_ctx, ctx=ctx)
 
@@ -563,7 +520,7 @@ def draw_bonus_and_ui(
             alpha=ctx.entity_alpha,
         )
 
-    if draw_world_aim:
+    if draw_aim_indicators_enabled:
         with profile_pass("aim_enhancements"):
             draw_aim_enhancements(render_ctx, ctx=ctx)
 

@@ -78,6 +78,8 @@ def draw_bonus_pickups(
     scale: float,
     alpha: float = 1.0,
 ) -> None:
+    """`bonus_render`'s pickup passes: every bubble and icon, then every weapon icon."""
+
     alpha = clamp(float(alpha), 0.0, 1.0)
     if alpha <= 1e-3:
         return
@@ -85,74 +87,57 @@ def draw_bonus_pickups(
     resources = frame.resources
     bonuses_texture = resources.texture(TextureId.BONUSES)
     wicons_texture = resources.texture(TextureId.UI_WICONS)
+    entries = frame.state.bonus_pool.entries
 
     bubble_src = bonus_icon_src(bonuses_texture, 0)
     bubble_size = 32.0 * scale
-
-    for idx, bonus in enumerate(frame.state.bonus_pool.entries):
+    for idx, bonus in enumerate(entries):
         if bonus.bonus_id == BonusId.UNUSED:
             continue
-
         time_left = float(bonus.time_left)
         time_max = float(bonus.time_max)
-        fade = bonus_fade(time_left, time_max)
-        bubble_alpha = bonus_bubble_fade(time_left, time_max) * 0.9 * alpha
-
         screen = viewport.world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
+        bubble_alpha = bonus_bubble_fade(time_left, time_max) * 0.9 * alpha
         bubble_dst = rl.Rectangle(screen.x, screen.y, bubble_size, bubble_size)
         bubble_origin = rl.Vector2(bubble_size * 0.5, bubble_size * 0.5)
         bubble_tint = rl.Color(255, 255, 255, int(bubble_alpha * 255.0 + 0.5))
         rl.draw_texture_pro(bonuses_texture, bubble_src, bubble_dst, bubble_origin, 0.0, bubble_tint)
 
-        bonus_id = bonus.bonus_id
-        if bonus_id == BonusId.WEAPON:
-            if bonus.amount not in WEAPON_BY_ID:
-                continue
-            weapon_id = WeaponId(bonus.amount)
-            icon_index = int(WEAPON_BY_ID[weapon_id].icon_index)
-            if not (0 <= icon_index <= 31):
-                continue
-
-            pulse = bonus_icon_pulse(float(frame.bonus_anim_phase))
-            icon_scale = fade * pulse * alpha
-            if icon_scale <= 1e-3:
-                continue
-
-            src = weapon_icon_src(wicons_texture, icon_index)
-            w = 60.0 * icon_scale * scale
-            h = 30.0 * icon_scale * scale
-            dst = rl.Rectangle(screen.x, screen.y, w, h)
-            origin = rl.Vector2(w * 0.5, h * 0.5)
-            icon_tint = rl.Color(255, 255, 255, int(fade * alpha * 255.0 + 0.5))
-            rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, icon_tint)
+        meta = BONUS_BY_ID.get(bonus.bonus_id)
+        icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else -1
+        if icon_id < 0:
             continue
-
-        meta = BONUS_BY_ID.get(bonus_id)
-        icon_id = int(meta.icon_id) if meta is not None and meta.icon_id is not None else None
-        if icon_id is None or icon_id < 0:
-            continue
-        if bonus_id == BonusId.POINTS and int(bonus.amount) == 1000:
+        if bonus.bonus_id == BonusId.POINTS and int(bonus.amount) == 1000:
             icon_id += 1
-
-        pulse = bonus_icon_pulse(float(idx) + float(frame.bonus_anim_phase))
-        icon_scale = fade * pulse * alpha
+        icon_scale = bonus_fade(time_left, time_max) * bonus_icon_pulse(float(idx) + float(frame.bonus_anim_phase)) * alpha
         if icon_scale <= 1e-3:
             continue
-
         src = bonus_icon_src(bonuses_texture, icon_id)
         size = 32.0 * icon_scale * scale
         rotation_rad = math.sin(float(idx) - float(frame.elapsed_ms) * 0.003) * 0.2
         dst = rl.Rectangle(screen.x, screen.y, size, size)
         origin = rl.Vector2(size * 0.5, size * 0.5)
         icon_tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
-        rl.draw_texture_pro(
-            bonuses_texture,
-            src,
-            dst,
-            origin,
-            float(rotation_rad * _RAD_TO_DEG),
-            icon_tint,
-        )
+        rl.draw_texture_pro(bonuses_texture, src, dst, origin, float(rotation_rad * _RAD_TO_DEG), icon_tint)
+
+    for bonus in entries:
+        if bonus.bonus_id != BonusId.WEAPON or bonus.amount not in WEAPON_BY_ID:
+            continue
+        icon_index = int(WEAPON_BY_ID[WeaponId(bonus.amount)].icon_index)
+        if not (0 <= icon_index <= 31):
+            continue
+        fade = bonus_fade(float(bonus.time_left), float(bonus.time_max))
+        icon_scale = fade * bonus_icon_pulse(float(frame.bonus_anim_phase)) * alpha
+        if icon_scale <= 1e-3:
+            continue
+        screen = viewport.world_to_screen_with(bonus.pos, camera=camera, view_scale=view_scale)
+        src = weapon_icon_src(wicons_texture, icon_index)
+        w = 60.0 * icon_scale * scale
+        h = 30.0 * icon_scale * scale
+        dst = rl.Rectangle(screen.x, screen.y, w, h)
+        origin = rl.Vector2(w * 0.5, h * 0.5)
+        icon_tint = rl.Color(255, 255, 255, int(fade * alpha * 255.0 + 0.5))
+        rl.draw_texture_pro(wicons_texture, src, dst, origin, 0.0, icon_tint)
 
 
 def draw_bonus_hover_labels(

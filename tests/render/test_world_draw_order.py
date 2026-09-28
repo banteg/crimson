@@ -310,8 +310,8 @@ def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mock
             "draw_players",
             "draw_creatures",
             "draw_freeze_overlay",
-            "draw_projectiles_and_effects",
-            "draw_bonus_and_ui",
+            "bonus_render",
+            "draw_aim_ui",
         )
     ]
     for name in ("begin_blend_mode", "rl_set_texture", "rl_begin", "rl_end", "end_blend_mode", "rl_tex_coord2f"):
@@ -322,14 +322,39 @@ def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mock
         assert events[-1] == "alpha_enter"
 
     colors = mocker.patch.object(world_draw.rl, "rl_color4ub", side_effect=record_color)
-    projectile_draw = mocker.spy(world_draw, "draw_projectile")
+    projectile_render = mocker.spy(world_draw, "projectile_render")
 
     world_draw.draw_world(render_ctx, entity_alpha=entity_alpha)
 
     assert vertices.call_count == 4
     assert [tuple(call.args) for call in colors.call_args_list] == ([(127, 127, 127, 0)] * 2 + [(51, 127, 255, 76)] * 2)
-    projectile_draw.assert_called_once_with(render_ctx, projectiles[0], proj_index=0, alpha=entity_alpha)
+    projectile_render.assert_called_once_with(render_ctx, alpha=entity_alpha)
     background.assert_called_once()
     assert events == ["alpha_enter", "alpha_exit"]
     for draw_pass in unrelated_passes:
         draw_pass.assert_not_called()
+
+
+def test_bonus_render_draws_pickups_under_the_effect_pools(mocker) -> None:
+    render_ctx = _render_ctx_for_creatures([])
+    order = mocker.Mock()
+    for name in (
+        "draw_bonus_pickups",
+        "draw_bonus_hover_labels",
+        "draw_particle_pool",
+        "secondary_detonation_pass",
+        "draw_sprite_effect_pool",
+        "draw_effect_pool",
+    ):
+        order.attach_mock(mocker.patch.object(world_draw, name), name)
+
+    world_draw.bonus_render(render_ctx, ctx=WorldDrawContext(entity_alpha=1.0))
+
+    assert [call[0] for call in order.mock_calls] == [
+        "draw_bonus_pickups",
+        "draw_bonus_hover_labels",
+        "draw_particle_pool",
+        "secondary_detonation_pass",
+        "draw_sprite_effect_pool",
+        "draw_effect_pool",
+    ]
