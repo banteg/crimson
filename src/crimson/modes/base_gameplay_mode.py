@@ -21,6 +21,7 @@ from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
+from ..game_states import GameStateId
 from ..local_input import LocalInputInterpreter
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
@@ -39,6 +40,7 @@ from ..replay.checkpoints import (
 )
 from ..replay.ticks import LiveTickSource, step_replay_tick
 from ..screens.results.game_over import GameOverUi
+from ..screens.ui_timeline import UiTimeline
 from ..sim.batch_apply import apply_presentation_plans
 from ..sim.clock import FixedStepClock
 from ..sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand
@@ -49,6 +51,7 @@ from ..sim.run_result import RunOutcome, RunResult, build_run_result
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..terrain_slots import TerrainSlotTriplet
+from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from ..ui.hud import HudState, draw_target_health_bar
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record_for_game_over
@@ -66,6 +69,9 @@ if TYPE_CHECKING:
 
 class _ModePerkMenuRuntime(PerkMenuRuntime):
     mode: BaseGameplayMode
+
+    def ui_timeline(self) -> UiTimeline:
+        return self.mode._ui_timeline
 
     def on_close(self) -> None:
         self.mode._perk_menu_closed()
@@ -144,6 +150,9 @@ class BaseGameplayMode:
 
         self._ui_mouse = Vec2()
         self._last_dt_ms = 0.0
+        # The menu timeline gameplay runs on (GameState.ui once bound), and native `gameplay_transition_latch`.
+        self._ui_timeline = UiTimeline()
+        self._gameplay_transition_latch = False
         self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
         self._run_reset_seed = 0
@@ -282,7 +291,8 @@ class BaseGameplayMode:
     def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
         if fade is not None:
-            # The game-over panel runs on the one menu timeline (`game_state_set(GAME_OVER)`).
+            # Gameplay, perk selection and game over all run on the one menu timeline.
+            self._ui_timeline = fade.ui
             self._game_over_ui.timeline = fade.ui
 
     def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None:
@@ -357,7 +367,20 @@ class BaseGameplayMode:
         dt_ui_ms = float(min(dt, 0.1) * 1000.0)
         self._last_dt_ms = dt_ui_ms
         self._update_ui_mouse()
+        if not self._game_over_active:
+            # The game-over panel advances the timeline itself while it is up.
+            self._ui_timeline.advance(int(dt_ui_ms))
+            if self._hud_alpha() >= 1.0:
+                self._gameplay_transition_latch = False
         return dt, dt_ui_ms
+
+    def _hud_alpha(self) -> float:
+        """`hud_update_and_render`: the HUD fades in with the timeline over `ui_element_table[28]`'s span."""
+        return min(1.0, max(0.0, self._ui_timeline.timeline_ms / ui_element_timeline_window(28)[1]))
+
+    def _enter_gameplay_timeline(self) -> None:
+        """`game_state_set(GAME_STATE_GAMEPLAY)`."""
+        self._ui_timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
 
     def _draw_game_cursor(self) -> None:
         ui_cursor_render(self.render_resources.resources, dt=self._last_dt_ms * 0.001, pos=self._ui_mouse)
@@ -546,6 +569,9 @@ class BaseGameplayMode:
         self._reset_replay_capture_state(clear_recorder=False)
 
         self._ui_mouse = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
+        # A new run: world entities fade in with the timeline until the HUD is fully in.
+        self._enter_gameplay_timeline()
+        self._gameplay_transition_latch = True
 
     def _initialize_run(
         self,
@@ -586,6 +612,7 @@ class BaseGameplayMode:
     def resume(self) -> None:
         self._action = None
         self._reset_gameplay_frame_clock()
+        self._enter_gameplay_timeline()
 
     def close(self) -> None:
         self._game_over_ui.close()
@@ -658,9 +685,11 @@ class BaseGameplayMode:
             self.close_requested = True
 
     def _world_entity_alpha(self) -> float:
-        if not self._game_over_active:
-            return 1.0
-        return float(self._game_over_ui.world_entity_alpha())
+        if self._game_over_active:
+            return float(self._game_over_ui.world_entity_alpha())
+        if self._gameplay_transition_latch:
+            return self._hud_alpha()
+        return 1.0
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
         alpha = float(entity_alpha)

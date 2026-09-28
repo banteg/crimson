@@ -86,12 +86,12 @@ def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_
     elapsed_after_open = session.elapsed_ms
 
     # The pick waits for the next simulated tick; the closing menu pauses the world.
-    mode._perk_menu.timeline_ms = ui_elements_max_timeline(GameStateId.PERK_SELECTION)
+    mode._perk_menu.timeline.timeline_ms = int(ui_elements_max_timeline(GameStateId.PERK_SELECTION))
     mode.update(1.0 / 60.0)
     assert mode._perk_pick_pending is True
     assert session.elapsed_ms == elapsed_after_open
 
-    mode._perk_menu.timeline_ms = 0.0
+    mode._perk_menu.timeline.timeline_ms = int(0.0)
     mode.update(1.0 / 60.0)
     assert mode._perk_pick_pending is False
     assert mode.state.perk_selection.pending_count == 1

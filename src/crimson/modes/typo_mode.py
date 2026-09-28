@@ -193,6 +193,7 @@ class TypoShooterMode(BaseGameplayMode):
                     resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
+                    alpha=self._hud_alpha(),
                     game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),

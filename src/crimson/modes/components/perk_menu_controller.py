@@ -5,6 +5,7 @@ from collections.abc import Sequence
 import msgspec
 
 from crimson.game_states import GameStateId
+from crimson.screens.ui_timeline import UiTimeline
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
@@ -32,7 +33,13 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
-class PerkMenuRuntime(msgspec.Struct):
+class PerkMenuRuntime(msgspec.Struct, kw_only=True):
+    standalone_timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
+
+    def ui_timeline(self) -> UiTimeline:
+        """The menu timeline the perk selection state runs on."""
+        return self.standalone_timeline
+
     def on_close(self) -> None:
         return None
 
@@ -82,23 +89,19 @@ class PerkMenuController:
         self._selected_index = int(value)
 
     @property
-    def timeline_ms(self) -> float:
-        return float(self._timeline_ms)
-
-    @timeline_ms.setter
-    def timeline_ms(self, value: float) -> None:
-        self._timeline_ms = float(value)
+    def timeline(self) -> UiTimeline:
+        return self._runtime.ui_timeline()
 
     @property
     def active(self) -> bool:
-        return bool(self._open) or self._timeline_ms > 1e-3
+        """Open, or still sliding out: gameplay resumes once the timeline drops below 0."""
+        return self._open or (self.timeline.closing and not self.timeline.ready)
 
     def reset(self) -> None:
         self._layout = PerkMenuLayout()
         self._cancel_button = UiButtonState(self._cancel_label)
         self._open = False
         self._selected_index = 0
-        self._timeline_ms = 0.0
         self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
     def _prewrapped_perk_desc(
@@ -160,20 +163,22 @@ class PerkMenuController:
         if not self._open:
             return
         self._open = False
+        self.timeline.begin()
         self._runtime.on_close()
 
     def open_menu(self) -> None:
+        """`game_state_set(GAME_STATE_PERK_SELECTION)`."""
         if self._open:
             return
         self._runtime.play_sfx(SfxId.UI_PANELCLICK)
         self._open = True
         self._selected_index = 0
+        self.timeline.enter(ui_elements_max_timeline(GameStateId.PERK_SELECTION))
 
-    def tick_timeline(self, dt_ui_ms: float) -> None:
-        if self._open:
-            self._timeline_ms = clamp(self._timeline_ms + float(dt_ui_ms), 0.0, ui_elements_max_timeline(GameStateId.PERK_SELECTION))
-        else:
-            self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, ui_elements_max_timeline(GameStateId.PERK_SELECTION))
+    def tick_timeline(self) -> None:
+        """Once the panel has slid out, the pending state is gameplay: `game_state_set(GAME_STATE_GAMEPLAY)`."""
+        if self.timeline.closing and self.timeline.ready:
+            self.timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
 
     def handle_input(
         self,
@@ -195,7 +200,7 @@ class PerkMenuController:
             self._selected_index = (self._selected_index - 1) % len(choices)
 
         screen_w = float(canvas.width())
-        slide_x = ui_element_anim(self._timeline_ms, index=27, width=self._layout.panel_size.x)[1]
+        slide_x = ui_element_anim(self.timeline.timeline_ms, index=27, width=self._layout.panel_size.x)[1]
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
@@ -248,7 +253,7 @@ class PerkMenuController:
         return None
 
     def draw(self, ctx: PerkMenuUiContext, choices: Sequence[PerkId]) -> None:
-        menu_t = clamp(self._timeline_ms / ui_elements_max_timeline(GameStateId.PERK_SELECTION), 0.0, 1.0)
+        menu_t = clamp(self.timeline.timeline_ms / ui_elements_max_timeline(GameStateId.PERK_SELECTION), 0.0, 1.0)
         if menu_t <= 1e-3:
             return
 
@@ -258,7 +263,7 @@ class PerkMenuController:
             self._selected_index = 0
 
         screen_w = float(canvas.width())
-        slide_x = ui_element_anim(self._timeline_ms, index=27, width=self._layout.panel_size.x)[1]
+        slide_x = ui_element_anim(self.timeline.timeline_ms, index=27, width=self._layout.panel_size.x)[1]
 
         master_owned = PerkId.PERK_MASTER in ctx.perks
         expert_owned = PerkId.PERK_EXPERT in ctx.perks

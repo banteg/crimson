@@ -138,7 +138,7 @@ def test_perk_menu_cancel_plays_button_click_and_returns_none(mocker) -> None:
 def test_draw_accepts_prepared_choices_without_selection_helpers(mocker) -> None:
     menu = PerkMenuController()
     menu.open = True
-    menu.timeline_ms = 1_000.0
+    menu.timeline.timeline_ms = int(1_000.0)
     mocker.patch.object(perk_menu_controller_module, "draw_classic_menu_panel", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_menu_item", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_ui_text", return_value=None)

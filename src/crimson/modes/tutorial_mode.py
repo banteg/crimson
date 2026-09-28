@@ -230,7 +230,7 @@ class TutorialMode(BaseGameplayMode):
             if choice_index is not None:
                 self._perk_pick_pending = True
                 self.record_perk_pick_command(int(choice_index), player_index=0)
-        self._perk_menu.tick_timeline(dt_ui_ms)
+        self._perk_menu.tick_timeline()
 
         perk_menu_active = self._perk_menu.active
 
@@ -272,7 +272,7 @@ class TutorialMode(BaseGameplayMode):
                     resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
-                    alpha=1.0,
+                    alpha=self._hud_alpha(),
                     game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),

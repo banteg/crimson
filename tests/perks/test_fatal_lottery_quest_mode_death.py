@@ -28,7 +28,8 @@ def test_quest_mode_closes_run_when_player_dies_during_perk_menu_transition(mock
     mode.player.health = -1.0
     mode.player.death_timer = 0.3
     mode._perk_menu.open = False
-    mode._perk_menu.timeline_ms = 100.0
+    mode._perk_menu.timeline.timeline_ms = 100
+    mode._perk_menu.timeline.begin()
 
     mode.update(1.0 / 60.0)
 

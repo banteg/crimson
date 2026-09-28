@@ -153,7 +153,7 @@ class QuestMode(BaseGameplayMode):
         )
         if not self._paused:
             self._perk_prompt.tick_pulse(float(dt_ui_ms))
-        self._perk_menu.tick_timeline(float(dt_ui_ms))
+        self._perk_menu.tick_timeline()
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._quest_spawn_state.spawn_timeline_ms)
@@ -355,6 +355,7 @@ class QuestMode(BaseGameplayMode):
                     resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
+                    alpha=self._hud_alpha(),
                     game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),

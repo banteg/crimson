@@ -7,7 +7,6 @@ from grim.config import (
 )
 from grim.console import ConsoleState
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -15,14 +14,12 @@ from grim.view import ViewContext
 
 from ..debug import debug_enabled
 from ..game_modes import GameMode
-from ..game_states import GameStateId
 from ..gameplay import survival_check_level_up
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
-from ..ui.animation import ui_elements_max_timeline
 from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -60,7 +57,6 @@ class SurvivalMode(BaseGameplayMode):
         )
         self._perk_prompt = PerkPromptState()
         self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
-        self._hud_fade_ms = ui_elements_max_timeline(GameStateId.PERK_SELECTION)
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
@@ -118,7 +114,7 @@ class SurvivalMode(BaseGameplayMode):
         )
         if allow_pulse:
             self._perk_prompt.tick_pulse(float(dt_ui_ms))
-        self._perk_menu.tick_timeline(float(dt_ui_ms))
+        self._perk_menu.tick_timeline()
 
     def open(self) -> None:
         super().open()
@@ -132,7 +128,6 @@ class SurvivalMode(BaseGameplayMode):
         spawn_state = prepared.session.mode_state
         assert isinstance(spawn_state, SurvivalSpawnState)
         self._spawn_state = spawn_state
-        self._hud_fade_ms = ui_elements_max_timeline(GameStateId.PERK_SELECTION)
 
     def close(self) -> None:
         self._sim_session = None
@@ -214,10 +209,6 @@ class SurvivalMode(BaseGameplayMode):
             dt_ui_ms=float(frame.dt_ui_ms),
             allow_pulse=(not self._paused) and (not self._game_over_active),
         )
-        if self._perk_menu.active:
-            self._hud_fade_ms = 0.0
-        else:
-            self._hud_fade_ms = clamp(self._hud_fade_ms + float(frame.dt_ui_ms), 0.0, ui_elements_max_timeline(GameStateId.PERK_SELECTION))
 
         perk_menu_active = self._perk_menu.active
         sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
@@ -262,7 +253,7 @@ class SurvivalMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active):
-            hud_alpha = clamp(self._hud_fade_ms / ui_elements_max_timeline(GameStateId.PERK_SELECTION), 0.0, 1.0)
+            hud_alpha = self._hud_alpha()
             self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
