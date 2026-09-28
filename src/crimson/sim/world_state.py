@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 
 import msgspec
 
@@ -30,8 +30,18 @@ from ..player_damage import player_take_projectile_damage
 from ..projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
+from ..typo.runtime import typo_mode_update
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
+from .mode_updates import (
+    ModeState,
+    QuestSpawnState,
+    RushSpawnState,
+    SurvivalSpawnState,
+    quest_mode_update,
+    rush_mode_update,
+    survival_update,
+)
 from .presentation_step import (
     ProjectileDecalPostCtx,
     plan_hit_sfx,
@@ -203,11 +213,12 @@ class WorldState(msgspec.Struct):
         self,
         dt: float,
         *,
-        mode_update: Callable[[], None] | None,
         inputs: Sequence[PlayerInput] | None,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         perk_progression_enabled: bool,
+        mode_state: ModeState = None,
+        elapsed_ms: float = 0.0,
         open_perk_menu: bool = False,
     ) -> WorldEvents:
         """Advance one frame; the caller has already applied the perk dt steps."""
@@ -250,9 +261,16 @@ class WorldState(msgspec.Struct):
                 reload_active_any=bool(reload_active_any),
             )
         dt = float(player_dt)
-        if mode_update is not None:
-            # The mode's native update (survival/rush/quest/typo) runs here.
-            mode_update()
+        # The mode updates read the elapsed run time from before this frame.
+        match mode_state:
+            case SurvivalSpawnState():
+                survival_update(self, mode_state, elapsed_ms=elapsed_ms, dt_ms=float(frame_dt_ms))
+            case RushSpawnState():
+                rush_mode_update(self, mode_state, elapsed_ms=elapsed_ms, dt_ms=float(frame_dt_ms))
+            case QuestSpawnState():
+                quest_mode_update(self, mode_state, dt_ms=float(frame_dt_ms))
+            case None if self.state.game_mode == GameMode.TYPO:
+                typo_mode_update(self, elapsed_ms=elapsed_ms, dt_ms=float(frame_dt_ms))
         # The rest follows `gameplay_update_and_render` after the mode update:
         # bonus timers, camera, world render (Telekinetic pickups happen in
         # `bonus_render`), level-up, then `bonus_update`.

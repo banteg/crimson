@@ -44,7 +44,6 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         inputs=[PlayerInput()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
     assert events.hits
@@ -86,7 +85,6 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         inputs=[PlayerInput()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
     assert events.hits
@@ -123,7 +121,6 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
         inputs=[PlayerInput()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
@@ -160,7 +157,6 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         inputs=[PlayerInput()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
 
@@ -200,7 +196,6 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
         inputs=[PlayerInput()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
     assert events.hits

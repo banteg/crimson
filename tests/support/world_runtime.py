@@ -5,11 +5,8 @@ from pathlib import Path
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import (
-    DeterministicSession,
-    DeterministicSessionTick,
-    SurvivalSpawnState,
-)
+from crimson.sim.mode_updates import SurvivalSpawnState
+from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
 from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime

@@ -14,12 +14,11 @@ from ..math_parity import f32, x87_pc24_mul
 from ..rng_caller_static import RngCallerStatic
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
-from ..sim.world_state import WorldState
 from .player import TYPO_WEAPON_ID, enforce_typo_player_frame
 from .spawns import tick_typo_spawns
 
 if TYPE_CHECKING:
-    from ..sim.sessions import MidStepContext, PostStepContext
+    from ..sim.world_state import WorldState
 
 
 def _require_single_player_typo(command) -> None:
@@ -77,31 +76,31 @@ def typo_before_step(world: WorldState) -> None:
         enforce_typo_player_frame(player)
 
 
-def typo_mid_step(ctx: MidStepContext) -> None:
+def typo_mode_update(world: WorldState, *, elapsed_ms: float, dt_ms: float) -> None:
     # After firing, native stomps player 0 to the shotgun with 30 ammo, without
     # `weapon_assign_player`: the reset pistol's clip stays.
-    player = ctx.world.players[0]
+    player = world.players[0]
     player.weapon.weapon_id = TYPO_WEAPON_ID
     player.weapon.ammo = 30.0
-    typo = ctx.world.state.typo
+    typo = world.state.typo
     cooldown, spawns = tick_typo_spawns(
-        elapsed_ms=int(ctx.elapsed_before_ms),
+        elapsed_ms=int(elapsed_ms),
         spawn_cooldown_ms=int(typo.spawn_cooldown_ms),
-        frame_dt_ms=int(ctx.dt_sim_ms),
-        player_count=len(ctx.world.players),
+        frame_dt_ms=int(dt_ms),
+        player_count=len(world.players),
     )
     typo.spawn_cooldown_ms = int(cooldown)
     for call in spawns:
         # creature_spawn_tinted allocates via creature_alloc_slot, which seeds
         # phase_seed = crt_rand() & 0x17f before the heading/size draws.
-        phase_seed = int(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
+        phase_seed = int(world.state.rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
         # `creature_spawn_tinted` (0x00444810) stores through float fields with
         # float literals, rounding each x87 op at PC24.
         heading = x87_pc24_mul(
-            float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314),
+            float(world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_HEADING) % 314),
             f32(0.01),
         )
-        size = float(ctx.world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
+        size = float(world.state.rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE) % 20 + 47)
         flags = CreatureFlags(0)
         move_speed = f32(1.7)
         if int(call.type_id) in (int(CreatureTypeId.SPIDER_SP1), int(CreatureTypeId.SPIDER_SP2)):
@@ -109,7 +108,7 @@ def typo_mid_step(ctx: MidStepContext) -> None:
             move_speed = x87_pc24_mul(move_speed, f32(1.2))
             size = x87_pc24_mul(size, f32(0.8))
 
-        creature_idx = ctx.world.creatures.spawn_init(
+        creature_idx = world.creatures.spawn_init(
             CreatureInit(
                 origin_template_id=0,
                 pos=call.pos,
@@ -129,19 +128,19 @@ def typo_mid_step(ctx: MidStepContext) -> None:
         )
         if creature_idx is None:
             continue
-        active_mask = [bool(entry.active) for entry in ctx.world.creatures.entries]
+        active_mask = [bool(entry.active) for entry in world.creatures.entries]
         typo.names.assign_random(
             int(creature_idx),
-            ctx.world.state.rng,
-            score_xp=int(ctx.world.state.highscore_score_xp),
+            world.state.rng,
+            score_xp=int(world.state.highscore_score_xp),
             active_mask=active_mask,
             dictionary_words=typo.dictionary_words,
             highscore_names=typo.highscore_names,
         )
 
 
-def typo_post_step(ctx: PostStepContext) -> None:
-    state = ctx.world.state
+def typo_post_step(world: WorldState) -> None:
+    state = world.state
     state.bonuses.weapon_power_up = 0.0
     state.bonuses.reflex_boost = 0.0
     state.time_scale_active = False

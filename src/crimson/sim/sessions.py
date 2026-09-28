@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from functools import partial
 
 import msgspec
 
@@ -9,22 +8,16 @@ from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
 from ..camera import camera_update_for_players
-from ..creatures.spawn import advance_survival_spawn_stage, tick_rush_mode_spawns, tick_survival_wave_spawns
 from ..game_modes import GameMode
-from ..gameplay import survival_update_weapon_handouts
 from ..perks.availability import prepare_perk_availability
 from ..perks.selection import (
     perk_selection_open_choices,
     perk_selection_pick,
 )
-from ..quests.runtime import tick_quest_completion_transition
-from ..quests.timeline import quest_spawn_table_empty, tick_quest_mode_spawns
-from ..quests.types import SpawnEntry
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.runtime import tutorial_input_transform, tutorial_post_step
-from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_mid_step, typo_post_step
+from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_post_step
 from ..weapon_runtime.availability import prepare_weapon_availability
-from ..weapons import WeaponId
 from .commands import (
     GameCommand,
     PerkMenuOpenCommand,
@@ -34,14 +27,12 @@ from .commands import (
     TypoSubmitCommand,
 )
 from .input import PlayerInput
+from .mode_updates import ModeState, QuestSpawnState
 from .presentation_step import DeterministicPresentationPlan, plan_world_presentation_step
 from .run_result import RunOutcome, all_players_dead, death_transition_ready
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming, reflex_boost_time_scale_factor
 from .world_state import WorldEvents, WorldState
-
-RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
-RUSH_FORCED_AMMO = 30.0
 
 # ---------------------------------------------------------------------------
 # Tick result types
@@ -67,146 +58,6 @@ class IllegalCommandError(ValueError):
 # ---------------------------------------------------------------------------
 # Mode runtime system
 # ---------------------------------------------------------------------------
-
-
-class MidStepContext(msgspec.Struct, frozen=True):
-    """Context passed to mid-step spawn hooks during deterministic stepping."""
-
-    world: WorldState
-    elapsed_before_ms: float
-    dt_sim_ms: float
-    dt_raw_ms: float
-
-
-class PostStepContext(msgspec.Struct, frozen=True):
-    """Context passed to post-step hooks during deterministic stepping."""
-
-    world: WorldState
-    dt_sim_ms: float
-
-
-class SurvivalSpawnState(msgspec.Struct):
-    stage: int = 0
-    spawn_cooldown_ms: float = 0.0
-
-
-class RushSpawnState(msgspec.Struct):
-    spawn_cooldown_ms: float = 0.0
-
-
-class QuestSpawnState(msgspec.Struct):
-    spawn_entries: tuple[SpawnEntry, ...] = ()
-    spawn_timeline_ms: float = 0.0
-    no_creatures_timer_ms: float = 0.0
-    completion_transition_ms: float = -1.0
-    completed: bool = False
-    play_hit_sfx: bool = False
-    play_completion_music: bool = False
-
-
-def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
-    state = ctx.world.state
-    survival_update_weapon_handouts(
-        state,
-        ctx.world.players,
-        survival_elapsed_ms=ctx.elapsed_before_ms,
-    )
-
-    player_level = ctx.world.players[0].level
-    stage, milestone_calls = advance_survival_spawn_stage(spawn.stage, player_level=int(player_level))
-    spawn.stage = stage
-    for call in milestone_calls:
-        ctx.world.creatures.spawn_template(
-            call.template_id,
-            call.pos,
-            float(call.heading),
-            state=state,
-            detail_preset=state.detail_preset,
-        )
-
-    player_xp = ctx.world.players[0].experience
-    cooldown, wave_spawns = tick_survival_wave_spawns(
-        spawn.spawn_cooldown_ms,
-        ctx.dt_sim_ms,
-        state.rng,
-        player_count=len(ctx.world.players),
-        survival_elapsed_ms=ctx.elapsed_before_ms,
-        player_experience=int(player_xp),
-    )
-    spawn.spawn_cooldown_ms = cooldown
-    ctx.world.creatures.spawn_inits(wave_spawns)
-
-
-def rush_mid_step(ctx: MidStepContext, spawn: RushSpawnState) -> None:
-    state = ctx.world.state
-    # Native `rush_mode_update` stomps the weapon id and ammo every frame, after
-    # the player update and without `weapon_assign_player`: the run starts on the
-    # reset pistol (its clip and 0.8 s cooldown), and a manual reload still runs.
-    for player in ctx.world.players:
-        player.weapon.weapon_id = RUSH_WEAPON_ID
-        player.weapon.ammo = RUSH_FORCED_AMMO
-    cooldown, spawns = tick_rush_mode_spawns(
-        spawn.spawn_cooldown_ms,
-        ctx.dt_raw_ms,
-        state.rng,
-        player_count=len(ctx.world.players),
-        survival_elapsed_ms=int(ctx.elapsed_before_ms),
-    )
-    spawn.spawn_cooldown_ms = cooldown
-    ctx.world.creatures.spawn_inits(spawns)
-
-
-def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
-    # Native runs quest_mode_update with the other mode updates before render,
-    # so quest spawns draw RNG ahead of the presentation pass, like the other
-    # modes' mid-steps. The scaled dt keeps the timeline (the quest score), the
-    # stall timer, and the completion transition slowed under Reflex Boost.
-    state = ctx.world.state
-    dt_ms = float(ctx.dt_sim_ms)
-    creatures_none_active = not any(c.active for c in ctx.world.creatures.entries)
-
-    entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_mode_spawns(
-        spawn.spawn_entries,
-        quest_spawn_timeline_ms=spawn.spawn_timeline_ms,
-        frame_dt_ms=dt_ms,
-        creatures_none_active=creatures_none_active,
-        no_creatures_timer_ms=spawn.no_creatures_timer_ms,
-    )
-    spawn.spawn_entries = entries
-    spawn.spawn_timeline_ms = float(timeline_ms)
-    spawn.no_creatures_timer_ms = float(no_creatures_timer_ms)
-    spawn_table_empty_now = quest_spawn_table_empty(spawn.spawn_entries)
-
-    if creatures_none_active and spawn_table_empty_now:
-        state.bonuses.reflex_boost = 0.0
-        state.time_scale_active = False
-
-    for call in spawns:
-        ctx.world.creatures.spawn_template(
-            call.template_id,
-            call.pos,
-            float(call.heading),
-            state=state,
-            detail_preset=state.detail_preset,
-        )
-
-    # Native quest_mode_update has no player-alive gate on the completion
-    # transition: if the timer crosses 2500 ms while the death animation is
-    # still playing, the quest completes despite the player dying.
-    completion_ms, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-        spawn.completion_transition_ms,
-        frame_dt_ms=dt_ms,
-        creatures_none_active=creatures_none_active,
-        spawn_table_empty=spawn_table_empty_now,
-    )
-    spawn.completion_transition_ms = float(completion_ms)
-    spawn.completed = bool(completed)
-    spawn.play_hit_sfx = bool(play_hit_sfx)
-    spawn.play_completion_music = bool(play_completion_music)
-
-
-# Per-mode spawn state. Typ-o and tutorial keep theirs in the gameplay state.
-type ModeState = SurvivalSpawnState | RushSpawnState | QuestSpawnState | None
 
 
 # ---------------------------------------------------------------------------
@@ -243,7 +94,6 @@ class DeterministicSession(msgspec.Struct):
     # Sim config; the game mode, detail preset, violence flag and game-tune latch live in the
     # gameplay state, like the native globals.
     apply_world_dt_steps: bool = True
-    elapsed_uses_raw_dt: bool = False
     # Reject perk commands the live UI cannot issue (they would otherwise no-op
     # or reroll perk choices). Original-capture playback replays native menu
     # activity verbatim and disables this.
@@ -324,25 +174,12 @@ class DeterministicSession(msgspec.Struct):
             case _:
                 return inputs
 
-    def _mode_update(self, ctx: MidStepContext) -> None:
-        """The mode's native update, run inside the world step after player updates."""
-
-        match self.mode_state:
-            case SurvivalSpawnState():
-                survival_mid_step(ctx, self.mode_state)
-            case RushSpawnState():
-                rush_mid_step(ctx, self.mode_state)
-            case QuestSpawnState():
-                quest_mid_step(ctx, self.mode_state)
-            case None if self.world.state.game_mode == GameMode.TYPO:
-                typo_mid_step(ctx)
-
-    def _mode_after_step(self, ctx: PostStepContext) -> None:
+    def _mode_after_step(self, dt_ms: float) -> None:
         match self.world.state.game_mode:
             case GameMode.TYPO:
-                typo_post_step(ctx)
+                typo_post_step(self.world)
             case GameMode.TUTORIAL:
-                tutorial_post_step(ctx)
+                tutorial_post_step(self.world, dt_ms=dt_ms)
 
     def _require_perk_command_allowed(self, name: str) -> None:
         # The perk prompt only offers the menu while a perk is pending and a
@@ -423,18 +260,7 @@ class DeterministicSession(msgspec.Struct):
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
-        dt_raw_ms = float(timing.dt_ms_i32)
         elapsed_before_ms = self.elapsed_ms
-
-        mode_update = None
-        if self.mode_state is not None or self.world.state.game_mode == GameMode.TYPO:
-            ctx = MidStepContext(
-                world=self.world,
-                elapsed_before_ms=elapsed_before_ms,
-                dt_sim_ms=dt_sim_ms,
-                dt_raw_ms=dt_raw_ms,
-            )
-            mode_update = partial(self._mode_update, ctx)
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
@@ -445,11 +271,12 @@ class DeterministicSession(msgspec.Struct):
 
         events = self.world.step(
             timing.dt_sim,
-            mode_update=mode_update,
             inputs=tick_inputs,
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
             perk_progression_enabled=self.perk_progression_enabled,
+            mode_state=self.mode_state,
+            elapsed_ms=elapsed_before_ms,
             open_perk_menu=open_perk_menu,
         )
 
@@ -486,15 +313,8 @@ class DeterministicSession(msgspec.Struct):
         # Native culls corpses while rendering the world, before
         # `tutorial_timeline_update` reads its bonus carrier.
         self.world.creatures.finalize_post_render_lifecycle()
-        self._mode_after_step(
-            PostStepContext(
-                world=self.world,
-                dt_sim_ms=dt_sim_ms,
-            ),
-        )
-
-        dt_elapsed = dt_raw_ms if self.elapsed_uses_raw_dt else dt_sim_ms
-        self.elapsed_ms = elapsed_before_ms + dt_elapsed
+        self._mode_after_step(dt_sim_ms)
+        self.elapsed_ms = elapsed_before_ms + dt_sim_ms
 
         step.elapsed_ms = self.elapsed_ms
         step.creature_count_world_step = creature_count_world_step

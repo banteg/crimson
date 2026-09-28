@@ -8,11 +8,11 @@ from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import DeterministicSession, MidStepContext
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from crimson.typo.names import CreatureNameTable
-from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_mid_step
+from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_mode_update
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
 from grim.geom import Vec2
@@ -156,14 +156,7 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
     world.state.highscore_score_xp = 7
     assign_random = mocker.spy(CreatureNameTable, "assign_random")
 
-    typo_mid_step(
-        MidStepContext(
-            world=world,
-            elapsed_before_ms=0.0,
-            dt_sim_ms=1.0,
-            dt_raw_ms=1.0,
-        ),
-    )
+    typo_mode_update(world, elapsed_ms=0.0, dt_ms=1.0)
 
     callers = [
         record.caller

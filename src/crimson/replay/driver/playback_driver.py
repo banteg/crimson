@@ -17,14 +17,11 @@ from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
 from ...replay.ticks import step_replay_tick
 from ...sim.bootstrap import TerrainSetup
 from ...sim.hooks import TickResult
+from ...sim.mode_updates import QuestSpawnState
 from ...sim.run_init import initialize_run
 from ...sim.run_result import RunOutcome, RunResult, build_run_result
 from ...sim.run_spec import RunSpec
-from ...sim.sessions import (
-    DeterministicSessionTick,
-    IllegalCommandError,
-    QuestSpawnState,
-)
+from ...sim.sessions import DeterministicSessionTick, IllegalCommandError
 from ...sim.world_reset import CreatureSlotResidue
 from ...sim.world_state import WorldState
 from ...weapons import WeaponId

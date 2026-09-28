@@ -10,8 +10,8 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
 from crimson.quests.level import QuestLevel
+from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.run_spec import RunSpec
-from crimson.sim.sessions import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
 from crimson.tutorial.state import TutorialOverlayState
 from crimson.world import WorldRuntime

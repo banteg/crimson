@@ -121,7 +121,6 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
         inputs=None,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
 

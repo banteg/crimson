@@ -8,7 +8,8 @@ from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import DeterministicSession, QuestSpawnState
+from crimson.sim.mode_updates import QuestSpawnState
+from crimson.sim.sessions import DeterministicSession
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.world_runtime import WorldRuntimeHost

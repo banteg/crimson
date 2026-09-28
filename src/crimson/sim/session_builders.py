@@ -8,12 +8,8 @@ from ..tutorial import reset_tutorial_state
 from ..typo.state import reset_typo_state
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
-from .sessions import (
-    DeterministicSession,
-    QuestSpawnState,
-    RushSpawnState,
-    SurvivalSpawnState,
-)
+from .mode_updates import QuestSpawnState, RushSpawnState, SurvivalSpawnState
+from .sessions import DeterministicSession
 
 
 def build_survival_session(
@@ -41,7 +37,6 @@ def build_rush_session(
     session = DeterministicSession(
         world=world,
         perk_progression_enabled=False,
-        elapsed_uses_raw_dt=True,
         mode_state=spawn,
     )
     return session, spawn

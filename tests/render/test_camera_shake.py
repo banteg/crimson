@@ -12,11 +12,8 @@ from crimson.math_parity import f32
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
-from crimson.sim.sessions import (
-    DeterministicSession,
-    RushSpawnState,
-    SurvivalSpawnState,
-)
+from crimson.sim.mode_updates import RushSpawnState, SurvivalSpawnState
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
@@ -223,7 +220,6 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
         world=world,
         perk_progression_enabled=False,
         mode_state=RushSpawnState(),
-        elapsed_uses_raw_dt=True,
     )
 
     _tick = session.step_tick(

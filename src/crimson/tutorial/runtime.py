@@ -35,25 +35,25 @@ def _tutorial_overlay_from_actions(actions: TutorialFrameActions) -> TutorialOve
     )
 
 
-def tutorial_post_step(ctx) -> None:
-    state = ctx.world.state
+def tutorial_post_step(world: WorldState, *, dt_ms: float) -> None:
+    state = world.state
     tutorial = state.tutorial
     # Native latches once the carrier's slot is inactive (its corpse culled) with
     # health spent and the bonus-on-death flag still set.
     hint_ref = tutorial.hint_bonus_creature_ref
     hint_bonus_died = False
     if hint_ref is not None:
-        carrier = ctx.world.creatures.entries[int(hint_ref)]
+        carrier = world.creatures.entries[int(hint_ref)]
         hint_bonus_died = (
             not carrier.active and carrier.hp <= 0.0 and bool(carrier.flags & CreatureFlags.BONUS_ON_DEATH)
         )
 
     tutorial, actions = tick_tutorial_timeline(
         tutorial,
-        frame_dt_ms=float(ctx.dt_sim_ms),
+        frame_dt_ms=float(dt_ms),
         any_move_active=bool(tutorial.move_active_this_tick),
         any_fire_active=bool(tutorial.fire_active_this_tick),
-        creatures_none_active=not bool(ctx.world.creatures.iter_active()),
+        creatures_none_active=not bool(world.creatures.iter_active()),
         bonus_pool_empty=not bool(state.bonus_pool.iter_active()),
         perk_pending_count=int(state.perk_selection.pending_count),
         hint_bonus_died=hint_bonus_died,
@@ -63,7 +63,7 @@ def tutorial_post_step(ctx) -> None:
     state.tutorial = tutorial
     state.tutorial_overlay = _tutorial_overlay_from_actions(actions)
 
-    players = ctx.world.players
+    players = world.players
     players[0].health = float(actions.force_player_health)
     if actions.force_player_experience is not None:
         players[0].experience = int(actions.force_player_experience)
@@ -85,16 +85,16 @@ def tutorial_post_step(ctx) -> None:
             pos=spawned.pos,
             count=12,
             rng=state.rng,
-            detail_preset=ctx.world.state.detail_preset,
+            detail_preset=world.state.detail_preset,
         )
 
     for call in actions.spawn_templates:
-        mapping, primary = ctx.world.creatures.spawn_template(
+        mapping, primary = world.creatures.spawn_template(
             call.template_id,
             call.pos,
             float(call.heading),
             state=state,
-            detail_preset=ctx.world.state.detail_preset,
+            detail_preset=world.state.detail_preset,
         )
         _ = mapping
         if primary is None or actions.stage5_bonus_carrier_drop is None:
@@ -103,8 +103,8 @@ def tutorial_post_step(ctx) -> None:
             continue
         drop_id, drop_amount = actions.stage5_bonus_carrier_drop
         tutorial.hint_bonus_creature_ref = int(primary)
-        if 0 <= int(primary) < len(ctx.world.creatures.entries):
-            creature = ctx.world.creatures.entries[int(primary)]
+        if 0 <= int(primary) < len(world.creatures.entries):
+            creature = world.creatures.entries[int(primary)]
             creature.flags |= CreatureFlags.BONUS_ON_DEATH
             creature.bonus_id = drop_id
             creature.bonus_duration_override = int(drop_amount)

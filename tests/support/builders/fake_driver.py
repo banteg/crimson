@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from types import SimpleNamespace
 
 from crimson.sim.hooks import TickResult
-from crimson.sim.sessions import QuestSpawnState
+from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.terrain_fx import TerrainFxBatch
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest

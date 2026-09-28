@@ -191,11 +191,11 @@ on to the next player, preserving the shared-global round-trip effect.
 
 | Native subsystem | Python counterpart | Current timing choice |
 | --- | --- | --- |
-| Survival spawning | `survival_mid_step` in `src/crimson/sim/sessions.py`; `tick_survival_wave_spawns` and `advance_survival_spawn_stage` in `src/crimson/creatures/spawn.py` | Simulation milliseconds for cooldown; previous elapsed value for difficulty. |
-| Rush spawning and elapsed time | `rush_mid_step` in `src/crimson/sim/sessions.py`; `tick_rush_mode_spawns` in `src/crimson/creatures/spawn.py`; `build_rush_session` in `src/crimson/sim/session_builders.py` | **Raw input milliseconds** for spawning; `elapsed_uses_raw_dt=True` for session time. Native receives simulation milliseconds at both points. |
-| Quest timeline and completion | `quest_mid_step` in `src/crimson/sim/sessions.py`; `src/crimson/quests/timeline.py` | Simulation milliseconds for timeline, stall, and completion; `run_elapsed_ms` exposes the quest timeline rather than general session elapsed time. |
+| Survival spawning | `survival_update` in `src/crimson/sim/mode_updates.py`; `tick_survival_wave_spawns` and `advance_survival_spawn_stage` in `src/crimson/creatures/spawn.py` | Simulation milliseconds for cooldown; previous elapsed value for difficulty. |
+| Rush spawning and elapsed time | `rush_mode_update` in `src/crimson/sim/mode_updates.py`; `tick_rush_mode_spawns` in `src/crimson/creatures/spawn.py` | Simulation milliseconds, as native. Rush has no perks or bonus drops, so they equal the input milliseconds. |
+| Quest timeline and completion | `quest_mode_update` in `src/crimson/sim/mode_updates.py`; `src/crimson/quests/timeline.py` | Simulation milliseconds for timeline, stall, and completion; `run_elapsed_ms` exposes the quest timeline rather than general session elapsed time. |
 | Tutorial stages and fades | `tutorial_post_step` in `src/crimson/tutorial/runtime.py`; `tick_tutorial_timeline` in `src/crimson/tutorial/timeline.py` | Simulation milliseconds passed to the stage machine and overlay state. |
-| Typo spawn cadence | `typo_mid_step` in `src/crimson/typo/runtime.py`; `tick_typo_spawns` in `src/crimson/typo/spawns.py` | Simulation milliseconds and the same remaining-cooldown clamp. |
+| Typo spawn cadence | `typo_mode_update` in `src/crimson/typo/runtime.py`; `tick_typo_spawns` in `src/crimson/typo/spawns.py` | Simulation milliseconds and the same remaining-cooldown clamp. |
 | Audio cooldowns | `src/crimson/sim/sessions.py` builds the presentation plan; `src/crimson/sim/batch_apply.py` applies it | `sfx_dt=timing.dt_audio`; music streaming is serviced separately from simulation ticks. |
 
 The Rush distinction matters when a time transform is active; with no transform,

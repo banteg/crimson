@@ -57,7 +57,6 @@ def test_world_step_applies_per_player_inputs_by_index() -> None:
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
-        mode_update=None,
     )
 
     assert world.players[0].pos.x > before[0][0]

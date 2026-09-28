@@ -14,10 +14,8 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..replay import Replay, ReplayRecorder
-from ..sim.sessions import (
-    DeterministicSession,
-    RushSpawnState,
-)
+from ..sim.mode_updates import RushSpawnState
+from ..sim.sessions import DeterministicSession
 from ..ui.cursor import draw_menu_cursor
 from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from .base_gameplay_mode import (

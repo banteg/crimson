@@ -139,7 +139,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         inputs=None,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
 
@@ -156,7 +155,6 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
         inputs=None,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
 

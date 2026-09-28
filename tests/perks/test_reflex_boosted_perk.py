@@ -46,7 +46,6 @@ def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
         inputs=[PlayerInput(move=Vec2(1.0, 0.0))],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
 
@@ -95,7 +94,6 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
         inputs=[PlayerInput()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
 

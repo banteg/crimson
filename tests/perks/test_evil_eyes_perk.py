@@ -39,7 +39,6 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
         inputs=[PlayerInput(aim=Vec2(float(creature.pos.x), float(creature.pos.y)))],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        mode_update=None,
         perk_progression_enabled=False,
     )
     assert events

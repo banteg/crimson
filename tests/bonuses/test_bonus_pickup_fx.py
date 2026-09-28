@@ -39,7 +39,6 @@ def _step_world_over_bonuses(
     )
     events = world.step(
         0.016,
-        mode_update=None,
         inputs=None,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),

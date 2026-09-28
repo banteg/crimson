@@ -88,7 +88,6 @@ def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled)
         0.016,
         inputs=[PlayerInput(), PlayerInput()], 
                 fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
-        perk_progression_enabled=False,
-        mode_update=None,     )
+        perk_progression_enabled=False,     )
     assert len(world.state.effects.iter_active()) == (0 if violence_disabled else 12)
     assert [player.low_health_timer for player in world.players] == [1.0, 1.0]
