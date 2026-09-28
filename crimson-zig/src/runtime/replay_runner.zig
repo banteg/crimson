@@ -9,6 +9,7 @@ const replay_codec = @import("../replay_codec.zig");
 const quest_results = @import("../quest_results.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
+const creatures_mod = @import("creatures.zig");
 const projectiles_mod = @import("projectiles.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
@@ -341,6 +342,8 @@ fn appendTickTrace(
         row.event_hit_count = r.projectile_tick_stats.hit_count + r.secondary_hit_count;
         row.event_pickup_count = @intCast(r.bonus_pickups.len);
         row.sfx_events = r.sfx_events;
+        row.hit_head = try allocator.dupe(projectiles_mod.ProjectileHit, r.projectile_tick_stats.hitHead());
+        row.deaths = try allocator.dupe(creatures_mod.CreatureDeath, context.creatures.tick_deaths.constSlice());
     }
     try trace.append(allocator, row);
 }

@@ -101,10 +101,11 @@ pub fn parseQuestLevel(value: []const u8) ?ParsedQuestLevel {
     };
 }
 
-pub fn enforceRushLoadout(players: []state_mod.PlayerState) void {
+pub fn enforceRushLoadout(state: *state_mod.GameplayState, players: []state_mod.PlayerState) void {
     for (players) |*player| {
         if (player.weapon.weapon_id != game_ids.WeaponId.assault_rifle) {
             player_runtime.weaponAssignPlayer(player, game_ids.WeaponId.assault_rifle);
+            player_runtime.queueWeaponAssignSfx(state, game_ids.WeaponId.assault_rifle);
         }
         player.weapon.ammo = rush_forced_ammo;
     }

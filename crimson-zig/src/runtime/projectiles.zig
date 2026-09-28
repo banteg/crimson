@@ -41,19 +41,28 @@ pub const Projectile = struct {
     hits_players: bool = false,
 };
 
+/// A creature hit by a primary projectile (Python `ProjectileHit`).
+pub const ProjectileHit = struct {
+    type_id: i32,
+    origin: state_mod.Vec2,
+    hit: state_mod.Vec2,
+    target: state_mod.Vec2,
+};
+
+/// Hits kept per tick; the replay checkpoints summarize the first eight.
+pub const hit_head_max: usize = 8;
+
 pub const ProjectileTickStats = struct {
     hit_count: i32 = 0,
     hit_audio_event_count: usize = 0,
     hit_audio_trigger_game_tune: bool = false,
     hit_audio_events: [4]creatures_mod.HitSfxPlan = [_]creatures_mod.HitSfxPlan{.{}} ** 4,
-    first_hit_creature_index: i32 = -1,
-    first_hit_projectile_index: i32 = -1,
-    first_hit_type_id: i32 = 0,
-    first_hit_origin: state_mod.Vec2 = .{},
-    first_hit_pos: state_mod.Vec2 = .{},
-    first_hit_target_size: f32 = 0.0,
-    first_hit_target_x: f32 = 0.0,
-    first_hit_target_y: f32 = 0.0,
+    hit_head: [hit_head_max]ProjectileHit = undefined,
+    hit_head_len: usize = 0,
+
+    pub fn hitHead(self: *const ProjectileTickStats) []const ProjectileHit {
+        return self.hit_head[0..self.hit_head_len];
+    }
 };
 
 pub const ProjectilePool = struct {
@@ -374,21 +383,14 @@ pub const ProjectilePool = struct {
                     continue;
                 }
                 tick_stats.hit_count += 1;
-                if (tick_stats.first_hit_creature_index < 0) {
-                    tick_stats.first_hit_creature_index = @intCast(hit_idx.?);
-                    tick_stats.first_hit_projectile_index = @intCast(proj_idx);
-                    tick_stats.first_hit_type_id = proj.type_id;
-                    tick_stats.first_hit_origin = .{
-                        .x = narrowF32(proj.origin.x),
-                        .y = narrowF32(proj.origin.y),
+                if (tick_stats.hit_head_len < hit_head_max) {
+                    tick_stats.hit_head[tick_stats.hit_head_len] = .{
+                        .type_id = proj.type_id,
+                        .origin = proj.origin,
+                        .hit = proj.pos,
+                        .target = creatures.entries[hit_idx.?].pos,
                     };
-                    tick_stats.first_hit_pos = .{
-                        .x = narrowF32(proj.pos.x),
-                        .y = narrowF32(proj.pos.y),
-                    };
-                    tick_stats.first_hit_target_size = narrowF32(creatures.entries[hit_idx.?].size);
-                    tick_stats.first_hit_target_x = narrowF32(creatures.entries[hit_idx.?].pos.x);
-                    tick_stats.first_hit_target_y = narrowF32(creatures.entries[hit_idx.?].pos.y);
+                    tick_stats.hit_head_len += 1;
                 }
 
                 const owner_player_idx = proj.owner.playerIndexInBounds(players.len);

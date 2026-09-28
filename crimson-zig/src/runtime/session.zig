@@ -195,7 +195,7 @@ pub const DeterministicSession = struct {
         session.creatures.effects = &session.effects;
 
         if (config.game_mode == .rush) {
-            runtime_bootstrap.enforceRushLoadout(session.players());
+            runtime_bootstrap.enforceRushLoadout(&session.state, session.players());
         }
 
         // The seed is the rng entering `gameplay_reset_state()`, which every mode's run start calls.

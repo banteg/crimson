@@ -178,8 +178,8 @@ pub const ParticlePool = struct {
                             const sound_slot = state.rng.randTagged(
                                 rng_callers.projectile_update_particle_bubblegun_expiry_sfx,
                             ) % 3;
-                            if (bubblegunExpirySfx(creatures.entries[target_idx].type_id, sound_slot)) |sfx_id| {
-                                state.sfx_queue.append(sfx_id);
+                            if (creatures_mod.deathSfxBank(creatures.entries[target_idx].type_id)) |bank| {
+                                state.step_sfx.append(bank[sound_slot]);
                             }
                         }
                         // Death history and forced bonuses precede the native active check.
@@ -354,18 +354,6 @@ fn nativeClampUnit(value: f32) f32 {
     if (!(value >= 0.0)) return 0.0;
     if (value > 1.0) return 1.0;
     return value;
-}
-
-fn bubblegunExpirySfx(type_id: i32, sound_slot: u32) ?state_mod.SfxId {
-    const creature_type = std.enums.fromInt(spawn_mod.CreatureTypeId, type_id) orelse return null;
-    const bank: [3]state_mod.SfxId = switch (creature_type) {
-        .zombie => .{ .zombie_die_01, .zombie_die_02, .zombie_die_03 },
-        .lizard => .{ .lizard_die_01, .lizard_die_02, .lizard_die_03 },
-        .alien => .{ .alien_die_01, .alien_die_02, .alien_die_03 },
-        .spider_sp1, .spider_sp2 => .{ .spider_die_01, .spider_die_02, .spider_die_03 },
-        .trooper => .{ .trooper_die_01, .trooper_die_02, .trooper_die_03 },
-    };
-    return bank[@intCast(sound_slot % 3)];
 }
 
 fn creatureFindInRadius(
@@ -775,7 +763,7 @@ test "inactive bubble expiry matches native death history and reward gates" {
         }
         for (witness.input.particles) |item| try std.testing.expect(!pool.entries[item.index].active);
         try std.testing.expectEqual(witness.rng_state, state.rng.state);
-        try std.testing.expectEqual(@as(usize, 0), state.sfx_queue.len);
+        try std.testing.expectEqual(@as(usize, 0), state.step_sfx.len);
         try std.testing.expect(!creatures.entries[target.index].active);
         try std.testing.expectEqual(previous_owner, creatures.entries[target.index].last_hit_owner);
     }

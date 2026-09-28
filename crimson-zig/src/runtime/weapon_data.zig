@@ -3,6 +3,7 @@ const game_ids = @import("../game_ids.zig");
 
 pub const WeaponId = game_ids.WeaponId;
 const ProjectileTypeId = game_ids.ProjectileTypeId;
+const SfxId = @import("state.zig").SfxId;
 
 pub const weapon_count_size: usize = @typeInfo(WeaponId).@"enum".fields.len;
 
@@ -207,6 +208,66 @@ pub fn projectileTypeIdsFromWeaponId(weapon_id: WeaponId) ProjectileTypeIds {
     return .{
         .count = 1,
         .values = .{ type_id, .pistol },
+    };
+}
+
+pub fn reloadSfx(weapon_id: WeaponId) ?SfxId {
+    return switch (weapon_id) {
+        .none => null,
+        .pistol => .pistol_reload,
+        .assault_rifle => .autorifle_reload,
+        .shotgun => .shotgun_reload,
+        .sawed_off_shotgun => .shotgun_reload,
+        .submachine_gun => .autorifle_reload,
+        .gauss_gun => .shotgun_reload,
+        .mean_minigun => .autorifle_reload,
+        .flamethrower => .autorifle_reload,
+        .plasma_rifle => .autorifle_reload,
+        .multi_plasma => .autorifle_reload,
+        .plasma_minigun => .autorifle_reload,
+        .rocket_launcher => .autorifle_reload_alt,
+        .seeker_rockets => .autorifle_reload_alt,
+        .plasma_shotgun => .shotgun_reload,
+        .blow_torch => .autorifle_reload,
+        .hr_flamer => .autorifle_reload,
+        .mini_rocket_swarmers => .autorifle_reload_alt,
+        .rocket_minigun => .autorifle_reload_alt,
+        .pulse_gun => .autorifle_reload,
+        .jackhammer => .shotgun_reload,
+        .ion_rifle => .shock_reload,
+        .ion_minigun => .shock_reload,
+        .ion_cannon => .shock_reload,
+        .shrinkifier_5k => .shock_reload,
+        .blade_gun => .shock_reload,
+        .spider_plasma => .shotgun_reload,
+        .evil_scythe => .shock_reload,
+        .plasma_cannon => .shock_reload,
+        .splitter_gun => .shock_reload,
+        .gauss_shotgun => .shotgun_reload,
+        .ion_shotgun => .shock_reload,
+        .flameburst => .shock_reload,
+        .raygun => .shock_reload,
+        .unused_34,
+        .unused_35,
+        .unused_36,
+        .unused_37,
+        .unused_38,
+        .unused_39,
+        .unused_40,
+        .unused_46,
+        .unused_47,
+        .unused_48,
+        .unused_49,
+        => null,
+        .plague_spreader_gun => .shotgun_reload,
+        .bubblegun => .shotgun_reload,
+        .rainbow_gun => .shotgun_reload,
+        .grim_weapon => .shotgun_reload,
+        .fire_bullets => .pistol_reload,
+        .transmutator => .shotgun_reload,
+        .blaster_r_300 => .shotgun_reload,
+        .lightning_rifle => .shotgun_reload,
+        .nuke_launcher => .shotgun_reload,
     };
 }
 

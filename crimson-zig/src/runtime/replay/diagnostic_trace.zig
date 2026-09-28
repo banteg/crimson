@@ -143,6 +143,8 @@ pub const ReplayTickTrace = struct {
     event_hit_count: i32 = 0,
     event_pickup_count: i32 = 0,
     sfx_events: state_mod.RuntimeSfxBuffer = .{},
+    hit_head: []const projectiles_mod.ProjectileHit = &.{},
+    deaths: []const creatures_mod.CreatureDeath = &.{},
 };
 
 pub fn buildReplayTickTrace(
@@ -277,16 +279,28 @@ pub fn deinitReplayTickTrace(allocator: std.mem.Allocator, trace: *ReplayTickTra
     if (trace.entities.projectiles.len > 0) allocator.free(trace.entities.projectiles);
     if (trace.entities.secondary_projectiles.len > 0) allocator.free(trace.entities.secondary_projectiles);
     if (trace.entities.bonuses.len > 0) allocator.free(trace.entities.bonuses);
+    if (trace.hit_head.len > 0) allocator.free(trace.hit_head);
+    if (trace.deaths.len > 0) allocator.free(trace.deaths);
     trace.players = &.{};
     trace.rng_rows = &.{};
     trace.timing_samples = &.{};
     trace.entities = .{};
+    trace.hit_head = &.{};
+    trace.deaths = &.{};
 }
 
 pub fn deinitReplayTickTraceSlice(allocator: std.mem.Allocator, trace: []ReplayTickTrace) void {
     for (trace) |*row| {
         deinitReplayTickTrace(allocator, row);
     }
+}
+
+/// A bonus timer in whole milliseconds, rounded to nearest (Python `nearest_ms_i32`).
+pub fn bonusTimerMs(value: f32) i32 {
+    const scaled_ms = @as(f64, @floatCast(value)) * 1000.0;
+    const rounded = @as(i64, @intFromFloat(@floor(scaled_ms + 0.5)));
+    if (rounded < 0) return 0;
+    return std.math.cast(i32, rounded) orelse std.math.maxInt(i32);
 }
 
 /// The checkpoint tutorial snapshot for `trace`, or null outside the tutorial.
@@ -502,4 +516,10 @@ test "entity samples retain allocation generations across unobserved reuse" {
         creatures.entries[creature].active = false;
         bonuses.entries[0].bonus_id = .unused;
     }
+}
+
+test "bonus timer encoding matches Frida nearest milliseconds" {
+    try std.testing.expectEqual(@as(i32, 8812), bonusTimerMs(8.811999320983887));
+    try std.testing.expectEqual(@as(i32, 1), bonusTimerMs(0.0005));
+    try std.testing.expectEqual(@as(i32, 0), bonusTimerMs(-1.0));
 }

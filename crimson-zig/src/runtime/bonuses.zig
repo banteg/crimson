@@ -729,7 +729,6 @@ fn applyBonus(
     // is the pickup owner. Corrected mode keeps intuitive per-player ownership.
     const perk_player = if (state.preserve_bugs and players.len > 0) players[0] else player.*;
     const economist_multiplier: f32 = if (perkActive(perk_player, PerkId.bonus_economist)) 1.5 else 1.0;
-    state.sfx_queue.append(.ui_bonus);
 
     switch (bonus_id) {
         .points => {

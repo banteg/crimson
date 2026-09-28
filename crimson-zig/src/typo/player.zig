@@ -4,13 +4,20 @@ const state_mod = @import("../runtime/state.zig");
 
 pub const typo_weapon_id = game_ids.WeaponId.shotgun;
 
-pub fn enforceTypoPlayerFrame(
+pub fn assignTypoWeapon(
     player: *state_mod.PlayerState,
     state: *state_mod.GameplayState,
 ) void {
     if (player.weapon.weapon_id != typo_weapon_id) {
         player_runtime.weaponAssignPlayerWithState(player, typo_weapon_id, state);
     }
+}
+
+pub fn enforceTypoPlayerFrame(
+    player: *state_mod.PlayerState,
+    state: *state_mod.GameplayState,
+) void {
+    assignTypoWeapon(player, state);
 
     player.weapon.shot_cooldown = 0.0;
     player.spread_heat = 0.0;

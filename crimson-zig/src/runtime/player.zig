@@ -75,6 +75,12 @@ pub fn weaponAssignPlayerWithState(
 ) void {
     incrementWeaponUsage(state, weapon_id);
     weaponAssignPlayer(player, weapon_id);
+    queueWeaponAssignSfx(state, weapon_id);
+}
+
+/// Queue the reload sound `weapon_assign_player` plays for the new weapon.
+pub fn queueWeaponAssignSfx(state: *GameplayState, weapon_id: WeaponId) void {
+    if (weapon_data.reloadSfx(weapon_id)) |sfx_id| state.sfx_queue.append(sfx_id);
 }
 
 pub fn playerSwapAltWeapon(player: *PlayerState) bool {

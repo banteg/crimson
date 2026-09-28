@@ -230,15 +230,24 @@ pub const runtime_sfx_queue_max: usize = 32;
 pub const RuntimeSfxBuffer = struct {
     items: [runtime_sfx_queue_max]SfxId = [_]SfxId{.ui_bonus} ** runtime_sfx_queue_max,
     len: usize = 0,
+    /// Every request, including those dropped once `items` is full.
+    count: usize = 0,
 
     pub fn append(self: *RuntimeSfxBuffer, sfx_id: SfxId) void {
+        self.count += 1;
         if (self.len >= self.items.len) return;
         self.items[self.len] = sfx_id;
         self.len += 1;
     }
 
+    pub fn appendBuffer(self: *RuntimeSfxBuffer, other: *const RuntimeSfxBuffer) void {
+        for (other.constSlice()) |sfx_id| self.append(sfx_id);
+        self.count += other.count - other.len;
+    }
+
     pub fn clear(self: *RuntimeSfxBuffer) void {
         self.len = 0;
+        self.count = 0;
     }
 
     pub fn constSlice(self: *const RuntimeSfxBuffer) []const SfxId {
@@ -264,6 +273,12 @@ pub const GameplayState = struct {
     gore_disabled: i32 = 0,
     bonuses: BonusTimers = .{},
     sfx_queue: RuntimeSfxBuffer = .{},
+    /// SFX the world step emits directly (Python `WorldStepRuntime.sfx`); a
+    /// tick's event SFX are these followed by `sfx_queue`.
+    step_sfx: RuntimeSfxBuffer = .{},
+    /// Hit SFX the world step emits outside the primary projectile hit plans
+    /// (Python `WorldStepRuntime.hit_sfx`).
+    hit_sfx: RuntimeSfxBuffer = .{},
     plaguebearer_infection_count: i32 = 0,
     time_scale_active: bool = false,
     perk_selection: PerkSelectionState = .{},

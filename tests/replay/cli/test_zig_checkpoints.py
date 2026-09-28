@@ -22,6 +22,7 @@ from crimson.replay.checkpoints import (
     load_checkpoints_file,
 )
 from crimson.sim.run_spec import RunSpec
+from tests.support.replay_runner_helpers import RECORDED_REPLAYS
 
 from ._helpers import (
     build_replay,
@@ -49,6 +50,16 @@ def test_zig_replay_diff_checkpoints_accepts_python_sidecars(tmp_path: Path) -> 
 
     assert result.returncode == 0, dbg_record._command_detail(result)
     assert "ok: 1 checkpoints match" in result.stdout
+
+
+@pytest.mark.slow
+@pytest.mark.replay_fixture
+@pytest.mark.parametrize("replay_path", RECORDED_REPLAYS, ids=lambda path: path.name)
+def test_zig_replay_verify_checkpoints_accepts_recorded_fixtures(replay_path: Path) -> None:
+    result = _run_zig_replay_verify_checkpoints([str(replay_path)])
+
+    assert result.returncode == 0, dbg_record._command_detail(result)
+    assert result.stdout.startswith("ok: ")
 
 
 def test_zig_replay_verify_checkpoints_accepts_python_sidecar(tmp_path: Path) -> None:

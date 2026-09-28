@@ -484,6 +484,7 @@ pub fn stepPlayerForTickWithEffects(
 
         if (cooldown_ms < 1 and reload_key_active) {
             if (player_runtime.playerSwapAltWeapon(player)) {
+                if (weapon_data.reloadSfx(player.weapon.weapon_id)) |sfx_id| state.sfx_queue.append(sfx_id);
                 player.weapon.shot_cooldown = narrowF32(player.weapon.shot_cooldown + 0.1);
                 state.player_alt_weapon_swap_cooldown_ms = 200;
             } else {

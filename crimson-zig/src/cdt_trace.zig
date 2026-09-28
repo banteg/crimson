@@ -2194,11 +2194,11 @@ fn buildSimState(
             .perk_pending_count = row.gameplay_state.perk_selection.pending_count,
             .perk_choices_dirty = row.gameplay_state.perk_selection.choices_dirty,
             .bonus_timers = .{
-                .weapon_power_up_ms = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
-                .reflex_boost_ms = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
-                .energizer_ms = bonusTimerMs(row.gameplay_state.bonuses.energizer),
-                .double_experience_ms = bonusTimerMs(row.gameplay_state.bonuses.double_experience),
-                .freeze_ms = bonusTimerMs(row.gameplay_state.bonuses.freeze),
+                .weapon_power_up_ms = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
+                .reflex_boost_ms = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
+                .energizer_ms = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.energizer),
+                .double_experience_ms = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.double_experience),
+                .freeze_ms = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.freeze),
             },
         },
         .players = players,
@@ -2257,11 +2257,11 @@ fn buildCheckpoint(
         .perk_pending = row.summary.perk_pending,
         .players = players,
         .bonus_timers = .{
-            .@"4" = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
-            .@"9" = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
-            .@"2" = bonusTimerMs(row.gameplay_state.bonuses.energizer),
-            .@"6" = bonusTimerMs(row.gameplay_state.bonuses.double_experience),
-            .@"11" = bonusTimerMs(row.gameplay_state.bonuses.freeze),
+            .@"4" = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up),
+            .@"9" = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.reflex_boost),
+            .@"2" = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.energizer),
+            .@"6" = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.double_experience),
+            .@"11" = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.freeze),
         },
         .perk = .{
             .pending_count = row.gameplay_state.perk_selection.pending_count,
@@ -2821,19 +2821,6 @@ fn castI64Clamp(value: i128) i64 {
     if (value > std.math.maxInt(i64)) return std.math.maxInt(i64);
     if (value < std.math.minInt(i64)) return std.math.minInt(i64);
     return @intCast(value);
-}
-
-fn bonusTimerMs(value: f32) i32 {
-    const scaled_ms = @as(f64, @floatCast(value)) * 1000.0;
-    const rounded = @as(i64, @intFromFloat(@floor(scaled_ms + 0.5)));
-    if (rounded < 0) return 0;
-    return std.math.cast(i32, rounded) orelse std.math.maxInt(i32);
-}
-
-test "bonus timer encoding matches Frida nearest milliseconds" {
-    try std.testing.expectEqual(@as(i32, 8812), bonusTimerMs(8.811999320983887));
-    try std.testing.expectEqual(@as(i32, 1), bonusTimerMs(0.0005));
-    try std.testing.expectEqual(@as(i32, 0), bonusTimerMs(-1.0));
 }
 
 fn writeI32Le(out: *std.Io.Writer, value: i32) !void {

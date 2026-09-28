@@ -768,8 +768,8 @@ test "bubblegun expiry reenters active corpse death with native sound draw" {
     try std.testing.expect(!particles.entries[0].active);
     try std.testing.expectEqual(@as(i32, 0), particles.entries[0].target_id);
     try std.testing.expect(!creatures.entries[0].active);
-    try std.testing.expectEqual(@as(usize, 1), state.sfx_queue.len);
-    try std.testing.expectEqual(expected_sfx, state.sfx_queue.items[0]);
+    try std.testing.expectEqual(@as(usize, 1), state.step_sfx.len);
+    try std.testing.expectEqual(expected_sfx, state.step_sfx.items[0]);
     try std.testing.expectEqual(
         cz.rng_caller_static.projectile_update_particle_bubblegun_expiry_sfx,
         trace.first.?.caller.?,

@@ -966,11 +966,11 @@ fn buildCheckpointFromTrace(
     }
 
     const bonus_entries = try allocator.dupe(BonusTimerEntryWire, &.{
-        .{ .key = "4", .value = bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up) },
-        .{ .key = "9", .value = bonusTimerMs(row.gameplay_state.bonuses.reflex_boost) },
-        .{ .key = "2", .value = bonusTimerMs(row.gameplay_state.bonuses.energizer) },
-        .{ .key = "6", .value = bonusTimerMs(row.gameplay_state.bonuses.double_experience) },
-        .{ .key = "11", .value = bonusTimerMs(row.gameplay_state.bonuses.freeze) },
+        .{ .key = "4", .value = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.weapon_power_up) },
+        .{ .key = "9", .value = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.reflex_boost) },
+        .{ .key = "2", .value = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.energizer) },
+        .{ .key = "6", .value = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.double_experience) },
+        .{ .key = "11", .value = replay_trace.bonusTimerMs(row.gameplay_state.bonuses.freeze) },
     });
     errdefer allocator.free(bonus_entries);
 
@@ -989,6 +989,8 @@ fn buildCheckpointFromTrace(
         built_player_counts += 1;
     }
 
+    const deaths = try buildDeaths(allocator, row);
+    errdefer allocator.free(deaths);
     const events = try buildEventSummary(allocator, row);
     errdefer deinitOwnedEventSummary(allocator, events);
     const typo = try replay_trace.typoSnapshot(ReplayTypoSnapshotWire, allocator, row);
@@ -1004,7 +1006,7 @@ fn buildCheckpointFromTrace(
         .perk_pending = row.summary.perk_pending,
         .players = players,
         .bonus_timers = .{ .entries = bonus_entries },
-        .deaths = &.{},
+        .deaths = deaths,
         .perk = .{
             .pending_count = row.gameplay_state.perk_selection.pending_count,
             .choices_dirty = row.gameplay_state.perk_selection.choices_dirty,
@@ -1020,6 +1022,7 @@ fn buildCheckpointFromTrace(
 fn deinitOwnedCheckpoint(allocator: std.mem.Allocator, checkpoint: *ReplayCheckpointWire) void {
     allocator.free(checkpoint.players);
     allocator.free(checkpoint.bonus_timers.entries);
+    allocator.free(checkpoint.deaths);
     allocator.free(checkpoint.perk.choices);
     for (checkpoint.perk.player_nonzero_counts) |player_counts| {
         deinitPlayerNonzeroCounts(allocator, player_counts);
@@ -1085,49 +1088,55 @@ fn buildEventSummary(
     row: *const replay_runner.ReplayTickTrace,
 ) !ReplayEventSummaryWire {
     const sfx_events = row.sfx_events.constSlice();
-    const initial_reload_sfx = initialReloadSfxKey(row);
-    const sfx_count = sfx_events.len + if (initial_reload_sfx != null) @as(usize, 1) else 0;
-    const head_len = @min(sfx_count, 4);
-    const sfx_head = try allocator.alloc([]const u8, head_len);
+    const sfx_head = try allocator.alloc([]const u8, @min(sfx_events.len, 4));
     errdefer allocator.free(sfx_head);
     var built: usize = 0;
     errdefer {
         for (sfx_head[0..built]) |entry| allocator.free(entry);
     }
-
-    if (initial_reload_sfx) |key| {
-        if (built < head_len) {
-            sfx_head[built] = try allocator.dupe(u8, key);
-            built += 1;
-        }
-    }
-    for (sfx_events[0..@min(sfx_events.len, head_len - built)]) |sfx_id| {
-        sfx_head[built] = try std.fmt.allocPrint(allocator, "sfx_{s}", .{@tagName(sfx_id)});
+    for (sfx_head, sfx_events[0..sfx_head.len]) |*entry, sfx_id| {
+        entry.* = try std.fmt.allocPrint(allocator, "sfx_{s}", .{@tagName(sfx_id)});
         built += 1;
     }
 
+    const hit_head = try allocator.alloc(ReplayHitSummaryEntryWire, row.hit_head.len);
+    for (hit_head, row.hit_head) |*entry, hit| {
+        entry.* = .{
+            .type_id = hit.type_id,
+            .origin = vec2Wire(hit.origin),
+            .hit = vec2Wire(hit.hit),
+            .target = vec2Wire(hit.target),
+        };
+    }
+
     return .{
-        .hit_count = 0,
-        .pickup_count = 0,
-        .sfx_count = @intCast(sfx_count),
+        .hit_count = row.event_hit_count,
+        .pickup_count = row.event_pickup_count,
+        .sfx_count = @intCast(row.sfx_events.count),
         .sfx_head = sfx_head,
-        .hit_head = try allocator.alloc(ReplayHitSummaryEntryWire, 0),
+        .hit_head = hit_head,
     };
 }
 
-fn initialReloadSfxKey(row: *const replay_runner.ReplayTickTrace) ?[]const u8 {
-    if (row.tick_index != 0) return null;
-    return switch (row.gameplay_state.game_mode) {
-        .quests, .tutorial => "sfx_pistol_reload",
-        .rush => "sfx_autorifle_reload",
-        .typo => "sfx_shotgun_reload",
-        else => null,
-    };
+fn buildDeaths(
+    allocator: std.mem.Allocator,
+    row: *const replay_runner.ReplayTickTrace,
+) ![]const ReplayDeathLedgerEntryWire {
+    const deaths = try allocator.alloc(ReplayDeathLedgerEntryWire, row.deaths.len);
+    for (deaths, row.deaths) |*entry, death| {
+        entry.* = .{
+            .creature_index = @intCast(death.index),
+            .type_id = death.type_id,
+            .reward_value = death.reward_value,
+            .xp_awarded = death.xp_awarded,
+            .owner_id = death.owner.toLegacy(),
+        };
+    }
+    return deaths;
 }
 
-fn bonusTimerMs(value: f32) i32 {
-    if (!(value > 0.0)) return 0;
-    return @intFromFloat(@floor(value * 1000.0));
+fn vec2Wire(value: state_mod.Vec2) Vec2Wire {
+    return .{ .x = value.x, .y = value.y };
 }
 
 fn compareCheckpoints(

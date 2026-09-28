@@ -137,7 +137,7 @@ pub const Bridge = struct {
 
         for (frame_audio.reload_weapon_ids[0..frame_audio.reload_event_count]) |weapon_raw| {
             const weapon_id = weaponIdFromInt(weapon_raw) orelse continue;
-            const sfx_id = weaponReloadSfx(weapon_id) orelse continue;
+            const sfx_id = weapon_data.reloadSfx(weapon_id) orelse continue;
             audio_mod.playSfx(state, sfx_id, reflex_boost_timer);
         }
 
@@ -275,65 +275,5 @@ fn weaponFireSfx(weapon_id: game_ids.WeaponId) ?sfx_map.SfxId {
         .blaster_r_300 => .shock_fire,
         .lightning_rifle => .explosion_large,
         .nuke_launcher => .explosion_large,
-    };
-}
-
-fn weaponReloadSfx(weapon_id: game_ids.WeaponId) ?sfx_map.SfxId {
-    return switch (weapon_id) {
-        .none => null,
-        .pistol => .pistol_reload,
-        .assault_rifle => .autorifle_reload,
-        .shotgun => .shotgun_reload,
-        .sawed_off_shotgun => .shotgun_reload,
-        .submachine_gun => .autorifle_reload,
-        .gauss_gun => .shotgun_reload,
-        .mean_minigun => .autorifle_reload,
-        .flamethrower => .autorifle_reload,
-        .plasma_rifle => .autorifle_reload,
-        .multi_plasma => .autorifle_reload,
-        .plasma_minigun => .autorifle_reload,
-        .rocket_launcher => .autorifle_reload_alt,
-        .seeker_rockets => .autorifle_reload_alt,
-        .plasma_shotgun => .shotgun_reload,
-        .blow_torch => .autorifle_reload,
-        .hr_flamer => .autorifle_reload,
-        .mini_rocket_swarmers => .autorifle_reload_alt,
-        .rocket_minigun => .autorifle_reload_alt,
-        .pulse_gun => .autorifle_reload,
-        .jackhammer => .shotgun_reload,
-        .ion_rifle => .shock_reload,
-        .ion_minigun => .shock_reload,
-        .ion_cannon => .shock_reload,
-        .shrinkifier_5k => .shock_reload,
-        .blade_gun => .shock_reload,
-        .spider_plasma => .shotgun_reload,
-        .evil_scythe => .shotgun_reload,
-        .plasma_cannon => .shock_reload,
-        .splitter_gun => .shock_reload,
-        .gauss_shotgun => .shotgun_reload,
-        .ion_shotgun => .shock_reload,
-        .flameburst => .shock_reload,
-        .raygun => .shock_reload,
-        .unused_34,
-        .unused_35,
-        .unused_36,
-        .unused_37,
-        .unused_38,
-        .unused_39,
-        .unused_40,
-        .unused_46,
-        .unused_47,
-        .unused_48,
-        .unused_49,
-        => null,
-        .plague_spreader_gun => .shotgun_reload,
-        .bubblegun => .shotgun_reload,
-        .rainbow_gun => .shotgun_reload,
-        .grim_weapon => .shotgun_reload,
-        .fire_bullets => .pistol_reload,
-        .transmutator => .shotgun_reload,
-        .blaster_r_300 => .shotgun_reload,
-        .lightning_rifle => .shotgun_reload,
-        .nuke_launcher => .shotgun_reload,
     };
 }

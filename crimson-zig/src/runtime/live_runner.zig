@@ -355,6 +355,8 @@ pub const LiveRunner = struct {
                 frame_audio.perk_menu_opened = true;
             }
             frame_audio.appendHitPlans(step_result.projectile_tick_stats);
+            frame_audio.appendRuntimeSfx(step_result.hit_sfx.constSlice());
+            for (step_result.bonus_pickups.constSlice()) |_| frame_audio.appendSfx(.ui_bonus);
             frame_audio.appendRuntimeSfx(step_result.sfx_events.constSlice());
             frame_audio.quest_play_hit_sfx = frame_audio.quest_play_hit_sfx or
                 (!before_quest_hit_sfx and self.session.quest_play_hit_sfx);

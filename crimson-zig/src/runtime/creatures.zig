@@ -142,6 +142,35 @@ pub fn resolveNativeTargetPlayer(
     return target_index;
 }
 
+/// One `creature_handle_death` run, as the Python `CreatureDeath` event.
+pub const CreatureDeath = struct {
+    index: usize,
+    type_id: i32,
+    reward_value: f32,
+    xp_awarded: i32,
+    owner: owner_ref.OwnerRef,
+};
+
+/// A tick's deaths. Re-entrant death handling can record a creature twice.
+pub const CreatureDeathBuffer = struct {
+    items: [2 * max_creatures]CreatureDeath = undefined,
+    len: usize = 0,
+
+    pub fn append(self: *CreatureDeathBuffer, death: CreatureDeath) void {
+        if (self.len >= self.items.len) return;
+        self.items[self.len] = death;
+        self.len += 1;
+    }
+
+    pub fn clear(self: *CreatureDeathBuffer) void {
+        self.len = 0;
+    }
+
+    pub fn constSlice(self: *const CreatureDeathBuffer) []const CreatureDeath {
+        return self.items[0..self.len];
+    }
+};
+
 pub const ShotResolutionResult = struct {
     hits: i32 = 0,
     deaths: i32 = 0,
@@ -183,6 +212,7 @@ pub const CreaturePool = struct {
     /// Counts every slot allocation, so lookups built over the pool can tell
     /// when a creature appeared since they last looked.
     alloc_count: u32 = 0,
+    tick_deaths: CreatureDeathBuffer = .{},
 
     pub fn reset(self: *CreaturePool) void {
         self.entries = [_]CreatureState{CreatureState{}} ** max_creatures;
@@ -194,6 +224,17 @@ pub const CreaturePool = struct {
         self.single_player_dormant_target = .{ .index = 1, .pos = .{} };
         self.spawn_slots = [_]spawn_mod.SpawnSlotInit{empty_spawn_slot} ** max_spawn_slots;
         self.spawn_slot_count = 0;
+        self.tick_deaths.clear();
+    }
+
+    fn recordDeath(self: *CreaturePool, index: usize, type_id: i32, reward_value: f32, xp_awarded: i32, owner: owner_ref.OwnerRef) void {
+        self.tick_deaths.append(.{
+            .index = index,
+            .type_id = type_id,
+            .reward_value = reward_value,
+            .xp_awarded = xp_awarded,
+            .owner = owner,
+        });
     }
 
     /// `gameplay_reset_state` assigns each static creature slot to a player
@@ -2264,8 +2305,8 @@ pub const CreaturePool = struct {
                             dt_f32,
                             world_size,
                         );
-                        // Plague timer kills consume one contact-SFX bank select draw.
-                        consumeContactSfxRng(state, creature.type_id);
+                        // Plague timer kills play one contact SFX.
+                        emitContactSfx(state, creature.type_id);
                     }
                     _ = terrain_fx.decals.addRandom(state, creature.pos);
                 }
@@ -2452,6 +2493,7 @@ pub const CreaturePool = struct {
                             @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
+                        state.step_sfx.append(.shock_fire);
                         creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, @as(f32, 1.0));
                     }
 
@@ -2466,6 +2508,7 @@ pub const CreaturePool = struct {
                             projectile_type,
                             owner_ref.OwnerRef.fromCreature(idx),
                         );
+                        state.step_sfx.append(.plasmaminigun_fire);
                         const randomized_cooldown = native_math.pc24Mul(
                             @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.creature_update_all_plasmaminigun_cooldown) & 3)),
                             @as(f32, 0.1),
@@ -2497,6 +2540,7 @@ pub const CreaturePool = struct {
                         null,
                         .{ .r = 1.0, .g = 1.0, .b = 1.0, .a = 1.0 },
                     );
+                    state.step_sfx.append(.ui_bonus);
                     state.bonus_spawn_guard = true;
                     emitDeathPrelude(
                         state,
@@ -2517,7 +2561,8 @@ pub const CreaturePool = struct {
                         @floatCast(world_size),
                     );
                     state.bonus_spawn_guard = false;
-                    _ = awardExperienceFromReward(state, player, creature.reward_value);
+                    const xp_gained = awardExperienceFromReward(state, player, creature.reward_value);
+                    self.recordDeath(idx, creature.type_id, creature.reward_value, xp_gained, creature.last_hit_owner);
                     creature.active = false;
                 }
             }
@@ -2528,7 +2573,7 @@ pub const CreaturePool = struct {
                 contact_player.health > 0.0 and
                 state.bonuses.energizer <= 0.0)
             {
-                consumeContactSfxRng(state, creature.type_id);
+                emitContactSfx(state, creature.type_id);
                 // Perks are one shared table (native perk_count_get reads slot
                 // zero); contact damage, shielding and ownership use the target.
                 const contact_perk_player = &players[0];
@@ -2873,6 +2918,7 @@ pub const CreaturePool = struct {
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
+        const death_type_id = creature.type_id;
         const death_reward_value = creature.reward_value;
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
@@ -2890,6 +2936,7 @@ pub const CreaturePool = struct {
         }
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
+        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -2901,6 +2948,7 @@ pub const CreaturePool = struct {
             state,
             self.effects orelse unreachable,
             creature.flags,
+            death_type_id,
             creature.pos,
         );
         return xp_gained;
@@ -2931,11 +2979,15 @@ pub const CreaturePool = struct {
             &creature.pos,
             world_size,
         );
-        if (!creature.active) return 0;
+        if (!creature.active) {
+            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
+            return 0;
+        }
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
+        const death_type_id = creature.type_id;
         const death_reward_value = creature.reward_value;
 
         creature.last_hit_owner = owner;
@@ -2955,6 +3007,7 @@ pub const CreaturePool = struct {
         }
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
+        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -2991,11 +3044,15 @@ pub const CreaturePool = struct {
             &creature.pos,
             world_size,
         );
-        if (!creature.active) return 0;
+        if (!creature.active) {
+            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
+            return 0;
+        }
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
+        const death_type_id = creature.type_id;
         const death_reward_value = creature.reward_value;
 
         creature.last_hit_owner = owner;
@@ -3016,6 +3073,7 @@ pub const CreaturePool = struct {
         }
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
+        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -3049,11 +3107,15 @@ pub const CreaturePool = struct {
             &creature.pos,
             world_size,
         );
-        if (!creature.active) return 0;
+        if (!creature.active) {
+            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
+            return 0;
+        }
         const split_can_reuse_slot =
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
+        const death_type_id = creature.type_id;
         const death_reward_value = creature.reward_value;
 
         creature.last_hit_owner = owner;
@@ -3071,6 +3133,7 @@ pub const CreaturePool = struct {
         );
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
+        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
 
         if (dt > 0.0 and state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
@@ -3415,6 +3478,7 @@ pub const CreaturePool = struct {
             (creature.flags & spawn_mod.CreatureFlags.split_on_death) != 0 and
             creature.size > 35.0;
         const death_size = creature.size;
+        const death_type_id = creature.type_id;
         const death_reward_value = creature.reward_value;
         spawnSplitChildrenOnDeath(self, state, creature);
         const slot_reused_by_child = split_can_reuse_slot and creature.size != death_size;
@@ -3432,6 +3496,7 @@ pub const CreaturePool = struct {
         }
 
         const xp_gained = awardExperienceForOwner(state, players, owner, death_reward_value);
+        self.recordDeath(creature_index, death_type_id, death_reward_value, xp_gained, owner);
         if (state.bonuses.freeze > 0.0) {
             self.kill_count += 1;
             if (!slot_reused_by_child) {
@@ -3443,6 +3508,7 @@ pub const CreaturePool = struct {
             state,
             self.effects orelse unreachable,
             creature.flags,
+            death_type_id,
             creature.pos,
         );
         return xp_gained;
@@ -4244,10 +4310,12 @@ fn emitCreatureApplyDamageFollowup(
     state: *state_mod.GameplayState,
     effects: *effects_mod.EffectPool,
     creature_flags: u32,
+    creature_type_id: i32,
     death_pos: state_mod.Vec2,
 ) void {
     if ((creature_flags & spawn_mod.CreatureFlags.ranged_attack_shock) == 0) {
-        _ = state.rng.randTagged(rng_callers.creature_apply_damage_death_sfx);
+        const roll = state.rng.randTagged(rng_callers.creature_apply_damage_death_sfx);
+        if (killingHitDeathSfx(creature_type_id, roll, state.preserve_bugs)) |sfx_id| state.step_sfx.append(sfx_id);
         return;
     }
 
@@ -4288,6 +4356,30 @@ fn emitCreatureApplyDamageFollowup(
             5,
         );
     }
+}
+
+/// A creature type's death sounds; troopers have three.
+pub fn deathSfxBank(creature_type_id: i32) ?[]const state_mod.SfxId {
+    const creature_type = std.enums.fromInt(spawn_mod.CreatureTypeId, creature_type_id) orelse return null;
+    return switch (creature_type) {
+        .zombie => &.{ .zombie_die_01, .zombie_die_02, .zombie_die_03, .zombie_die_04 },
+        .lizard => &.{ .lizard_die_01, .lizard_die_02, .lizard_die_03, .lizard_die_04 },
+        .alien => &.{ .alien_die_01, .alien_die_02, .alien_die_03, .alien_die_04 },
+        .spider_sp1, .spider_sp2 => &.{ .spider_die_01, .spider_die_02, .spider_die_03, .spider_die_04 },
+        .trooper => &.{ .trooper_die_01, .trooper_die_02, .trooper_die_03 },
+    };
+}
+
+/// The `creature_apply_damage` killing-hit sound for a death-SFX `roll`.
+fn killingHitDeathSfx(creature_type_id: i32, roll: u32, preserve_bugs: bool) ?state_mod.SfxId {
+    const bank = deathSfxBank(creature_type_id) orelse return null;
+    if (creature_type_id == @intFromEnum(spawn_mod.CreatureTypeId.trooper)) {
+        // Native indexes the three-entry trooper bank with `rand & 3`; the
+        // unwritten fourth slot resolves to `sfx_trooper_inpain_01`.
+        if (preserve_bugs) return if ((roll & 3) < bank.len) bank[roll & 3] else .trooper_inpain_01;
+        return bank[roll % bank.len];
+    }
+    return bank[roll & 3];
 }
 
 fn applyCreatureDamagePostDeathImpulse(
@@ -4454,17 +4546,16 @@ fn dot(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
 
 const thick_skinned_damage_scale_f32: f32 = 0.6660000085830688;
 
-fn creatureTypeHasContactSfx(type_id: i32) bool {
-    return type_id == @intFromEnum(spawn_mod.CreatureTypeId.zombie) or
-        type_id == @intFromEnum(spawn_mod.CreatureTypeId.lizard) or
-        type_id == @intFromEnum(spawn_mod.CreatureTypeId.alien) or
-        type_id == @intFromEnum(spawn_mod.CreatureTypeId.spider_sp1) or
-        type_id == @intFromEnum(spawn_mod.CreatureTypeId.spider_sp2);
-}
-
-fn consumeContactSfxRng(state: *state_mod.GameplayState, creature_type_id: i32) void {
-    if (!creatureTypeHasContactSfx(creature_type_id)) return;
-    _ = state.rng.randTagged(rng_callers.creature_update_all_contact_sfx) & 1;
+fn emitContactSfx(state: *state_mod.GameplayState, creature_type_id: i32) void {
+    const creature_type = std.enums.fromInt(spawn_mod.CreatureTypeId, creature_type_id) orelse return;
+    const bank: [2]state_mod.SfxId = switch (creature_type) {
+        .zombie => .{ .zombie_attack_01, .zombie_attack_02 },
+        .lizard => .{ .lizard_attack_01, .lizard_attack_02 },
+        .alien => .{ .alien_attack_01, .alien_attack_02 },
+        .spider_sp1, .spider_sp2 => .{ .spider_attack_01, .spider_attack_02 },
+        .trooper => return,
+    };
+    state.step_sfx.append(bank[state.rng.randTagged(rng_callers.creature_update_all_contact_sfx) & 1]);
 }
 
 pub fn applyPlayerContactDamage(
@@ -4793,6 +4884,7 @@ test "creature damage shock followup emits native burst and tagged draws" {
         &state,
         &effects,
         spawn_mod.CreatureFlags.ranged_attack_shock,
+        @intFromEnum(spawn_mod.CreatureTypeId.zombie),
         .{ .x = 100.0, .y = 200.0 },
     );
 

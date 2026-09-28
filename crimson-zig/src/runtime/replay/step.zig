@@ -92,7 +92,9 @@ pub const StepResult = struct {
     projectile_tick_stats: projectiles_mod.ProjectileTickStats,
     secondary_hit_count: i32,
     bonus_pickups: bonus_runtime.BonusPickupBuffer,
+    /// The step's SFX followed by the queued ones (Python `WorldEvents.sfx`).
     sfx_events: state_mod.RuntimeSfxBuffer,
+    hit_sfx: state_mod.RuntimeSfxBuffer,
     terrain_fx: terrain_fx_mod.TerrainFxBatch,
     rng_end: u32,
 };
@@ -197,7 +199,11 @@ pub fn stepTick(
     };
 
     callPhaseHook(options.hooks, context, .pre_reset, &frame);
-    context.state.sfx_queue.clear();
+    // `sfx_queue` keeps what was queued between ticks (the loadout's reload
+    // sound, perk picks); the step's own event buffers start empty.
+    context.state.step_sfx.clear();
+    context.state.hit_sfx.clear();
+    context.creatures.tick_deaths.clear();
 
     context.state.game_mode = context.game_mode;
     // Perk picks apply before frame timing is derived; a menu request opens
@@ -205,6 +211,7 @@ pub fn stepTick(
     // pre-step hook, but that hook neither draws RNG nor reads the typing
     // state, so applying them here is equivalent.
     callPhaseHook(options.hooks, context, .pre_commands, &frame);
+    if (context.game_mode == .typo) typo_runtime.assignLoadout(&context.state, context.players());
     var open_perk_menu = false;
     for (tick_commands, 0..) |command, index| {
         commands.applyCommand(context, command, frame.dt) catch |err| {
@@ -353,7 +360,7 @@ pub fn stepTick(
 
     callPhaseHook(options.hooks, context, .pre_player_movement, &frame);
     if (context.game_mode == .rush) {
-        runtime_bootstrap.enforceRushLoadout(players);
+        runtime_bootstrap.enforceRushLoadout(&context.state, players);
     } else if (context.game_mode == .typo) {
         typo_runtime.beforeStep(&context.state, players);
     } else if (context.game_mode == .tutorial) {
@@ -640,6 +647,10 @@ pub fn stepTick(
         context.detail_preset,
     );
     frame.rng_after_bonus_update = context.state.rng.state;
+    // The world step ends here; the mode's post-step queues into the next tick.
+    var sfx_events = context.state.step_sfx.take();
+    sfx_events.appendBuffer(&context.state.sfx_queue);
+    context.state.sfx_queue.clear();
     if (context.game_mode == .typo) {
         typo_runtime.postStep(&context.state);
     } else if (context.game_mode == .tutorial) {
@@ -688,7 +699,8 @@ pub fn stepTick(
         .projectile_tick_stats = frame.projectile_tick_stats,
         .secondary_hit_count = frame.secondary_hit_count,
         .bonus_pickups = context.tick_bonus_pickups,
-        .sfx_events = context.state.sfx_queue.take(),
+        .sfx_events = sfx_events,
+        .hit_sfx = context.state.hit_sfx.take(),
         .terrain_fx = context.terrain_fx.takeBatch(),
         .rng_end = context.state.rng.state,
     };

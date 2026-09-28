@@ -359,7 +359,7 @@ pub const SecondaryProjectilePool = struct {
                     state.game_tune_started = true;
                     _ = state.rng.randTagged(rng_callers.sfx_play_exclusive_playlist_pick);
                 } else {
-                    state.sfx_queue.append(.explosion_medium);
+                    state.hit_sfx.append(.explosion_medium);
                 }
 
                 // Native preserves the incoming type in a local before the
@@ -511,7 +511,6 @@ pub const SecondaryProjectilePool = struct {
                 entry.vel = .{ .x = 0.0, .y = 0.5 };
                 entry.detonation_t = 0.0;
                 entry.detonation_scale = 0.5;
-                state.sfx_queue.append(.explosion_medium);
             }
         }
         return hit_count;
