@@ -115,7 +115,7 @@ region gives dedicated attempt/completion slots only to quests 1.1–4.10.
 Stage-5 attempt indices alias earlier completion counters; stage-5 completion
 indices spill into the following mode/time/seed fields and beyond the payload.
 The native menu uses those unchecked indices, as recovered in
-`tools/match/scratches/quest_select_menu_update/scratch.cpp`. The port uses
+`decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp`. The port uses
 `src/crimson/quests/status.py` to restrict persisted quest counters to the
 40 dedicated slots. See [save layout](../formats/save-status-format.md).
 

@@ -245,7 +245,7 @@ entry and exit:
   `0 < accepted_count` guard (§4).
 
 `typo_plain3` is now the canonical source of
-[`typo_word_pick_highscore_name`](../../scratches/typo_word_pick_highscore_name/scratch.cpp).
+[`typo_word_pick_highscore_name`](../../../../decomp/1.9/crimsonland/typo/typo_word_pick_highscore_name.cpp).
 
 ### (b) Field anchoring: passes after correcting the audit's "most-used field" wording
 

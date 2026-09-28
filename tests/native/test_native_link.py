@@ -545,41 +545,46 @@ def test_default_grim_translation_unit_config_loads_slot_accessor_cluster() -> N
     ]
 
 
-def test_recovered_grim_source_layout_preserves_evidence_boundaries() -> None:
-    layout_path = (
-        matchlib.REPO_ROOT / "decomp/1.9/grim/layout.json"
-    )
+RECOVERED_LAYOUTS = sorted((matchlib.REPO_ROOT / "decomp").glob("*/*/layout.json"))
+
+
+@pytest.mark.parametrize(
+    "layout_path",
+    RECOVERED_LAYOUTS,
+    ids=[path.parent.relative_to(matchlib.REPO_ROOT).as_posix() for path in RECOVERED_LAYOUTS],
+)
+def test_recovered_source_layout_preserves_evidence_boundaries(layout_path: Path) -> None:
     payload = json.loads(layout_path.read_text(encoding="utf-8"))
+    image = payload["image"]
     root = (matchlib.REPO_ROOT / payload["root"]).resolve()
     translation_units = load_native_translation_unit_config(
-        DEFAULT_TRANSLATION_UNIT_CONFIGS["grim.dll"],
-        image="grim.dll",
+        DEFAULT_TRANSLATION_UNIT_CONFIGS[image],
+        image=image,
     )
     clusters = {cluster.name: cluster for cluster in translation_units.clusters}
+    analysis = matchlib.REPO_ROOT / "analysis/ida/raw" / image
+    functions = matchlib.load_function_manifest(
+        analysis / "functions.json",
+        metadata_path=analysis / "metadata.json",
+        scope="all",
+    ).by_name
 
     assert payload["schema"] == 1
     assert payload["kind"] == "crimson-recovered-source-layout"
-    assert payload["image"] == "grim.dll"
-    assert [module["name"] for module in payload["modules"]] == [
-        "api",
-        "app",
-        "codec",
-        "config",
-        "device",
-        "input",
-        "render",
-        "runtime",
-        "state",
-        "texture",
-        "timing",
-        "window",
-    ]
+    assert root == layout_path.parent.resolve()
 
     seen_sources: set[Path] = set()
     seen_configs: set[Path] = set()
     proven_clusters: set[str] = set()
+    previous_end = 0
     for module in payload["modules"]:
-        assert module["layout_evidence"] == "inferred-subsystem"
+        evidence = module["layout_evidence"]
+        assert evidence in {"inferred-subsystem", "inferred-translation-unit"}
+        # A translation-unit claim is a contiguous native code range.
+        if evidence == "inferred-translation-unit":
+            start, end = (int(bound, 16) for bound in module["range"])
+            assert previous_end <= start < end
+            previous_end = end
         for source_row in module["sources"]:
             source = (matchlib.REPO_ROOT / source_row["path"]).resolve()
             assert source.is_relative_to(root)
@@ -587,32 +592,37 @@ def test_recovered_grim_source_layout_preserves_evidence_boundaries() -> None:
             assert source not in seen_sources
             seen_sources.add(source)
 
-            functions: list[str] = []
+            members: list[str] = []
             for config_name in source_row["configs"]:
                 config_dir = (matchlib.REPO_ROOT / config_name).resolve()
                 assert config_dir not in seen_configs
                 seen_configs.add(config_dir)
                 config = matchlib.load_scratch_config(config_dir)
-                assert config.image == "grim.dll"
+                assert config.image == image
                 assert (config.directory / config.source).resolve() == source
-                functions.append(config.function)
+                if evidence == "inferred-translation-unit":
+                    function = functions[config.function]
+                    assert start <= function.address < function.end <= end
+                members.append(config.function)
 
             ownership = source_row["physical_ownership"]
             if ownership["kind"] == "native-translation-unit":
                 cluster_name = ownership["cluster"]
                 cluster = clusters[cluster_name]
-                assert functions == [
+                assert members == [
                     member.function for member in cluster.members
                 ]
                 proven_clusters.add(cluster_name)
             else:
                 assert ownership == {"kind": "unproven-isolated-object"}
-                assert len(functions) == 1
+                assert len(members) == 1
 
-    assert seen_sources == set(root.glob("*/*.cpp"))
+    assert seen_sources == {
+        path for path in root.glob("*/*") if path.suffix in {".c", ".cpp"}
+    }
     object_manifest = json.loads(
         (
-            matchlib.REPO_ROOT / "analysis/native/grim.dll/objects.json"
+            matchlib.REPO_ROOT / "analysis/native" / image / "objects.json"
         ).read_text(encoding="utf-8"),
     )
     canonical_rows = [
@@ -620,7 +630,7 @@ def test_recovered_grim_source_layout_preserves_evidence_boundaries() -> None:
         for object_row in object_manifest["objects"]
         for function in object_row["functions"]
     ]
-    assert len(canonical_rows) == 139
+    assert canonical_rows
     assert {
         (matchlib.REPO_ROOT / row["canonical_source"]).resolve()
         for row in canonical_rows
@@ -629,8 +639,6 @@ def test_recovered_grim_source_layout_preserves_evidence_boundaries() -> None:
         (matchlib.REPO_ROOT / row["canonical_config"]).resolve().parent
         for row in canonical_rows
     } <= seen_configs
-    assert len(seen_sources) == 171
-    assert len(seen_configs) == 180
     assert proven_clusters == set(clusters)
 
 

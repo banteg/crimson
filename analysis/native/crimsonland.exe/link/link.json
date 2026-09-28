@@ -51,7 +51,7 @@
       }
     }
   ],
-  "audit_digest": "5f0b6bc1240489a35ec5909896f7fc807793113d2e6f54815db63d4f3f08a5f3",
+  "audit_digest": "203aca7f4dfa8843c54ff7313ef4a4421c1b34848e9247348bee4294f9336f25",
   "entry": {
     "aliases": {
       "object": {
@@ -108,10 +108,10 @@
     "symbol_count": 10
   },
   "provider_config": {
-    "declared_sha256": "775c17ce76320f0a1273d2e16753f41a6304df861a9d7e9d9397563e9be8b511",
+    "declared_sha256": "56ae09ebeb4b0178bfa4d95cccedb97d5deb78cf4f1b0c6c81e1eb88fa251a46",
     "path": "tools/native/providers/crimsonland.exe.json",
     "repository_relative": true,
-    "sha256": "775c17ce76320f0a1273d2e16753f41a6304df861a9d7e9d9397563e9be8b511"
+    "sha256": "56ae09ebeb4b0178bfa4d95cccedb97d5deb78cf4f1b0c6c81e1eb88fa251a46"
   },
   "providers": [
     {
@@ -339,7 +339,7 @@
           "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "24ed18931dfdf3ab1fc3d4120d8a1ded299819d2d6444f98c4fa67d3f8a82e8a"
+          "sha256": "7e162cdf42ee504ce0c18af66af81c267234a96ba96282a2b55e904ac0016875"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
@@ -1234,7 +1234,7 @@
         },
         {
           "note": "The exact recovered DxDiag probe records the decorated COM references.",
-          "path": "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+          "path": "decomp/1.9/crimsonland/dxversion/dx_get_version_from_dxdiag.cpp",
           "repository_relative": true,
           "sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713"
         }
@@ -1287,7 +1287,7 @@
         },
         {
           "note": "The exact recovered DxDiag probe records the decorated VARIANT helper references.",
-          "path": "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
+          "path": "decomp/1.9/crimsonland/dxversion/dx_get_version_from_dxdiag.cpp",
           "repository_relative": true,
           "sha256": "a11b9bf5571fdc3f5ab8b458cb70380c67f60154cfd30954848e7e6c8e6bf713"
         }
@@ -1343,7 +1343,7 @@
         },
         {
           "note": "The exact recovered file-version helper records the three decorated VERSION references.",
-          "path": "tools/match/scratches/win32_file_get_version_words/scratch.cpp",
+          "path": "decomp/1.9/crimsonland/dxversion/win32_file_get_version_words.cpp",
           "repository_relative": true,
           "sha256": "80a4abac36b367da33498778b903051855e3af4a783afe63df0c2a19591816d8"
         }
@@ -1386,7 +1386,7 @@
       "evidence": [
         {
           "note": "The exact recovered DirectX wrapper records the two renamed CRT leaf references.",
-          "path": "tools/match/scratches/dx_get_version/scratch.cpp",
+          "path": "decomp/1.9/crimsonland/dxversion/dx_get_version.cpp",
           "repository_relative": true,
           "sha256": "b89d1d3f894e4fa1a60f97e74b7232d0368c11089bc94bd46fb5ee420e68f777"
         },

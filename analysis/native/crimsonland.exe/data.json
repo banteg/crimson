@@ -1,5 +1,5 @@
 {
-  "audit_digest": "5f0b6bc1240489a35ec5909896f7fc807793113d2e6f54815db63d4f3f08a5f3",
+  "audit_digest": "203aca7f4dfa8843c54ff7313ef4a4421c1b34848e9247348bee4294f9336f25",
   "entries": [
     {
       "address": 4211888,
@@ -1544,7 +1544,7 @@
       "section_offset": 344,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/console_cmd_arg_get/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/console/console_cmd_arg_get.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -3764,7 +3764,7 @@
       "section_offset": 5912,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 2,
-      "size_source": "tools/match/scratches/tutorial_timeline_update/scratch.cpp and pinned reference PE: complete NUL-terminated placeholder string",
+      "size_source": "decomp/1.9/crimsonland/game/tutorial_timeline_update.cpp and pinned reference PE: complete NUL-terminated placeholder string",
       "type": "char[2]"
     },
     {
@@ -3804,7 +3804,7 @@
       "section_offset": 6892,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 14,
-      "size_source": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "size_source": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp and pinned reference PE: complete NUL-terminated credit string",
       "type": "char[14]"
     },
     {
@@ -3824,7 +3824,7 @@
       "section_offset": 7256,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 26,
-      "size_source": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "size_source": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp and pinned reference PE: complete NUL-terminated credit string",
       "type": "char[26]"
     },
     {
@@ -3844,7 +3844,7 @@
       "section_offset": 7372,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 21,
-      "size_source": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "size_source": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp and pinned reference PE: complete NUL-terminated credit string",
       "type": "char[21]"
     },
     {
@@ -4266,7 +4266,7 @@
       "section_offset": 10768,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4288,7 +4288,7 @@
       "section_offset": 10772,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4310,7 +4310,7 @@
       "section_offset": 10776,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4332,7 +4332,7 @@
       "section_offset": 10780,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4354,7 +4354,7 @@
       "section_offset": 10784,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4376,7 +4376,7 @@
       "section_offset": 10788,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4398,7 +4398,7 @@
       "section_offset": 10792,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4420,7 +4420,7 @@
       "section_offset": 10796,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -4462,7 +4462,7 @@
       "section_offset": 10804,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "char *"
     },
     {
@@ -8296,7 +8296,7 @@
       "section_offset": 54344,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1024,
-      "size_source": "tools/match/scratches/console_update/scratch.cpp and console_input_poll/scratch.cpp: console_input_buf[1024]",
+      "size_source": "decomp/1.9/crimsonland/console/console_update.cpp and console_input_poll/scratch.cpp: console_input_buf[1024]",
       "type": "char[1024]"
     },
     {
@@ -8317,7 +8317,7 @@
       "section_offset": 55368,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 512,
-      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; tools/match/scratches/highscore_build_path/scratch.c: highscore_cwd_buf[512]",
+      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
       "type": "char[512]"
     },
     {
@@ -8506,7 +8506,7 @@
       "section_offset": 55968,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1024,
-      "size_source": "tools/match/scratches/console_tokenize_line/scratch.cpp: strcpy from the 1024-byte console input buffer; Binary Ninja data layout reserves exactly 1024 bytes before console_log_queue",
+      "size_source": "decomp/1.9/crimsonland/console/console_tokenize_line.cpp: strcpy from the 1024-byte console input buffer; Binary Ninja data layout reserves exactly 1024 bytes before console_log_queue",
       "type": "char[1024]"
     },
     {
@@ -8691,7 +8691,7 @@
       "section_offset": 58576,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/console_render/scratch.cpp: console_cvar_entry_t pointer declaration; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/console/console_render.cpp: console_cvar_entry_t pointer declaration; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "console_cvar_entry_t *"
     },
     {
@@ -9550,7 +9550,7 @@
       "section_offset": 62300,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/player_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int"
     },
     {
@@ -9987,7 +9987,7 @@
       "section_offset": 62724,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/bonus_render/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/crimsonland/bonus_render.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int"
     },
     {
@@ -11100,7 +11100,7 @@
       "section_offset": 63464,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 28,
-      "size_source": "tools/match/scratches/perks_generate_choices/scratch.c and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/perks_generate_choices.c and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int[7]"
     },
     {
@@ -11182,7 +11182,7 @@
       "section_offset": 63548,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/player_update/scratch.cpp: extern IGrim2D_cpp pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp: extern IGrim2D_cpp pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "type": "IGrim2D *"
     },
     {
@@ -11220,7 +11220,7 @@
       "section_offset": 63556,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/game_frame_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int"
     },
     {
@@ -14509,7 +14509,7 @@
       "section_offset": 81864,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/camera_update/scratch.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/camera_update.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "type": "float"
     },
     {
@@ -14528,7 +14528,7 @@
       "section_offset": 81868,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/camera_update/scratch.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/camera_update.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "type": "float"
     },
     {
@@ -15615,7 +15615,7 @@
       "section_offset": 90064,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/quest_mode_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/quest_mode_update.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int"
     },
     {
@@ -16107,7 +16107,7 @@
       "section_offset": 90156,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
-      "size_source": "tools/match/scratches/game_frame_update/scratch.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "size_source": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "char"
     },
     {
@@ -17396,7 +17396,7 @@
       "section_offset": 90700,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 1,
-      "size_source": "tools/match/scratches/game_frame_update/scratch.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "size_source": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "type": "unsigned char"
     },
     {
@@ -17623,7 +17623,7 @@
       "section_offset": 90740,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/game_frame_update/scratch.cpp: extern game_state_id_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: game_state_id_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern game_state_id_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: game_state_id_is_32_bit",
       "type": "game_state_id_t"
     },
     {
@@ -20259,7 +20259,7 @@
       "section_offset": 124808,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 16,
-      "size_source": "tools/match/scratches/ui_render_hud/scratch.cpp: complete quest-stage label writer; Binary Ninja data layout reserves the 16-byte buffer before ui_cursor_texture",
+      "size_source": "decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp: complete quest-stage label writer; Binary Ninja data layout reserves the 16-byte buffer before ui_cursor_texture",
       "type": "char[16]"
     },
     {
@@ -20698,7 +20698,7 @@
       "section_offset": 124908,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 4,
-      "size_source": "tools/match/scratches/effects_render/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/effects/effects_render.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int"
     },
     {
@@ -29681,7 +29681,7 @@
       "section_offset": 337500,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 128,
-      "size_source": "tools/match/scratches/highscore_build_path/scratch.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "size_source": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "type": "char[128]"
     },
     {
@@ -29702,7 +29702,7 @@
       "section_offset": 337628,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 128,
-      "size_source": "tools/match/scratches/highscore_build_path/scratch.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "size_source": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "type": "char[128]"
     },
     {
@@ -29723,7 +29723,7 @@
       "section_offset": 337756,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 512,
-      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; tools/match/scratches/highscore_build_path/scratch.c: highscore_cwd_buf[512]",
+      "size_source": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
       "type": "char[512]"
     },
     {
@@ -32244,7 +32244,7 @@
       "section_offset": 375760,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 128,
-      "size_source": "tools/match/scratches/ui_focus_update/scratch.cpp: ui_focus_candidates[32]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "size_source": "decomp/1.9/crimsonland/ui_widgets/ui_focus_update.cpp: ui_focus_candidates[32]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "type": "int[32]"
     },
     {
@@ -33751,7 +33751,7 @@
       "section_offset": 394540,
       "section_source": "analysis/ida/raw/crimsonland.exe/segments.json",
       "size": 24576,
-      "size_source": "tools/match/scratches/typo_target_name_draw_labels/scratch.cpp and related Typ-o scratches: typo_target_name_table[384][64]",
+      "size_source": "decomp/1.9/crimsonland/typo/typo_target_name_draw_labels.cpp and related Typ-o scratches: typo_target_name_table[384][64]",
       "type": "char[384][64]"
     },
     {
@@ -37782,7 +37782,7 @@
     },
     "data_map_sha256": "930da7b86f25523e0a2b488ae214e5372d3b5d241dcf1ad9948f8f8479b158e0",
     "definitions": "tools/native/data_definitions/crimsonland.exe.json",
-    "definitions_sha256": "aa67a621050e3cc2dac3393e2950f56b39e4367809b4decef794b9c6c708b02e",
+    "definitions_sha256": "cfc8d7d06e51008e3d4c2ce017fadd221daf3252043e856fb000c76d329fad0c",
     "reference_image": {
       "path": "game_bins/crimsonland/1.9.93-gog/crimsonland.exe",
       "sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4"

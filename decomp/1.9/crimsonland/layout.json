@@ -1,0 +1,5577 @@
+{
+  "schema": 1,
+  "kind": "crimson-recovered-source-layout",
+  "image": "crimsonland.exe",
+  "root": "decomp/1.9/crimsonland",
+  "modules": [
+    {
+      "name": "console",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Console subsystem; the console object's initializer sits at the top of the range.",
+      "range": [
+        "0x401030",
+        "0x4028d9"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/console/console_input_clear.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_input_clear"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_input_buffer.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_input_buffer"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_input_poll.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_input_poll"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/invoke_callback_n.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/invoke_callback_n"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_arg_get.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_arg_get"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_argc_get.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_argc_get"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_global_construct_and_register.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_global_construct_and_register"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_register_global_destructor_atexit.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_register_global_destructor_atexit"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_global_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_global_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_clear_log.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_clear_log"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_log_node_free.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_log_node_free"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_quit.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_quit"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_exec.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_exec"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_extend.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_extend"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_minimize.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_minimize"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmdlist.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmdlist"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_vars.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_vars"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_echo.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_echo"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cmd_set.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_set"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_push_line.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_push_line"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_printf.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_printf"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_set_open.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_set_open"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_history_apply.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_history_apply"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_exec_line.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_exec_line"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_register_cvar.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_register_cvar"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cvar_find.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cvar_find"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cvar_unregister.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cvar_unregister"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_command_unregister.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_command_unregister"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_tokenize_line.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_tokenize_line"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_cvar_autocomplete.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cvar_autocomplete"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_register_command.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_register_command"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_command_find.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_command_find"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_command_autocomplete.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_command_autocomplete"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/console/console_flush_log.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_flush_log"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "game",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the config object's initializer; main loop, demo, perk prompt and selection, mode updates, tutorial, camera and frame update.",
+      "range": [
+        "0x4028e0",
+        "0x40cfc4"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/game/config_init_defaults_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/config_init_defaults_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/config_init_defaults.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/config_init_defaults"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/game_build_path.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_build_path"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/register_core_cvars.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/register_core_cvars"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_render_loading.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_render_loading"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_setup_variant_0.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_setup_variant_0"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_setup_variant_2.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_setup_variant_2"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_setup_variant_1.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_setup_variant_1"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_setup_variant_3.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_setup_variant_3"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_purchase_interstitial_begin.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_purchase_interstitial_begin"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_mode_start.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_mode_start"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_mouse_inside_rect_with_padding.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_mouse_inside_rect_with_padding"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_mouse_inside_rect.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_mouse_inside_rect"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/game_core_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_core_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/perk_prompt_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perk_prompt_update_and_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/input_key_name.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_key_name"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/perks_generate_choices.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perks_generate_choices"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_trial_overlay_render.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "demo-trial-overlay-render-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/demo_trial_overlay_render",
+            "tools/match/scratches/demo_trial_maybe_later_button_destroy",
+            "tools/match/scratches/demo_trial_purchase_button_destroy",
+            "tools/match/scratches/demo_trial_already_paid_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_render_keybind_help.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_render_keybind_help"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/perk_apply.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perk_apply"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/gameplay_render_world.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/gameplay_render_world"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/perk_selection_screen_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "perk-selection-screen-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/perk_selection_screen_update",
+            "tools/match/scratches/perk_selection_idle_color_destroy",
+            "tools/match/scratches/perk_selection_hover_color_destroy",
+            "tools/match/scratches/perk_selection_choice_items_destroy",
+            "tools/match/scratches/perk_selection_cancel_button_destroy",
+            "tools/match/scratches/perk_selection_select_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/format_ordinal.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/format_ordinal"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_draw_clock_gauge.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_draw_clock_gauge"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/game_update_victory_screen.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "game-update-victory-screen-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/game_update_victory_screen",
+            "tools/match/scratches/game_completed_survival_button_destroy",
+            "tools/match/scratches/game_completed_rush_button_destroy",
+            "tools/match/scratches/game_completed_typo_button_destroy",
+            "tools/match/scratches/game_completed_main_menu_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/game_update_generic_menu.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_update_generic_menu"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/perks_update_effects.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perks_update_effects"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/quest_mode_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_mode_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/rush_mode_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/rush_mode_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/survival_spawn_creature.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/survival_spawn_creature"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/survival_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/survival_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/tutorial_prompt_dialog.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "tutorial-prompt-dialog-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/tutorial_prompt_dialog",
+            "tools/match/scratches/tutorial_repeat_button_destroy",
+            "tools/match/scratches/tutorial_primary_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/tutorial_timeline_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/tutorial_timeline_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/camera_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/camera_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/bonus_apply.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_apply"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/bonus_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_draw_clock_gauge_at.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_draw_clock_gauge_at"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/ui_render_aim_indicators.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "ui-render-aim-indicators-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/ui_render_aim_indicators",
+            "tools/match/scratches/ui_render_aim_screen_destroy",
+            "tools/match/scratches/ui_render_aim_lifetime_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/gameplay_update_and_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/plugin_runtime_clear_pools.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/plugin_runtime_clear_pools"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/plugin_runtime_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/plugin_runtime_update_and_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/demo_purchase_screen_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "demo-purchase-screen-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/demo_purchase_screen_update",
+            "tools/match/scratches/demo_purchase_maybe_later_button_destroy",
+            "tools/match/scratches/demo_purchase_purchase_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/game/game_frame_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_frame_update"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "credits",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the credits line-table initializer.",
+      "range": [
+        "0x40cfd0",
+        "0x40df61"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/credits/credits_line_table_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/credits_line_table_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/credits/credits_line_table_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/credits_line_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/credits/credits_line_set.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/credits_line_set"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/credits/credits_line_clear_flag.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/credits_line_clear_flag"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/credits_build_lines"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/credits/credits_screen_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "credits-screen-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/credits_screen_update",
+            "tools/match/scratches/credits_back_button_destroy",
+            "tools/match/scratches/credits_secret_button_destroy"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mods",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with an empty initializer and the mod API initializer; mods-menu and credits-secret statics interleave in .bss.",
+      "range": [
+        "0x40df70",
+        "0x40ff41"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/mods/crimson_crt_empty_initializer_slot_05_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_05_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/crimson_crt_empty_initializer_slot_05.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_05"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_printf.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_printf"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_debug_printf.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_debug_printf"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_get_var.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_get_var"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_del_var.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_del_var"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_execute.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_execute"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_add_command.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_add_command"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_del_command.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_del_command"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_core_get_extension.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_core_get_extension"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_clear.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_clear"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_get_string_width.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_get_string_width"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_printf.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_printf"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_load_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_load_texture"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_free_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_free_texture"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_set_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_set_texture"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_set_color.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_set_color"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_set_subset.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_set_subset"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_set_texture_filter.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_set_texture_filter"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_set_blend_mode.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_set_blend_mode"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_begin.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_begin"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_end.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_end"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_quad.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_quad"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_quad_rot.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_quad_rot"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_gfx_draw_quads.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_gfx_draw_quads"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_load_sample.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_load_sample"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_free_sample.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_free_sample"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_play_sample.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_play_sample"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_load_tune.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_load_tune"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_free_tune.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_free_tune"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_play_tune.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_play_tune"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_sfx_stop_tune.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_sfx_stop_tune"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_inp_get_pressed_char.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_inp_get_pressed_char"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_inp_get_analog.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_inp_get_analog"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_inp_key_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_inp_key_down"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_inp_get_key_name.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_inp_get_key_name"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_api_cl_enter_menu.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_api_cl_enter_menu"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_load_info.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "mod-load-info-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/mod_load_info",
+            "tools/match/scratches/mod_info_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mod_load_mod.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mod_load_mod"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mods_any_available.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/mods_any_available"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/mods_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "mods-menu-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/mods_menu_update",
+            "tools/match/scratches/mods_menu_scrollbar_destroy",
+            "tools/match/scratches/mods_menu_main_menu_button_destroy",
+            "tools/match/scratches/mods_menu_launch_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/credits_secret_match3_find.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/credits_secret_match3_find"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/mods/credits_secret_alien_zookeeper_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "credits-secret-alien-zookeeper-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/credits_secret_alien_zookeeper_update",
+            "tools/match/scratches/credits_secret_reset_button_destroy",
+            "tools/match/scratches/credits_secret_back_button_destroy"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "end_screens",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Game-over, quest-failed and quest-results screens; one contiguous .bss block.",
+      "range": [
+        "0x40ff50",
+        "0x412071"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/end_screens/time_format_mm_ss.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/time_format_mm_ss"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/end_screens/game_over_screen_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "game-over-screen-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/game_over_screen_update",
+            "tools/match/scratches/game_over_name_submit_button_destroy",
+            "tools/match/scratches/game_over_name_input_state_destroy",
+            "tools/match/scratches/game_over_play_again_button_destroy",
+            "tools/match/scratches/game_over_highscores_button_destroy",
+            "tools/match/scratches/game_over_main_menu_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/end_screens/quest_failed_screen_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "quest-failed-screen-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/quest_failed_screen_update",
+            "tools/match/scratches/quest_failed_play_again_button_destroy",
+            "tools/match/scratches/quest_failed_play_another_button_destroy",
+            "tools/match/scratches/quest_failed_main_menu_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "quest-results-screen-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/quest_results_screen_update",
+            "tools/match/scratches/quest_results_name_submit_button_destroy",
+            "tools/match/scratches/quest_results_name_input_state_destroy",
+            "tools/match/scratches/quest_results_play_next_button_destroy",
+            "tools/match/scratches/quest_results_play_again_button_destroy",
+            "tools/match/scratches/quest_results_highscores_button_destroy",
+            "tools/match/scratches/quest_results_main_menu_button_destroy"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "gameplay",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the run-state, quest/bonus meta, spawn-slot, game-status and highscore-sentinel initializers.",
+      "range": [
+        "0x412080",
+        "0x41767a"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_07_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_07_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_07.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_07"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/gameplay_run_state_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/gameplay_run_state_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/gameplay_run_state_init.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/gameplay_run_state_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_09_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_09_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/crimson_crt_empty_initializer_slot_09.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_09"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/quest_meta.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "quest-meta-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/quest_meta_global_construct_and_register",
+            "tools/match/scratches/quest_meta_init",
+            "tools/match/scratches/quest_meta_register_atexit",
+            "tools/match/scratches/quest_meta_table_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/quest_meta_entry_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_meta_entry_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/quest_meta_entry_release.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_meta_entry_release"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_pool_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_pool_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_pool_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/creature_spawn_slot_table_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_spawn_slot_table_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/creature_spawn_slot_table_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_spawn_slot_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/game_status_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_status_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/game_status_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_status_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_init_sentinels_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/highscore_init_sentinels.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_init_sentinels"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_meta.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "bonus-meta-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_meta_global_construct_and_register",
+            "tools/match/scratches/bonus_meta_table_init",
+            "tools/match/scratches/bonus_meta_register_atexit",
+            "tools/match/scratches/bonus_meta_table_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_meta_entry_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_meta_entry_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_meta_entry_release.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_meta_entry_release"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_pick_random_type.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_pick_random_type"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_metadata_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_metadata_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/bonus_reset_availability.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_reset_availability"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/game_mode_label.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_mode_label"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/play_time_load.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/play_time_load"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/game_save_status.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_save_status"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/game_load_status.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_load_status"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/gameplay_reset_state"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/player_start_reload.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_start_reload"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "player-update-heading"
+          },
+          "configs": [
+            "tools/match/scratches/player_heading_approach_target",
+            "tools/match/scratches/player_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/vec2_sub.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vec2_sub"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/gameplay/vec2_length.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vec2_length"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ui_render",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "UI template/element, reserved-color and bonus-HUD initializers; terrain, creature rendering and HUD.",
+      "range": [
+        "0x417680",
+        "0x41cca3"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_menu_template_pool_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_template_pool_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_menu_template_pool_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_template_pool_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_element_globals_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_globals_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_element_globals_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_globals_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_template_slot_ctor_noop.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_template_slot_ctor_noop"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_template_block_set_mode4.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_template_block_set_mode4"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_template_triplet_reset_and_seed_modes.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_template_triplet_reset_and_seed_modes"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_draw_textured_quad.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_draw_textured_quad"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/terrain_generate.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/terrain_generate"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/terrain_generate_random.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/terrain_generate_random"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/terrain_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/terrain_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/creature_render_type.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_render_type"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/creature_render_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_render_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_element_set_rect.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_set_rect"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_element_load.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_load"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_menu_assets_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_assets_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/reserved_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/reserved_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/reserved_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/reserved_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_cursor_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_cursor_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_render_aim_enhancement.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_render_aim_enhancement"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_elements_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_elements_update_and_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_draw_progress_bar.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_draw_progress_bar"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_table_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_hud_slot_table_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_table_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_hud_slot_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_activate.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_hud_slot_activate"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/bonus_hud_slot_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_hud_slot_update_and_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "ui-render-hud-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/ui_render_hud",
+            "tools/match/scratches/ui_hud_progress_color_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_render/hud_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/hud_update_and_render"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dxversion",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "DirectX SDK GetDXVersion sample helpers.",
+      "range": [
+        "0x41ccb0",
+        "0x41dc7d"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/dxversion/dx_get_version.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dx_get_version"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/dxversion/dx_get_version_from_dxdiag.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dx_get_version_from_dxdiag"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/dxversion/dx_get_version_fallback_from_files.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dx_get_version_fallback_from_files"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/dxversion/win32_file_get_version_words.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/win32_file_get_version_words"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/dxversion/dx_version_pack_4x16.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dx_version_pack_4x16"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/dxversion/dx_version_compare_4x16.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dx_version_compare_4x16"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "platform",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Grim interface loader, Ogg Vorbis memory callbacks and version gates.",
+      "range": [
+        "0x41dc80",
+        "0x41df66"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/platform/grim_load_interface.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/grim_load_interface"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_mem_read.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_mem_read"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_mem_seek.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_mem_seek"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_mem_close_callback.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_mem_close_callback"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_mem_tell.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_mem_tell"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_pcm_seek.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_pcm_seek"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_mem_open.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_mem_open"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_mem_close.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_mem_close"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/vorbis_read_pcm16.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vorbis_read_pcm16"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/game_is_full_version.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_is_full_version"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/demo_trial_time_limit_ms.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/demo_trial_time_limit_ms"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/platform/play_time_get.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/play_time_get"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "crimsonland",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the entity-pool initializers; entities, projectiles, bonuses, startup and crimsonland_main.",
+      "range": [
+        "0x41df70",
+        "0x42ddff"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_queue_random_prefix_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_queue_random_prefix_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_effect_id_prefix_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_rotated_effect_id_prefix_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_aim64_prefix_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_aim64_prefix_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_aim64_prefix_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_aim64_prefix_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_scale_prefix_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_rotated_scale_prefix_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_rotated_scale_prefix_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_rotated_scale_prefix_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/render_tint_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/render_tint_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/render_tint_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/render_tint_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_global_noop_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_global_noop_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_global_noop_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_global_noop_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_particle_pool_suffix_color_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_particle_pool_suffix_color_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_particle_pool_suffix_color_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_particle_pool_suffix_color_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv8_prefix_state_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_effect_uv8_prefix_state_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv8_prefix_state_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_effect_uv8_prefix_state_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv16_prefix_vec2_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_effect_uv16_prefix_vec2_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv16_prefix_vec2_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_effect_uv16_prefix_vec2_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv_strip16_prefix_vec2_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_effect_uv_strip16_prefix_vec2_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_effect_uv_strip16_prefix_vec2_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_effect_uv_strip16_prefix_vec2_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_31_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_31_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_31.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_31"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/vec2_add.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vec2_add"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_apply_move_with_spawn_avoidance.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_apply_move_with_spawn_avoidance"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/vec2_add_inplace.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vec2_add_inplace"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_vec2_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_queue_random_prefix_vec2_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/unused_fx_queue_random_prefix_vec2_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/unused_fx_queue_random_prefix_vec2_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/secondary_projectile_pool_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/secondary_projectile_pool_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/secondary_projectile_pool_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/secondary_projectile_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/sprite_effect_pool_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sprite_effect_pool_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/sprite_effect_pool_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sprite_effect_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/particle_pool_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/particle_pool_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/particle_pool_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/particle_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_state_table_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_state_table_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_state_table_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_state_table_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_pool_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_pool_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_pool_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_38_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_38_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_38.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_38"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_39_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_39_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_39.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_39"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/projectile_pool_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/projectile_pool_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/projectile_pool_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_41_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_41_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_41.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_41"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_42_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_42_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_42.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_42"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_43_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_43_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_43.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_43"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_44_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_44_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_44.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_44"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_45_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_45_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimson_crt_empty_initializer_slot_45.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_45"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_add.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_add"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/input_aim_pov_left_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_aim_pov_left_active"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/input_aim_pov_right_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_aim_pov_right_active"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_handle_death.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_handle_death"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/config_sync_from_grim.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/config_sync_from_grim"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/config_ensure_file.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/config_ensure_file"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/config_load_presets.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/config_load_presets"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/angle_approach.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/angle_approach"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_pool_sentinel_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_pool_sentinel_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_pool_sentinel_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_pool_sentinel_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_alloc_slot.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_alloc_slot"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_spawn_at.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_spawn_at"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_spawn_at_pos.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_spawn_at_pos"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_try_spawn_on_kill.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_try_spawn_on_kill"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_spawn_sprite.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_spawn_sprite"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/weapon_table_entry.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_table_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_reset_all.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_reset_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/effect_uv_tables_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_uv_tables_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_find_nearest.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_find_nearest"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_spawn_particle.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_spawn_particle"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_spawn_particle_slow.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_spawn_particle_slow"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_spawn_secondary_projectile.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_spawn_secondary_projectile"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/projectile_spawn.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/projectile_spawn"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/projectile_reset_pools.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/projectile_reset_pools"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creatures_apply_radius_damage.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creatures_apply_radius_damage"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_find_in_radius.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_find_in_radius"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_find_in_radius.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_find_in_radius"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_apply_damage"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/projectile_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/projectile_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/projectile_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/projectile_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/plaguebearer_spread_infection.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/plaguebearer_spread_infection"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_take_damage"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_update_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_add_random.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_add_random"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_random_color_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_random_color_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_add_rotated.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_add_rotated"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/fx_queue_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/fx_queue_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_alloc_slot.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_alloc_slot"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_reset_all.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_reset_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creatures_none_active.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creatures_none_active"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/creature_spawn.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_spawn"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/player_render_overlays.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_render_overlays"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_label_for_entry.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_label_for_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/bonus_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/bonus_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/audio_resume_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_resume_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/audio_suspend_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_suspend_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/texture_get_or_load.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/texture_get_or_load"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/texture_get_or_load_alt.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/texture_get_or_load_alt"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_load_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_load_texture"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_set_resource_paq.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_set_resource_paq"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_tell_time_survived.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_tell_time_survived"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_open_url.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_open_url"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_snd_freq_adjustment.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_snd_freq_adjustment"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_generate_terrain.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_generate_terrain"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/reg_read_dword_default"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/reg_write_dword"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/init_audio_and_terrain.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/init_audio_and_terrain"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/load_textures_step.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/load_textures_step"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/game_startup_init_prelude.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_startup_init_prelude"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/startup_audio_load_thread.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/startup_audio_load_thread"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/game_startup_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_startup_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_snd_add_game_tune.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_snd_add_game_tune"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/console_cmd_set_gamma_ramp.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/console_cmd_set_gamma_ramp"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimsonland_main"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/highscore_sync_worker.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_sync_worker"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/crimsonland/statistics_update_check_worker.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/statistics_update_check_worker"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "effects",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the effect-pool initializer.",
+      "range": [
+        "0x42de00",
+        "0x42fa84"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_pool_vertices_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_pool_vertices_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_pool_vertices_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_pool_vertices_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/crimson_crt_empty_initializer_slot_48_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_48_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/crimson_crt_empty_initializer_slot_48.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_48"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/crimson_crt_empty_initializer_slot_49_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_49_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/crimson_crt_empty_initializer_slot_49.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_49"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_init_entry.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_init_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_defaults_reset.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_defaults_reset"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_free.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_free"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_select_texture.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_select_texture"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effects_update.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effects_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effects_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effects_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_blood_splatter.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_blood_splatter"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_freeze_shard.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_freeze_shard"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_freeze_shatter.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_freeze_shatter"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_burst.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_burst"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_shrinkifier_hit.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_shrinkifier_hit"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_ion_hit_core.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_ion_hit_core"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_plasma_hit_core.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_plasma_hit_core"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_splitter_hit_burst.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_splitter_hit_burst"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_ion_hit_sparks.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_ion_hit_sparks"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/effects/effect_spawn_explosion_burst.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/effect_spawn_explosion_burst"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "perks",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the perk meta lifecycle.",
+      "range": [
+        "0x42fa90",
+        "0x430a1b"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/perks/perk_meta.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "perk-meta-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/perk_meta_global_construct_and_register",
+            "tools/match/scratches/perk_meta_table_init",
+            "tools/match/scratches/perk_meta_register_atexit",
+            "tools/match/scratches/perk_meta_table_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/perk_meta_entry_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perk_meta_entry_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/perk_can_offer.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perk_can_offer"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/perk_select_random.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perk_select_random"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/perks_rebuild_available.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perks_rebuild_available"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/perk_count_get.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perk_count_get"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/wrap_text_to_width_alloc.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/wrap_text_to_width_alloc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/perks/perks_init_database.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/perks_init_database"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "quests",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Spawn templates, spawn timeline, quest builders and quest database.",
+      "range": [
+        "0x430a20",
+        "0x43a942"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_meta_init_entry.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_meta_init_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/creature_spawn_slot_alloc.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_spawn_slot_alloc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/creature_spawn_template.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_spawn_template"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_spawn_table_empty.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_spawn_table_empty"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_spawn_timeline_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_spawn_timeline_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_database_advance_slot.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_database_advance_slot"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_fallback.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_fallback"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_nagolipoli.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_nagolipoli"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_monster_blues.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_monster_blues"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_gathering.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_gathering"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_army_of_three.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_army_of_three"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_knee_deep_in_the_dead.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_knee_deep_in_the_dead"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_gang_wars.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_gang_wars"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_fortress.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_fortress"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_cross_fire.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_cross_fire"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_beating.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_beating"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_spanking_of_the_dead.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_spanking_of_the_dead"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_hidden_evil.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_hidden_evil"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_land_hostile.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_land_hostile"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_minor_alien_breach.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_minor_alien_breach"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_alien_squads.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_alien_squads"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_zombie_masters.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_zombie_masters"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_8_legged_terror.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_8_legged_terror"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_ghost_patrols.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_ghost_patrols"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_random_factor.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_random_factor"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_spider_wave_syndrome.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_spider_wave_syndrome"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_nesting_grounds.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_nesting_grounds"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_alien_dens.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_alien_dens"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_arachnoid_farm.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_arachnoid_farm"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_gauntlet.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_gauntlet"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_syntax_terror.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_syntax_terror"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_spider_spawns.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_spider_spawns"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_two_fronts.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_two_fronts"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_survival_of_the_fastest.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_survival_of_the_fastest"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_spideroids.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_spideroids"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_evil_zombies_at_large.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_evil_zombies_at_large"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_everred_pastures.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_everred_pastures"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_lizard_kings.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_lizard_kings"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_sweep_stakes.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_sweep_stakes"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_deja_vu.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_deja_vu"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_target_practice.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_target_practice"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_major_alien_breach.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_major_alien_breach"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_land_of_lizards.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_land_of_lizards"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_lizquidation.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_lizquidation"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_zombie_time.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_zombie_time"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_frontline_assault.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_frontline_assault"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_collaboration.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_collaboration"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_blighting.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_blighting"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_annihilation.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_annihilation"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_massacre.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_massacre"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_killing.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_killing"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_lizard_zombie_pact.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_lizard_zombie_pact"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_lizard_raze.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_lizard_raze"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_surrounded_by_reptiles.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_surrounded_by_reptiles"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_unblitzkrieg.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_unblitzkrieg"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_the_end_of_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_the_end_of_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_build_spiders_inc.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_build_spiders_inc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_database_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_database_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/quests/quest_start_selected.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/quest_start_selected"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "highscore",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Highscore records and table I/O.",
+      "range": [
+        "0x43a950",
+        "0x43b805"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_date_checksum.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_date_checksum"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_submit_full_version_guard.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_submit_full_version_guard"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_record_pack_for_submit.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_record_pack_for_submit"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_read_record.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_read_record"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_record_equals.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_record_equals"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_update_record.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_update_record"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_write_record.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_write_record"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_survival_score_desc.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_compare_survival_score_desc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_rush_field32_desc.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_compare_rush_field32_desc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_compare_quest_field32_asc_nonzero_first.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_compare_quest_field32_asc_nonzero_first"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_find_name_entry.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_find_name_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_load_table.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_load_table"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_save_record.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_save_record"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_save_active.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_save_active"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_rank_index.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_rank_index"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_build_path.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_build_path"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_record_init.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_record_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/highscore/highscore_load_table_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_load_table_thunk"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "resource",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Buffer reader and resource pack access.",
+      "range": [
+        "0x43b810",
+        "0x43bae1"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/resource/sfx_entry_reset_runtime_state.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_reset_runtime_state"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/buffer_reader_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/buffer_reader_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/buffer_reader_seek.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/buffer_reader_seek"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/buffer_reader_read_u16.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/buffer_reader_read_u16"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/buffer_reader_read_u32.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/buffer_reader_read_u32"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/buffer_reader_skip.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/buffer_reader_skip"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/buffer_reader_find_tag.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/buffer_reader_find_tag"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/resource_pack_read_cstring.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/resource_pack_read_cstring"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/resource_pack_set.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/resource_pack_set"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/resource_open_read.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/resource_open_read"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/resource/resource_close.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/resource_close"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "sound",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "DirectSound, sample and music stream entries.",
+      "range": [
+        "0x43baf0",
+        "0x43c66d"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/sound/dsound_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dsound_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/dsound_shutdown.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dsound_shutdown"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/dsound_restore_buffer.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/dsound_restore_buffer"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/resource_read_alloc.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/resource_read_alloc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_load_ogg.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_load_ogg"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_seek.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_seek"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_start_playback.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_start_playback"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_resume.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_resume"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_stop.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_stop"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_set_volume.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_set_volume"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_load_wav.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_load_wav"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_release_entry.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_release_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/wav_parse_into_entry.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/wav_parse_into_entry"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_upload_buffer.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_upload_buffer"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/sfx_entry_create_buffers.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_create_buffers"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/music_entry_load_ogg.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_entry_load_ogg"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/music_stream_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_stream_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/sound/music_stream_fill.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_stream_fill"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "audio",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the sfx, audio-id and music table initializers.",
+      "range": [
+        "0x43c670",
+        "0x43d7de"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_entry_table_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_table_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_entry_table_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_entry_table_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_asset_id_table_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_asset_id_table_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_asset_id_table_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_asset_id_table_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/music_entry_table_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_entry_table_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/music_entry_table_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_entry_table_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_release_sample.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_release_sample"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_load_sample.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_load_sample"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/music_load_track.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_load_track"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/music_queue_track.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_queue_track"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/music_release_track.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_release_track"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_init_music.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_init_music"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_init_sfx.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_init_sfx"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_system_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_system_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_release_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_release_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/music_release_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/music_release_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_shutdown_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_shutdown_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_play.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_play"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_play_panned.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_play_panned"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_play_exclusive.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_play_exclusive"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_mute_all.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_mute_all"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_update_mute_fades.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_update_mute_fades"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_suspend_channels.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_suspend_channels"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/audio_resume_channels.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/audio_resume_channels"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/audio/sfx_is_unmuted.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/sfx_is_unmuted"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ui_widgets",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Focus, slider, checkbox, scrollbar, menu item, button, text input and list widgets.",
+      "range": [
+        "0x43d7e0",
+        "0x43f54c"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_focus_set.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_focus_set"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_focus_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_focus_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_focus_draw.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_focus_draw"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_segmented_slider_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_segmented_slider_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_checkbox_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_checkbox_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_scrollbar_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_scrollbar_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_menu_item_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "ui-menu-item-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_item_update",
+            "tools/match/scratches/ui_menu_idle_color_destroy",
+            "tools/match/scratches/ui_menu_hover_color_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_button_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_button_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_text_input_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_text_input_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_list_widget_update"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ui_screens",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Statistics, unlocked databases, highscore, update-notice and profile screens.",
+      "range": [
+        "0x43f550",
+        "0x444801"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/statistics_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "statistics-menu-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/statistics_menu_update",
+            "tools/match/scratches/statistics_high_scores_button_destroy",
+            "tools/match/scratches/statistics_weapons_button_destroy",
+            "tools/match/scratches/statistics_perks_button_destroy",
+            "tools/match/scratches/statistics_credits_button_destroy",
+            "tools/match/scratches/statistics_typo_button_destroy",
+            "tools/match/scratches/statistics_mods_button_destroy",
+            "tools/match/scratches/statistics_update_button_destroy",
+            "tools/match/scratches/statistics_back_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/unlocked_weapons_database.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "unlocked-weapons-database-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/unlocked_weapons_database_update",
+            "tools/match/scratches/unlocked_weapons_back_button_destroy",
+            "tools/match/scratches/unlocked_weapons_scrollbar_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/unlocked_perks_database.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "unlocked-perks-database-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/unlocked_perks_database_update",
+            "tools/match/scratches/unlocked_perks_back_button_destroy",
+            "tools/match/scratches/unlocked_perks_scrollbar_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/crimson_crt_empty_initializer_slot_54_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_54_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/crimson_crt_empty_initializer_slot_54.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/crimson_crt_empty_initializer_slot_54"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_horizontal_divider.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_card_draw_horizontal_divider"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/highscore_card_draw_vertical_divider.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_card_draw_vertical_divider"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/highscore_format_date_label.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_format_date_label"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/ui_text_input_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_text_input_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/ui_update_notice_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "ui-update-notice-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/ui_update_notice_update",
+            "tools/match/scratches/ui_update_notice_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "highscore-screen-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/highscore_screen_update",
+            "tools/match/scratches/highscore_game_mode_list_destroy",
+            "tools/match/scratches/highscore_player_count_list_destroy",
+            "tools/match/scratches/highscore_date_filter_list_destroy",
+            "tools/match/scratches/highscore_online_scores_checkbox_destroy",
+            "tools/match/scratches/highscore_back_button_destroy",
+            "tools/match/scratches/highscore_play_button_destroy",
+            "tools/match/scratches/highscore_update_button_destroy",
+            "tools/match/scratches/highscore_score_scrollbar_destroy",
+            "tools/match/scratches/highscore_hardcore_checkbox_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_screens/ui_profile_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "ui-profile-menu-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/ui_profile_menu_update",
+            "tools/match/scratches/profile_name_input_destroy",
+            "tools/match/scratches/profile_add_button_destroy",
+            "tools/match/scratches/profile_delete_button_destroy",
+            "tools/match/scratches/profile_name_list_destroy"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "typo",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Typo mode.",
+      "range": [
+        "0x444810",
+        "0x445ff1"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/typo/creature_spawn_tinted.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/creature_spawn_tinted"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/player_fire_weapon.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/player_fire_weapon"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_word_pick_fragment.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/typo_word_pick_fragment"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_word_pick_highscore_name.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/typo_word_pick_highscore_name"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_target_name_is_unique.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/typo_target_name_is_unique"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_target_name_assign_random.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/typo_target_name_assign_random"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_target_find_by_name.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/typo_target_find_by_name"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_target_name_draw_labels.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/typo_target_name_draw_labels"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "typo-gameplay-update-and-render-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/typo_gameplay_update_and_render",
+            "tools/match/scratches/typo_target_world_destroy"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ui_elements",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "UI element system, game state machine and main-menu handlers.",
+      "range": [
+        "0x446000",
+        "0x447580"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/input_any_key_pressed.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_any_key_pressed"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/input_primary_just_pressed.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_primary_just_pressed"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/input_primary_is_down.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_primary_is_down"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_callback_noop.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_callback_noop"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_get_element_index.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_get_element_index"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_elements_reset_state.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_elements_reset_state"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_elements_max_timeline.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_elements_max_timeline"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/game_state_set.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/game_state_set"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_element_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_element_render.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_render"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_mods.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_mods"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_options.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_options"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_statistics.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_statistics"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_controls.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_controls"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_play_game.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_play_game"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_click_back_contextual.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_click_back_contextual"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_main_click_quit.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_quit"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_pause_click_resume.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_pause_click_resume"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/ui_elements/ui_menu_pause_click_main_menu.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_pause_click_main_menu"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "menus",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Options, quest-select, controls and play-game menus; their statics interleave in .bss.",
+      "range": [
+        "0x447580",
+        "0x4518f5"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/menus/config_apply_detail_preset.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/config_apply_detail_preset"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/options_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "options-menu-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/options_menu_update",
+            "tools/match/scratches/options_info_checkbox_destroy",
+            "tools/match/scratches/options_sfx_volume_slider_destroy",
+            "tools/match/scratches/options_music_volume_slider_destroy",
+            "tools/match/scratches/options_graphics_detail_slider_destroy",
+            "tools/match/scratches/options_mouse_sensitivity_slider_destroy",
+            "tools/match/scratches/options_controls_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/input_configure_for_label.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_configure_for_label"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/input_scheme_label.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_scheme_label"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/quest_select_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "quest-select-menu-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/quest_select_menu_update",
+            "tools/match/scratches/quest_select_row_idle_color_destroy",
+            "tools/match/scratches/quest_select_row_hover_color_destroy",
+            "tools/match/scratches/quest_select_unused_blue_color_destroy",
+            "tools/match/scratches/quest_select_unused_blue_dim_color_destroy",
+            "tools/match/scratches/quest_select_title_color_destroy",
+            "tools/match/scratches/quest_select_selected_stage_color_destroy",
+            "tools/match/scratches/quest_select_hovered_stage_color_destroy",
+            "tools/match/scratches/quest_select_unused_orange_color_destroy",
+            "tools/match/scratches/quest_select_hardcore_checkbox_destroy",
+            "tools/match/scratches/quest_select_back_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/input_detect_active_analog_axis.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/input_detect_active_analog_axis"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_menu_update"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/vec2_add_out.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/vec2_add_out"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_rebind_items_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_rebind_items_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_direction_arrow_checkbox_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_direction_arrow_checkbox_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_move_method_list_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_move_method_list_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_aim_method_list_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_aim_method_list_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_player_profile_list_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_player_profile_list_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_back_button_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_back_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/controls_redefine_button_destroy.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/controls_redefine_button_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/play_game_menu_update.cpp",
+          "physical_ownership": {
+            "kind": "native-translation-unit",
+            "cluster": "play-game-menu-update-lifecycle"
+          },
+          "configs": [
+            "tools/match/scratches/play_game_menu_update",
+            "tools/match/scratches/play_game_quests_button_destroy",
+            "tools/match/scratches/play_game_rush_button_destroy",
+            "tools/match/scratches/play_game_survival_button_destroy",
+            "tools/match/scratches/play_game_typo_button_destroy",
+            "tools/match/scratches/play_game_hardcore_checkbox_destroy",
+            "tools/match/scratches/play_game_tutorial_button_destroy",
+            "tools/match/scratches/play_game_player_count_list_destroy"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/ui_element_init_defaults.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_init_defaults"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/ui_element_layout_calc.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_element_layout_calc"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/ui_menu_main_click_buy_full_version.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_buy_full_version"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/ui_menu_main_click_recheck_full_version.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_main_click_recheck_full_version"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/menus/ui_menu_layout_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/ui_menu_layout_init"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "weapons",
+      "layout_evidence": "inferred-translation-unit",
+      "evidence": "Opens with the weapon-table defaults initializer.",
+      "range": [
+        "0x451900",
+        "0x452ee1"
+      ],
+      "sources": [
+        {
+          "path": "decomp/1.9/crimsonland/weapons/weapon_table_defaults_global_init_thunk.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_table_defaults_global_init_thunk"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/weapons/weapon_table_defaults_global_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_table_defaults_global_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/weapons/weapon_table_init.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_table_init"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/weapons/weapon_pick_random_available.cpp",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_pick_random_available"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/weapons/weapon_assign_player.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_assign_player"
+          ]
+        },
+        {
+          "path": "decomp/1.9/crimsonland/weapons/weapon_refresh_available.c",
+          "physical_ownership": {
+            "kind": "unproven-isolated-object"
+          },
+          "configs": [
+            "tools/match/scratches/weapon_refresh_available"
+          ]
+        }
+      ]
+    }
+  ]
+}

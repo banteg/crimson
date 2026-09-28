@@ -149,8 +149,8 @@ These are separate mode paths. Ordinary gameplay calls `player_update`, whose
 weapon-fire logic is inline; it does not call `player_fire_weapon`. Typ-o calls
 `player_fire_weapon` instead, after its console/dead-player gates. Each reached
 path applies the decay once. See
-`tools/match/scratches/gameplay_update_and_render/scratch.cpp` and
-`tools/match/scratches/typo_gameplay_update_and_render/scratch.cpp`.
+`decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp` and
+`decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp`.
 
 During `player_render_overlays`, the **torso quad** is offset by a recoil vector computed from aim heading:
 

@@ -40,7 +40,7 @@ shareware build while `shareware_offer_seen_latch` is clear. It saves config,
 starts `demo_mode_start`, mutes the existing music, plays `shortie_monk`, clears
 the quit request and sets the latch. A later quit exits. This is the quit-offer
 path, separate from menu idle entry; see
-`tools/match/scratches/game_frame_update/scratch.cpp`.
+`decomp/1.9/crimsonland/game/game_frame_update.cpp`.
 
 ## Core loop model
 
@@ -134,7 +134,7 @@ The variants are small, deterministic setup functions that:
 - Weapon: `0x0b` (Rocket Launcher) for both.
 - Uses `heading = -100.0`, the random-heading sentinel.
   `creature_spawn_template` replaces it with `(rand() % 628) * 0.01f` after
-  allocating the root slot; see `tools/match/scratches/creature_spawn_template/scratch.cpp`.
+  allocating the root slot; see `decomp/1.9/crimsonland/quests/creature_spawn_template.cpp`.
 
 ### Variant 1 — `demo_setup_variant_1` (`0x004030f0`)
 

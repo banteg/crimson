@@ -7,7 +7,7 @@ tags:
 # Typ-o input rendering
 
 The native reference is `typo_gameplay_update_and_render` (`0x004457c0`), recovered
-in `tools/match/scratches/typo_gameplay_update_and_render/scratch.cpp`.
+in `decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp`.
 Python draws it through `src/crimson/ui/overlays/typo_run.py`.
 
 | Element | Native geometry and content |

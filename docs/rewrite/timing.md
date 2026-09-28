@@ -46,11 +46,11 @@ Native sources:
   `decomp/1.9/grim/timing/update.cpp`, and
   `decomp/1.9/grim/timing/get_frame_dt.cpp`.
 - `decomp/1.9/grim/app/run_loop.cpp` for input timing and frame dispatch.
-- `tools/match/scratches/game_frame_update/scratch.cpp`,
-  `tools/match/scratches/gameplay_update_and_render/scratch.cpp`, and
-  `tools/match/scratches/player_update/scratch.cpp` for delta mutation order.
-- `tools/match/scratches/audio_update/scratch.cpp` and
-  `tools/match/scratches/console_update/scratch.cpp` for saved-delta consumers.
+- `decomp/1.9/crimsonland/game/game_frame_update.cpp`,
+  `decomp/1.9/crimsonland/game/gameplay_update_and_render.cpp`, and
+  `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` for delta mutation order.
+- `decomp/1.9/crimsonland/audio/audio_update.cpp` and
+  `decomp/1.9/crimsonland/console/console_update.cpp` for saved-delta consumers.
 
 ### Slow motion is layered
 
@@ -137,8 +137,8 @@ final-second easing, but that difference matters only if an active latch is
 introduced outside the normal mode flow. The practical timing distinction in
 Typo is its spawn/debt policy, not an alternative slow-motion mechanic.
 
-Entry/reset evidence: `tools/match/scratches/game_state_set/scratch.cpp` and
-`tools/match/scratches/gameplay_reset_state/scratch.cpp`.
+Entry/reset evidence: `decomp/1.9/crimsonland/ui_elements/game_state_set.cpp` and
+`decomp/1.9/crimsonland/gameplay/gameplay_reset_state.cpp`.
 
 ### Run time, playtime, and score
 
@@ -153,7 +153,7 @@ should not be used as substitutes for survival time or the quest timeline.
 
 Quest results further transform the timeline into a score by subtracting life
 and unpicked-perk bonuses. That final time is a scoring value, not another clock.
-See `tools/match/scratches/quest_results_screen_update/scratch.cpp` and the Python
+See `decomp/1.9/crimsonland/end_screens/quest_results_screen_update.cpp` and the Python
 counterpart `src/crimson/quests/results.py` (`compute_quest_final_time`).
 
 ## Python port counterparts

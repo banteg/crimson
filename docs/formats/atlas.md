@@ -67,7 +67,7 @@ Extracted table (effect_id → size code + frame index):
 
 The frame index selects a row-major cell in the corresponding UV grid.
 `effect_spawn` copies that cell origin and adds the effect-specific UV step to
-form four corners; see `tools/match/scratches/effect_spawn/scratch.cpp`.
+form four corners; see `decomp/1.9/crimsonland/effects/effect_spawn.cpp`.
 
 Visual note:
 
@@ -121,7 +121,7 @@ The engine uses **two patterns**:
 
   - Beam segments use `grim_set_atlas_frame(4, 2)`. Direction is computed
     separately and used to place the quads; it is not an extra argument to the
-    atlas setter. See `tools/match/scratches/projectile_render/scratch.cpp`.
+    atlas setter. See `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp`.
 
 - `artifacts/assets/crimson/game/bonuses.png` (bonus_texture)
   - Uses **sprite table index 0x10**, which maps to **grid=4**.

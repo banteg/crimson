@@ -171,7 +171,7 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   - Sharpshooter subtracts `2 * frame_dt`, clamps to `0.25`, then
     unconditionally writes `0.02`. The final value is therefore `0.02`; these
     are sequential writes, not conflicting candidate constants. See
-    `tools/match/scratches/player_update/scratch.cpp`. [static]
+    `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp`. [static]
 
 - **Gain on fire:** if Sharpshooter is **not** active,
   `player_spread_heat += weapon_table[weapon_id].spread_heat * 1.3`. [static]

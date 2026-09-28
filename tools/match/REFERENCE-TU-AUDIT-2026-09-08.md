@@ -187,11 +187,11 @@ The eight inspected source digests pin the classification epoch:
 
 | Source | SHA-256 |
 |---|---|
-| `tools/match/scratches/controls_menu_update/scratch.cpp` | `86c10a5d49356e52c062ba14d52e6c0db01690ab2e3b9a47ae7b24d017af2b7e` |
-| `tools/match/scratches/creature_render_type/scratch.cpp` | `64c270c898ac14e21ab7ad932cc0cf83a5bdc7d97b397461b102ff93276f7086` |
-| `tools/match/scratches/creature_spawn_template/scratch.cpp` | `5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f` |
-| `tools/match/scratches/creature_update_all/scratch.cpp` | `854a1dcf34a2b8e21695af7dfa23ade204da4172a3004ad4cd8adcd44636cb17` |
-| `tools/match/scratches/highscore_screen_update/scratch.cpp` | `8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be` |
-| `tools/match/scratches/player_update/scratch.cpp` | `1a7e3490cde7dfc566818418d2dfd7a242fbb6eb0dab810aa4eab854aa94c7fe` |
-| `tools/match/scratches/projectile_render/scratch.cpp` | `57d0adb7c5305072e2405207031de48041ef8a29a42786b6320a1c5f9acfa063` |
-| `tools/match/scratches/projectile_update/scratch.cpp` | `7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1` |
+| `decomp/1.9/crimsonland/menus/controls_menu_update.cpp` | `86c10a5d49356e52c062ba14d52e6c0db01690ab2e3b9a47ae7b24d017af2b7e` |
+| `decomp/1.9/crimsonland/ui_render/creature_render_type.cpp` | `64c270c898ac14e21ab7ad932cc0cf83a5bdc7d97b397461b102ff93276f7086` |
+| `decomp/1.9/crimsonland/quests/creature_spawn_template.cpp` | `5c1fdd779bb8b027eca91c28d9d113a7cbaf6b965a85a542f8b161b8d0c3305f` |
+| `decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp` | `854a1dcf34a2b8e21695af7dfa23ade204da4172a3004ad4cd8adcd44636cb17` |
+| `decomp/1.9/crimsonland/ui_screens/highscore_screen.cpp` | `8666b3ecc039f3fe4a3d1078629152136f2cd3ada463a48c0f07a9512bed93be` |
+| `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` | `1a7e3490cde7dfc566818418d2dfd7a242fbb6eb0dab810aa4eab854aa94c7fe` |
+| `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` | `57d0adb7c5305072e2405207031de48041ef8a29a42786b6320a1c5f9acfa063` |
+| `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` | `7245eccc7426b22b561a90b4d4a024f3c6d769c274f24cc760b034043973edc1` |

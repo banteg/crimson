@@ -453,14 +453,14 @@
         "visual-cpp-6-sp6-media"
       ],
       "tracked_sources": [
-        "tools/match/scratches/dx_get_version/scratch.cpp",
-        "tools/match/scratches/dx_get_version_from_dxdiag/scratch.cpp",
-        "tools/match/scratches/dx_get_version_fallback_from_files/scratch.cpp",
-        "tools/match/scratches/win32_file_get_version_words/scratch.cpp",
-        "tools/match/scratches/dx_version_pack_4x16/scratch.cpp",
-        "tools/match/scratches/dx_version_compare_4x16/scratch.cpp",
-        "tools/match/scratches/reg_read_dword_default/scratch.c",
-        "tools/match/scratches/reg_write_dword/scratch.c"
+        "decomp/1.9/crimsonland/dxversion/dx_get_version.cpp",
+        "decomp/1.9/crimsonland/dxversion/dx_get_version_from_dxdiag.cpp",
+        "decomp/1.9/crimsonland/dxversion/dx_get_version_fallback_from_files.cpp",
+        "decomp/1.9/crimsonland/dxversion/win32_file_get_version_words.cpp",
+        "decomp/1.9/crimsonland/dxversion/dx_version_pack_4x16.cpp",
+        "decomp/1.9/crimsonland/dxversion/dx_version_compare_4x16.cpp",
+        "decomp/1.9/crimsonland/crimsonland/reg_read_dword_default.c",
+        "decomp/1.9/crimsonland/crimsonland/reg_write_dword.c"
       ],
       "validation": "Every archive member must remain an exact all-scope instruction and reference match.",
       "normalization": [

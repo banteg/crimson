@@ -9,8 +9,12 @@ share function bodies. Tooling, scratch notes and experiments stay under
 decomp/
   builds.json      every known build: package, image pins, compilers, family
   1.9/             family 1.9: builds 1.9.1, 1.9.8, 1.9.9, 1.9.93 (canonical)
-    grim/          grim.dll
+    crimsonland/   crimsonland.exe, one directory per inferred translation unit
+    grim/          grim.dll, one directory per inferred subsystem
 ```
+
+Each image tree has a `layout.json` that records how strong the evidence for
+its grouping is; the native-link tests validate it.
 
 ## Builds
 
@@ -28,9 +32,11 @@ header. `profiles` maps a C2 build to the matcher's compiler profile.
 | 1.9.9 | 2008-10 | `crimsonland.RWG`, unwrapped | 36 (C2 9782, with runtime) | 1.9 |
 | 1.9.93 | 2011-02 | `crimsonland.exe` | 34 (C2 9782, with runtime) | 1.9 |
 
-The game grew from one C++ object into two dozen source files. The freeware
-builds share their compiler with 1.9.1 but join a family only once measured
-function overlap shows they share source.
+The game grew from one C++ object into two dozen source files, and it never
+had a C object: every build before 1.9.9 takes its runtime from an older
+compiler build, and none links a C object from the game's compiler. The
+freeware builds share their compiler with 1.9.1 but join a family only once
+measured function overlap shows they share source.
 
 Two build quirks are recorded in `builds.json`:
 

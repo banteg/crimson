@@ -7,9 +7,9 @@ tags:
 
 Native behavior is anchored to `creature_update_all` (`0x00426220`),
 `creature_apply_damage` (`0x004207c0`) and `creature_handle_death` (`0x0041e910`).
-Their recovered bodies are in `tools/match/scratches/creature_update_all/scratch.cpp`,
-`tools/match/scratches/creature_apply_damage/scratch.cpp` and
-`tools/match/scratches/creature_handle_death/scratch.c`. Consult address-keyed
+Their recovered bodies are in `decomp/1.9/crimsonland/crimsonland/creature_update_all.cpp`,
+`decomp/1.9/crimsonland/crimsonland/creature_apply_damage.cpp` and
+`decomp/1.9/crimsonland/crimsonland/creature_handle_death.c`. Consult address-keyed
 binary analysis when changing behavior; the Python implementation is a port.
 
 ## Update ownership and order

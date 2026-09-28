@@ -829,7 +829,7 @@
     {
       "address": 4994908,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; tools/match/scratches/highscore_build_path/scratch.c: highscore_cwd_buf[512]",
+      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
       "image": "crimsonland.exe",
       "name": "highscore_cwd_buf",
       "owners": [
@@ -1865,7 +1865,7 @@
     {
       "address": 4994652,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/highscore_build_path/scratch.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "extent_evidence": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "image": "crimsonland.exe",
       "name": "highscore_named_path_buf",
       "owners": [
@@ -1879,7 +1879,7 @@
     {
       "address": 4994780,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/highscore_build_path/scratch.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
+      "extent_evidence": "decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_named_path_buf[128] and highscore_path_buf[128]",
       "image": "crimsonland.exe",
       "name": "highscore_path_buf",
       "owners": [
@@ -1893,7 +1893,7 @@
     {
       "address": 5032912,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/ui_focus_update/scratch.cpp: ui_focus_candidates[32]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/ui_widgets/ui_focus_update.cpp: ui_focus_candidates[32]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "ui_focus_candidates",
       "owners": [
@@ -2649,7 +2649,7 @@
     {
       "address": 4720616,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/perks_generate_choices/scratch.c and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/perks_generate_choices.c and perk_selection_screen_update/scratch.cpp: perk_choice_ids[7]; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "perk_choice_ids",
       "owners": [
@@ -2803,7 +2803,7 @@
     {
       "address": 4664408,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "extent_evidence": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp and pinned reference PE: complete NUL-terminated credit string",
       "image": "crimsonland.exe",
       "name": "credits_name_petri_j",
       "owners": [
@@ -3965,7 +3965,7 @@
     {
       "address": 4664524,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "extent_evidence": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp and pinned reference PE: complete NUL-terminated credit string",
       "image": "crimsonland.exe",
       "name": "credits_name_valtteri_pihlajam",
       "owners": [
@@ -4203,7 +4203,7 @@
     {
       "address": 4781960,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/ui_render_hud/scratch.cpp: complete quest-stage label writer; Binary Ninja data layout reserves the 16-byte buffer before ui_cursor_texture",
+      "extent_evidence": "decomp/1.9/crimsonland/ui_render/ui_render_hud.cpp: complete quest-stage label writer; Binary Ninja data layout reserves the 16-byte buffer before ui_cursor_texture",
       "image": "crimsonland.exe",
       "name": "quest_stage_label_buffer",
       "owners": [
@@ -5533,7 +5533,7 @@
     {
       "address": 4664044,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/credits_build_lines/scratch.cpp and pinned reference PE: complete NUL-terminated credit string",
+      "extent_evidence": "decomp/1.9/crimsonland/credits/credits_build_lines.cpp and pinned reference PE: complete NUL-terminated credit string",
       "image": "crimsonland.exe",
       "name": "credits_name_ville_m",
       "owners": [
@@ -9999,7 +9999,7 @@
     {
       "address": 4715728,
       "blocker": "uncompiled-zero-definition",
-      "extent_evidence": "tools/match/scratches/console_render/scratch.cpp: console_cvar_entry_t pointer declaration; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/console/console_render.cpp: console_cvar_entry_t pointer declaration; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "cv_con_mono_font",
       "owners": [
@@ -10167,7 +10167,7 @@
     {
       "address": 4720700,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/player_update/scratch.cpp: extern IGrim2D_cpp pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp: extern IGrim2D_cpp pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "grim_interface_ptr",
       "owners": [
@@ -10195,7 +10195,7 @@
     {
       "address": 4720708,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/game_frame_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "frame_dt_ms",
       "owners": [
@@ -11301,7 +11301,7 @@
     {
       "address": 4739016,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/camera_update/scratch.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/camera_update.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
       "name": "camera_offset_x",
       "owners": [
@@ -11315,7 +11315,7 @@
     {
       "address": 4739020,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/camera_update/scratch.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/camera_update.cpp: extern float; tools/native/abi/crimsonland.exe/abi_assertions.cpp: float_is_32_bit",
       "image": "crimsonland.exe",
       "name": "camera_offset_y",
       "owners": [
@@ -11413,7 +11413,7 @@
     {
       "address": 4747216,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/quest_mode_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/quest_mode_update.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "quest_spawn_timeline",
       "owners": [
@@ -11917,7 +11917,7 @@
     {
       "address": 4747892,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/game_frame_update/scratch.cpp: extern game_state_id_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: game_state_id_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern game_state_id_t; tools/native/abi/crimsonland.exe/abi_assertions.cpp: game_state_id_is_32_bit",
       "image": "crimsonland.exe",
       "name": "game_state_pending",
       "owners": [
@@ -13051,7 +13051,7 @@
     {
       "address": 4782060,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/effects_render/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/effects/effects_render.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "particles_texture",
       "owners": [
@@ -18624,7 +18624,7 @@
     {
       "address": 4663064,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/tutorial_timeline_update/scratch.cpp and pinned reference PE: complete NUL-terminated placeholder string",
+      "extent_evidence": "decomp/1.9/crimsonland/game/tutorial_timeline_update.cpp and pinned reference PE: complete NUL-terminated placeholder string",
       "image": "crimsonland.exe",
       "name": "tutorial_empty_string",
       "owners": [
@@ -19226,7 +19226,7 @@
     {
       "address": 4747308,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/game_frame_update/scratch.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "extent_evidence": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
       "name": "screen_fade_ramp_flag",
       "owners": [
@@ -19408,7 +19408,7 @@
     {
       "address": 4747852,
       "blocker": "initialized-definition",
-      "extent_evidence": "tools/match/scratches/game_frame_update/scratch.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
+      "extent_evidence": "decomp/1.9/crimsonland/game/game_frame_update.cpp: extern unsigned char; tools/native/abi/crimsonland.exe/abi_assertions.cpp: unsigned_char_is_one_byte",
       "image": "crimsonland.exe",
       "name": "ui_transition_direction",
       "owners": [
@@ -20430,7 +20430,7 @@
     {
       "address": 4657496,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/console_cmd_arg_get/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/console/console_cmd_arg_get.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "console_empty_arg",
       "owners": [
@@ -20444,7 +20444,7 @@
     {
       "address": 4667920,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_redistribution_build",
       "owners": [
@@ -20458,7 +20458,7 @@
     {
       "address": 4667924,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_reijo",
       "owners": [
@@ -20472,7 +20472,7 @@
     {
       "address": 4667928,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_secret_weapons",
       "owners": [
@@ -20486,7 +20486,7 @@
     {
       "address": 4667932,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_warning",
       "owners": [
@@ -20500,7 +20500,7 @@
     {
       "address": 4667936,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_alien_zookeeper",
       "owners": [
@@ -20514,7 +20514,7 @@
     {
       "address": 4667940,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_secret_path",
       "owners": [
@@ -20528,7 +20528,7 @@
     {
       "address": 4667944,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_magic_paint",
       "owners": [
@@ -20542,7 +20542,7 @@
     {
       "address": 4667948,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_muzzy",
       "owners": [
@@ -20556,7 +20556,7 @@
     {
       "address": 4667956,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/crimsonland_main/scratch.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/crimsonland_main.cpp: char pointer; tools/native/abi/crimsonland.exe/abi_assertions.cpp: pointer_is_32_bit",
       "image": "crimsonland.exe",
       "name": "developer_hint_haxxor",
       "owners": [
@@ -20738,7 +20738,7 @@
     {
       "address": 4711496,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/console_update/scratch.cpp and console_input_poll/scratch.cpp: console_input_buf[1024]",
+      "extent_evidence": "decomp/1.9/crimsonland/console/console_update.cpp and console_input_poll/scratch.cpp: console_input_buf[1024]",
       "image": "crimsonland.exe",
       "name": "console_input_buf",
       "owners": [
@@ -20752,7 +20752,7 @@
     {
       "address": 4712520,
       "blocker": "matched",
-      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; tools/match/scratches/highscore_build_path/scratch.c: highscore_cwd_buf[512]",
+      "extent_evidence": "tools/match/include/crimsonland_console.h: console_exec_line_buf[512]; decomp/1.9/crimsonland/highscore/highscore_build_path.c: highscore_cwd_buf[512]",
       "image": "crimsonland.exe",
       "name": "console_exec_line_buf",
       "owners": [
@@ -20780,7 +20780,7 @@
     {
       "address": 4713120,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/console_tokenize_line/scratch.cpp: strcpy from the 1024-byte console input buffer; Binary Ninja data layout reserves exactly 1024 bytes before console_log_queue",
+      "extent_evidence": "decomp/1.9/crimsonland/console/console_tokenize_line.cpp: strcpy from the 1024-byte console input buffer; Binary Ninja data layout reserves exactly 1024 bytes before console_log_queue",
       "image": "crimsonland.exe",
       "name": "console_tokenize_buf",
       "owners": [
@@ -20976,7 +20976,7 @@
     {
       "address": 4719452,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/player_update/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/gameplay/player_update_heading.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "config_player_count",
       "owners": [
@@ -21270,7 +21270,7 @@
     {
       "address": 4719876,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/bonus_render/scratch.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
+      "extent_evidence": "decomp/1.9/crimsonland/crimsonland/bonus_render.cpp: extern int; tools/native/abi/crimsonland.exe/abi_assertions.cpp: int_is_32_bit",
       "image": "crimsonland.exe",
       "name": "config_screen_width",
       "owners": [
@@ -28985,7 +28985,7 @@
     {
       "address": 5051692,
       "blocker": "matched",
-      "extent_evidence": "tools/match/scratches/typo_target_name_draw_labels/scratch.cpp and related Typ-o scratches: typo_target_name_table[384][64]",
+      "extent_evidence": "decomp/1.9/crimsonland/typo/typo_target_name_draw_labels.cpp and related Typ-o scratches: typo_target_name_table[384][64]",
       "image": "crimsonland.exe",
       "name": "typo_target_name_table",
       "owners": [

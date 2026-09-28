@@ -6,7 +6,7 @@ tags:
 # Player damage
 
 `player_take_damage` (`0x00425e50`) takes a player index and float damage.
-The recovered body is `tools/match/scratches/player_take_damage/scratch.cpp`;
+The recovered body is `decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp`;
 Python implements it in `src/crimson/player_damage.py`.
 
 Native code xrefs are `player_update` at `0x00415a03` (Ammunition Within) and

@@ -658,8 +658,8 @@ Rewrite behavior:
 - Default: enemy projectile hits are ignored while Death Clock is active.
 - `--preserve-bugs`: they subtract 10 health as in the original.
 
-Evidence: `tools/match/scratches/projectile_update/scratch.cpp` (player hit
-branch) and `tools/match/scratches/player_take_damage/scratch.cpp`.
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (player hit
+branch) and `decomp/1.9/crimsonland/crimsonland/player_take_damage.cpp`.
 
 ## 28) Bullet heads and plasma cores are never visible
 
@@ -680,6 +680,6 @@ Rewrite behavior:
 - Documented and preserved in both modes: the pass samples the same texels, so
   heads and cores stay invisible as in the original.
 
-Evidence: `tools/match/scratches/projectile_render/scratch.cpp` (Fire Bullets
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (Fire Bullets
 glow and late bullet pass), `effect_select_texture`, and captures of the
 original with Plasma Shooter spiders.
