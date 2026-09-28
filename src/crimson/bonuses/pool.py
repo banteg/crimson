@@ -405,8 +405,8 @@ class BonusPool:
             if _bonus_entry_is_empty(entry):
                 continue
 
-            decay = f32(float(f32(dt)) * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0))
-            entry.time_left = f32(float(f32(entry.time_left)) - float(decay))
+            decay = f32(f32(dt) * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0))
+            entry.time_left = f32(f32(entry.time_left) - float(decay))
             if not entry.picked and state.game_mode == GameMode.TUTORIAL:
                 entry.time_left = 5.0
             expired_to_unused = False

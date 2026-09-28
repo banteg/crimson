@@ -72,7 +72,7 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
 
     state = step_runtime.world.state
     players = step_runtime.world.players
-    raw_damage = float(f32(damage))
+    raw_damage = f32(damage)
     if state.debug_god_mode:
         return 0.0
 
@@ -95,7 +95,7 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
 
     if PerkId.THICK_SKINNED in state.perks:
         # Native uses an f32 constant (`~0.666`) here, not exact 2/3.
-        damage_scaled = float(f32(float(damage_scaled) * float(_THICK_SKINNED_DAMAGE_SCALE_F32)))
+        damage_scaled = f32(float(damage_scaled) * float(_THICK_SKINNED_DAMAGE_SCALE_F32))
 
     dodged = False
     if PerkId.NINJA in state.perks:

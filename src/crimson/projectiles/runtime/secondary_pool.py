@@ -160,8 +160,8 @@ def _move_rocket(
 ) -> None:
     # Move. Native keeps pos/vel as f32 fields: `pos += f32(dt * vel)`.
     entry.pos = Vec2(
-        float(f32(float(entry.pos.x) + float(f32(float(dt) * float(entry.vel.x))))),
-        float(f32(float(entry.pos.y) + float(f32(float(dt) * float(entry.vel.y))))),
+        f32(float(entry.pos.x) + f32(float(dt) * float(entry.vel.x))),
+        f32(float(entry.pos.y) + f32(float(dt) * float(entry.vel.y))),
     )
 
     # Update velocity + countdown. `projectile_vec2_length` rounds per PC=24 op.
@@ -172,8 +172,8 @@ def _move_rocket(
             if speed_mag < (500.0 if rocket else 600.0):
                 factor = x87_pc24_add(x87_pc24_mul(dt, 3.0 if rocket else 4.0), 1.0)
                 entry.vel = Vec2(
-                    float(f32(factor * float(entry.vel.x))),
-                    float(f32(factor * float(entry.vel.y))),
+                    f32(factor * float(entry.vel.x)),
+                    f32(factor * float(entry.vel.y)),
                 )
             entry.speed = x87_pc24_sub(entry.speed, f32(dt))
         case SecondaryProjectileTypeId.HOMING_ROCKET:
@@ -264,8 +264,8 @@ def _tick_rocket_trail(
         spawn_pos = entry.pos - direction * 9.0
         # Native bug: both trail velocity components come from cosine
         # (fcos with no fsin), so the smoke drifts diagonally.
-        trail_cos = math.cos(float(f32(entry.angle)) + NATIVE_HALF_PI)
-        trail_velocity = Vec2(float(f32(trail_cos)) * 90.0, float(f32(trail_cos * 90.0)))
+        trail_cos = math.cos(f32(entry.angle) + NATIVE_HALF_PI)
+        trail_velocity = Vec2(f32(trail_cos) * 90.0, f32(trail_cos * 90.0))
         sprite_effects.spawn(
             pos=spawn_pos,
             vel=trail_velocity,
@@ -273,7 +273,7 @@ def _tick_rocket_trail(
             color=RGBA(1.0, 1.0, 1.0, 0.25),
             rng=rng,
         )
-        entry.trail_timer = float(f32(0.06))
+        entry.trail_timer = f32(0.06)
 
 
 class SecondaryProjectilePool:
@@ -324,13 +324,13 @@ class SecondaryProjectilePool:
                 entry.detonation_t = 0.0
                 entry.detonation_scale = float(time_to_live)
                 entry.vel = Vec2(0.0, f32(time_to_live))
-                entry.speed = float(f32(float(time_to_live)))
+                entry.speed = f32(time_to_live)
                 return index
             case SecondaryProjectileTypeId.HOMING_ROCKET:
                 radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
                 # Native stores each trig result as float32 before the seeker's 190x velocity override.
                 entry.vel = Vec2(x87_pc24_cos_mul(radians, 1.0, 190.0), x87_pc24_sin_mul(radians, 1.0, 190.0))
-                entry.speed = float(f32(float(time_to_live)))
+                entry.speed = f32(time_to_live)
                 # Native `fx_spawn_secondary_projectile` seeds the seeker target with
                 # `creature_find_nearest(&player_aim_x, -1, 0.0)`.
                 entry.target_id = -1
@@ -343,7 +343,7 @@ class SecondaryProjectilePool:
             case _:
                 radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
                 entry.vel = Vec2(x87_pc24_cos_mul(radians, 90.0), x87_pc24_sin_mul(radians, 90.0))
-                entry.speed = float(f32(float(time_to_live)))
+                entry.speed = f32(time_to_live)
 
         return index
 

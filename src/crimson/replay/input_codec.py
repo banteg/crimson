@@ -22,7 +22,7 @@ from .types import (
 
 
 def _quantize_f32(value: float) -> float:
-    return float(f32(float(value)))
+    return f32(value)
 
 
 def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:

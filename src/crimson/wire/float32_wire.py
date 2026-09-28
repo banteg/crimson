@@ -13,7 +13,7 @@ def _field_label(field: str | None) -> str:
 
 def wire_f32(value: float, *, field: str | None = None) -> float:
     label = _field_label(field)
-    narrowed = float(f32(float(value)))
+    narrowed = f32(value)
     if not math.isfinite(narrowed):
         raise ValueError(f"{label} must be finite")
     return narrowed
@@ -30,7 +30,7 @@ def assert_wire_f32(value: float, *, field: str | None = None) -> float:
     candidate = float(value)
     if not math.isfinite(candidate):
         raise ValueError(f"{label} must be finite")
-    narrowed = float(f32(candidate))
+    narrowed = f32(candidate)
     if candidate != narrowed:
         raise ValueError(f"{label} must be f32-canonical")
     return candidate

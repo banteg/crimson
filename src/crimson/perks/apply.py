@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ..creatures.runtime import CreatureState
 
 # Native f32 literals.
-_THICK_SKINNED_FRACTION = float(f32(0.33333334))
+_THICK_SKINNED_FRACTION = f32(0.33333334)
 _BREATHING_ROOM_FRACTION = f32(0.6666667)
 _GRIM_DEAL_XP_SCALE = f32(0.18)
 

@@ -887,7 +887,7 @@ def spawn_ring_children(
         child = alloc_creature(template_id, pos, rng)
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
-        angle = x87_pc24_mul(f32(float(i)), f32(angle_step))
+        angle = x87_pc24_mul(f32(i), f32(angle_step))
         child.target_offset = Vec2(
             x87_pc24_cos_mul(angle, f32(radius)),
             x87_pc24_sin_mul(angle, f32(radius)),
@@ -988,13 +988,13 @@ class PlanBuilder(msgspec.Struct):
         final_heading = heading
         if final_heading == RANDOM_HEADING_SENTINEL:
             final_heading = x87_pc24_mul(
-                f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_RANDOM_HEADING) % 628)),
+                f32(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_RANDOM_HEADING) % 628),
                 f32(0.01),
             )
 
         # Base initialization always consumes one rand() for a transient heading value.
         creatures[0].heading = x87_pc24_mul(
-            f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING) % 314)),
+            f32(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_TEMPLATE_BASE_HEADING) % 314),
             f32(0.01),
         )
 
@@ -1094,13 +1094,13 @@ def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> SpawnId | None:
 
     Note: the original only adds `interval` once (no loop), so large dt can keep the timer negative.
     """
-    timer = float(f32(float(slot.timer)))
-    interval = float(f32(float(slot.interval)))
-    dt = float(f32(float(frame_dt)))
-    timer = float(f32(timer - dt))
+    timer = f32(slot.timer)
+    interval = f32(slot.interval)
+    dt = f32(frame_dt)
+    timer = f32(timer - dt)
     slot.timer = timer
     if slot.timer < 0.0:
-        slot.timer = float(f32(float(slot.timer) + interval))
+        slot.timer = f32(float(slot.timer) + interval)
         if slot.count < slot.limit:
             slot.count += 1
             return slot.child_template_id
@@ -1219,17 +1219,17 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     c.size = float(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE) % 20 + 44)
 
     # heading = (rand() % 314) * 0.01
-    c.heading = float(f32(f32(float(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING) % 314)) * f32(0.01)))
+    c.heading = f32(f32(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING) % 314) * f32(0.01))
 
     # Native computes in float32; preserve rounding so derived speeds match capture.
-    move_speed = f32(f32(f32(float(xp // 4000)) * f32(0.045)) + f32(0.9))
+    move_speed = f32(f32(f32(xp // 4000) * f32(0.045)) + f32(0.9))
     if c.type_id == CreatureTypeId.SPIDER_SP1:
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         move_speed = f32(f32(move_speed) * f32(1.3))
 
     r_health = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH)
     health_scaled = x87_pc24_mul(float(xp), f32(0.00125))
-    health_rand = f32(float(r_health & 0xF))
+    health_rand = f32(r_health & 0xF)
     health = f32(f32(health_scaled + health_rand) + f32(52.0))
 
     if c.type_id == CreatureTypeId.ZOMBIE:
@@ -1408,7 +1408,7 @@ def tick_survival_wave_spawns(
         spawn_cooldown += interval_ms
         spawn 1 creature at a random edge
     """
-    cooldown = f32(f32(spawn_cooldown) - f32(f32(float(player_count)) * f32(frame_dt_ms)))
+    cooldown = f32(f32(spawn_cooldown) - f32(f32(player_count) * f32(frame_dt_ms)))
     if cooldown >= 0.0:
         return float(cooldown), ()
 
@@ -1427,7 +1427,7 @@ def tick_survival_wave_spawns(
 
         if interval_ms < 1:
             interval_ms = 1
-        cooldown = f32(cooldown + f32(float(interval_ms)))
+        cooldown = f32(cooldown + f32(interval_ms))
 
         pos = rand_survival_spawn_pos(
             rng,
@@ -1485,12 +1485,12 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             if level < 11:
                 break
             stage = 3
-            step = float(f32(42.666668))
+            step = f32(42.666668)
             for i in range(12):
                 spawns.append(
                     SpawnTemplateCall(
                         template_id=SpawnId.SPIDER_SP2_RANDOM_35,
-                        pos=Vec2(1088.0, float(f32(f32(float(i)) * f32(step) + f32(256.0)))),
+                        pos=Vec2(1088.0, f32(f32(i) * f32(step) + f32(256.0))),
                         heading=heading,
                     ),
                 )
@@ -1642,7 +1642,7 @@ def build_rush_mode_spawn_creature(
     # `fild survival_elapsed_ms` loads the int exactly; only the multiply rounds.
     elapsed = float(elapsed_ms)
     c.health = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
-    c.heading = float(f32(f32(float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314)) * f32(0.01)))
+    c.heading = f32(f32(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314) * f32(0.01))
     c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
     c.reward_value = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)
 
@@ -1665,7 +1665,7 @@ def tick_rush_mode_spawns(
     survival_elapsed_ms: int,
 ) -> tuple[float, tuple[CreatureInit, ...]]:
     """Advance rush-mode edge wave spawning (pure model of `rush_mode_update` / 0x004072b0)."""
-    cooldown = f32(f32(spawn_cooldown) - f32(f32(float(player_count)) * f32(frame_dt_ms)))
+    cooldown = f32(f32(spawn_cooldown) - f32(f32(player_count) * f32(frame_dt_ms)))
 
     spawns: list[CreatureInit] = []
     while cooldown < 0.0:
@@ -2104,7 +2104,7 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
 
     def setup_child(child: CreatureInit, idx: int) -> None:
         child.target_offset = Vec2(-256.0 + float(idx) * 64.0, -256.0)
-        angle = x87_pc24_mul(f32(float(2 + idx * 2)), _NATIVE_FORMATION_CHAIN_LIZARD_ANGLE_STEP)
+        angle = x87_pc24_mul(f32(2 + idx * 2), _NATIVE_FORMATION_CHAIN_LIZARD_ANGLE_STEP)
         child.pos = Vec2(
             x87_pc24_add(f32(ctx.pos.x), x87_pc24_cos_mul(angle, f32(256.0))),
             x87_pc24_add(f32(ctx.pos.y), x87_pc24_sin_mul(angle, f32(256.0))),
@@ -2150,7 +2150,7 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
 
     def setup_child(child: CreatureInit, idx: int) -> None:
         angle_idx = 2 + idx * 2
-        angle = x87_pc24_mul(f32(float(angle_idx)), _NATIVE_FORMATION_CHAIN_ALIEN_ANGLE_STEP)
+        angle = x87_pc24_mul(f32(angle_idx), _NATIVE_FORMATION_CHAIN_ALIEN_ANGLE_STEP)
         child.pos = Vec2(
             x87_pc24_add(f32(ctx.pos.x), x87_pc24_cos_mul(angle, f32(256.0))),
             x87_pc24_add(f32(ctx.pos.y), x87_pc24_sin_mul(angle, f32(256.0))),

@@ -391,7 +391,7 @@ def _canonical_f32(value: float, *, field: str, require_canonical: bool = False)
     if not math.isfinite(numeric):
         raise ReplayCheckpointsError(f"{field} must be a finite f32")
     try:
-        canonical = float(f32(numeric))
+        canonical = f32(numeric)
     except (OverflowError, ValueError) as exc:
         raise ReplayCheckpointsError(f"{field} must be a finite f32") from exc
     if require_canonical and canonical != numeric:

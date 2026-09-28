@@ -135,18 +135,18 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
 
     # Native keeps these values in float locals (`fVar*`) across the function.
     # Preserve that spill behavior to avoid branch flips near the `tau` boundary.
-    angle = float(f32(current))
-    target_f = float(f32(target))
-    rate_f = float(f32(rate))
-    dt_f = float(f32(dt))
+    angle = f32(current)
+    target_f = f32(target)
+    rate_f = f32(rate)
+    dt_f = f32(dt)
     tau = float(NATIVE_TAU)
 
     while angle < 0.0:
-        angle = float(f32(angle + tau))
+        angle = f32(angle + tau)
     while tau < angle:
-        angle = float(f32(angle - tau))
+        angle = f32(angle - tau)
 
-    direct = float(f32(abs(float(f32(target_f - angle)))))
+    direct = f32(abs(f32(target_f - angle)))
 
     hi = angle
     if angle < target_f:
@@ -154,24 +154,24 @@ def _angle_approach(current: float, target: float, rate: float, dt: float) -> fl
     lo = angle
     if target_f < angle:
         lo = target_f
-    wrapped = float(f32(abs(float(f32(float(f32(tau - hi)) + lo)))))
+    wrapped = f32(abs(f32(f32(tau - hi) + lo)))
 
     step_scale = wrapped
     if direct < wrapped:
         step_scale = direct
     if step_scale > 1.0:
         step_scale = 1.0
-    step_scale = float(f32(step_scale))
+    step_scale = f32(step_scale)
 
-    step_delta = float(f32(float(f32(dt_f * step_scale)) * rate_f))
+    step_delta = f32(f32(dt_f * step_scale) * rate_f)
 
     if direct <= wrapped:
         if angle < target_f:
-            return float(f32(angle + step_delta))
+            return f32(angle + step_delta)
     else:
         if target_f < angle:
-            return float(f32(angle + step_delta))
-    return float(f32(angle - step_delta))
+            return f32(angle + step_delta)
+    return f32(angle - step_delta)
 
 
 def _movement_delta_from_heading_f32(
@@ -187,7 +187,7 @@ def _movement_delta_from_heading_f32(
     # precision internally, so their rounding lands in the first multiply
     # (`creature_update_all` 0x426dab..0x426de6, validated against captured
     # walker velocity channels).
-    radians = x87_pc24_sub(float(f32(heading)), NATIVE_HALF_PI)
+    radians = x87_pc24_sub(f32(heading), NATIVE_HALF_PI)
 
     # Preserve native multiply order:
     # `vel = trig(heading - half_pi) * frame_dt * move_scale * move_speed * 30.0`
@@ -750,7 +750,7 @@ class CreaturePool:
 
         Death side effects are initiated by damage call sites.
         """
-        dt = float(f32(float(step_runtime.dt)))
+        dt = f32(step_runtime.dt)
         world = step_runtime.world
         state = world.state
         players = world.players
@@ -1262,7 +1262,7 @@ class CreaturePool:
             # Native spawn paths write heading but keep target_heading stale from
             # the recycled slot (capture lifecycle shows added entries retaining
             # prior target_heading values).
-            entry.heading = f32(float(init.heading))
+            entry.heading = f32(init.heading)
         entry.phase_seed = int(init.phase_seed)
         # Native spawn paths zero velocity and a few per-frame state fields on every
         # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
@@ -1278,7 +1278,7 @@ class CreaturePool:
             hp = 1.0
         entry.hp = f32(hp)
         if not init.preserve_max_health:
-            entry.max_hp = f32(float(init.max_health or hp))
+            entry.max_hp = f32(init.max_health or hp)
 
         # Stat fields a spawn path never writes keep the recycled slot's values.
         if init.move_speed is not None:
@@ -1295,9 +1295,9 @@ class CreaturePool:
         # creature_alloc_slot leaves the native orbit-angle/radius union stale.
         # Only overwrite an arm when the selected spawn path explicitly does.
         if init.orbit_angle is not None:
-            entry.orbit_angle = f32(float(init.orbit_angle))
+            entry.orbit_angle = f32(init.orbit_angle)
         if init.orbit_radius is not None:
-            entry.orbit_radius = f32(float(init.orbit_radius))
+            entry.orbit_radius = f32(init.orbit_radius)
         elif init.ranged_projectile_type is not None:
             entry.ranged_projectile_type = int(init.ranged_projectile_type)
 
@@ -1365,8 +1365,8 @@ class CreaturePool:
         if dt <= 0.0:
             return
 
-        dt_f32 = f32(float(dt))
-        lifecycle_stage = f32(float(creature.lifecycle_stage))
+        dt_f32 = f32(dt)
+        lifecycle_stage = f32(creature.lifecycle_stage)
         if lifecycle_stage <= 0.0:
             creature.lifecycle_stage = f32(
                 lifecycle_stage - f32(float(dt_f32) * CREATURE_CORPSE_FADE_DECAY),
@@ -1386,7 +1386,7 @@ class CreaturePool:
                 # Preserve native x87 operation order for the death-slide
                 # velocity: trig * lifecycle * frame_dt * 9, narrowing after
                 # each multiply in the game's 24-bit precision mode.
-                radians = x87_pc24_sub(float(f32(creature.heading)), NATIVE_HALF_PI)
+                radians = x87_pc24_sub(f32(creature.heading), NATIVE_HALF_PI)
                 vel_x = x87_pc24_cos_mul(
                     radians,
                     float(next_lifecycle_stage),
@@ -1501,19 +1501,13 @@ class CreaturePool:
                 child.phase_seed = int(rng.rand_tagged(phase_seed_caller)) & 0xFF
                 # Native stores `heading +- 1.5707964f` unwrapped and leaves
                 # `target_heading` as the parent's stale copy.
-                child.heading = float(f32(float(creature.heading) + float(heading_offset)))
-                child.hp = float(f32(float(creature.max_hp) * float(f32(0.25))))
+                child.heading = f32(float(creature.heading) + float(heading_offset))
+                child.hp = f32(float(creature.max_hp) * f32(0.25))
                 # Native multiplies by the f32 literal 0.6666667.
-                child.reward_value = float(
-                    f32(float(child.reward_value) * float(f32(0.6666667))),
-                )
-                child.size = float(f32(float(child.size) - float(f32(8.0))))
-                child.move_speed = float(
-                    f32(float(child.move_speed) + float(f32(0.1))),
-                )
-                child.contact_damage = float(
-                    f32(float(child.contact_damage) * float(f32(0.7))),
-                )
+                child.reward_value = f32(float(child.reward_value) * f32(0.6666667))
+                child.size = f32(float(child.size) - f32(8.0))
+                child.move_speed = f32(float(child.move_speed) + f32(0.1))
+                child.contact_damage = f32(float(child.contact_damage) * f32(0.7))
                 child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
                 self._entries[child_idx] = child
                 self.spawned_count += 1

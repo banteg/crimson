@@ -207,7 +207,7 @@ class ParticlePool:
 
         if dt <= 0.0:
             return []
-        dt = f32(float(dt))
+        dt = f32(dt)
         creatures = step_runtime.world.creatures.entries
         fx_queue = step_runtime.fx_queue
         sprite_effects = step_runtime.world.state.sprite_effects
@@ -293,9 +293,9 @@ class ParticlePool:
                         # f32 constant 1.2566371.
                         angle = float(entry.angle)
                         while float(NATIVE_TAU) < angle:
-                            angle = float(f32(angle - float(NATIVE_TAU)))
+                            angle = f32(angle - float(NATIVE_TAU))
                         while angle < 0.0:
-                            angle = float(f32(angle + float(NATIVE_TAU)))
+                            angle = f32(angle + float(NATIVE_TAU))
                         entry.angle = angle
                         hit_x = x87_pc24_sub(
                             x87_pc24_sub(entry.pos.x, x87_pc24_mul(dt, entry.vel.x)),
@@ -310,7 +310,7 @@ class ParticlePool:
                             hit_angle = x87_pc24_sub(hit_angle, NATIVE_TAU)
                         while hit_angle < 0.0:
                             hit_angle = x87_pc24_add(hit_angle, NATIVE_TAU)
-                        deflect_step = float(f32(1.2566371))
+                        deflect_step = f32(1.2566371)
                         if float(entry.angle) <= hit_angle:
                             entry.angle = f32(float(entry.angle) + deflect_step)
                         else:

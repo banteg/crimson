@@ -150,7 +150,7 @@ def reset_world_players(
     count = max(1, int(player_count))
 
     for idx in range(count):
-        offset = f32(float(idx * 0x50))
+        offset = f32(idx * 0x50)
         if idx % 2:
             pos = Vec2(f32(base.x - offset), f32(base.y - offset))
         else:

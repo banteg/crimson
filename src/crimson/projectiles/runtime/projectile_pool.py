@@ -17,6 +17,7 @@ from ...math_parity import (
     f32,
     x87_pc24_add,
     x87_pc24_cos_mul,
+    x87_pc24_distance,
     x87_pc24_hypot,
     x87_pc24_mul,
     x87_pc24_sin_mul,
@@ -77,14 +78,14 @@ _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[ProjectileTemplateId, ProjectileC
 def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
     """Mirror native PC_24 arithmetic stores in the projectile damage formula."""
 
-    distance = f32(float(dist))
+    distance = f32(dist)
     if distance < 50.0:
         distance = 50.0
     damage = f32(100.0 / float(distance))
-    damage = f32(float(damage) * float(f32(float(damage_scale))))
+    damage = f32(float(damage) * f32(damage_scale))
     damage = f32(float(damage) * 30.0)
     damage = f32(float(damage) + 10.0)
-    return f32(float(damage) * float(f32(0.95)))
+    return f32(float(damage) * f32(0.95))
 
 
 def _stop_on_hit_jitter_axis_f32(direction: float, jitter: int, pos: float) -> float:
@@ -134,18 +135,18 @@ class ProjectilePool:
         entry.active = True
         # Native projectile spawn writes angle/pos as float32 fields; keep those
         # stores narrowed so next-tick movement uses the same precision.
-        angle_f32 = float(f32(float(angle)))
-        pos_f32 = Vec2(float(f32(float(pos.x))), float(f32(float(pos.y))))
+        angle_f32 = f32(angle)
+        pos_f32 = Vec2(f32(pos.x), f32(pos.y))
         entry.angle = angle_f32
         entry.pos = pos_f32
         entry.origin = pos_f32
         entry.vel = Vec2(
-            float(f32(math.cos(float(angle_f32)) * 1.5)),
-            float(f32(math.sin(float(angle_f32)) * 1.5)),
+            f32(math.cos(float(angle_f32)) * 1.5),
+            f32(math.sin(float(angle_f32)) * 1.5),
         )
         entry.type_id = type_id
         # Native stores the f32 literal 0.4.
-        entry.life_timer = float(f32(0.4))
+        entry.life_timer = f32(0.4)
         entry.reserved = 0.0
         entry.speed_scale = 1.0
         weapon_entry = weapon_entry_for_projectile_type_id(type_id)
@@ -166,7 +167,7 @@ class ProjectilePool:
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
-        dt = float(f32(float(ctx.dt)))
+        dt = f32(ctx.dt)
         step_runtime = ctx.step_runtime
         world = step_runtime.world
         creatures = world.creatures.entries
@@ -200,12 +201,6 @@ class ProjectilePool:
 
         def _damage_scale(type_id: int) -> float:
             return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).damage_scale)
-
-        def _damage_distance_f32(origin: Vec2, pos: Vec2) -> float:
-            dx = float(f32(float(origin.x) - float(pos.x)))
-            dy = float(f32(float(origin.y) - float(pos.y)))
-            dist_sq = float(f32(float(f32(float(dx) * float(dx))) + float(f32(float(dy) * float(dy)))))
-            return float(f32(math.sqrt(float(dist_sq))))
 
         def _damage_type_for() -> int:
             return int(CreatureDamageType.BULLET)
@@ -272,7 +267,7 @@ class ProjectilePool:
                 or proj.pos.x > TERRAIN_SIZE + margin
                 or proj.pos.y > TERRAIN_SIZE + margin
             ):
-                proj.life_timer = float(f32(float(proj.life_timer) - float(dt)))
+                proj.life_timer = f32(float(proj.life_timer) - float(dt))
                 continue
 
             steps = int(proj.travel_budget)
@@ -314,8 +309,8 @@ class ProjectilePool:
                 if x87_pc24_hypot(acc.x, acc.y) >= 4.0 or steps <= step + 3:
                     move = acc
                     proj.pos = Vec2(
-                        float(f32(float(proj.pos.x) + float(move.x))),
-                        float(f32(float(proj.pos.y) + float(move.y))),
+                        f32(float(proj.pos.x) + float(move.x)),
+                        f32(float(proj.pos.y) + float(move.y)),
                     )
                     acc = Vec2()
 
@@ -430,7 +425,7 @@ class ProjectilePool:
                             _stop_on_hit_jitter_axis_f32(dir_y, jitter, proj.pos.y),
                         )
 
-                    dist = _damage_distance_f32(proj.origin, proj.pos)
+                    dist = x87_pc24_distance(proj.origin, proj.pos)
 
                     hit_info = _ProjectileHitInfo(
                         proj_index=int(proj_index), proj=proj, hit_idx=int(hit_idx), move=move, target=target,

@@ -35,7 +35,7 @@ def tick_quest_spawn_timeline(
     for idx, entry in enumerate(entries):
         if entry.count <= 0:
             continue
-        if f32(float(entry.trigger_ms)) < timeline_ms or force_spawn:
+        if f32(entry.trigger_ms) < timeline_ms or force_spawn:
             start_idx = idx
             break
 
@@ -55,7 +55,7 @@ def tick_quest_spawn_timeline(
         offscreen_x = base_pos.x < 0.0 or base_pos.x > TERRAIN_SIZE
 
         for spawn_idx in range(int(entry.count)):
-            magnitude = f32(float(spawn_idx * 0x28))
+            magnitude = f32(spawn_idx * 0x28)
             offset = magnitude if (spawn_idx & 1) == 0 else -magnitude
             if offscreen_x:
                 pos = base_pos.offset(dy=offset)

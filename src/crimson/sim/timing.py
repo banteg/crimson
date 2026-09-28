@@ -13,7 +13,7 @@ def reflex_boost_time_scale_factor(*, reflex_boost_timer: float, time_scale_acti
     if not time_scale_active:
         return 1.0
 
-    reflex_f32 = f32(float(reflex_boost_timer))
+    reflex_f32 = f32(reflex_boost_timer)
     if reflex_f32 >= 1.0:
         return f32(0.3)
 
@@ -29,7 +29,7 @@ def reflex_boost_time_scale_factor(*, reflex_boost_timer: float, time_scale_acti
 def ftol_ms_i32(dt_seconds: float) -> int:
     """Convert seconds -> integer milliseconds via float32 scale + truncation."""
 
-    dt_f32 = f32(float(dt_seconds))
+    dt_f32 = f32(dt_seconds)
     scaled_ms_f32 = f32(float(dt_f32) * 1000.0)
     return int(math.trunc(float(scaled_ms_f32)))
 
@@ -37,7 +37,7 @@ def ftol_ms_i32(dt_seconds: float) -> int:
 def nearest_ms_i32(seconds: float) -> int:
     """Encode canonical f32 seconds using Frida's nearest-millisecond rule."""
 
-    seconds_f32 = f32(float(seconds))
+    seconds_f32 = f32(seconds)
     return int(math.floor(float(seconds_f32) * 1000.0 + 0.5))
 
 
@@ -64,15 +64,15 @@ class FrameTiming(msgspec.Struct, frozen=True):
         time_scale_active_entry: bool,
         time_scale_factor: float,
     ) -> FrameTiming:
-        dt_f32 = float(f32(float(dt)))
+        dt_f32 = f32(dt)
         if not math.isfinite(dt_f32):
             raise ValueError(f"dt must be finite, got {dt!r}")
-        world_dt_f32 = dt_f32 if world_dt is None else float(f32(float(world_dt)))
+        world_dt_f32 = dt_f32 if world_dt is None else f32(world_dt)
         if not math.isfinite(world_dt_f32):
             raise ValueError(f"world_dt must be finite, got {world_dt!r}")
 
         active = bool(time_scale_active_entry)
-        factor = float(f32(float(time_scale_factor)))
+        factor = f32(time_scale_factor)
         if active and (not math.isfinite(factor) or float(factor) <= 0.0):
             raise ValueError(f"time_scale_factor must be finite and > 0 when active, got {time_scale_factor!r}")
 

@@ -115,13 +115,13 @@ def bonus_update(
         if double_xp <= 0.0:
             state.bonuses.double_experience = 0.0
         else:
-            state.bonuses.double_experience = float(f32(float(double_xp) - float(dt)))
+            state.bonuses.double_experience = f32(float(double_xp) - float(dt))
 
         freeze = float(state.bonuses.freeze)
         if freeze <= 0.0:
             state.bonuses.freeze = 0.0
         else:
-            state.bonuses.freeze = float(f32(float(freeze) - float(dt)))
+            state.bonuses.freeze = f32(float(freeze) - float(dt))
 
     bonus_hud_update(state, players, dt=dt)
 
@@ -134,9 +134,9 @@ def bonus_update_pre_pickup_timers(state: GameplayState, dt: float) -> None:
     if dt <= 0.0:
         return
     if float(state.bonuses.weapon_power_up) > 0.0:
-        state.bonuses.weapon_power_up = float(f32(float(state.bonuses.weapon_power_up) - float(dt)))
+        state.bonuses.weapon_power_up = f32(float(state.bonuses.weapon_power_up) - float(dt))
     if float(state.bonuses.energizer) > 0.0:
-        state.bonuses.energizer = float(f32(float(state.bonuses.energizer) - float(dt)))
+        state.bonuses.energizer = f32(float(state.bonuses.energizer) - float(dt))
     if float(state.bonuses.reflex_boost) > 0.0:
         state.bonuses.reflex_boost = float(
             x87_pc24_sub(

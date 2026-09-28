@@ -20,6 +20,7 @@ from ..math_parity import (
     f32_vec2,
     heading_from_delta_f32,
     x87_pc24_add,
+    x87_pc24_distance,
     x87_pc24_mul,
 )
 from ..rng_caller_static import RngCallerStatic
@@ -82,23 +83,12 @@ def resolve_live_link(creatures: Sequence[CreatureState], link_index: int) -> Cr
     return None
 
 
-def _distance_f32(a: Vec2, b: Vec2) -> float:
-    # Gameplay leaves x87 in 24-bit precision mode: the deltas, squares, and
-    # sum each round to f32 before fsqrt stores the final distance.
-    dx = f32(float(b.x) - float(a.x))
-    dy = f32(float(b.y) - float(a.y))
-    dx_sq = f32(float(dx) * float(dx))
-    dy_sq = f32(float(dy) * float(dy))
-    dist_sq = f32(float(dx_sq) + float(dy_sq))
-    return f32(math.sqrt(float(dist_sq)))
-
-
 def _orbit_target_f32(*, player_pos: Vec2, orbit_phase: float, dist: float, scale: float) -> Vec2:
-    orbit_dist = f32(float(dist))
-    orbit_scale = f32(float(scale))
-    phase = f32(float(orbit_phase))
-    px = f32(float(player_pos.x))
-    py = f32(float(player_pos.y))
+    orbit_dist = f32(dist)
+    orbit_scale = f32(scale)
+    phase = f32(orbit_phase)
+    px = f32(player_pos.x)
+    py = f32(player_pos.y)
     orbit_x = f32(math.cos(float(phase)) * float(orbit_dist))
     orbit_x = f32(float(orbit_x) * float(orbit_scale))
     orbit_y = f32(math.sin(float(phase)) * float(orbit_dist))
@@ -135,7 +125,7 @@ def creature_ai_update_target(
     """
 
     distance_pos = distance_player_pos
-    dist_to_player = _distance_f32(creature.pos, distance_pos)
+    dist_to_player = x87_pc24_distance(creature.pos, distance_pos)
     orbit_phase = f32(f32(float(creature.phase_seed) * f32(3.7)) * NATIVE_PI)
     move_scale = 1.0
     self_damage: float | None = None
@@ -180,7 +170,7 @@ def creature_ai_update_target(
         link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
             creature.target = _link_target_f32(link_pos=link.pos, offset=(creature.target_offset or Vec2()))
-            dist_to_target = _distance_f32(creature.pos, creature.target)
+            dist_to_target = x87_pc24_distance(creature.pos, creature.target)
             if dist_to_target <= 64.0:
                 move_scale = f32(dist_to_target * 0.015625)
         else:
@@ -216,7 +206,7 @@ def creature_ai_update_target(
             creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
         else:
             angle = x87_pc24_add(float(creature.orbit_angle), float(creature.heading))
-            orbit_radius = f32(float(creature.orbit_radius))
+            orbit_radius = f32(creature.orbit_radius)
             creature.target = Vec2(
                 x87_pc24_add(
                     x87_pc24_mul(math.cos(angle), orbit_radius),
@@ -228,7 +218,7 @@ def creature_ai_update_target(
                 ),
             )
 
-    dist_to_target = _distance_f32(creature.pos, creature.target)
+    dist_to_target = x87_pc24_distance(creature.pos, creature.target)
     if dist_to_target < 40.0 or dist_to_target > 400.0:
         creature.force_target = 1
 

@@ -780,10 +780,10 @@ WEAPON_TABLE = [
 WEAPON_TABLE = [
     msgspec.structs.replace(
         entry,
-        shot_cooldown=float(f32(entry.shot_cooldown)),
-        reload_time=float(f32(entry.reload_time)),
-        spread_heat_inc=float(f32(entry.spread_heat_inc)),
-        damage_scale=float(f32(entry.damage_scale)),
+        shot_cooldown=f32(entry.shot_cooldown),
+        reload_time=f32(entry.reload_time),
+        spread_heat_inc=f32(entry.spread_heat_inc),
+        damage_scale=f32(entry.damage_scale),
     )
     for entry in WEAPON_TABLE
 ]

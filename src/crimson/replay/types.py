@@ -18,7 +18,7 @@ from ..sim.run_spec import RunSpec
 REPLAY_FORMAT_VERSION = 25
 # Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
 REPLAY_TICK_RATE = 60
-REPLAY_TICK_DT = float(f32(1.0 / REPLAY_TICK_RATE))
+REPLAY_TICK_DT = f32(1.0 / REPLAY_TICK_RATE)
 
 FIRE_DOWN_FLAG = 1 << 0
 FIRE_PRESSED_FLAG = 1 << 1
@@ -146,7 +146,7 @@ def current_replay_game_version() -> str:
 
 
 def quantize_f32(value: float) -> float:
-    return float(f32(float(value)))
+    return f32(value)
 
 
 def pack_input_flags(

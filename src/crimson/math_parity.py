@@ -13,7 +13,6 @@ __all__ = [
     "NATIVE_QUARTER_PI",
     "NATIVE_TAU",
     "NATIVE_TURN_RATE_SCALE",
-    "atan2_f32",
     "f32",
     "f32_bits_i32",
     "f32_from_bits",
@@ -29,6 +28,7 @@ __all__ = [
     "x87_pc24_add",
     "x87_pc24_cos_mul",
     "x87_pc24_crt_pow",
+    "x87_pc24_distance",
     "x87_pc24_div",
     "x87_pc24_hypot",
     "x87_pc24_mul",
@@ -132,6 +132,12 @@ _FLT_EPSILON = f32_from_bits(0x34000000)
 _FLT_MIN = f32_from_bits(0x00800000)
 
 
+def x87_pc24_distance(a: Vec2, b: Vec2) -> float:
+    """Native `vec2_distance` under PC24: the deltas, squares, sum and root each round to float32."""
+
+    return x87_pc24_hypot(x87_pc24_sub(a.x, b.x), x87_pc24_sub(a.y, b.y))
+
+
 def x87_d3dx_vec2_normalize(value: Vec2) -> Vec2:
     """`D3DXVec2Normalize` x87 path (0x00455587) at PC24.
 
@@ -181,10 +187,6 @@ def sin_f32(radians: float) -> float:
 
 def cos_f32(radians: float) -> float:
     return f32(math.cos(float(radians)))
-
-
-def atan2_f32(y: float, x: float) -> float:
-    return f32(math.atan2(float(y), float(x)))
 
 
 def heading_from_delta_f32(*, dx: float, dy: float) -> float:

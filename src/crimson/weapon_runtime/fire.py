@@ -220,26 +220,26 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     pellet_count = int(weapon.pellet_count)
     fire_bullets_weapon = weapon_entry_for_projectile_type_id(ProjectileTemplateId.FIRE_BULLETS)
 
-    shot_cooldown = float(f32(float(weapon.shot_cooldown)))
+    shot_cooldown = f32(weapon.shot_cooldown)
     weapon_spread_heat = float(weapon.spread_heat_inc)
     fire_bullets_spread_heat = float(fire_bullets_weapon.spread_heat_inc)
 
     if is_fire_bullets and pellet_count == 1:
-        shot_cooldown = float(f32(float(fire_bullets_weapon.shot_cooldown)))
+        shot_cooldown = f32(fire_bullets_weapon.shot_cooldown)
 
     spread_heat_base = fire_bullets_spread_heat if is_fire_bullets else weapon_spread_heat
     spread_inc = x87_pc24_mul(spread_heat_base, f32(1.3))
 
     if PerkId.FASTSHOT in state.perks:
-        shot_cooldown = float(f32(float(shot_cooldown) * 0.88))
+        shot_cooldown = f32(float(shot_cooldown) * 0.88)
     if PerkId.SHARPSHOOTER in state.perks:
-        shot_cooldown = float(f32(float(shot_cooldown) * 1.05))
-    player.weapon.shot_cooldown = max(0.0, float(f32(float(shot_cooldown))))
+        shot_cooldown = f32(float(shot_cooldown) * 1.05)
+    player.weapon.shot_cooldown = max(0.0, f32(shot_cooldown))
 
     aim = input_state.aim
     # `player_update` computes and stores aim_heading before entering the fire
     # branch; later muzzle and presentation math reload that exact float field.
-    aim_heading = float(f32(player.aim_heading))
+    aim_heading = f32(player.aim_heading)
 
     muzzle = native_fire_muzzle_pos(player.pos, aim_heading)
     weapon_flags = int(weapon.flags or 0)

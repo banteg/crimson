@@ -74,7 +74,7 @@ def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> R
         player_results.append(
             PlayerRunResult(
                 experience=int(player.experience),
-                health=float(f32(float(player.health))),
+                health=f32(player.health),
                 shots_fired=int(shots_fired),
                 shots_hit=int(shots_hit),
                 most_used_weapon_id=most_used_weapon_id_for_player(

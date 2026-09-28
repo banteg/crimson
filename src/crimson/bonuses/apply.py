@@ -77,12 +77,12 @@ def bonus_apply(
 
         case BonusId.MEDIKIT:
             if float(player.health) < 100.0:
-                player.health = min(100.0, float(f32(float(player.health) + 10.0)))
+                player.health = min(100.0, f32(float(player.health) + 10.0))
 
         case BonusId.REFLEX_BOOST:
             old = float(state.bonuses.reflex_boost)
             _activate_hud_slot(state, players, bonus_id)
-            state.bonuses.reflex_boost = float(f32(old + float(amount) * multiplier))
+            state.bonuses.reflex_boost = f32(old + float(amount) * multiplier)
             for target in players:
                 target.weapon.ammo = float(target.weapon.clip_size)
                 target.weapon.reload_timer = 0.0
@@ -91,7 +91,7 @@ def bonus_apply(
         case BonusId.WEAPON_POWER_UP:
             old = float(state.bonuses.weapon_power_up)
             _activate_hud_slot(state, players, bonus_id)
-            state.bonuses.weapon_power_up = float(f32(old + float(amount) * multiplier))
+            state.bonuses.weapon_power_up = f32(old + float(amount) * multiplier)
             player.weapon_reset_latch = 0
             player.weapon.shot_cooldown = 0.0
             player.weapon.reload_timer = 0.0
@@ -99,7 +99,7 @@ def bonus_apply(
 
         case BonusId.SPEED:
             _activate_hud_slot(state, players, bonus_id)
-            player.speed_bonus_timer = float(f32(float(player.speed_bonus_timer) + float(amount) * multiplier))
+            player.speed_bonus_timer = f32(float(player.speed_bonus_timer) + float(amount) * multiplier)
 
         case BonusId.FREEZE:
             old = float(state.bonuses.freeze)
@@ -125,7 +125,7 @@ def bonus_apply(
 
         case BonusId.SHIELD:
             _activate_hud_slot(state, players, bonus_id)
-            player.shield_timer = float(f32(float(player.shield_timer) + float(amount) * multiplier))
+            player.shield_timer = f32(float(player.shield_timer) + float(amount) * multiplier)
 
         case BonusId.SHOCK_CHAIN:
             target_idx = creature_find_nearest_alive(
@@ -168,7 +168,7 @@ def bonus_apply(
 
         case BonusId.FIRE_BULLETS:
             _activate_hud_slot(state, players, bonus_id)
-            player.fire_bullets_timer = float(f32(float(player.fire_bullets_timer) + 5.0 * multiplier))
+            player.fire_bullets_timer = f32(float(player.fire_bullets_timer) + 5.0 * multiplier)
             player.weapon_reset_latch = 0
             player.weapon.shot_cooldown = 0.0
             player.weapon.reload_timer = 0.0
@@ -177,12 +177,12 @@ def bonus_apply(
         case BonusId.ENERGIZER:
             old = float(state.bonuses.energizer)
             _activate_hud_slot(state, players, bonus_id)
-            state.bonuses.energizer = float(f32(old + 8.0 * multiplier))
+            state.bonuses.energizer = f32(old + 8.0 * multiplier)
 
         case BonusId.DOUBLE_EXPERIENCE:
             old = float(state.bonuses.double_experience)
             _activate_hud_slot(state, players, bonus_id)
-            state.bonuses.double_experience = float(f32(old + 6.0 * multiplier))
+            state.bonuses.double_experience = f32(old + 6.0 * multiplier)
 
         case BonusId.NUKE:
             state.camera_shake_pulses = NUKE_CAMERA_SHAKE_PULSES

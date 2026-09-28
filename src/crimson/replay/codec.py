@@ -65,7 +65,7 @@ def _require_int(value: int, *, low: int, high: int, field: str) -> None:
 def _require_f32(value: float, *, field: str) -> None:
     _require(math.isfinite(value), f"{field} must be finite")
     try:
-        canonical = float(f32(value))
+        canonical = f32(value)
     except OverflowError as exc:
         raise ReplayCodecError(f"{field} is outside the f32 range") from exc
     _require(canonical == value, f"{field} must be a canonical f32")

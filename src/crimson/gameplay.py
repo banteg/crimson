@@ -22,6 +22,7 @@ from .math_parity import (
     x87_fpatan,
     x87_pc24_add,
     x87_pc24_crt_pow,
+    x87_pc24_distance,
     x87_pc24_div,
     x87_pc24_hypot,
     x87_pc24_mul,
@@ -79,14 +80,14 @@ if TYPE_CHECKING:
 
 _RELATIVE_MOVE_HEADING_NONE = -1.0
 _RELATIVE_MOVE_HEADING_FORWARD = 0.0
-_RELATIVE_MOVE_HEADING_FORWARD_RIGHT = float(f32(0.7853982))
-_RELATIVE_MOVE_HEADING_RIGHT = float(f32(1.5707964))
-_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT = float(f32(2.3561945))
+_RELATIVE_MOVE_HEADING_FORWARD_RIGHT = f32(0.7853982)
+_RELATIVE_MOVE_HEADING_RIGHT = f32(1.5707964)
+_RELATIVE_MOVE_HEADING_BACKWARD_RIGHT = f32(2.3561945)
 _RELATIVE_MOVE_HEADING_BACKWARD = float(NATIVE_PI)
-_RELATIVE_MOVE_HEADING_BACKWARD_LEFT = float(f32(3.926991))
-_RELATIVE_MOVE_HEADING_LEFT = float(f32(4.712389))
-_RELATIVE_MOVE_HEADING_FORWARD_LEFT = float(f32(5.4977875))
-_RELATIVE_MOVE_TURN_ALIGN_SCALE = float(f32(7.957747))
+_RELATIVE_MOVE_HEADING_BACKWARD_LEFT = f32(3.926991)
+_RELATIVE_MOVE_HEADING_LEFT = f32(4.712389)
+_RELATIVE_MOVE_HEADING_FORWARD_LEFT = f32(5.4977875)
+_RELATIVE_MOVE_TURN_ALIGN_SCALE = f32(7.957747)
 _AIM_POINT_RADIUS = 60.0
 _DUAL_ACTION_PAD_DEADZONE = f32(0.2)
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
@@ -164,8 +165,8 @@ def survival_record_recent_death(state: GameplayState, *, pos: Vec2) -> None:
 
     if recent_count < 3:
         state.survival_recent_death_pos[recent_count] = Vec2(
-            f32(float(pos.x)),
-            f32(float(pos.y)),
+            f32(pos.x),
+            f32(pos.y),
         )
 
     recent_count += 1
@@ -265,13 +266,6 @@ def gameplay_accumulate_weapon_usage_time(
     state.weapon_usage_time[weapon_id] = (int(state.weapon_usage_time[weapon_id]) + int(frame_dt_ms)) & 0xFFFFFFFF
 
 
-def _distance_f32_xy(ax: float, ay: float, bx: float, by: float) -> float:
-    dx = f32(float(ax) - float(bx))
-    dy = f32(float(ay) - float(by))
-    dist_sq = f32(f32(float(dx) * float(dx)) + f32(float(dy) * float(dy)))
-    return f32(math.sqrt(float(dist_sq)))
-
-
 _ALT_WEAPON_MOVE_SCALE = f32(0.8)
 _SPAWN_AVOIDANCE_RADIUS_SCALE = f32(0.33333334)
 
@@ -292,8 +286,8 @@ def _player_apply_move_with_spawn_avoidance(
         dx = x87_pc24_mul(dx, _ALT_WEAPON_MOVE_SCALE)
         dy = x87_pc24_mul(dy, _ALT_WEAPON_MOVE_SCALE)
 
-    pos_x = float(f32(float(player.pos.x) + float(dx)))
-    pos_y = float(f32(float(player.pos.y) + float(dy)))
+    pos_x = f32(float(player.pos.x) + float(dx))
+    pos_y = f32(float(player.pos.y) + float(dy))
 
     if spawn_slots and creatures:
         for slot in spawn_slots:
@@ -307,30 +301,30 @@ def _player_apply_move_with_spawn_avoidance(
                 x87_pc24_add(float(owner.size), float(player.size)),
                 _SPAWN_AVOIDANCE_RADIUS_SCALE,
             )
-            if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) > float(radius):
+            if x87_pc24_distance(owner_pos, Vec2(pos_x, pos_y)) > float(radius):
                 continue
 
             # Collision: revert, then try axis resolution.
-            old_x = float(f32(float(pos_x) - float(dx)))
-            old_y = float(f32(float(pos_y) - float(dy)))
-            old_dist = _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(old_x), float(old_y))
-            x_candidate = float(f32(float(old_x) + float(dx)))
-            y_candidate = float(f32(float(old_y) + float(dy)))
+            old_x = f32(float(pos_x) - float(dx))
+            old_y = f32(float(pos_y) - float(dy))
+            old_dist = x87_pc24_distance(owner_pos, Vec2(old_x, old_y))
+            x_candidate = f32(float(old_x) + float(dx))
+            y_candidate = f32(float(old_y) + float(dy))
 
             if float(radius) < float(old_dist):
                 # X-only move.
                 pos_x = x_candidate
                 pos_y = old_y
-                if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(
+                if x87_pc24_distance(owner_pos, Vec2(pos_x, pos_y)) <= float(
                     radius,
                 ):
                     # Y-only move.
-                    pos_x = float(f32(float(x_candidate) - float(dx)))
+                    pos_x = f32(float(x_candidate) - float(dx))
                     pos_y = y_candidate
-                    if _distance_f32_xy(float(owner_pos.x), float(owner_pos.y), float(pos_x), float(pos_y)) <= float(
+                    if x87_pc24_distance(owner_pos, Vec2(pos_x, pos_y)) <= float(
                         radius,
                     ):
-                        pos_y = float(f32(float(y_candidate) - float(dy)))
+                        pos_y = f32(float(y_candidate) - float(dy))
             else:
                 pos_x = x_candidate
                 pos_y = y_candidate
@@ -367,25 +361,25 @@ def _resolve_aim_scheme_for_update(input_state: PlayerInput) -> AimScheme:
 
 
 def _player_accelerate_move_speed(player: PlayerState, perks: PerkCounts, dt: float) -> None:
-    dt = float(f32(float(dt)))
+    dt = f32(dt)
     if PerkId.LONG_DISTANCE_RUNNER in perks:
         if player.move_speed < 2.0:
             acceleration = f32(float(dt) * 4.0)
-            player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
-        player.move_speed = float(f32(float(player.move_speed) + float(dt)))
+            player.move_speed = f32(float(player.move_speed) + float(acceleration))
+        player.move_speed = f32(float(player.move_speed) + float(dt))
         if player.move_speed > f32(2.8):
             player.move_speed = f32(2.8)
     else:
         acceleration = f32(float(dt) * 5.0)
-        player.move_speed = float(f32(float(player.move_speed) + float(acceleration)))
+        player.move_speed = f32(float(player.move_speed) + float(acceleration))
         if player.move_speed > 2.0:
             player.move_speed = 2.0
 
 
 def _player_decelerate_move_speed(player: PlayerState, dt: float) -> None:
-    dt = float(f32(float(dt)))
+    dt = f32(dt)
     deceleration = f32(float(dt) * 15.0)
-    player.move_speed = float(f32(float(player.move_speed) - float(deceleration)))
+    player.move_speed = f32(float(player.move_speed) - float(deceleration))
     if player.move_speed < 0.0:
         player.move_speed = 0.0
 
@@ -588,7 +582,7 @@ def _player_tick_low_health(
     # `player_take_damage` has armed `low_health_timer` (!= 100.0), count down
     # while HP < 20 and emit a 3x blood splatter + bloodspill SFX burst.
     if player.low_health_timer != 100.0 and player.health < 20.0:
-        next_low_health_timer = float(f32(float(player.low_health_timer) - float(dt)))
+        next_low_health_timer = f32(float(player.low_health_timer) - float(dt))
         player.low_health_timer = next_low_health_timer
         if next_low_health_timer < 0.0:
             bleed_dir_angle = x87_pc24_sub(
@@ -774,7 +768,7 @@ def _player_move(
                 float(target_heading),
                 float(movement_dt),
             )
-            player.aim_heading = float(f32(float(player.aim_heading) + float(turn_delta)))
+            player.aim_heading = f32(float(player.aim_heading) + float(turn_delta))
             _player_accelerate_move_speed(player, state.perks, movement_dt)
             _player_apply_move_speed_caps(player)
             velocity = _player_turn_aligned_velocity_native(
@@ -849,9 +843,9 @@ def _player_tick_reload(
             # Anxious Loader overcuts the timer.
             player.weapon.reload_timer = x87_pc24_mul(float(dt), f32(0.8))
 
-    reload_timer_now = float(f32(float(player.weapon.reload_timer)))
-    dt_f32 = float(f32(float(dt)))
-    reload_step = x87_pc24_mul(f32(float(reload_scale)), dt_f32)
+    reload_timer_now = f32(player.weapon.reload_timer)
+    dt_f32 = f32(dt)
+    reload_step = x87_pc24_mul(f32(reload_scale), dt_f32)
     # Native preloads ammo one frame before reload timer underflows using the
     # unscaled `frame_dt` (before Stationary Reloader scale is applied). That
     # can miss reload completion when Stationary Reloader is active, leaving the
@@ -933,7 +927,7 @@ def player_update(
     players = world.players
     creatures = world.creatures.entries
     spawn_slots = world.creatures.spawn_slots
-    dt = float(f32(float(dt)))
+    dt = f32(dt)
     if dt <= 0.0:
         return dt
 
@@ -948,13 +942,13 @@ def player_update(
 
     _player_tick_low_health(player, state, dt, step_runtime.world.state.detail_preset, step_runtime.world.state.violence_disabled)
 
-    damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
+    damping_scalar = f32(state.player_spread_damping_scalar)
     if float(state.player_spread_damping_gate) <= 0.0:
-        damping_scalar = float(f32(float(damping_scalar) + float(f32(float(dt) * 0.8))))
+        damping_scalar = f32(float(damping_scalar) + f32(float(dt) * 0.8))
         if damping_scalar > 1.0:
             damping_scalar = 1.0
     else:
-        damping_scalar = float(f32(float(damping_scalar) - float(dt)))
+        damping_scalar = f32(float(damping_scalar) - float(dt))
         if damping_scalar < 0.3:
             damping_scalar = 0.3
     state.player_spread_damping_scalar = float(damping_scalar)
@@ -966,8 +960,8 @@ def player_update(
             x87_pc24_mul(dt, f32(2.0)),
         ),
     )
-    cooldown_decay = float(f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)))
-    next_shot_cooldown = float(f32(float(player.weapon.shot_cooldown) - float(cooldown_decay)))
+    cooldown_decay = f32(float(dt) * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0))
+    next_shot_cooldown = f32(float(player.weapon.shot_cooldown) - float(cooldown_decay))
     player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
@@ -1079,7 +1073,7 @@ def player_update(
         TERRAIN_SIZE - half_size,
         TERRAIN_SIZE - half_size,
     )
-    player.pos = Vec2(f32(float(clamped_pos.x)), f32(float(clamped_pos.y)))
+    player.pos = Vec2(f32(clamped_pos.x), f32(clamped_pos.y))
     if player.muzzle_flash_alpha > 0.8:
         player.muzzle_flash_alpha = 0.8
     return frame_dt
@@ -1095,11 +1089,11 @@ def _player_heading_approach_target_with_delta(
     # Native runs this through float32 temporaries (`var_8`/`edx_1`) before the
     # direct-vs-wrapped compare and turn-sign branch. That quantization matters
     # near opposite-heading ties.
-    heading = float(f32(float(_normalize_heading_angle(float(player.heading)))))
+    heading = f32(_normalize_heading_angle(float(player.heading)))
     player.heading = float(heading)
-    target = float(f32(float(target_heading)))
+    target = f32(target_heading)
 
-    direct = float(f32(abs(float(f32(float(target - heading))))))
+    direct = f32(abs(f32(target - heading)))
     high = heading
     if target > high:
         high = target
@@ -1110,23 +1104,23 @@ def _player_heading_approach_target_with_delta(
     wrapped = abs(x87_pc24_add(x87_pc24_sub(NATIVE_TAU, high), low))
     diff = min(wrapped, direct)
 
-    dt_f32 = float(f32(float(dt)))
+    dt_f32 = f32(dt)
     # Native computes `frame_dt * diff * 5.0` under x87 PC=24. Quantize after
     # each multiply to model that precision even though the intermediate stays
     # on the x87 stack.
-    scaled = float(f32(float(dt_f32) * float(diff)))
+    scaled = f32(float(dt_f32) * float(diff))
     if direct <= wrapped:
         if target > heading:
-            turn_delta = float(f32(float(scaled) * 5.0))
+            turn_delta = f32(float(scaled) * 5.0)
         else:
-            turn_delta = float(f32(float(scaled) * -5.0))
+            turn_delta = f32(float(scaled) * -5.0)
     else:
         if target >= heading:
-            turn_delta = float(f32(float(scaled) * -5.0))
+            turn_delta = f32(float(scaled) * -5.0)
         else:
-            turn_delta = float(f32(float(scaled) * 5.0))
+            turn_delta = f32(float(scaled) * 5.0)
 
-    player.heading = float(f32(float(heading) + float(turn_delta)))
+    player.heading = f32(float(heading) + float(turn_delta))
     return float(diff), float(turn_delta)
 
 
@@ -1137,9 +1131,9 @@ def _player_heading_approach_target(player: PlayerState, target_heading: float, 
 
 def _normalize_heading_angle(value: float) -> float:
     tau = float(NATIVE_TAU)
-    angle = float(f32(float(value)))
+    angle = f32(value)
     while angle < 0.0:
-        angle = float(f32(float(angle) + float(tau)))
+        angle = f32(float(angle) + float(tau))
     while angle > tau:
-        angle = float(f32(float(angle) - float(tau)))
+        angle = f32(float(angle) - float(tau))
     return float(angle)
