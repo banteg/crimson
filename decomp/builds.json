@@ -2,6 +2,7 @@
   "schema": 1,
   "kind": "crimson-decomp-builds",
   "cl_build": "CL_BUILD macro value: major*10000 + minor*100 + patch",
+  "reported": "Builds published to decomp.dev, each from its own saved evidence.",
   "profiles": {
     "8966": "msvc6.5",
     "9044": "msvc6.5pp",
@@ -246,6 +247,7 @@
       "id": "1.9.8",
       "family": "1.9",
       "cl_build": 10908,
+      "reported": true,
       "distribution": "shareware",
       "package": {
         "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2004.exe",
@@ -411,6 +413,7 @@
       "id": "1.9.93",
       "family": "1.9",
       "cl_build": 10993,
+      "reported": true,
       "distribution": "GOG (Crimsonland Classic)",
       "package": {
         "path": "game_bins/crimsonland/1.9.93-gog",

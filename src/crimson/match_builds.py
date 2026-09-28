@@ -16,7 +16,6 @@ import hashlib
 import json
 import math
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
 from functools import cache
 from itertools import pairwise
@@ -123,6 +122,8 @@ def _reference_catalog(image: BuildImage) -> matchlib.ReferenceCatalog:
 @dataclass(frozen=True, slots=True)
 class Registry:
     builds: dict[str, dict[str, BuildImage]]
+    # Builds published to decomp.dev, canonical first.
+    reported: tuple[str, ...]
 
     def image(self, build: str, name: str) -> BuildImage:
         if build not in self.builds:
@@ -160,6 +161,12 @@ def load_registry(path: Path = REGISTRY_PATH) -> Registry:
             }
             for row in payload["builds"]
         },
+        tuple(
+            sorted(
+                (row["id"] for row in payload["builds"] if row.get("reported")),
+                key=lambda build: build not in canonical.values(),
+            ),
+        ),
     )
 
 
@@ -695,23 +702,30 @@ def scan_build(
         if image.target.functions_path.is_file():
             for row in json.loads(image.target.functions_path.read_text(encoding="utf-8")):
                 evidence[name, row["name"]] = row["evidence"]
-    work = []
+    scratches: list[str] = []
+    configs: list[matchlib.ScratchConfig] = []
+    owners: list[int] = []
     for conf_path in sorted(match_root.resolve().glob("scratches/*/scratch.conf")):
         config = matchlib.load_scratch_config(conf_path.parent)
         if config.archive is not None or config.import_thunk is not None:
             continue
         if (config.image, config.function) not in evidence:
             continue
-        image = registry.image(build, config.image)
-        work.append((image.scratch_configs(config), image.target, evidence[config.image, config.function]))
-
-    def evaluate(item: tuple[tuple[matchlib.ScratchConfig, ...], matchlib.MatchTarget, str]) -> BuildScanRow:
-        configs, target, row_evidence = item
-        statuses = [matchlib.evaluate_scratch(config, match_root, target=target) for config in configs]
-        return BuildScanRow(
-            max(statuses, key=lambda status: (SCAN_STATES.index(status.state), status.ratio or 0.0)),
-            row_evidence,
-        )
-
-    with ThreadPoolExecutor(max_workers=jobs) as executor:
-        return list(executor.map(evaluate, work))
+        for build_config in registry.image(build, config.image).scratch_configs(config):
+            configs.append(build_config)
+            owners.append(len(scratches))
+        scratches.append(evidence[config.image, config.function])
+    statuses = matchlib.evaluate_scratch_configs(
+        configs,
+        match_root,
+        targets={name: image.target for name, image in registry.builds[build].items()},
+        jobs=jobs,
+        scope="all",
+    )
+    # Keep each scratch's best compiler.
+    best: dict[int, matchlib.ScratchStatus] = {}
+    for owner, status in zip(owners, statuses, strict=True):
+        rank = (SCAN_STATES.index(status.state), status.ratio or 0.0)
+        if owner not in best or rank > (SCAN_STATES.index(best[owner].state), best[owner].ratio or 0.0):
+            best[owner] = status
+    return [BuildScanRow(best[index], row_evidence) for index, row_evidence in enumerate(scratches)]

@@ -6538,7 +6538,7 @@ def _scratch_cache_path(config: ScratchConfig) -> Path:
 
 def _scratch_cache_key(
     config: ScratchConfig,
-    image_path: Path,
+    target: MatchTarget,
     manifest: FunctionManifest,
     match_root: Path,
     *,
@@ -6561,11 +6561,11 @@ def _scratch_cache_key(
             "import_thunk": config.import_thunk,
             "reference_aliases": [list(alias) for alias in config.reference_aliases],
         },
-        "imports_sha256": match_toolchain.file_sha256(default_functions_path(config.image).with_name("imports.json")),
-        "image_sha256": match_toolchain.file_sha256(image_path),
+        "imports_sha256": match_toolchain.file_sha256(target.functions_path.with_name("imports.json")),
+        "image_sha256": match_toolchain.file_sha256(target.image_path),
         "matcher_sha256": match_toolchain.file_sha256(Path(__file__)),
         "manifest": _manifest_digest(manifest),
-        "data_map_sha256": match_toolchain.file_sha256(DEFAULT_DATA_MAP_PATH),
+        "data_map_sha256": match_toolchain.file_sha256(target.data_map_path),
         "name_map_sha256": match_toolchain.file_sha256(DEFAULT_NAME_MAP_PATH),
     }
 
@@ -6640,7 +6640,7 @@ def _load_cached_status(
     config: ScratchConfig,
     *,
     address: int,
-    image_path: Path,
+    target: MatchTarget,
     manifest: FunctionManifest,
     match_root: Path,
     include_resolver: _ScratchIncludeResolver,
@@ -6652,7 +6652,7 @@ def _load_cached_status(
         return None
     if payload.get("key") != _scratch_cache_key(
         config,
-        image_path,
+        target,
         manifest,
         match_root,
         include_resolver=include_resolver,
@@ -6670,7 +6670,7 @@ def _load_cached_status(
 def _store_cached_status(
     status: ScratchStatus,
     *,
-    image_path: Path,
+    target: MatchTarget,
     manifest: FunctionManifest,
     match_root: Path,
     include_resolver: _ScratchIncludeResolver,
@@ -6700,7 +6700,7 @@ def _store_cached_status(
             {
                 "key": _scratch_cache_key(
                     status.config,
-                    image_path,
+                    target,
                     manifest,
                     match_root,
                     include_resolver=include_resolver,
@@ -6743,26 +6743,51 @@ def collect_scratch_statuses(
             config = replace(config, compiler=compiler or config.compiler, cflags=cflags or config.cflags)
         configs.append(config)
     configs = _filter_scoped_scratch_configs(configs, scope=scope)
+    return evaluate_scratch_configs(configs, match_root, jobs=jobs, scope=scope, force=force)
 
+
+def evaluate_scratch_configs(
+    configs: list[ScratchConfig],
+    match_root: Path = DEFAULT_MATCH_ROOT,
+    *,
+    targets: dict[str, MatchTarget] | None = None,
+    jobs: int = DEFAULT_MATCH_JOBS,
+    scope: str | None = None,
+    force: bool = False,
+) -> list[ScratchStatus]:
+    """Match each config through the status cache; one status per config, in order.
+
+    ``targets`` maps an image name to the image its configs compare against,
+    by default the canonical one.
+    """
+    if jobs < 1:
+        raise ValueError("jobs must be positive")
+    match_root = match_root.resolve()
+    targets = {
+        image_name: (targets or {}).get(image_name) or default_match_target(image_name)
+        for image_name in {config.image for config in configs}
+    }
     manifest_cache: dict[str, FunctionManifest] = {}
     catalog_cache: dict[str, ReferenceCatalog] = {}
-    for image_name in {config.image for config in configs}:
-        _, functions_path, metadata_path = _paths_for_image(image_name)
+    for image_name, target in targets.items():
         manifest_cache[image_name] = load_function_manifest(
-            functions_path,
-            metadata_path=metadata_path,
-            image_name=image_name,
+            target.functions_path,
+            metadata_path=target.metadata_path,
+            image_name=target.image_name,
             scope=scope,
         )
-        catalog_cache[image_name] = load_reference_catalog(manifest_cache[image_name])
+        catalog_cache[image_name] = load_reference_catalog(
+            manifest_cache[image_name],
+            data_map_path=target.data_map_path,
+            functions_path=target.functions_path,
+        )
 
     include_resolver = _ScratchIncludeResolver(match_root)
     input_hashes = SharedInputHashes()
-    statuses_by_directory: dict[Path, ScratchStatus] = {}
-    uncached: list[ScratchConfig] = []
-    for config in configs:
+    statuses: dict[int, ScratchStatus] = {}
+    uncached: list[int] = []
+    for index, config in enumerate(configs):
         manifest = manifest_cache[config.image]
-        image_path, _, _ = _paths_for_image(config.image)
         try:
             function, _, _ = resolve_function(manifest, config.function, end_override=config.end_va)
             address = function.address
@@ -6774,7 +6799,7 @@ def collect_scratch_statuses(
             else _load_cached_status(
                 config,
                 address=address,
-                image_path=image_path,
+                target=targets[config.image],
                 manifest=manifest,
                 match_root=match_root,
                 include_resolver=include_resolver,
@@ -6782,19 +6807,18 @@ def collect_scratch_statuses(
             )
         )
         if cached is not None:
-            statuses_by_directory[config.directory] = cached
+            statuses[index] = cached
         else:
-            uncached.append(config)
+            uncached.append(index)
 
     image_cache = {
-        image_name: load_image(_paths_for_image(image_name)[0], manifest_cache[image_name].image_base)
-        for image_name in {config.image for config in uncached}
+        image_name: load_image(targets[image_name].image_path, manifest_cache[image_name].image_base)
+        for image_name in {configs[index].image for index in uncached}
     }
 
     def match_config(config: ScratchConfig) -> ScratchStatus:
         manifest = manifest_cache[config.image]
         image = image_cache[config.image]
-        image_path, _, _ = _paths_for_image(config.image)
         try:
             function, start, end = resolve_function(manifest, config.function, end_override=config.end_va)
             target_data = image.function_bytes(start, end)
@@ -6851,7 +6875,7 @@ def collect_scratch_statuses(
             )
             _store_cached_status(
                 status,
-                image_path=image_path,
+                target=targets[config.image],
                 manifest=manifest,
                 match_root=match_root,
                 include_resolver=include_resolver,
@@ -6874,14 +6898,14 @@ def collect_scratch_statuses(
                 error=_exception_summary(exc),
             )
 
-    if jobs == 1 or len(uncached) < 2:
-        matched = list(map(match_config, uncached))
+    pending = [configs[index] for index in uncached]
+    if jobs == 1 or len(pending) < 2:
+        matched = list(map(match_config, pending))
     else:
-        with ThreadPoolExecutor(max_workers=min(jobs, len(uncached))) as executor:
-            matched = list(executor.map(match_config, uncached))
-    for status in matched:
-        statuses_by_directory[status.config.directory] = status
-    return [statuses_by_directory[config.directory] for config in configs]
+        with ThreadPoolExecutor(max_workers=min(jobs, len(pending))) as executor:
+            matched = list(executor.map(match_config, pending))
+    statuses.update(zip(uncached, matched, strict=True))
+    return [statuses[index] for index in range(len(configs))]
 
 
 def is_analyzer_placeholder(name: str) -> bool:

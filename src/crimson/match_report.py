@@ -16,16 +16,22 @@ import subprocess
 import sys
 import tomllib
 from collections import Counter
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_data_report, match_toolchain
+from . import match_builds, match_data_report, match_toolchain
 from . import match_report_accounting as accounting
 
+# The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
 VERSION = "1.9.93"
-DEFAULT_EVIDENCE = matchlib.REPO_ROOT / "analysis" / "decomp" / f"{VERSION}.json"
-DEFAULT_REPORT = matchlib.REPO_ROOT / "artifacts" / "decomp" / "report.json"
+DEFAULT_REPORTS = matchlib.REPO_ROOT / "artifacts" / "decomp"
+BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata)\.json")
+
+
+def evidence_path(version: str) -> Path:
+    return matchlib.REPO_ROOT / "analysis" / "decomp" / f"{version}.json"
 
 
 def _input_path(path: str) -> bool:
@@ -39,7 +45,7 @@ def _input_path(path: str) -> bool:
         return p.suffix in {".c", ".cpp", ".cc", ".h", ".hpp", ".inc", ".conf", ".sh", ".py"} or (
             path.startswith(("tools/native/", "decomp/")) and p.suffix == ".json"
         )
-    return path.startswith("analysis/ghidra/maps/") or (
+    return path.startswith("analysis/ghidra/maps/") or BUILD_MAP_RE.fullmatch(path) is not None or (
         path.startswith("analysis/ida/raw/") and p.name in {"functions.json", "metadata.json", "imports.json"}
     )
 
@@ -118,31 +124,41 @@ def _required_hash(path: Path) -> str:
     return digest
 
 
-def _inventory() -> list[dict[str, Any]]:
+def _images(version: str) -> list[match_builds.BuildImage]:
+    return [match_builds.load_registry().image(version, name) for name in matchlib.TRACKED_IMAGE_NAMES]
+
+
+def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
+    """The version's function inventory: the curated one, or another build's map of it."""
     rows: list[dict[str, Any]] = []
-    for image_name in matchlib.TRACKED_IMAGE_NAMES:
-        image_path, functions_path, metadata_path = matchlib._paths_for_image(image_name)
+    for build_image in _images(version):
+        target = build_image.target
         manifest = matchlib.load_function_manifest(
-            functions_path,
-            metadata_path=metadata_path,
-            image_name=image_name,
+            target.functions_path,
+            metadata_path=target.metadata_path,
+            image_name=target.image_name,
             scope="all",
         )
-        image = matchlib.load_image(image_path, manifest.image_base)
+        image = matchlib.load_image(target.image_path, manifest.image_base)
+        canonical = {} if build_image.is_canonical else {
+            matchlib.parse_int(row["address"]): matchlib.parse_int(row["canonical_address"])
+            for row in json.loads(target.functions_path.read_text(encoding="utf-8"))
+        }
         for function in manifest.functions:
-            rows.append(
-                {
-                    "image": image_name,
-                    "address": function.address,
-                    "name": function.name,
-                    "size": len(image.function_bytes(function.address, function.end)),
-                },
-            )
+            row = {
+                "image": build_image.name,
+                "address": function.address,
+                "name": function.name,
+                "size": len(image.function_bytes(function.address, function.end)),
+            }
+            if canonical:
+                row["canonical_address"] = canonical[function.address]
+            rows.append(row)
     return rows
 
 
 def _external_inputs(
-    configs: list[matchlib.ScratchConfig], tracked: dict[str, str],
+    configs: list[matchlib.ScratchConfig], tracked: dict[str, str], version: str = VERSION,
 ) -> tuple[dict[str, str], dict[str, Any]]:
     files: dict[str, str] = {}
     toolchains: dict[str, Any] = {}
@@ -168,29 +184,18 @@ def _external_inputs(
                 "config": (config.directory / "scratch.conf").relative_to(matchlib.REPO_ROOT).as_posix(),
                 "fingerprint": match_toolchain.scratch_toolchain_fingerprint(compiler, matchlib.DEFAULT_MATCH_ROOT),
             }
-    for image_name in matchlib.TRACKED_IMAGE_NAMES:
-        path = matchlib._paths_for_image(image_name)[0]
+    for build_image in _images(version):
+        path = build_image.target.image_path
         files[path.relative_to(matchlib.REPO_ROOT).as_posix()] = _required_hash(path)
     return dict(sorted(files.items())), toolchains
 
 
-def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, Any]:
-    if untracked := untracked_inputs():
-        raise ValueError(
-            "untracked report inputs would be evaluated but not pinned; stage or remove these files: "
-            + ", ".join(untracked[:8]),
-        )
-    before = repository_inputs()
-    configs = [
-        matchlib.load_scratch_config(p.parent)
-        for p in sorted(matchlib.DEFAULT_MATCH_ROOT.glob("scratches/*/scratch.conf"))
-    ]
-    external, toolchains = _external_inputs(configs, before)
-    inventory = _inventory()
-    statuses = matchlib.collect_scratch_statuses(scope="all", jobs=jobs)
-    errors = [s for s in statuses if s.error]
-    if errors:
-        raise ValueError("matching failed: " + "; ".join(f"{s.config.function}: {s.error}" for s in errors))
+def _image_paths(version: str) -> dict[str, Path]:
+    return {build_image.name: build_image.target.image_path for build_image in _images(version)}
+
+
+def _score(inventory: list[dict[str, Any]], statuses: list[matchlib.ScratchStatus]) -> None:
+    """Attach each function's candidate evidence to its inventory row."""
     selected: dict[tuple[str, int], matchlib.ScratchStatus] = {}
     for status in statuses:
         key = status.config.image, status.address
@@ -223,15 +228,44 @@ def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, An
                 "matched": accounting.normalized_exact(row, ratio=status.ratio),
             },
         )
-    data = match_data_report.refresh_evidence(configs)
-    if repository_inputs() != before or _external_inputs(configs, before) != (external, toolchains):
+
+
+def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, Any]:
+    """Score every function of ``version``; another build compiles each mapped scratch as that build."""
+    if untracked := untracked_inputs():
+        raise ValueError(
+            "untracked report inputs would be evaluated but not pinned; stage or remove these files: "
+            + ", ".join(untracked[:8]),
+        )
+    before = repository_inputs()
+    inventory = _inventory(version)
+    if version == VERSION:
+        configs = [
+            matchlib.load_scratch_config(p.parent)
+            for p in sorted(matchlib.DEFAULT_MATCH_ROOT.glob("scratches/*/scratch.conf"))
+        ]
+        statuses = matchlib.collect_scratch_statuses(scope="all", jobs=jobs)
+        if errors := [s for s in statuses if s.error]:
+            raise ValueError("matching failed: " + "; ".join(f"{s.config.function}: {s.error}" for s in errors))
+    else:
+        # A canonical source that another build's compiler rejects leaves that function without a candidate.
+        statuses = [
+            row.status
+            for row in match_builds.scan_build(match_builds.load_registry(), version, jobs=jobs)
+            if row.status.error is None
+        ]
+        configs = [status.config for status in statuses]
+    external, toolchains = _external_inputs(configs, before, version)
+    _score(inventory, statuses)
+    data = match_data_report.refresh_evidence(configs) if version == VERSION else None
+    if repository_inputs() != before or _external_inputs(configs, before, version) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
         "schema": 3,
         "verification": accounting.VERIFICATION,
         "identities": accounting.identities(inventory, before, external, toolchains),
-        "code_inventory": accounting.code_inventory(inventory),
-        "version": VERSION,
+        "code_inventory": accounting.code_inventory(inventory, _image_paths(version)),
+        "version": version,
         "scope": "all",
         "inputs": before,
         "external_inputs": dict(sorted(external.items())),
@@ -242,7 +276,12 @@ def refresh_evidence(*, jobs: int = matchlib.DEFAULT_MATCH_JOBS) -> dict[str, An
 
 
 def validate_evidence(evidence: dict[str, Any]) -> None:
-    if evidence.get("schema") != 3 or evidence.get("version") != VERSION or evidence.get("scope") != "all":
+    version = evidence.get("version")
+    if (
+        evidence.get("schema") != 3
+        or version not in match_builds.load_registry().reported
+        or evidence.get("scope") != "all"
+    ):
         raise ValueError("unsupported decomp.dev evidence")
     current = repository_inputs()
     recorded = evidence["inputs"]
@@ -255,8 +294,9 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         # be absent. If present, none may drift from the recorded build.
         if (actual is not None or path.startswith("game_bins/")) and actual != digest:
             raise ValueError(f"report artifact changed or missing: {path}")
-    for toolchain in evidence["toolchains"].values():
-        config = matchlib.load_scratch_config((matchlib.REPO_ROOT / toolchain["config"]).parent)
+    for profile, toolchain in evidence["toolchains"].items():
+        # Another build compiles a scratch with its own profile, so resolve the recorded one.
+        config = replace(matchlib.load_scratch_config((matchlib.REPO_ROOT / toolchain["config"]).parent), compiler=profile)
         compiler = matchlib._compiler_executable_path(config, matchlib.DEFAULT_MATCH_ROOT)
         if (
             compiler.is_file()
@@ -264,8 +304,14 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
             != toolchain["fingerprint"]
         ):
             raise ValueError(f"report toolchain changed: {compiler}")
-    inventory = [{k: row[k] for k in ("image", "address", "name", "size")} for row in evidence["functions"]]
-    if inventory != _inventory():
+    expected = _inventory(version)
+    if len(evidence["functions"]) != len(expected):
+        raise ValueError("report denominator differs from the full function inventory")
+    inventory = [
+        {key: row[key] for key in expected_row}
+        for row, expected_row in zip(evidence["functions"], expected, strict=True)
+    ]
+    if inventory != expected:
         raise ValueError("report denominator differs from the full function inventory")
     for row in evidence["functions"]:
         accounting.validate_function(row)
@@ -273,9 +319,12 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         raise ValueError("unsupported evidence verification mode")
     if evidence["identities"] != accounting.identities(inventory, recorded, evidence["external_inputs"], evidence["toolchains"]):
         raise ValueError("report measurement identities differ")
-    if evidence["code_inventory"] != accounting.code_inventory(inventory):
+    if evidence["code_inventory"] != accounting.code_inventory(inventory, _image_paths(version)):
         raise ValueError("executable inventory reconciliation differs")
-    match_data_report.validate_evidence(evidence["data"])
+    if version == VERSION:
+        match_data_report.validate_evidence(evidence["data"])
+    elif evidence["data"] is not None:
+        raise ValueError("data evidence covers the canonical build only")
 
 
 def _category_definitions() -> tuple[dict[str, str], list[tuple[str, int, int, str]]]:
@@ -335,6 +384,8 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
         if key in seen:
             raise ValueError(f"duplicate report function: {key}")
         seen.add(key)
+        # Ownership is defined on the canonical image; another build's row carries its canonical address.
+        owner_key = row["image"], row.get("canonical_address", row["address"])
         size, ratio = row["size"], row["ratio"]
         if type(size) is not int or size < 0 or not math.isfinite(ratio) or not 0 <= ratio <= 1:
             raise ValueError(f"invalid matching measures: {key}")
@@ -363,11 +414,11 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
         categories = [{"crimsonland.exe": "exe", "grim.dll": "dll"}[row["image"]]]
         libraries = sorted({
             category for image, start, end, category in library_ranges
-            if image == row["image"] and start <= row["address"] < end
+            if image == row["image"] and start <= owner_key[1] < end
         })
-        if key in third_party and not libraries:
+        if owner_key in third_party and not libraries:
             libraries.append("libs.other")
-        if not libraries and any(region.contains(row["address"]) for region in ownership.ranges[row["image"]]):
+        if not libraries and any(region.contains(owner_key[1]) for region in ownership.ranges[row["image"]]):
             categories.append("game")
         if libraries:
             categories.extend(["libs", *libraries])

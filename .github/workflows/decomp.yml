@@ -29,16 +29,20 @@ jobs:
 
       - name: Fetch pinned reference images
         run: |
-          game_dir="game_bins/crimsonland/1.9.93-gog"
-          mkdir -p "$game_dir"
-          for name in crimsonland.exe grim.dll; do
+          set -o pipefail
+          # Every reported build's images, mirrored at paq.crimson.banteg.xyz/v<build>/.
+          uv run --no-sync python -c '
+          import json
+          for build in json.load(open("decomp/builds.json"))["builds"]:
+              if build.get("reported"):
+                  for image in build["images"]:
+                      print(build["id"], build["tree"], image["name"], image["sha256"])
+          ' | while read -r build tree name sha256; do
+            mkdir -p "$tree"
             curl --fail --location --retry 3 --retry-all-errors \
-              --output "$game_dir/$name" "https://paq.crimson.banteg.xyz/v1.9.93/$name"
+              --output "$tree/$name" "https://paq.crimson.banteg.xyz/v$build/$name"
+            echo "$sha256  $tree/$name" | sha256sum --check
           done
-          sha256sum --check <<'EOF'
-          771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
-          373f1304511c2cdb06a36447cc96f281a270bfe96957ca8ff03e19cf03dc8e70  game_bins/crimsonland/1.9.93-gog/grim.dll
-          EOF
 
       - name: Verify matching evidence and export progress
         run: uv run --no-sync crimson match report
@@ -50,18 +54,34 @@ jobs:
             https://github.com/encounter/objdiff/releases/download/v3.8.1/objdiff-cli-linux-x86_64
           echo "c8290281e82114bcc1a06ff73061110d3902a177822e750337de2537188e358f  $RUNNER_TEMP/objdiff-cli" | sha256sum --check
           chmod +x "$RUNNER_TEMP/objdiff-cli"
-          "$RUNNER_TEMP/objdiff-cli" report changes artifacts/decomp/report.json artifacts/decomp/report.json
+          for report in artifacts/decomp/*/report.json; do
+            "$RUNNER_TEMP/objdiff-cli" report changes "$report" "$report"
+          done
 
-      - name: Upload measurement diagnostics
+      - name: Upload 1.9.93 measurement diagnostics
         uses: actions/upload-artifact@v4
         with:
           name: 1.9.93_measurement
-          path: artifacts/decomp/report.metrics.json
+          path: artifacts/decomp/1.9.93/report.metrics.json
           if-no-files-found: error
 
-      - name: Upload progress report
+      - name: Upload 1.9.93 progress report
         uses: actions/upload-artifact@v4
         with:
           name: 1.9.93_report
-          path: artifacts/decomp/report.json
+          path: artifacts/decomp/1.9.93/report.json
+          if-no-files-found: error
+
+      - name: Upload 1.9.8 measurement diagnostics
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1.9.8_measurement
+          path: artifacts/decomp/1.9.8/report.metrics.json
+          if-no-files-found: error
+
+      - name: Upload 1.9.8 progress report
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1.9.8_report
+          path: artifacts/decomp/1.9.8/report.json
           if-no-files-found: error

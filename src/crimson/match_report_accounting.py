@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
@@ -165,12 +166,12 @@ def reconcile_sections(sections: list[dict[str, Any]], functions: list[dict[str,
     return result
 
 
-def code_inventory(functions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def code_inventory(functions: list[dict[str, Any]], image_paths: dict[str, Path]) -> list[dict[str, Any]]:
     import pefile
 
     sections = []
-    for image in matchlib.TRACKED_IMAGE_NAMES:
-        with pefile.PE(str(matchlib._paths_for_image(image)[0]), fast_load=True) as pe:
+    for image, path in image_paths.items():
+        with pefile.PE(str(path), fast_load=True) as pe:
             for section in pe.sections:
                 if section.Characteristics & 0x20000000 and section.Misc_VirtualSize:
                     sections.append({"image": image, "name": section.Name.rstrip(b"\0").decode("ascii"),

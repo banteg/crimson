@@ -66,6 +66,19 @@ def test_library_filters_overlap_images_without_double_counting() -> None:
     assert result["units"][3]["metadata"]["progress_categories"] == ["dll", "libs", "libs.d3dx8"]
 
 
+def test_other_builds_take_ownership_from_their_canonical_address() -> None:
+    ownership = report.matchlib._load_matching_scope_definition("port")
+    platform = next(d for d in ownership.function_dispositions["crimsonland.exe"] if d.disposition == "platform-replaced")
+    result = report.build_report([
+        # A 1.9.8 function at a library address whose canonical counterpart is game code, and the reverse.
+        _function(0x00452EF0, 100, canonical_address=platform.address),
+        _function(platform.address, 200, canonical_address=0x00452EF0),
+    ])
+    categories = {c["id"]: c["measures"] for c in result["categories"]}
+    assert categories["game"]["total_code"] == "100"
+    assert categories["libs"]["total_code"] == "200"
+
+
 def test_game_category_keeps_platform_code_but_excludes_known_libraries() -> None:
     ownership = report.matchlib._load_matching_scope_definition("port")
     platform = next(d for d in ownership.function_dispositions["crimsonland.exe"] if d.disposition == "platform-replaced")
@@ -108,10 +121,10 @@ def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.Monk
     }
     monkeypatch.setattr(report, "repository_inputs", lambda: {"scratch.c": "original"})
     monkeypatch.setattr(report.match_data_report, "validate_evidence", lambda _: None)
-    monkeypatch.setattr(report, "_inventory", lambda: [{k: function[k] for k in ("image", "address", "name", "size")}])
+    monkeypatch.setattr(report, "_inventory", lambda _: [{k: function[k] for k in ("image", "address", "name", "size")}])
     evidence.update(verification=report.accounting.VERIFICATION,
                     identities=report.accounting.identities([function], evidence["inputs"], {}), code_inventory=[])
-    monkeypatch.setattr(report.accounting, "code_inventory", lambda _: [])
+    monkeypatch.setattr(report.accounting, "code_inventory", lambda *_: [])
     report.validate_evidence(evidence)
     altered = deepcopy(evidence)
     altered["functions"][0]["size"] = 99
@@ -142,7 +155,9 @@ def test_input_selection_ignores_research_notes_but_tracks_builds() -> None:
     assert report._input_path("analysis/matching_scope.json")
     assert report._input_path("tools/native/data_candidates.json")
     assert report._input_path("src/crimson/native_link.py")
+    assert report._input_path("analysis/decomp/1.9.8/crimsonland.exe/data.json")
     assert not report._input_path("analysis/decomp/1.9.93.json")
+    assert not report._input_path("analysis/decomp/1.9.8.json")
     assert not report._input_path("tools/match/scratches/new_function/experiments.jsonl")
     assert not report._input_path("tools/match/STATUS.md")
     assert not report._input_path("analysis/native/grim.dll/link/link.json")

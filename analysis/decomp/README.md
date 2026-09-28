@@ -10,8 +10,10 @@ The GOG provenance and exact reference hashes remain documented in
 
 ## Scope and metrics
 
-There is one version (`1.9.93`) and one combined report. **Game & Engine** is
-the preferred category and headline, available through
+Two versions are reported, each from its own saved evidence: `1.9.93`, the
+canonical build described below, and `1.9.8` (see [1.9.8](#198)). Builds
+marked `reported` in [decomp/builds.json](../../decomp/builds.json) are
+published. **Game & Engine** is the preferred category and headline, available through
 [`?category=game`](https://decomp.dev/banteg/crimson?category=game).
 Setting it as the project-wide default requires a decomp.dev maintainer to set
 `default_category` to `game`; the current project settings form does not expose
@@ -142,6 +144,24 @@ functions and create no code treemap tiles. Data never changes code/fuzzy
 percentages, and no linked-data credit is claimed: source groupings do not recover
 original translation units or final data placement.
 
+## 1.9.8
+
+1.9.8 is measured with the same credit rules, from the same sources, compiled as
+1.9.8: the build's compiler profile (the Processor Pack, C2 9044) and
+`/DCL_BUILD=10908`. Its `grim.dll` is an incremental build, so each of its
+functions takes the better of the build's two profiles. Prebuilt library code
+keeps its own toolchain.
+
+Its denominator is the function inventory of its [build map](#other-builds):
+every canonical function placed in 1.9.8, with the exact extent of an identical
+body or, for a changed one, the extent up to the next known function. Code the
+map does not place stays unresolved in the executable reconciliation, as
+uncurated gaps do for 1.9.93. Each function takes its categories from its
+canonical counterpart. Data is not measured for 1.9.8.
+
+A reference counts only when 1.9.8's own maps name its target, so an exact
+instruction body whose globals the map does not name yet stays at `audit`.
+
 ## Refresh and publish
 
 On a machine with the matching compilers, reference images and pinned archives:
@@ -152,7 +172,8 @@ uv run crimson match report --refresh -j 8
 
 This evaluates the complete scratch corpus using the matcher's content-checked
 cache, rejects failures, duplicate targets and partial function extents, and
-updates `analysis/decomp/1.9.93.json`. Commit that evidence alongside changes to
+updates `analysis/decomp/<version>.json` for every reported version
+(`--version 1.9.8` limits it to one). Commit that evidence alongside changes to
 matching sources, shared headers, maps, toolchain configuration or the reporter.
 It records source/input hashes, compiler fingerprints, reference hashes,
 per-function results, and compiled data evidence. Schema 3 retains reference
@@ -188,18 +209,19 @@ Older schema snapshots establish a new baseline. Renames alone do not change the
 native key or inventory identity. Fuzzy similarity is neither semantic recovery
 nor an estimate of remaining effort.
 
-To verify saved evidence and generate `artifacts/decomp/report.json`:
+To verify saved evidence and generate `artifacts/decomp/<version>/report.json`:
 
 ```sh
 uv run crimson match report
 ```
 
 The `Decompilation progress` workflow runs on pushes to `master` and PRs. It
-downloads and checks the two reference images, verifies the evidence against
-repository inputs, the complete live function inventory, and reference data
-extents, exports objdiff v2
-JSON, validates it with the SHA-256-pinned objdiff CLI, and uploads only
-`report.json` as `1.9.93_report`. The verification mode is **source-bound local compilation; CI checks freshness
+downloads each reported build's pinned images from the project asset host,
+verifies each version's evidence against repository inputs,
+its complete live function inventory, and (for 1.9.93) reference data extents,
+exports objdiff v2 JSON, validates it with the SHA-256-pinned objdiff CLI, and
+uploads each `report.json` as `<version>_report`; decomp.dev lists one version
+per artifact. The verification mode is **source-bound local compilation; CI checks freshness
 and report consistency**. Parser acceptance checks format compatibility only.
 CI does not recompile the corpus; it rejects
 stale evidence rather than attaching old scores to a new source revision.
@@ -217,5 +239,5 @@ See the [integration guide](https://decomp.wiki/tools/decomp-dev) and
 
 `<build>/<image>/` holds the maps that place canonical functions and globals in
 another build of the family, derived by `uv run crimson match build-map`. They
-feed `--build` comparisons and are not part of this report; see
+feed `--build` comparisons and the reported builds' inventories; see
 [decomp/README.md](../../decomp/README.md#other-builds).

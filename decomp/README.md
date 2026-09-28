@@ -122,6 +122,10 @@ uv run crimson match build-scan 1.9.8
 A reference to a global that the build's data map does not name stays
 unresolved, so such a function reports `audit`, never `match`.
 
+Builds marked `reported` in `builds.json` (1.9.93 and 1.9.8) are published to
+decomp.dev, each from its own evidence; see
+[analysis/decomp/README.md](../analysis/decomp/README.md#198).
+
 ## Scope
 
 Third-party code keeps its upstream or archive provenance and is not presented
