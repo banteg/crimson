@@ -18,7 +18,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...game_states import GameStateId
-from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
@@ -107,9 +107,9 @@ class QuestFailedView:
                 self._action = self._close_action
                 self._close_action = None
             return
-        panel_was_hidden = self._intro_ms < RESULTS_PANEL_VISIBLE_MS
-        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
-        if panel_was_hidden and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS and self.state.audio is not None:
+        panel_was_hidden = self._intro_ms < ui_elements_max_timeline(GameStateId.QUEST_FAILED)
+        self._intro_ms = min(ui_elements_max_timeline(GameStateId.QUEST_FAILED), self._intro_ms + dt_ms)
+        if panel_was_hidden and self._intro_ms >= ui_elements_max_timeline(GameStateId.QUEST_FAILED) and self.state.audio is not None:
             # ui_element_update clicks as the panel element becomes enabled.
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
@@ -244,7 +244,7 @@ class QuestFailedView:
         return world_fade_alpha(self._intro_ms)
 
     def _panel_top_left(self) -> Vec2:
-        return self._panel_origin().offset(dx=results_panel_slide_x(self._intro_ms, width=QUEST_FAILED_PANEL_W))
+        return self._panel_origin().offset(dx=ui_element_anim(self._intro_ms, index=35, width=QUEST_FAILED_PANEL_W)[1])
 
     def _failure_message(self) -> str:
         retry_count = int(self.state.quest_fail_retry_count)

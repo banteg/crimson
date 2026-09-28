@@ -3,10 +3,11 @@ from __future__ import annotations
 import math
 import os
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
@@ -23,9 +24,7 @@ from crimson.ui.menu_layout import (
     label_alpha,
     main_menu_item_scale,
     menu_item_bounds,
-    menu_slot_end_ms,
     menu_slot_pos_x,
-    menu_slot_start_ms,
     update_menu_item_timers,
 )
 from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
@@ -70,9 +69,8 @@ class MenuView:
         self._hovered_index = None
         self._transition.reset()
         self._panel_open_sfx_played = False
-        self._transition.duration_ms = self._menu_max_timeline_ms(
-            mods_available=self._mods_available(),
-            other_games=self._other_games_enabled(),
+        self._transition.duration_ms = ui_elements_max_timeline(
+            GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
         )
         self._init_ground()
         if self.state.audio is not None:
@@ -261,8 +259,6 @@ class MenuView:
             angle_rad, slide_x = ui_element_anim(
                 self._transition.timeline_ms,
                 index=entry.slot + 2,
-                start_ms=menu_slot_start_ms(entry.slot),
-                end_ms=menu_slot_end_ms(entry.slot),
                 width=item_w,
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
@@ -312,7 +308,7 @@ class MenuView:
         return None
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._transition.timeline_ms >= menu_slot_start_ms(entry.slot)
+        return self._transition.timeline_ms >= ui_element_timeline_window(entry.slot + 2)[1]
 
     def _menu_item_bounds(self, entry: MenuEntry, resources: RuntimeResources) -> Rect:
         item = resources.texture(TextureId.UI_MENU_ITEM)
@@ -324,13 +320,3 @@ class MenuView:
             local_y_shift,
         )
 
-    @staticmethod
-    def _menu_max_timeline_ms(mods_available: bool, other_games: bool) -> int:
-        max_ms = 300  # sign element at index 0
-        show_top = mods_available
-        slot_active = [show_top, True, True, True, True, other_games]
-        for slot, active in enumerate(slot_active):
-            if not active:
-                continue
-            max_ms = max(max_ms, (slot + 2) * 100 + 300)
-        return max_ms

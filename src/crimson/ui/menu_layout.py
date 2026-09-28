@@ -90,16 +90,6 @@ def menu_slot_pos_x(slot: int) -> float:
     return MENU_LABEL_BASE_X - float(slot * 20)
 
 
-def menu_slot_start_ms(slot: int) -> int:
-    # ui_menu_layout_init: start_time_ms is the fully-visible time.
-    return (slot + 2) * 100 + 300
-
-
-def menu_slot_end_ms(slot: int) -> int:
-    # ui_menu_layout_init: end_time_ms is the fully-hidden time.
-    return (slot + 2) * 100
-
-
 def main_menu_item_scale(width: int, slot: int) -> tuple[float, float]:
     """Return (scale, rise) for main menu item `slot` (`ui_element_table[slot + 2]`)."""
     # ui_menu_layout_init: items 1..7 shrink to 0.9 and rise (i - 2) * 11 at <= 640.

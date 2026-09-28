@@ -4,6 +4,7 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_layout import MENU_PANEL_WIDTH
 from grim.fonts.small import draw_small_text
@@ -11,7 +12,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView
 
 
 class _ModsContentLayout(msgspec.Struct, frozen=True):
@@ -21,7 +22,7 @@ class _ModsContentLayout(msgspec.Struct, frozen=True):
 
 class ModsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Mods")
+        super().__init__(state, game_state=GameStateId.MODS_MENU, panel_element=9, back_element=9, title="Mods")
         self._lines: list[str] = []
 
     def open(self) -> None:
@@ -31,9 +32,7 @@ class ModsMenuView(PanelMenuView):
     def _content_layout(self) -> _ModsContentLayout:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (

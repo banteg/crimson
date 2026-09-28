@@ -14,9 +14,6 @@ from .layout import menu_widescreen_y_shift
 # - fully hidden until end_ms
 # - slides in over (end_ms..start_ms)
 # - fully visible at start_ms
-PERK_MENU_ANIM_START_MS = 400.0
-PERK_MENU_ANIM_END_MS = 100.0
-PERK_MENU_TRANSITION_MS = PERK_MENU_ANIM_START_MS
 
 # Layout offsets from the classic game (perk selection screen), derived from
 # `perk_selection_screen_update` (see analysis/ghidra + BN).
@@ -118,49 +115,6 @@ def perk_menu_compute_layout(
         list_step_y=list_step_y,
         desc=desc,
         cancel_pos=cancel_pos,
-    )
-
-
-def ui_element_slide_x(
-    t_ms: float,
-    *,
-    start_ms: float,
-    end_ms: float,
-    width: float,
-    direction_flag: int = 0,
-) -> float:
-    """
-    Slide offset helper matching ui_element_update semantics (see MenuView._ui_element_anim).
-
-    direction_flag=0: slide from left  (-width -> 0)
-    direction_flag=1: slide from right (+width -> 0)
-    """
-
-    if start_ms <= end_ms or width <= 0.0:
-        return 0.0
-
-    width = abs(width)
-    t = t_ms
-    if t < end_ms:
-        slide = width
-    elif t < start_ms:
-        elapsed = t - end_ms
-        span = start_ms - end_ms
-        p = elapsed / span if span > 1e-6 else 1.0
-        slide = (1.0 - p) * width
-    else:
-        slide = 0.0
-
-    return slide if int(direction_flag) else -slide
-
-
-def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
-    return ui_element_slide_x(
-        t_ms,
-        start_ms=PERK_MENU_ANIM_START_MS,
-        end_ms=PERK_MENU_ANIM_END_MS,
-        width=width,
-        direction_flag=0,
     )
 
 

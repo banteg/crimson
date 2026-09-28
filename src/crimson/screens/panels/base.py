@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
@@ -36,15 +37,15 @@ PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
 PANEL_BACK_POS_X = -55.0
 PANEL_BACK_POS_Y = 430.0
-PANEL_TIMELINE_START_MS = 300
-PANEL_TIMELINE_END_MS = 0
-
 
 class PanelMenuView:
     def __init__(
         self,
         state: GameState,
         *,
+        game_state: GameStateId,
+        panel_element: int,
+        back_element: int,
         title: str,
         body: str | None = None,
         panel_pos: Vec2 = Vec2(PANEL_POS_X, PANEL_POS_Y),
@@ -54,6 +55,9 @@ class PanelMenuView:
         back_action: ScreenAction = Route.MENU,
     ) -> None:
         self.state = state
+        self._game_state = game_state
+        self._panel_element = panel_element
+        self._back_element = back_element
         self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
@@ -78,7 +82,7 @@ class PanelMenuView:
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(self._game_state)
         self._panel_open_sfx_played = False
         self._init_ground()
         self._is_open = True
@@ -198,9 +202,7 @@ class PanelMenuView:
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (
@@ -234,15 +236,13 @@ class PanelMenuView:
         item_w = float(resources.texture(TextureId.UI_MENU_ITEM).width)
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=2,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=self._back_element,
             width=item_w * back_button_scale(self._menu_screen_width)[0],
         )
         return Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
 
     def _entry_enabled(self) -> bool:
-        return self._transition.timeline_ms >= PANEL_TIMELINE_START_MS
+        return self._transition.timeline_ms >= ui_element_timeline_window(self._back_element)[1]
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         mouse = canvas.mouse_position()

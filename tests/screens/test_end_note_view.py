@@ -6,7 +6,7 @@ from typing import cast
 import crimson.screens.quest_views.end_note as end_note_module
 from crimson.screens.actions import Route
 from crimson.screens.quest_views import EndNoteView
-from crimson.ui.animation import WORLD_FADE_SPAN_MS
+from crimson.ui.animation import ui_element_timeline_window
 from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -83,7 +83,7 @@ def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_
     view = EndNoteView(state)
     view.open()
     view._closing = True
-    view._timeline_ms = WORLD_FADE_SPAN_MS // 2
+    view._timeline_ms = ui_element_timeline_window(28)[1] // 2
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

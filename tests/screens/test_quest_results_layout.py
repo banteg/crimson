@@ -8,11 +8,12 @@ from unittest.mock import MagicMock
 import crimson.screens.results.quest_results as quest_results_module
 import crimson.ui.text_input as text_input_module
 from crimson.game_modes import GameMode
+from crimson.game_states import GameStateId
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.results import QuestFinalTime
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.results.quest_results import QuestResultsUi
-from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, WORLD_FADE_SPAN_MS
+from crimson.ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg
@@ -73,7 +74,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
     )
     ui.phase = int(phase)
     ui.rank = 0
-    ui._intro_ms = RESULTS_PANEL_VISIBLE_MS
+    ui._intro_ms = ui_elements_max_timeline(GameStateId.QUEST_RESULTS)
     ui.breakdown = QuestFinalTime(
         base_time_ms=17_610,
         life_bonus_ms=0,
@@ -174,11 +175,11 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) 
     ui._intro_ms = 0.0
     assert ui.world_entity_alpha() == 0.0
 
-    ui._intro_ms = WORLD_FADE_SPAN_MS * 0.5
+    ui._intro_ms = ui_element_timeline_window(28)[1] * 0.5
     assert ui.world_entity_alpha() == 0.5
 
     # The UI timeline stops at 400 ms, so closing starts from 400 / 500.
-    ui._intro_ms = RESULTS_PANEL_VISIBLE_MS
+    ui._intro_ms = ui_elements_max_timeline(GameStateId.QUEST_RESULTS)
     assert ui.world_entity_alpha() == 0.8
 
     ui._closing = False

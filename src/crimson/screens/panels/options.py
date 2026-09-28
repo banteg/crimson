@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
@@ -17,7 +18,7 @@ from grim.raylib_api import rl
 from ...game.types import GameState
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
 
@@ -42,7 +43,9 @@ class OptionsMenuView(PanelMenuView):
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options", back_action=Route.BACK)
+        super().__init__(
+            state, game_state=GameStateId.OPTIONS_MENU, panel_element=31, back_element=32, title="Options", back_action=Route.BACK,
+        )
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
@@ -175,9 +178,7 @@ class OptionsMenuView(PanelMenuView):
     def _content_layout(self) -> _OptionsContentLayout:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (

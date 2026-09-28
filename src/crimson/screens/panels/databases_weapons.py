@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from crimson.game_states import GameStateId
 from grim.assets import TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
@@ -17,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
+    _game_state = GameStateId.WEAPON_DATABASE
+
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._weapon_ids: list[int] = []

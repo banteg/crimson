@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -27,7 +28,6 @@ from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
 LEFT_PANEL_POS_Y = 185.0
@@ -37,6 +37,8 @@ RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
+    _game_state: GameStateId
+
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
@@ -44,7 +46,7 @@ class _DatabaseBaseView:
 
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(self._game_state)
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -53,7 +55,7 @@ class _DatabaseBaseView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(self._game_state)
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -137,17 +139,13 @@ class _DatabaseBaseView:
 
         _angle_rad, left_slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=2,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=33,
             width=MENU_PANEL_WIDTH,
             direction_flag=1,
         )

@@ -8,7 +8,7 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
-from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
@@ -220,7 +220,7 @@ class QuestResultsUi(msgspec.Struct):
         draw_small_text(font, text, pos, color)
 
     def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
-        panel_slide_x = results_panel_slide_x(self._intro_ms, width=QUEST_RESULTS_PANEL_W)
+        panel_slide_x = ui_element_anim(self._intro_ms, index=35, width=QUEST_RESULTS_PANEL_W)[1]
 
         panel_pos = Vec2(QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x, 0.0)
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
@@ -257,8 +257,8 @@ class QuestResultsUi(msgspec.Struct):
                 return action
             return None
 
-        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
-        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS:
+        self._intro_ms = min(ui_elements_max_timeline(GameStateId.QUEST_RESULTS), self._intro_ms + dt_ms)
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= ui_elements_max_timeline(GameStateId.QUEST_RESULTS):
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
         if self._consume_enter:

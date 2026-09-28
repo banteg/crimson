@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -61,7 +62,6 @@ from ..high_scores_layout import (
     hs_right_options_x_shift,
     hs_right_panel_pos_x,
 )
-from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..panels.hit_test import mouse_inside_rect_with_padding
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
@@ -81,7 +81,7 @@ class HighScoresView:
         self._dt = 0.0
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES)
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -100,7 +100,7 @@ class HighScoresView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES)
         self._scroll_index = 0
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
@@ -158,17 +158,13 @@ class HighScoresView:
         panel_w = MENU_PANEL_WIDTH
         _angle_rad, left_slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=9,
             width=panel_w,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=2,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=33,
             width=panel_w,
             direction_flag=1,
         )
@@ -586,17 +582,13 @@ class HighScoresView:
         panel_w = MENU_PANEL_WIDTH
         _angle_rad, left_slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=9,
             width=panel_w,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=2,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=33,
             width=panel_w,
             direction_flag=1,
         )
@@ -650,10 +642,7 @@ class HighScoresView:
     def _world_entity_alpha(self) -> float:
         if not self._transition.closing:
             return 1.0
-        span = PANEL_TIMELINE_START_MS - PANEL_TIMELINE_END_MS
-        if span <= 0:
-            return 0.0
-        alpha = (float(self._transition.timeline_ms) - PANEL_TIMELINE_END_MS) / float(span)
+        alpha = float(self._transition.timeline_ms) / ui_elements_max_timeline(GameStateId.HIGHSCORES)
         if alpha < 0.0:
             return 0.0
         if alpha > 1.0:

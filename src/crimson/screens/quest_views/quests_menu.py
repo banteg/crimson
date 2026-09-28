@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -28,7 +29,6 @@ from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
@@ -82,7 +82,7 @@ class QuestsMenuView:
         self._stage = 1
         self._dirty = False
         self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.QUEST_SELECT)
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -94,7 +94,7 @@ class QuestsMenuView:
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.QUEST_SELECT)
         self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
@@ -233,9 +233,7 @@ class QuestsMenuView:
     def _layout(self) -> _QuestMenuLayout:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=37,
             width=MENU_PANEL_WIDTH,
         )
         # `quest_select_menu_update` base sums:
@@ -544,9 +542,7 @@ class QuestsMenuView:
     def _draw_panel(self) -> None:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=37,
             width=MENU_PANEL_WIDTH,
         )
         shadows_enabled = self.state.config.display.shadows_enabled

@@ -4,6 +4,8 @@ from collections.abc import Sequence
 
 import msgspec
 
+from crimson.game_states import GameStateId
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.fonts.small import SmallFontData, measure_small_text_width
@@ -16,7 +18,6 @@ from ...perks import PerkId, perk_display_description, perk_display_name
 from ...sim.state_types import PerkCounts, PlayerState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
-    PERK_MENU_TRANSITION_MS,
     PerkMenuLayout,
     UiButtonState,
     button_draw,
@@ -25,7 +26,6 @@ from ...ui.perk_menu import (
     draw_ui_text,
     menu_item_hit_rect,
     perk_menu_compute_layout,
-    perk_menu_panel_slide_x,
 )
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -171,9 +171,9 @@ class PerkMenuController:
 
     def tick_timeline(self, dt_ui_ms: float) -> None:
         if self._open:
-            self._timeline_ms = clamp(self._timeline_ms + float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
+            self._timeline_ms = clamp(self._timeline_ms + float(dt_ui_ms), 0.0, ui_elements_max_timeline(GameStateId.PERK_SELECTION))
         else:
-            self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
+            self._timeline_ms = clamp(self._timeline_ms - float(dt_ui_ms), 0.0, ui_elements_max_timeline(GameStateId.PERK_SELECTION))
 
     def handle_input(
         self,
@@ -195,7 +195,7 @@ class PerkMenuController:
             self._selected_index = (self._selected_index - 1) % len(choices)
 
         screen_w = float(canvas.width())
-        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
+        slide_x = ui_element_anim(self._timeline_ms, index=27, width=self._layout.panel_size.x)[1]
 
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
@@ -248,7 +248,7 @@ class PerkMenuController:
         return None
 
     def draw(self, ctx: PerkMenuUiContext, choices: Sequence[PerkId]) -> None:
-        menu_t = clamp(self._timeline_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
+        menu_t = clamp(self._timeline_ms / ui_elements_max_timeline(GameStateId.PERK_SELECTION), 0.0, 1.0)
         if menu_t <= 1e-3:
             return
 
@@ -258,7 +258,7 @@ class PerkMenuController:
             self._selected_index = 0
 
         screen_w = float(canvas.width())
-        slide_x = perk_menu_panel_slide_x(self._timeline_ms, width=self._layout.panel_size.x)
+        slide_x = ui_element_anim(self._timeline_ms, index=27, width=self._layout.panel_size.x)[1]
 
         master_owned = PerkId.PERK_MASTER in ctx.perks
         expert_owned = PerkId.PERK_EXPERT in ctx.perks

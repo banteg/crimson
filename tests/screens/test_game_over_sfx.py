@@ -9,13 +9,13 @@ import crimson.screens.high_scores_view.view as high_scores_view_module
 import crimson.screens.results.game_over as game_over_module
 from crimson.game.types import GameState, PauseBackground
 from crimson.game_modes import GameMode
+from crimson.game_states import GameStateId
 from crimson.persistence import save_status
 from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.screens.high_scores_view import HighScoresView
-from crimson.screens.panels.base import PANEL_TIMELINE_START_MS
 from crimson.screens.results.game_over import GameOverUi
-from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS
+from crimson.ui.animation import ui_elements_max_timeline
 from grim.assets import RuntimeResources
 from grim.audio import AudioState
 from grim.config import ensure_crimson_cfg
@@ -56,7 +56,7 @@ def _runtime_resources_stub(*, tex: rl.Texture | None = None) -> RuntimeResource
 def test_game_over_panel_open_plays_panel_click(tmp_path: Path, mocker) -> None:
     ui = GameOverUi(assets_root=tmp_path, base_dir=tmp_path, config=ensure_crimson_cfg(tmp_path))
     ui.phase = 1
-    ui._intro_ms = RESULTS_PANEL_VISIBLE_MS - 60.0
+    ui._intro_ms = ui_elements_max_timeline(GameStateId.GAME_OVER) - 60.0
     ui._panel_open_sfx_played = False
 
     play_sfx = mocker.Mock()
@@ -171,7 +171,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     view = HighScoresView(state, ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))
     view.open()
     view._transition.closing = True
-    view._transition.timeline_ms = PANEL_TIMELINE_START_MS // 2
+    view._transition.timeline_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES) // 2
     view.draw()
 
     draw_pause_background_mock.assert_called()

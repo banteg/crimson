@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import datetime as dt
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
@@ -32,7 +33,6 @@ from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
 STATISTICS_PANEL_POS_X = -89.0
@@ -95,7 +95,7 @@ class StatisticsMenuView:
 
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.STATISTICS_MENU)
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -108,7 +108,7 @@ class StatisticsMenuView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.STATISTICS_MENU)
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -129,7 +129,7 @@ class StatisticsMenuView:
 
     def resume(self) -> None:
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.STATISTICS_MENU)
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
@@ -186,9 +186,7 @@ class StatisticsMenuView:
 
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=39,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
@@ -239,9 +237,7 @@ class StatisticsMenuView:
 
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=39,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )

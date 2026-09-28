@@ -29,15 +29,20 @@ def test_close_crosses_zero_once_and_resume_restarts_only_animation(duration) ->
 
 @pytest.mark.parametrize(("timeline", "expected"), [(0, -510), (100, -510), (250, -255), (400, 0), (500, 0)])
 def test_quest_results_keeps_100ms_hold_then_300ms_slide(timeline, expected) -> None:
-    _, slide = ui_element_anim(timeline, index=1, start_ms=400, end_ms=100, width=510)
+    _, slide = ui_element_anim(timeline, index=35, width=510)
     assert slide == expected
 
 
 def test_panels_and_sign_keep_opposite_directions_and_staggered_intervals() -> None:
-    angle, left = ui_element_anim(150, index=1, start_ms=300, end_ms=0, width=510)
-    sign_angle, right = ui_element_anim(150, index=0, start_ms=300, end_ms=0, width=510, direction_flag=1)
+    angle, left = ui_element_anim(150, index=11, width=510)
+    sign_angle, right = ui_element_anim(150, index=0, width=510, direction_flag=1)
     assert left == -255
     assert right == 255
     assert sign_angle == -angle == -0.7853982
     # A later main-menu item is still hidden while the panel is halfway in.
-    assert ui_element_anim(150, index=3, start_ms=600, end_ms=300, width=510) == (1.5707964, -510)
+    assert ui_element_anim(150, index=3, width=510) == (1.5707964, -510)
+
+
+def test_pause_items_slide_in_100ms_apart_from_100ms() -> None:
+    # `ui_menu_layout_init` shifts pause elements 23..25 by 100/200/300 ms, not the main-menu stagger.
+    assert [ui_element_anim(250, index=index, width=300)[1] for index in (23, 24, 25)] == [-150.0, -250.0, -300.0]

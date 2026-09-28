@@ -28,7 +28,7 @@ from ...persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
-from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -157,7 +157,7 @@ class GameOverUi(msgspec.Struct):
 
     def _panel_layout(self, *, screen_w: float) -> _GameOverPanelLayout:
         # Keep consistent with the main menu panel offsets.
-        panel_slide_x = results_panel_slide_x(self._intro_ms, width=GAME_OVER_PANEL_W)
+        panel_slide_x = ui_element_anim(self._intro_ms, index=30, width=GAME_OVER_PANEL_W)[1]
 
         panel_pos = Vec2(GAME_OVER_PANEL_X + panel_slide_x, 0.0)
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
@@ -199,11 +199,11 @@ class GameOverUi(msgspec.Struct):
                 return action
             return None
 
-        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
+        self._intro_ms = min(ui_elements_max_timeline(GameStateId.GAME_OVER), self._intro_ms + dt_ms)
         if (
             (not self._panel_open_sfx_played)
             and play_sfx is not None
-            and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS
+            and self._intro_ms >= ui_elements_max_timeline(GameStateId.GAME_OVER)
         ):
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True

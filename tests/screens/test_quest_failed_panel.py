@@ -13,7 +13,7 @@ from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, StartRun
 from crimson.screens.quest_views import QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.screens.quest_views.shared import QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET
-from crimson.ui.animation import WORLD_FADE_SPAN_MS
+from crimson.ui.animation import ui_element_timeline_window
 from crimson.weapons import WeaponId
 from grim import music as grim_music
 from grim import sfx as grim_sfx
@@ -252,7 +252,7 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
 
     view.open()
     view._closing = True
-    view._intro_ms = WORLD_FADE_SPAN_MS * 0.5
+    view._intro_ms = ui_element_timeline_window(28)[1] * 0.5
     view.draw()
 
     pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)

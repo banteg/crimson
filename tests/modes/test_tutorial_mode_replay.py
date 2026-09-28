@@ -3,12 +3,13 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.game_states import GameStateId
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.perk_menu import PERK_MENU_TRANSITION_MS
+from crimson.ui.animation import ui_elements_max_timeline
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -85,7 +86,7 @@ def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_
     elapsed_after_open = session.elapsed_ms
 
     # The pick waits for the next simulated tick; the closing menu pauses the world.
-    mode._perk_menu.timeline_ms = PERK_MENU_TRANSITION_MS
+    mode._perk_menu.timeline_ms = ui_elements_max_timeline(GameStateId.PERK_SELECTION)
     mode.update(1.0 / 60.0)
     assert mode._perk_pick_pending is True
     assert session.elapsed_ms == elapsed_after_open

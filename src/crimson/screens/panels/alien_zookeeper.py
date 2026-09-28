@@ -4,10 +4,11 @@ import math
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -31,7 +32,6 @@ from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 _BOARD_SIDE = 6
 _BOARD_CELLS = _BOARD_SIDE * _BOARD_SIDE
@@ -128,7 +128,7 @@ class AlienZooKeeperView:
 
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.CREDITS_SECRET)
 
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
@@ -144,7 +144,7 @@ class AlienZooKeeperView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.CREDITS_SECRET)
 
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
@@ -173,9 +173,7 @@ class AlienZooKeeperView:
     def _panel_slide_x(self) -> float:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route
 from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
@@ -14,6 +15,7 @@ from .databases_base import _DatabaseBaseView
 
 
 class UnlockedPerksDatabaseView(_DatabaseBaseView):
+    _game_state = GameStateId.PERK_DATABASE
     _VISIBLE_ROWS = 10
     _LIST_WIDTH = 250.0
     _LIST_FRAME_X = 212.0

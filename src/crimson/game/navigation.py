@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from grim.audio import stop_music
 from grim.view import ViewContext
 
@@ -90,7 +91,14 @@ class ScreenNavigator:
         if entry is not None:
             return entry
         if route is Route.OTHER_GAMES:
-            view = PanelMenuView(self.state, title="Other games", body="This menu is out of scope for the rewrite.")
+            view = PanelMenuView(
+                self.state,
+                game_state=GameStateId.MENU_LEGACY_VARIANT,
+                panel_element=9,
+                back_element=9,
+                title="Other games",
+                body="This menu is out of scope for the rewrite.",
+            )
         else:
             view_type = {
                 Route.MENU: MenuView,

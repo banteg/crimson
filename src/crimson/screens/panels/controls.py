@@ -4,6 +4,7 @@ from enum import Enum, auto
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
@@ -32,7 +33,7 @@ from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView
 from .controls_labels import (
     RebindRowSpec,
     RebindTarget,
@@ -194,6 +195,9 @@ class ControlsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
+            game_state=GameStateId.CONTROLS_MENU,
+            panel_element=14,
+            back_element=18,
             title="Controls",
             back_action=Route.BACK,
             panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
@@ -289,9 +293,7 @@ class ControlsMenuView(PanelMenuView):
     def _left_panel_top_left(self) -> Vec2:
         _, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         return (
@@ -305,9 +307,7 @@ class ControlsMenuView(PanelMenuView):
     def _right_panel_top_left(self) -> Vec2:
         _, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=3,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=40,
             width=MENU_PANEL_WIDTH,
             direction_flag=1,
         )

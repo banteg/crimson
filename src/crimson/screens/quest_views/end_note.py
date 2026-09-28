@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.ui.cursor import ui_cursor_render
@@ -15,7 +16,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -87,13 +88,13 @@ class EndNoteView:
                     self._close_action = None
             return
         if dt_ms > 0:
-            panel_was_hidden = self._timeline_ms < RESULTS_PANEL_VISIBLE_MS
-            self._timeline_ms = min(RESULTS_PANEL_VISIBLE_MS, self._timeline_ms + dt_ms)
-            if panel_was_hidden and self._timeline_ms >= RESULTS_PANEL_VISIBLE_MS and self.state.audio is not None:
+            panel_was_hidden = self._timeline_ms < ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE)
+            self._timeline_ms = min(ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE), self._timeline_ms + dt_ms)
+            if panel_was_hidden and self._timeline_ms >= ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE) and self.state.audio is not None:
                 # ui_element_update clicks as the panel element becomes enabled.
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
-        enabled = self._timeline_ms >= RESULTS_PANEL_VISIBLE_MS
+        enabled = self._timeline_ms >= ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
             self._begin_close_transition(Route.MENU)
             return
@@ -237,7 +238,7 @@ class EndNoteView:
 
     def _panel_top_left(self) -> Vec2:
         # game_update_victory_screen offsets the panel and its text by slot 35's slide.
-        slide_x = results_panel_slide_x(self._timeline_ms, width=END_NOTE_PANEL_W)
+        slide_x = ui_element_anim(self._timeline_ms, index=35, width=END_NOTE_PANEL_W)[1]
         return Vec2(
             END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X + slide_x,
             END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + menu_widescreen_y_shift(float(canvas.width())),

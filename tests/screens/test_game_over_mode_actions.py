@@ -10,7 +10,7 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ShowScores
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.animation import WORLD_FADE_SPAN_MS
+from crimson.ui.animation import ui_element_timeline_window
 from grim.audio import AudioState
 from grim.music import init_music_state
 from grim.rand import Crand
@@ -116,7 +116,7 @@ def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
 def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
     mode._game_over_ui._closing = True
-    mode._game_over_ui._intro_ms = WORLD_FADE_SPAN_MS * 0.5
+    mode._game_over_ui._intro_ms = ui_element_timeline_window(28)[1] * 0.5
 
     world_draw = mocker.patch.object(mode, "_draw_world")
 

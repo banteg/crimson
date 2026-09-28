@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
@@ -24,7 +25,7 @@ from ...input_codes import PadCode, pad_nav_pressed
 from ...ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
+from .base import PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
 
 
@@ -65,6 +66,9 @@ class PlayGameMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
         super().__init__(
             state,
+            game_state=GameStateId.PLAY_GAME_MENU,
+            panel_element=11,
+            back_element=12,
             title="Play Game",
             panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
             panel_height=278.0,
@@ -154,9 +158,7 @@ class PlayGameMenuView(PanelMenuView):
     def _content_layout(self) -> _PlayGameContentLayout:
         _angle_rad, slide_x = ui_element_anim(
             self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (

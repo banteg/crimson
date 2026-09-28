@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import math
 
+from crimson.game_states import GameStateId
 from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background
 from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim, world_fade_alpha
+from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline, world_fade_alpha
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
@@ -19,9 +20,7 @@ from crimson.ui.menu_layout import (
     MenuEntry,
     label_alpha,
     menu_item_bounds,
-    menu_slot_end_ms,
     menu_slot_pos_x,
-    menu_slot_start_ms,
     pause_menu_item_scale,
     update_menu_item_timers,
 )
@@ -70,7 +69,7 @@ class PauseMenuView:
         self._focus_timer_ms = 0
         self._hovered_index = None
         self._transition.reset()
-        self._transition.duration_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
+        self._transition.duration_ms = ui_elements_max_timeline(GameStateId.PAUSE_MENU)
         self._panel_open_sfx_played = False
         self._is_open = True
 
@@ -219,7 +218,7 @@ class PauseMenuView:
         return None
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._transition.timeline_ms >= menu_slot_start_ms(entry.slot)
+        return self._transition.timeline_ms >= ui_element_timeline_window(entry.slot + 23)[1]
 
     def _draw_menu_items(self) -> None:
         if not self._menu_entries:
@@ -232,9 +231,7 @@ class PauseMenuView:
             pos = Vec2(menu_slot_pos_x(entry.slot), entry.y)
             angle_rad, slide_x = ui_element_anim(
                 self._transition.timeline_ms,
-                index=entry.slot + 2,
-                start_ms=menu_slot_start_ms(entry.slot),
-                end_ms=menu_slot_end_ms(entry.slot),
+                index=entry.slot + 23,
                 width=item_w,
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
