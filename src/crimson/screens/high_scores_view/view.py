@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -27,7 +28,7 @@ from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_update
 from ..actions import ShowScores
 from ..assets import require_runtime_resources
 from ..high_scores_layout import (
@@ -77,7 +78,6 @@ class HighScoresView:
         self.state = state
         self._is_open = False
         self._ground: GroundRenderer | None = None
-        self._cursor_pulse_time = 0.0
         self._dt = 0.0
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
@@ -99,7 +99,6 @@ class HighScoresView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
         self._transition.reset()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._scroll_index = 0
@@ -136,7 +135,6 @@ class HighScoresView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         self._dt = min(dt, 0.1)
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
@@ -201,15 +199,10 @@ class HighScoresView:
             button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
             mouse = canvas.mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            w = button_width(
-                resources,
-                self._update_button.label,
-                force_wide=self._update_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._update_button,
                 pos=button_base_pos,
-                width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -219,26 +212,20 @@ class HighScoresView:
                     play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
                 self._reload_records()
                 return
-            w = button_width(resources, self._play_button.label, force_wide=self._play_button.force_wide)
             if button_update(
+                resources,
                 self._play_button,
                 pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y),
-                width=w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
             ):
                 self._start_selected_game()
                 return
-            back_w = button_width(
-                resources,
-                self._back_button.label,
-                force_wide=self._back_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._back_button,
                 pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
-                width=back_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -658,7 +645,7 @@ class HighScoresView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def _world_entity_alpha(self) -> float:
         if not self._transition.closing:

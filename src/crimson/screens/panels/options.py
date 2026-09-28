@@ -15,7 +15,7 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
@@ -125,15 +125,10 @@ class OptionsMenuView(PanelMenuView):
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         resources = require_runtime_resources(self.state)
-        width = button_width(
-            resources,
-            self._controls_button.label,
-            force_wide=self._controls_button.force_wide,
-        )
         if button_update(
+            resources,
             self._controls_button,
             pos=controls_pos,
-            width=width,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -361,16 +356,10 @@ class OptionsMenuView(PanelMenuView):
         draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0, 1.0), text_color)
 
         button_pos = base_pos.offset(dy=155.0)
-        button_w = button_width(
-            resources,
-            self._controls_button.label,
-            force_wide=self._controls_button.force_wide,
-        )
         button_draw(
             resources,
             self._controls_button,
             pos=button_pos,
-            width=button_w,
         )
 
     def _draw_slider(

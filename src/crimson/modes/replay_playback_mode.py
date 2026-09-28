@@ -45,7 +45,6 @@ from ..ui.hud import (
     HudRenderContext,
     HudState,
     draw_hud_overlay,
-    hud_flags_for_game_mode,
 )
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
@@ -564,11 +563,10 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before Typ-o replay draw"
         driver = self._driver
-        cursor_pulse_time = 0.0 if driver is None else float(driver.elapsed_ms) * 0.001
         draw_typing_box(
             runtime.render_resources.resources.texture(TextureId.UI_IND_PANEL),
             text=runtime.world.state.typo.typing.text,
-            cursor_pulse_time=float(cursor_pulse_time),
+            game_time_s=0.0 if driver is None else float(driver.elapsed_ms) * 0.001,
             draw_text=self._draw_ui_text,
             measure_text_width=self._measure_ui_text_width,
         )
@@ -597,7 +595,6 @@ class ReplayPlaybackMode:
         runtime.draw_aim_indicators(show_aim=True)
         mode_id = replay.run.game_mode_id
         show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
-        hud_flags = hud_flags_for_game_mode(mode_id)
         quest_progress_ratio: float | None = None
         elapsed_ms = float(runtime.presentation_elapsed_ms)
         match mode_id:
@@ -620,11 +617,7 @@ class ReplayPlaybackMode:
                 resources=runtime.render_resources.resources,
                 state=self._hud_state,
                 font=self._small,
-                show_health=bool(hud_flags.show_health),
-                show_weapon=bool(hud_flags.show_weapon),
-                show_xp=bool(hud_flags.show_xp),
-                show_time=bool(hud_flags.show_time),
-                show_quest_hud=bool(hud_flags.show_quest_hud),
+                game_mode=mode_id,
                 small_indicators=False,
             ),
             player=players[0],

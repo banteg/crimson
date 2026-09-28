@@ -306,7 +306,7 @@ def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker
     draw_overlay.assert_called_once()
     assert draw_overlay.call_args.args == (texture,)
     assert draw_overlay.call_args.kwargs["text"] == "reload"
-    assert draw_overlay.call_args.kwargs["cursor_pulse_time"] == 0.25
+    assert draw_overlay.call_args.kwargs["game_time_s"] == 0.25
 
 
 def test_draw_tutorial_overlays_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:

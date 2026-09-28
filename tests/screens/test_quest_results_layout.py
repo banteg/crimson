@@ -106,9 +106,8 @@ def _patch_draw_environment(
     mocker.patch.object(quest_results_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module.rl, "draw_line")
     mocker.patch.object(quest_results_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_results_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
     mocker.patch.object(quest_results_module, "draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_results_module, "draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_results_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(
         QuestResultsUi,
         "_text_width",

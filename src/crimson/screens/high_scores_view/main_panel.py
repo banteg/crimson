@@ -12,7 +12,7 @@ from grim.raylib_api import rl
 
 from ...game_modes import GameMode
 from ...quests import quest_by_level
-from ...ui.perk_menu import button_draw, button_width
+from ...ui.perk_menu import button_draw
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
     HS_BACK_BUTTON_Y,
@@ -180,21 +180,16 @@ def draw_main_panel(
             y += row_step
 
     button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
-    w = button_width(resources, view._update_button.label, force_wide=view._update_button.force_wide)
-    button_draw(resources, view._update_button, pos=button_base_pos, width=w)
-    w = button_width(resources, view._play_button.label, force_wide=view._play_button.force_wide)
+    button_draw(resources, view._update_button, pos=button_base_pos)
     button_draw(
         resources,
         view._play_button,
         pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y),
-        width=w,
     )
-    w = button_width(resources, view._back_button.label, force_wide=view._back_button.force_wide)
     button_draw(
         resources,
         view._back_button,
         pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
-        width=w,
     )
 
     return selected_rank

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.screens.actions import Route
 from grim import canvas
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -18,8 +17,7 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
     draw_tutorial_overlay_panels,
@@ -175,12 +173,11 @@ class TutorialMode(BaseGameplayMode):
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(resources, self._play_button.label, force_wide=True)
-            repeat_w = button_width(resources, self._repeat_button.label, force_wide=True)
+            play_w = button_width(resources, self._play_button)
             if button_update(
+                resources,
                 self._play_button,
                 pos=button_base_pos,
-                width=play_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -188,9 +185,9 @@ class TutorialMode(BaseGameplayMode):
                 self._finish_tutorial_run(restart=False)
                 return
             if button_update(
+                resources,
                 self._repeat_button,
                 pos=button_base_pos.offset(dx=play_w + gap),
-                width=repeat_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -202,13 +199,12 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.enabled:
             resources = self.render_resources.resources
             y = float(canvas.height()) - 50.0
-            w = button_width(resources, self._skip_button.label, force_wide=True)
-            if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(resources, self._skip_button, pos=Vec2(10.0, y), dt_ms=dt_ms, mouse=mouse, click=click):
                 self._finish_tutorial_run(restart=False)
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
-        dt, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
+        dt, dt_ui_ms = self._tick_frame(dt)
 
         self._handle_input()
         if self._action == Route.PAUSE:
@@ -270,7 +266,6 @@ class TutorialMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if not perk_menu_active:
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
@@ -278,11 +273,7 @@ class TutorialMode(BaseGameplayMode):
                     state=self._hud_state,
                     font=self._small,
                     alpha=1.0,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
+                    game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
@@ -300,7 +291,7 @@ class TutorialMode(BaseGameplayMode):
                 self._perk_menu_ui_context(),
                 perk_selection_prepared_choices(self.state),
             )
-            self._draw_menu_cursor()
+            self._draw_game_cursor()
 
     def _draw_tutorial_prompts(self, *, hud_bottom: float) -> None:
         overlay = self.state.tutorial_overlay
@@ -324,38 +315,25 @@ class TutorialMode(BaseGameplayMode):
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(resources, self._play_button.label, force_wide=True)
-            repeat_w = button_width(resources, self._repeat_button.label, force_wide=True)
+            play_w = button_width(resources, self._play_button)
             button_draw(
                 resources,
                 self._play_button,
                 pos=button_base_pos,
-                width=play_w,
             )
             button_draw(
                 resources,
                 self._repeat_button,
                 pos=button_base_pos.offset(dx=play_w + gap),
-                width=repeat_w,
             )
             return
 
         if self._skip_button.alpha > 1e-3:
             y = float(canvas.height()) - 50.0
-            w = button_width(resources, self._skip_button.label, force_wide=True)
-            button_draw(resources, self._skip_button, pos=Vec2(10.0, y), width=w)
+            button_draw(resources, self._skip_button, pos=Vec2(10.0, y))
 
         if self._paused:
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
-    def _draw_menu_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )

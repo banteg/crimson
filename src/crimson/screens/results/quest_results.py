@@ -9,6 +9,7 @@ import msgspec
 from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
 from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
@@ -30,12 +31,11 @@ from ...persistence.highscores import (
 )
 from ...quests.level import QuestLevel
 from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
-from ...ui.cursor import draw_menu_cursor
 from ...ui.formatting import format_time_mm_ss
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
@@ -112,7 +112,6 @@ class QuestResultsUi(msgspec.Struct):
 
     _intro_ms: float = 0.0
     _dt: float = 0.0
-    _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
     _close_action: ResultAction | None = None
@@ -187,7 +186,6 @@ class QuestResultsUi(msgspec.Struct):
         self.input_caret = len(self.input_text)
 
         self._intro_ms = 0.0
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._closing = False
         self._close_action = None
@@ -244,7 +242,6 @@ class QuestResultsUi(msgspec.Struct):
         dt_s = float(min(dt, 0.1))
         self._dt = dt_s
         dt_ms = dt_s * 1000.0
-        self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
             mouse = canvas.mouse_position()
 
@@ -330,8 +327,7 @@ class QuestResultsUi(msgspec.Struct):
             input_pos = content_pos.offset(dy=150.0)
             ok_pos = input_pos + Vec2(170.0, -8.0)
             resources = runtime_resources_for(self.assets_root)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
-            ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
+            ok_clicked = button_update(resources, self._ok_button, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
                 if self.input_text.strip():
@@ -394,15 +390,10 @@ class QuestResultsUi(msgspec.Struct):
             button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
             resources = runtime_resources_for(self.assets_root)
 
-            play_next_w = button_width(
-                resources,
-                self._play_next_button.label,
-                force_wide=self._play_next_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._play_next_button,
                 pos=button_pos,
-                width=play_next_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -413,15 +404,10 @@ class QuestResultsUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._play_again_button,
                 pos=button_pos,
-                width=play_again_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -432,15 +418,10 @@ class QuestResultsUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._high_scores_button,
                 pos=button_pos,
-                width=high_scores_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -451,15 +432,10 @@ class QuestResultsUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._main_menu_button,
                 pos=button_pos,
-                width=main_menu_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -615,8 +591,7 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             ok_pos = input_pos + Vec2(170.0, -8.0)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
-            button_draw(resources, self._ok_button, pos=ok_pos, width=ok_w)
+            button_draw(resources, self._ok_button, pos=ok_pos)
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0, 46.0)
@@ -675,57 +650,28 @@ class QuestResultsUi(msgspec.Struct):
 
             # Buttons
             button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
-            play_next_w = button_width(
-                resources,
-                self._play_next_button.label,
-                force_wide=self._play_next_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._play_next_button,
                 pos=button_pos,
-                width=play_next_w,
             )
             button_pos = button_pos.offset(dy=32.0)
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._play_again_button,
                 pos=button_pos,
-                width=play_again_w,
             )
             button_pos = button_pos.offset(dy=32.0)
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._high_scores_button,
                 pos=button_pos,
-                width=high_scores_w,
             )
             button_pos = button_pos.offset(dy=32.0)
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._main_menu_button,
                 pos=button_pos,
-                width=main_menu_w,
             )
 
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=Vec2.from_xy(mouse),
-            pulse_time=float(self._cursor_pulse_time),
-        )
+        ui_cursor_render(resources, dt=self._dt, pos=Vec2.from_xy(mouse))

@@ -4,9 +4,10 @@ import math
 import os
 
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_cursor, ensure_menu_ground, menu_ground_camera
+from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -52,7 +53,6 @@ class MenuView:
         self._hovered_index: int | None = None
         self._transition = ScreenTransition()
         self._transition.duration_ms = 0
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._panel_open_sfx_played = False
@@ -69,7 +69,6 @@ class MenuView:
         self._focus_timer_ms = 0
         self._hovered_index = None
         self._transition.reset()
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._transition.duration_ms = self._menu_max_timeline_ms(
             mods_available=self._mods_available(),
@@ -98,7 +97,6 @@ class MenuView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if not self._transition.advance(dt_ms):
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
@@ -159,7 +157,7 @@ class MenuView:
             locked=self.state.menu_sign_locked,
             timeline_ms=self._transition.timeline_ms,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()

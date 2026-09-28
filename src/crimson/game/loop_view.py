@@ -85,6 +85,7 @@ class GameLoopView:
         return self.state.quit_requested
 
     def update(self, dt: float) -> None:
+        self.state.frame_dt = min(dt, 0.1)
         input_begin_frame()
         console = self.state.console
         console.handle_hotkey()

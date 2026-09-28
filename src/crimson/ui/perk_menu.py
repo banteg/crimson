@@ -261,10 +261,11 @@ def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, r
     )
 
 
-def button_width(resources: RuntimeResources, label: str, *, force_wide: bool) -> float:
-    if force_wide:
+def button_width(resources: RuntimeResources, state: UiButtonState) -> float:
+    """`ui_button_update` picks the plate from the label: 82px under 40px of text, else 145px."""
+    if state.force_wide:
         return 145.0
-    if _ui_text_width(resources, label) < 40.0:
+    if _ui_text_width(resources, state.label) < 40.0:
         return 82.0
     return 145.0
 
@@ -275,10 +276,10 @@ def button_hit_rect(*, pos: Vec2, width: float) -> Rect:
 
 
 def button_update(
+    resources: RuntimeResources,
     state: UiButtonState,
     *,
     pos: Vec2,
-    width: float,
     dt_ms: float,
     mouse: rl.Vector2,
     click: bool,
@@ -287,7 +288,7 @@ def button_update(
     if not state.enabled:
         state.hovered = False
     else:
-        state.hovered = focused or button_hit_rect(pos=pos, width=width).contains(mouse)
+        state.hovered = focused or button_hit_rect(pos=pos, width=button_width(resources, state)).contains(mouse)
 
     delta = 6 if (state.enabled and state.hovered) else -4
     state.hover_t = int(clamp(state.hover_t + int(dt_ms) * delta, 0.0, 1000.0))
@@ -306,8 +307,8 @@ def button_draw(
     state: UiButtonState,
     *,
     pos: Vec2,
-    width: float,
 ) -> None:
+    width = button_width(resources, state)
     button_sm, button_md = _resolve_button_textures(resources)
     texture = button_md if width > 120.0 else button_sm
 

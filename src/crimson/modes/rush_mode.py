@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -14,8 +13,7 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..replay import Replay, ReplayRecorder
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -103,15 +101,6 @@ class RushMode(BaseGameplayMode):
             recorder=self._replay_recorder,
         )
 
-    def _draw_game_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )
 
     def draw(self) -> None:
         entity_alpha = self._world_entity_alpha()
@@ -121,18 +110,13 @@ class RushMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if not self._game_over_active:
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
                     resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
+                    game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import (
     CrimsonConfig,
@@ -22,8 +21,7 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.perk_menu import PERK_MENU_TRANSITION_MS
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
@@ -127,7 +125,6 @@ class SurvivalMode(BaseGameplayMode):
         self._perk_prompt.reset()
         self._perk_menu.reset()
         self._cursor_time = 0.0
-        self._cursor_pulse_time = 0.0
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.SURVIVAL)
         self._sim_session = prepared.session
@@ -237,15 +234,6 @@ class SurvivalMode(BaseGameplayMode):
             recorder=self._replay_recorder,
         )
 
-    def _draw_game_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )
 
     def _draw_perk_prompt(self) -> None:
         self._perk_prompt.draw(
@@ -274,7 +262,6 @@ class SurvivalMode(BaseGameplayMode):
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active):
             hud_alpha = clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar(alpha=hud_alpha)
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
@@ -282,11 +269,7 @@ class SurvivalMode(BaseGameplayMode):
                     state=self._hud_state,
                     font=self._small,
                     alpha=hud_alpha,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
+                    game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,

@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import cast
 
 import crimson.ui.hud as hud_module
+from crimson.game_modes import GameMode
 from crimson.sim.state_types import PlayerState
 from crimson.ui.hud import HudRenderContext, HudState, draw_hud_overlay
 from crimson.weapons import WeaponId
@@ -65,6 +66,7 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
     player1.weapon.ammo = 1
 
     draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+    mocker.patch.object(hud_module, "_draw_progress_bar")
     mocker.patch.object(hud_module.rl, "draw_text", side_effect=lambda *args, **kwargs: None)
 
     draw_hud_overlay(
@@ -72,9 +74,7 @@ def test_draw_hud_overlay_stacks_player_bars_for_multiplayer(mocker) -> None:
             resources=resources,
             state=HudState(),
             alpha=1.0,
-            show_weapon=True,
-            show_xp=False,
-            show_time=False,
+            game_mode=GameMode.SURVIVAL,
         ),
         player=player0,
         players=[player0, player1],
@@ -139,6 +139,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
     player1 = PlayerState(index=1, pos=Vec2(), health=100.0)
 
     draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+    mocker.patch.object(hud_module, "_draw_progress_bar")
 
     draw_texture_pro.reset_mock()
     draw_hud_overlay(
@@ -146,9 +147,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
             resources=resources,
             state=HudState(preserve_bugs=False),
             alpha=1.0,
-            show_weapon=False,
-            show_xp=False,
-            show_time=False,
+            game_mode=GameMode.RUSH,
         ),
         player=player0,
         players=[player0, player1],
@@ -174,9 +173,7 @@ def test_draw_hud_overlay_preserve_bugs_shares_player1_heart_pulse_speed(mocker)
             resources=resources,
             state=HudState(preserve_bugs=True),
             alpha=1.0,
-            show_weapon=False,
-            show_xp=False,
-            show_time=False,
+            game_mode=GameMode.RUSH,
         ),
         player=player0,
         players=[player0, player1],
@@ -226,16 +223,14 @@ def test_draw_hud_overlay_uses_native_aux_origin_without_xp(mocker) -> None:
     player = PlayerState(index=0, pos=Vec2(), health=100.0, aux_timer=0.5)
     player.weapon.weapon_id = WeaponId.PISTOL
     draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+    mocker.patch.object(hud_module, "_draw_progress_bar")
 
     draw_hud_overlay(
         HudRenderContext(
             resources=resources,
             state=HudState(),
             alpha=1.0,
-            show_health=False,
-            show_weapon=False,
-            show_xp=False,
-            show_time=False,
+            game_mode=GameMode.DEMO,
         ),
         player=player,
         players=[player],
@@ -278,16 +273,14 @@ def test_draw_hud_overlay_compacts_active_aux_rows(mocker) -> None:
     player0.weapon.weapon_id = WeaponId.PISTOL
     player1.weapon.weapon_id = WeaponId.PISTOL
     draw_texture_pro = mocker.patch.object(hud_module.rl, "draw_texture_pro")
+    mocker.patch.object(hud_module, "_draw_progress_bar")
 
     draw_hud_overlay(
         HudRenderContext(
             resources=resources,
             state=HudState(),
             alpha=1.0,
-            show_health=False,
-            show_weapon=False,
-            show_xp=True,
-            show_time=False,
+            game_mode=GameMode.TYPO,
         ),
         player=player0,
         players=[player0, player1],
@@ -321,8 +314,7 @@ def test_bonus_hud_draws_four_timer_bars(mocker) -> None:
     hud.slots[0].slide_x = -2.0
     hud.slots[0].timer_values = (0.0, 0.0, 5.0, 10.0)
     draw_hud_overlay(
-        HudRenderContext(resources=resources, state=HudState(), show_health=False, show_weapon=False,
-                         show_xp=False, show_time=False),
+        HudRenderContext(resources=resources, state=HudState(), game_mode=GameMode.DEMO),
         player=players[0], players=players, bonus_hud=hud, frame_dt_ms=0.0,
     )
     assert [call.args[2] for call in bars.call_args_list] == [0.0, 0.0, 0.25, 0.5]

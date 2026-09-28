@@ -3,9 +3,10 @@ from __future__ import annotations
 import datetime as dt
 
 from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
 from crimson.ui.menu_layout import (
@@ -28,7 +29,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
@@ -92,7 +93,6 @@ class StatisticsMenuView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
@@ -107,7 +107,6 @@ class StatisticsMenuView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
         self._transition.reset()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
@@ -169,7 +168,6 @@ class StatisticsMenuView:
         )
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
         if not self._transition.advance(dt_ms):
@@ -202,8 +200,7 @@ class StatisticsMenuView:
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
-            w = button_width(resources, btn.label, force_wide=btn.force_wide)
-            return button_update(btn, pos=pos, width=w, dt_ms=dt_ms_f, mouse=mouse, click=click)
+            return button_update(resources, btn, pos=pos, dt_ms=dt_ms_f, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0)):
@@ -303,20 +300,16 @@ class StatisticsMenuView:
         # Buttons.
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
-            w = button_width(resources, btn.label, force_wide=btn.force_wide)
             button_draw(
                 resources,
                 btn,
                 pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i)),
-                width=w,
             )
 
-        back_w = button_width(resources, self._btn_back.label, force_wide=self._btn_back.force_wide)
         button_draw(
             resources,
             self._btn_back,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
-            width=back_w,
         )
 
         draw_menu_sign(
@@ -324,4 +317,4 @@ class StatisticsMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)

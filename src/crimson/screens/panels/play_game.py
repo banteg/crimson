@@ -22,7 +22,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...input_codes import PadCode, pad_nav_pressed
 from ...ui.menu_nav import menu_confirm_pressed, menu_focus_step
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .hit_test import mouse_inside_rect_with_padding
@@ -325,11 +325,10 @@ class PlayGameMenuView(PanelMenuView):
     ) -> tuple[bool, bool]:
         state = self._mode_button_state(mode)
         state.enabled = bool(enabled)
-        width = button_width(resources, state.label, force_wide=state.force_wide)
         clicked = button_update(
+            resources,
             state,
             pos=pos,
-            width=width,
             dt_ms=float(dt_ms),
             mouse=mouse,
             click=bool(click),
@@ -558,8 +557,7 @@ class PlayGameMenuView(PanelMenuView):
         resources: RuntimeResources,
     ) -> None:
         state = self._mode_button_state(mode)
-        width = button_width(resources, state.label, force_wide=state.force_wide)
-        button_draw(resources, state, pos=pos, width=width)
+        button_draw(resources, state, pos=pos)
 
     def _draw_mode_count(self, key: str, pos: Vec2, color: rl.Color, *, font: SmallFontData) -> None:
         status = self.state.status

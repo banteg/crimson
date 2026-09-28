@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -68,7 +69,6 @@ class PanelMenuView:
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
         self._transition.duration_ms = 0
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -79,7 +79,6 @@ class PanelMenuView:
         self._hovered = False
         self._transition.reset()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._init_ground()
         self._is_open = True
@@ -104,7 +103,6 @@ class PanelMenuView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if not self._transition.advance(dt_ms):
             return False
@@ -159,10 +157,7 @@ class PanelMenuView:
             timeline_ms=self._transition.timeline_ms,
         )
         self._draw_contents()
-        draw_screen_cursor(
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
+        ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()

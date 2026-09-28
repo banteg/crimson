@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from grim import canvas
 from grim.assets import TextureId
@@ -16,7 +17,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -50,7 +51,6 @@ class EndNoteView:
         self.state = state
         self._ground: GroundRenderer | None = None
         self._action: ScreenAction | None = None
-        self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._closing = False
         self._close_action: ScreenAction | None = None
@@ -62,7 +62,6 @@ class EndNoteView:
 
     def open(self) -> None:
         self._action = None
-        self._cursor_pulse_time = 0.0
         self._timeline_ms = 0
         self._closing = False
         self._close_action = None
@@ -79,7 +78,6 @@ class EndNoteView:
         if self._ground is not None:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
-        self._cursor_pulse_time += dt_step * 1.1
         dt_ms = int(dt_step * 1000.0)
         if self._closing:
             if dt_ms > 0 and self._action is None:
@@ -110,15 +108,10 @@ class EndNoteView:
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
-        survival_w = button_width(
-            resources,
-            self._survival_button.label,
-            force_wide=self._survival_button.force_wide,
-        )
         if button_update(
+            resources,
             self._survival_button,
             pos=button_pos,
-            width=survival_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -128,11 +121,10 @@ class EndNoteView:
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        rush_w = button_width(resources, self._rush_button.label, force_wide=self._rush_button.force_wide)
         if button_update(
+            resources,
             self._rush_button,
             pos=button_pos,
-            width=rush_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -142,11 +134,10 @@ class EndNoteView:
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        typo_w = button_width(resources, self._typo_button.label, force_wide=self._typo_button.force_wide)
         if button_update(
+            resources,
             self._typo_button,
             pos=button_pos,
-            width=typo_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -156,15 +147,10 @@ class EndNoteView:
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        main_w = button_width(
-            resources,
-            self._main_menu_button.label,
-            force_wide=self._main_menu_button.force_wide,
-        )
         if button_update(
+            resources,
             self._main_menu_button,
             pos=button_pos,
-            width=main_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -234,27 +220,15 @@ class EndNoteView:
         draw_small_text(font, "Good luck with your battles, trooper!", body_pos, body_color)
 
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET, END_NOTE_BUTTON_Y_OFFSET)
-        survival_w = button_width(
-            resources,
-            self._survival_button.label,
-            force_wide=self._survival_button.force_wide,
-        )
-        button_draw(resources, self._survival_button, pos=button_pos, width=survival_w)
+        button_draw(resources, self._survival_button, pos=button_pos)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        rush_w = button_width(resources, self._rush_button.label, force_wide=self._rush_button.force_wide)
-        button_draw(resources, self._rush_button, pos=button_pos, width=rush_w)
+        button_draw(resources, self._rush_button, pos=button_pos)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        typo_w = button_width(resources, self._typo_button.label, force_wide=self._typo_button.force_wide)
-        button_draw(resources, self._typo_button, pos=button_pos, width=typo_w)
+        button_draw(resources, self._typo_button, pos=button_pos)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        main_w = button_width(
-            resources,
-            self._main_menu_button.label,
-            force_wide=self._main_menu_button.force_wide,
-        )
-        button_draw(resources, self._main_menu_button, pos=button_pos, width=main_w)
+        button_draw(resources, self._main_menu_button, pos=button_pos)
 
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         action = self._action

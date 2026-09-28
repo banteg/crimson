@@ -4,9 +4,10 @@ import math
 
 from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor
+from crimson.screens.chrome import draw_screen_background
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim, world_fade_alpha
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -47,7 +48,6 @@ class PauseMenuView:
         self._hovered_index: int | None = None
         self._transition = ScreenTransition()
         self._transition.duration_ms = 0
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._panel_open_sfx_played = False
@@ -71,7 +71,6 @@ class PauseMenuView:
         self._hovered_index = None
         self._transition.reset()
         self._transition.duration_ms = max(300, *(menu_slot_start_ms(entry.slot) for entry in self._menu_entries))
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._is_open = True
 
@@ -88,7 +87,6 @@ class PauseMenuView:
         self._assert_open()
         if self.state.audio is not None:
             update_audio(self.state.audio, dt)
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
 
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if not self._transition.advance(dt_ms):
@@ -156,10 +154,7 @@ class PauseMenuView:
             locked=self.state.menu_sign_locked,
             timeline_ms=self._transition.timeline_ms,
         )
-        draw_screen_cursor(
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
+        ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()

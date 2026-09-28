@@ -21,7 +21,6 @@ from ...ui.perk_menu import (
     UiButtonState,
     button_draw,
     button_update,
-    button_width,
     draw_menu_item,
     draw_ui_text,
     menu_item_hit_rect,
@@ -226,15 +225,10 @@ class PerkMenuController:
                     return int(idx)
                 break
 
-        cancel_w = button_width(
-            ctx.resources,
-            self._cancel_button.label,
-            force_wide=self._cancel_button.force_wide,
-        )
         if button_update(
+            ctx.resources,
             self._cancel_button,
             pos=computed.cancel_pos,
-            width=cancel_w,
             dt_ms=float(dt_ui_ms),
             mouse=ctx.mouse,
             click=click,
@@ -322,12 +316,8 @@ class PerkMenuController:
             color=UI_TEXT_COLOR,
         )
 
-        cancel_w = button_width(
-            ctx.resources, self._cancel_button.label, force_wide=self._cancel_button.force_wide,
-        )
         button_draw(
             ctx.resources,
             self._cancel_button,
             pos=computed.cancel_pos,
-            width=cancel_w,
         )

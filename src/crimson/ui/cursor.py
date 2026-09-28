@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import math
 
+import msgspec
+
+from grim import canvas
+from grim.assets import RuntimeResources, TextureId
+from grim.color import grim_color
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -10,50 +15,22 @@ from ..effects_atlas import EffectId, effect_src_rect
 CURSOR_EFFECT_ID = int(EffectId.GLOW)
 
 
-def _clamp01(value: float) -> float:
-    if value < 0.0:
-        return 0.0
-    if value > 1.0:
-        return 1.0
-    return value
-
-
-def draw_cursor_glow(
-    particles: rl.Texture | None,
-    *,
-    pos: Vec2,
-    pulse_time: float | None = None,
-    effect_id: int = CURSOR_EFFECT_ID,
-) -> None:
+def draw_cursor_glow(particles: rl.Texture | None, *, pos: Vec2) -> None:
+    """The aim reticle's single additive glow quad."""
     if particles is None:
         return
-    src = effect_src_rect(
-        int(effect_id),
-        texture_width=float(particles.width),
-        texture_height=float(particles.height),
-    )
+    src = effect_src_rect(CURSOR_EFFECT_ID, texture_width=float(particles.width), texture_height=float(particles.height))
     if src is None:
         return
-
-    src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
-    origin = rl.Vector2(0.0, 0.0)
-
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
-    if pulse_time is None:
-        dst = rl.Rectangle(float(pos.x - 32.0), float(pos.y - 32.0), 64.0, 64.0)
-        rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, rl.WHITE)
-    else:
-        alpha = (math.pow(2.0, math.sin(float(pulse_time))) + 2.0) * 0.32
-        alpha = _clamp01(alpha)
-        tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
-        for dx, dy, size in (
-            (-28.0, -28.0, 64.0),
-            (-10.0, -18.0, 64.0),
-            (-18.0, -10.0, 64.0),
-            (-48.0, -48.0, 128.0),
-        ):
-            dst = rl.Rectangle(float(pos.x + dx), float(pos.y + dy), float(size), float(size))
-            rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
+    rl.draw_texture_pro(
+        particles,
+        rl.Rectangle(*src),
+        rl.Rectangle(float(pos.x - 32.0), float(pos.y - 32.0), 64.0, 64.0),
+        rl.Vector2(0.0, 0.0),
+        0.0,
+        rl.WHITE,
+    )
     rl.end_blend_mode()
 
 
@@ -77,16 +54,41 @@ def draw_aim_cursor(
     rl.draw_texture_pro(aim, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
 
-def draw_menu_cursor(
-    particles: rl.Texture | None,
-    cursor: rl.Texture | None,
-    *,
-    pos: Vec2,
-    pulse_time: float,
-) -> None:
-    draw_cursor_glow(particles, pos=pos, pulse_time=pulse_time)
-    if cursor is None:
-        return
-    src = rl.Rectangle(0.0, 0.0, float(cursor.width), float(cursor.height))
-    dst = rl.Rectangle(float(pos.x - 2.0), float(pos.y - 2.0), 32.0, 32.0)
-    rl.draw_texture_pro(cursor, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+class _CursorPulse(msgspec.Struct):
+    """Native `ui_cursor_pulse_phase`: only advances while a cursor renders."""
+
+    phase: float = 0.0
+
+
+_pulse = _CursorPulse()
+
+
+def ui_cursor_render(resources: RuntimeResources, *, dt: float, pos: Vec2 | None = None) -> None:
+    """`ui_cursor_render`: advance the pulse, draw four additive glow quads, then the arrow."""
+    _pulse.phase += dt * 1.1
+    if pos is None:
+        pos = Vec2.from_xy(canvas.mouse_position())
+    particles = resources.texture(TextureId.PARTICLES)
+    src = effect_src_rect(CURSOR_EFFECT_ID, texture_width=float(particles.width), texture_height=float(particles.height))
+    if src is not None:
+        tint = grim_color(1.0, 1.0, 1.0, (math.sin(_pulse.phase) ** 2 + 2.0) * 0.32)
+        rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
+        for dx, dy, size in ((-28.0, -28.0, 64.0), (-10.0, -18.0, 64.0), (-18.0, -10.0, 64.0), (-48.0, -48.0, 128.0)):
+            rl.draw_texture_pro(
+                particles,
+                rl.Rectangle(*src),
+                rl.Rectangle(float(pos.x + dx), float(pos.y + dy), size, size),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                tint,
+            )
+        rl.end_blend_mode()
+    cursor = resources.texture(TextureId.UI_CURSOR)
+    rl.draw_texture_pro(
+        cursor,
+        rl.Rectangle(0.0, 0.0, float(cursor.width), float(cursor.height)),
+        rl.Rectangle(float(pos.x - 2.0), float(pos.y - 2.0), 32.0, 32.0),
+        rl.Vector2(0.0, 0.0),
+        0.0,
+        rl.WHITE,
+    )

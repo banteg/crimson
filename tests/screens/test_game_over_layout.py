@@ -225,9 +225,8 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
 
     draw_classic_menu_panel = mocker.patch.object(game_over_module, "draw_classic_menu_panel")
-    mocker.patch.object(game_over_module, "draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(game_over_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(game_over_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(game_over_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
     mocker.patch.object(game_over_module, "ui_text_input_render")
     patch_raylib_module("crimson.screens.results.game_over")
 

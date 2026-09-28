@@ -42,7 +42,6 @@ def test_dismissing_dropdown_does_not_click_through_to_play(scores_view, mocker)
 @pytest.fixture
 def scores_view(make_game_state, screen_resources, screen_io, mocker) -> HighScoresView:
     mocker.patch.object(scores_module, "ensure_menu_ground", return_value=None)
-    mocker.patch.object(scores_module, "button_width", return_value=100.0)
     mocker.patch.object(scores_module, "button_update", return_value=False)
     state = make_game_state(resources=screen_resources)
     state.config.gameplay.mode = GameMode.QUESTS
@@ -52,7 +51,7 @@ def scores_view(make_game_state, screen_resources, screen_io, mocker) -> HighSco
 
 def click_button(view: HighScoresView, label: str, mocker) -> None:
     view._transition.timeline_ms = view._transition.duration_ms
-    mocker.patch.object(scores_module, "button_update", side_effect=lambda button, **_k: button.label == label)
+    mocker.patch.object(scores_module, "button_update", side_effect=lambda _resources, button, **_k: button.label == label)
     view.update(0.016)
 
 

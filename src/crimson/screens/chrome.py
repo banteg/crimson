@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from grim import canvas
-from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -9,7 +7,6 @@ from grim.terrain_render import GroundRenderer
 from ..game.types import GameState
 from ..sim.bootstrap import advance_unlock_terrain
 from ..terrain_slots import resolve_terrain_slots
-from ..ui.cursor import draw_menu_cursor
 from .assets import require_runtime_resources
 
 
@@ -56,14 +53,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         ground.schedule_generate(seed=terrain.terrain_seed, generation_kind="unlock_random")
         state.menu_ground_camera = None
     return ground
-
-
-def draw_screen_cursor(*, resources: RuntimeResources, pulse_time: float) -> None:
-    particles = resources.texture(TextureId.PARTICLES)
-    cursor_tex = resources.texture(TextureId.UI_CURSOR)
-
-    mouse = canvas.mouse_position()
-    draw_menu_cursor(particles, cursor_tex, pos=Vec2.from_xy(mouse), pulse_time=float(pulse_time))
 
 
 def draw_screen_background(state: GameState, ground: GroundRenderer | None, *, entity_alpha: float = 1.0) -> None:

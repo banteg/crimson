@@ -30,7 +30,7 @@ from ...input_codes import (
 from ...movement_controls import MovementControlType
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
 from .controls_labels import (
@@ -368,20 +368,13 @@ class ControlsMenuView(PanelMenuView):
             return True
         return False
 
-    def _reset_button_layout(self, *, left_top_left: Vec2) -> tuple[Vec2, float]:
-        resources = require_runtime_resources(self.state)
-        button = self._reset_button
-        width = button_width(resources, button.label, force_wide=button.force_wide)
-        return left_top_left + CONTROLS_RESET_BUTTON_OFFSET, width
-
     def _update_reset_button(self, dt: float, *, left_top_left: Vec2, enabled: bool) -> bool:
         button = self._reset_button
         button.enabled = enabled and self._checkbox_enabled() and self._dropdown is None
-        pos, width = self._reset_button_layout(left_top_left=left_top_left)
         if not button_update(
+            require_runtime_resources(self.state),
             button,
-            pos=pos,
-            width=width,
+            pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET,
             dt_ms=min(dt, 0.1) * 1000.0,
             mouse=canvas.mouse_position(),
             click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
@@ -826,8 +819,7 @@ class ControlsMenuView(PanelMenuView):
             rl.Color(255, 255, 255, checkbox_alpha),
         )
 
-        reset_pos, reset_width = self._reset_button_layout(left_top_left=left_top_left)
-        button_draw(resources, self._reset_button, pos=reset_pos, width=reset_width)
+        button_draw(resources, self._reset_button, pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET)
 
         dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
             (

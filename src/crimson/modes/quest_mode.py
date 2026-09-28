@@ -28,8 +28,7 @@ from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import QuestSpawnState
 from ..sim.run_result import RunOutcome
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
@@ -350,18 +349,13 @@ class QuestMode(BaseGameplayMode):
             total = self._quest_spawn_state.total_creatures
             kills = int(self.creatures.kill_count)
             quest_progress_ratio = float(kills) / float(total) if total > 0 else None
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             hud_bottom = draw_hud_overlay(
                 HudRenderContext(
                     resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
+                    game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,
@@ -398,15 +392,6 @@ class QuestMode(BaseGameplayMode):
             y += float(debug_overlay_height)
             self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
-    def _draw_game_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )
 
     def _draw_quest_title(self) -> None:
         font = self._grim_mono

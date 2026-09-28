@@ -63,24 +63,12 @@ HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
 
 
-class HudRenderFlags(msgspec.Struct, frozen=True):
-    show_health: bool
-    show_weapon: bool
-    show_xp: bool
-    show_time: bool
-    show_quest_hud: bool
-
-
 class HudRenderContext(msgspec.Struct, frozen=True):
     resources: RuntimeResources
     state: HudState
+    game_mode: GameMode
     font: SmallFontData | None = None
     alpha: float = 1.0
-    show_health: bool = True
-    show_weapon: bool = True
-    show_xp: bool = True
-    show_time: bool = False
-    show_quest_hud: bool = False
     small_indicators: bool = False
 
 
@@ -119,52 +107,6 @@ class HudState(msgspec.Struct):
 class HudLayout(msgspec.Struct, frozen=True):
     line_h: float
     hud_y_shift: float
-
-
-def hud_flags_for_game_mode(game_mode_id: GameMode) -> HudRenderFlags:
-    """Match `hud_update_and_render` (0x0041ca90) flag mapping."""
-
-    match game_mode_id:
-        case GameMode.QUESTS:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=True,
-                show_xp=True,
-                show_time=False,
-                show_quest_hud=True,
-            )
-        case GameMode.SURVIVAL:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=True,
-                show_xp=True,
-                show_time=False,
-                show_quest_hud=False,
-            )
-        case GameMode.RUSH:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=False,
-                show_xp=False,
-                show_time=True,
-                show_quest_hud=False,
-            )
-        case GameMode.TYPO:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=False,
-                show_xp=True,
-                show_time=True,
-                show_quest_hud=False,
-            )
-        case _:
-            return HudRenderFlags(
-                show_health=False,
-                show_weapon=False,
-                show_xp=False,
-                show_time=False,
-                show_quest_hud=False,
-            )
 
 
 def hud_layout(*, font: SmallFontData | None, show_quest_hud: bool) -> HudLayout:
@@ -282,11 +224,18 @@ def draw_hud_overlay(
     state = context.state
     font = context.font
     alpha = float(context.alpha)
-    show_health = bool(context.show_health)
-    show_weapon = bool(context.show_weapon)
-    show_xp = bool(context.show_xp)
-    show_time = bool(context.show_time)
-    show_quest_hud = bool(context.show_quest_hud)
+    # `hud_update_and_render` picks the panels from the game mode before `ui_render_hud`.
+    match context.game_mode:
+        case GameMode.QUESTS:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, True, True, True, False
+        case GameMode.SURVIVAL:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, True, True, False, False
+        case GameMode.RUSH:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, False, False, False, True
+        case GameMode.TYPO:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, False, True, False, True
+        case _:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = False, False, False, False, False
     small_indicators = bool(context.small_indicators)
     game_top = resources.texture(TextureId.UI_GAME_TOP)
     life_heart = resources.texture(TextureId.UI_LIFE_HEART)

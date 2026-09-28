@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from grim import canvas
 from grim.assets import TextureId
@@ -20,7 +21,7 @@ from ...game_states import GameStateId
 from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -58,7 +59,6 @@ class QuestFailedView:
         self._dt = 0.0
         self._quest_title: str = ""
         self._action: ScreenAction | None = None
-        self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
         self._closing = False
         self._close_action: ScreenAction | None = None
@@ -69,7 +69,6 @@ class QuestFailedView:
     def open(self) -> None:
         self._action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
         self._intro_ms = 0.0
         self._closing = False
         self._close_action = None
@@ -101,7 +100,6 @@ class QuestFailedView:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
         self._dt = dt_step
-        self._cursor_pulse_time += dt_step * 1.1
         dt_ms = dt_step * 1000.0
         if self._closing:
             self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
@@ -135,15 +133,10 @@ class QuestFailedView:
         resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
-        retry_w = button_width(
-            resources,
-            self._retry_button.label,
-            force_wide=self._retry_button.force_wide,
-        )
         if button_update(
+            resources,
             self._retry_button,
             pos=button_pos,
-            width=retry_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -152,15 +145,10 @@ class QuestFailedView:
             return
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        play_another_w = button_width(
-            resources,
-            self._quest_list_button.label,
-            force_wide=self._quest_list_button.force_wide,
-        )
         if button_update(
+            resources,
             self._quest_list_button,
             pos=button_pos,
-            width=play_another_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -169,15 +157,10 @@ class QuestFailedView:
             return
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        main_menu_w = button_width(
-            resources,
-            self._main_menu_button.label,
-            force_wide=self._main_menu_button.force_wide,
-        )
         if button_update(
+            resources,
             self._main_menu_button,
             pos=button_pos,
-            width=main_menu_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -224,40 +207,23 @@ class QuestFailedView:
 
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
-        retry_w = button_width(
-            resources,
-            self._retry_button.label,
-            force_wide=self._retry_button.force_wide,
-        )
-        button_draw(resources, self._retry_button, pos=button_pos, width=retry_w)
+        button_draw(resources, self._retry_button, pos=button_pos)
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        play_another_w = button_width(
-            resources,
-            self._quest_list_button.label,
-            force_wide=self._quest_list_button.force_wide,
-        )
         button_draw(
             resources,
             self._quest_list_button,
             pos=button_pos,
-            width=play_another_w,
         )
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        main_menu_w = button_width(
-            resources,
-            self._main_menu_button.label,
-            force_wide=self._main_menu_button.force_wide,
-        )
         button_draw(
             resources,
             self._main_menu_button,
             pos=button_pos,
-            width=main_menu_w,
         )
 
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         action = self._action

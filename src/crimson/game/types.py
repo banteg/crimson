@@ -106,6 +106,8 @@ class GameState(msgspec.Struct):
     quit_requested: bool = False
     screen_fade_alpha: float = 0.0
     screen_fade_ramp: bool = False
+    # Native `frame_dt` as the menus see it (clamped to 0.1s), set once per frame by the loop.
+    frame_dt: float = 0.0
 
     @property
     def pause_background(self) -> PauseBackground | None:

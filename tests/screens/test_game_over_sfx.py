@@ -165,7 +165,7 @@ def test_high_scores_view_draw_fades_pause_background_during_close(tmp_path: Pat
     mocker.patch.object(high_scores_view_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_main_panel", side_effect=lambda *_args, **_kwargs: 0)
     mocker.patch.object(high_scores_view_module, "draw_right_panel", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(high_scores_view_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(high_scores_view_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(high_scores_view_module, "draw_menu_sign", return_value=None)
 
     view = HighScoresView(state, ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))

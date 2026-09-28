@@ -5,9 +5,10 @@ import math
 import msgspec
 
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -27,7 +28,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
@@ -125,7 +126,6 @@ class AlienZooKeeperView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
@@ -143,7 +143,6 @@ class AlienZooKeeperView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
         self._transition.reset()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
@@ -289,7 +288,6 @@ class AlienZooKeeperView:
 
         dt_clamped = min(float(dt), 0.1)
         dt_ms = int(dt_clamped * 1000.0)
-        self._cursor_pulse_time += dt_clamped * 1.1
 
         if not self._transition.advance(dt_ms):
             return
@@ -325,15 +323,10 @@ class AlienZooKeeperView:
         resources = require_runtime_resources(self.state)
         dt_ms_f = dt_clamped * 1000.0
 
-        reset_w = button_width(
-            resources,
-            self._reset_button.label,
-            force_wide=self._reset_button.force_wide,
-        )
         if button_update(
+            resources,
             self._reset_button,
             pos=layout.reset_pos,
-            width=reset_w,
             dt_ms=dt_ms_f,
             mouse=mouse,
             click=click,
@@ -343,11 +336,10 @@ class AlienZooKeeperView:
             self._reset_state()
             return
 
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
+            resources,
             self._back_button,
             pos=layout.back_pos,
-            width=back_w,
             dt_ms=dt_ms_f,
             mouse=mouse,
             click=click,
@@ -454,24 +446,16 @@ class AlienZooKeeperView:
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
-        reset_w = button_width(
-            resources,
-            self._reset_button.label,
-            force_wide=self._reset_button.force_wide,
-        )
         button_draw(
             resources,
             self._reset_button,
             pos=layout.reset_pos,
-            width=reset_w,
         )
 
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
             pos=layout.back_pos,
-            width=back_w,
         )
 
         draw_menu_sign(
@@ -481,4 +465,4 @@ class AlienZooKeeperView:
             locked=True,
             timeline_ms=self._transition.timeline_ms,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)

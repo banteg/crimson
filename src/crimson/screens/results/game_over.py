@@ -7,6 +7,7 @@ from pathlib import Path
 import msgspec
 
 from crimson.screens.actions import ResultAction
+from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
@@ -28,11 +29,10 @@ from ...persistence.highscores import (
     upsert_highscore_record,
 )
 from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
-from ...ui.cursor import draw_menu_cursor
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
 
 GAME_OVER_PANEL_X = -45.0
@@ -95,7 +95,6 @@ class GameOverUi(msgspec.Struct):
     _dt: float = 0.0
 
     _intro_ms: float = 0.0
-    _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
     _close_action: ResultAction | None = None
@@ -123,7 +122,6 @@ class GameOverUi(msgspec.Struct):
         self._saved = False
         self._dt = 0.0
         self._intro_ms = 0.0
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
         self._closing = False
         self._close_action = None
@@ -187,7 +185,6 @@ class GameOverUi(msgspec.Struct):
     ) -> ResultAction | None:
         self._dt = float(min(dt, 0.1))
         dt_ms = self._dt * 1000.0
-        self._cursor_pulse_time += self._dt * 1.1
         if mouse is None:
             mouse = canvas.mouse_position()
 
@@ -264,8 +261,7 @@ class GameOverUi(msgspec.Struct):
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             form_pos = banner_pos + Vec2(8.0, 84.0)
             ok_pos = form_pos + Vec2(170.0, 32.0)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
-            ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
+            ok_clicked = button_update(resources, self._ok_button, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
                 if self.input_text.strip():
@@ -297,15 +293,10 @@ class GameOverUi(msgspec.Struct):
             panel_layout = self._panel_layout(screen_w=screen_w)
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             button_pos = banner_pos + Vec2(52.0, (210.0 if self.rank < TABLE_MAX else 208.0))
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._play_again_button,
                 pos=button_pos,
-                width=play_again_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -316,15 +307,10 @@ class GameOverUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._high_scores_button,
                 pos=button_pos,
-                width=high_scores_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -335,15 +321,10 @@ class GameOverUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._main_menu_button,
                 pos=button_pos,
-                width=main_menu_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -447,12 +428,10 @@ class GameOverUi(msgspec.Struct):
             )
 
             ok_pos = form_pos + Vec2(170.0, 32.0)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
             button_draw(
                 resources,
                 self._ok_button,
                 pos=ok_pos,
-                width=ok_w,
             )
 
             score_pos = form_pos + Vec2(16.0, 116.0)
@@ -481,47 +460,24 @@ class GameOverUi(msgspec.Struct):
         # Buttons phase rendering.
         if self.phase == 1:
             button_pos = banner_pos + Vec2(52.0, (210.0 if self.rank < TABLE_MAX else 208.0))
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._play_again_button,
                 pos=button_pos,
-                width=play_again_w,
             )
             button_pos = button_pos.offset(dy=32.0)
 
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._high_scores_button,
                 pos=button_pos,
-                width=high_scores_w,
             )
             button_pos = button_pos.offset(dy=32.0)
 
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._main_menu_button,
                 pos=button_pos,
-                width=main_menu_w,
             )
 
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=Vec2.from_xy(mouse),
-            pulse_time=float(self._cursor_pulse_time),
-        )
+        ui_cursor_render(resources, dt=self._dt, pos=Vec2.from_xy(mouse))

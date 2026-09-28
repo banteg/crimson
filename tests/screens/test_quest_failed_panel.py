@@ -243,12 +243,11 @@ def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_stat
     mocker.patch.object(quest_failed_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_failed_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_failed_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(quest_failed_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_failed_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(quest_failed_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
     mocker.patch.object(view, "_draw_score_preview", side_effect=lambda *_args, **_kwargs: None)
 
     view.open()

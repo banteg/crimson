@@ -47,7 +47,7 @@ def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_sta
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
     mocker.patch.object(pause_menu_module, "draw_menu_sign", return_value=None)
-    mocker.patch.object(pause_menu_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
 
     view.draw()
 
@@ -74,7 +74,7 @@ def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_ga
     mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
     mocker.patch.object(pause_menu_module, "draw_menu_sign", return_value=None)
-    mocker.patch.object(pause_menu_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
+    mocker.patch.object(pause_menu_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
 
     view.draw()
 

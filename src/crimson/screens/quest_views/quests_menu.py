@@ -3,9 +3,10 @@ from __future__ import annotations
 from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_cursor, ensure_menu_ground, menu_ground_camera
+from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -25,7 +26,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
@@ -80,7 +81,6 @@ class QuestsMenuView:
 
         self._stage = 1
         self._dirty = False
-        self._cursor_pulse_time = 0.0
         self._transition = ScreenTransition()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._panel_open_sfx_played = False
@@ -93,7 +93,6 @@ class QuestsMenuView:
         self._init_ground()
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
-        self._cursor_pulse_time = 0.0
         self._transition.reset()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._panel_open_sfx_played = False
@@ -122,7 +121,6 @@ class QuestsMenuView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
         if not self._transition.advance(dt_ms):
@@ -176,13 +174,12 @@ class QuestsMenuView:
         )
         dt_ms = min(float(dt), 0.1) * 1000.0
         resources = require_runtime_resources(self.state)
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
+            resources,
             self._back_button,
             pos=back_pos,
-            width=float(back_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
             click=bool(click),
@@ -221,10 +218,7 @@ class QuestsMenuView:
             timeline_ms=self._transition.timeline_ms,
         )
         self._draw_contents()
-        draw_screen_cursor(
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
+        ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
@@ -541,12 +535,10 @@ class QuestsMenuView:
 
         # Back button.
         back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
             pos=back_pos,
-            width=float(back_w),
         )
 
     def _draw_panel(self) -> None:

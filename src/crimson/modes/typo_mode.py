@@ -17,8 +17,7 @@ from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
+from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
 
@@ -42,6 +41,8 @@ class TypoShooterMode(BaseGameplayMode):
             audio_rng=audio_rng,
         )
         self._sim_session: DeterministicSession | None = None
+        # Native `game_time_s`, which blinks the typing caret.
+        self._game_time_s = 0.0
 
     def open(self) -> None:
         super().open()
@@ -115,6 +116,7 @@ class TypoShooterMode(BaseGameplayMode):
         self._update_audio(dt)
 
         dt = self._tick_frame(dt)[0]
+        self._game_time_s += dt
         self._handle_input()
         if self._action == Route.PAUSE:
             return
@@ -154,15 +156,6 @@ class TypoShooterMode(BaseGameplayMode):
         # Death/game-over flow is handled at the start of the next frame so the
         # trooper death animation can play before the UI slides in.
 
-    def _draw_game_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )
 
     def _draw_name_labels(self) -> None:
         draw_typo_name_labels(
@@ -177,7 +170,7 @@ class TypoShooterMode(BaseGameplayMode):
         draw_typing_box(
             self.render_resources.resources.texture(TextureId.UI_IND_PANEL),
             text=self.state.typo.typing.text,
-            cursor_pulse_time=float(self._cursor_pulse_time),
+            game_time_s=self._game_time_s,
             draw_text=self._draw_ui_text,
             measure_text_width=self._ui_text_width,
         )
@@ -194,18 +187,13 @@ class TypoShooterMode(BaseGameplayMode):
             self._draw_name_labels()
 
         if show_gameplay_ui:
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
             draw_hud_overlay(
                 HudRenderContext(
                     resources=self.render_resources.resources,
                     state=self._hud_state,
                     font=self._small,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
+                    game_mode=self._config_game_mode_id(),
                     small_indicators=self._hud_small_indicators(),
                 ),
                 player=self.player,

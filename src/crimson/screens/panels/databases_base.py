@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.screens.transitions import ScreenTransition
 from crimson.ui.animation import ui_element_anim
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -22,7 +23,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..transitions import _draw_screen_fade
@@ -41,7 +42,6 @@ class _DatabaseBaseView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
@@ -52,7 +52,6 @@ class _DatabaseBaseView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
         self._transition.reset()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
@@ -90,7 +89,6 @@ class _DatabaseBaseView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
         if not self._transition.advance(dt_ms):
@@ -117,11 +115,10 @@ class _DatabaseBaseView:
         self._update_content_interaction(left_top_left=left_top_left, mouse=mouse)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
+            resources,
             self._back_button,
             pos=left_top_left + back_pos,
-            width=back_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -181,12 +178,10 @@ class _DatabaseBaseView:
         self._draw_contents(left_panel_top_left, right_panel_top_left, font=font)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
             pos=left_panel_top_left + back_pos,
-            width=back_w,
         )
 
         draw_menu_sign(
@@ -196,7 +191,7 @@ class _DatabaseBaseView:
             locked=True,
             timeline_ms=self._transition.timeline_ms,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def _back_button_pos(self) -> Vec2:
         raise NotImplementedError

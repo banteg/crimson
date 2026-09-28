@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ScreenAction, ShowScores
+from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.audio import AudioState, play_music, stop_music, update_audio
 from grim.config import CrimsonConfig
@@ -142,7 +143,6 @@ class BaseGameplayMode:
         self._game_over_banner = "reaper"
 
         self._ui_mouse = Vec2()
-        self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
         self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
@@ -349,17 +349,15 @@ class BaseGameplayMode:
             max(0.0, screen_h - 1.0),
         )
 
-    def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
+    def _tick_frame(self, dt: float) -> tuple[float, float]:
         dt = float(dt)
         dt_ui_ms = float(min(dt, 0.1) * 1000.0)
         self._last_dt_ms = dt_ui_ms
-
         self._update_ui_mouse()
-
-        pulse_dt = float(min(dt, 0.1)) if clamp_cursor_pulse else dt
-        self._cursor_pulse_time += pulse_dt * 1.1
-
         return dt, dt_ui_ms
+
+    def _draw_game_cursor(self) -> None:
+        ui_cursor_render(self.render_resources.resources, dt=self._last_dt_ms * 0.001, pos=self._ui_mouse)
 
     def _begin_mode_update(self, dt: float) -> _ModeFrameState | None:
         self._update_audio(dt)
@@ -545,7 +543,6 @@ class BaseGameplayMode:
         self._reset_replay_capture_state(clear_recorder=False)
 
         self._ui_mouse = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
-        self._cursor_pulse_time = 0.0
 
     def _initialize_run(
         self,
