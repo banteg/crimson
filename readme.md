@@ -18,6 +18,8 @@ The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tier
 
 The [native Zig port](docs/rewrite/zig-verifier.md) also has a desktop shell, all five gameplay modes, replay/debug tools and a headless WASM interface. See [coverage and validation limits](docs/rewrite/status.md) for what the current checks establish.
 
+The [matching decompilation](decomp/README.md) of 1.9.93 is complete: all 858 game and engine functions in `crimsonland.exe` and `grim.dll` (360,094 bytes of code) come from recovered C/C++ source that Visual C++ 6 compiles to the original machine code, instruction for instruction, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted. Progress is tracked on [decomp.dev](https://decomp.dev/banteg/crimson), which also measures 1.9.8 from the same source.
+
 ## Quick start
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:

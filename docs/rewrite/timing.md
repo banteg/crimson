@@ -16,12 +16,9 @@ session, but live play supplies fixed 60 Hz ticks. Native behavior and current
 Python behavior are distinguished below; sharing a helper does not establish
 native parity for every mode.
 
-This reference comes from the recovered C/C++ and Python source. In the matching
-report inspected on 2026-09-26, the engine timing functions, main frame and
-gameplay coordinators, Survival, Rush, Quest mode update, Tutorial, and Typo
-coordinator are exact matches. `player_update` and
-`quest_spawn_timeline_update` remain partial matches. See the current
-`tools/match/STATUS.md` for evidence status. This page does not claim a new
+This reference comes from the recovered C/C++ and Python source. Every native
+function it describes is an exact match, as is all of the game and engine code;
+see `tools/match/STATUS.md` for evidence status. This page does not claim a new
 native runtime comparison.
 
 For conversion and precision rules, see [delta-time parity](parity/delta-time.md)
@@ -111,14 +108,12 @@ coordinator.
 | Tutorial | Accumulate stage and transition timers, while movement, firing, pickups, and perk actions also gate progression. Prompt and hint fades consume integer milliseconds. | Simulation milliseconds; console guard. Tutorial instructional overlays can slow with the world, unlike the later ordinary HUD/UI pass. |
 | Typo Shooter | Subtract `frame_dt_ms * player_count`; on a spawn, add `3500 - survival_elapsed_ms / 800`, then clamp the remaining cooldown to at least 100 ms. That makes at most one two-creature wave per update, even with an overdue cooldown. | Its own coordinator's integer cadence, without perk/bonus slowdown in normal play. Console blocks cooldown subtraction and elapsed accounting. It calls weapon firing directly rather than ordinary `player_update`. |
 
-Native mode sources are the `scratch.cpp` files under:
+Native mode sources are under `decomp/1.9/crimsonland/`:
 
-- `tools/match/scratches/survival_update/` and
-  `tools/match/scratches/rush_mode_update/`.
-- `tools/match/scratches/quest_mode_update/` and
-  `tools/match/scratches/quest_spawn_timeline_update/`.
-- `tools/match/scratches/tutorial_timeline_update/`.
-- `tools/match/scratches/typo_gameplay_update_and_render/`.
+- `game/survival_update.cpp` and `game/rush_mode_update.cpp`.
+- `game/quest_mode_update.cpp` and `quests/quest_spawn_timeline_update.cpp`.
+- `game/tutorial_timeline_update.cpp`.
+- `typo/typo_gameplay_update_and_render.cpp`.
 
 ### Typo's residual slow-motion branch is not a gameplay feature
 

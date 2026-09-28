@@ -8,6 +8,11 @@ tags:
 
 Primary evidence and decompile-facing documentation for original binary behavior.
 
+The matching decompilation of 1.9.93 is complete for game and engine code: all
+858 functions come from [recovered source](https://github.com/banteg/crimson/tree/master/decomp)
+that compiles to the original machine code. Progress for 1.9.93 and 1.9.8 is
+tracked on [decomp.dev](https://decomp.dev/banteg/crimson).
+
 ## Subsections
 
 - [Static](static/index.md) — decompiler findings and symbol/data analysis.

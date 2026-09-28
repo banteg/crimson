@@ -8,6 +8,11 @@ and the [historical inventory](../historical/koti-mbnet-crimsonland/manifest.jso
 The GOG provenance and exact reference hashes remain documented in
 [provenance.md](../../docs/contributor/project-tracking/provenance.md).
 
+1.9.93's **Game & Engine** category is complete: 858/858 functions and
+360,094/360,094 code bytes are matched, every one also an encoded-body match.
+Libraries, unclassified functions, data and linking are measured separately
+below.
+
 ## Scope and metrics
 
 Two versions are reported, each from its own saved evidence: `1.9.93`, the
