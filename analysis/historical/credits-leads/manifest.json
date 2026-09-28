@@ -1,0 +1,494 @@
+{
+  "schema": 1,
+  "kind": "historical-crimsonland-credits-leads",
+  "checked_at": "2026-09-28",
+  "binary_credits": [
+    {
+      "version": "1.0.2",
+      "path": "game_bins/crimsonland/1.0.2/crimson.exe",
+      "sha256": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe",
+      "heading": "Beta testers / thanks / greets",
+      "note": "This is a combined credits list; it does not establish that every named person was a beta tester.",
+      "credited_handles": [
+        {
+          "handle": "Armas",
+          "file_offset": "0x1d83c"
+        },
+        {
+          "handle": "epaz",
+          "file_offset": "0x1d834"
+        },
+        {
+          "handle": "exi",
+          "file_offset": "0x1d830"
+        },
+        {
+          "handle": "Jayzon",
+          "file_offset": "0x1d828"
+        },
+        {
+          "handle": "KySSe",
+          "file_offset": "0x1d820"
+        },
+        {
+          "handle": "lore",
+          "file_offset": "0x1d818"
+        },
+        {
+          "handle": "milzer",
+          "file_offset": "0x1d810"
+        },
+        {
+          "handle": "monotonic",
+          "file_offset": "0x1d804"
+        },
+        {
+          "handle": "Outolintu",
+          "file_offset": "0x1d7f8"
+        },
+        {
+          "handle": "Skele",
+          "file_offset": "0x1d7f0"
+        },
+        {
+          "handle": "TeLa",
+          "file_offset": "0x1d7e8"
+        },
+        {
+          "handle": "Ukuli",
+          "file_offset": "0x1d7e0"
+        },
+        {
+          "handle": "Vulderi",
+          "file_offset": "0x1d7d8"
+        },
+        {
+          "handle": "Wiltsu",
+          "file_offset": "0x1d7d0"
+        }
+      ],
+      "special_thanks_file_offset": null
+    },
+    {
+      "version": "1.3.0",
+      "path": "game_bins/crimsonland/1.3.0/crimson.exe",
+      "sha256": "5c56641e7205631f4ea87394d8cbfd87bfc88f8211d199d439eae0a5ca6ad4d8",
+      "heading": "Beta testers / thanks / greets",
+      "note": "This is a combined credits list; it does not establish that every named person was a beta tester.",
+      "credited_handles": [
+        {
+          "handle": "Armas",
+          "file_offset": "0x2ad68"
+        },
+        {
+          "handle": "crud",
+          "file_offset": "0x2ad60"
+        },
+        {
+          "handle": "epaz",
+          "file_offset": "0x2ad58"
+        },
+        {
+          "handle": "exi",
+          "file_offset": "0x2ad54"
+        },
+        {
+          "handle": "Jayzon",
+          "file_offset": "0x2ad4c"
+        },
+        {
+          "handle": "KySSe",
+          "file_offset": "0x2ad44"
+        },
+        {
+          "handle": "lore",
+          "file_offset": "0x2ad3c"
+        },
+        {
+          "handle": "milzer",
+          "file_offset": "0x2ad34"
+        },
+        {
+          "handle": "monotonic",
+          "file_offset": "0x2ad28"
+        },
+        {
+          "handle": "muzzy",
+          "file_offset": "0x2ad20"
+        },
+        {
+          "handle": "PornReindeer",
+          "file_offset": "0x2ad10"
+        },
+        {
+          "handle": "Outolintu",
+          "file_offset": "0x2ad04"
+        },
+        {
+          "handle": "Quarot",
+          "file_offset": "0x2acfc"
+        },
+        {
+          "handle": "Skele",
+          "file_offset": "0x2acf4"
+        },
+        {
+          "handle": "Sniperwolf / Wolf_",
+          "file_offset": "0x2ace0"
+        },
+        {
+          "handle": "Strombo",
+          "file_offset": "0x2acd8"
+        },
+        {
+          "handle": "TeLa",
+          "file_offset": "0x2acd0"
+        },
+        {
+          "handle": "Ukuli",
+          "file_offset": "0x2acc8"
+        },
+        {
+          "handle": "Vulderi",
+          "file_offset": "0x2acc0"
+        },
+        {
+          "handle": "Wiltsu",
+          "file_offset": "0x2acb8"
+        }
+      ],
+      "special_thanks_file_offset": "0x2ae18"
+    },
+    {
+      "version": "1.3.1",
+      "path": "game_bins/crimsonland/1.3.1/crimson.exe",
+      "sha256": "177fc668c8ff7433bb92e11af105a1efb871814079a3070cc5b37d9f765e8153",
+      "heading": "Beta testers / thanks / greets",
+      "note": "This is a combined credits list; it does not establish that every named person was a beta tester.",
+      "credited_handles": [
+        {
+          "handle": "Armas",
+          "file_offset": "0x30ca0"
+        },
+        {
+          "handle": "crud",
+          "file_offset": "0x30c98"
+        },
+        {
+          "handle": "epaz",
+          "file_offset": "0x30c90"
+        },
+        {
+          "handle": "exi",
+          "file_offset": "0x30c8c"
+        },
+        {
+          "handle": "Jayzon",
+          "file_offset": "0x30c84"
+        },
+        {
+          "handle": "KySSe",
+          "file_offset": "0x30c7c"
+        },
+        {
+          "handle": "lore",
+          "file_offset": "0x30c74"
+        },
+        {
+          "handle": "matricks",
+          "file_offset": "0x30c68"
+        },
+        {
+          "handle": "milzer",
+          "file_offset": "0x30c60"
+        },
+        {
+          "handle": "monotonic",
+          "file_offset": "0x30c54"
+        },
+        {
+          "handle": "muzzy",
+          "file_offset": "0x30c4c"
+        },
+        {
+          "handle": "PornReindeer",
+          "file_offset": "0x30c3c"
+        },
+        {
+          "handle": "Outolintu",
+          "file_offset": "0x30c30"
+        },
+        {
+          "handle": "Quarot",
+          "file_offset": "0x30c28"
+        },
+        {
+          "handle": "Skele",
+          "file_offset": "0x30c20"
+        },
+        {
+          "handle": "Sniperwolf / Wolf_",
+          "file_offset": "0x30c0c"
+        },
+        {
+          "handle": "Strombo",
+          "file_offset": "0x30c04"
+        },
+        {
+          "handle": "TeLa",
+          "file_offset": "0x30bfc"
+        },
+        {
+          "handle": "Tieom",
+          "file_offset": "0x30bf4"
+        },
+        {
+          "handle": "Ukuli",
+          "file_offset": "0x30bec"
+        },
+        {
+          "handle": "Vulderi",
+          "file_offset": "0x30be4"
+        },
+        {
+          "handle": "Wiltsu",
+          "file_offset": "0x30bdc"
+        },
+        {
+          "handle": "Womba!",
+          "file_offset": "0x30bd4"
+        }
+      ],
+      "special_thanks_file_offset": "0x30d50"
+    },
+    {
+      "version": "1.4.0",
+      "path": "game_bins/crimsonland/1.4.0/crimson.exe",
+      "sha256": "0e4d5f62b34c7c62d5b7bb1f6a774d54e91c68a0c898d53cabead1f5f151eb8b",
+      "heading": "Beta testers / thanks / greets",
+      "note": "This is a combined credits list; it does not establish that every named person was a beta tester.",
+      "credited_handles": [
+        {
+          "handle": "Armas",
+          "file_offset": "0x31dc0"
+        },
+        {
+          "handle": "crud",
+          "file_offset": "0x31db8"
+        },
+        {
+          "handle": "epaz",
+          "file_offset": "0x31db0"
+        },
+        {
+          "handle": "exi",
+          "file_offset": "0x31dac"
+        },
+        {
+          "handle": "Jayzon",
+          "file_offset": "0x31da4"
+        },
+        {
+          "handle": "KySSe",
+          "file_offset": "0x31d9c"
+        },
+        {
+          "handle": "lore",
+          "file_offset": "0x31d94"
+        },
+        {
+          "handle": "matricks",
+          "file_offset": "0x31d88"
+        },
+        {
+          "handle": "milzer",
+          "file_offset": "0x31d80"
+        },
+        {
+          "handle": "monotonic",
+          "file_offset": "0x31d74"
+        },
+        {
+          "handle": "muzzy",
+          "file_offset": "0x31d6c"
+        },
+        {
+          "handle": "PornReindeer",
+          "file_offset": "0x31d5c"
+        },
+        {
+          "handle": "Outolintu",
+          "file_offset": "0x31d50"
+        },
+        {
+          "handle": "Quarot",
+          "file_offset": "0x31d48"
+        },
+        {
+          "handle": "Skele",
+          "file_offset": "0x31d40"
+        },
+        {
+          "handle": "Sniperwolf / Wolf_",
+          "file_offset": "0x31d2c"
+        },
+        {
+          "handle": "Strombo",
+          "file_offset": "0x31d24"
+        },
+        {
+          "handle": "TeLa",
+          "file_offset": "0x31d1c"
+        },
+        {
+          "handle": "Tieom",
+          "file_offset": "0x31d14"
+        },
+        {
+          "handle": "Ukuli",
+          "file_offset": "0x31d0c"
+        },
+        {
+          "handle": "Vulderi",
+          "file_offset": "0x31d04"
+        },
+        {
+          "handle": "Wiltsu",
+          "file_offset": "0x31cfc"
+        },
+        {
+          "handle": "Womba!",
+          "file_offset": "0x31cf4"
+        }
+      ],
+      "special_thanks_file_offset": null
+    }
+  ],
+  "public_lead": {
+    "url": "https://www.sweclockers.com/forum/post/988391",
+    "thread": "https://www.sweclockers.com/forum/trad/82110-crimsonland",
+    "author_handle": "matricks",
+    "posted_at": "2002-08-29T12:44:19+02:00",
+    "outbound_links": [
+      "http://www.birdie.org/~ascorbiq/paqer.zip",
+      "http://batman.jypoly.fi/~94132/edgeboard/index.php?a=topic&forum=3&topic=42"
+    ],
+    "capture": {
+      "path": "analysis/historical/credits-leads/captures/sweclockers.html",
+      "size": 177842,
+      "sha256": "55957cac1ad39f93c6de0be2d210496e481793652c2c811fa0912240feacef7c"
+    },
+    "interpretation": "The matching handle is absent from 1.3.0 credits and present in 1.3.1. The contemporary Crimsonland post supplies two new archive targets. Attribution to the credited individual is plausible, not independently proven. The name paqer.zip suggests an archive tool; its contents have not been recovered."
+  },
+  "checks": [
+    {
+      "target": "https://www.birdie.org/~ascorbiq/paqer.zip",
+      "result": "HTTP 404"
+    },
+    {
+      "target": "https://discmaster.textfiles.com/search?q=paqer*&outputAs=json&limit=1000",
+      "result": "Empty JSON list"
+    },
+    {
+      "target": "Wayback CDX: birdie.org/~ascorbiq/* and www.birdie.org/~ascorbiq/paqer.zip",
+      "result": "HTTP 503 or connection failure; inconclusive"
+    },
+    {
+      "target": "Wayback CDX: batman.jypoly.fi/~94132/edgeboard/* and exact topic 42 URL",
+      "result": "Timeouts at 40 and 20 seconds; inconclusive"
+    },
+    {
+      "target": "milzer public repositories",
+      "result": "Nine public repositories listed; inspected pikku-ukot-mesoo recursive tree and source archive plus burno2025 README. No additional Crimsonland build found."
+    },
+    {
+      "target": "Credits-derived web searches",
+      "result": "Searched freeware handles with Crimsonland and early team aliases with 10tons, plus distinctive commercial additions. No additional verified game-download lead beyond matricks forum links and milzer preservation repositories."
+    },
+    {
+      "target": "Wayback CDX: milzer.org/*",
+      "result": "Connection failure; inconclusive"
+    }
+  ],
+  "outcome": "All twelve recovered versions compared. Explicit early team alias mappings and milzer public source preservation found; no additional Crimsonland version recovered.",
+  "all_versions_evidence": "analysis/historical/credits-leads/all-versions.json",
+  "all_versions_method": "extract.py: Windows-1252 string blocks for four freeware binaries; static push-immediate calls to the credits setter and last-write-wins table reconstruction for eight commercial binaries. SHA-256, offsets, and call addresses retained. No runtime testing.",
+  "additional_leads": [
+    {
+      "handle": "milzer",
+      "name": "Miikka Kulmala",
+      "identity_evidence": "Explicit milzer - miikka kulmala - code, html, 2d gfx string in both 1.0.2 and 1.3.0; commercial credits name Miikka Kulmala under Manual and Play testers. Public GitHub profile names Miikka Kulmala.",
+      "urls": [
+        "https://milzer.org/",
+        "https://github.com/milzer",
+        "https://github.com/milzer/pikku-ukot-mesoo",
+        "https://github.com/milzer/burno2025"
+      ],
+      "preserved_source_commit": "cee426423c46236c0f706a65088ac5031427d3a6",
+      "finding": "Public repository preserves Pikku-ukot mesoo (1999-2001). src/pumApp.cpp lines 430-436 credit 10tons entertainment 2001, milzer and crud, and point to www.10tons.org. Inspected repository tree and text source files: no Crimsonland-named package or Crimsonland text reference found. Burno2025 is a modern remake of an old DOS game.",
+      "interpretation": "Concrete preservation/contact lead, not evidence of possessing a missing Crimsonland version. No contact made."
+    }
+  ],
+  "captures": [
+    {
+      "path": "analysis/historical/credits-leads/captures/burno-readme.md",
+      "size": 307,
+      "sha256": "31a861995a8dc3ee055d0cb3805b57145bf5c93ae67fb5725f7c40fe1a023177"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/milzer-home.html",
+      "size": 3027,
+      "sha256": "ef5f29cc096ccd636d3cc0b894ae49fb8cd55889c5f4cafcc8acffe0159c231a"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/milzer-http.html",
+      "size": 3027,
+      "sha256": "ef5f29cc096ccd636d3cc0b894ae49fb8cd55889c5f4cafcc8acffe0159c231a"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/milzer-profile.json",
+      "size": 1309,
+      "sha256": "e231d5e0eb5a9f64fca54caada2ff08d843cb2ae5540a0926dde38fb35d9f118"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/milzer-repos.json",
+      "size": 52738,
+      "sha256": "a9aedc2d8e34e06672d26e6142e4defec6caac134e228ef732adbde94d69c8ce"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/paqer-disc.json",
+      "size": 2,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/paqer-live-response",
+      "size": 73614,
+      "sha256": "72132cebb48211348b1b500ad5c016d19306aaed4c628b9b6182099acba41984"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/pikku-pumApp.cpp",
+      "size": 28772,
+      "sha256": "0ab6e91848e8c05aa957a773afb30b42b7aa4c7d25244505ac67604033f28f64"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/pikku-readme.md",
+      "size": 743,
+      "sha256": "bdc7e1d1462aeb3c818925b912c3a3c770a614e3ced47f44bfc13877d6c2bf01"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/pikku-source.zip",
+      "size": 4117138,
+      "sha256": "0be0bcc610e127dc302cfc8dcb9cae4b58c56c267e76c627884f26ee2c62f302"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/pikku-tree.json",
+      "size": 22533,
+      "sha256": "6b26700dd8275ab40eab38ddf6ecf0b438472259d896d35311bc2571aaf07d3e"
+    },
+    {
+      "path": "analysis/historical/credits-leads/captures/sweclockers.html",
+      "size": 177842,
+      "sha256": "55957cac1ad39f93c6de0be2d210496e481793652c2c811fa0912240feacef7c"
+    }
+  ]
+}

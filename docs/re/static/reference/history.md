@@ -134,6 +134,36 @@ thread `398570`. Its file catalog does independently preserve records for
 The current Pelit forum search requires authentication, so a migrated private
 thread remains an open lead.
 
+## Credits as preservation leads
+
+A static comparison of all twelve recovered executables is recorded in
+[`analysis/historical/credits-leads/manifest.json`](../../../../analysis/historical/credits-leads/manifest.json),
+with reproducible extraction, binary hashes, string offsets and commercial
+credits setter calls. The combined freeware tester/thanks/greetings list grows
+from 14 handles in 1.0.2 to 20 in 1.3.0 and 23 in 1.3.1/1.4.0. Commercial
+credits add Dirk Bunk in the recovered 1.9.0 build and Avraham Petrosyan in
+1.9.1; the credited names then remain unchanged through 1.9.93. These are
+first appearances among recovered builds, not exact introduction dates.
+
+The 1.0.2 and 1.3.0 credits also preserve a nine-person 10tons roster with
+explicit handle/name mappings. In particular, `milzer` is Miikka Kulmala,
+credited for the commercial game's manual and play testing. His public
+[Pikku-ukot mesoo repository](https://github.com/milzer/pikku-ukot-mesoo)
+preserves a 1999–2001 game whose original source credits 10tons, milzer and
+crud. This provides a concrete preservation contact lead; the inspected
+repository contains no recovered Crimsonland package.
+
+A contemporary [matricks forum post](https://www.sweclockers.com/forum/post/988391)
+links to `birdie.org/~ascorbiq/paqer.zip` and an old `batman.jypoly.fi`
+discussion. Neither payload nor discussion was recovered. The matching handle
+is suggestive, not proof of identity. Wayback requests failed or timed out,
+so those checks do not establish absence from the archive.
+
+The commercial binaries also retain greetings to Chaos^, Matricks and Muzzy,
+but all eight overwrite those entries with an empty string before the credits
+table is complete. Stored strings must not be mistaken for displayed credits.
+This investigation recovered leads, not an additional game version.
+
 ## Useful behavioral evidence
 
 - The 1.2.1 page describes four prototype levels unlocked by holding left Ctrl
