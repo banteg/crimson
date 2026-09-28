@@ -2307,8 +2307,7 @@ pub const CreaturePool = struct {
                     if (creature.hp < 0.0) {
                         state.plaguebearer_infection_count += 1;
                         _ = self.handleDeath(state, players, bonus_pool, terrain_fx, idx, true, dt_f32, world_size);
-                        // Plague timer kills play one contact SFX.
-                        emitContactSfx(state, creature.type_id);
+                        emitContactSfx(state, creature.type_id, rng_callers.creature_update_all_plague_kill_sfx);
                     }
                     _ = terrain_fx.decals.addRandom(state, creature.pos);
                 }
@@ -2556,7 +2555,7 @@ pub const CreaturePool = struct {
                 contact_player.health > 0.0 and
                 state.bonuses.energizer <= 0.0)
             {
-                emitContactSfx(state, creature.type_id);
+                emitContactSfx(state, creature.type_id, rng_callers.creature_update_all_contact_sfx);
                 // Perks are one shared table (native perk_count_get reads slot
                 // zero); contact damage, shielding and ownership use the target.
                 const contact_perk_player = &players[0];
@@ -4117,7 +4116,7 @@ fn dot(a: state_mod.Vec2, b: state_mod.Vec2) f32 {
 
 const thick_skinned_damage_scale_f32: f32 = 0.6660000085830688;
 
-fn emitContactSfx(state: *state_mod.GameplayState, creature_type_id: i32) void {
+fn emitContactSfx(state: *state_mod.GameplayState, creature_type_id: i32, caller: rng_callers.Caller) void {
     const creature_type = std.enums.fromInt(spawn_mod.CreatureTypeId, creature_type_id) orelse return;
     const bank: [2]state_mod.SfxId = switch (creature_type) {
         .zombie => .{ .zombie_attack_01, .zombie_attack_02 },
@@ -4126,7 +4125,7 @@ fn emitContactSfx(state: *state_mod.GameplayState, creature_type_id: i32) void {
         .spider_sp1, .spider_sp2 => .{ .spider_attack_01, .spider_attack_02 },
         .trooper => return,
     };
-    state.step_sfx.append(bank[state.rng.randTagged(rng_callers.creature_update_all_contact_sfx) & 1]);
+    state.step_sfx.append(bank[state.rng.randTagged(caller) & 1]);
 }
 
 pub fn applyPlayerContactDamage(
@@ -8021,6 +8020,49 @@ test "energizer eat of a spawn-slot owner releases the slot" {
     // The eat stores reward directly, then creature_handle_death awards it again.
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);
     try std.testing.expect(!state.bonus_spawn_guard);
+}
+
+test "plague kill draws its sound at the plague-kill caller" {
+    const CallerTrace = struct {
+        const Self = @This();
+
+        plague_kill: usize = 0,
+        contact: usize = 0,
+
+        fn onDraw(ctx: ?*anyopaque, draw: spawn_mod.Crand.TraceDraw) void {
+            const self: *Self = @ptrCast(@alignCast(ctx orelse return));
+            if (draw.caller == rng_callers.creature_update_all_plague_kill_sfx) self.plague_kill += 1;
+            if (draw.caller == rng_callers.creature_update_all_contact_sfx) self.contact += 1;
+        }
+    };
+
+    var pool: CreaturePool = .{};
+    var effects: effects_mod.EffectPool = .{};
+    pool.effects = &effects;
+    var state = state_mod.GameplayState.init(1);
+    var trace: CallerTrace = .{};
+    state.rng.setTraceSink(&trace, CallerTrace.onDraw, false);
+    var bonuses: bonus_runtime.BonusPool = .{};
+    var players = [_]state_mod.PlayerState{
+        .{ .index = 0, .pos = .{ .x = 900.0, .y = 900.0 }, .health = 100.0 },
+    };
+    pool.entries[0] = .{
+        .active = true,
+        .type_id = @intFromEnum(spawn_mod.CreatureTypeId.zombie),
+        .hp = 10.0,
+        .max_hp = 100.0,
+        .size = 40.0,
+        .pos = .{ .x = 100.0, .y = 100.0 },
+        .plague_infected = true,
+        .collision_timer = 0.0,
+        .ai_mode = .orbit_player,
+    };
+
+    try pool.update(&state, &players, 0.016, 1024.0, &bonuses);
+
+    try std.testing.expect(!(pool.entries[0].hp > 0.0));
+    try std.testing.expectEqual(@as(usize, 1), trace.plague_kill);
+    try std.testing.expectEqual(@as(usize, 0), trace.contact);
 }
 
 test "ranged shock creature queues projectile along heading not direct aim" {
