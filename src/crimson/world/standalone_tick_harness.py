@@ -43,12 +43,11 @@ class StandaloneTickHarness:
             return session
 
         self.reset()
+        world_state.state.game_mode = self.game_mode
+        world_state.state.detail_preset = runtime.detail_preset
+        world_state.state.violence_disabled = runtime.violence_disabled
         session = DeterministicSession(
             world=world_state,
-            game_mode=self.game_mode,
-            detail_preset=runtime.detail_preset,
-            violence_disabled=runtime.violence_disabled,
-            game_tune_started=bool(runtime.game_tune_started),
             perk_progression_enabled=False,
             apply_world_dt_steps=True,
         )
@@ -65,7 +64,7 @@ class StandaloneTickHarness:
         plans = []
         for _ in range(self.clock.advance(float(dt))):
             step = step_replay_tick(session, self.ticks.next_tick())
-            runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=session.game_tune_started)
+            runtime.advance_presentation_clock(dt_sim=step.dt_sim)
             plans.append(step.presentation)
         apply_presentation_plans(plans=plans, runtime=runtime)
         return len(plans)

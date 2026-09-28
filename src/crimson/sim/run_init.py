@@ -62,6 +62,8 @@ def initialize_run(
         quest_fail_retry_count=spec.quest_fail_retry_count, preserve_bugs=spec.preserve_bugs,
     )
     world.state.rng.srand(spec.seed)
+    world.state.detail_preset = spec.detail_preset
+    world.state.violence_disabled = spec.violence_disabled
     world.creatures.apply_gameplay_reset_target_players(spec.player_count)
     if creature_pool_residue is not None:
         apply_creature_pool_residue(world.creatures.entries, creature_pool_residue)
@@ -79,13 +81,10 @@ def initialize_run(
     match spec.game_mode_id:
         case GameMode.SURVIVAL:
             session, _ = build_survival_session(
-                world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-                apply_world_dt_steps=apply_world_dt_steps,
+                world=world, apply_world_dt_steps=apply_world_dt_steps,
             )
         case GameMode.RUSH:
-            session, _ = build_rush_session(
-                world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-            )
+            session, _ = build_rush_session(world=world)
         case GameMode.QUESTS:
             assert quest is not None
             # Native burns the score tag between generic and quest terrain setup.
@@ -97,8 +96,7 @@ def initialize_run(
                 quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore, rng=world.state.rng),
             )
             session, _ = build_quest_session(
-                world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-                apply_world_dt_steps=apply_world_dt_steps,
+                world=world, apply_world_dt_steps=apply_world_dt_steps,
                 quest_level=quest.level,
                 start_weapon_id=quest.start_weapon_id if start_weapon_id is None else start_weapon_id,
                 spawn_entries=generated_entries if spawn_entries is None else spawn_entries,
@@ -108,13 +106,11 @@ def initialize_run(
                 world.state.status.increment_quest_play_count(index)
         case GameMode.TYPO:
             session = build_typo_session(
-                world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
+                world=world,
                 dictionary_words=spec.typo_dictionary_words, highscore_names=spec.typo_highscore_names,
             )
         case GameMode.TUTORIAL:
-            session = build_tutorial_session(
-                world=world, detail_preset=spec.detail_preset, violence_disabled=spec.violence_disabled,
-            )
+            session = build_tutorial_session(world=world)
         case _:
             raise ValueError(f"unsupported replay game_mode_id={int(spec.game_mode_id)}")
     # Run setup happens inside a frame; `game_frame_update` ends it with its discarded draw.

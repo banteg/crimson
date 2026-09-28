@@ -955,7 +955,7 @@ def player_update(
         )
         return dt
 
-    _player_tick_low_health(player, state, dt, step_runtime.detail_preset, step_runtime.violence_disabled)
+    _player_tick_low_health(player, state, dt, step_runtime.world.state.detail_preset, step_runtime.world.state.violence_disabled)
 
     damping_scalar = float(f32(float(state.player_spread_damping_scalar)))
     if float(state.player_spread_damping_gate) <= 0.0:

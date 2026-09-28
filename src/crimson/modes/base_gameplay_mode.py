@@ -790,10 +790,7 @@ class BaseGameplayMode:
             tick = self._live_ticks.next_tick()
             tick_index = recorder.record(tick) if recorder is not None else None
             step = step_replay_tick(session, tick)
-            self._world_runtime.advance_presentation_clock(
-                dt_sim=step.dt_sim,
-                game_tune_started=session.game_tune_started,
-            )
+            self._world_runtime.advance_presentation_clock(dt_sim=step.dt_sim)
             plans.append(step.presentation)
             if tick_index is not None:
                 self._record_replay_checkpoint(

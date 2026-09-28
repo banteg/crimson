@@ -27,7 +27,6 @@ def test_advance_playback_frame_advances_tick_index(assets_dir: Path) -> None:
         dt_seconds=2.0 * float(clock.dt_tick),
         max_ticks=None,
         tick_limit=16,
-        game_tune_started=False,
     )
 
     assert advance.next_tick_index == 6
@@ -47,7 +46,6 @@ def test_advance_playback_frame_respects_max_ticks_clamp(assets_dir: Path) -> No
         dt_seconds=3.0 * float(clock.dt_tick),
         max_ticks=1,
         tick_limit=16,
-        game_tune_started=False,
     )
 
     assert advance.ticks_requested == 1
@@ -66,7 +64,6 @@ def test_advance_playback_frame_keeps_output_and_outcome_order(assets_dir: Path)
         dt_seconds=3.0 * float(clock.dt_tick),
         max_ticks=None,
         tick_limit=16,
-        game_tune_started=False,
     )
 
     assert [int(tick_result.tick_index) for tick_result in advance.tick_results] == [5, 6, 7]
@@ -84,7 +81,6 @@ def test_advance_playback_frame_refunds_unconsumed_ticks_when_tick_limit_truncat
         dt_seconds=3.0 * float(clock.dt_tick),
         max_ticks=None,
         tick_limit=2,
-        game_tune_started=False,
     )
 
     assert advance.ticks_requested == 3
@@ -104,7 +100,6 @@ def test_advance_playback_frame_does_not_refund_when_all_ticks_complete(assets_d
         dt_seconds=2.0 * float(clock.dt_tick),
         max_ticks=None,
         tick_limit=16,
-        game_tune_started=False,
     )
 
     assert len(advance.tick_results) == 2
@@ -127,11 +122,9 @@ def test_advance_playback_frame_advances_presentation_clock_after_stepping_the_b
         dt_seconds=2.0 * float(clock.dt_tick),
         max_ticks=None,
         tick_limit=2,
-        game_tune_started=True,
     )
 
     assert len(advance.tick_results) == 2
     assert elapsed_at_step == [0.0, 0.0]
     assert runtime.presentation_elapsed_ms == pytest.approx(2.0 * 1000.0 / 60.0)
     assert runtime.bonus_anim_phase == pytest.approx(2.0 * 1.3 / 60.0)
-    assert runtime.game_tune_started is True

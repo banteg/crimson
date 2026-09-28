@@ -31,9 +31,9 @@ def make_session(
     perk_progression_enabled: bool = True,
 ) -> tuple[DeterministicSession, WorldState]:
     world = make_world(seed=seed, player_count=player_count)
+    world.state.game_mode = game_mode
     session = DeterministicSession(
         world=world,
-        game_mode=game_mode,
         perk_progression_enabled=perk_progression_enabled,
     )
     return session, world

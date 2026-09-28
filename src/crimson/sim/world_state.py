@@ -56,12 +56,8 @@ class WorldEvents(msgspec.Struct):
 class WorldStepRuntime(msgspec.Struct):
     world: WorldState
     dt: float
-    detail_preset: int
-    violence_disabled: int
     fx_queue: FxQueue
     fx_queue_rotated: FxQueueRotated
-    game_mode: GameMode
-    hit_audio_game_tune_started: bool
     deaths: list[CreatureDeath]
     sfx: list[SfxRequest]
     trigger_game_tune: bool = False
@@ -83,7 +79,7 @@ class WorldStepRuntime(msgspec.Struct):
                 players=self.world.players,
                 rng=self.world.state.rng,
                 dt=f32(self.dt),
-                detail_preset=self.detail_preset,
+                detail_preset=self.world.state.detail_preset,
                 fx_queue=self.fx_queue,
                 keep_corpse=keep_corpse,
             ),
@@ -104,8 +100,8 @@ class WorldStepRuntime(msgspec.Struct):
             fx_queue=self.fx_queue,
             hit=hit,
             rng=self.world.state.rng,
-            detail_preset=int(self.detail_preset),
-            violence_disabled=int(self.violence_disabled),
+            detail_preset=self.world.state.detail_preset,
+            violence_disabled=self.world.state.violence_disabled,
         )
 
     def finish_hit_presentation(self, hit: ProjectileHit, presentation: ProjectileDecalPostCtx) -> None:
@@ -114,17 +110,17 @@ class WorldStepRuntime(msgspec.Struct):
             fx_queue=self.fx_queue,
             post_ctx=msgspec.structs.replace(presentation, hit=hit),
             rng=self.world.state.rng,
-            detail_preset=int(self.detail_preset),
+            detail_preset=self.world.state.detail_preset,
         )
         hit_trigger, keys = plan_hit_sfx(
             [hit],
-            game_mode=self.game_mode,
-            game_tune_started=self.hit_audio_game_tune_started,
+            game_mode=self.world.state.game_mode,
+            game_tune_started=self.world.state.game_tune_started,
             rng=self.world.state.rng,
         )
         if hit_trigger:
             self.trigger_game_tune = True
-            self.hit_audio_game_tune_started = True
+            self.world.state.game_tune_started = True
         if keys:
             self.hit_sfx.extend(keys)
 
@@ -132,9 +128,10 @@ class WorldStepRuntime(msgspec.Struct):
         # Native secondary-rocket hits run the same first-hit game-tune branch
         # as bullet hits: sfx_play_exclusive(music_track_extra_0) plus one
         # playlist rand outside rush, else the panned explosion sound.
-        if self.game_mode != GameMode.RUSH and not self.hit_audio_game_tune_started:
+        state = self.world.state
+        if state.game_mode != GameMode.RUSH and not state.game_tune_started:
             self.trigger_game_tune = True
-            self.hit_audio_game_tune_started = True
+            state.game_tune_started = True
             _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             return
         self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
@@ -208,18 +205,14 @@ class WorldState(msgspec.Struct):
         *,
         mode_update: Callable[[], None] | None,
         inputs: Sequence[PlayerInput] | None,
-        detail_preset: int,
-        violence_disabled: int,
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
-        game_mode: GameMode,
         perk_progression_enabled: bool,
-        game_tune_started: bool,
         open_perk_menu: bool = False,
     ) -> WorldEvents:
         """Advance one frame; the caller has already applied the perk dt steps."""
         dt = float(dt)
-        fx_queue.violence_disabled = int(violence_disabled)
+        fx_queue.violence_disabled = self.state.violence_disabled
         frame_dt_ms = ftol_ms_i32(dt)
         inputs = normalize_input_frame(inputs, player_count=len(self.players))
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
@@ -229,12 +222,8 @@ class WorldState(msgspec.Struct):
         step_runtime = WorldStepRuntime(
             world=self,
             dt=float(dt),
-            detail_preset=int(detail_preset),
-            violence_disabled=int(violence_disabled),
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
-            game_mode=game_mode,
-            hit_audio_game_tune_started=bool(game_tune_started),
             deaths=[],
             sfx=[],
         )
@@ -279,7 +268,7 @@ class WorldState(msgspec.Struct):
             self.players,
             dt,
             creatures=self.creatures.entries,
-            detail_preset=int(detail_preset),
+            detail_preset=self.state.detail_preset,
             step_runtime=step_runtime,
         )
         # XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
@@ -295,13 +284,13 @@ class WorldState(msgspec.Struct):
             and any(player.health > 0.0 for player in self.players)
         )
         if perk_menu_opened:
-            perk_selection_open_choices(self.state, self.players, game_mode=game_mode)
+            perk_selection_open_choices(self.state, self.players, game_mode=self.state.game_mode)
         pickups += bonus_update(
             self.state,
             self.players,
             dt,
             creatures=self.creatures.entries,
-            detail_preset=int(detail_preset),
+            detail_preset=self.state.detail_preset,
             step_runtime=step_runtime,
         )
         if self.state.sfx_queue:

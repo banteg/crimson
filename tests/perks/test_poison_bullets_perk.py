@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
@@ -43,13 +42,9 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     events = world.step(
         0.016,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
     assert events.hits
@@ -89,13 +84,9 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     events = world.step(
         0.016,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
     assert events.hits
@@ -130,13 +121,9 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
     world.step(
         0.016,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
     assert not (creature.flags & CreatureFlags.SELF_DAMAGE_TICK)
@@ -171,13 +158,9 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
     world.step(
         0.016,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -215,13 +198,9 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
     events = world.step(
         0.016,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
     assert events.hits

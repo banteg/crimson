@@ -8,7 +8,6 @@ from crimson.creatures.anim import (
 )
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.math_parity import f32, x87_pc24_div, x87_pc24_mul_chain
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.types import ProjectileTemplateId
@@ -120,13 +119,9 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
     events = world.step(
         dt,
         inputs=None,
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 

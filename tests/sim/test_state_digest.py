@@ -41,7 +41,7 @@ def test_session_digest_ignores_paths_dirty_flags_and_rng_tracing() -> None:
 
 def test_session_digest_rejects_unrepresented_components(mocker) -> None:
     session, _sim = make_session()
-    mocker.patch.object(session, "detail_preset", object())
+    mocker.patch.object(session, "elapsed_uses_raw_dt", object())
     with pytest.raises(TypeError, match="unsupported deterministic state component"):
         session_digest(session)
 

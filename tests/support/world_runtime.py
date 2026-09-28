@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.game_modes import GameMode
 from crimson.render.rtx.mode import RtxRenderMode
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
@@ -101,13 +100,11 @@ class WorldRuntimeHost(WorldRuntime):
             detail_preset = int(self.config.display.detail_preset)
             violence_disabled = int(self.config.display.violence_disabled)
 
+        self.world.state.detail_preset = detail_preset
+        self.world.state.violence_disabled = violence_disabled
         session = DeterministicSession(
             world=self.world,
-            game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=perk_progression_enabled,
-            detail_preset=detail_preset,
-            violence_disabled=violence_disabled,
-            game_tune_started=self.game_tune_started,
             mode_state=self._survival_test_spawn_state,
         )
         session.elapsed_ms = float(self._survival_test_elapsed_ms)
@@ -119,6 +116,6 @@ class WorldRuntimeHost(WorldRuntime):
         )
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
 
-        self.advance_presentation_clock(dt_sim=tick.dt_sim, game_tune_started=session.game_tune_started)
+        self.advance_presentation_clock(dt_sim=tick.dt_sim)
         apply_presentation_plans(plans=[tick.presentation], runtime=self)
         return tick

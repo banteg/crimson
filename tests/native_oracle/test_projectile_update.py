@@ -14,7 +14,6 @@ import pytest
 
 from crimson.creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
@@ -61,15 +60,12 @@ def _seed_native_player(oracle) -> None:
 
 
 def _step_runtime(world: WorldState, dt: float) -> WorldStepRuntime:
+    world.state.game_tune_started = True
     return WorldStepRuntime(
         world=world,
         dt=dt,
-        detail_preset=5,
-        violence_disabled=0,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
-        hit_audio_game_tune_started=True,
         deaths=[],
         sfx=[],
     )

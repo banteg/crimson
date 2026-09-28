@@ -76,8 +76,6 @@ def test_quest_audio_requests_survive_render_partitions(
 ) -> None:
     session, spawn = build_quest_session(
         world=make_world(),
-        detail_preset=5,
-        violence_disabled=0,
         apply_world_dt_steps=True,
         spawn_entries=(),
         quest_level=None,
@@ -140,7 +138,6 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
 
 @pytest.mark.parametrize("partition", [(1, 1), (2,), (0, 2, 0), (1, 0, 1)])
 def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, tmp_path, partition) -> None:
-    from crimson.game_modes import GameMode
     from crimson.math_parity import f32
     from crimson.sim.batch_apply import apply_presentation_plans
     from crimson.sim.sessions import DeterministicSession
@@ -168,7 +165,6 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
         world.state.camera_shake_timer = 10.0
         session = DeterministicSession(
             world=world,
-            game_mode=GameMode.SURVIVAL,
             perk_progression_enabled=False,
         )
         tick = 0

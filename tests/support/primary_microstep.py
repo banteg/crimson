@@ -4,7 +4,6 @@ import struct
 from unittest.mock import patch
 
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import ProjectileTemplateId
@@ -44,15 +43,12 @@ def observe(case):
                 shield_timer=item["shield"],
             ),
         )
+    world.state.game_tune_started = True
     runtime = WorldStepRuntime(
         world=world,
         dt=case["dt"],
-        detail_preset=5,
-        violence_disabled=0,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
-        hit_audio_game_tune_started=True,
         deaths=[],
         sfx=[],
     )

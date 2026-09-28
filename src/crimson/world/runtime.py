@@ -27,7 +27,6 @@ class WorldRuntime:
     world: WorldState
     presentation_elapsed_ms: float
     bonus_anim_phase: float
-    game_tune_started: bool
 
     def __init__(
         self,
@@ -107,18 +106,16 @@ class WorldRuntime:
         )
         self.presentation_elapsed_ms = 0.0
         self.bonus_anim_phase = 0.0
-        self.game_tune_started = False
 
     def load_world_state(self, world: WorldState) -> None:
         self.world = world
 
-    def advance_presentation_clock(self, *, dt_sim: float, game_tune_started: bool) -> None:
+    def advance_presentation_clock(self, *, dt_sim: float) -> None:
         """Advance the render-only clocks by one simulated tick."""
 
         if float(dt_sim) > 0.0:
             self.presentation_elapsed_ms += float(dt_sim) * 1000.0
             self.bonus_anim_phase += float(dt_sim) * 1.3
-        self.game_tune_started = bool(game_tune_started)
 
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
@@ -126,7 +123,6 @@ class WorldRuntime:
 
     def close_runtime(self) -> None:
         self.render_resources.close()
-        self.game_tune_started = False
 
     def sync_audio_bridge_state(self) -> None:
         self.audio_bridge.sync(

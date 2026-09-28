@@ -163,7 +163,7 @@ class ProjectilePool:
         step_runtime = ctx.step_runtime
         world = step_runtime.world
         creatures = world.creatures.entries
-        detail_preset = int(step_runtime.detail_preset)
+        detail_preset = int(step_runtime.world.state.detail_preset)
         runtime_state = world.state
         rng = runtime_state.rng
         players = world.players

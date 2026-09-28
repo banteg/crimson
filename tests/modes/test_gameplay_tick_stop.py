@@ -51,8 +51,8 @@ def test_live_settings_change_does_not_change_recorded_session_settings(make_mod
     mode.config.display.detail_preset = 1
     mode.config.display.violence_disabled = 1
     mode._run_deterministic_session_ticks(dt_frame=1 / 60, session=session, recorder=None)
-    assert session.detail_preset == 5
-    assert session.violence_disabled == 0
+    assert session.world.state.detail_preset == 5
+    assert session.world.state.violence_disabled == 0
     prepared = mode._initialize_run(GameMode.RUSH)
-    assert prepared.session.detail_preset == 1
-    assert prepared.session.violence_disabled == 1
+    assert prepared.session.world.state.detail_preset == 1
+    assert prepared.session.world.state.violence_disabled == 1

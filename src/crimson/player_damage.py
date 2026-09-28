@@ -41,7 +41,7 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
     world = step_runtime.world
     state = world.state
     state.effects.spawn_explosion_burst(
-        pos=player.pos, scale=1.8, rng=state.rng, detail_preset=step_runtime.detail_preset,
+        pos=player.pos, scale=1.8, rng=state.rng, detail_preset=step_runtime.world.state.detail_preset,
     )
     state.bonus_spawn_guard = True
     for creature_idx, creature in enumerate(world.creatures.entries):

@@ -6,7 +6,6 @@ from typing import Any
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.gameplay import player_update
 from crimson.perks.availability import prepare_perk_availability
 from crimson.sim.input import PlayerInput
@@ -44,26 +43,18 @@ def make_creature_state(
     )
 
 
-def make_step_runtime(
-    world: WorldState,
-    *,
-    dt: float = 0.1,
-    detail_preset: int = 5,
-    violence_disabled: int = 0,
-    game_mode: GameMode = GameMode.SURVIVAL,
-    fx_queue: FxQueue | None = None,
-) -> WorldStepRuntime:
-    """The per-tick world context `WorldState.step` builds, for driving one subsystem directly."""
+def make_step_runtime(world: WorldState, *, dt: float = 0.1, fx_queue: FxQueue | None = None) -> WorldStepRuntime:
+    """The per-tick world context `WorldState.step` builds, for driving one subsystem directly.
 
+    Subsystem tests start past the first projectile hit's game tune, so hits draw no playlist pick.
+    """
+
+    world.state.game_tune_started = True
     return WorldStepRuntime(
         world=world,
         dt=float(dt),
-        detail_preset=int(detail_preset),
-        violence_disabled=int(violence_disabled),
         fx_queue=FxQueue() if fx_queue is None else fx_queue,
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=game_mode,
-        hit_audio_game_tune_started=True,
         deaths=[],
         sfx=[],
     )

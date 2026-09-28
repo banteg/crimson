@@ -66,7 +66,8 @@ def test_staged_death_matches_native_corpse_tint_size_and_retry() -> None:
         row = case["creatures"][0]
         world = make_world(preserve_bugs=True)
         world.players[0].pos = Vec2(300, 400)
-        step_runtime = make_step_runtime(world, dt=case["dt"], violence_disabled=case["violence"])
+        world.state.violence_disabled = case["violence"]
+        step_runtime = make_step_runtime(world, dt=case["dt"])
         queue = fill_queue(step_runtime.fx_queue_rotated, 0 if case["queued"] else 63)
         initial_count = queue.count
         pool = world.creatures

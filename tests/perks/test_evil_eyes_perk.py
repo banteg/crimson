@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.perks import PerkId
 from crimson.perks.effects import perks_update_effects
 from crimson.sim.gameplay_state import GameplayState
@@ -38,13 +37,9 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     events = world.step(
         0.5,
         inputs=[PlayerInput(aim=Vec2(float(creature.pos.x), float(creature.pos.y)))],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
     assert events

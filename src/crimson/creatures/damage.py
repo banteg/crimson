@@ -211,7 +211,7 @@ def creature_apply_damage(
     )
     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
         _damage_lethal_ranged_shock_burst(
-            creature=creature, rng=rng, effects=state.effects, detail_preset=step_runtime.detail_preset,
+            creature=creature, rng=rng, effects=state.effects, detail_preset=step_runtime.world.state.detail_preset,
         )
     else:
         sound = resolve_native_death_sfx(creature, rng=rng, preserve_bugs=state.preserve_bugs)

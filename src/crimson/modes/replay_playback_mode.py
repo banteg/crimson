@@ -435,7 +435,6 @@ class ReplayPlaybackMode:
             dt_seconds=float(frame_dt),
             max_ticks=max_ticks,
             tick_limit=int(tick_limit),
-            game_tune_started=bool(driver.session.game_tune_started),
         )
         self._tick_index = int(advance.next_tick_index)
 

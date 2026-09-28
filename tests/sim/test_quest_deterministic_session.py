@@ -27,9 +27,9 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
             ),
     )
     spawn_state = QuestSpawnState(spawn_entries=entries)
+    runtime.world.state.game_mode = GameMode.QUESTS
     session = DeterministicSession(
         world=runtime.world,
-        game_mode=GameMode.QUESTS,
         perk_progression_enabled=True,
         mode_state=spawn_state,
     )
@@ -121,7 +121,7 @@ def test_quest_timing_does_not_zero_dt_for_pending_perk_prompt() -> None:
 
 def _effects_after_first_spawn(*, detail_preset: int) -> int:
     session, _spawn_state = _build_session(seed=101, level="1.3")
-    session.detail_preset = detail_preset
+    session.world.state.detail_preset = detail_preset
     creatures = session.world.creatures.entries
     while not any(creature.active for creature in creatures):
         session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(aim=Vec2(512.0, 512.0))])

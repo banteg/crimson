@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
@@ -40,13 +39,9 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
     events = world.step(
         0.2,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -76,13 +71,9 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
     events = world.step(
         0.05,
         inputs=[PlayerInput(fire_down=True, aim=Vec2(120.0, 100.0))],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -124,13 +115,9 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
     world.step(
         0.2,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -155,13 +142,9 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
     events = world.step(
         0.05,
         inputs=[PlayerInput()],
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 

@@ -6,7 +6,6 @@ from pathlib import Path
 import pytest
 
 from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
-from crimson.game_modes import GameMode
 from crimson.owner_ref import OwnerRef
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -42,15 +41,12 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         particle.style_id = ParticleStyleId.BUBBLEGUN
         particle.target_id = item["target"]
         particle.owner = OwnerRef.from_player(0)
+    world.state.game_tune_started = True
     runtime = WorldStepRuntime(
         world=world,
         dt=case["dt"],
-        detail_preset=5,
-        violence_disabled=0,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
-        hit_audio_game_tune_started=True,
         deaths=[],
         sfx=[],
     )

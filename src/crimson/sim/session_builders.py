@@ -19,17 +19,13 @@ from .sessions import (
 def build_survival_session(
     *,
     world: WorldState,
-    detail_preset: int,
-    violence_disabled: int,
     apply_world_dt_steps: bool = True,
 ) -> tuple[DeterministicSession, SurvivalSpawnState]:
+    world.state.game_mode = GameMode.SURVIVAL
     spawn = SurvivalSpawnState()
     session = DeterministicSession(
         world=world,
-        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
-        detail_preset=detail_preset,
-        violence_disabled=violence_disabled,
         apply_world_dt_steps=apply_world_dt_steps,
         mode_state=spawn,
     )
@@ -39,16 +35,12 @@ def build_survival_session(
 def build_rush_session(
     *,
     world: WorldState,
-    detail_preset: int,
-    violence_disabled: int,
 ) -> tuple[DeterministicSession, RushSpawnState]:
+    world.state.game_mode = GameMode.RUSH
     spawn = RushSpawnState()
     session = DeterministicSession(
         world=world,
-        game_mode=GameMode.RUSH,
         perk_progression_enabled=False,
-        detail_preset=detail_preset,
-        violence_disabled=violence_disabled,
         elapsed_uses_raw_dt=True,
         mode_state=spawn,
     )
@@ -58,13 +50,12 @@ def build_rush_session(
 def build_quest_session(
     *,
     world: WorldState,
-    detail_preset: int,
-    violence_disabled: int,
     apply_world_dt_steps: bool,
     spawn_entries: tuple[SpawnEntry, ...],
     quest_level: QuestLevel | None,
     start_weapon_id: WeaponId | None,
 ) -> tuple[DeterministicSession, QuestSpawnState]:
+    world.state.game_mode = GameMode.QUESTS
     world.state.quest_level = quest_level
 
     weapon_id = WeaponId.PISTOL if start_weapon_id in (None, WeaponId.NONE) else start_weapon_id
@@ -74,10 +65,7 @@ def build_quest_session(
     quest_state = QuestSpawnState(spawn_entries=tuple(spawn_entries))
     session = DeterministicSession(
         world=world,
-        game_mode=GameMode.QUESTS,
         perk_progression_enabled=True,
-        detail_preset=detail_preset,
-        violence_disabled=violence_disabled,
         apply_world_dt_steps=apply_world_dt_steps,
         mode_state=quest_state,
     )
@@ -87,11 +75,10 @@ def build_quest_session(
 def build_typo_session(
     *,
     world: WorldState,
-    detail_preset: int,
-    violence_disabled: int,
     dictionary_words: tuple[str, ...] = (),
     highscore_names: tuple[str, ...] = (),
 ) -> DeterministicSession:
+    world.state.game_mode = GameMode.TYPO
     reset_typo_state(
         world.state.typo,
         creature_capacity=len(world.creatures.entries),
@@ -100,19 +87,15 @@ def build_typo_session(
     )
     return DeterministicSession(
         world=world,
-        game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
-        detail_preset=detail_preset,
-        violence_disabled=violence_disabled,
     )
 
 
 def build_tutorial_session(
     *,
     world: WorldState,
-    detail_preset: int,
-    violence_disabled: int,
 ) -> DeterministicSession:
+    world.state.game_mode = GameMode.TUTORIAL
     weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
     reset_tutorial_state(
         world.state.tutorial,
@@ -120,8 +103,5 @@ def build_tutorial_session(
     )
     return DeterministicSession(
         world=world,
-        game_mode=GameMode.TUTORIAL,
         perk_progression_enabled=True,
-        detail_preset=detail_preset,
-        violence_disabled=violence_disabled,
     )

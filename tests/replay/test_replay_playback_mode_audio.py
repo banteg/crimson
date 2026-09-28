@@ -48,7 +48,7 @@ def test_replay_render_uses_recorded_gore_setting(mocker, replay_playback_view, 
     assert frame.config is not None
     assert frame.config.display.violence_disabled == recorded_gore
     assert view._driver is not None
-    assert view._driver.session.violence_disabled == recorded_gore
+    assert view._driver.session.world.state.violence_disabled == recorded_gore
     assert viewer_config.display.violence_disabled == 1 - recorded_gore
     assert frame.config is not viewer_config
 

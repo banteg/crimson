@@ -396,7 +396,7 @@ class SecondaryProjectilePool:
         runtime_state = step_runtime.world.state
         creatures = step_runtime.world.creatures.entries
         fx_queue = step_runtime.fx_queue
-        detail_preset = int(step_runtime.detail_preset)
+        detail_preset = int(step_runtime.world.state.detail_preset)
 
         if dt <= 0.0:
             return 0

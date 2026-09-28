@@ -76,7 +76,6 @@ class MidStepContext(msgspec.Struct, frozen=True):
     elapsed_before_ms: float
     dt_sim_ms: float
     dt_raw_ms: float
-    detail_preset: int
 
 
 class PostStepContext(msgspec.Struct, frozen=True):
@@ -84,7 +83,6 @@ class PostStepContext(msgspec.Struct, frozen=True):
 
     world: WorldState
     dt_sim_ms: float
-    detail_preset: int
 
 
 class SurvivalSpawnState(msgspec.Struct):
@@ -123,7 +121,7 @@ def survival_mid_step(ctx: MidStepContext, spawn: SurvivalSpawnState) -> None:
             call.pos,
             float(call.heading),
             state=state,
-            detail_preset=ctx.detail_preset,
+            detail_preset=state.detail_preset,
         )
 
     player_xp = ctx.world.players[0].experience
@@ -189,7 +187,7 @@ def quest_mid_step(ctx: MidStepContext, spawn: QuestSpawnState) -> None:
             call.pos,
             float(call.heading),
             state=state,
-            detail_preset=ctx.detail_preset,
+            detail_preset=state.detail_preset,
         )
 
     # Native quest_mode_update has no player-alive gate on the completion
@@ -240,14 +238,10 @@ class DeterministicSession(msgspec.Struct):
     # Core state
     world: WorldState
 
-    # Mode identity
-    game_mode: GameMode
     perk_progression_enabled: bool
 
-    # Sim config
-    detail_preset: int = 5
-    violence_disabled: int = 0
-    game_tune_started: bool = False
+    # Sim config; the game mode, detail preset, violence flag and game-tune latch live in the
+    # gameplay state, like the native globals.
     apply_world_dt_steps: bool = True
     elapsed_uses_raw_dt: bool = False
     # Reject perk commands the live UI cannot issue (they would otherwise no-op
@@ -263,7 +257,6 @@ class DeterministicSession(msgspec.Struct):
 
     def __post_init__(self) -> None:
         state = self.world.state
-        state.game_mode = self.game_mode
         prepare_weapon_availability(state)
         prepare_perk_availability(state)
 
@@ -286,7 +279,7 @@ class DeterministicSession(msgspec.Struct):
         """Outcome when this tick ends the run in live play, else None."""
 
         players = self.world.players
-        match self.game_mode:
+        match self.world.state.game_mode:
             case GameMode.SURVIVAL:
                 return RunOutcome.DEATH if death_transition_ready(players) else None
             case GameMode.QUESTS:
@@ -302,7 +295,7 @@ class DeterministicSession(msgspec.Struct):
     def end_outcome(self) -> RunOutcome:
         """Outcome of a run whose recording stops after the current tick."""
 
-        match self.game_mode:
+        match self.world.state.game_mode:
             case GameMode.QUESTS:
                 # The failed-quest countdown keeps running while paused, so a
                 # failed run may close between ticks before the death animation ends.
@@ -318,12 +311,12 @@ class DeterministicSession(msgspec.Struct):
                 return self.terminal_outcome() or RunOutcome.INCOMPLETE
 
     def _mode_before_step(self) -> None:
-        match self.game_mode:
+        match self.world.state.game_mode:
             case GameMode.TYPO:
                 typo_before_step(self.world)
 
     def _mode_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
-        match self.game_mode:
+        match self.world.state.game_mode:
             case GameMode.TYPO:
                 return typo_input_transform(self.world, inputs)
             case GameMode.TUTORIAL:
@@ -341,11 +334,11 @@ class DeterministicSession(msgspec.Struct):
                 rush_mid_step(ctx, self.mode_state)
             case QuestSpawnState():
                 quest_mid_step(ctx, self.mode_state)
-            case None if self.game_mode == GameMode.TYPO:
+            case None if self.world.state.game_mode == GameMode.TYPO:
                 typo_mid_step(ctx)
 
     def _mode_after_step(self, ctx: PostStepContext) -> None:
-        match self.game_mode:
+        match self.world.state.game_mode:
             case GameMode.TYPO:
                 typo_post_step(ctx)
             case GameMode.TUTORIAL:
@@ -372,7 +365,7 @@ class DeterministicSession(msgspec.Struct):
                     self.world.state,
                     self.world.players,
                     choice_index,
-                    game_mode=self.game_mode,
+                    game_mode=self.world.state.game_mode,
                     dt=timing.dt_sim,
                     creatures=self.world.creatures.entries,
                 )
@@ -382,9 +375,9 @@ class DeterministicSession(msgspec.Struct):
             case PerkMenuOpenCommand():
                 # Between ticks only in original captures; recorded runs open mid-tick.
                 self._require_perk_command_allowed("perk_menu_open")
-                perk_selection_open_choices(self.world.state, self.world.players, game_mode=self.game_mode)
+                perk_selection_open_choices(self.world.state, self.world.players, game_mode=self.world.state.game_mode)
             case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
-                if self.game_mode != GameMode.TYPO:
+                if self.world.state.game_mode != GameMode.TYPO:
                     raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
                 apply_typo_command(self.world, command)
             case _:
@@ -434,13 +427,12 @@ class DeterministicSession(msgspec.Struct):
         elapsed_before_ms = self.elapsed_ms
 
         mode_update = None
-        if self.mode_state is not None or self.game_mode == GameMode.TYPO:
+        if self.mode_state is not None or self.world.state.game_mode == GameMode.TYPO:
             ctx = MidStepContext(
                 world=self.world,
                 elapsed_before_ms=elapsed_before_ms,
                 dt_sim_ms=dt_sim_ms,
                 dt_raw_ms=dt_raw_ms,
-                detail_preset=self.detail_preset,
             )
             mode_update = partial(self._mode_update, ctx)
 
@@ -455,13 +447,9 @@ class DeterministicSession(msgspec.Struct):
             timing.dt_sim,
             mode_update=mode_update,
             inputs=tick_inputs,
-            detail_preset=self.detail_preset,
-            violence_disabled=self.violence_disabled,
             fx_queue=fx_queue,
             fx_queue_rotated=fx_queue_rotated,
-            game_mode=self.game_mode,
             perk_progression_enabled=self.perk_progression_enabled,
-            game_tune_started=self.game_tune_started,
             open_perk_menu=open_perk_menu,
         )
 
@@ -493,9 +481,6 @@ class DeterministicSession(msgspec.Struct):
             events=events,
             presentation=presentation,
         )
-        if step.presentation.trigger_game_tune:
-            self.game_tune_started = True
-
         creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
 
         # Native culls corpses while rendering the world, before
@@ -505,7 +490,6 @@ class DeterministicSession(msgspec.Struct):
             PostStepContext(
                 world=self.world,
                 dt_sim_ms=dt_sim_ms,
-                detail_preset=self.detail_preset,
             ),
         )
 

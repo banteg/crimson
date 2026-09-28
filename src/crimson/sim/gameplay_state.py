@@ -53,6 +53,10 @@ class GameplayState(msgspec.Struct):
     perk_selection: PerkSelectionState = msgspec.field(default_factory=PerkSelectionState)
     sfx_queue: list[SfxRequest] = msgspec.field(default_factory=list)
     game_mode: GameMode = GameMode.SURVIVAL
+    detail_preset: int = 5
+    violence_disabled: int = 0
+    # Native `music_playlist_randomized_latch`: the first projectile hit has started the game tune.
+    game_tune_started: bool = False
     hardcore: bool = False
     # The global quest retry counter; hardcore creature spawns clear it.
     quest_fail_retry_count: int = 0

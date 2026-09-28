@@ -3,7 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.creatures.spawn import SpawnId
-from crimson.game_modes import GameMode
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
@@ -28,10 +27,6 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
     )
     session = DeterministicSession(
         world=runtime.world,
-        game_mode=GameMode.SURVIVAL,
-        detail_preset=5,
-        violence_disabled=0,
-        game_tune_started=bool(runtime.game_tune_started),
         perk_progression_enabled=False,
         apply_world_dt_steps=True,
     )
@@ -42,7 +37,7 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
         step = step_replay_tick(session, ticks.next_tick())
         if not step.presentation.terrain_fx.is_empty():
             break
-        runtime.advance_presentation_clock(dt_sim=step.dt_sim, game_tune_started=bool(session.game_tune_started))
+        runtime.advance_presentation_clock(dt_sim=step.dt_sim)
         apply_presentation_plans(plans=[step.presentation], runtime=runtime)
 
     assert not step.presentation.terrain_fx.is_empty()

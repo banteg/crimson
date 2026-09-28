@@ -701,7 +701,7 @@ class CreaturePool:
     ) -> None:
         state, players = step_runtime.world.state, step_runtime.world.players
         rng = state.rng
-        detail_preset, violence_disabled = int(step_runtime.detail_preset), int(step_runtime.violence_disabled)
+        detail_preset, violence_disabled = int(step_runtime.world.state.detail_preset), int(step_runtime.world.state.violence_disabled)
         fx_queue_rotated = step_runtime.fx_queue_rotated
         # Native performs this first death-stage tick before calling
         # creature_apply_damage for periodic poison flags.  Keeping it
@@ -755,8 +755,8 @@ class CreaturePool:
         state = world.state
         players = world.players
         rng = state.rng
-        detail_preset = int(step_runtime.detail_preset)
-        violence_disabled = int(step_runtime.violence_disabled)
+        detail_preset = int(step_runtime.world.state.detail_preset)
+        violence_disabled = int(step_runtime.world.state.violence_disabled)
         fx_queue = step_runtime.fx_queue
         fx_queue_rotated = step_runtime.fx_queue_rotated
         sfx = step_runtime.sfx

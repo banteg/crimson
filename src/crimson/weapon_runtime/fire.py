@@ -249,7 +249,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             pos=muzzle,
             aim_heading=aim_heading,
             draws=shell_casing_draws,
-            detail_preset=int(ctx.step_runtime.detail_preset),
+            detail_preset=int(ctx.step_runtime.world.state.detail_preset),
         )
 
     shot_angle = _native_shot_angle_with_jitter(

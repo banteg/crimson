@@ -5,7 +5,6 @@ from unittest.mock import patch
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
 from crimson.projectiles.runtime import PrimaryStepCtx, collision
 from crimson.projectiles.types import ProjectileTemplateId
@@ -52,20 +51,17 @@ def observe(case):
     creature.size = target["size"]
     creature.lifecycle_stage = target["lifecycle"]
     creature.tint = RGBA(0, 0, 0, 0)
+    world.state.game_tune_started = True
     runtime = WorldStepRuntime(
         world=world,
         dt=case["dt"],
-        detail_preset=5,
-        violence_disabled=1,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
-        hit_audio_game_tune_started=True,
         deaths=[],
         sfx=[],
     )
-    runtime.violence_disabled = case.get("violence_disabled", 0)
-    runtime.fx_queue.violence_disabled = runtime.violence_disabled
+    world.state.violence_disabled = case.get("violence_disabled", 0)
+    runtime.fx_queue.violence_disabled = world.state.violence_disabled
     random_positions = []
     splatters = []
     damage_calls = []

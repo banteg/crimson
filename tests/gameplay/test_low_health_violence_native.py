@@ -8,7 +8,6 @@ import pytest
 
 from crimson.aim_schemes import AimScheme
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.movement_controls import MovementControlType
 from crimson.sim.input import PlayerInput
@@ -46,12 +45,13 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
             aim_heading=f32(frame["aim_heading"]),
         )
         world.players[player.index] = player
+        world.state.violence_disabled = frame["violence_disabled"]
         step_player(
             world,
             player,
             PlayerInput(aim=Vec2(300.0, 400.0), aim_scheme=AimScheme.MOUSE, move_mode=MovementControlType.STATIC),
             frame["dt"],
-            step_runtime=make_step_runtime(world, dt=frame["dt"], violence_disabled=frame["violence_disabled"]),
+            step_runtime=make_step_runtime(world, dt=frame["dt"]),
         )
         assert _bits(player.low_health_timer) == expected["timer_bits"], case["input"]["name"]
         assert [record.value for record in rng.records_since()] == expected["rng_draws"], case["input"]["name"]
@@ -83,13 +83,12 @@ def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled)
         PlayerState(index=index, pos=Vec2(400.0 + index * 100, 400.0), health=19.0, low_health_timer=0.0)
         for index in range(2)
     ]
+    world.state.violence_disabled = violence_disabled
     world.step(
         0.016,
         inputs=[PlayerInput(), PlayerInput()], 
-        detail_preset=5, violence_disabled=violence_disabled,
-        fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL, perk_progression_enabled=False,
-        mode_update=None, game_tune_started=False,
-    )
+                fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
+        perk_progression_enabled=False,
+        mode_update=None,     )
     assert len(world.state.effects.iter_active()) == (0 if violence_disabled else 12)
     assert [player.low_health_timer for player in world.players] == [1.0, 1.0]

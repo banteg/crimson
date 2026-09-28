@@ -19,10 +19,10 @@ def test_runtime_reset_replaces_a_loaded_world_without_touching_it(tmp_path: Pat
     replacement.players.append(PlayerState(index=0, pos=Vec2(10.0, 20.0), health=17.0))
     runtime.load_world_state(replacement)
     assert runtime.world is replacement
-    runtime.advance_presentation_clock(dt_sim=0.5, game_tune_started=True)
+    runtime.advance_presentation_clock(dt_sim=0.5)
 
     runtime.reset(seed=123, player_count=2)
-    assert (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase, runtime.game_tune_started) == (0.0, 0.0, False)
+    assert (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase) == (0.0, 0.0)
     assert runtime.world is not first and runtime.world is not replacement
     assert runtime.world.state.rng.state == 123
     assert len(runtime.world.players) == 2

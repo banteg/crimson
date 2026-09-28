@@ -4,7 +4,6 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -105,7 +104,6 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     tick_start = rng.calls
     session = DeterministicSession(
         world=world,
-        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
     )
     result = session.step_tick(dt=1 / 60, inputs=[PlayerInput(aim=Vec2(600, 512))])
@@ -139,13 +137,9 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     events = world.step(
         0.2,
         inputs=None,
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 
@@ -160,13 +154,9 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     events = world.step(
         0.2,
         inputs=None,
-        detail_preset=5,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         mode_update=None,
-        violence_disabled=0,
-        game_tune_started=False,
         perk_progression_enabled=False,
     )
 

@@ -64,7 +64,7 @@ def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> R
 
     player_results: list[PlayerRunResult] = []
     for index, player in enumerate(players):
-        if session.game_mode == GameMode.TYPO:
+        if state.game_mode == GameMode.TYPO:
             shots_fired, shots_hit = typo_shot_counts(state.typo)
         else:
             # Piercing shots can hit several creatures; the high-score record

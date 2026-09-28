@@ -5,7 +5,6 @@ from pathlib import Path
 from crimson.bonuses import BonusId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.effects_atlas import EffectId
-from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.sim.world_state import WorldEvents, WorldState
@@ -42,13 +41,9 @@ def _step_world_over_bonuses(
         0.016,
         mode_update=None,
         inputs=None,
-        detail_preset=5,
-        violence_disabled=0,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
-        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=False,
-        game_tune_started=False,
     )
     return world, events, [caller for caller in callers if caller.name.startswith("BONUS_APPLY_")]
 

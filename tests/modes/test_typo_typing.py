@@ -75,9 +75,9 @@ def test_typo_commands_apply_before_input_transform(make_world_state, monkeypatc
 
     monkeypatch.setattr("crimson.sim.sessions.typo_input_transform", observe_transform)
 
+    world.state.game_mode = GameMode.TYPO
     session = DeterministicSession(
         world=world,
-        game_mode=GameMode.TYPO,
         perk_progression_enabled=False,
     )
     session.step_tick(
@@ -162,7 +162,6 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
             elapsed_before_ms=0.0,
             dt_sim_ms=1.0,
             dt_raw_ms=1.0,
-            detail_preset=5,
         ),
     )
 
