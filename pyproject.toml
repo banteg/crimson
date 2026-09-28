@@ -77,7 +77,7 @@ extend-ignore = [
 "tests/**" = ["ARG"]
 # Frozen evidence and review probes keep the style they were recorded with.
 "analysis/**" = ["ARG", "B905", "C4", "FURB", "I001", "ISC", "RET", "SIM"]
-"tools/match/evidence/**" = ["ARG", "B905", "C4", "FURB", "ISC", "RET", "SIM"]
+"tools/match/evidence/**" = ["ARG", "B905", "C4", "FURB", "I001", "ISC", "RET", "SIM"]
 
 [tool.ruff.lint.flake8-bugbear]
 extend-immutable-calls = [
