@@ -12,7 +12,7 @@ from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime.spawn import projectile_spawn
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import make_step_runtime, step_player
+from tests.support.factories import fire_player_weapon, make_step_runtime, step_player
 
 
 def _spawn_type(
@@ -20,7 +20,7 @@ def _spawn_type(
     *,
     players: list[PlayerState],
     owner: OwnerRef,
-    owner_player_index: int | None = None,
+    owner_player_index: int,
 ) -> int:
     proj_id = projectile_spawn(
         state,
@@ -89,20 +89,11 @@ def test_projectile_spawn_fire_bullets_default_uses_owner_timer() -> None:
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1))
-    player0_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(0))
+    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1), owner_player_index=1)
+    player0_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(0), owner_player_index=0)
 
     assert player1_type == int(ProjectileTemplateId.PISTOL)
     assert player0_type == int(ProjectileTemplateId.FIRE_BULLETS)
-
-
-def test_projectile_spawn_fire_bullets_default_resolves_owner_index_in_player_slice() -> None:
-    state = GameplayState(preserve_bugs=False)
-    player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=1.0)
-
-    player1_type = _spawn_type(state, players=[player1], owner=OwnerRef.from_local_player(0), owner_player_index=1)
-
-    assert player1_type == int(ProjectileTemplateId.FIRE_BULLETS)
 
 
 def test_projectile_spawn_fire_bullets_default_uses_owner_player_index_with_owner_minus_100() -> None:
@@ -124,7 +115,7 @@ def test_projectile_spawn_fire_bullets_preserve_bugs_keeps_global_gate() -> None
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1))
+    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1), owner_player_index=1)
 
     assert player1_type == int(ProjectileTemplateId.FIRE_BULLETS)
 
@@ -142,20 +133,20 @@ def test_projectile_spawn_preserve_bugs_keeps_native_owner_window() -> None:
         preserved_state,
         players=players,
         owner=OwnerRef.from_player(3),
+        owner_player_index=3,
     )
     assert preserved_type == int(ProjectileTemplateId.PISTOL)
     assert preserved_state.shots_fired[3] == 0
-    assert preserved_state.shots_fired_total == 0
 
     corrected_state = GameplayState(preserve_bugs=False)
     corrected_type = _spawn_type(
         corrected_state,
         players=players,
         owner=OwnerRef.from_player(3),
+        owner_player_index=3,
     )
     assert corrected_type == int(ProjectileTemplateId.PISTOL)
     assert corrected_state.shots_fired[3] == 1
-    assert corrected_state.shots_fired_total == 1
 
 
 def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner() -> None:
@@ -210,3 +201,16 @@ def test_nuke_and_perk_fire_bullets_preserve_bugs_keeps_global_conversion() -> N
     )
     assert man_bomb_types
     assert set(man_bomb_types) == {int(ProjectileTemplateId.FIRE_BULLETS)}
+
+
+def test_preserve_bugs_weapon_shot_converts_while_the_other_player_has_fire_bullets() -> None:
+    # Native `projectile_spawn` reads both players' Fire Bullets timers whoever fired.
+    world = _two_player_world(preserve_bugs=True, fire_bullets_timers=(0.0, 1.0))
+    player0 = world.players[0]
+    player0.weapon.shot_cooldown = 0.0
+
+    fire_player_weapon(world, player0, PlayerInput(fire_down=True, fire_pressed=True, aim=Vec2(200.0, 100.0)), 0.016)
+
+    assert _active_type_ids(world.state) == [int(ProjectileTemplateId.FIRE_BULLETS)]
+    # The converting pass counts the shot a second time.
+    assert world.state.shots_fired[0] == 2

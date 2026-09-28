@@ -548,7 +548,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
                 mag_draw=mag_roll,
             )
             _projectile_spawn(
-                state, players=[player], pos=muzzle, angle=angle, type_id=ProjectileTemplateId.FIRE_BULLETS,
+                state, players=players, pos=muzzle, angle=angle, type_id=ProjectileTemplateId.FIRE_BULLETS,
                 owner=owner, owner_player_index=player.index,
             )
             state.sprite_effects.spawn(

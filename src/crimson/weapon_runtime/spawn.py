@@ -29,72 +29,6 @@ def _uses_native_player_projectile_path(owner: OwnerRef) -> bool:
     return legacy_owner == -100 or -3 <= legacy_owner <= -1
 
 
-def _resolve_player_slot(players: list[PlayerState], *, player_index: int) -> int | None:
-    target_index = int(player_index)
-    if 0 <= target_index < len(players):
-        direct = players[target_index]
-        if int(direct.index) == target_index:
-            return int(target_index)
-    for slot, player in enumerate(players):
-        if int(player.index) == target_index:
-            return int(slot)
-    return None
-
-
-def _shots_fired_player_index(
-    *,
-    state: GameplayState,
-    players: list[PlayerState],
-    owner: OwnerRef,
-    owner_player_index: int | None,
-) -> int | None:
-    if owner_player_index is not None:
-        player_index = int(owner_player_index)
-        if 0 <= player_index < len(state.shots_fired):
-            return int(player_index)
-
-    if owner.is_player() and not (owner.local_host and owner.index == 0):
-        player_index = int(owner.index)
-        if 0 <= player_index < len(state.shots_fired):
-            return int(player_index)
-
-    if owner.local_host and owner.index == 0 and len(players) == 1:
-        player_index = int(players[0].index)
-        if 0 <= player_index < len(state.shots_fired):
-            return int(player_index)
-
-    return None
-
-
-def _fire_bullets_active(
-    players: list[PlayerState],
-    *,
-    state: GameplayState,
-    owner: OwnerRef,
-    owner_player_index: int | None,
-) -> bool:
-    # Native `projectile_spawn` checks player-1/player-2 Fire Bullets timers
-    # globally, regardless of projectile ownership.
-    if bool(state.preserve_bugs):
-        return any(float(player.fire_bullets_timer) > 0.0 for player in players[:2])
-
-    resolved_owner_slot: int | None = None
-    if owner_player_index is not None:
-        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner_player_index))
-    elif owner.is_player() and not (owner.local_host and owner.index == 0):
-        resolved_owner_slot = _resolve_player_slot(players, player_index=int(owner.index))
-    elif owner.local_host and owner.index == 0 and len(players) == 1:
-        # Callers that only pass one player are explicitly indicating the owner
-        # context (for example OwnerRef.from_local_player(0) with friendly fire disabled).
-        resolved_owner_slot = 0
-
-    if resolved_owner_slot is None:
-        return False
-    if not (0 <= resolved_owner_slot < len(players)):
-        return False
-    return float(players[resolved_owner_slot].fire_bullets_timer) > 0.0
-
-
 def projectile_spawn(
     state: GameplayState,
     *,
@@ -103,32 +37,26 @@ def projectile_spawn(
     angle: float,
     type_id: ProjectileTemplateId,
     owner: OwnerRef,
-    owner_player_index: int | None = None,
+    owner_player_index: int,
     hits_players: bool = False,
 ) -> int:
-    # Mirror `projectile_spawn` (0x00420440) Fire Bullets override.
+    """Port of `projectile_spawn` (0x00420440): a player's shot counts as fired and becomes Fire Bullets."""
+
     uses_player_projectile_path = owner.is_player() and (
-        not bool(state.preserve_bugs) or _uses_native_player_projectile_path(owner)
+        not state.preserve_bugs or _uses_native_player_projectile_path(owner)
     )
-    if (not state.bonus_spawn_guard) and uses_player_projectile_path:
+    if not state.bonus_spawn_guard and uses_player_projectile_path:
+        # Native loops once more after converting, so a converted shot counts twice.
         while True:
-            player_index = _shots_fired_player_index(
-                state=state,
-                players=players,
-                owner=owner,
-                owner_player_index=owner_player_index,
-            )
-            state.shots_fired_total += 1
-            if player_index is not None:
-                state.shots_fired[player_index] += 1
+            state.shots_fired[owner_player_index] += 1
             if type_id == ProjectileTemplateId.FIRE_BULLETS:
                 break
-            if not _fire_bullets_active(
-                players,
-                state=state,
-                owner=owner,
-                owner_player_index=owner_player_index,
-            ):
+            # Native reads both players' timers whoever fired; the rewrite reads the shooter's.
+            if state.preserve_bugs:
+                fire_bullets_active = any(player.fire_bullets_timer > 0.0 for player in players[:2])
+            else:
+                fire_bullets_active = players[owner_player_index].fire_bullets_timer > 0.0
+            if not fire_bullets_active:
                 break
             type_id = ProjectileTemplateId.FIRE_BULLETS
 
@@ -149,7 +77,7 @@ def spawn_projectile_ring(
     angle_offset: float,
     type_id: ProjectileTemplateId,
     owner: OwnerRef,
-    owner_player_index: int | None = None,
+    owner_player_index: int,
     players: list[PlayerState],
 ) -> None:
     if count <= 0:

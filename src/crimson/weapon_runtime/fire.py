@@ -31,7 +31,7 @@ from ..sim.input import PlayerInput
 from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
-from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles
+from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, projectile_spawn
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -77,6 +77,8 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
     """The muzzle, owner and pools every `player_update` fire branch spawns into."""
 
     state: GameplayState
+    players: list[PlayerState]
+    player_index: int
     muzzle: Vec2
     aim_heading: float
     owner: OwnerRef
@@ -85,11 +87,14 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
     hits_players: bool
 
     def projectile(self, type_id: ProjectileTemplateId, angle: float) -> int:
-        return self.state.projectiles.spawn(
+        return projectile_spawn(
+            self.state,
+            players=self.players,
             pos=self.muzzle,
             angle=angle,
             type_id=type_id,
             owner=self.owner,
+            owner_player_index=self.player_index,
             hits_players=self.hits_players,
         )
 
@@ -101,6 +106,8 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
         target_hint: Vec2 | None = None,
         creatures: Sequence[CreatureState] | None = None,
     ) -> None:
+        # Native `fx_spawn_secondary_projectile` counts every rocket as a shot fired.
+        self.state.shots_fired[self.player_index] += 1
         self.state.secondary_projectiles.spawn_from_spec(
             SecondarySpawnSpec(
                 pos=self.muzzle,
@@ -263,18 +270,18 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     owner = owner_ref_for_player(player.index)
     shot = _ShotSpawner(
         state=state,
+        players=ctx.step_runtime.world.players,
+        player_index=player.index,
         muzzle=muzzle,
         aim_heading=aim_heading,
         owner=owner_ref_for_player_projectiles(state, player.index),
         hits_players=bool(state.friendly_fire_enabled),
     )
     ammo_cost = 1.0
+    # Shots fired are counted where native counts them, in `projectile_spawn` and
+    # `fx_spawn_secondary_projectile`; the per-weapon usage counter keeps the
+    # rewrite's most-used-weapon heuristic.
     shot_count = 1
-    # Native increments the accuracy counter only inside projectile_spawn /
-    # fx_spawn_secondary_projectile; particle weapons (flamethrowers, bubblegun)
-    # never count toward shots fired. The per-weapon usage counter keeps
-    # incrementing as the rewrite's most-used-weapon heuristic.
-    counts_accuracy_shots = True
 
     if is_fire_bullets:
         for _ in range(pellet_count):
@@ -333,7 +340,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     owner=owner,
                     rng=state.rng,
                 )
-                counts_accuracy_shots = False
                 ammo_cost = f32(0.1)
             case WeaponId.HR_FLAMER:
                 particle = state.particles.spawn_particle(
@@ -344,7 +350,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.HR_FLAMER
-                counts_accuracy_shots = False
                 ammo_cost = f32(0.1)
             case WeaponId.BLOW_TORCH:
                 particle = state.particles.spawn_particle(
@@ -355,7 +360,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.BLOW_TORCH
-                counts_accuracy_shots = False
                 ammo_cost = f32(0.05)
             case (
                 WeaponId.PLASMA_RIFLE
@@ -458,7 +462,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     owner=owner,
                     rng=state.rng,
                 )
-                counts_accuracy_shots = False
                 ammo_cost = f32(0.15)
             case _:
                 # Native `player_update` has no branch for the other ids (Spider
@@ -466,11 +469,8 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 # costs its cooldown, sound and ammo but spawns nothing.
                 shot_count = 0
 
-    if 0 <= int(player.index) < len(state.shots_fired):
-        if counts_accuracy_shots:
-            state.shots_fired[int(player.index)] += int(shot_count)
-        if 0 <= weapon_id < WEAPON_COUNT_SIZE:
-            state.weapon_shots_fired[int(player.index)][weapon_id] += int(shot_count)
+    if 0 <= weapon_id < WEAPON_COUNT_SIZE:
+        state.weapon_shots_fired[player.index][weapon_id] += shot_count
 
     if PerkId.SHARPSHOOTER not in state.perks:
         player.spread_heat = min(f32(0.48), max(0.0, x87_pc24_add(player.spread_heat, spread_inc)))

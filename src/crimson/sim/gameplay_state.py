@@ -85,7 +85,6 @@ class GameplayState(msgspec.Struct):
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
     shots_fired: list[int] = msgspec.field(default_factory=lambda: [0] * 4)
-    shots_fired_total: int = 0
     shots_hit: list[int] = msgspec.field(default_factory=lambda: [0] * 4)
     player_spread_damping_scalar: float = 1.0
     player_spread_damping_gate: float = 0.0
