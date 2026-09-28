@@ -7,10 +7,12 @@ import pytest
 
 import crimson.screens.quest_views.quest_failed as quest_failed_module
 from crimson.game_modes import GameMode
+from crimson.game_states import GameStateId
 from crimson.modes.quest_mode import QuestRunOutcome
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, StartRun
 from crimson.screens.quest_views import QUEST_FAILED_PANEL_W, QuestFailedView
+from crimson.screens.quest_views.shared import QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET
 from crimson.ui.animation import WORLD_FADE_SPAN_MS
 from crimson.weapons import WeaponId
 from grim import music as grim_music
@@ -220,39 +222,17 @@ def test_quest_failed_main_menu_waits_for_exit_transition(monkeypatch, quest_fai
     play_music.assert_called_once_with(state.audio, "shortie_monk")
 
 
-def test_quest_failed_score_block_matches_native_fields(monkeypatch, quest_failed_state, mocker) -> None:
-    state = quest_failed_state
-    view = QuestFailedView(state, _failed_outcome())
-
+def test_quest_failed_card_sits_at_the_native_input_xy(quest_failed_state, mocker) -> None:
+    view = QuestFailedView(quest_failed_state, _failed_outcome())
     view.open()
+    score_card = mocker.patch.object(quest_failed_module, "ui_text_input_render")
 
-    drawn_text: list[str] = []
-    drawn_lines: list[tuple[int, int, int, int]] = []
-    drawn_rects: list[tuple[int, int, int, int]] = []
+    view._draw_score_preview(panel_top_left=Vec2(-108.0, 29.0))
 
-    def _draw_small_text(_font, text, pos, color):
-        drawn_text.append(str(text))
-
-    def _draw_line(x1, y1, x2, y2, color):
-        drawn_lines.append((int(x1), int(y1), int(x2), int(y2)))
-
-    def _draw_rect(x, y, w, h, color):
-        drawn_rects.append((int(x), int(y), int(w), int(h)))
-
-    mocker.patch.object(quest_failed_module, "draw_small_text", side_effect=_draw_small_text)
-    mocker.patch.object(quest_failed_module.rl, "draw_line", side_effect=_draw_line)
-    mocker.patch.object(quest_failed_module.rl, "draw_rectangle", side_effect=_draw_rect)
-    mocker.patch.object(quest_failed_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
-
-    view._draw_score_preview(state.resources.small_font, panel_top_left=Vec2(-108.0, 29.0))
-
-    assert "Score" in drawn_text
-    assert "Experience" in drawn_text
-    assert "Rank: 1" not in drawn_text
-    assert not any(text.startswith("Frags:") for text in drawn_text)
-    assert not any(text.startswith("Hit %:") for text in drawn_text)
-    assert drawn_lines  # vertical separator
-    assert any(w == 192 and h == 1 for (_x, _y, w, h) in drawn_rects)  # horizontal separator
+    # `quest_failed_screen_update`: message xy + (6, 16), then + (4, 10).
+    message = Vec2(-108.0, 29.0) + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET)
+    assert score_card.call_args.args[0] == message + Vec2(10.0, 26.0)
+    assert score_card.call_args.kwargs["game_state"] == GameStateId.QUEST_FAILED
 
 
 def test_quest_failed_draw_fades_pause_background_during_close(quest_failed_state, mocker) -> None:

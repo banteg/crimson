@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.ui.formatting import format_ordinal, format_time_mm_ss
+from crimson.ui.formatting import format_ordinal, format_time_mm_ss, highscore_format_date_label
 
 
 @pytest.mark.parametrize(
@@ -12,18 +12,22 @@ from crimson.ui.formatting import format_ordinal, format_time_mm_ss
         (2, "2nd"),
         (3, "3rd"),
         (4, "4th"),
+        (7, "7th"),
+        (8, "8th"),
         (10, "10th"),
         (11, "11th"),
         (12, "12th"),
         (13, "13th"),
         (14, "14th"),
+        (20, "20th"),
         (21, "21st"),
         (22, "22nd"),
         (23, "23rd"),
         (24, "24th"),
-        (111, "111th"),
-        (112, "112th"),
-        (113, "113th"),
+        # Native only special-cases 8..20, so the hundreds keep st/nd/rd.
+        (111, "111st"),
+        (112, "112nd"),
+        (113, "113rd"),
         (121, "121st"),
         (122, "122nd"),
         (123, "123rd"),
@@ -49,3 +53,8 @@ def test_format_ordinal(value: int, expected: str) -> None:
 def test_format_time_mm_ss(ms: int, expected: str) -> None:
     assert format_time_mm_ss(ms) == expected
 
+
+
+def test_highscore_date_label_marks_unknown_months() -> None:
+    assert highscore_format_date_label(31, 1, 2026) == "31. Jan 2026"
+    assert highscore_format_date_label(0, 0, 2000) == "0. ??? 2000"

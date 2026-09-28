@@ -5,37 +5,13 @@ from typing import TYPE_CHECKING
 
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ...game_modes import GameMode
+from ...game_states import GameStateId
+from ...ui.highscore_card import ui_text_input_render
 from ..high_scores_layout import (
-    HS_LOCAL_CLOCK_X,
-    HS_LOCAL_CLOCK_Y,
-    HS_LOCAL_DATE_X,
-    HS_LOCAL_DATE_Y,
-    HS_LOCAL_FRAGS_X,
-    HS_LOCAL_FRAGS_Y,
-    HS_LOCAL_HIT_X,
-    HS_LOCAL_HIT_Y,
-    HS_LOCAL_LABEL_X,
-    HS_LOCAL_LABEL_Y,
-    HS_LOCAL_NAME_X,
-    HS_LOCAL_NAME_Y,
-    HS_LOCAL_RANK_X,
-    HS_LOCAL_RANK_Y,
-    HS_LOCAL_SCORE_LABEL_X,
-    HS_LOCAL_SCORE_LABEL_Y,
-    HS_LOCAL_SCORE_VALUE_X,
-    HS_LOCAL_SCORE_VALUE_Y,
-    HS_LOCAL_TIME_LABEL_X,
-    HS_LOCAL_TIME_LABEL_Y,
-    HS_LOCAL_TIME_VALUE_X,
-    HS_LOCAL_TIME_VALUE_Y,
-    HS_LOCAL_WEAPON_Y,
-    HS_LOCAL_WICON_X,
-    HS_LOCAL_WICON_Y,
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
     HS_RIGHT_GAME_MODE_DROP_X,
@@ -80,7 +56,6 @@ from ..high_scores_layout import (
     hs_right_options_x_shift,
 )
 from ..panels.hit_test import mouse_inside_rect_with_padding
-from .shared import format_elapsed_mm_ss, format_score_date, ordinal
 
 if TYPE_CHECKING:
     from .view import HighScoresView
@@ -204,7 +179,6 @@ def draw_right_panel(
     _draw_right_panel_local_score(
         view,
         resources=resources,
-        font=font,
         right_top_left=right_top_left,
         highlight_rank=highlight_rank,
     )
@@ -371,250 +345,18 @@ def _draw_right_panel_local_score(
     view: HighScoresView,
     *,
     resources: RuntimeResources,
-    font: SmallFontData,
     right_top_left: Vec2,
     highlight_rank: int | None,
 ) -> None:
-    local_shift_x = hs_right_local_card_x_shift(float(view.state.config.display.width))
-    card_top_left = right_top_left + Vec2(local_shift_x, 0.0)
     if not view._records:
         return
     idx = int(highlight_rank) if highlight_rank is not None else int(view._scroll_index)
-    if idx < 0:
-        idx = 0
-    if idx >= len(view._records):
-        idx = len(view._records) - 1
-    entry = view._records[idx]
-
-    text_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.8))
-    value_color = rl.Color(int(255 * 0.9), int(255 * 0.9), 255, 255)
-    game_time_color = rl.Color(255, 255, 255, int(255 * 0.8))
-    lower_section_color = rl.Color(int(255 * 0.9), int(255 * 0.9), int(255 * 0.9), int(255 * 0.7))
-    separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
-
-    name = str(entry.name())
-    if not name:
-        name = "???"
-    draw_small_text(font, name, card_top_left + Vec2(HS_LOCAL_NAME_X, HS_LOCAL_NAME_Y), text_color)
-    draw_small_text(
-        font, "Local score", card_top_left + Vec2(HS_LOCAL_LABEL_X, HS_LOCAL_LABEL_Y), text_color,
+    idx = max(0, min(idx, len(view._records) - 1))
+    local_shift_x = hs_right_local_card_x_shift(float(view.state.config.display.width))
+    ui_text_input_render(
+        right_top_left + Vec2(local_shift_x + 74.0, 44.0), view._records[idx], 1.0, idx + 1,
+        game_state=GameStateId.HIGHSCORES, ui_phase=0, resources=resources, mouse=canvas.mouse_position(), dt=view._dt,
     )
-    rl.draw_line(
-        int(card_top_left.x + 78.0),
-        int(card_top_left.y + 57.0),
-        int(card_top_left.x + 117.0),
-        int(card_top_left.y + 57.0),
-        separator_color,
-    )
-
-    date_text = format_score_date(entry)
-    if date_text:
-        draw_small_text(
-            font, date_text, card_top_left + Vec2(HS_LOCAL_DATE_X, HS_LOCAL_DATE_Y), text_color,
-        )
-    rl.draw_line(
-        int(card_top_left.x + 74.0),
-        int(card_top_left.y + 72.0),
-        int(card_top_left.x + 266.0),
-        int(card_top_left.y + 72.0),
-        separator_color,
-    )
-
-    draw_small_text(
-        font, "Score", card_top_left + Vec2(HS_LOCAL_SCORE_LABEL_X, HS_LOCAL_SCORE_LABEL_Y), text_color,
-    )
-
-    mode_raw = int(entry.game_mode_id)
-    try:
-        mode_id = GameMode(mode_raw)
-    except ValueError:
-        mode_id = GameMode.DEMO
-    elapsed_ms = int(entry.survival_elapsed_ms)
-    score_xp = int(entry.score_xp)
-    match mode_id:
-        case GameMode.QUESTS:
-            time_label = "Experience"
-        case _:
-            time_label = "Game time"
-
-    draw_small_text(
-        font,
-        time_label,
-        card_top_left + Vec2(HS_LOCAL_TIME_LABEL_X, HS_LOCAL_TIME_LABEL_Y),
-        game_time_color,
-    )
-    rl.draw_line(
-        int(card_top_left.x + 170.0),
-        int(card_top_left.y + 90.0),
-        int(card_top_left.x + 170.0),
-        int(card_top_left.y + 138.0),
-        separator_color,
-    )
-
-    # Native highscore card:
-    # - Rush/Quest: score is survival time in seconds (ms * 0.001), rendered with 2 decimals.
-    # - Others: score is XP (u32).
-    score_value_pos = Vec2(HS_LOCAL_SCORE_VALUE_X, HS_LOCAL_SCORE_VALUE_Y)
-    match mode_id:
-        case GameMode.RUSH | GameMode.QUESTS:
-            score_value = f"{elapsed_ms * 0.001:.2f} secs"
-            # Quest/Rush scores are variable-width second labels ("%.2f secs") and are
-            # centered in the left score column in native.
-            score_label_w = measure_small_text_width(font, "Score")
-            score_value_w = measure_small_text_width(font, score_value)
-            score_col_center_x = HS_LOCAL_SCORE_LABEL_X + score_label_w * 0.5
-            score_value_pos = Vec2(score_col_center_x - score_value_w * 0.5, HS_LOCAL_SCORE_VALUE_Y)
-        case _:
-            score_value = f"{score_xp}"
-    draw_small_text(font, score_value, card_top_left + score_value_pos, value_color)
-
-    match mode_id:
-        case GameMode.QUESTS:
-            draw_small_text(
-                font,
-                f"{score_xp}",
-                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X, HS_LOCAL_TIME_VALUE_Y),
-                game_time_color,
-            )
-        case _:
-            _draw_clock_gauge(
-                resources=resources,
-                elapsed_ms=elapsed_ms,
-                pos=card_top_left + Vec2(HS_LOCAL_CLOCK_X, HS_LOCAL_CLOCK_Y),
-            )
-            draw_small_text(
-                font,
-                format_elapsed_mm_ss(elapsed_ms),
-                card_top_left + Vec2(HS_LOCAL_TIME_VALUE_X, HS_LOCAL_TIME_VALUE_Y),
-                game_time_color,
-            )
-
-    draw_small_text(
-        font,
-        f"Rank: {ordinal(idx + 1)}",
-        card_top_left + Vec2(HS_LOCAL_RANK_X, HS_LOCAL_RANK_Y),
-        text_color,
-    )
-
-    frags = int(entry.creature_kill_count)
-
-    shots_fired = int(entry.shots_fired)
-    shots_hit = int(entry.shots_hit)
-    hit_pct = 0
-    if shots_fired > 0:
-        hit_pct = int((shots_hit * 100) // shots_fired)
-    rl.draw_line(
-        int(card_top_left.x + 74.0),
-        int(card_top_left.y + 142.0),
-        int(card_top_left.x + 266.0),
-        int(card_top_left.y + 142.0),
-        separator_color,
-    )
-
-    weapon_id = entry.most_used_weapon_id
-    weapon_name, icon_index = _weapon_label_and_icon(weapon_id)
-    if icon_index is not None:
-        _draw_wicon(
-            resources=resources,
-            icon_index=icon_index,
-            pos=card_top_left + Vec2(HS_LOCAL_WICON_X, HS_LOCAL_WICON_Y),
-        )
-    weapon_name_x = HS_LOCAL_WICON_X + max(
-        0.0,
-        32.0 - measure_small_text_width(font, weapon_name) * 0.5,
-    )
-    draw_small_text(
-        font, weapon_name, card_top_left + Vec2(weapon_name_x, HS_LOCAL_WEAPON_Y), lower_section_color,
-    )
-    draw_small_text(
-        font,
-        f"Frags: {frags}",
-        card_top_left + Vec2(HS_LOCAL_FRAGS_X, HS_LOCAL_FRAGS_Y),
-        lower_section_color,
-    )
-    draw_small_text(
-        font,
-        f"Hit %: {hit_pct}%",
-        card_top_left + Vec2(HS_LOCAL_HIT_X, HS_LOCAL_HIT_Y),
-        lower_section_color,
-    )
-    rl.draw_line(
-        int(card_top_left.x + 74.0),
-        int(card_top_left.y + 194.0),
-        int(card_top_left.x + 266.0),
-        int(card_top_left.y + 194.0),
-        separator_color,
-    )
-
-
-def _draw_clock_gauge(
-    *,
-    resources: RuntimeResources,
-    elapsed_ms: int,
-    pos: Vec2,
-) -> None:
-    table_tex = resources.texture(TextureId.UI_CLOCK_TABLE)
-    pointer_tex = resources.texture(TextureId.UI_CLOCK_POINTER)
-    draw_w = 32.0
-    draw_h = 32.0
-    dst = rl.Rectangle(pos.x, pos.y, draw_w, draw_h)
-    src_table = rl.Rectangle(0.0, 0.0, float(table_tex.width), float(table_tex.height))
-    src_pointer = rl.Rectangle(0.0, 0.0, float(pointer_tex.width), float(pointer_tex.height))
-    rl.draw_texture_pro(
-        table_tex,
-        src_table,
-        dst,
-        rl.Vector2(0.0, 0.0),
-        0.0,
-        rl.WHITE,
-    )
-    seconds = max(0, int(elapsed_ms) // 1000)
-    rotation_deg = float(seconds) * 6.0
-    center = Vec2(pos.x + draw_w * 0.5, pos.y + draw_h * 0.5)
-    rl.draw_texture_pro(
-        pointer_tex,
-        src_pointer,
-        rl.Rectangle(center.x, center.y, draw_w, draw_h),
-        rl.Vector2(draw_w * 0.5, draw_h * 0.5),
-        rotation_deg,
-        rl.WHITE,
-    )
-
-
-def _draw_wicon(
-    *,
-    resources: RuntimeResources,
-    icon_index: int,
-    pos: Vec2,
-) -> None:
-    tex = resources.texture(TextureId.UI_WICONS)
-    idx = int(icon_index)
-    if idx < 0 or idx > 31:
-        return
-    grid = 8
-    cell_w = float(tex.width) / float(grid)
-    cell_h = float(tex.height) / float(grid)
-    frame = idx * 2
-    src_x = float(frame % grid) * cell_w
-    src_y = float(frame // grid) * cell_h
-    icon_w = cell_w * 2.0
-    icon_h = cell_h
-    rl.draw_texture_pro(
-        tex,
-        rl.Rectangle(src_x, src_y, icon_w, icon_h),
-        rl.Rectangle(pos.x, pos.y, icon_w, icon_h),
-        rl.Vector2(0.0, 0.0),
-        0.0,
-        rl.WHITE,
-    )
-
-
-def _weapon_label_and_icon(weapon_id: int) -> tuple[str, int | None]:
-    from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
-
-    weapon = WEAPON_BY_ID[WeaponId(weapon_id)]
-    name = weapon_display_name(weapon.weapon_id)
-    return name, weapon.icon_index
 
 
 __all__ = ["draw_right_panel"]

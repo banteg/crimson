@@ -4,8 +4,6 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
 
-import pytest
-
 import crimson.screens.results.game_over as game_over_module
 import crimson.ui.text_input as text_input_module
 from crimson.game_modes import GameMode
@@ -13,10 +11,8 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.results.game_over import GameOverUi
 from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, WORLD_FADE_SPAN_MS
-from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg
-from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -232,7 +228,7 @@ def test_game_over_draw_uses_classic_menu_panel(monkeypatch, patch_raylib_module
     mocker.patch.object(game_over_module, "draw_menu_cursor", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(game_over_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(game_over_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
-    mocker.patch.object(GameOverUi, "_draw_score_card", return_value=None)
+    mocker.patch.object(game_over_module, "ui_text_input_render")
     patch_raylib_module("crimson.screens.results.game_over")
 
     ui.draw(
@@ -265,58 +261,3 @@ def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> N
     ui._closing = False
     ui._intro_ms = 0.0
     assert ui.world_entity_alpha() == 1.0
-
-
-@pytest.mark.parametrize(
-    ("preserve_bugs", "expected_tooltip"),
-    [
-        (False, "The % of shot bullets hit the target"),
-        (True, "The % of shot bullets hit the target"),
-    ],
-)
-def test_game_over_hit_ratio_tooltip_preserves_original_text(
-    tmp_path: Path, preserve_bugs: bool, expected_tooltip: str, mocker,
-) -> None:
-    ui = GameOverUi(
-        assets_root=tmp_path,
-        base_dir=tmp_path,
-        config=_test_config(shadows_enabled=0, game_mode=1),
-        preserve_bugs=preserve_bugs,
-    )
-    ui.rank = 0
-    ui._dt = 0.0
-    ui._hover_weapon = 0.0
-    ui._hover_time = 0.0
-    ui._hover_hit_ratio = 1.0
-
-    record = HighScoreRecord.blank()
-    record.game_mode_id = GameMode.SURVIVAL
-    record.score_xp = 1000
-    record.survival_elapsed_ms = 12_000
-    record.creature_kill_count = 20
-    record.shots_fired = 50
-    record.shots_hit = 25
-    record.most_used_weapon_id = WeaponId.PISTOL
-
-    mocker.patch.object(game_over_module.rl, "measure_text", side_effect=lambda text, _size: len(str(text)) * 8)
-    mocker.patch.object(game_over_module.rl, "draw_line", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(game_over_module.rl, "draw_texture_pro", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(game_over_module, "runtime_resources_for", return_value=_resources_for_score_card())
-    draw_small = mocker.patch.object(
-        GameOverUi,
-        "_draw_small",
-        autospec=True,
-    )
-
-    ui._draw_score_card(
-        pos=Vec2(0.0, 0.0),
-        record=record,
-        resources=_resources_for_score_card(),
-        font=_resources_for_score_card().small_font,
-        alpha=1.0,
-        show_weapon_row=True,
-        mouse=rl.Vector2(-1000.0, -1000.0),
-    )
-
-    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
-    assert expected_tooltip in captured_text

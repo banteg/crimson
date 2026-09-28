@@ -248,7 +248,7 @@ def _weapon_ammo_class(weapon_id: int) -> int:
     return int(value) if value is not None else 0
 
 
-def _weapon_icon_src(texture: rl.Texture, icon_index: int) -> rl.Rectangle:
+def weapon_icon_src(texture: rl.Texture, icon_index: int) -> rl.Rectangle:
     grid = 8
     cell_w = float(texture.width) / grid
     cell_h = float(texture.height) / grid
@@ -430,7 +430,7 @@ def draw_hud_overlay(
             icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
             if icon_index is None:
                 continue
-            src = _weapon_icon_src(wicons, icon_index)
+            src = weapon_icon_src(wicons, icon_index)
             icon_pos = icon_base_pos + icon_step * float(idx)
             dst = rl.Rectangle(
                 icon_pos.x,
@@ -819,7 +819,7 @@ def draw_hud_overlay(
 
         icon_index = _weapon_icon_index(hud_player.weapon.weapon_id)
         if icon_index is not None:
-            src = _weapon_icon_src(wicons, icon_index)
+            src = weapon_icon_src(wicons, icon_index)
             icon_pos = aux_icon_base_pos + aux_step * float(aux_row)
             dst = rl.Rectangle(icon_pos.x, icon_pos.y, 60.0, 30.0)
             rl.draw_texture_pro(

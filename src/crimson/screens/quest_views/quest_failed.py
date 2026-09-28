@@ -8,7 +8,7 @@ from crimson.ui.layout import menu_widescreen_y_shift
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, update_audio
-from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -16,7 +16,9 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...game_states import GameStateId
 from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from ..assets import require_runtime_resources
@@ -53,6 +55,7 @@ class QuestFailedView:
         self._ground: GroundRenderer | None = None
         self._outcome = outcome
         self._record: HighScoreRecord | None = None
+        self._dt = 0.0
         self._quest_title: str = ""
         self._action: ScreenAction | None = None
         self._cursor_pulse_time = 0.0
@@ -97,6 +100,7 @@ class QuestFailedView:
         if self._ground is not None:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
+        self._dt = dt_step
         self._cursor_pulse_time += dt_step * 1.1
         dt_ms = dt_step * 1000.0
         if self._closing:
@@ -216,7 +220,7 @@ class QuestFailedView:
             panel_top_left + Vec2(QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET),
             text_color,
         )
-        self._draw_score_preview(font, panel_top_left=panel_top_left)
+        self._draw_score_preview(panel_top_left=panel_top_left)
 
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
@@ -353,41 +357,15 @@ class QuestFailedView:
         self._closing = True
         self._close_action = action
 
-    def _text_width(self, text: str) -> float:
-        return float(measure_small_text_width(require_runtime_resources(self.state).small_font, text))
-
-    def _draw_score_preview(self, font: SmallFontData, *, panel_top_left: Vec2) -> None:
-        record = self._record
-        if record is None:
+    def _draw_score_preview(self, *, panel_top_left: Vec2) -> None:
+        if self._record is None:
             return
-
-        score_pos = panel_top_left + Vec2(QUEST_FAILED_SCORE_X_OFFSET, QUEST_FAILED_SCORE_Y_OFFSET)
-
-        label_color = rl.Color(230, 230, 230, int(255 * 0.8))
-        value_color = rl.Color(230, 230, 255, 255)
-        # `ui_text_input_render`: render_tint_color.rgb = (149,175,198)/255.
-        separator_color = rl.Color(149, 175, 198, int(255 * 0.7))
-
-        score_label = "Score"
-        score_label_w = self._text_width(score_label)
-        draw_small_text(font, score_label, score_pos.offset(dx=32.0 - score_label_w * 0.5), label_color)
-
-        score_value = f"{float(int(record.survival_elapsed_ms)) * 0.001:.2f} secs"
-        score_value_w = self._text_width(score_value)
-        draw_small_text(font, score_value, score_pos + Vec2(32.0 - score_value_w * 0.5, 15.0), value_color)
-
-        sep_pos = score_pos.offset(dx=80.0)
-        rl.draw_line(int(sep_pos.x), int(sep_pos.y), int(sep_pos.x), int(sep_pos.y + 48.0), separator_color)
-
-        col2_pos = score_pos.offset(dx=96.0)
-        draw_small_text(font, "Experience", col2_pos, value_color)
-        xp_value = f"{int(record.score_xp)}"
-        xp_w = self._text_width(xp_value)
-        draw_small_text(font, xp_value, col2_pos + Vec2(32.0 - xp_w * 0.5, 15.0), label_color)
-
-        # `highscore_card_draw_horizontal_divider`: 192px separator at x-16.
-        line_pos = score_pos + Vec2(-16.0, 52.0)
-        rl.draw_rectangle(int(line_pos.x), int(line_pos.y), int(192.0), int(1.0), separator_color)
+        # Quest-failed cards never show the rank, so any rank works.
+        ui_text_input_render(
+            panel_top_left + Vec2(QUEST_FAILED_SCORE_X_OFFSET, QUEST_FAILED_SCORE_Y_OFFSET), self._record, 1.0, 0,
+            game_state=GameStateId.QUEST_FAILED, ui_phase=0, resources=require_runtime_resources(self.state),
+            mouse=canvas.mouse_position(), dt=self._dt,
+        )
 
 
 __all__ = [

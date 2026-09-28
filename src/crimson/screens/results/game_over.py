@@ -17,6 +17,7 @@ from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
 from ...game_modes import GameMode
+from ...game_states import GameStateId
 from ...persistence.highscores import (
     NAME_MAX_EDIT,
     TABLE_MAX,
@@ -28,12 +29,11 @@ from ...persistence.highscores import (
 )
 from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from ...ui.cursor import draw_menu_cursor
-from ...ui.formatting import format_ordinal, format_time_mm_ss
+from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
-from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
 GAME_OVER_PANEL_X = -45.0
 # `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
@@ -64,22 +64,6 @@ INPUT_BOX_H = 18.0
 
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
-COLOR_SCORE_LABEL = rl.Color(230, 230, 230, 255)
-COLOR_SCORE_VALUE = rl.Color(230, 230, 255, 255)
-
-
-def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
-    weapon_id = int(weapon_id_native)
-    icon_index = WEAPON_BY_ID[WeaponId(weapon_id)].icon_index
-    if icon_index < 0 or icon_index > 31:
-        return None
-    grid = 8
-    cell_w = float(texture.width) / grid
-    cell_h = float(texture.height) / grid
-    frame = int(icon_index) * 2
-    col = frame % grid
-    row = frame // grid
-    return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
 
 
 class _GameOverPanelLayout(msgspec.Struct, frozen=True):
@@ -110,9 +94,6 @@ class GameOverUi(msgspec.Struct):
     _saved: bool = False
     _dt: float = 0.0
 
-    _hover_weapon: float = 0.0
-    _hover_time: float = 0.0
-    _hover_hit_ratio: float = 0.0
     _intro_ms: float = 0.0
     _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
@@ -141,9 +122,6 @@ class GameOverUi(msgspec.Struct):
         self._candidate_record = None
         self._saved = False
         self._dt = 0.0
-        self._hover_weapon = 0.0
-        self._hover_time = 0.0
-        self._hover_hit_ratio = 0.0
         self._intro_ms = 0.0
         self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
@@ -376,221 +354,6 @@ class GameOverUi(msgspec.Struct):
                 return None
         return None
 
-    def _draw_score_card(
-        self,
-        *,
-        pos: Vec2,
-        record: HighScoreRecord,
-        resources: RuntimeResources,
-        font: SmallFontData,
-        alpha: float,
-        show_weapon_row: bool,
-        mouse: rl.Vector2,
-    ) -> None:
-        dt_hover = float(self._dt) * 2.0
-        label_color = rl.Color(COLOR_SCORE_LABEL.r, COLOR_SCORE_LABEL.g, COLOR_SCORE_LABEL.b, int(255 * alpha * 0.8))
-        value_color = rl.Color(COLOR_SCORE_VALUE.r, COLOR_SCORE_VALUE.g, COLOR_SCORE_VALUE.b, int(255 * alpha))
-        hint_color = rl.Color(COLOR_SCORE_LABEL.r, COLOR_SCORE_LABEL.g, COLOR_SCORE_LABEL.b, int(255 * alpha * 0.7))
-
-        card_origin = pos.offset(dx=4.0)
-        mode_raw = int(record.game_mode_id)
-        try:
-            mode_id = GameMode(mode_raw)
-        except ValueError:
-            mode_id = GameMode.DEMO
-
-        # Left column: Score + value + Rank.
-        score_label = "Score"
-        score_label_w = self._text_width(font, score_label)
-        self._draw_small(
-            font,
-            score_label,
-            card_origin.offset(dx=32.0 - score_label_w * 0.5),
-            label_color,
-        )
-
-        match mode_id:
-            case GameMode.RUSH | GameMode.QUESTS:
-                seconds = float(int(record.survival_elapsed_ms)) * 0.001
-                score_value = f"{seconds:.2f} secs"
-            case _:
-                score_value = f"{int(record.score_xp)}"
-        score_value_w = self._text_width(font, score_value)
-        self._draw_small(
-            font,
-            score_value,
-            card_origin + Vec2(32.0 - score_value_w * 0.5, 15.0),
-            value_color,
-        )
-
-        rank_value = format_ordinal(int(self.rank) + 1)
-        rank_text = f"Rank: {rank_value}"
-        rank_w = self._text_width(font, rank_text)
-        self._draw_small(
-            font,
-            rank_text,
-            card_origin + Vec2(32.0 - rank_w * 0.5, 30.0),
-            label_color,
-        )
-
-        # Separator between columns (mirrors highscore_card_draw_vertical_divider).
-        separator_x = card_origin.x + 80.0
-        rl.draw_line(
-            int(separator_x),
-            int(card_origin.y),
-            int(separator_x),
-            int(card_origin.y + 48.0),
-            label_color,
-        )
-
-        # Right column: Game time + gauge, or Experience in quest mode.
-        col2_pos = card_origin.offset(dx=96.0)
-        match mode_id:
-            case GameMode.QUESTS:
-                self._draw_small(font, "Experience", col2_pos, label_color)
-                xp_value = f"{int(record.score_xp)}"
-                xp_w = self._text_width(font, xp_value)
-                self._draw_small(
-                    font,
-                    xp_value,
-                    col2_pos + Vec2(32.0 - xp_w * 0.5, 15.0),
-                    label_color,
-                )
-                self._hover_time = max(0.0, float(self._hover_time) - dt_hover)
-            case _:
-                self._draw_small(font, "Game time", col2_pos.offset(dx=6.0), label_color)
-                time_rect_pos = col2_pos + Vec2(8.0, 16.0)
-                time_rect = Rect.from_top_left(time_rect_pos, 64.0, 29.0)
-                hovering_time = time_rect.contains(mouse)
-                self._hover_time = float(
-                    max(0.0, min(1.0, self._hover_time + (dt_hover if hovering_time else -dt_hover))),
-                )
-
-                elapsed_ms = int(record.survival_elapsed_ms)
-                clock_table = resources.texture(TextureId.UI_CLOCK_TABLE)
-                src = rl.Rectangle(0.0, 0.0, float(clock_table.width), float(clock_table.height))
-                clock_table_pos = col2_pos + Vec2(8.0, 14.0)
-                dst = rl.Rectangle(clock_table_pos.x, clock_table_pos.y, 32.0, 32.0)
-                rl.draw_texture_pro(
-                    clock_table,
-                    src,
-                    dst,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, int(255 * alpha)),
-                )
-                clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
-                src = rl.Rectangle(
-                    0.0,
-                    0.0,
-                    float(clock_pointer.width),
-                    float(clock_pointer.height),
-                )
-                # NOTE: Raylib's draw_texture_pro uses dst.x/y as the rotation origin position;
-                # offset by half-size so the 32x32 quad stays aligned with the table.
-                clock_pointer_pos = col2_pos + Vec2(24.0, 30.0)
-                dst = rl.Rectangle(clock_pointer_pos.x, clock_pointer_pos.y, 32.0, 32.0)
-                seconds = max(0, elapsed_ms // 1000)
-                rotation = float(seconds) * 6.0
-                origin = rl.Vector2(16.0, 16.0)
-                rl.draw_texture_pro(
-                    clock_pointer,
-                    src,
-                    dst,
-                    origin,
-                    rotation,
-                    rl.Color(255, 255, 255, int(255 * alpha)),
-                )
-
-                time_text = format_time_mm_ss(elapsed_ms)
-                self._draw_small(font, time_text, col2_pos + Vec2(40.0, 19.0), label_color)
-
-        # Second row: weapon icon + frags + hit ratio (suppressed while entering the name).
-        row_pos = card_origin.offset(dy=52.0)
-        self._hover_weapon = float(max(0.0, min(1.0, self._hover_weapon)))
-        self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
-        if show_weapon_row:
-            weapon_pos = row_pos
-            weapon_rect = Rect.from_top_left(weapon_pos, 64.0, 32.0)
-            hovering_weapon = weapon_rect.contains(mouse)
-            self._hover_weapon = float(
-                max(0.0, min(1.0, self._hover_weapon + (dt_hover if hovering_weapon else -dt_hover))),
-            )
-
-            wicons = resources.texture(TextureId.UI_WICONS)
-            src = _weapon_icon_src(wicons, record.most_used_weapon_id)
-            if src is not None:
-                dst = rl.Rectangle(weapon_pos.x, weapon_pos.y, 64.0, 32.0)
-                rl.draw_texture_pro(
-                    wicons,
-                    src,
-                    dst,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, int(255 * alpha)),
-                )
-
-            weapon_id = record.most_used_weapon_id
-            weapon_name = weapon_display_name(weapon_id)
-            name_w = self._text_width(font, weapon_name)
-            name_pos = Vec2(card_origin.x + max(0.0, (32.0 - name_w * 0.5)), row_pos.y + 32.0)
-            self._draw_small(font, weapon_name, name_pos, hint_color)
-
-            frags_text = f"Frags: {int(record.creature_kill_count)}"
-            stats_pos = row_pos.offset(dx=110.0)
-            self._draw_small(font, frags_text, stats_pos.offset(dy=1.0), label_color)
-
-            fired = max(0, int(record.shots_fired))
-            hit = max(0, int(record.shots_hit))
-            ratio = int((hit * 100) / fired) if fired > 0 else 0
-            hit_text = f"Hit %: {ratio}%"
-            self._draw_small(font, hit_text, stats_pos.offset(dy=15.0), label_color)
-
-            hit_rect_pos = stats_pos.offset(dy=15.0)
-            hit_rect = Rect.from_top_left(hit_rect_pos, 64.0, 17.0)
-            hovering_hit = hit_rect.contains(mouse)
-            self._hover_hit_ratio = float(
-                max(0.0, min(1.0, self._hover_hit_ratio + (dt_hover if hovering_hit else -dt_hover))),
-            )
-            tooltip_pos = row_pos.offset(dy=48.0)
-        else:
-            self._hover_weapon = max(0.0, float(self._hover_weapon) - dt_hover)
-            self._hover_hit_ratio = 0.0
-            tooltip_pos = row_pos
-
-        self._hover_weapon = float(max(0.0, min(1.0, self._hover_weapon)))
-        self._hover_time = float(max(0.0, min(1.0, self._hover_time)))
-        self._hover_hit_ratio = float(max(0.0, min(1.0, self._hover_hit_ratio)))
-
-        if self._hover_weapon > 0.5:
-            t = (self._hover_weapon - 0.5) * 2.0
-            col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
-            self._draw_small(
-                font,
-                "Most used weapon during the game",
-                tooltip_pos.offset(dx=-20.0),
-                col,
-            )
-        if self._hover_time > 0.5:
-            t = (self._hover_time - 0.5) * 2.0
-            col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
-            self._draw_small(
-                font,
-                "The time the game lasted",
-                tooltip_pos.offset(dx=12.0),
-                col,
-            )
-        if self._hover_hit_ratio > 0.5:
-            t = (self._hover_hit_ratio - 0.5) * 2.0
-            col = rl.Color(label_color.r, label_color.g, label_color.b, int(255 * alpha * t))
-            hit_ratio_tooltip = "The % of shot bullets hit the target"
-            self._draw_small(
-                font,
-                hit_ratio_tooltip,
-                tooltip_pos.offset(dx=-22.0),
-                col,
-            )
-
     def draw(
         self,
         *,
@@ -693,14 +456,9 @@ class GameOverUi(msgspec.Struct):
             )
 
             score_pos = form_pos + Vec2(16.0, 116.0)
-            self._draw_score_card(
-                pos=score_pos,
-                record=record,
-                resources=resources,
-                font=font,
-                alpha=1.0,
-                show_weapon_row=False,
-                mouse=mouse,
+            ui_text_input_render(
+                score_pos, record, 1.0, self.rank + 1,
+                game_state=GameStateId.GAME_OVER, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
         else:
             score_card_pos = banner_pos + Vec2(
@@ -715,14 +473,9 @@ class GameOverUi(msgspec.Struct):
                     rl.Color(200, 200, 200, 255),
                 )
 
-            self._draw_score_card(
-                pos=score_card_pos,
-                record=record,
-                resources=resources,
-                font=font,
-                alpha=1.0,
-                show_weapon_row=True,
-                mouse=mouse,
+            ui_text_input_render(
+                score_card_pos, record, 1.0, self.rank + 1,
+                game_state=GameStateId.GAME_OVER, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
         # Buttons phase rendering.

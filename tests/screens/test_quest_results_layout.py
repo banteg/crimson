@@ -16,6 +16,7 @@ from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, WORLD_FADE_SPAN_MS
 from crimson.weapons import WeaponId
 from grim.assets import RuntimeResources, TextureId
 from grim.config import CrimsonConfig, default_crimson_cfg
+from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -95,7 +96,7 @@ def _build_ui(tmp_path: Path, *, phase: int) -> QuestResultsUi:
 
 def _patch_draw_environment(
     mocker,
-) -> tuple[MagicMock, MagicMock, MagicMock]:
+) -> tuple[MagicMock, MagicMock]:
     mocker.patch.object(quest_results_module, "runtime_resources_for", return_value=_resources_stub())
     mocker.patch.object(quest_results_module.rl, "get_screen_width", side_effect=lambda: 640)
     mocker.patch.object(quest_results_module.rl, "get_screen_height", side_effect=lambda: 480)
@@ -103,7 +104,7 @@ def _patch_draw_environment(
     mocker.patch.object(quest_results_module.rl, "draw_rectangle_lines", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module.rl, "draw_rectangle", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
-    draw_line = mocker.patch.object(quest_results_module.rl, "draw_line")
+    mocker.patch.object(quest_results_module.rl, "draw_line")
     mocker.patch.object(quest_results_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
     mocker.patch.object(quest_results_module, "button_width", side_effect=lambda *_args, **_kwargs: 82.0)
     mocker.patch.object(quest_results_module, "draw_ui_text", side_effect=lambda *_args, **_kwargs: None)
@@ -119,31 +120,15 @@ def _patch_draw_environment(
         "_draw_small",
         autospec=True,
     )
-    draw_texture_pro = mocker.patch.object(quest_results_module.rl, "draw_texture_pro")
-    return draw_small, draw_texture_pro, draw_line
-
-
-def test_quest_results_name_entry_draws_stats_card(tmp_path: Path, mocker) -> None:
-    ui = _build_ui(tmp_path, phase=1)
-    draw_small, draw_texture_pro, _draw_line = _patch_draw_environment(mocker)
-
-    ui.draw(mouse=rl.Vector2(0.0, 0.0))
-
-    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
-    assert "State your name trooper!" in captured_text
-    assert "Score" in captured_text
-    assert "Experience" in captured_text
-    assert "Rank: 1st" in captured_text
-    assert "Shotgun" in captured_text
-    assert "Frags: 10" in captured_text
-    assert "Hit %: 23%" in captured_text
-    assert len(draw_texture_pro.call_args_list) == 2
+    mocker.patch.object(quest_results_module.rl, "draw_texture_pro")
+    score_card = mocker.patch.object(quest_results_module, "ui_text_input_render")
+    return draw_small, score_card
 
 
 def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
     ui.preserve_bugs = True
-    draw_small, _draw_texture_pro, _draw_line = _patch_draw_environment(mocker)
+    draw_small, _score_card = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
@@ -154,7 +139,7 @@ def test_quest_results_name_prompt_preserve_bugs(tmp_path: Path, mocker) -> None
 
 def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=1)
-    draw_small, _draw_texture_pro, draw_line = _patch_draw_environment(mocker)
+    draw_small, score_card = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
@@ -162,43 +147,21 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
         str(call.args[2]): (float(call.args[3].x), float(call.args[3].y), call.args[4])
         for call in draw_small.call_args_list
     }
-
     state_x, state_y, state_color = draw_map["State your name trooper!"]
     assert (state_x, state_y) == (154.0, 147.0)
     assert (state_color.r, state_color.g, state_color.b, state_color.a) == (149, 175, 198, 255)
-
-    score_x, score_y, _score_color = draw_map["Score"]
-    assert (score_x, score_y) == (154.0, 225.0)
-    exp_x, exp_y, exp_color = draw_map["Experience"]
-    assert (exp_x, exp_y) == (238.0, 225.0)
-    assert (exp_color.r, exp_color.g, exp_color.b, exp_color.a) == (149, 175, 198, 178)
-    frags_x, frags_y, _frags_color = draw_map["Frags: 10"]
-    assert (frags_x, frags_y) == (252.0, 278.0)
-    hit_x, hit_y, _hit_color = draw_map["Hit %: 23%"]
-    assert (hit_x, hit_y) == (252.0, 292.0)
-
-    line_draws = [
-        (int(call.args[0]), int(call.args[1]), int(call.args[2]), int(call.args[3]), call.args[4])
-        for call in draw_line.call_args_list
-    ]
-    assert (126, 277, 318, 277) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
-    assert (126, 325, 318, 325) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
-    assert (222, 225, 222, 273) in [(x1, y1, x2, y2) for x1, y1, x2, y2, _c in line_draws]
+    xy, record, _alpha, rank = score_card.call_args.args
+    assert (xy, record, rank) == (Vec2(138.0, 225.0), ui.record, 1)
+    assert score_card.call_args.kwargs["ui_phase"] == 1
 
 
-def test_quest_results_buttons_phase_keeps_weapon_stats_hidden(tmp_path: Path, mocker) -> None:
+def test_quest_results_buttons_phase_passes_its_phase_to_the_card(tmp_path: Path, mocker) -> None:
     ui = _build_ui(tmp_path, phase=2)
-    draw_small, draw_texture_pro, _draw_line = _patch_draw_environment(mocker)
+    _draw_small, score_card = _patch_draw_environment(mocker)
 
     ui.draw(mouse=rl.Vector2(0.0, 0.0))
 
-    captured_text = [str(call.args[2]) for call in draw_small.call_args_list]
-    assert "Score" in captured_text
-    assert "Experience" in captured_text
-    assert "Frags: 10" not in captured_text
-    assert "Hit %: 23%" not in captured_text
-    assert "Shotgun" not in captured_text
-    assert len(draw_texture_pro.call_args_list) == 1
+    assert score_card.call_args.kwargs["ui_phase"] == 2
 
 
 def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path) -> None:
@@ -280,12 +243,3 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(tmp_path: Path, m
     assert ui._saved
     assert ui.save_error is None
     assert len(read_highscore_records(ui._scores_path)) == 1
-
-
-def test_negative_quest_score_displays_signed_seconds(tmp_path: Path, mocker) -> None:
-    ui = _build_ui(tmp_path, phase=1)
-    assert ui.record is not None
-    ui.record.survival_elapsed_ms = -500
-    draw_small, _draw_texture, _draw_line = _patch_draw_environment(mocker)
-    ui.draw(mouse=rl.Vector2(0.0, 0.0))
-    assert "-0.50 secs" in [str(call.args[2]) for call in draw_small.call_args_list]

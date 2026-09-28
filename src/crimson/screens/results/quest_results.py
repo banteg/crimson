@@ -6,10 +6,11 @@ from pathlib import Path
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
 from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
 from grim import canvas
-from grim.assets import RuntimeResources, TextureId, runtime_resources_for
+from grim.assets import TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -30,12 +31,12 @@ from ...persistence.highscores import (
 from ...quests.level import QuestLevel
 from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
 from ...ui.cursor import draw_menu_cursor
-from ...ui.formatting import format_ordinal, format_time_mm_ss
+from ...ui.formatting import format_time_mm_ss
+from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
 from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
-from ...weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
@@ -84,20 +85,6 @@ class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
     top_left: Vec2
 
 
-def _weapon_icon_src(texture: rl.Texture, weapon_id_native: int) -> rl.Rectangle | None:
-    weapon_id = int(weapon_id_native)
-    icon_index = WEAPON_BY_ID[WeaponId(weapon_id)].icon_index
-    if icon_index < 0 or icon_index > 31:
-        return None
-    grid = 8
-    cell_w = float(texture.width) / grid
-    cell_h = float(texture.height) / grid
-    frame = int(icon_index) * 2
-    col = frame % grid
-    row = frame // grid
-    return rl.Rectangle(float(col * cell_w), float(row * cell_h), float(cell_w * 2), float(cell_h))
-
-
 class QuestResultsUi(msgspec.Struct):
     assets_root: Path
     base_dir: Path
@@ -124,6 +111,7 @@ class QuestResultsUi(msgspec.Struct):
     _saved: bool = False
 
     _intro_ms: float = 0.0
+    _dt: float = 0.0
     _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
     _closing: bool = False
@@ -233,108 +221,6 @@ class QuestResultsUi(msgspec.Struct):
     def _draw_small(self, font: SmallFontData, text: str, pos: Vec2, color: rl.Color) -> None:
         draw_small_text(font, text, pos, color)
 
-    def _draw_name_entry_stats(
-        self,
-        *,
-        pos: Vec2,
-        alpha: float,
-        show_weapon_row: bool,
-        resources: RuntimeResources,
-        font: SmallFontData,
-    ) -> None:
-        if self.record is None:
-            return
-        record = self.record
-        qualifies = int(self.rank) < TABLE_MAX
-        rank_text = format_ordinal(int(self.rank) + 1) if qualifies else "--"
-        x = pos.x
-        y = pos.y
-
-        seconds = float(int(record.survival_elapsed_ms)) * 0.001
-        score_value = f"{seconds:.2f} secs"
-        xp_value = f"{int(record.score_xp)}"
-
-        alpha_f = max(0.0, min(1.0, float(alpha)))
-        col_label = rl.Color(230, 230, 230, int(255 * alpha_f * 0.8))
-        col_score_value = rl.Color(230, 230, 255, int(255 * alpha_f))
-        col_row = rl.Color(230, 230, 230, int(255 * alpha_f * 0.7))
-        col_line = rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha_f * 0.7))
-        icon_tint = rl.Color(255, 255, 255, int(255 * alpha_f))
-
-        left_center_x = x + 36.0
-        right_label_x = x + 100.0
-        right_center_x = right_label_x + 32.0
-
-        score_w = self._text_width(font, "Score")
-        self._draw_small(font, "Score", Vec2(left_center_x - score_w * 0.5, y), col_label)
-        score_value_w = self._text_width(font, score_value)
-        self._draw_small(
-            font,
-            score_value,
-            Vec2(left_center_x - score_value_w * 0.5, y + 15.0),
-            col_score_value,
-        )
-        rank_label = f"Rank: {rank_text}"
-        rank_w = self._text_width(font, rank_label)
-        self._draw_small(
-            font,
-            rank_label,
-            Vec2(left_center_x - rank_w * 0.5, y + 30.0),
-            col_label,
-        )
-
-        # Native path: highscore_card_draw_vertical_divider sets current color from
-        # highscore_card_divider_color_r just before
-        # drawing "Experience", so it uses the accent-blue tint (alpha*0.7).
-        self._draw_small(font, "Experience", Vec2(right_label_x, y), col_line)
-        xp_value_w = self._text_width(font, xp_value)
-        self._draw_small(
-            font,
-            xp_value,
-            Vec2(right_center_x - xp_value_w * 0.5, y + 15.0),
-            col_label,
-        )
-
-        # Native vertical separator drawn via highscore_card_draw_vertical_divider
-        # from x+84, height 48.
-        sep_x = x + 84.0
-        rl.draw_line(int(sep_x), int(y), int(sep_x), int(y + 48.0), col_line)
-
-        row_top = y + 52.0
-        rl.draw_line(int(x - 12.0), int(row_top), int(x + 180.0), int(row_top), col_line)
-        if not show_weapon_row:
-            return
-
-        row_y = row_top
-        wicons = resources.texture(TextureId.UI_WICONS)
-        src = _weapon_icon_src(wicons, record.most_used_weapon_id)
-        if src is not None:
-            dst = rl.Rectangle(x + 4.0, row_y, 64.0, 32.0)
-            rl.draw_texture_pro(wicons, src, dst, rl.Vector2(0.0, 0.0), 0.0, icon_tint)
-
-        weapon_id = record.most_used_weapon_id
-        weapon_name = weapon_display_name(weapon_id)
-        name_w = self._text_width(font, weapon_name)
-        name_x = max(x + 4.0, left_center_x - name_w * 0.5)
-        self._draw_small(font, weapon_name, Vec2(name_x, row_y + 32.0), col_row)
-
-        frags_text = f"Frags: {int(record.creature_kill_count)}"
-        self._draw_small(font, frags_text, Vec2(x + 114.0, row_y + 1.0), col_row)
-
-        fired = max(0, int(record.shots_fired))
-        hit = max(0, min(int(record.shots_hit), fired))
-        ratio = int((hit * 100) / fired) if fired > 0 else 0
-        hit_text = f"Hit %: {ratio}%"
-        self._draw_small(font, hit_text, Vec2(x + 114.0, row_y + 15.0), col_row)
-
-        rl.draw_line(
-            int(x - 12.0),
-            int(row_y + 48.0),
-            int(x + 180.0),
-            int(row_y + 48.0),
-            col_line,
-        )
-
     def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
         panel_slide_x = results_panel_slide_x(self._intro_ms, width=QUEST_RESULTS_PANEL_W)
 
@@ -356,6 +242,7 @@ class QuestResultsUi(msgspec.Struct):
         mouse: rl.Vector2 | None = None,
     ) -> ResultAction | None:
         dt_s = float(min(dt, 0.1))
+        self._dt = dt_s
         dt_ms = dt_s * 1000.0
         self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
@@ -733,12 +620,9 @@ class QuestResultsUi(msgspec.Struct):
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0, 46.0)
-            self._draw_name_entry_stats(
-                pos=score_card_pos,
-                alpha=1.0,
-                show_weapon_row=True,
-                resources=resources,
-                font=font,
+            ui_text_input_render(
+                score_card_pos, self.record, 1.0, self.rank + 1,
+                game_state=GameStateId.QUEST_RESULTS, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
         else:
@@ -753,12 +637,9 @@ class QuestResultsUi(msgspec.Struct):
                 )
 
             card_y = var_c_12 + 16.0
-            self._draw_name_entry_stats(
-                pos=Vec2(score_card_pos.x, card_y),
-                alpha=1.0,
-                show_weapon_row=False,
-                resources=resources,
-                font=font,
+            ui_text_input_render(
+                Vec2(score_card_pos.x, card_y), self.record, 1.0, self.rank + 1,
+                game_state=GameStateId.QUEST_RESULTS, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
             # Unlock lines (their presence shifts the buttons down in native).

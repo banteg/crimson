@@ -78,6 +78,7 @@ class HighScoresView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
         self._cursor_pulse_time = 0.0
+        self._dt = 0.0
         self._widescreen_y_shift = 0.0
         self._transition = ScreenTransition()
         self._transition.duration_ms = PANEL_TIMELINE_START_MS
@@ -136,6 +137,7 @@ class HighScoresView:
         if self._ground is not None:
             self._ground.process_pending()
         self._cursor_pulse_time += min(dt, 0.1) * 1.1
+        self._dt = min(dt, 0.1)
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
         if not self._transition.advance(dt_ms):
