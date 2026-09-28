@@ -29,25 +29,55 @@ under ignored artifact directories. The archive retained four images from the
 2003 design. The 2002 logo, background, thumbnails, full screenshots, and both
 1.2.2 ZIPs are referenced by the HTML but were not retained by Wayback.
 
-## Freeware release inventory
+## Release inventory
+
+Every version below has contemporary evidence that it was published. A version
+is "recovered" only when a package survives and its contents confirm the number.
+
+### Freeware (2002)
 
 | Version | State | Evidence |
 | --- | --- | --- |
+| 1.0.x | missing | The 2002-05-13 news entry says older headlines were deleted; 1.0.2 is the only 1.0.x number known. |
 | 1.0.2 | recovered | Original ZIP preserved on the project asset host. |
-| 1.1.1 | missing | Release notes on the 2002 page. |
-| 1.1.6 | missing | Release notes on the 2002 page. |
+| 1.1.1 | missing | Release notes on the 2002 page (2002-05-09, patch only). |
+| 1.1.6 | missing | Release notes on the 2002 page (2002-05-13, patch only). |
 | 1.1.7 | missing | Release notes plus Pelit catalog record `CLAND117.ZIP`, dated 2002-05-23; no payload survives there. |
-| 1.2.1 | missing | Release notes on the 2002 page. |
+| 1.2.1 | missing | Release notes on the 2002 page (2002-05-28, update). |
 | 1.2.2 | missing | Full and no-music links survive; Wayback only retained later 404 responses. |
 | 1.2.4 | missing | Mentioned retrospectively by the 1.3.0 and 1.4.0 readmes. |
 | 1.3.0 | recovered | Original ZIP and readme dated 2002-07-11; Pelit catalog record `CLAND130.ZIP` is dated 2002-07-24. |
-| 1.4.0 | recovered | Original ZIP and readme dated 2002-09-16. |
+| 1.3.1 | missing | Crimsongame forum posts mention a 1.3.1 ZIP. |
+| 1.4.0 | recovered | Original ZIP and readme dated 2002-09-16; the last freeware release. |
+
+### Commercial (2003-2010)
+
+| Version | State | Evidence |
+| --- | --- | --- |
+| 1.8.7 | missing | A single Crimsongame forum request for "1.9.0 or 1.8.7"; possibly a pre-launch build. |
+| 1.9.0 | missing | Crimsongame forum posts. |
+| 1.9.1 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `crimsonland v.1.9.1` (built 2003-06-09). |
+| 1.9.3 | missing | The MOD SDK 1.0 readme (2003-08-14) requires "v1.93 or above". 1.9.2 and 1.9.4-1.9.7 are not individually attested. |
+| 1.9.8 | recovered | Reflexive installer; the payload's `crimsonland.exe` reads `Crimsonland 1.9.8` (built 2003-08-18). |
+| 1.9.9 | recovered | Suomipelit ZIP dated 2008-12-07; crimsonland.com news of 2008-11-20. |
+| 1.9.91 | missing | Listed in the 1.9.93 `whatsupdated.txt`; the 2009 news post counts from "1.9.90". |
+| 1.9.92 | unverified | crimsonland.com news of 2009-03-06. The one known installer uses a custom self-extractor that has not been unpacked. |
+| 1.9.93 | recovered | The GOG Classic 2.0.0.4 build decompiled by this project; crimsonland.com news of 2010-06-30. |
 
 Recovered packages are deliberately stored under ignored `game_bins/`, with
 their retrieval URLs, sizes, and SHA-256 hashes committed in the manifest.
-Two historical Reflexive installers and the independently archived 1.9.9 ZIP
-are preserved alongside them; the two installer versions remain undetermined
-rather than inferred from upload metadata.
+
+Both archived Reflexive installers wrap an Inno Setup installer in a Reflexive
+Arcade loader, so their outer PE timestamps (2003-04-25 and 2004-04-08) date the
+loader, not the game. Carving the embedded Inno image (at offset `0x34c04` and
+`0x30e04`) and running `innoextract` recovers the full game tree. The executable
+version strings and each package's `whatsupdated.txt` both identify the builds
+as 1.9.1 and 1.9.8. The 1.9.1 notes still carry an "UPDATE ONLY package" heading,
+although the package holds the complete game.
+
+The 2014 remaster, GOG's "Classic 2.0.0.4" installer label, the Russian "2.0"
+crack bundle built on 1.9.8, and the CL:ONE fan mod releases are separate
+version lines and are not listed here.
 
 ## Linked forum threads
 

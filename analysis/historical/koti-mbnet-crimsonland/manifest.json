@@ -110,20 +110,34 @@
       "zip_test": "ok"
     },
     {
-      "version": "undetermined-2003-04-25",
+      "version": "1.9.1",
       "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2003.exe",
       "source": "https://archive.org/download/CrimsonlandSetup/CrimsonlandSetup.exe",
       "size": 7291066,
       "sha256": "f3f85f1ea647b5173583d49eea80cba28fd449ba84d90736b4e845ff082e6e2b",
-      "pe_timestamp": "2003-04-25T04:45:51Z"
+      "wrapper_pe_timestamp": "2003-04-25T04:45:51Z",
+      "payload": {
+        "wrapper": "Reflexive Arcade loader around an Inno Setup 2.0.18 installer at offset 0x34c04",
+        "exe_version_string": "crimsonland v.1.9.1",
+        "exe_pe_timestamp": "2003-06-09T20:28:21Z",
+        "exe_sha256": "4893b64fb1468c08dd2a21e2ab02fd8b3984280e8cde59b4a37921b5f876edc1",
+        "whatsupdated_title": "Crimsonland UPDATE to version 1.9.1"
+      }
     },
     {
-      "version": "undetermined-2004-04-08",
+      "version": "1.9.8",
       "path": "game_bins/crimsonland/historical/shareware/CrimsonlandSetup-2004.exe",
       "source": "https://archive.org/download/Crimsonland/CrimsonlandSetup.exe",
       "size": 7271169,
       "sha256": "3be3fc79f2d5611c2bb5820035f29b4bced1e6410d0a2af14ddf73ddbdda8a2d",
-      "pe_timestamp": "2004-04-08T17:38:47Z"
+      "wrapper_pe_timestamp": "2004-04-08T17:38:47Z",
+      "payload": {
+        "wrapper": "Reflexive Arcade loader around an Inno Setup 4.1.6 installer at offset 0x30e04",
+        "exe_version_string": "Crimsonland 1.9.8",
+        "exe_pe_timestamp": "2003-08-18T16:39:56Z",
+        "exe_sha256": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
+        "whatsupdated_title": "Crimsonland version 1.9.8"
+      }
     }
   ],
   "unrecovered": [
@@ -156,6 +170,36 @@
       "version": "1.2.4",
       "evidence": "Mentioned by the 1.3.0 and 1.4.0 readmes",
       "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.3.1",
+      "evidence": "Crimsongame forum threads 30 and 369 mention a 1.3.1 zip",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.8.7",
+      "evidence": "Crimsongame forum thread 369 asks for 1.9.0 or 1.8.7",
+      "reason": "Single forum mention; no package URL or surviving capture found."
+    },
+    {
+      "version": "1.9.0",
+      "evidence": "Crimsongame forum threads 14 and 369",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.9.3",
+      "evidence": "MOD SDK 1.0 readme (2003-08-14) requires full version v1.93 or above",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.9.91",
+      "evidence": "whatsupdated.txt shipped with 1.9.93",
+      "reason": "No package URL or surviving capture found."
+    },
+    {
+      "version": "1.9.92",
+      "evidence": "crimsonland.com news 2009-03-06 and whatsupdated.txt shipped with 1.9.93",
+      "reason": "The one known installer uses a custom self-extractor that has not been unpacked, so its payload is unverified."
     }
   ]
 }
