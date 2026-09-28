@@ -321,7 +321,9 @@ fn fireBulletsGlowPass(ctx: DrawCtx) void {
 
 fn bulletHeadPass(ctx: DrawCtx) void {
     const texture = ctx.assets.texture(.bullet_i);
-    const src: window_atlas.AtlasRect = .{ .x = 0.0, .y = 0.0, .width = @floatFromInt(texture.width), .height = @floatFromInt(texture.height) };
+    // Native binds `bullet_i` without resetting the UVs the Fire Bullets glow's
+    // `effect_select_texture(13)` left, so heads sample that transparent sub-rect.
+    const src = glowRect(texture);
     const color = tint(0.8, 0.8, 0.8, ctx.entity_alpha * 0.9);
     for (ctx.session.projectiles.entries) |projectile| {
         if (!projectile.active or projectile.life_timer < 0.4) continue;
@@ -393,7 +395,7 @@ fn anyIonGunMaster(players: []const state_mod.PlayerState) bool {
     return false;
 }
 
-/// `particles` effect 13, the glow every additive projectile pass selects.
+/// Effect 13, the glow every additive projectile pass selects.
 fn glowRect(texture: rl.Texture2D) window_atlas.AtlasRect {
     return window_atlas.effectRect(texture.width, texture.height, .glow).?;
 }
