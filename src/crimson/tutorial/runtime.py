@@ -14,16 +14,6 @@ from .state import TutorialOverlayState
 from .timeline import TutorialFrameActions, tick_tutorial_timeline
 
 
-def tutorial_before_step(world: WorldState) -> None:
-    tutorial = world.state.tutorial
-    hint_ref = tutorial.hint_bonus_creature_ref
-    tutorial.hint_bonus_alive_before_tick = False
-    if hint_ref is None or not (0 <= int(hint_ref) < len(world.creatures.entries)):
-        return
-    entry = world.creatures.entries[int(hint_ref)]
-    tutorial.hint_bonus_alive_before_tick = bool(entry.active and entry.hp > 0.0)
-
-
 def tutorial_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
     tutorial = world.state.tutorial
     if inputs:
@@ -48,12 +38,15 @@ def _tutorial_overlay_from_actions(actions: TutorialFrameActions) -> TutorialOve
 def tutorial_post_step(ctx) -> None:
     state = ctx.world.state
     tutorial = state.tutorial
+    # Native latches once the carrier's slot is inactive (its corpse culled) with
+    # health spent and the bonus-on-death flag still set.
     hint_ref = tutorial.hint_bonus_creature_ref
-    hint_alive_after = False
-    if hint_ref is not None and 0 <= int(hint_ref) < len(ctx.world.creatures.entries):
-        entry = ctx.world.creatures.entries[int(hint_ref)]
-        hint_alive_after = bool(entry.active and entry.hp > 0.0)
-    hint_bonus_died = bool(tutorial.hint_bonus_alive_before_tick and not hint_alive_after)
+    hint_bonus_died = False
+    if hint_ref is not None:
+        carrier = ctx.world.creatures.entries[int(hint_ref)]
+        hint_bonus_died = (
+            not carrier.active and carrier.hp <= 0.0 and bool(carrier.flags & CreatureFlags.BONUS_ON_DEATH)
+        )
 
     tutorial, actions = tick_tutorial_timeline(
         tutorial,
@@ -67,7 +60,6 @@ def tutorial_post_step(ctx) -> None:
     )
     tutorial.move_active_this_tick = False
     tutorial.fire_active_this_tick = False
-    tutorial.hint_bonus_alive_before_tick = False
     state.tutorial = tutorial
     state.tutorial_overlay = _tutorial_overlay_from_actions(actions)
 

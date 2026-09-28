@@ -14,7 +14,6 @@ class TutorialState(msgspec.Struct):
     hint_bonus_creature_ref: int | None = None
     move_active_this_tick: bool = False
     fire_active_this_tick: bool = False
-    hint_bonus_alive_before_tick: bool = False
 
 
 class TutorialOverlayState(msgspec.Struct):
@@ -38,7 +37,6 @@ def reset_tutorial_state(
     tutorial.hint_bonus_creature_ref = None
     tutorial.move_active_this_tick = False
     tutorial.fire_active_this_tick = False
-    tutorial.hint_bonus_alive_before_tick = False
     overlay.prompt_text = ""
     overlay.prompt_alpha = 0.0
     overlay.hint_text = ""
