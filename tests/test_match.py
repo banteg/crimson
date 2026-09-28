@@ -6354,8 +6354,10 @@ def test_source_probe_uses_temporary_shadow_without_touching_scratch(
     )
     observed_directories: list[Path] = []
 
-    def fake_evaluate(probe_config: ScratchConfig, match_root: Path, *, deadline: float | None = None) -> ScratchStatus:
-        del match_root
+    def fake_evaluate(
+        probe_config: ScratchConfig, match_root: Path, *, deadline: float | None = None, target: object = None,
+    ) -> ScratchStatus:
+        del match_root, target
         observed_directories.append(probe_config.directory)
         text = (probe_config.directory / probe_config.source).read_text(encoding="utf-8")
         ratio = 0.75 if text == "variant\n" else 0.5
@@ -6409,8 +6411,10 @@ def test_source_probe_fingerprints_resolved_include_tree(
         note="",
     )
 
-    def fake_evaluate(probe_config: ScratchConfig, root: Path, *, deadline: float | None = None) -> ScratchStatus:
-        del root
+    def fake_evaluate(
+        probe_config: ScratchConfig, root: Path, *, deadline: float | None = None, target: object = None,
+    ) -> ScratchStatus:
+        del root, target
         return ScratchStatus(
             config=probe_config,
             address=0x401000,
@@ -6461,8 +6465,10 @@ def test_source_overlay_can_shadow_an_included_match_header(
     )
     observed: list[tuple[str, str]] = []
 
-    def fake_evaluate(probe_config: ScratchConfig, root: Path, *, deadline: float | None = None) -> ScratchStatus:
-        assert root == match_root.resolve()
+    def fake_evaluate(
+        probe_config: ScratchConfig, root: Path, *, deadline: float | None = None, target: object = None,
+    ) -> ScratchStatus:
+        assert root == match_root.resolve() and target is None
         observed.append(
             (
                 (probe_config.directory / probe_config.source).read_text(encoding="utf-8"),
