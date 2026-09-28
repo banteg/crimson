@@ -1,5 +1,28 @@
 # quest_spawn_timeline_update
 
+## Recovered source (2026-09-28)
+
+The body is exact from plain indexed source: 115/115 instructions, 13/0/0 references and
+`body_byte_exact` under MSVC 6.5 and 6.6 at `/O2 /GB`. No redundant check or opaque copy remains.
+
+Three spellings carry the match. Each control changes only that spelling:
+
+- `pos = offset + quest_spawn_table[entry_index].position` through
+  `quest_timeline_vec2_t::operator+(const vec2f_t &)`. Building `pos` from components gives 62.34%.
+- The spread is `(float)(spawn_index * 40)`. A separate `spread` counter gives 78.26%.
+- `spawn_index` is reset when advancing to the next entry, and the inner loop is
+  `for (; spawn_index < count; spawn_index++)`. Resetting it in the loop header or at the group
+  head gives 86.96%, because C2 no longer keeps zero in `ebx`.
+
+The pointer store `lea edi, [esi+0xc]; mov [esp+0x10], edi; mov [esp+0x10], ebx` and the y/heading
+bases follow from these. The vector-operator spelling follows the MOD SDK's
+`vec2_t` in `cltypes.h`.
+
+Under the Processor Pack C2 (9044), the loop-header reset reproduces the 1.9.8 body exactly, while this
+source leaves an `edi`/`ebp` swap there. The quest builders also show 9044-only scheduling differences
+from their exact sources, so 1.9.8 is not used as an acceptance criterion. The sections below record the
+earlier residual analysis.
+
 ## Plain comparison temporary: one-instruction diagnostic residual (2026-09-28)
 
 [The new source-only witness](../../evidence/quest-plain-guard-2026-09-28/README.md)
