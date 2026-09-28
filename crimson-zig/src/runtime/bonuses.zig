@@ -307,6 +307,20 @@ pub fn updatePrePickupTimers(
     }
 }
 
+/// Telekinetic pickups, which native applies in `bonus_render`, ahead of the
+/// level-up check and `bonus_update`.
+pub fn telekineticUpdate(
+    pool: *BonusPool,
+    state: *state_mod.GameplayState,
+    players: []state_mod.PlayerState,
+    dt: f32,
+    pickup_records: ?*BonusPickupBuffer,
+) BonusRuntimeError!void {
+    var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
+    var pickup_count: usize = 0;
+    try bonusTelekineticUpdate(pool, state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
+}
+
 pub fn bonusUpdate(
     pool: *BonusPool,
     state: *state_mod.GameplayState,
@@ -314,12 +328,8 @@ pub fn bonusUpdate(
     dt: f32,
     pickup_records: ?*BonusPickupBuffer,
 ) BonusRuntimeError!void {
-    if (pickup_records) |records| records.* = BonusPickupBuffer{};
-
     var pickup_bonus_ids = [_]BonusId{.unused} ** bonus_pool_size;
     var pickup_count: usize = 0;
-
-    try bonusTelekineticUpdate(pool, state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
     try pool.update(state, players, dt, &pickup_bonus_ids, &pickup_count, pickup_records);
 
     if (dt > 0.0) {

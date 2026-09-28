@@ -578,14 +578,26 @@ pub fn stepTick(
     context.state.highscore_score_xp = if (players.len > 0) players[0].experience else 0;
 
     callPhaseHook(options.hooks, context, .pre_bonus_effects, &frame);
-    cameraShakeUpdate(&context.state, dt_after_player);
-    if (context.perk_progression_enabled) {
-        _ = survival_progression.survivalProgressionUpdate(&context.state, players);
-    }
+    // The rest follows `gameplay_update_and_render` after the mode update: bonus
+    // timers, camera, world render (Telekinetic pickups happen in `bonus_render`),
+    // level-up, then `bonus_update`.
     context.state.time_scale_active = context.state.bonuses.reflex_boost > 0.0;
     bonus_runtime.updatePrePickupTimers(&context.state, dt_after_player);
     survival_progression.gameplayAccumulateWeaponUsageTime(&context.state, players, frame.dt_sim_ms_i32);
     survival_progression.gameplayEnforceWeaponGuards(&context.state, players);
+    cameraShakeUpdate(&context.state, dt_after_player);
+    context.tick_bonus_pickups = .{};
+    try bonus_runtime.telekineticUpdate(
+        &context.bonuses,
+        &context.state,
+        players,
+        dt_after_player,
+        &context.tick_bonus_pickups,
+    );
+    // XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
+    if (context.perk_progression_enabled) {
+        _ = survival_progression.survivalProgressionUpdate(&context.state, players);
+    }
     if (open_perk_menu) commands.openRequestedPerkMenu(context);
     try bonus_runtime.bonusUpdate(
         &context.bonuses,
