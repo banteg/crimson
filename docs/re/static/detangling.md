@@ -23,7 +23,7 @@ uv run crimson match status
   record canonical names, signatures and data labels.
 - `analysis/annotations/functions.json` retains address-keyed recovery notes.
 - `tools/match/STATUS.md` reports matching results; each scratch's configuration
-  identifies its source, including bodies moved into `tools/native/recovered/`.
+  identifies its source, including bodies moved into `decomp/`.
 - [Binary analysis](binary-analysis.md) describes current source/view lookup.
 - [Native linking](native-linking.md) distinguishes recovered code, library
   providers, linkability and byte-match evidence.
