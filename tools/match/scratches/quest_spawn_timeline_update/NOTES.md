@@ -1,5 +1,25 @@
 # quest_spawn_timeline_update
 
+## 1.9.8 sources and the 8966 dead-store route (2026-09-28)
+
+[These sources](../../evidence/quest-history-sources-2026-09-28/README.md)
+compile under C2 9044 exactly to the 1.9.8 body. In each, the group entry is
+re-derived from `entry_index` (or absent), and at least one spawn-loop field is
+read through the index. Some of them compile under 8966 to native's +0 anchor,
+with dead IV-copy stores that 9044 drops. So a single source for 1.9.8 and
+1.9.93 remains possible.
+
+The traced route to a dead named-pointer store has two parts:
+
+- Phase-3 CSE redirects a pointer's reads only when its copy source is a flagged
+  derived IV (`+0x32 & 3`).
+- The last dead-code pass then deletes the redundant reads while keeping the
+  definition.
+
+Only the champion IV carries that flag, so this route cannot store native's
+`esi + 0xc`. In 2,846 index-family spellings, none emits that `lea`. The
+canonical source is unchanged at 91.228070%.
+
 ## Historical bodies and source controls (2026-09-28)
 
 [The historical comparison](../../evidence/quest-history-controls-2026-09-28/README.md)
