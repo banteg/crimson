@@ -5,7 +5,6 @@ from functools import partial
 
 import msgspec
 
-from grim.rand import CrandLike, RecordingCrand
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
@@ -35,15 +34,11 @@ from .commands import (
     TypoSubmitCommand,
 )
 from .input import PlayerInput
-from .presentation_step import plan_world_presentation_step
+from .presentation_step import DeterministicPresentationPlan, plan_world_presentation_step
 from .run_result import RunOutcome, all_players_dead, death_transition_ready
-from .step_pipeline import (
-    DeterministicStepResult,
-    PresentationRngTrace,
-)
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming, reflex_boost_time_scale_factor
-from .world_state import WorldState
+from .world_state import WorldEvents, WorldState
 
 RUSH_WEAPON_ID = WeaponId.ASSAULT_RIFLE
 RUSH_FORCED_AMMO = 30.0
@@ -53,7 +48,11 @@ RUSH_FORCED_AMMO = 30.0
 # ---------------------------------------------------------------------------
 
 
-class DeterministicSessionTick(DeterministicStepResult):
+class DeterministicSessionTick(msgspec.Struct):
+    dt_sim: float
+    timing: FrameTiming
+    events: WorldEvents
+    presentation: DeterministicPresentationPlan
     elapsed_ms: float = 0.0
     creature_count_world_step: int = 0
     quest_completed: bool = False
@@ -84,7 +83,6 @@ class PostStepContext(msgspec.Struct, frozen=True):
     """Context passed to post-step hooks during deterministic stepping."""
 
     world: WorldState
-    step_result: DeterministicStepResult
     dt_sim_ms: float
     detail_preset: int
 
@@ -398,7 +396,6 @@ class DeterministicSession(msgspec.Struct):
         *,
         dt: float,
         inputs: Sequence[PlayerInput] | None,
-        trace_rng: bool = False,
         commands: Sequence[GameCommand] | None = None,
         prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
@@ -449,14 +446,6 @@ class DeterministicSession(msgspec.Struct):
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
-        presentation_rng: CrandLike
-        recording_rng: RecordingCrand | None = None
-        if trace_rng:
-            recording_rng = RecordingCrand(state.rng)
-            presentation_rng = recording_rng
-        else:
-            presentation_rng = state.rng
-
         prev_audio = [
             (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players
         ]
@@ -476,27 +465,17 @@ class DeterministicSession(msgspec.Struct):
             open_perk_menu=open_perk_menu,
         )
 
-        presentation_trace = PresentationRngTrace()
         presentation = plan_world_presentation_step(
             state=state,
             players=self.world.players,
-            fx_queue=fx_queue,
-            hits=events.hits,
             pickups=events.pickups,
             event_sfx=events.sfx,
             prev_audio=prev_audio,
             prev_perk_pending=prev_perk_pending,
-            game_mode=self.game_mode,
             perk_progression_enabled=self.perk_progression_enabled,
-            rng=presentation_rng,
-            detail_preset=self.detail_preset,
-            violence_disabled=self.violence_disabled,
-            game_tune_started=self.game_tune_started,
             trigger_game_tune=events.trigger_game_tune,
             hit_sfx=events.hit_sfx,
         )
-        if recording_rng is not None:
-            presentation_trace.draws_total = int(recording_rng.calls)
 
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
@@ -513,7 +492,6 @@ class DeterministicSession(msgspec.Struct):
             timing=timing,
             events=events,
             presentation=presentation,
-            presentation_rng_trace=presentation_trace,
         )
         if step.presentation.trigger_game_tune:
             self.game_tune_started = True
@@ -526,7 +504,6 @@ class DeterministicSession(msgspec.Struct):
         self._mode_after_step(
             PostStepContext(
                 world=self.world,
-                step_result=step,
                 dt_sim_ms=dt_sim_ms,
                 detail_preset=self.detail_preset,
             ),

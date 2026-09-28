@@ -10,7 +10,6 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import (
     plan_hit_sfx,
     plan_world_presentation_step,
-    queue_projectile_decals,
 )
 from crimson.sim.state_types import BonusPickupEvent, PlayerState
 from crimson.weapons import WeaponId
@@ -18,6 +17,7 @@ from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
+from tests.support.decals import queue_projectile_decals
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -88,8 +88,6 @@ def test_plan_world_presentation_step_orders_sfx(mocker) -> None:
     commands = plan_world_presentation_step(
         state=state,
         players=[player],
-        fx_queue=FxQueue(),
-        hits=[],
         pickups=[
             BonusPickupEvent(
                 player_index=0,
@@ -107,12 +105,9 @@ def test_plan_world_presentation_step_orders_sfx(mocker) -> None:
         ],
         prev_audio=[(0, False, 0.0)],
         prev_perk_pending=0,
-        game_mode=GameMode.SURVIVAL,
         perk_progression_enabled=True,
-        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
-        detail_preset=5,
-        violence_disabled=0,
-        game_tune_started=False,
+        trigger_game_tune=False,
+        hit_sfx=[],
     )
 
     assert commands.trigger_game_tune is False
@@ -468,43 +463,3 @@ def test_queue_projectile_decals_orders_blood_before_decals() -> None:
     )
     assert rng.values_since(before_calls) == [0] * 74
     assert fx_queue.count == 12
-
-
-def test_plan_world_presentation_step_prefers_preplanned_hit_outputs() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
-    before_calls = rng.calls
-    before_state = rng.state
-
-    commands = plan_world_presentation_step(
-        state=state,
-        players=[player],
-        fx_queue=FxQueue(),
-        hits=_hits(1),
-        pickups=[],
-        event_sfx=[],
-        prev_audio=[(0, False, 0.0)],
-        prev_perk_pending=0,
-        game_mode=GameMode.SURVIVAL,
-        perk_progression_enabled=True,
-        rng=rng,
-        detail_preset=5,
-        violence_disabled=0,
-        game_tune_started=False,
-        trigger_game_tune=True,
-        hit_sfx=[SfxRequest(SfxId.BULLET_HIT_01)],
-    )
-
-    assert_rng_progression(
-        rng,
-        before_calls=before_calls,
-        before_state=before_state,
-        expected_draws=0,
-        expected_after_state=0,
-    )
-    assert rng.values_since(before_calls) == []
-    assert commands.trigger_game_tune is True
-    assert sfx_ids(commands.sfx) == [
-        SfxId.BULLET_HIT_01,
-    ]

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.sessions import DeterministicSessionTick
-from crimson.sim.step_pipeline import PresentationRngTrace
 from crimson.sim.terrain_fx import TerrainFxBatch
 from crimson.sim.timing import FrameTiming
 from crimson.sim.world_state import WorldEvents
@@ -34,5 +33,4 @@ def make_tick_payload(
             terrain_fx=terrain_fx,
             post_apply_sfx=tuple(post_apply_sfx),
         ),
-        presentation_rng_trace=PresentationRngTrace(),
     )

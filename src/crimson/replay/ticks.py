@@ -24,14 +24,12 @@ def step_replay_tick(
     session: DeterministicSession,
     tick: ReplayTick,
     *,
-    trace_rng: bool = False,
     prelude_post_apply_sfx: list[SfxId] | None = None,
 ) -> DeterministicSessionTick:
     return session.step_tick(
         dt=REPLAY_TICK_DT,
         inputs=unpack_tick_inputs(tick.inputs),
         commands=tick.commands,
-        trace_rng=trace_rng,
         prelude_post_apply_sfx=prelude_post_apply_sfx,
     )
 

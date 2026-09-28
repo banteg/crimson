@@ -116,7 +116,6 @@ class WorldRuntimeHost(WorldRuntime):
         tick = session.step_tick(
             dt=float(dt),
             inputs=tick_inputs,
-            trace_rng=False,
         )
         self._survival_test_elapsed_ms = float(session.elapsed_ms)
 

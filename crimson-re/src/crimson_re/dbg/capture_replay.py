@@ -179,7 +179,6 @@ class CapturePlaybackDriver(SessionPlaybackDriver):
         return self.session.step_tick(
             dt=tick.dt,
             inputs=unpack_tick_inputs(tick.inputs),
-            trace_rng=self.trace_rng,
             commands=list(tick.postlude),
             prelude_post_apply_sfx=prelude_post_apply_sfx,
         )

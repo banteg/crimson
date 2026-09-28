@@ -5,9 +5,9 @@ from pathlib import Path
 from crimson.effects import FxQueue
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.presentation_step import queue_projectile_decals
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
+from tests.support.decals import queue_projectile_decals
 from tests.support.world_runtime import WorldRuntimeHost
 
 

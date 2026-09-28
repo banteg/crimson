@@ -316,7 +316,6 @@ class PlaybackDriver(SessionPlaybackDriver):
         return step_replay_tick(
             self.session,
             self.replay.ticks[tick_index],
-            trace_rng=self.trace_rng,
             prelude_post_apply_sfx=prelude_post_apply_sfx,
         )
 

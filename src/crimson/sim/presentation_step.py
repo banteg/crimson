@@ -136,35 +136,6 @@ class ProjectileDecalPostCtx(msgspec.Struct, frozen=True):
     freeze_active: bool
 
 
-def queue_projectile_decals(
-    *,
-    state: GameplayState,
-    players: Sequence[PlayerState],
-    fx_queue: FxQueue,
-    hits: list[ProjectileHit],
-    rng: CrandLike,
-    detail_preset: int,
-    violence_disabled: int,
-) -> None:
-    for hit in hits:
-        post_ctx = queue_projectile_decals_pre_hit(
-            state=state,
-            players=players,
-            fx_queue=fx_queue,
-            hit=hit,
-            rng=rng,
-            detail_preset=detail_preset,
-            violence_disabled=violence_disabled,
-        )
-        queue_projectile_decals_post_hit(
-            state=state,
-            fx_queue=fx_queue,
-            post_ctx=post_ctx,
-            rng=rng,
-            detail_preset=detail_preset,
-        )
-
-
 def queue_projectile_decals_pre_hit(
     *,
     state: GameplayState,
@@ -336,52 +307,18 @@ def plan_world_presentation_step(
     *,
     state: GameplayState,
     players: Sequence[PlayerState],
-    fx_queue: FxQueue,
-    hits: list[ProjectileHit],
     pickups: list[BonusPickupEvent],
     event_sfx: list[SfxRequest],
     prev_audio: Sequence[tuple[int, bool, float]],
     prev_perk_pending: int,
-    game_mode: GameMode,
     perk_progression_enabled: bool,
-    rng: CrandLike,
-    detail_preset: int,
-    violence_disabled: int,
-    game_tune_started: bool,
-    trigger_game_tune: bool | None = None,
-    hit_sfx: Sequence[SfxRequest] | None = None,
+    trigger_game_tune: bool,
+    hit_sfx: Sequence[SfxRequest],
 ) -> DeterministicPresentationPlan:
     sfx: list[SfxRequest] = []
-    play_game_tune = False
     if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
         sfx.append(SfxRequest(SfxId.UI_LEVELUP))
-    if trigger_game_tune is None and hit_sfx is None:
-        if hits:
-            queue_projectile_decals(
-                state=state,
-                players=players,
-                fx_queue=fx_queue,
-                hits=hits,
-                rng=rng,
-                detail_preset=int(detail_preset),
-                violence_disabled=int(violence_disabled),
-            )
-            if float(state.bonuses.freeze) > 0.0:
-                if game_mode != GameMode.RUSH and (not bool(game_tune_started)):
-                    play_game_tune = True
-            else:
-                play_game_tune, planned_hit_sfx = plan_hit_sfx(
-                    hits,
-                    game_mode=game_mode,
-                    game_tune_started=bool(game_tune_started),
-                    rng=rng,
-                )
-                sfx.extend(planned_hit_sfx)
-    else:
-        if trigger_game_tune is not None:
-            play_game_tune = bool(trigger_game_tune)
-        if hit_sfx is not None:
-            sfx.extend(hit_sfx)
+    sfx.extend(hit_sfx)
     for idx, player in enumerate(players):
         if idx >= len(prev_audio):
             continue
@@ -398,7 +335,7 @@ def plan_world_presentation_step(
         sfx.extend(SfxRequest(SfxId.UI_BONUS) for _ in pickups)
     sfx.extend(event_sfx)
     return DeterministicPresentationPlan(
-        trigger_game_tune=play_game_tune,
+        trigger_game_tune=trigger_game_tune,
         sfx=tuple(sfx),
         reflex_boost_timer=float(state.bonuses.reflex_boost),
     )
