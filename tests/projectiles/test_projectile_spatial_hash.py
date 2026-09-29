@@ -109,8 +109,7 @@ def test_creature_spatial_hash_sees_slots_allocated_after_it_was_built() -> None
     spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
     assert spatial.candidate_indices(pos=Vec2(300.0, 300.0), radius=8.0) == []
 
-    index = world.creatures._alloc_slot()
-    assert index is not None
+    index = world.creatures.alloc_slot(world.state.rng)
     world.creatures.entries[index] = _creature(pos=Vec2(300.0, 300.0), hp=1.0)
 
     assert spatial.candidate_indices(pos=Vec2(300.0, 300.0), radius=8.0) == [index]

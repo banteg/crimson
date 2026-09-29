@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.creatures.runtime import CreaturePool, CreatureState
 from crimson.creatures.spawn import (
     SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
     SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
@@ -11,8 +12,29 @@ from crimson.creatures.spawn import (
     tick_survival_wave_spawns,
 )
 from crimson.rng_caller_static import RngCallerStatic
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 from tests.support.helpers import ScriptedCrand, assert_float_close
+
+
+def _tick(
+    rng: CrandLike,
+    cooldown: float,
+    dt_ms: float,
+    *,
+    player_count: int = 1,
+    survival_elapsed_ms: float = 0.0,
+) -> tuple[float, list[CreatureState]]:
+    pool = CreaturePool()
+    cooldown = tick_survival_wave_spawns(
+        pool,
+        cooldown,
+        dt_ms,
+        rng,
+        player_count=player_count,
+        survival_elapsed_ms=survival_elapsed_ms,
+        player_experience=0,
+    )
+    return cooldown, [creature for creature in pool.entries if creature.active]
 
 
 @pytest.mark.parametrize(
@@ -118,30 +140,16 @@ def test_rand_survival_spawn_pos_uses_exact_native_callers(
 
 def test_tick_survival_wave_spawns_no_trigger() -> None:
     rng = Crand(123)
-    cooldown, spawns = tick_survival_wave_spawns(
-        100.0,
-        16.0,
-        rng,
-        player_count=2,
-        survival_elapsed_ms=0.0,
-        player_experience=0,
-    )
+    cooldown, spawns = _tick(rng, 100.0, 16.0, player_count=2)
 
     assert_float_close(cooldown, 68.0)
-    assert spawns == ()
+    assert spawns == []
     assert rng.state == 123
 
 
 def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
     rng = Crand(1)
-    cooldown, spawns = tick_survival_wave_spawns(
-        -1.0,
-        0.0,
-        rng,
-        player_count=1,
-        survival_elapsed_ms=0.0,
-        player_experience=0,
-    )
+    cooldown, spawns = _tick(rng, -1.0, 0.0)
 
     assert_float_close(cooldown, 499.0)
     assert len(spawns) == 1
@@ -150,21 +158,14 @@ def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
     assert_float_close(c.pos.x, 35.0)
     assert_float_close(c.pos.y, 1064.0)
     assert c.type_id == CreatureTypeId.ALIEN
-    assert_float_close(c.health, 85.0)
+    assert_float_close(c.hp, 85.0)
     assert_float_close(c.reward_value, 336.0)
     assert rng.state == 0xA6E9C9A6
 
 
 def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
     rng = Crand(1)
-    cooldown, spawns = tick_survival_wave_spawns(
-        -1.0,
-        0.0,
-        rng,
-        player_count=1,
-        survival_elapsed_ms=905400.0,  # 500 - (elapsed/0x708) == -3
-        player_experience=0,
-    )
+    cooldown, spawns = _tick(rng, -1.0, 0.0, survival_elapsed_ms=905400.0)  # 500 - (elapsed/0x708) == -3
 
     assert_float_close(cooldown, 0.0)
     assert len(spawns) == 3
@@ -182,14 +183,7 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
 def test_tick_survival_wave_spawns_uses_distinct_extra_and_main_position_callers() -> None:
     rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    tick_survival_wave_spawns(
-        -1.0,
-        0.0,
-        rng,
-        player_count=1,
-        survival_elapsed_ms=905400.0,
-        player_experience=0,
-    )
+    _tick(rng, -1.0, 0.0, survival_elapsed_ms=905400.0)
 
     position_callers = [
         record.caller
@@ -214,14 +208,7 @@ def test_tick_survival_wave_spawns_uses_distinct_extra_and_main_position_callers
 
 def test_tick_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> None:
     rng = Crand(1)
-    cooldown, spawns = tick_survival_wave_spawns(
-        -2.0,
-        0.0,
-        rng,
-        player_count=1,
-        survival_elapsed_ms=905400.0,  # interval branch resolves to 1ms after extras
-        player_experience=0,
-    )
+    cooldown, spawns = _tick(rng, -2.0, 0.0, survival_elapsed_ms=905400.0)  # interval branch resolves to 1ms after extras
 
     # Native loops while cooldown < 0, so -2 with +1 interval runs two iterations.
     assert_float_close(cooldown, 0.0)

@@ -40,8 +40,6 @@ from .spawn_ids import (
     CreatureFlags,
     CreatureTypeId,
     SpawnId,
-    Tint,
-    TintRGBA,
 )
 from .spawn_templates import SPAWN_ID_TO_TEMPLATE, SPAWN_TEMPLATES, TYPE_ID_TO_NAME, SpawnTemplate
 
@@ -63,19 +61,17 @@ __all__ = [
     "TYPE_ID_TO_NAME",
     "CreatureAiMode",
     "CreatureFlags",
-    "CreatureInit",
     "CreatureTypeId",
     "SpawnId",
     "SpawnSlot",
     "SpawnTemplate",
     "SpawnTemplateCall",
     "advance_survival_spawn_stage",
-    "build_rush_mode_spawn_creature",
-    "build_survival_spawn_creature",
+    "creature_spawn",
     "creature_spawn_template",
     "pack_bonus_on_death_args",
-    "resolve_tint",
     "spawn_id_label",
+    "survival_spawn_creature",
     "tick_rush_mode_spawns",
     "tick_spawn_slot",
     "tick_survival_wave_spawns",
@@ -135,19 +131,6 @@ def pack_bonus_on_death_args(bonus_id: BonusId, amount_override: int) -> int:
 
     packed = ((int(amount_override) & 0xFFFF) << 16) | (int(bonus_id) & 0xFFFF)
     return packed - 0x1_0000_0000 if packed >= 0x8000_0000 else packed
-
-
-def resolve_tint(tint: Tint | None) -> TintRGBA:
-    """Resolve a partial/optional tint into concrete RGBA multipliers."""
-    if tint is None:
-        return (1.0, 1.0, 1.0, 1.0)
-    tint_r, tint_g, tint_b, tint_a = tint
-    return (
-        1.0 if tint_r is None else tint_r,
-        1.0 if tint_g is None else tint_g,
-        1.0 if tint_b is None else tint_b,
-        1.0 if tint_a is None else tint_a,
-    )
 
 
 def clamp01(value: float) -> float:
@@ -955,81 +938,6 @@ def creature_spawn_template(
     return creature_idx
 
 
-# Survival and Rush spawners still build a `CreatureInit` that `CreaturePool.spawn_init` writes.
-
-
-class CreatureInit(msgspec.Struct):
-    # Template id that produced this creature (not necessarily unique per creature in formations).
-    origin_template_id: int
-
-    pos: Vec2
-
-    # Heading is optional at plan-build time:
-    # - `None` means "preserve stale slot heading" (native `creature_alloc_slot` behavior).
-    # - explicit float means "set heading to this value".
-    # The base template path writes heading explicitly at tail (`final_heading`).
-    heading: float | None
-
-    phase_seed: int
-
-    preserve_force_target: bool = False
-    # Keep the recycled slot's `max_health` (native writes none for this creature).
-    preserve_max_health: bool = False
-
-    type_id: CreatureTypeId | None = None
-    flags: CreatureFlags = CreatureFlags(0)
-    ai_mode: int = CreatureAiMode.ORBIT_PLAYER
-
-    health: float | None = None
-    max_health: float | None = None
-    move_speed: float | None = None
-    reward_value: float | None = None
-    size: float | None = None
-    contact_damage: float | None = None
-
-    tint: Tint | None = None
-
-    orbit_angle: float | None = None
-    orbit_radius: float | None = None
-    ranged_projectile_type: int | None = None
-
-    # AI link semantics:
-    # - For most formations (ai_mode 3/5/...), `ai_link_parent` references another creature index
-    #   (typically the parent or previous element in the chain).
-    # - For AI7 timer mode (flag 0x80), `ai_timer` is written into link_index.
-    ai_link_parent: int | None = None
-    ai_timer: int | None = None
-
-    target_offset: Vec2 | None = None
-
-    # Spawn slot reference (stored in link_index when flags include HAS_SPAWN_SLOT_FLAG).
-    spawn_slot: int | None = None
-
-    # BONUS_ON_DEATH uses link_index low/high 16-bit fields for bonus spawn args.
-    bonus_id: BonusId | None = None
-    bonus_duration_override: int | None = None
-
-
-def alloc_creature(
-    template_id: int,
-    pos: Vec2,
-    rng: CrandLike,
-) -> CreatureInit:
-    # creature_alloc_slot():
-    # - clears flags
-    # - seeds the int32 phase_seed with `crt_rand() & 0x17f`
-    phase_seed = int(rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)) & 0x17F
-    # Native `creature_alloc_slot` does not clear heading; some template child paths
-    # intentionally keep stale heading from the recycled slot.
-    return CreatureInit(
-        origin_template_id=template_id,
-        pos=pos,
-        heading=None,
-        phase_seed=phase_seed,
-        preserve_force_target=True,
-    )
-
-
 class SurvivalSpawnPosCallers(msgspec.Struct, frozen=True):
     edge: RngCallerStatic
     top_x: RngCallerStatic
@@ -1063,17 +971,16 @@ def _survival_tint_inverse_bucket(xp: int, divisor: int) -> float:
     return x87_pc24_div(f32(1.0), x87_pc24_add(float(xp // divisor), f32(10.0)))
 
 
-def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experience: int) -> CreatureInit:
-    """Pure model of `survival_spawn_creature` (crimsonland.exe 0x00407510).
-
-    Note: this is not a `creature_spawn_template` spawn id; it picks a `type_id` and stats
-    dynamically based on `player_experience`.
-    """
+def survival_spawn_creature(pool: CreaturePool, pos: Vec2, rng: CrandLike, *, player_experience: int) -> int:
+    """Port of `survival_spawn_creature` (0x00407510): a Survival wave creature scaled by player 1's XP."""
     xp = int(player_experience)
 
-    c = alloc_creature(-1, pos, rng)
-    c.preserve_force_target = False
-    c.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature_idx = pool.alloc_slot(rng)
+    creature = pool.creature(creature_idx)
+    creature.pos = f32_vec2(pos)
+    creature.plague_infected = False
+    creature.collision_timer = 0.0
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
 
     r10 = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_TYPE_ROLL) % 10
 
@@ -1107,19 +1014,19 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     # Rare override: forces spider_sp1 when (rand() & 0x1f) == 2.
     if (rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_OVERRIDE) & 0x1F) == 2:
         type_id = 3
+    creature.type_id = CreatureTypeId(type_id)
 
-    c.type_id = CreatureTypeId(type_id)
+    size_roll = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE)
+    creature.active = True
+    creature.force_target = 0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+    creature.size = float(size_roll % 20 + 44)
+    creature.vel = Vec2()
+    creature.heading = f32(f32(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING) % 314) * f32(0.01))
 
-    # size = rand() % 20 + 44
-    c.size = float(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_SIZE) % 20 + 44)
-
-    # heading = (rand() % 314) * 0.01
-    c.heading = f32(f32(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEADING) % 314) * f32(0.01))
-
-    # Native computes in float32; preserve rounding so derived speeds match capture.
     move_speed = f32(f32(f32(xp // 4000) * f32(0.045)) + f32(0.9))
-    if c.type_id == CreatureTypeId.SPIDER_SP1:
-        c.flags |= CreatureFlags.AI7_LINK_TIMER
+    if creature.type_id == CreatureTypeId.SPIDER_SP1:
+        creature.flags |= CreatureFlags.AI7_LINK_TIMER
         move_speed = f32(f32(move_speed) * f32(1.3))
 
     r_health = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_HEALTH)
@@ -1127,7 +1034,7 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     health_rand = f32(r_health & 0xF)
     health = f32(f32(health_scaled + health_rand) + f32(52.0))
 
-    if c.type_id == CreatureTypeId.ZOMBIE:
+    if creature.type_id == CreatureTypeId.ZOMBIE:
         move_speed = f32(f32(move_speed) * f32(0.6))
         if float(move_speed) < 1.3:
             move_speed = f32(1.3)
@@ -1136,13 +1043,12 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
     if float(move_speed) > 3.5:
         move_speed = f32(3.5)
 
-    c.move_speed = float(move_speed)
-    c.health = float(health)
-    c.reward_value = 0.0
+    creature.move_speed = float(move_speed)
+    creature.hp = float(health)
+    creature.attack_cooldown = 0.0
 
     # Tint based on player_experience thresholds. Native keeps the x87 in
     # 24-bit precision, so each arithmetic instruction rounds to f32.
-    tint_a = f32(1.0)
     inverse_1k_bucket = _survival_tint_inverse_bucket(xp, 1000)
     inverse_10k_bucket = _survival_tint_inverse_bucket(xp, 10_000)
     if xp < 50_000:
@@ -1192,76 +1098,48 @@ def build_survival_spawn_creature(pos: Vec2, rng: CrandLike, *, player_experienc
         )
         if tint_b < 0.5:
             tint_b = f32(0.5)
+    tint = RGBA(tint_r, tint_g, tint_b, 1.0)
 
-    c.tint = (tint_r, tint_g, tint_b, tint_a)
-
-    # contact_damage = size * 0.0952381
     # Native multiplies by the f32 literal 0.0952381 (one ulp above 2/21).
-    c.contact_damage = x87_pc24_mul(float(c.size or 0.0), f32(0.0952381))
-
-    # reward_value is always 0.0 at this point in the original.
-    c.reward_value = x87_pc24_add(
+    creature.contact_damage = x87_pc24_mul(creature.size, f32(0.0952381))
+    # `reward_value` was just zeroed, so native always takes its `== 0.0f` branch.
+    reward_value = x87_pc24_add(
         float(rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_REWARD_BONUS) % 10 + 10),
         x87_pc24_mul(move_speed, f32(5.0)),
     )
-    c.reward_value = x87_pc24_add(
-        c.reward_value,
-        x87_pc24_mul(float(c.contact_damage or 0.0), f32(0.8)),
-    )
-    c.reward_value = x87_pc24_add(
-        c.reward_value,
-        x87_pc24_mul(float(c.health or 0.0), f32(0.4)),
-    )
+    reward_value = x87_pc24_add(reward_value, x87_pc24_mul(creature.contact_damage, f32(0.8)))
+    reward_value = x87_pc24_add(reward_value, x87_pc24_mul(creature.hp, f32(0.4)))
 
     # Rare stat overrides (color-coded variants).
-    r = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_RED)
-    if r % 180 < 2:
-        c.tint = (f32(0.9), f32(0.4), f32(0.4), f32(1.0))
-        c.health = 65.0
-        c.reward_value = 320.0
-    else:
-        r = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_GREEN)
-        if r % 240 < 2:
-            c.tint = (f32(0.4), f32(0.9), f32(0.4), f32(1.0))
-            c.health = 85.0
-            c.reward_value = 420.0
-        else:
-            r = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE)
-            if r % 360 < 2:
-                c.tint = (f32(0.4), f32(0.4), f32(0.9), f32(1.0))
-                c.health = 125.0
-                c.reward_value = 520.0
+    if rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_RED) % 180 < 2:
+        tint = _tint(0.9, 0.4, 0.4, 1.0)
+        creature.hp = 65.0
+        reward_value = 320.0
+    elif rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_GREEN) % 240 < 2:
+        tint = _tint(0.4, 0.9, 0.4, 1.0)
+        creature.hp = 85.0
+        reward_value = 420.0
+    elif rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_BLUE) % 360 < 2:
+        tint = _tint(0.4, 0.4, 0.9, 1.0)
+        creature.hp = 125.0
+        reward_value = 520.0
 
     # Rare health/size boosts (do not recompute contact_damage).
-    r = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE)
-    if r % 1320 < 4:
-        c.tint = (f32(0.84), f32(0.24), f32(0.89), f32(1.0))
-        c.size = 80.0
-        c.reward_value = 600.0
-        c.health = x87_pc24_add(float(c.health or 0.0), f32(230.0))
-    else:
-        r = rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW)
-        if r % 1620 < 4:
-            c.tint = (f32(0.94), f32(0.84), f32(0.29), f32(1.0))
-            c.size = 85.0
-            c.reward_value = 900.0
-            c.health = x87_pc24_add(float(c.health or 0.0), f32(2230.0))
+    if rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_PURPLE) % 1320 < 4:
+        creature.hp = x87_pc24_add(creature.hp, f32(230.0))
+        tint = _tint(0.84, 0.24, 0.89, 1.0)
+        creature.size = 80.0
+        reward_value = 600.0
+    elif rng.rand_tagged(RngCallerStatic.SURVIVAL_SPAWN_CREATURE_RARE_YELLOW) % 1620 < 4:
+        creature.hp = x87_pc24_add(creature.hp, f32(2230.0))
+        tint = _tint(0.94, 0.84, 0.29, 1.0)
+        creature.size = 85.0
+        reward_value = 900.0
 
-    if c.health is not None:
-        c.max_health = c.health
-    if c.reward_value is not None:
-        c.reward_value = x87_pc24_mul(c.reward_value, f32(0.8))
-
-    if c.tint is not None:
-        tint_r, tint_g, tint_b, tint_a = c.tint
-        c.tint = (
-            clamp01(tint_r) if tint_r is not None else None,
-            clamp01(tint_g) if tint_g is not None else None,
-            clamp01(tint_b) if tint_b is not None else None,
-            clamp01(tint_a) if tint_a is not None else None,
-        )
-
-    return c
+    creature.max_hp = creature.hp
+    creature.reward_value = x87_pc24_mul(reward_value, f32(0.8))
+    creature.tint = RGBA(clamp01(tint.r), clamp01(tint.g), clamp01(tint.b), clamp01(tint.a))
+    return creature_idx
 
 
 def rand_survival_spawn_pos(
@@ -1281,6 +1159,7 @@ def rand_survival_spawn_pos(
 
 
 def tick_survival_wave_spawns(
+    pool: CreaturePool,
     spawn_cooldown: float,
     frame_dt_ms: float,
     rng: CrandLike,
@@ -1288,8 +1167,8 @@ def tick_survival_wave_spawns(
     player_count: int,
     survival_elapsed_ms: float,
     player_experience: int,
-) -> tuple[float, tuple[CreatureInit, ...]]:
-    """Advance survival enemy wave spawning, returning updated cooldown + spawned creatures.
+) -> float:
+    """Advance survival enemy wave spawning into `pool`, returning the updated cooldown.
 
     Modeled after `survival_update` (crimsonland.exe 0x00407cd0) wave spawns:
       spawn_cooldown -= player_count * frame_dt_ms
@@ -1304,33 +1183,23 @@ def tick_survival_wave_spawns(
         spawn 1 creature at a random edge
     """
     cooldown = f32(f32(spawn_cooldown) - f32(f32(player_count) * f32(frame_dt_ms)))
-    if cooldown >= 0.0:
-        return float(cooldown), ()
-
-    spawns: list[CreatureInit] = []
     while cooldown < 0.0:
         interval_ms = 500 - int(survival_elapsed_ms) // 1800
         if interval_ms < 0:
             extra = (1 - interval_ms) >> 1
             interval_ms += int(extra) * 2
             for _ in range(int(extra)):
-                pos = rand_survival_spawn_pos(
-                    rng,
-                    callers=SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
-                )
-                spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
+                pos = rand_survival_spawn_pos(rng, callers=SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS)
+                survival_spawn_creature(pool, pos, rng, player_experience=player_experience)
 
         if interval_ms < 1:
             interval_ms = 1
         cooldown = f32(cooldown + f32(interval_ms))
 
-        pos = rand_survival_spawn_pos(
-            rng,
-            callers=SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
-        )
-        spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
+        pos = rand_survival_spawn_pos(rng, callers=SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS)
+        survival_spawn_creature(pool, pos, rng, player_experience=player_experience)
 
-    return float(cooldown), tuple(spawns)
+    return float(cooldown)
 
 
 class SpawnTemplateCall(msgspec.Struct, frozen=True):
@@ -1518,51 +1387,54 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
     return stage, tuple(spawns)
 
 
-def build_rush_mode_spawn_creature(
+def creature_spawn(
+    pool: CreaturePool,
     pos: Vec2,
-    tint_rgba: TintRGBA,
+    tint: RGBA,
+    type_id: CreatureTypeId,
     rng: CrandLike,
     *,
-    type_id: int,
     survival_elapsed_ms: int,
-) -> CreatureInit:
-    """Pure model of `creature_spawn` (0x00428240) as used by `rush_mode_update` (0x004072b0)."""
-    elapsed_ms = int(survival_elapsed_ms)
-
-    c = alloc_creature(-1, pos, rng)
-    c.preserve_force_target = False
-    c.type_id = CreatureTypeId(type_id)
-    c.ai_mode = CreatureAiMode.ORBIT_PLAYER
-
+) -> int:
+    """Port of `creature_spawn` (0x00428240), the Rush spawner; stats grow with the elapsed time."""
+    creature_idx = pool.alloc_slot(rng)
+    creature = pool.creature(creature_idx)
+    creature.pos = f32_vec2(pos)
+    creature.type_id = type_id
+    creature.ai_mode = CreatureAiMode.ORBIT_PLAYER
+    creature.plague_infected = False
+    creature.collision_timer = 0.0
+    creature.active = True
+    creature.force_target = 0
+    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     # `fild survival_elapsed_ms` loads the int exactly; only the multiply rounds.
-    elapsed = float(elapsed_ms)
-    c.health = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
-    c.heading = f32(f32(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314) * f32(0.01))
-    c.move_speed = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
-    c.reward_value = float(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD) % 30 + 140)
-
-    c.tint = tint_rgba
-    c.contact_damage = 4.0
-
-    if c.health is not None:
-        c.max_health = c.health
-    c.size = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 47.0)
-
-    return c
+    elapsed = float(int(survival_elapsed_ms))
+    creature.vel = Vec2()
+    creature.hp = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_HEALTH_SCALE), 10.0)
+    creature.heading = f32(f32(rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_HEADING) % 314) * f32(0.01))
+    creature.move_speed = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 2.5)
+    reward_roll = rng.rand_tagged(RngCallerStatic.CREATURE_SPAWN_REWARD)
+    creature.attack_cooldown = 0.0
+    creature.reward_value = float(reward_roll % 30 + 140)
+    creature.tint = tint
+    creature.size = x87_pc24_add(x87_pc24_mul(elapsed, _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE), 47.0)
+    creature.contact_damage = 4.0
+    creature.max_hp = creature.hp
+    return creature_idx
 
 
 def tick_rush_mode_spawns(
+    pool: CreaturePool,
     spawn_cooldown: float,
     frame_dt_ms: float,
     rng: CrandLike,
     *,
     player_count: int,
     survival_elapsed_ms: int,
-) -> tuple[float, tuple[CreatureInit, ...]]:
-    """Advance rush-mode edge wave spawning (pure model of `rush_mode_update` / 0x004072b0)."""
+) -> float:
+    """Advance Rush edge wave spawning into `pool` (`rush_mode_update` / 0x004072b0); returns the cooldown."""
     cooldown = f32(f32(spawn_cooldown) - f32(f32(player_count) * f32(frame_dt_ms)))
 
-    spawns: list[CreatureInit] = []
     while cooldown < 0.0:
         cooldown = f32(cooldown + 250.0)
 
@@ -1570,36 +1442,31 @@ def tick_rush_mode_spawns(
         t = float(int(survival_elapsed_ms) + 1)
         # 0x407336..0x407366: separate x87 PC=24 multiplies/adds,
         # with the f32 0.3 constant at 0x46f258 (0x3e99999a).
-        tint_r = clamp01(x87_pc24_add(x87_pc24_mul(t, f32(1.0 / 120000.0)), f32(0.3)))
-        tint_g = clamp01(x87_pc24_add(x87_pc24_mul(t, 10000.0), f32(0.3)))
-        tint_b = clamp01(x87_pc24_add(math.sin(float(x87_pc24_mul(t, _NATIVE_RUSH_TINT_SIN_SCALE))), f32(0.3)))
-        tint_a = 1.0
-        tint = (tint_r, tint_g, tint_b, tint_a)
+        tint = RGBA(
+            clamp01(x87_pc24_add(x87_pc24_mul(t, f32(1.0 / 120000.0)), f32(0.3))),
+            clamp01(x87_pc24_add(x87_pc24_mul(t, 10000.0), f32(0.3))),
+            clamp01(x87_pc24_add(math.sin(float(x87_pc24_mul(t, _NATIVE_RUSH_TINT_SIN_SCALE))), f32(0.3))),
+            1.0,
+        )
 
         elapsed_ms = int(survival_elapsed_ms)
         theta = x87_pc24_mul(float(elapsed_ms), f32(0.001))
         # 0x00407422..0x00407490: fcos/fsin stay wide into the PC24 `* 256.0f`,
         # then add the PC24 `height * 0.5f`.
         half_height = x87_pc24_mul(TERRAIN_SIZE, 0.5)
-        spawn_right = Vec2(
-            x87_pc24_add(TERRAIN_SIZE, 64.0),
-            x87_pc24_add(x87_pc24_cos_mul(theta, 256.0), half_height),
+        right = Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), x87_pc24_add(x87_pc24_cos_mul(theta, 256.0), half_height))
+        creature = pool.creature(
+            creature_spawn(pool, right, tint, CreatureTypeId.ALIEN, rng, survival_elapsed_ms=elapsed_ms),
         )
-        spawn_left = Vec2(
-            -64.0,
-            x87_pc24_add(x87_pc24_sin_mul(theta, 256.0), half_height),
+        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
+
+        left = Vec2(-64.0, x87_pc24_add(x87_pc24_sin_mul(theta, 256.0), half_height))
+        creature = pool.creature(
+            creature_spawn(pool, left, tint, CreatureTypeId.SPIDER_SP1, rng, survival_elapsed_ms=elapsed_ms),
         )
+        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
+        creature.flags |= CreatureFlags.AI7_LINK_TIMER
+        # 0x004074ba: `move_speed *= 1.4f` at PC24.
+        creature.move_speed = x87_pc24_mul(creature.move_speed, f32(1.4))
 
-        c = build_rush_mode_spawn_creature(spawn_right, tint, rng, type_id=2, survival_elapsed_ms=elapsed_ms)
-        c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
-        spawns.append(c)
-
-        c = build_rush_mode_spawn_creature(spawn_left, tint, rng, type_id=3, survival_elapsed_ms=elapsed_ms)
-        c.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
-        c.flags |= CreatureFlags.AI7_LINK_TIMER
-        if c.move_speed is not None:
-            # 0x004074ba: `move_speed *= 1.4f` at PC24.
-            c.move_speed = x87_pc24_mul(c.move_speed, f32(1.4))
-        spawns.append(c)
-
-    return float(cooldown), tuple(spawns)
+    return float(cooldown)

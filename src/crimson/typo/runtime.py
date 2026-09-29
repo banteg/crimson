@@ -12,6 +12,7 @@ from grim.math import clamp01
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
+from ..creatures.runtime import PHANTOM_CREATURE_INDEX
 from ..creatures.spawn import CreatureTypeId
 from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
 from ..rng_caller_static import RngCallerStatic
@@ -105,7 +106,8 @@ def typo_mode_update(world: WorldState, *, elapsed_ms: float, dt_ms: float) -> N
             (Vec2(-64.0, y), CreatureTypeId.ALIEN),
         ):
             creature_idx = creature_spawn_tinted(world, pos, tint, type_id)
-            if creature_idx is None:
+            if creature_idx == PHANTOM_CREATURE_INDEX:
+                # Native names the phantom slot too, one past its 384-entry name table.
                 continue
             typo.names.assign_random(
                 creature_idx,

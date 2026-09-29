@@ -6,7 +6,6 @@ See: `docs/creatures/update.md`.
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -31,7 +30,6 @@ from ..math_parity import (
     f32,
     f32_bits_i32,
     f32_from_bits,
-    f32_vec2,
     heading_add_pi_f32,
     x87_d3dx_vec2_normalize,
     x87_pc24_add,
@@ -63,13 +61,10 @@ from .spawn import (
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
-    CreatureInit,
     CreatureTypeId,
     SpawnId,
     SpawnSlot,
     creature_spawn_template,
-    pack_bonus_on_death_args,
-    resolve_tint,
     tick_spawn_slot,
 )
 
@@ -419,17 +414,6 @@ class CreaturePool:
                 return slot_index
         return NATIVE_SPAWN_SLOT_COUNT - 1
 
-    def _alloc_slot(self) -> int | None:
-        for i, entry in enumerate(self._entries):
-            if not entry.active:
-                entry.generation += 1
-                self.alloc_count += 1
-                return i
-        return None
-
-    def _free_slot_count(self) -> int:
-        return sum(1 for entry in self._entries if not entry.active)
-
     def _resolve_target_player(self, creature: CreatureState, players: list[PlayerState]) -> _TargetPlayerResolution:
         player_count = len(players)
         if player_count == 0:
@@ -547,40 +531,6 @@ class CreaturePool:
         dist_current = x87_pc24_hypot(current_dx, current_dy)
         if dist_new < dist_current:
             player.auto_target = int(creature_index)
-
-    def spawn_init(
-        self,
-        init: CreatureInit,
-    ) -> int | None:
-        """Materialize a single `CreatureInit` into the runtime pool."""
-
-        idx = self._alloc_slot()
-        if idx is None:
-            return None
-        # Reuse the allocated slot so fields that native spawn paths do not touch
-        # (e.g. link_index for survival AI7 spiders) retain stale values.
-        entry = self._entries[idx]
-        self._apply_init(entry, init)
-
-        if init.ai_timer is not None:
-            entry.link_index = int(init.ai_timer)
-        elif init.ai_link_parent is not None:
-            entry.link_index = int(init.ai_link_parent)
-
-        self._entries[idx] = entry
-        self.spawned_count += 1
-        return idx
-
-    def spawn_inits(
-        self,
-        inits: Sequence[CreatureInit],
-    ) -> list[int]:
-        mapping: list[int] = []
-        for init in inits:
-            idx = self.spawn_init(init)
-            if idx is not None:
-                mapping.append(idx)
-        return mapping
 
     def spawn_template(
         self,
@@ -1173,79 +1123,6 @@ class CreaturePool:
 
         return death
 
-    def _apply_init(self, entry: CreatureState, init: CreatureInit) -> None:
-        entry.active = True
-        entry.type_id = init.type_id if init.type_id is not None else CreatureTypeId.ZOMBIE
-        entry.pos = f32_vec2(init.pos)
-        if init.heading is not None:
-            # Native spawn paths write heading but keep target_heading stale from
-            # the recycled slot (capture lifecycle shows added entries retaining
-            # prior target_heading values).
-            entry.heading = f32(init.heading)
-        entry.phase_seed = int(init.phase_seed)
-        # Native spawn paths zero velocity and a few per-frame state fields on every
-        # allocation (`creature_spawn`, `survival_spawn_creature`, `creature_spawn_template`).
-        entry.vel = Vec2()
-        if not init.preserve_force_target:
-            entry.force_target = 0
-
-        entry.flags = init.flags or CreatureFlags(0)
-        entry.ai_mode = CreatureAiMode(init.ai_mode)
-
-        hp = float(init.health or 0.0)
-        if hp <= 0.0:
-            hp = 1.0
-        entry.hp = f32(hp)
-        if not init.preserve_max_health:
-            entry.max_hp = f32(init.max_health or hp)
-
-        # Stat fields a spawn path never writes keep the recycled slot's values.
-        if init.move_speed is not None:
-            entry.move_speed = f32(init.move_speed)
-        if init.reward_value is not None:
-            entry.reward_value = f32(init.reward_value)
-        if init.size is not None:
-            entry.size = f32(init.size)
-        if init.contact_damage is not None:
-            entry.contact_damage = f32(init.contact_damage)
-
-        if init.target_offset is not None:
-            entry.target_offset = f32_vec2(init.target_offset)
-        # creature_alloc_slot leaves the native orbit-angle/radius union stale.
-        # Only overwrite an arm when the selected spawn path explicitly does.
-        if init.orbit_angle is not None:
-            entry.orbit_angle = f32(init.orbit_angle)
-        if init.orbit_radius is not None:
-            entry.orbit_radius = f32(init.orbit_radius)
-        elif init.ranged_projectile_type is not None:
-            entry.ranged_projectile_type = int(init.ranged_projectile_type)
-
-        entry.attack_cooldown = 0.0
-
-        entry.bonus_id = init.bonus_id
-        entry.bonus_duration_override = (
-            int(init.bonus_duration_override) if init.bonus_duration_override is not None else None
-        )
-        if (entry.flags & CreatureFlags.BONUS_ON_DEATH) and init.bonus_id is not None:
-            # Native packs the `bonus_spawn_at` args into link_index (low i16
-            # bonus id, high i16 amount/duration override); keep the field
-            # native-faithful even though death handling reads the typed fields.
-            entry.link_index = pack_bonus_on_death_args(
-                init.bonus_id,
-                -1 if init.bonus_duration_override is None else int(init.bonus_duration_override),
-            )
-
-        if init.tint is not None:
-            # Creature color channels are float fields.
-            tint_r, tint_g, tint_b, tint_a = resolve_tint(init.tint)
-            entry.tint = RGBA(f32(tint_r), f32(tint_g), f32(tint_b), f32(tint_a))
-
-        entry.plague_infected = False
-        entry.collision_timer = 0.0
-        entry.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-        entry.hit_flash_timer = 0.0
-        entry.anim_phase = 0.0
-
     def _release_spawn_slot(self, creature: CreatureState) -> None:
         """A dying or culled spawner (flag 0x4) frees the spawn slot in its `link_index`."""
 
@@ -1396,14 +1273,10 @@ class CreaturePool:
                 (-float(NATIVE_HALF_PI), RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
                 (float(NATIVE_HALF_PI), RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
             ):
-                child_idx = self._alloc_slot()
-                if child_idx is None:
-                    continue
-                # Native `creature_alloc_slot` draws a phase seed (rand & 0x17f) that the
-                # subsequent struct copy from the parent immediately overwrites; only the
-                # draw itself matters for the stream.
-                rng.rand_tagged(RngCallerStatic.CREATURE_ALLOC_SLOT_PHASE_SEED)
-                child = msgspec.structs.replace(creature, generation=self._entries[child_idx].generation)
+                # The struct copy from the parent overwrites what `creature_alloc_slot` seeded;
+                # a full pool copies the child into the phantom slot.
+                child_idx = self.alloc_slot(rng)
+                child = msgspec.structs.replace(creature, generation=self.creature(child_idx).generation)
                 child.phase_seed = int(rng.rand_tagged(phase_seed_caller)) & 0xFF
                 # Native stores `heading +- 1.5707964f` unwrapped and leaves
                 # `target_heading` as the parent's stale copy.
@@ -1415,8 +1288,10 @@ class CreaturePool:
                 child.move_speed = f32(float(child.move_speed) + f32(0.1))
                 child.contact_damage = f32(float(child.contact_damage) * f32(0.7))
                 child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-                self._entries[child_idx] = child
-                self.spawned_count += 1
+                if child_idx == PHANTOM_CREATURE_INDEX:
+                    self.phantom = child
+                else:
+                    self._entries[child_idx] = child
 
             state.effects.spawn_burst(
                 pos=creature.pos,

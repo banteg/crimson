@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import math
 
-from crimson.creatures.runtime import CreaturePool
-from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
+from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, SpawnId
 from crimson.math_parity import f32, f32_from_bits
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
@@ -112,22 +111,14 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     ]
 
 
-def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
-    pool = CreaturePool()
-    init = CreatureInit(
-        origin_template_id=0,
-        pos=Vec2(),
-        heading=0.0,
-        phase_seed=0,
-        flags=CreatureFlags.RANGED_ATTACK_VARIANT,
-        ai_mode=2,
-        ranged_projectile_type=26,
+def test_plasma_shooter_packs_its_projectile_type_into_orbit_radius() -> None:
+    world = make_world()
+    idx = world.creatures.spawn_template(
+        SpawnId.SPIDER_PLASMA_SHOOTER_3C, Vec2(), 0.0, state=world.state, detail_preset=5,
     )
-    idx = pool.spawn_init(init)
-    assert idx is not None
     # Native writes the int arm of the orbit_radius union: the radius reads as 26's bits.
-    assert pool.entries[idx].ranged_projectile_type == 26
-    assert pool.entries[idx].orbit_radius == f32_from_bits(26)
+    assert world.creatures.entries[idx].ranged_projectile_type == 26
+    assert world.creatures.entries[idx].orbit_radius == f32_from_bits(26)
 
 
 def test_ranged_projectile_can_damage_player() -> None:

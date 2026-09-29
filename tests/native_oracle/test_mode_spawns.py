@@ -1,4 +1,4 @@
-"""Rush and Survival wave spawns vs `tick_rush_mode_spawns` / `build_survival_spawn_creature`.
+"""Rush and Survival wave spawns vs `tick_rush_mode_spawns` / `survival_spawn_creature`.
 
 - `rush_mode_update` (0x004072b0) with the native `creature_spawn`: the cooldown
   loop, tint, edge positions and elapsed-scaled stats.
@@ -14,7 +14,7 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import build_survival_spawn_creature, tick_rush_mode_spawns
+from crimson.creatures.spawn import survival_spawn_creature, tick_rush_mode_spawns
 from crimson.math_parity import f32
 from crimson.sim.state_types import TERRAIN_SIZE
 from grim.geom import Vec2
@@ -89,15 +89,15 @@ def test_rush_mode_spawns_match_native(oracle) -> None:
         oracle.call("rush_mode_update")
 
         crt = CrtRand(seed)
-        cooldown, inits = tick_rush_mode_spawns(
+        pool = CreaturePool()
+        cooldown = tick_rush_mode_spawns(
+            pool,
             float(cooldown_ms),
             float(dt_ms),
             crt,
             player_count=player_count,
             survival_elapsed_ms=elapsed_ms,
         )
-        pool = CreaturePool()
-        pool.spawn_inits(inits)
 
         case = f"rush elapsed_ms={elapsed_ms} dt_ms={dt_ms} players={player_count} seed=0x{seed:08x}"
         if oracle.read_i32("survival_spawn_cooldown") != cooldown:
@@ -135,7 +135,7 @@ def test_survival_spawn_creature_matches_native(oracle) -> None:
 
             crt = CrtRand(seed)
             pool = CreaturePool()
-            pool.spawn_inits([build_survival_spawn_creature(pos, crt, player_experience=experience)])
+            survival_spawn_creature(pool, pos, crt, player_experience=experience)
 
             case = f"survival experience={experience} seed=0x{seed:08x}"
             case_mismatches, _ = _compare_pool(oracle, case, pool)

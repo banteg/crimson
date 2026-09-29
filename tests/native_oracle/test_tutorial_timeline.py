@@ -13,7 +13,7 @@ import random
 import struct
 
 from crimson.bonuses import BonusId
-from crimson.creatures.runtime import pack_bonus_on_death_args
+from crimson.creatures.spawn import pack_bonus_on_death_args
 from crimson.creatures.spawn_ids import CreatureFlags
 from crimson.game_modes import GameMode
 from crimson.sim.state_types import PlayerState
