@@ -72,6 +72,7 @@ test {
     _ = cz.window_atlas;
     _ = @import("window_assets.zig");
     _ = @import("window_cursor.zig");
+    _ = @import("window_keybind_help.zig");
     _ = @import("window_ground.zig");
     _ = @import("window_main.zig");
     _ = @import("window_menu.zig");

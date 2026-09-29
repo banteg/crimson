@@ -256,6 +256,70 @@ pub fn drawSmallText(
     }
 }
 
+const grim_mono_advance: f32 = 16.0;
+const grim_mono_draw_size: f32 = 32.0;
+const grim_mono_line_height: f32 = 28.0;
+
+fn drawGrimMonoGlyph(texture: rl.Texture2D, value: u8, x: f32, y: f32, draw_size: f32, color: rl.Color) void {
+    const cell_w = @as(f32, @floatFromInt(texture.width)) / 16.0;
+    const cell_h = @as(f32, @floatFromInt(texture.height)) / 16.0;
+    const col: f32 = @floatFromInt(value % 16);
+    const row: f32 = @floatFromInt(value / 16);
+    rl.drawTexturePro(
+        texture,
+        rl.Rectangle.init(col * cell_w, row * cell_h, cell_w, cell_h),
+        rl.Rectangle.init(x, y, draw_size, draw_size),
+        rl.Vector2.zero(),
+        0.0,
+        color,
+    );
+}
+
+/// `grim_draw_text_mono`: the courier grid font; each glyph advances before it is drawn, and the
+/// Finnish vowels are composed from a base letter and a mark.
+pub fn drawGrimMonoText(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    x: f32,
+    y: f32,
+    scale: f32,
+    color: rl.Color,
+) void {
+    const texture = runtime_assets.texture(.default_font_courier);
+    const advance = grim_mono_advance * scale;
+    const draw_size = grim_mono_draw_size * scale;
+    var x_pos = x;
+    var y_pos = y;
+    var skip_advance = false;
+    for (text) |value| {
+        switch (value) {
+            '\n' => {
+                x_pos = x;
+                y_pos += grim_mono_line_height * scale;
+            },
+            '\r' => {},
+            0xA7 => skip_advance = true,
+            0xE5, 0xE4, 0xF6 => {
+                x_pos += advance;
+                drawGrimMonoGlyph(texture, if (value == 0xF6) 'o' else 'a', x_pos, y_pos + 1.0, draw_size, color);
+                if (value == 0xE5) {
+                    drawGrimMonoGlyph(texture, '.', x_pos, y_pos - 6.0, draw_size, color);
+                } else {
+                    drawGrimMonoGlyph(texture, '"', x_pos, y_pos, draw_size, color);
+                }
+            },
+            else => {
+                if (skip_advance) {
+                    skip_advance = false;
+                } else {
+                    x_pos += advance;
+                }
+                drawGrimMonoGlyph(texture, value, x_pos, y_pos + 1.0, draw_size, color);
+            },
+        }
+    }
+}
+
 pub fn measureSmallText(runtime_assets: *const window_assets.RuntimeAssets, text: []const u8) f32 {
     var width: f32 = 0.0;
     var best: f32 = 0.0;

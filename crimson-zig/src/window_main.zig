@@ -21,6 +21,7 @@ const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
 const window_cursor = @import("window_cursor.zig");
 const window_effects = @import("window_effects.zig");
+const window_keybind_help = @import("window_keybind_help.zig");
 const window_ground = @import("window_ground.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
@@ -122,6 +123,7 @@ const GameplayScreen = struct {
     pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
     pending_terrain_fx_count: usize = 0,
     pause_menu: window_pause_menu.State = .{},
+    key_info: window_keybind_help.State = .{},
 
     fn deinit(self: *GameplayScreen) void {
         if (self.ground) |*ground| {
@@ -815,6 +817,10 @@ const App = struct {
     fn updateGameplay(self: *App, frame_dt: f32) void {
         if (self.gameplay) |*gameplay| {
             gameplay.render_time_s += @max(frame_dt, 0.0);
+            // `gameplay_update_and_render` pauses on F1 and shows the key info; Typ-o's update has no pause.
+            if (gameplay.runner.session.game_mode != .typo) {
+                gameplay.key_info.update(rl.isKeyPressed(.f1), frameDeltaMs(frame_dt));
+            }
             if (!gameplay.perk_ui.active() and (rl.isKeyPressed(.escape) or input_codes.padNavPressed(.start))) {
                 gameplay.pause_menu.reset();
                 self.setScreen(.pause);
@@ -852,7 +858,9 @@ const App = struct {
             if (perk_ui_update.play_button_click) {
                 self.audio.playUiButtonClick();
             }
-            gameplay.last_update = gameplay.runner.stepFrame(frame_dt, input) catch |err| {
+            // `game_paused_flag` freezes the world: the frame steps with no time.
+            const sim_dt: f32 = if (gameplay.key_info.paused) 0.0 else frame_dt;
+            gameplay.last_update = gameplay.runner.stepFrame(sim_dt, input) catch |err| {
                 self.finishRun(gameplay, .runtime_error, liveRuntimeErrorDetail(err));
                 return;
             };
@@ -911,7 +919,11 @@ const App = struct {
             }
             if (pause_update.play_button_click) self.audio.playUiButtonClick();
             if (pause_update.action) |action| switch (action) {
-                .back_to_previous => self.setScreen(.gameplay),
+                .back_to_previous => {
+                    // `game_state_set(GAME_STATE_GAMEPLAY)` clears `game_paused_flag`.
+                    gameplay.key_info.paused = false;
+                    self.setScreen(.gameplay);
+                },
                 .open_options => {
                     self.options.reset();
                     self.options_back_to = .pause;
@@ -1693,6 +1705,9 @@ const App = struct {
                     drawTutorialOverlay(gameplay, assets);
                 }
             }
+        }
+        if (runtime_assets) |assets| {
+            window_keybind_help.draw(assets, &self.runtime.config, &gameplay.key_info);
         }
     }
 
