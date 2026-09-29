@@ -25,6 +25,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
 from ...game.types import GameState
+from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -230,6 +231,8 @@ class CreditsView:
 
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
+        # The port's keyboard path to the line puzzle: focused, Enter clicks the line crossing the reading row.
+        self._text_focus = UiFocusTarget()
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
@@ -345,6 +348,24 @@ class CreditsView:
             return 1.0
         return alpha
 
+    def _line_y(self, row: int, *, panel_top_left: Vec2) -> float:
+        return panel_top_left.y + _TEXT_BASE_Y + float(row) * _TEXT_LINE_HEIGHT - self._scroll_fraction_px(self._scroll_time_s)
+
+    def _reading_row(self) -> int:
+        """The visible row nearest the middle of the text window: the keyboard's "click" row."""
+        visible_count = self._scroll_line_end_index - self._scroll_line_start_index
+        frac_px = self._scroll_fraction_px(self._scroll_time_s)
+        return visible_count // 2 + (1 if frac_px > _TEXT_LINE_HEIGHT * 0.5 else 0)
+
+    def _click_line(self, index: int) -> None:
+        line = self._lines[index]
+        if "o" in line.text:
+            if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
+                play_sfx(self.state.audio, SfxId.UI_BONUS)
+            line.flags |= _FLAG_CLICKED
+        elif _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.TROOPER_INPAIN_01)
+
     def _update_line_clicks(
         self,
         *,
@@ -357,8 +378,6 @@ class CreditsView:
         if visible_count <= 0 or not click:
             return
 
-        base_y = panel_top_left.y + _TEXT_BASE_Y
-        frac_px = self._scroll_fraction_px(self._scroll_time_s)
         center_x = panel_top_left.x + (_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X)
 
         for row in range(visible_count):
@@ -368,7 +387,7 @@ class CreditsView:
             line = self._lines[index]
             text_w = measure_small_text_width(font, line.text)
             x = center_x - (text_w * 0.5)
-            y = base_y + (float(row) * _TEXT_LINE_HEIGHT) - frac_px
+            y = self._line_y(row, panel_top_left=panel_top_left)
             if not self._mouse_inside_rect(
                 mouse,
                 x=x,
@@ -377,15 +396,17 @@ class CreditsView:
                 h=_TEXT_RECT_H,
             ):
                 continue
-
-            if "o" in line.text:
-                if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
-                    play_sfx(self.state.audio, SfxId.UI_BONUS)
-                line.flags |= _FLAG_CLICKED
-            else:
-                if _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
-                    play_sfx(self.state.audio, SfxId.TROOPER_INPAIN_01)
+            self._click_line(index)
             return
+
+    def _update_text_focus(self) -> None:
+        focus = self.state.focus
+        self._text_focus.focused = focus.update(self._text_focus)
+        if not (self._text_focus.focused and focus.enter):
+            return
+        index = self._scroll_line_start_index + self._reading_row()
+        if 0 <= index < len(self._lines) and index < self._scroll_line_end_index:
+            self._click_line(index)
 
     def _update_secret_unlock(self) -> None:
         if self._secret_unlock:
@@ -467,6 +488,9 @@ class CreditsView:
             self._begin_close_transition(Route.ALIEN_ZOOKEEPER)
             return
 
+        # Native's line puzzle is mouse-only; the port's text focus stop comes after the buttons.
+        self._update_text_focus()
+
     def draw(self) -> None:
         self._assert_open()
         draw_screen_background(self.state, self._ground)
@@ -515,6 +539,14 @@ class CreditsView:
                 color = self._line_color(line.flags, alpha=alpha)
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
+
+            if self._text_focus.focused:
+                # The reading row keeps its marker while focused: the port-only stop has no hover to show it.
+                reading_y = self._line_y(self._reading_row(), panel_top_left=panel_top_left)
+                rl.draw_rectangle_rec(
+                    rl.Rectangle(panel_top_left.x + _TEXT_ANCHOR_X - 16.0, reading_y + 4.0, 6.0, 6.0),
+                    rl.Color(204, 204, 153, 204),
+                )
 
         button_draw(
             resources,

@@ -27,6 +27,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
+from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -135,6 +136,9 @@ class AlienZooKeeperView:
 
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
+        # The port's keyboard path to the mouse-only board: focused, the arrows move a cell cursor and Enter clicks it.
+        self._board_focus = UiFocusTarget()
+        self._cursor_index = 0
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
@@ -227,51 +231,64 @@ class AlienZooKeeperView:
         self._timer_ms = _TIMER_RESET_MS
 
     def _resolve_tile_click(self, *, layout: _AzkLayout, mouse: rl.Vector2) -> None:
-        if self._timer_ms <= 0:
-            return
-
-        for index, cell_value in enumerate(self._board):
-            if cell_value == -3:
-                continue
+        for index in range(_BOARD_CELLS):
             row = index // _BOARD_SIDE
             col = index % _BOARD_SIDE
             x = layout.board_x + col * layout.tile_size
             y = layout.board_y + row * layout.tile_size
-            if not _mouse_inside_rect(mouse, x=x, y=y, w=layout.tile_size, h=layout.tile_size):
-                continue
-
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_CLINK_01)
-
-            if self._selected_index == -1:
-                self._selected_index = index
+            if _mouse_inside_rect(mouse, x=x, y=y, w=layout.tile_size, h=layout.tile_size):
+                self._click_tile(index)
                 return
 
-            selected = self._selected_index
-            self._board[index], self._board[selected] = self._board[selected], self._board[index]
-            self._selected_index = -1
-
-            has_match, out_idx, out_dir = _credits_secret_match3_find(self._board)
-            if not has_match:
-                return
-
-            self._board[out_idx] = -3
-            if out_dir == 0:
-                if (out_idx + _BOARD_SIDE) < _BOARD_CELLS:
-                    self._board[out_idx + _BOARD_SIDE] = -3
-                if (out_idx + (_BOARD_SIDE * 2)) < _BOARD_CELLS:
-                    self._board[out_idx + (_BOARD_SIDE * 2)] = -3
-            else:
-                if (out_idx + 1) < _BOARD_CELLS:
-                    self._board[out_idx + 1] = -3
-                if (out_idx + 2) < _BOARD_CELLS:
-                    self._board[out_idx + 2] = -3
-
-            self._score += 1
-            self._timer_ms += _MATCH_TIMER_BONUS_MS
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BONUS)
+    def _update_board_focus(self) -> None:
+        focus = self.state.focus
+        self._board_focus.focused = focus.update(self._board_focus)
+        if not self._board_focus.focused:
             return
+        row, col = divmod(self._cursor_index, _BOARD_SIDE)
+        col = max(0, min(_BOARD_SIDE - 1, col + int(focus.right) - int(focus.left)))
+        row = max(0, min(_BOARD_SIDE - 1, row + int(focus.down) - int(focus.up)))
+        self._cursor_index = row * _BOARD_SIDE + col
+        if focus.enter:
+            self._click_tile(self._cursor_index)
+
+    def _click_tile(self, index: int) -> None:
+        if self._timer_ms <= 0:
+            return
+        if self._board[index] == -3:
+            return
+
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.UI_CLINK_01)
+
+        if self._selected_index == -1:
+            self._selected_index = index
+            return
+
+        selected = self._selected_index
+        self._board[index], self._board[selected] = self._board[selected], self._board[index]
+        self._selected_index = -1
+
+        has_match, out_idx, out_dir = _credits_secret_match3_find(self._board)
+        if not has_match:
+            return
+
+        self._board[out_idx] = -3
+        if out_dir == 0:
+            if (out_idx + _BOARD_SIDE) < _BOARD_CELLS:
+                self._board[out_idx + _BOARD_SIDE] = -3
+            if (out_idx + (_BOARD_SIDE * 2)) < _BOARD_CELLS:
+                self._board[out_idx + (_BOARD_SIDE * 2)] = -3
+        else:
+            if (out_idx + 1) < _BOARD_CELLS:
+                self._board[out_idx + 1] = -3
+            if (out_idx + 2) < _BOARD_CELLS:
+                self._board[out_idx + 2] = -3
+
+        self._score += 1
+        self._timer_ms += _MATCH_TIMER_BONUS_MS
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.UI_BONUS)
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -313,6 +330,8 @@ class AlienZooKeeperView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)
+        # Focus order: the port's board stop, then Reset and Back.
+        self._update_board_focus()
 
         resources = require_runtime_resources(self.state)
         dt_ms_f = dt_clamped * 1000.0
@@ -406,6 +425,14 @@ class AlienZooKeeperView:
             )
             rl.draw_rectangle_rec(sel_rect, _to_color(0.2, 0.4, 0.7, 0.4))
             rl.draw_rectangle_lines_ex(sel_rect, 1.0, rl.WHITE)
+
+        if self._board_focus.focused:
+            row, col = divmod(self._cursor_index, _BOARD_SIDE)
+            cursor = rl.Rectangle(
+                layout.board_x + col * layout.tile_size, layout.board_y + row * layout.tile_size, layout.tile_size, layout.tile_size,
+            )
+            rl.draw_rectangle_lines_ex(cursor, 1.0, _to_color(0.8, 0.8, 0.6, 0.8))
+            self.state.focus.draw(Vec2(layout.board_x - 16.0, cursor.y))
 
         alien = resources.texture(TextureId.ALIEN)
         frame_w = float(alien.width) / 8.0

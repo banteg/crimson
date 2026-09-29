@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.game import loop_view as loop_module
 from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
@@ -21,7 +20,7 @@ from crimson.screens.actions import (
 )
 from crimson.screens.high_scores_layout import HS_RIGHT_GAME_MODE_WIDGET, hs_right_options_x_shift
 from crimson.screens.high_scores_view import view as scores_module
-from crimson.screens.panels import alien_zookeeper, credits, stats
+from crimson.screens.panels import alien_zookeeper, stats
 from crimson.screens.panels.controls import ControlsMenuView
 from crimson.screens.panels.options import OptionsMenuView
 from crimson.screens.pause_menu import PauseMenuView
@@ -30,26 +29,7 @@ from crimson.screens.stack import ScreenEntry, ScreenStack
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.support.gameplay_screen import GameplayScreenStub
-from tests.support.screens import ScreenStub
-
-
-@pytest.fixture
-def loop(make_game_state, screen_resources, screen_io, mocker) -> GameLoopView:
-    state = make_game_state(resources=screen_resources)
-    for module in (menu, scores_module, stats, credits, alien_zookeeper):
-        mocker.patch.object(module, "ensure_menu_ground", return_value=None)
-    mocker.patch.object(type(state.console), "handle_hotkey")
-    mocker.patch.object(type(state.console), "update")
-    mocker.patch.object(loop_module, "debug_enabled", return_value=False)
-    view = GameLoopView(state)
-    view.navigation.open()
-    view.navigation.navigate(Route.MENU)
-    return view
-
-
-def finish_transition(loop: GameLoopView) -> None:
-    for _ in range(12):
-        loop.update(0.1)
+from tests.support.screens import ScreenStub, finish_transition
 
 
 def test_menu_options_controls_back_preserves_parent_and_config(loop, mocker) -> None:
