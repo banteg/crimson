@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
+from grim.audio import resume_audio, suspend_audio
 from grim.blend import opaque_blend
 from grim.raylib_api import rl
 from grim.texture_mode import texture_mode
@@ -83,6 +84,16 @@ class GameLoopView:
 
     def should_close(self) -> bool:
         return self.state.quit_requested
+
+    def focus_changed(self, focused: bool) -> None:
+        """grim calls `audio_suspend_all` / `audio_resume_all` as the window loses and regains focus."""
+        audio = self.state.audio
+        if audio is None:
+            return
+        if focused:
+            resume_audio(audio)
+        else:
+            suspend_audio(audio)
 
     def update(self, dt: float) -> None:
         self.state.frame_dt = min(dt, 0.1)

@@ -21,14 +21,15 @@ def _not_requested() -> bool:
     return False
 
 
-def _ignore_fullscreen_change(_fullscreen: bool) -> None:
+def _ignore_window_change(_state: bool) -> None:
     return None
 
 
 class RunViewHooks(msgspec.Struct, frozen=True):
     should_close: Callable[[], bool] = _not_requested
     consume_screenshot_request: Callable[[], bool] = _not_requested
-    fullscreen_changed: Callable[[bool], None] = _ignore_fullscreen_change
+    fullscreen_changed: Callable[[bool], None] = _ignore_window_change
+    focus_changed: Callable[[bool], None] = _ignore_window_change
 
 
 def _fullscreen_toggle_pressed() -> bool:
@@ -77,15 +78,20 @@ def run_view(
         view.open()
         screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
         screenshot_index = _next_screenshot_index(screenshot_dir)
+        focused = True
         while not rl.window_should_close():
             dt = rl.get_frame_time()
+            # Native grim freezes timing while the window is inactive and the game skips the first frame back.
+            was_focused, focused = focused, rl.is_window_focused()
+            if focused != was_focused:
+                run_hooks.focus_changed(focused)
             toggle_fullscreen = _fullscreen_toggle_pressed()
             if toggle_fullscreen:
                 rl.toggle_borderless_windowed()
                 run_hooks.fullscreen_changed(rl.is_window_state(rl.ConfigFlags.FLAG_BORDERLESS_WINDOWED_MODE))
             canvas.fit()
             # Skip the update that would also see this frame's Enter press.
-            if not toggle_fullscreen:
+            if not toggle_fullscreen and focused and was_focused:
                 view.update(dt)
             take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
             if run_hooks.consume_screenshot_request():

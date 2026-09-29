@@ -19,6 +19,32 @@ class AudioState(msgspec.Struct):
     music: music.MusicState
     sfx: sfx.SfxState
     owns_device: bool = False
+    # Streams and voices `suspend_audio` paused, for `resume_audio`.
+    suspended_music: list[rl.Music] = msgspec.field(default_factory=list)
+    suspended_sounds: list[rl.Sound] = msgspec.field(default_factory=list)
+
+
+def suspend_audio(state: AudioState) -> None:
+    """`audio_suspend_all`: pause every playing music stream and sound voice while the window is inactive."""
+    for track in state.music.tracks.values():
+        if rl.is_music_stream_playing(track.stream):
+            rl.pause_music_stream(track.stream)
+            state.suspended_music.append(track.stream)
+    for sample in state.sfx.samples.values():
+        for voice in sample.voices():
+            if rl.is_sound_playing(voice.sound):
+                rl.pause_sound(voice.sound)
+                state.suspended_sounds.append(voice.sound)
+
+
+def resume_audio(state: AudioState) -> None:
+    """`audio_resume_all`: resume what `suspend_audio` paused."""
+    for stream in state.suspended_music:
+        rl.resume_music_stream(stream)
+    for sound in state.suspended_sounds:
+        rl.resume_sound(sound)
+    state.suspended_music.clear()
+    state.suspended_sounds.clear()
 
 
 def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState) -> AudioState:

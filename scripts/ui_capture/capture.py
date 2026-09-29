@@ -133,6 +133,8 @@ class Driver:
         rl.set_target_fps = lambda _fps: None
         rl.window_should_close = self.advance
         rl.get_frame_time = lambda: DT
+        # The hidden window never has focus; the game would suspend like native does when inactive.
+        rl.is_window_focused = lambda: True
         rl.get_time = lambda: self.frame * DT
         rl.get_fps = lambda: 60
         rl.is_key_pressed = lambda key: int(key) in self.pressed

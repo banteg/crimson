@@ -274,6 +274,7 @@ def run_game(config: GameConfig) -> None:
                 should_close=view.should_close,
                 consume_screenshot_request=view.consume_screenshot_request,
                 fullscreen_changed=lambda fullscreen: _save_windowed(cfg, windowed=not fullscreen),
+                focus_changed=view.focus_changed,
             ),
         )
         if state is not None:
