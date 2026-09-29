@@ -8,9 +8,7 @@ from pathlib import Path
 
 import msgspec
 
-from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..math_parity import f32
-from ..movement_controls import MovementControlType, movement_control_type_from_value
 from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
@@ -143,98 +141,6 @@ def current_replay_game_version() -> str:
         return f"{version}{separator}g{build}" + (".dirty" if dirty else "")
     except (OSError, subprocess.CalledProcessError):
         return version
-
-
-def pack_input_flags(
-    *,
-    fire_down: bool,
-    fire_pressed: bool,
-    reload_pressed: bool,
-    reload_down: bool = False,
-    fire_bullets_key_down: bool = False,
-    aim_turn_left: bool = False,
-    aim_turn_right: bool = False,
-    move_mode: MovementControlType | None = None,
-    aim_scheme: AimScheme | None = None,
-    move_forward_pressed: bool | None = None,
-    move_backward_pressed: bool | None = None,
-    turn_left_pressed: bool | None = None,
-    turn_right_pressed: bool | None = None,
-) -> int:
-    flags = 0
-    if fire_down:
-        flags |= FIRE_DOWN_FLAG
-    if fire_pressed:
-        flags |= FIRE_PRESSED_FLAG
-    if reload_pressed:
-        flags |= RELOAD_PRESSED_FLAG
-    if reload_down:
-        flags |= RELOAD_DOWN_FLAG
-    if fire_bullets_key_down:
-        flags |= FIRE_BULLETS_KEY_DOWN_FLAG
-    if aim_turn_left:
-        flags |= AIM_TURN_LEFT_FLAG
-    if aim_turn_right:
-        flags |= AIM_TURN_RIGHT_FLAG
-    key_fields = (
-        move_forward_pressed,
-        move_backward_pressed,
-        turn_left_pressed,
-        turn_right_pressed,
-    )
-    if any(field is not None for field in key_fields):
-        flags |= MOVE_KEYS_PRESENT_FLAG
-        if bool(move_forward_pressed):
-            flags |= MOVE_FORWARD_FLAG
-        if bool(move_backward_pressed):
-            flags |= MOVE_BACKWARD_FLAG
-        if bool(turn_left_pressed):
-            flags |= TURN_LEFT_FLAG
-        if bool(turn_right_pressed):
-            flags |= TURN_RIGHT_FLAG
-    if move_mode is not None:
-        flags |= MOVE_MODE_PRESENT_FLAG
-        flags |= (int(move_mode) & MOVE_MODE_MASK) << MOVE_MODE_SHIFT
-    if aim_scheme is not None:
-        flags |= AIM_SCHEME_PRESENT_FLAG
-        flags |= (int(aim_scheme) & AIM_SCHEME_MASK) << AIM_SCHEME_SHIFT
-    return int(flags)
-
-
-def unpack_input_flags(flags: int) -> tuple[bool, bool, bool, bool]:
-    flags = int(flags)
-    return (
-        bool(flags & FIRE_DOWN_FLAG),
-        bool(flags & FIRE_PRESSED_FLAG),
-        bool(flags & RELOAD_PRESSED_FLAG),
-        bool(flags & RELOAD_DOWN_FLAG),
-    )
-
-
-def unpack_input_move_key_flags(flags: int) -> tuple[bool | None, bool | None, bool | None, bool | None]:
-    flags = int(flags)
-    if not bool(flags & MOVE_KEYS_PRESENT_FLAG):
-        return None, None, None, None
-    return (
-        bool(flags & MOVE_FORWARD_FLAG),
-        bool(flags & MOVE_BACKWARD_FLAG),
-        bool(flags & TURN_LEFT_FLAG),
-        bool(flags & TURN_RIGHT_FLAG),
-    )
-
-
-def unpack_input_mode_flags(flags: int) -> tuple[MovementControlType | None, AimScheme | None]:
-    flags = int(flags)
-    move_mode: MovementControlType | None = None
-    aim_scheme: AimScheme | None = None
-    if bool(flags & MOVE_MODE_PRESENT_FLAG):
-        move_mode = movement_control_type_from_value((flags >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK)
-    if bool(flags & AIM_SCHEME_PRESENT_FLAG):
-        aim_scheme_raw = (flags >> AIM_SCHEME_SHIFT) & AIM_SCHEME_MASK
-        if aim_scheme_raw == AIM_SCHEME_MASK:
-            aim_scheme_raw = -1
-        aim_scheme = aim_scheme_from_value(aim_scheme_raw)
-    return move_mode, aim_scheme
 
 
 # `(move_x, move_y, aim_x, aim_y, flags)`; axes are canonical float32 values.

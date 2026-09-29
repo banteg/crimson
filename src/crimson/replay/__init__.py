@@ -33,10 +33,6 @@ from .types import (
     PackedTickInputs,
     Replay,
     ReplayTick,
-    pack_input_flags,
-    unpack_input_flags,
-    unpack_input_mode_flags,
-    unpack_input_move_key_flags,
 )
 from .versioning import ReplayGameVersionError, ReplayGameVersionWarning, warn_on_game_version_mismatch
 
@@ -71,13 +67,9 @@ __all__ = [
     "inflate_replay_payload",
     "load_replay",
     "load_replay_file",
-    "pack_input_flags",
     "pack_player_input",
     "pack_tick",
     "pack_tick_inputs",
-    "unpack_input_flags",
-    "unpack_input_mode_flags",
-    "unpack_input_move_key_flags",
     "unpack_player_input",
     "unpack_tick_inputs",
     "validate_replay",
