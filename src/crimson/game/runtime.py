@@ -25,6 +25,7 @@ from ..debug import set_debug_enabled
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
+from ..screens.quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState
 
@@ -220,6 +221,10 @@ def run_game(config: GameConfig) -> None:
     assets_dir = _resolve_assets_dir(config)
     console = create_console(base_dir, assets_dir=assets_dir)
     status = ensure_game_status(base_dir)
+    # Native `game_frame_update` clears hardcore every frame while fewer than 40 quests are unlocked. Unlocks only
+    # grow and the quest menu refuses the checkbox below that, so clearing it once at boot is the same.
+    if status.quest_unlock_index < QUEST_HARDCORE_UNLOCK_INDEX:
+        cfg.gameplay.hardcore = False
     state: GameState | None = None
     try:
         state = GameState(

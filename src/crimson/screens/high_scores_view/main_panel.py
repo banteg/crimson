@@ -12,6 +12,7 @@ from grim.raylib_api import rl
 
 from ...game_modes import GameMode
 from ...quests import quest_by_level
+from ...ui.checkbox import ui_checkbox_draw
 from ...ui.perk_menu import button_draw
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,
@@ -19,6 +20,7 @@ from ..high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
+    HS_HARDCORE_CHECKBOX_OFFSET,
     HS_QUEST_ARROW_X,
     HS_QUEST_ARROW_Y,
     HS_SCORE_FRAME_H,
@@ -27,6 +29,7 @@ from ..high_scores_layout import (
     HS_SCORE_FRAME_Y,
     HS_TITLE_UNDERLINE_Y,
 )
+from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .shared import mode_label
 
 if TYPE_CHECKING:
@@ -104,6 +107,11 @@ def draw_main_panel(
             arrow_pos = left_panel_top_left + Vec2(HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y)
             dst = rl.Rectangle(arrow_pos.x, arrow_pos.y, dst_w, dst_h)
             rl.draw_texture_pro(arrow, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+
+    if mode_id == GameMode.QUESTS and view.state.status.quest_unlock_index >= QUEST_HARDCORE_UNLOCK_INDEX:
+        checkbox = view.hardcore_checkbox
+        checkbox.checked = view.state.config.gameplay.hardcore
+        ui_checkbox_draw(resources, checkbox, left_panel_top_left + HS_HARDCORE_CHECKBOX_OFFSET)
 
     header_color = rl.Color(255, 255, 255, 255)
     draw_small_text(font, "Rank", left_panel_top_left + Vec2(211.0, 84.0), header_color)

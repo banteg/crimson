@@ -124,7 +124,6 @@ def test_scores_back_restores_original_run_context_through_loop(loop, screen_res
     scores._update_right_panel_widgets(
         right_top_left=Vec2(),
         resources=screen_resources,
-        font=screen_resources.small_font,
     )
     assert state.config.gameplay.mode == GameMode.RUSH
     scores._begin_close_transition(Route.BACK)

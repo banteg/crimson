@@ -17,7 +17,6 @@ from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
 from grim.config import HighScoreDateMode
-from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -26,6 +25,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
+from ...ui.checkbox import UiCheckbox, ui_checkbox_update
 from ...ui.layout import DropdownLayoutBase
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update
@@ -37,6 +37,7 @@ from ..high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
+    HS_HARDCORE_CHECKBOX_OFFSET,
     HS_LEFT_PANEL_HEIGHT,
     HS_LEFT_PANEL_POS_Y,
     HS_QUEST_ARROW_X,
@@ -62,6 +63,7 @@ from ..high_scores_layout import (
     hs_right_panel_pos_x,
 )
 from ..panels.hit_test import mouse_inside_rect_with_padding
+from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
 from .records import load_records
@@ -90,6 +92,8 @@ class HighScoresView:
 
         # Right-panel list widget state (quests variant).
         self._dropdown: ScoreDropdown | None = None
+        self.internet_checkbox = UiCheckbox("Show internet scores")
+        self.hardcore_checkbox = UiCheckbox("Hardcore")
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
@@ -147,7 +151,6 @@ class HighScoresView:
 
         screen_width = float(self.state.config.display.width)
         resources = require_runtime_resources(self.state)
-        font = resources.small_font
 
         # Compute animated panel positions so hit-tests match the draw path even while sliding.
         panel_w = MENU_PANEL_WIDTH
@@ -175,7 +178,6 @@ class HighScoresView:
             if self._update_right_panel_widgets(
                 right_top_left=right_panel_top_left,
                 resources=resources,
-                font=font,
             ):
                 return
             if dropdown_was_open:
@@ -346,7 +348,6 @@ class HighScoresView:
         *,
         right_top_left: Vec2,
         resources: RuntimeResources,
-        font: SmallFontData,
     ) -> bool:
         request = self._request
 
@@ -358,22 +359,16 @@ class HighScoresView:
 
         # Checkbox: "Show internet scores" (config.show_online_scores).
         if not dropdown_blocked:
-            check_tex = (
-                resources.texture(TextureId.UI_CHECK_ON)
-                if self.state.config.profile.show_internet_scores
-                else resources.texture(TextureId.UI_CHECK_OFF)
-            )
-            label = "Show internet scores"
-            check_pos = shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y)
-            label_w = measure_small_text_width(font, label)
-            font_h = float(font.cell_size)
-            rect_w = float(check_tex.width) + 6.0 + label_w
-            rect_h = max(float(check_tex.height), font_h)
-            mouse_pos = Vec2.from_xy(canvas.mouse_position())
-            if Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos) and rl.is_mouse_button_pressed(
-                rl.MouseButton.MOUSE_BUTTON_LEFT,
+            checkbox = self.internet_checkbox
+            checkbox.checked = self.state.config.profile.show_internet_scores
+            if ui_checkbox_update(
+                resources,
+                checkbox,
+                shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y),
+                mouse=Vec2.from_xy(canvas.mouse_position()),
+                click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
             ):
-                self.state.config.profile.show_internet_scores = not self.state.config.profile.show_internet_scores
+                self.state.config.profile.show_internet_scores = checkbox.checked
                 self._dirty = True
                 self._reload_records()
                 return True
@@ -522,8 +517,20 @@ class HighScoresView:
         if level is None:
             return False
 
-        # Clamp to a sane range.
         global_index = int(level.global_index)
+        mouse = Vec2.from_xy(canvas.mouse_position())
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+
+        # `highscore_screen`: the Hardcore checkbox beside the column headers, from 40 unlocked quests.
+        hardcore_toggled = False
+        if self.state.status.quest_unlock_index >= QUEST_HARDCORE_UNLOCK_INDEX:
+            checkbox = self.hardcore_checkbox
+            checkbox.checked = self.state.config.gameplay.hardcore
+            if ui_checkbox_update(
+                resources, checkbox, left_panel_top_left + HS_HARDCORE_CHECKBOX_OFFSET, mouse=mouse, click=click,
+            ):
+                self.state.config.gameplay.hardcore = checkbox.checked
+                hardcore_toggled = True
 
         unlock = (
             int(self.state.status.quest_unlock_index_full)
@@ -532,9 +539,6 @@ class HighScoresView:
         )
         max_index = max(0, min(49, unlock))
         arrow = resources.texture(TextureId.UI_ARROW)
-
-        mouse = Vec2.from_xy(canvas.mouse_position())
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         arrow_w = float(arrow.width)
         arrow_h = float(arrow.height)
 
@@ -552,11 +556,19 @@ class HighScoresView:
             self._dirty = True
             self._reload_records()
 
-        if global_index > 0 and prev_rect.contains(mouse) and click:
+        # Native pages with the arrow keys too; switching tables reloads and clamps to the unlocked quests.
+        if global_index > 0 and (
+            (prev_rect.contains(mouse) and click) or rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT)
+        ):
             _set_level(global_index - 1)
             return True
-        if global_index < max_index and next_rect.contains(mouse) and click:
+        if global_index < max_index and (
+            (next_rect.contains(mouse) and click) or rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT)
+        ):
             _set_level(global_index + 1)
+            return True
+        if hardcore_toggled:
+            _set_level(global_index)
             return True
         return False
 

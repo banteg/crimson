@@ -6,6 +6,8 @@ Measured from analysis/frida/ui_render_trace_oracle_1024x768.json.
 
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 # Panel positions are expressed in "panel pos" (pre-offset) space, matching other menu panels:
 #   panel_top_left = (panel_pos_x + MENU_PANEL_OFFSET_X, panel_pos_y + y_shift + MENU_PANEL_OFFSET_Y)
 
@@ -130,6 +132,8 @@ HS_SCORE_FRAME_H = 164.0
 # left panel top-left at 1024x768 is (-98,194).
 HS_QUEST_ARROW_X = 449.0
 HS_QUEST_ARROW_Y = 62.0
+# Native `highscore_screen` puts the Hardcore checkbox at the column header origin (Rank - 9) + (162, -2).
+HS_HARDCORE_CHECKBOX_OFFSET = Vec2(364.0, 82.0)
 
 # Right panel (Quests): options + dropdown widgets.
 # right panel top-left at 1024x768 is (630,209).

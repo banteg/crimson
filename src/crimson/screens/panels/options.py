@@ -35,11 +35,12 @@ class _OptionsContentLayout(msgspec.Struct, frozen=True):
 
 
 class OptionsMenuView(PanelMenuView):
+    # Native also has a "Mouse sensitivity:" slider at +107 for its software cursor; the port uses the OS cursor,
+    # so the row is left empty and crimson.cfg keeps the value.
     _LABELS = (
         "Sound volume:",
         "Music volume:",
         "Graphics detail:",
-        "Mouse sensitivity:",
     )
 
     def __init__(self, state: GameState) -> None:
@@ -50,7 +51,6 @@ class OptionsMenuView(PanelMenuView):
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
         self._slider_detail = SliderState(5, 1, 5)
-        self._slider_mouse = SliderState(10, 1, 10)
         self._ui_info_texts = True
         self._active_slider: str | None = None
         self._dirty = False
@@ -104,20 +104,6 @@ class OptionsMenuView(PanelMenuView):
             self._slider_detail.value = preset
             self._dirty = True
 
-        if self._update_slider(
-            "mouse",
-            self._slider_mouse,
-            slider_pos.offset(dy=107.0),
-            rect_on,
-        ):
-            sensitivity = float(self._slider_mouse.value) * 0.1
-            if sensitivity < 0.1:
-                sensitivity = 0.1
-            if sensitivity > 1.0:
-                sensitivity = 1.0
-            config.display.mouse_sensitivity = sensitivity
-            self._dirty = True
-
         if self._update_checkbox(label_pos.offset(dy=135.0)):
             config.gameplay.show_info_texts = self._ui_info_texts
             self._dirty = True
@@ -155,7 +141,6 @@ class OptionsMenuView(PanelMenuView):
         sfx_volume = config.audio.sfx_volume
         music_volume = config.audio.music_volume
         detail_preset = config.display.detail_preset
-        mouse_sensitivity = config.display.mouse_sensitivity
 
         self._slider_sfx.value = max(
             self._slider_sfx.min_value,
@@ -170,10 +155,6 @@ class OptionsMenuView(PanelMenuView):
         if detail_preset > self._slider_detail.max_value:
             detail_preset = self._slider_detail.max_value
         self._slider_detail.value = detail_preset
-        self._slider_mouse.value = max(
-            self._slider_mouse.min_value,
-            min(self._slider_mouse.max_value, int(mouse_sensitivity * 10.0 + 0.5)),
-        )
 
     def _content_layout(self) -> _OptionsContentLayout:
         _angle_rad, slide_x = ui_element_anim(
@@ -296,7 +277,7 @@ class OptionsMenuView(PanelMenuView):
 
         draw_small_text(font, "Effect density applies next game.", base_pos.offset(dy=195.0), text_color)
 
-        y_offsets = (47.0, 67.0, 87.0, 107.0)
+        y_offsets = (47.0, 67.0, 87.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
             draw_small_text(font, label, label_pos.offset(dy=offset), text_color)
 
@@ -324,14 +305,6 @@ class OptionsMenuView(PanelMenuView):
         self._draw_slider(
             self._slider_detail,
             slider_pos.offset(dy=87.0),
-            rect_on,
-            rect_off,
-            rect_w,
-            rect_h,
-        )
-        self._draw_slider(
-            self._slider_mouse,
-            slider_pos.offset(dy=107.0),
             rect_on,
             rect_off,
             rect_w,

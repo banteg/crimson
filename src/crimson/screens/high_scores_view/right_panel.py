@@ -10,6 +10,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game_states import GameStateId
+from ...ui.checkbox import ui_checkbox_draw
 from ...ui.highscore_card import ui_text_input_render
 from ..high_scores_layout import (
     HS_RIGHT_CHECK_X,
@@ -41,8 +42,6 @@ from ..high_scores_layout import (
     HS_RIGHT_SCORE_LIST_WIDGET_Y,
     HS_RIGHT_SCORE_LIST_X,
     HS_RIGHT_SCORE_LIST_Y,
-    HS_RIGHT_SHOW_INTERNET_X,
-    HS_RIGHT_SHOW_INTERNET_Y,
     HS_RIGHT_SHOW_SCORES_DROP_X,
     HS_RIGHT_SHOW_SCORES_DROP_Y,
     HS_RIGHT_SHOW_SCORES_VALUE_X,
@@ -195,33 +194,9 @@ def _draw_right_panel_quest_options(
     options_top_left = right_top_left + Vec2(options_shift_x, 0.0)
     text_color = rl.Color(255, 255, 255, int(255 * 0.8))
 
-    # Checkbox: "Show internet scores"
-    check_tex = (
-        resources.texture(TextureId.UI_CHECK_ON)
-        if view.state.config.profile.show_internet_scores
-        else resources.texture(TextureId.UI_CHECK_OFF)
-    )
-    check_w = float(check_tex.width)
-    check_h = float(check_tex.height)
-    rl.draw_texture_pro(
-        check_tex,
-        rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-        rl.Rectangle(
-            options_top_left.x + HS_RIGHT_CHECK_X,
-            options_top_left.y + HS_RIGHT_CHECK_Y,
-            check_w,
-            check_h,
-        ),
-        rl.Vector2(0.0, 0.0),
-        0.0,
-        rl.WHITE,
-    )
-    draw_small_text(
-        font,
-        "Show internet scores",
-        options_top_left + Vec2(HS_RIGHT_SHOW_INTERNET_X, HS_RIGHT_SHOW_INTERNET_Y),
-        text_color,
-    )
+    checkbox = view.internet_checkbox
+    checkbox.checked = view.state.config.profile.show_internet_scores
+    ui_checkbox_draw(resources, checkbox, options_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y))
     draw_small_text(
         font,
         "Number of players",
