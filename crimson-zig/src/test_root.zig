@@ -74,6 +74,7 @@ test {
     _ = @import("window_cursor.zig");
     _ = @import("window_keybind_help.zig");
     _ = @import("window_ground.zig");
+    _ = @import("window_highscore_card.zig");
     _ = @import("window_main.zig");
     _ = @import("window_menu.zig");
     _ = @import("window_menu_panels.zig");

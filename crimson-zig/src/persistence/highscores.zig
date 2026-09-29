@@ -191,6 +191,18 @@ pub const HighScoreRecord = struct {
         writeU32(self.data[0x3C..][0..4], value);
     }
 
+    pub fn day(self: *const HighScoreRecord) u8 {
+        return self.data[0x40];
+    }
+
+    pub fn month(self: *const HighScoreRecord) u8 {
+        return self.data[0x42];
+    }
+
+    pub fn yearOffset(self: *const HighScoreRecord) u8 {
+        return self.data[0x43];
+    }
+
     pub fn dateWeek(self: *const HighScoreRecord) u8 {
         return self.data[0x41];
     }

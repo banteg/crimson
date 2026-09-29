@@ -14,6 +14,7 @@ const weapon_data = cz.weapon_data;
 const window_atlas = cz.window_atlas;
 
 const window_assets = @import("window_assets.zig");
+const window_highscore_card = @import("window_highscore_card.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
 const window_ui = @import("window_ui.zig");
@@ -959,7 +960,19 @@ fn drawHighScoreRightPanel(
 ) void {
     if (selectedHighScoreRank(state, left_rect)) |rank| {
         if (rank < state.records.len) {
-            drawHighScoreLocalDetails(assets, state.records[rank], rank, preserve_bugs, highScoreRightLocalCardRect(right_rect, config.screen_width));
+            const card_rect = highScoreRightLocalCardRect(right_rect, config.screen_width);
+            window_highscore_card.uiTextInputRender(
+                assets,
+                rl.Vector2.init(card_rect.x + 74.0, card_rect.y + 44.0),
+                &state.records[rank],
+                1.0,
+                @intCast(rank + 1),
+                .highscores,
+                0,
+                rl.getMousePosition(),
+                rl.getFrameTime(),
+                preserve_bugs,
+            );
             return;
         }
     }
@@ -1753,97 +1766,6 @@ fn hoveredListRow(rect: rl.Rectangle, total: usize, scroll: usize) ?usize {
     return scroll + row;
 }
 
-fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record: persistence.highscores.HighScoreRecord, rank: usize, preserve_bugs: bool, right_rect: rl.Rectangle) void {
-    const detail_x = right_rect.x + 78.0;
-    const mode = record.gameModeId() orelse .survival;
-    const local_text = rl.Color.init(229, 229, 229, 204);
-    const value_text = rl.Color.init(229, 229, 255, 255);
-    const lower_text = rl.Color.init(229, 229, 229, 178);
-    const separator = rl.Color.init(149, 175, 198, 178);
-
-    window_ui.drawSmallText(assets, clippedRecordName(record), detail_x, right_rect.y + 44.0, local_text);
-    window_ui.drawSmallText(assets, "Local score", detail_x, right_rect.y + 58.0, local_text);
-    rl.drawLine(@intFromFloat(right_rect.x + 78.0), @intFromFloat(right_rect.y + 57.0), @intFromFloat(right_rect.x + 117.0), @intFromFloat(right_rect.y + 57.0), separator);
-    var date_buf: [64]u8 = undefined;
-    if (formatRecordDateBuf(&date_buf, record)) |date| {
-        const date_w = window_ui.measureSmallText(assets, date);
-        window_ui.drawSmallText(assets, date, right_rect.x + 230.0 - date_w * 0.5, right_rect.y + 72.0, local_text);
-    }
-    rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 72.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 72.0), separator);
-    window_ui.drawSmallText(assets, "Score", detail_x + 27.0, right_rect.y + 90.0, local_text);
-    const time_label = if (mode == .quests) "Experience" else "Game time";
-    window_ui.drawSmallText(assets, time_label, detail_x + 114.0, right_rect.y + 90.0, local_text);
-    rl.drawLine(@intFromFloat(right_rect.x + 170.0), @intFromFloat(right_rect.y + 90.0), @intFromFloat(right_rect.x + 170.0), @intFromFloat(right_rect.y + 138.0), separator);
-
-    switch (mode) {
-        .rush, .quests => {
-            var score_buf: [32]u8 = undefined;
-            const score_text = std.fmt.bufPrint(&score_buf, "{d:.2} secs", .{@as(f32, @floatFromInt(record.survivalElapsedMs())) * 0.001}) catch "0.00 secs";
-            const label_center_x = detail_x + 27.0 + window_ui.measureSmallText(assets, "Score") * 0.5;
-            const score_w = window_ui.measureSmallText(assets, score_text);
-            window_ui.drawSmallText(assets, score_text, label_center_x - score_w * 0.5, right_rect.y + 105.0, value_text);
-            window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 148.0, right_rect.y + 109.0, local_text);
-        },
-        .survival, .typo, .tutorial => {
-            window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 27.0, right_rect.y + 105.0, value_text);
-            drawClockGauge(assets, @intCast(@max(0, record.survivalElapsedMs())), right_rect.x + 194.0, right_rect.y + 103.0);
-            var time_buf: [32]u8 = undefined;
-            window_ui.drawSmallText(assets, formatElapsedMmSsBuf(&time_buf, @intCast(@max(0, record.survivalElapsedMs()))), detail_x + 148.0, right_rect.y + 109.0, local_text);
-        },
-    }
-    var rank_buf: [32]u8 = undefined;
-    var ordinal_buf: [16]u8 = undefined;
-    const rank_text = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{ordinalBuf(&ordinal_buf, rank + 1)}) catch "Rank: ?";
-    window_ui.drawSmallText(assets, rank_text, detail_x + 16.0, right_rect.y + 120.0, local_text);
-    const icon_index = weapon_data.weaponIconIndex(record.mostUsedWeaponId());
-    rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 142.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 142.0), separator);
-    if (icon_index >= 0) {
-        const src_rect = window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index);
-        rl.drawTexturePro(
-            assets.texture(.ui_wicons),
-            rl.Rectangle.init(src_rect.x, src_rect.y, src_rect.width, src_rect.height),
-            rl.Rectangle.init(detail_x + 12.0, right_rect.y + 146.0, 64.0, 32.0),
-            rl.Vector2.zero(),
-            0.0,
-            rl.Color.white,
-        );
-    }
-    window_ui.drawSmallTextFmt("Frags: {d}", assets, .{record.creatureKillCount()}, detail_x + 122.0, right_rect.y + 147.0, lower_text);
-    window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{highScoreHitPercent(record)}, detail_x + 122.0, right_rect.y + 161.0, lower_text);
-    const weapon_name = game_ids.weaponDisplayName(record.mostUsedWeaponId(), preserve_bugs);
-    const weapon_name_x = right_rect.x + 90.0 + @max(@as(f32, 0.0), 32.0 - window_ui.measureSmallText(assets, weapon_name) * 0.5);
-    window_ui.drawSmallText(assets, weapon_name, weapon_name_x, right_rect.y + 178.0, lower_text);
-    rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 194.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 194.0), separator);
-}
-
-fn highScoreHitPercent(record: persistence.highscores.HighScoreRecord) u64 {
-    const shots_fired = record.shotsFired();
-    if (shots_fired == 0) return 0;
-    return @divTrunc(@as(u64, record.shotsHit()) * 100, @as(u64, shots_fired));
-}
-
-fn drawClockGauge(assets: *const window_assets.RuntimeAssets, elapsed_ms: u32, x: f32, y: f32) void {
-    const table = assets.texture(.ui_clock_table);
-    const pointer = assets.texture(.ui_clock_pointer);
-    rl.drawTexturePro(
-        table,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(table.width), @floatFromInt(table.height)),
-        rl.Rectangle.init(x, y, 32.0, 32.0),
-        rl.Vector2.zero(),
-        0.0,
-        rl.Color.white,
-    );
-    const seconds = @divTrunc(elapsed_ms, 1000);
-    rl.drawTexturePro(
-        pointer,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(pointer.width), @floatFromInt(pointer.height)),
-        rl.Rectangle.init(x + 16.0, y + 16.0, 32.0, 32.0),
-        rl.Vector2.init(16.0, 16.0),
-        @as(f32, @floatFromInt(seconds)) * 6.0,
-        rl.Color.white,
-    );
-}
-
 const HighScoreScrollAction = enum {
     line_up,
     line_down,
@@ -2236,35 +2158,6 @@ fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32, preserve_bugs: bool) []c
     return std.fmt.bufPrint(buf, "played for {d} hours {d} minutes", .{ hours, minutes }) catch "played for 0 hours 0 minutes";
 }
 
-fn formatElapsedMmSsBuf(buf: []u8, elapsed_ms: u32) []const u8 {
-    const total_seconds = @divTrunc(elapsed_ms, 1000);
-    const minutes = @divTrunc(total_seconds, 60);
-    const seconds = @mod(total_seconds, 60);
-    return std.fmt.bufPrint(buf, "{d}:{d:0>2}", .{ minutes, seconds }) catch "0:00";
-}
-
-fn formatRecordDateBuf(buf: []u8, record: persistence.highscores.HighScoreRecord) ?[]const u8 {
-    const day = record.data[0x40];
-    const month = record.data[0x42];
-    if (day == 0 or month == 0 or month > 12) return null;
-    const year = 2000 + @as(i32, record.data[0x43]);
-    return std.fmt.bufPrint(buf, "{d}. {s} {d}", .{ day, monthNames()[month - 1], year }) catch null;
-}
-
-fn monthNames() [12][]const u8 {
-    return .{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-}
-
-fn ordinalBuf(buf: []u8, rank: usize) []const u8 {
-    const suffix = switch (rank % 10) {
-        1 => if (rank % 100 == 11) "th" else "st",
-        2 => if (rank % 100 == 12) "th" else "nd",
-        3 => if (rank % 100 == 13) "th" else "rd",
-        else => "th",
-    };
-    return std.fmt.bufPrint(buf, "{d}{s}", .{ rank, suffix }) catch "?";
-}
-
 fn questLevelKeyFromConfig(config: formats.crimson_cfg.CrimsonCfg) i32 {
     _ = config;
     return 101;
@@ -2494,23 +2387,6 @@ test "statistics right panel shifts match narrow native layouts" {
     const right_rect = rl.Rectangle.init(630.0, 209.0, 424.0, 276.0);
     try std.testing.expectApproxEqAbs(@as(f32, 640.0), highScoreRightOptionsRect(right_rect, 640).x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 642.0), highScoreRightLocalCardRect(right_rect, 640).x, 1e-6);
-}
-
-test "high score local details hit percent uses wide math" {
-    var record = persistence.highscores.HighScoreRecord.blank();
-    try std.testing.expectEqual(@as(u64, 0), highScoreHitPercent(record));
-
-    record.setShotsFired(20);
-    record.setShotsHit(15);
-    try std.testing.expectEqual(@as(u64, 75), highScoreHitPercent(record));
-
-    record.setShotsFired(3);
-    record.setShotsHit(2);
-    try std.testing.expectEqual(@as(u64, 66), highScoreHitPercent(record));
-
-    record.setShotsFired(1);
-    record.setShotsHit(std.math.maxInt(u32));
-    try std.testing.expectEqual(@as(u64, 429496729500), highScoreHitPercent(record));
 }
 
 test "statistics database detail labels preserve original wording in all modes" {
