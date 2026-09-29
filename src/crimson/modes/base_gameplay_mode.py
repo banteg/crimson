@@ -59,7 +59,7 @@ from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from ..ui.hud import HudState, draw_target_health_bar
 from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
-from .components.highscore_record_builder import build_highscore_record_for_game_over
+from .components.highscore_record_builder import build_highscore_record
 from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
 from .components.perk_prompt_controller import PerkPromptState
 
@@ -749,7 +749,7 @@ class BaseGameplayMode:
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        self._game_over_record = build_highscore_record_for_game_over(
+        self._game_over_record = build_highscore_record(
             state=self.state,
             player=self.player,
             survival_elapsed_ms=int(self._session_elapsed_ms()),

@@ -7,6 +7,7 @@ from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestRunOutcome
+from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.level import QuestLevel
 from crimson.screens import menu
 from crimson.screens.actions import (
@@ -26,7 +27,6 @@ from crimson.screens.panels.play_game import PlayGameMenuView
 from crimson.screens.pause_menu import PauseMenuView
 from crimson.screens.quest_views.quest_results import QuestResultsView
 from crimson.screens.stack import ScreenEntry, ScreenStack
-from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.support.gameplay_screen import GameplayScreenStub
@@ -179,16 +179,9 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
         kind="completed",
         level=QuestLevel(1, 1),
         base_time_ms=60000,
-        player_health=100,
-        player2_health=None,
+        player_health_values=(100.0,),
         pending_perk_count=0,
-        experience=1234,
-        kill_count=42,
-        weapon_id=WeaponId.PISTOL,
-        shots_fired=50,
-        shots_hit=40,
-        most_used_weapon_id=WeaponId.PISTOL,
-        highscore_random_tag=123,
+        record=HighScoreRecord.blank(rand_value=123),
     )
     gameplay = GameplayScreenStub(action=ShowQuestOutcome(outcome))
     state.screens.reset(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))

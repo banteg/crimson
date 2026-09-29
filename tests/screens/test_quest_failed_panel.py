@@ -9,12 +9,12 @@ import crimson.screens.quest_views.quest_failed as quest_failed_module
 from crimson.game_modes import GameMode
 from crimson.game_states import GameStateId
 from crimson.modes.quest_mode import QuestRunOutcome
+from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, StartRun
 from crimson.screens.quest_views import QUEST_FAILED_PANEL_W, QuestFailedView
 from crimson.screens.quest_views.shared import QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET
 from crimson.ui.animation import ui_element_timeline_window
-from crimson.weapons import WeaponId
 from grim import music as grim_music
 from grim import sfx as grim_sfx
 from grim.assets import RuntimeResources
@@ -67,27 +67,10 @@ def _failed_outcome() -> QuestRunOutcome:
         kind="failed",
         level=QuestLevel(5, 10),
         base_time_ms=7_000,
-        player_health=0.0,
-        player2_health=None,
+        player_health_values=(0.0,),
         pending_perk_count=0,
-        experience=123,
-        kill_count=45,
-        weapon_id=WeaponId.PISTOL,
-        shots_fired=100,
-        shots_hit=42,
-        most_used_weapon_id=WeaponId.PISTOL,
-        highscore_random_tag=0x0AAC0004,
+        record=HighScoreRecord.blank(rand_value=0x0AAC0004),
     )
-
-
-def test_quest_failed_preserves_start_random_tag(quest_failed_state) -> None:
-    state = quest_failed_state
-
-    view = QuestFailedView(state, _failed_outcome())
-    view.open()
-
-    assert view._record is not None
-    assert view._record.uni_num == 0x0AAC0004
 
 
 def test_quest_failed_panel_layout_uses_native_anchor(monkeypatch, quest_failed_state, mocker) -> None:

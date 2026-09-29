@@ -18,24 +18,25 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
-from ..persistence.highscores import UNI_NUM_MASK
+from ..persistence.highscores import UNI_NUM_MASK, HighScoreRecord
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import QuestSpawnState
-from ..sim.run_result import RunOutcome, run_shot_counts
+from ..sim.run_result import RunOutcome
 from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
 )
-from ..weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
+from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
+from .components.highscore_record_builder import build_highscore_record
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -47,17 +48,9 @@ class QuestRunOutcome(msgspec.Struct, frozen=True):
     kind: str  # "completed" | "failed"
     level: QuestLevel
     base_time_ms: int
-    player_health: float
-    player2_health: float | None
+    player_health_values: tuple[float, ...]
     pending_perk_count: int
-    experience: int
-    kill_count: int
-    weapon_id: WeaponId
-    shots_fired: int
-    shots_hit: int
-    most_used_weapon_id: WeaponId
-    highscore_random_tag: int
-    player_health_values: tuple[float, ...] = ()
+    record: HighScoreRecord
 
 
 class QuestMode(BaseGameplayMode):
@@ -212,30 +205,20 @@ class QuestMode(BaseGameplayMode):
     def _close_run(self, kind: str) -> None:
         if self._outcome is None:
             assert self._quest_level is not None, "quest outcome requires active quest level"
-            fired, hit = run_shot_counts(self.state)
-            most_used_weapon_id = most_used_weapon_id_for_player(
-                self.state,
-                fallback_weapon_id=self.player.weapon.weapon_id,
-            )
-            player_health_values = tuple(float(player.health) for player in self.world.players)
-            player2_health = None
-            if len(player_health_values) >= 2:
-                player2_health = float(player_health_values[1])
+            base_time_ms = int(self._quest_spawn_state.spawn_timeline_ms)
             self._outcome = QuestRunOutcome(
                 kind=kind,
                 level=self._quest_level,
-                base_time_ms=int(self._quest_spawn_state.spawn_timeline_ms),
-                player_health=float(player_health_values[0] if player_health_values else self.player.health),
-                player2_health=player2_health,
-                player_health_values=player_health_values,
+                base_time_ms=base_time_ms,
+                player_health_values=tuple(float(player.health) for player in self.world.players),
                 pending_perk_count=int(self.state.perk_selection.pending_count),
-                experience=int(self.state.highscore_score_xp),
-                kill_count=int(self.creatures.kill_count),
-                weapon_id=self.player.weapon.weapon_id,
-                shots_fired=fired,
-                shots_hit=hit,
-                most_used_weapon_id=most_used_weapon_id,
-                highscore_random_tag=int(self._quest_highscore_random_tag),
+                record=build_highscore_record(
+                    state=self.state,
+                    player=self.player,
+                    survival_elapsed_ms=base_time_ms,
+                    creature_kill_count=int(self.creatures.kill_count),
+                    rand_value=int(self._quest_highscore_random_tag),
+                ),
             )
         self._save_replay()
         self.close_requested = True

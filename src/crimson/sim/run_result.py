@@ -106,9 +106,8 @@ def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> R
     if outcome == RunOutcome.QUEST_COMPLETED:
         quest_final_ms = compute_quest_final_time(
             base_time_ms=int(elapsed_ms),
-            player_health=float(players[0].health),
-            pending_perk_count=int(state.perk_selection.pending_count),
             player_health_values=tuple(float(player.health) for player in players),
+            pending_perk_count=int(state.perk_selection.pending_count),
         ).final_time_ms
 
     return RunResult(

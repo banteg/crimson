@@ -75,10 +75,8 @@ class QuestResultsBreakdownAnim(msgspec.Struct):
 def compute_quest_final_time(
     *,
     base_time_ms: int,
-    player_health: float,
+    player_health_values: Sequence[float],
     pending_perk_count: int,
-    player2_health: float | None = None,
-    player_health_values: Sequence[float] | None = None,
 ) -> QuestFinalTime:
     """Compute quest final time (ms) and breakdown.
 
@@ -92,17 +90,9 @@ def compute_quest_final_time(
     """
 
     base_ms = int(base_time_ms)
-    health_values: tuple[float, ...]
-    if player_health_values is not None and len(player_health_values) > 0:
-        health_values = tuple(float(health) for health in player_health_values)
-    else:
-        health_values = (float(player_health),)
-        if player2_health is not None:
-            health_values += (float(player2_health),)
-
-    player0_health = int(math.trunc(f32(health_values[0])))
+    player0_health = int(math.trunc(f32(player_health_values[0])))
     life_bonus_ms = int(math.trunc(x87_pc24_mul(float(player0_health), f32(50.0))))
-    for health in health_values[1:]:
+    for health in player_health_values[1:]:
         life_bonus_ms += int(math.trunc(x87_pc24_mul(f32(health), f32(50.0))))
 
     unpicked_perk_bonus_ms = int(pending_perk_count) * 1000

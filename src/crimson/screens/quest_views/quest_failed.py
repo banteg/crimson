@@ -247,32 +247,12 @@ class QuestFailedView:
         return "Quest failed, try again."
 
     def _build_score_preview(self, outcome: QuestRunOutcome | None) -> None:
-        from ...persistence.highscores import HighScoreRecord
-
         self._record = None
         if outcome is None:
             return
-
-        level = outcome.level
-        major, minor = level.major, level.minor
-
-        record = HighScoreRecord.blank(
-            rand_value=int(outcome.highscore_random_tag),
-        )
+        record = outcome.record.copy()
         record.set_name(_player_name_default(self.state.config) or "Player")
-        record.game_mode_id = GameMode.QUESTS
-        record.quest_stage_major = major
-        record.quest_stage_minor = minor
-        record.survival_elapsed_ms = max(1, int(outcome.base_time_ms))
-        record.score_xp = int(outcome.experience)
-        record.creature_kill_count = int(outcome.kill_count)
-        record.most_used_weapon_id = outcome.most_used_weapon_id
-        record.hardcore_marker = 0x75 if self.state.config.gameplay.hardcore else 0
-        fired = max(0, int(outcome.shots_fired))
-        hit = max(0, min(int(outcome.shots_hit), fired))
-        record.shots_fired = fired
-        record.shots_hit = hit
-
+        record.survival_elapsed_ms = max(1, outcome.base_time_ms)
         self._record = record
 
     def _activate_retry(self) -> None:

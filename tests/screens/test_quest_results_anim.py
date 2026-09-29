@@ -10,7 +10,7 @@ from crimson.quests.results import (
 def test_breakdown_anim_reaches_final_values() -> None:
     target = compute_quest_final_time(
         base_time_ms=5000,
-        player_health=100.0,
+        player_health_values=(100.0,),
         pending_perk_count=3,
     )
     anim = QuestResultsBreakdownAnim.start()
@@ -28,7 +28,7 @@ def test_breakdown_anim_reaches_final_values() -> None:
 def test_breakdown_anim_can_skip_to_final() -> None:
     target = compute_quest_final_time(
         base_time_ms=12345,
-        player_health=42.0,
+        player_health_values=(42.0,),
         pending_perk_count=7,
     )
     anim = QuestResultsBreakdownAnim.start()
