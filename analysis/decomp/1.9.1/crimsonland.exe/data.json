@@ -2,7 +2,17 @@
   "entries": [
     {
       "address": "0x004683cc",
+      "name": "??_7mod_api_cpp_t@@6B@",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004683cc",
       "name": "mod_api_vtable",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468980",
+      "name": "$T318",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -12,7 +22,17 @@
     },
     {
       "address": "0x00468990",
+      "name": "$T16547",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468990",
       "name": "crt_ehvec_dtor_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004689a0",
+      "name": "$T16560",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -22,7 +42,17 @@
     },
     {
       "address": "0x004689c0",
+      "name": "$T17734",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004689c0",
       "name": "crt_start_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468a18",
+      "name": "$T17786",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -32,7 +62,17 @@
     },
     {
       "address": "0x00468a30",
+      "name": "$T17138",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468a30",
       "name": "crt_msize_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468a48",
+      "name": "$T17396",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -42,7 +82,17 @@
     },
     {
       "address": "0x00468a60",
+      "name": "$T17377",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468a60",
       "name": "crt_free_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468b38",
+      "name": "$T16793",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -52,7 +102,17 @@
     },
     {
       "address": "0x00468b68",
+      "name": "??_C@_01A@?$AA?$AA@",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468b68",
       "name": "crt_two_nul_literal",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468b6c",
+      "name": "??_C@_13A@?$AA?$AA?$AA?$AA@",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -62,7 +122,17 @@
     },
     {
       "address": "0x00468b70",
+      "name": "$T17629",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468b70",
       "name": "crt_lcmap_string_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468b88",
+      "name": "$T17388",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -72,7 +142,17 @@
     },
     {
       "address": "0x00468f78",
+      "name": "$T17333",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468f78",
       "name": "crt_frame_unwind_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468f88",
+      "name": "$T17354",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -82,7 +162,17 @@
     },
     {
       "address": "0x00468fa0",
+      "name": "$T17369",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468fa0",
       "name": "crt_build_catch_object_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468fb0",
+      "name": "$T17381",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -92,7 +182,17 @@
     },
     {
       "address": "0x00468fc0",
+      "name": "$T17610",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00468fc0",
       "name": "crt_get_string_type_a_scope_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00469160",
+      "name": "$T17643",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -102,7 +202,17 @@
     },
     {
       "address": "0x0046a000",
+      "name": "___xc_a",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a000",
       "name": "crt_xc_begin",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a0e0",
+      "name": "___xc_z",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -112,7 +222,17 @@
     },
     {
       "address": "0x0046a0e4",
+      "name": "___xi_a",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a0e4",
       "name": "crt_xi_begin",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a0f8",
+      "name": "___xi_z",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -122,7 +242,17 @@
     },
     {
       "address": "0x0046a0fc",
+      "name": "___xp_a",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a0fc",
       "name": "crt_pre_terminator_begin",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a104",
+      "name": "___xp_z",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -132,7 +262,17 @@
     },
     {
       "address": "0x0046a108",
+      "name": "___xt_a",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a108",
       "name": "crt_terminator_begin",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0046a110",
+      "name": "___xt_z",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -206,6 +346,26 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004707fc",
+      "name": "ui_segmented_slider_tex_on",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00470800",
+      "name": "ui_segmented_slider_tex_off",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004715a0",
+      "name": "?g_D3DXFastTable@@3UD3DXFASTTABLE@@A",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004715a0",
+      "name": "g_D3DXFastTable",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004715a0",
       "name": "renderer_dispatch_table",
       "program": "1.9.1/crimsonland.exe"
@@ -217,7 +377,17 @@
     },
     {
       "address": "0x00471780",
+      "name": "_invSqrtTab",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00471780",
       "name": "d3dx_inverse_sqrt_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00471780",
+      "name": "invSqrtTab",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -246,8 +416,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00473098",
+      "name": "sgn",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x0047309c",
       "name": "d3dx_x87_math_abs_mask",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047309c",
+      "name": "mabs",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -256,13 +436,28 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730a0",
+      "name": "mant",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730a4",
       "name": "d3dx_x87_math_exponent_mask",
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730a4",
+      "name": "expo",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730a8",
       "name": "d3dx_x87_math_one",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730a8",
+      "name": "one",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -276,8 +471,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730b4",
+      "name": "oob",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730c8",
       "name": "d3dx_x87_math_atan_q0",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730c8",
+      "name": "qq0",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -286,8 +491,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730cc",
+      "name": "qq1",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730d0",
       "name": "d3dx_x87_math_atan_q2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730d0",
+      "name": "qq2",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -296,13 +511,33 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730d4",
+      "name": "pp0",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730d8",
       "name": "d3dx_x87_math_atan_p1",
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730d8",
+      "name": "pp1",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730dc",
       "name": "d3dx_x87_math_atan_p2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730dc",
+      "name": "pp2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730e0",
+      "name": "bnd",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -312,12 +547,27 @@
     },
     {
       "address": "0x004730e4",
+      "name": "asp0",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730e4",
       "name": "d3dx_x87_math_acos_p0",
       "program": "1.9.1/crimsonland.exe"
     },
     {
       "address": "0x004730ec",
+      "name": "asq0",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730ec",
       "name": "d3dx_x87_math_acos_q0",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730f0",
+      "name": "asq1",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -331,8 +581,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004730f4",
+      "name": "pio2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004730f8",
       "name": "d3dx_x87_math_negative_pi_over_2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004730f8",
+      "name": "npio2",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -341,8 +601,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00473108",
+      "name": "ln2hi",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x0047310c",
       "name": "d3dx_x87_math_ln2_low",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047310c",
+      "name": "ln2lo",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -351,8 +621,23 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00473110",
+      "name": "rt2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00473114",
       "name": "d3dx_x87_math_exponent_decrement",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473114",
+      "name": "edec",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473118",
+      "name": "bias",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -362,12 +647,27 @@
     },
     {
       "address": "0x0047311c",
+      "name": "c2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047311c",
       "name": "d3dx_x87_math_log_c2",
       "program": "1.9.1/crimsonland.exe"
     },
     {
       "address": "0x00473120",
+      "name": "c1",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473120",
       "name": "d3dx_x87_math_log_c1",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473124",
+      "name": "c0",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -381,8 +681,23 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x0047312c",
+      "name": "maxn",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473160",
+      "name": "__FPinit",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00473160",
       "name": "crt_fp_init_hook",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473168",
+      "name": "__FPmtterm",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -392,12 +707,27 @@
     },
     {
       "address": "0x00473180",
+      "name": "__aexit_rtn",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473180",
       "name": "crt_exit_routine",
       "program": "1.9.1/crimsonland.exe"
     },
     {
       "address": "0x00473184",
+      "name": "___app_type",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473184",
       "name": "crt_app_type",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473198",
+      "name": "__NLG_Destination",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -412,7 +742,17 @@
     },
     {
       "address": "0x004733cc",
+      "name": "___mb_cur_max",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004733cc",
       "name": "crt_mb_cur_max",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004733d8",
+      "name": "__iob",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -422,7 +762,17 @@
     },
     {
       "address": "0x00473658",
+      "name": "___nullstring",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473658",
       "name": "crt_null_string",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047365c",
+      "name": "___wnullstring",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -432,7 +782,17 @@
     },
     {
       "address": "0x004736f0",
+      "name": "___tlsindex",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004736f0",
       "name": "crt_tls_index",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004736f4",
+      "name": "__locktable",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -442,7 +802,17 @@
     },
     {
       "address": "0x00473930",
+      "name": "___badioinfo",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473930",
       "name": "crt_bad_ioinfo",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473a60",
+      "name": "__XcptActTab",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -452,7 +822,17 @@
     },
     {
       "address": "0x00473ad8",
+      "name": "__First_FPE_Indx",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473ad8",
       "name": "crt_first_fpe_action_index",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473adc",
+      "name": "__Num_FPE",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -462,7 +842,17 @@
     },
     {
       "address": "0x00473b80",
+      "name": "__d_inf",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473b80",
       "name": "crt_double_infinity",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473b88",
+      "name": "__d_ind",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -472,7 +862,17 @@
     },
     {
       "address": "0x00473b90",
+      "name": "__d_max",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473b90",
       "name": "crt_double_max",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473ba0",
+      "name": "__d_mzero",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -482,7 +882,17 @@
     },
     {
       "address": "0x00473c80",
+      "name": "_over",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473c80",
       "name": "crt_x87_overflow_value",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473c8c",
+      "name": "_under",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -492,7 +902,17 @@
     },
     {
       "address": "0x00473ca0",
+      "name": "_DoubleFormat",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473ca0",
       "name": "crt_double_format_descriptor",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473cb8",
+      "name": "_FloatFormat",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -502,7 +922,17 @@
     },
     {
       "address": "0x00473cd0",
+      "name": "___old_small_block_heap",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00473cd0",
       "name": "crt_old_small_block_heap",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475cf0",
+      "name": "___old_sbh_p_starting_region",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -516,8 +946,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00475d00",
+      "name": "fdiv_risc_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00475d10",
       "name": "crt_fdiv_scale_1",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475d10",
+      "name": "fdiv_scale_1",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -526,8 +966,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00475d14",
+      "name": "fdiv_scale_2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00475d18",
       "name": "crt_fdiv_one_shl_63",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475d18",
+      "name": "one_shl_63",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -536,8 +986,18 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00475d1c",
+      "name": "fprem_risc_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00475d34",
       "name": "crt_fdiv_one_shl_64",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475d34",
+      "name": "one_shl_64",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -546,8 +1006,23 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00475d3c",
+      "name": "one_shr_64",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00475d4c",
       "name": "crt_fdiv_half",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475d4c",
+      "name": "half",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475d54",
+      "name": "big_number",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -557,7 +1032,17 @@
     },
     {
       "address": "0x00475e60",
+      "name": "__timezone",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475e60",
       "name": "crt_timezone",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475e64",
+      "name": "__daylight",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -567,7 +1052,17 @@
     },
     {
       "address": "0x00475e68",
+      "name": "__dstbias",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475e68",
       "name": "crt_dst_bias",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475ef8",
+      "name": "_dststart",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -577,7 +1072,17 @@
     },
     {
       "address": "0x00475f08",
+      "name": "_dstend",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475f08",
       "name": "crt_dst_end_rule",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475f14",
+      "name": "__lpdays",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -587,7 +1092,17 @@
     },
     {
       "address": "0x00475f48",
+      "name": "__days",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00475f48",
       "name": "crt_month_days",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00476078",
+      "name": "__matherr_flag",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -597,7 +1112,17 @@
     },
     {
       "address": "0x00476170",
+      "name": "__pow10pos",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00476170",
       "name": "crt_pow10_positive",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004762d0",
+      "name": "__pow10neg",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -681,6 +1206,11 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00476ec8",
+      "name": "console_open_flag",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004774cc",
       "name": "console_cmd_argc",
       "program": "1.9.1/crimsonland.exe"
@@ -688,6 +1218,11 @@
     {
       "address": "0x004774d0",
       "name": "cv_con_mono_font",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004774d4",
+      "name": "console_input_enabled",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -1076,6 +1611,11 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x0047885c",
+      "name": "game_time_ms",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00478868",
       "name": "cv_silentloads",
       "program": "1.9.1/crimsonland.exe"
@@ -1181,6 +1721,11 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x0047a440",
+      "name": "mod_api_gfx_batch_open",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x0047a448",
       "name": "plugin_module_handle",
       "program": "1.9.1/crimsonland.exe"
@@ -1208,6 +1753,11 @@
     {
       "address": "0x0047c6a0",
       "name": "quest_selected_meta",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047cd80",
+      "name": "camera_offset",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -1547,6 +2097,11 @@
     },
     {
       "address": "0x0047ef90",
+      "name": "camera_shake_offset",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047ef90",
       "name": "camera_shake_offset_x",
       "program": "1.9.1/crimsonland.exe"
     },
@@ -1563,6 +2118,11 @@
     {
       "address": "0x0047efa0",
       "name": "player_name_length",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047efa4",
+      "name": "frame_cursor_state",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -1608,6 +2168,11 @@
     {
       "address": "0x0047efc5",
       "name": "highscore_return_latch",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0047efdc",
+      "name": "screen_fade_alpha",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -1847,7 +2412,17 @@
     },
     {
       "address": "0x00486ee0",
+      "name": "ui_element_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00486ee0",
       "name": "ui_element_table_end",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00486f80",
+      "name": "ui_element_table_start",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -1883,6 +2458,16 @@
     {
       "address": "0x00487500",
       "name": "quest_stage_label_buffer",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00487514",
+      "name": "ui_aim_texture",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00487560",
+      "name": "particles_texture",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -2011,6 +2596,16 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x00488068",
+      "name": "ui_aim_enhancement_anim_timer",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0048806c",
+      "name": "ui_aim_enhancement_pulse_phase",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x00488080",
       "name": "unused_fx_queue_random_prefix_color",
       "program": "1.9.1/crimsonland.exe"
@@ -2018,6 +2613,11 @@
     {
       "address": "0x00488090",
       "name": "unused_fx_queue_random_prefix_vec2",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00488098",
+      "name": "?color@?4??fx_queue_add_random@@9@4UFxRandomColor@@A",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -2123,6 +2723,11 @@
     {
       "address": "0x00488ef4",
       "name": "effect_uv2_v",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x00488f10",
+      "name": "?$S1@?4??fx_queue_add_random@@9@4EA",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -2243,6 +2848,11 @@
     {
       "address": "0x0048cf40",
       "name": "secondary_proj_speed",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x0048da58",
+      "name": "render_tint_color",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -2477,6 +3087,11 @@
     },
     {
       "address": "0x004a240c",
+      "name": "effect_template",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004a240c",
       "name": "effect_template_vel_x",
       "program": "1.9.1/crimsonland.exe"
     },
@@ -2558,6 +3173,11 @@
     {
       "address": "0x004a24c0",
       "name": "effect_discard_entry",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004a2580",
+      "name": "effect_pool",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -2663,6 +3283,11 @@
     {
       "address": "0x004bb0a8",
       "name": "sfx_voice_table",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004bb128",
+      "name": "audio_asset_id_table",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3106,6 +3731,11 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004c0100",
+      "name": "highscore_card_divider_color_r",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004c461c",
       "name": "ui_focus_count",
       "program": "1.9.1/crimsonland.exe"
@@ -3113,6 +3743,11 @@
     {
       "address": "0x004c4620",
       "name": "ui_focus_index",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004c4624",
+      "name": "ui_focus_frame_marker_ms",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3152,7 +3787,17 @@
     },
     {
       "address": "0x004ccb88",
+      "name": "__umaskval",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccb88",
       "name": "crt_umask",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccb8c",
+      "name": "__osver",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3162,7 +3807,17 @@
     },
     {
       "address": "0x004ccb90",
+      "name": "__winver",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccb90",
       "name": "crt_windows_version",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccb94",
+      "name": "__winmajor",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3172,12 +3827,27 @@
     },
     {
       "address": "0x004ccb98",
+      "name": "__winminor",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccb98",
       "name": "crt_windows_minor",
       "program": "1.9.1/crimsonland.exe"
     },
     {
       "address": "0x004ccb9c",
+      "name": "___argc",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccb9c",
       "name": "crt_argc",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccba0",
+      "name": "___argv",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3192,7 +3862,17 @@
     },
     {
       "address": "0x004ccbac",
+      "name": "___initenv",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbac",
       "name": "crt_initial_environment",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbb0",
+      "name": "__wenviron",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3202,7 +3882,17 @@
     },
     {
       "address": "0x004ccbb8",
+      "name": "__pgmptr",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbb8",
       "name": "crt_program_path",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbc0",
+      "name": "__exitflag",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3212,7 +3902,17 @@
     },
     {
       "address": "0x004ccbc4",
+      "name": "__C_Termination_Done",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbc4",
       "name": "crt_termination_done",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbc8",
+      "name": "__C_Exit_Done",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3222,7 +3922,17 @@
     },
     {
       "address": "0x004ccbcc",
+      "name": "__aenvptr",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbcc",
       "name": "crt_ansi_environment_block",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbd4",
+      "name": "___error_mode",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3232,7 +3942,17 @@
     },
     {
       "address": "0x004ccbd8",
+      "name": "__cflush",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccbd8",
       "name": "crt_cflush",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccc40",
+      "name": "__stdbuf",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3242,7 +3962,17 @@
     },
     {
       "address": "0x004ccc54",
+      "name": "___lc_handle",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccc54",
       "name": "crt_locale_handles",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccc6c",
+      "name": "___lc_codepage",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3252,7 +3982,17 @@
     },
     {
       "address": "0x004ccc74",
+      "name": "_?f_use@?1??__crtLCMapStringA@@9@9",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccc74",
       "name": "crt_lcmap_string_use_wide_api",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccc78",
+      "name": "_?_pgmname@?1??_setargv@@9@9",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3262,7 +4002,17 @@
     },
     {
       "address": "0x004ccd7c",
+      "name": "_?f_use@?1??__crtGetEnvironmentStringsA@@9@9",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd7c",
       "name": "crt_get_environment_strings_use_wide_api",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd80",
+      "name": "__adbgmsg",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3272,7 +4022,17 @@
     },
     {
       "address": "0x004ccd84",
+      "name": "___old_sbh_decommitable_pages",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd84",
       "name": "crt_sbh_decommitable_pages",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd88",
+      "name": "?_pnhHeap@@3P6AHI@ZA",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3282,7 +4042,17 @@
     },
     {
       "address": "0x004ccd8c",
+      "name": "__newmode",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd8c",
       "name": "crt_new_mode",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd90",
+      "name": "_?f_use@?1??__crtGetStringTypeA@@9@9",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3292,7 +4062,17 @@
     },
     {
       "address": "0x004ccd94",
+      "name": "__commode",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd94",
       "name": "crt_commit_mode",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccd98",
+      "name": "_tzapiused",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3302,7 +4082,17 @@
     },
     {
       "address": "0x004ccda0",
+      "name": "_tzinfo",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccda0",
       "name": "crt_timezone_info",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cce50",
+      "name": "_?first_time@?1??__tzset@@9@9",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3312,7 +4102,17 @@
     },
     {
       "address": "0x004cceb8",
+      "name": "_fSystemSet",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cceb8",
       "name": "crt_mb_system_codepage_set",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccebc",
+      "name": "_?pfnMessageBoxA@?1??__crtMessageBoxA@@9@9",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3322,7 +4122,17 @@
     },
     {
       "address": "0x004ccec0",
+      "name": "_?pfnGetActiveWindow@?1??__crtMessageBoxA@@9@9",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccec0",
       "name": "crt_get_active_window_proc",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccec4",
+      "name": "_?pfnGetLastActivePopup@?1??__crtMessageBoxA@@9@9",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3332,7 +4142,17 @@
     },
     {
       "address": "0x004ccec8",
+      "name": "_pOldExceptFilter",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccec8",
       "name": "crt_previous_exception_filter",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccecc",
+      "name": "_ctrlc_action",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3342,7 +4162,17 @@
     },
     {
       "address": "0x004cced0",
+      "name": "_ctrlbreak_action",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cced0",
       "name": "crt_ctrl_break_action",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cced4",
+      "name": "_abort_action",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3352,7 +4182,17 @@
     },
     {
       "address": "0x004cced8",
+      "name": "_term_action",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cced8",
       "name": "crt_term_action",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccee0",
+      "name": "__fmode",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3362,7 +4202,17 @@
     },
     {
       "address": "0x004ccefc",
+      "name": "_?f_use@?1??__crtCompareStringA@@9@9",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccefc",
       "name": "crt_compare_string_use_wide_api",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ccf00",
+      "name": "mod_api_gfx_format_buffer",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3372,7 +4222,17 @@
     },
     {
       "address": "0x004cd340",
+      "name": "?fvecf0pt5@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd340",
       "name": "d3dx_sse_rsqrt_half_vector",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd350",
+      "name": "?fvecf3pt0@?1??rsqrt_nr@@YA?AVF32vec1@@ABV2@@Z@4V2@B",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3382,7 +4242,17 @@
     },
     {
       "address": "0x004cd360",
+      "name": "??_B?1??rsqrt_nr@@YA?AVF32vec1@@ABV1@@Z@51",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd360",
       "name": "d3dx_sse_rsqrt_init_guard",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd364",
+      "name": "___mbcodepage",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3392,7 +4262,17 @@
     },
     {
       "address": "0x004cd370",
+      "name": "___mbulinfo",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd370",
       "name": "crt_mb_lead_byte_ranges",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd37c",
+      "name": "___ismbcodepage",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3402,7 +4282,17 @@
     },
     {
       "address": "0x004cd380",
+      "name": "__mbcasemap",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd380",
       "name": "crt_mb_case_map",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd480",
+      "name": "__mbctype",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3412,7 +4302,17 @@
     },
     {
       "address": "0x004cd584",
+      "name": "___mblcid",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd584",
       "name": "crt_mb_lcid",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd588",
+      "name": "___sbh_sizeHeaderList",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3422,7 +4322,17 @@
     },
     {
       "address": "0x004cd58c",
+      "name": "___sbh_indGroupDefer",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd58c",
       "name": "crt_sbh_deferred_group_index",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd590",
+      "name": "___sbh_pHeaderScan",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3432,7 +4342,17 @@
     },
     {
       "address": "0x004cd594",
+      "name": "___sbh_pHeaderDefer",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd594",
       "name": "crt_sbh_header_defer",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd598",
+      "name": "___sbh_cntHeaderList",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3442,7 +4362,17 @@
     },
     {
       "address": "0x004cd59c",
+      "name": "___sbh_pHeaderList",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd59c",
       "name": "crt_sbh_header_list",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd5a0",
+      "name": "___sbh_threshold",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3462,7 +4392,17 @@
     },
     {
       "address": "0x004cd5ac",
+      "name": "___setlc_active",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd5ac",
       "name": "crt_setlocale_active",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004cd5b0",
+      "name": "___unguarded_readlc_active",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3492,12 +4432,27 @@
     },
     {
       "address": "0x004ce6e4",
+      "name": "__acmdln",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce6e4",
       "name": "crt_ansi_command_line",
       "program": "1.9.1/crimsonland.exe"
     },
     {
       "address": "0x004ce6e8",
+      "name": "___env_initialized",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce6e8",
       "name": "crt_environment_initialized",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce6ec",
+      "name": "___mbctype_initialized",
       "program": "1.9.1/crimsonland.exe"
     },
     {
@@ -3531,5 +4486,5 @@
       "program": "1.9.1/crimsonland.exe"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies; every observed reference to an entry agrees."
+  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees."
 }

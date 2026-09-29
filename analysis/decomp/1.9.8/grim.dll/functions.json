@@ -45,7 +45,10 @@
     "end": "0x10002E7A",
     "evidence": "exact",
     "name": "grim_app_cleanup",
-    "size": 26
+    "size": 26,
+    "aliases": [
+      "?cleanup@MyApp@@QAEXXZ"
+    ]
   },
   {
     "address": "0x10002F40",
@@ -53,7 +56,10 @@
     "end": "0x10002F80",
     "evidence": "ordered",
     "name": "grim_app_tick",
-    "size": 64
+    "size": 64,
+    "aliases": [
+      "?tick@MyApp@@QAE_NXZ"
+    ]
   },
   {
     "address": "0x10003130",
@@ -61,7 +67,10 @@
     "end": "0x100031F0",
     "evidence": "ordered",
     "name": "grim_app_init",
-    "size": 192
+    "size": 192,
+    "aliases": [
+      "?init@MyApp@@QAE_NXZ"
+    ]
   },
   {
     "address": "0x100031F0",
@@ -165,7 +174,10 @@
     "end": "0x10004BE0",
     "evidence": "referenced",
     "name": "grim_texture_init",
-    "size": 64
+    "size": 64,
+    "aliases": [
+      "??0GrimTexture@@QAE@PAD@Z"
+    ]
   },
   {
     "address": "0x10004BE0",
@@ -173,7 +185,10 @@
     "end": "0x10004C22",
     "evidence": "exact",
     "name": "grim_texture_release",
-    "size": 66
+    "size": 66,
+    "aliases": [
+      "??1GrimTexture@@QAE@XZ"
+    ]
   },
   {
     "address": "0x10004C30",
@@ -197,7 +212,10 @@
     "end": "0x10005220",
     "evidence": "referenced",
     "name": "grim_texture_load_file",
-    "size": 544
+    "size": 544,
+    "aliases": [
+      "?grim_texture_load_file@GrimTexture@@QAE_NPAD@Z"
+    ]
   },
   {
     "address": "0x10005220",
@@ -781,7 +799,10 @@
     "end": "0x10008331",
     "evidence": "exact",
     "name": "grim_line_vector_dtor",
-    "size": 1
+    "size": 1,
+    "aliases": [
+      "$E2"
+    ]
   },
   {
     "address": "0x10008340",
@@ -1165,7 +1186,10 @@
     "end": "0x1000AB03",
     "evidence": "exact",
     "name": "grim_jaz_decode_scope_init",
-    "size": 3
+    "size": 3,
+    "aliases": [
+      "??0GrimJazDecodeScope@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1000AB10",
@@ -1181,7 +1205,10 @@
     "end": "0x1000AB6C",
     "evidence": "exact",
     "name": "grim_zlib_decompress_alloc",
-    "size": 60
+    "size": 60,
+    "aliases": [
+      "?decompress_alloc@GrimJazDecodeScope@@QAE_NPAPAEIPBEI@Z"
+    ]
   },
   {
     "address": "0x1000AB70",
@@ -1189,7 +1216,10 @@
     "end": "0x1000ABB2",
     "evidence": "exact",
     "name": "grim_jaz_decompress_payload",
-    "size": 66
+    "size": 66,
+    "aliases": [
+      "?unpack@GrimJazDecodeScope@@QAEPAEPAEPAI@Z"
+    ]
   },
   {
     "address": "0x1000B1AD",
@@ -1253,7 +1283,10 @@
     "end": "0x1000B9B5",
     "evidence": "referenced",
     "name": "crt_onexit",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "__onexit"
+    ]
   },
   {
     "address": "0x1000B9B5",
@@ -1261,7 +1294,10 @@
     "end": "0x1000B9C7",
     "evidence": "exact",
     "name": "crt_atexit",
-    "size": 18
+    "size": 18,
+    "aliases": [
+      "_atexit"
+    ]
   },
   {
     "address": "0x1000B9F6",
@@ -1269,7 +1305,10 @@
     "end": "0x1000BACF",
     "evidence": "referenced",
     "name": "crt_init",
-    "size": 217
+    "size": 217,
+    "aliases": [
+      "__CRT_INIT@12"
+    ]
   },
   {
     "address": "0x1000BACF",
@@ -1309,7 +1348,10 @@
     "end": "0x1000E313",
     "evidence": "exact",
     "name": "msvc_array_unwind_filter",
-    "size": 22
+    "size": 22,
+    "aliases": [
+      "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"
+    ]
   },
   {
     "address": "0x1000E908",
@@ -1341,7 +1383,10 @@
     "end": "0x100129DF",
     "evidence": "exact",
     "name": "crt_alloca_probe",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "__alloca_probe"
+    ]
   },
   {
     "address": "0x10014890",
@@ -1357,7 +1402,10 @@
     "end": "0x100148BA",
     "evidence": "exact",
     "name": "grim_format_info_lookup",
-    "size": 36
+    "size": 36,
+    "aliases": [
+      "?D3DXGetFormatInfo@@YAPBU_D3DXFORMAT_INFO@@W4_D3DFORMAT@@@Z"
+    ]
   },
   {
     "address": "0x100148BA",
@@ -1365,7 +1413,10 @@
     "end": "0x1001492F",
     "evidence": "exact",
     "name": "d3dx_score_format",
-    "size": 117
+    "size": 117,
+    "aliases": [
+      "?D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z"
+    ]
   },
   {
     "address": "0x1001492F",
@@ -1373,7 +1424,10 @@
     "end": "0x1001499D",
     "evidence": "exact",
     "name": "d3dx_find_closest_format",
-    "size": 110
+    "size": 110,
+    "aliases": [
+      "?D3DXFindClosestFormat@@YA?AW4_D3DFORMAT@@PBW41@PBUtagPALETTEENTRY@@PBU_D3DXFORMAT_INFO@@@Z"
+    ]
   },
   {
     "address": "0x1001499D",
@@ -1381,7 +1435,10 @@
     "end": "0x10014A7F",
     "evidence": "exact",
     "name": "d3dx_find_closest_device_format",
-    "size": 226
+    "size": 226,
+    "aliases": [
+      "?D3DXFindClosestDeviceFormat@@YA?AW4_D3DFORMAT@@PAUIDirect3DDevice8@@KW4_D3DRESOURCETYPE@@PBU_D3DXFORMAT_INFO@@@Z"
+    ]
   },
   {
     "address": "0x10014A7F",
@@ -1389,7 +1446,10 @@
     "end": "0x10014AB0",
     "evidence": "exact",
     "name": "d3dx_find_closest_external_format",
-    "size": 49
+    "size": 49,
+    "aliases": [
+      "?D3DXFindClosestExternalFormat@@YA?AW4_D3DFORMAT@@W41@@Z"
+    ]
   },
   {
     "address": "0x10014AB0",
@@ -1397,7 +1457,10 @@
     "end": "0x10014B8F",
     "evidence": "exact",
     "name": "D3DXLoadSurfaceFromMemory",
-    "size": 223
+    "size": 223,
+    "aliases": [
+      "_D3DXLoadSurfaceFromMemory@40"
+    ]
   },
   {
     "address": "0x10014B8F",
@@ -1405,7 +1468,10 @@
     "end": "0x10014C3F",
     "evidence": "exact",
     "name": "d3dx_save_surface_to_file",
-    "size": 176
+    "size": 176,
+    "aliases": [
+      "?SaveSurfaceToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@H@Z"
+    ]
   },
   {
     "address": "0x10014C3F",
@@ -1421,7 +1487,10 @@
     "end": "0x10014C62",
     "evidence": "exact",
     "name": "grim_yuv_cache_entry_init",
-    "size": 3
+    "size": 3,
+    "aliases": [
+      "??0D3DXCOLOR@@QAE@XZ"
+    ]
   },
   {
     "address": "0x10014C62",
@@ -1429,7 +1498,10 @@
     "end": "0x10014D35",
     "evidence": "exact",
     "name": "D3DXLoadVolumeFromMemory",
-    "size": 211
+    "size": 211,
+    "aliases": [
+      "_D3DXLoadVolumeFromMemory@44"
+    ]
   },
   {
     "address": "0x10014D35",
@@ -1437,7 +1509,10 @@
     "end": "0x1001505F",
     "evidence": "exact",
     "name": "d3dx_check_texture_requirements_internal",
-    "size": 810
+    "size": 810,
+    "aliases": [
+      "?CheckTextureRequirements@@YAJPAUIDirect3DDevice8@@PAI111KPAW4_D3DFORMAT@@W4_D3DPOOL@@W4_D3DRESOURCETYPE@@@Z"
+    ]
   },
   {
     "address": "0x1001505F",
@@ -1445,7 +1520,10 @@
     "end": "0x10015087",
     "evidence": "exact",
     "name": "D3DXCheckTextureRequirements",
-    "size": 40
+    "size": 40,
+    "aliases": [
+      "_D3DXCheckTextureRequirements@28"
+    ]
   },
   {
     "address": "0x10015087",
@@ -1453,7 +1531,10 @@
     "end": "0x100150ED",
     "evidence": "exact",
     "name": "D3DXCreateTexture",
-    "size": 102
+    "size": 102,
+    "aliases": [
+      "_D3DXCreateTexture@32"
+    ]
   },
   {
     "address": "0x100150ED",
@@ -1461,7 +1542,10 @@
     "end": "0x10015138",
     "evidence": "exact",
     "name": "d3dx_lock_surface_scalar_deleting_dtor",
-    "size": 75
+    "size": 75,
+    "aliases": [
+      "??_ECD3DXLockSurface@@QAEPAXI@Z"
+    ]
   },
   {
     "address": "0x10015138",
@@ -1469,7 +1553,10 @@
     "end": "0x10015183",
     "evidence": "exact",
     "name": "d3dx_lock_volume_scalar_deleting_dtor",
-    "size": 75
+    "size": 75,
+    "aliases": [
+      "??_ECD3DXLockVolume@@QAEPAXI@Z"
+    ]
   },
   {
     "address": "0x10015183",
@@ -1477,7 +1564,10 @@
     "end": "0x100151A5",
     "evidence": "exact",
     "name": "grim_vector_constructor_iterator",
-    "size": 34
+    "size": 34,
+    "aliases": [
+      "??_H@YGXPAXIHP6EPAX0@Z@Z"
+    ]
   },
   {
     "address": "0x100151A5",
@@ -1485,7 +1575,10 @@
     "end": "0x100151EE",
     "evidence": "exact",
     "name": "d3dx_eval_color",
-    "size": 73
+    "size": 73,
+    "aliases": [
+      "?EvalColor@@YAMPAUD3DXCOLOR@@K@Z"
+    ]
   },
   {
     "address": "0x100151EE",
@@ -1493,7 +1586,10 @@
     "end": "0x100159EC",
     "evidence": "exact",
     "name": "d3dx_copy_texture_filtered",
-    "size": 2046
+    "size": 2046,
+    "aliases": [
+      "_D3DXComputeNormalMap@24"
+    ]
   },
   {
     "address": "0x100159EC",
@@ -1501,7 +1597,10 @@
     "end": "0x10015B92",
     "evidence": "exact",
     "name": "D3DXLoadSurfaceFromSurface",
-    "size": 422
+    "size": 422,
+    "aliases": [
+      "_D3DXLoadSurfaceFromSurface@32"
+    ]
   },
   {
     "address": "0x10015B92",
@@ -1509,7 +1608,10 @@
     "end": "0x10015C18",
     "evidence": "exact",
     "name": "D3DXLoadVolumeFromVolume",
-    "size": 134
+    "size": 134,
+    "aliases": [
+      "_D3DXLoadVolumeFromVolume@32"
+    ]
   },
   {
     "address": "0x10015C18",
@@ -1517,7 +1619,10 @@
     "end": "0x10015FD8",
     "evidence": "exact",
     "name": "d3dx_save_texture_to_file",
-    "size": 960
+    "size": 960,
+    "aliases": [
+      "?SaveTextureToFile@@YAJPBXW4_D3DXIMAGE_FILEFORMAT@@PAUIDirect3DBaseTexture8@@PBUtagPALETTEENTRY@@H@Z"
+    ]
   },
   {
     "address": "0x10015FD8",
@@ -1525,7 +1630,10 @@
     "end": "0x10015FF5",
     "evidence": "exact",
     "name": "D3DXSaveTextureToFileA",
-    "size": 29
+    "size": 29,
+    "aliases": [
+      "_D3DXSaveTextureToFileA@16"
+    ]
   },
   {
     "address": "0x10015FF5",
@@ -1533,7 +1641,10 @@
     "end": "0x100162D9",
     "evidence": "exact",
     "name": "D3DXFilterTexture",
-    "size": 740
+    "size": 740,
+    "aliases": [
+      "_D3DXFilterTexture@16"
+    ]
   },
   {
     "address": "0x100162D9",
@@ -1541,7 +1652,10 @@
     "end": "0x1001694C",
     "evidence": "exact",
     "name": "d3dx_create_texture_from_file_in_memory_ex",
-    "size": 1651
+    "size": 1651,
+    "aliases": [
+      "?CreateTextureFromFileInMemoryEx@@YAJPAUIDirect3DDevice8@@PBXIIIIIKW4_D3DFORMAT@@W4_D3DPOOL@@KKKPAU_D3DXIMAGE_INFO@@PAUtagPALETTEENTRY@@W4_D3DRESOURCETYPE@@PAPAUIDirect3DBaseTexture8@@@Z"
+    ]
   },
   {
     "address": "0x1001694C",
@@ -1549,7 +1663,10 @@
     "end": "0x1001698C",
     "evidence": "exact",
     "name": "D3DXCreateTextureFromFileInMemoryEx",
-    "size": 64
+    "size": 64,
+    "aliases": [
+      "_D3DXCreateTextureFromFileInMemoryEx@60"
+    ]
   },
   {
     "address": "0x1001698C",
@@ -1557,7 +1674,10 @@
     "end": "0x100169EF",
     "evidence": "exact",
     "name": "D3DXCreateTextureFromFileExA",
-    "size": 99
+    "size": 99,
+    "aliases": [
+      "_D3DXCreateTextureFromFileExA@56"
+    ]
   },
   {
     "address": "0x100169EF",
@@ -1565,7 +1685,10 @@
     "end": "0x10016A1C",
     "evidence": "exact",
     "name": "float_near_equal",
-    "size": 45
+    "size": 45,
+    "aliases": [
+      "?WithinEpsilon@@YAHMM@Z"
+    ]
   },
   {
     "address": "0x10016A29",
@@ -1581,7 +1704,10 @@
     "end": "0x10016A59",
     "evidence": "exact",
     "name": "d3dx_init_vec2_hermite",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016A59",
@@ -1589,7 +1715,10 @@
     "end": "0x10016AE7",
     "evidence": "exact",
     "name": "d3dx_c_vec2_hermite",
-    "size": 142
+    "size": 142,
+    "aliases": [
+      "?c_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016AE7",
@@ -1597,7 +1726,10 @@
     "end": "0x10016B11",
     "evidence": "exact",
     "name": "d3dx_init_vec2_catmull_rom",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016B11",
@@ -1605,7 +1737,10 @@
     "end": "0x10016BC0",
     "evidence": "exact",
     "name": "d3dx_c_vec2_catmull_rom",
-    "size": 175
+    "size": 175,
+    "aliases": [
+      "?c_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016BC0",
@@ -1613,7 +1748,10 @@
     "end": "0x10016BEF",
     "evidence": "exact",
     "name": "d3dx_init_vec2_barycentric",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "?init_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10016BEF",
@@ -1621,7 +1759,10 @@
     "end": "0x10016C32",
     "evidence": "exact",
     "name": "d3dx_c_vec2_barycentric",
-    "size": 67
+    "size": 67,
+    "aliases": [
+      "?c_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10016C66",
@@ -1629,7 +1770,10 @@
     "end": "0x10016C6C",
     "evidence": "exact",
     "name": "D3DXVec3Normalize",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXVec3Normalize@8"
+    ]
   },
   {
     "address": "0x10016C6C",
@@ -1637,7 +1781,10 @@
     "end": "0x10016C96",
     "evidence": "exact",
     "name": "d3dx_init_vec3_hermite",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016C96",
@@ -1645,7 +1792,10 @@
     "end": "0x10016D44",
     "evidence": "exact",
     "name": "d3dx_c_vec3_hermite",
-    "size": 174
+    "size": 174,
+    "aliases": [
+      "?c_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016D44",
@@ -1653,7 +1803,10 @@
     "end": "0x10016D6E",
     "evidence": "exact",
     "name": "d3dx_init_vec3_catmull_rom",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016D6E",
@@ -1661,7 +1814,10 @@
     "end": "0x10016E3F",
     "evidence": "exact",
     "name": "d3dx_c_vec3_catmull_rom",
-    "size": 209
+    "size": 209,
+    "aliases": [
+      "?c_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10016E3F",
@@ -1669,7 +1825,10 @@
     "end": "0x10016E6E",
     "evidence": "exact",
     "name": "d3dx_init_vec3_barycentric",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "?init_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10016E6E",
@@ -1677,7 +1836,10 @@
     "end": "0x10016ECB",
     "evidence": "exact",
     "name": "d3dx_c_vec3_barycentric",
-    "size": 93
+    "size": 93,
+    "aliases": [
+      "?c_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10016EE5",
@@ -1685,7 +1847,10 @@
     "end": "0x10016EEB",
     "evidence": "exact",
     "name": "D3DXVec3TransformCoord",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXVec3TransformCoord@12"
+    ]
   },
   {
     "address": "0x10016EF8",
@@ -1693,7 +1858,10 @@
     "end": "0x10016F5E",
     "evidence": "exact",
     "name": "d3dx_c_vec3_transform_normal",
-    "size": 102
+    "size": 102,
+    "aliases": [
+      "?c_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10016F80",
@@ -1701,7 +1869,10 @@
     "end": "0x10016F8D",
     "evidence": "ordered",
     "name": "d3dx_init_vec3_project",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x10016F8D",
@@ -1709,7 +1880,10 @@
     "end": "0x1001707D",
     "evidence": "exact",
     "name": "d3dx_c_vec4_cross",
-    "size": 240
+    "size": 240,
+    "aliases": [
+      "?c_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x1001708A",
@@ -1717,7 +1891,10 @@
     "end": "0x100170B4",
     "evidence": "exact",
     "name": "d3dx_init_vec4_hermite",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x100170B4",
@@ -1725,7 +1902,10 @@
     "end": "0x10017185",
     "evidence": "exact",
     "name": "d3dx_c_vec4_hermite",
-    "size": 209
+    "size": 209,
+    "aliases": [
+      "?c_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10017185",
@@ -1733,7 +1913,10 @@
     "end": "0x100171AF",
     "evidence": "exact",
     "name": "d3dx_init_vec4_catmull_rom",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x100171AF",
@@ -1741,7 +1924,10 @@
     "end": "0x100172A2",
     "evidence": "exact",
     "name": "d3dx_c_vec4_catmull_rom",
-    "size": 243
+    "size": 243,
+    "aliases": [
+      "?c_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x100172A2",
@@ -1749,7 +1935,10 @@
     "end": "0x100172D1",
     "evidence": "exact",
     "name": "d3dx_init_vec4_barycentric",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "?init_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x100172D1",
@@ -1757,7 +1946,10 @@
     "end": "0x10017348",
     "evidence": "exact",
     "name": "d3dx_c_vec4_barycentric",
-    "size": 119
+    "size": 119,
+    "aliases": [
+      "?c_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10017355",
@@ -1765,7 +1957,10 @@
     "end": "0x100173F4",
     "evidence": "exact",
     "name": "d3dx_c_vec4_transform",
-    "size": 159
+    "size": 159,
+    "aliases": [
+      "?c_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10017401",
@@ -1773,7 +1968,10 @@
     "end": "0x100174CB",
     "evidence": "exact",
     "name": "d3dx_c_matrixf_determinant",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?c_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100174D8",
@@ -1781,7 +1979,10 @@
     "end": "0x100174DE",
     "evidence": "exact",
     "name": "D3DXMatrixMultiply",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixMultiply@12"
+    ]
   },
   {
     "address": "0x100174DE",
@@ -1789,7 +1990,10 @@
     "end": "0x10017714",
     "evidence": "exact",
     "name": "d3dx_c_matrix_multiply",
-    "size": 566
+    "size": 566,
+    "aliases": [
+      "?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x10017721",
@@ -1797,7 +2001,10 @@
     "end": "0x10017727",
     "evidence": "exact",
     "name": "D3DXMatrixTranspose",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixTranspose@8"
+    ]
   },
   {
     "address": "0x10017727",
@@ -1805,7 +2012,10 @@
     "end": "0x10017794",
     "evidence": "exact",
     "name": "d3dx_c_matrix_transpose",
-    "size": 109
+    "size": 109,
+    "aliases": [
+      "?c_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100177A1",
@@ -1813,7 +2023,10 @@
     "end": "0x100179D7",
     "evidence": "exact",
     "name": "d3dx_c_matrix_multiply_transpose",
-    "size": 566
+    "size": 566,
+    "aliases": [
+      "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x100179E4",
@@ -1821,7 +2034,10 @@
     "end": "0x100179EA",
     "evidence": "exact",
     "name": "D3DXMatrixInverse",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixInverse@12"
+    ]
   },
   {
     "address": "0x100179EA",
@@ -1829,7 +2045,10 @@
     "end": "0x10017D77",
     "evidence": "exact",
     "name": "d3dx_c_matrix_inverse",
-    "size": 909
+    "size": 909,
+    "aliases": [
+      "?c_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x10017D77",
@@ -1837,7 +2056,10 @@
     "end": "0x10017DA5",
     "evidence": "exact",
     "name": "d3dx_init_matrix_scaling",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10017DA5",
@@ -1845,7 +2067,10 @@
     "end": "0x10017E01",
     "evidence": "exact",
     "name": "d3dx_c_matrix_scaling",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?c_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10017E01",
@@ -1853,7 +2078,10 @@
     "end": "0x10017E2F",
     "evidence": "exact",
     "name": "d3dx_init_matrix_translation",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10017E2F",
@@ -1861,7 +2089,10 @@
     "end": "0x10017E8B",
     "evidence": "exact",
     "name": "d3dx_c_matrix_translation",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?c_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10017E8B",
@@ -1869,7 +2100,10 @@
     "end": "0x10017EA7",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_x",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10017EA7",
@@ -1877,7 +2111,10 @@
     "end": "0x10017F21",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_x",
-    "size": 122
+    "size": 122,
+    "aliases": [
+      "?c_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10017F21",
@@ -1885,7 +2122,10 @@
     "end": "0x10017F3D",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_y",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "?init_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10017F3D",
@@ -1893,7 +2133,10 @@
     "end": "0x10017FB8",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_y",
-    "size": 123
+    "size": 123,
+    "aliases": [
+      "?c_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10017FB8",
@@ -1901,7 +2144,10 @@
     "end": "0x10017FD4",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_z",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "?init_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10017FD4",
@@ -1909,7 +2155,10 @@
     "end": "0x10018050",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_z",
-    "size": 124
+    "size": 124,
+    "aliases": [
+      "?c_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10018050",
@@ -1917,7 +2166,10 @@
     "end": "0x10018070",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_axis",
-    "size": 32
+    "size": 32,
+    "aliases": [
+      "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x10018070",
@@ -1925,7 +2177,10 @@
     "end": "0x10018172",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_axis",
-    "size": 258
+    "size": 258,
+    "aliases": [
+      "?c_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x1001817F",
@@ -1933,7 +2188,10 @@
     "end": "0x10018185",
     "evidence": "exact",
     "name": "D3DXMatrixRotationQuaternion",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixRotationQuaternion@8"
+    ]
   },
   {
     "address": "0x10018185",
@@ -1941,7 +2199,10 @@
     "end": "0x10018267",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_quaternion",
-    "size": 226
+    "size": 226,
+    "aliases": [
+      "?c_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "address": "0x10018267",
@@ -1949,7 +2210,10 @@
     "end": "0x10018295",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_yaw_pitch_roll",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x100182A6",
@@ -1957,7 +2221,10 @@
     "end": "0x100182CD",
     "evidence": "exact",
     "name": "d3dx_init_matrix_affine_transformation",
-    "size": 39
+    "size": 39,
+    "aliases": [
+      "?init_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
   },
   {
     "address": "0x100182CD",
@@ -1965,7 +2232,10 @@
     "end": "0x100183B3",
     "evidence": "exact",
     "name": "d3dx_c_matrix_affine_transformation",
-    "size": 230
+    "size": 230,
+    "aliases": [
+      "?c_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
   },
   {
     "address": "0x100183DA",
@@ -1973,7 +2243,10 @@
     "end": "0x10018477",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_to_axis_angle",
-    "size": 157
+    "size": 157,
+    "aliases": [
+      "?c_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ]
   },
   {
     "address": "0x10018484",
@@ -1981,7 +2254,10 @@
     "end": "0x100185B8",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_rotation_matrix",
-    "size": 308
+    "size": 308,
+    "aliases": [
+      "?c_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100185B8",
@@ -1989,7 +2265,10 @@
     "end": "0x100185D8",
     "evidence": "exact",
     "name": "d3dx_init_quaternion_rotation_axis",
-    "size": 32
+    "size": 32,
+    "aliases": [
+      "?init_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x100185D8",
@@ -1997,7 +2276,10 @@
     "end": "0x10018634",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_rotation_axis",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?c_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x10018634",
@@ -2005,7 +2287,10 @@
     "end": "0x10018662",
     "evidence": "exact",
     "name": "d3dx_init_quaternion_rotation_yaw_pitch_roll",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10018662",
@@ -2013,7 +2298,10 @@
     "end": "0x10018668",
     "evidence": "exact",
     "name": "D3DXQuaternionRotationYawPitchRoll",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionRotationYawPitchRoll@16"
+    ]
   },
   {
     "address": "0x10018668",
@@ -2021,7 +2309,10 @@
     "end": "0x10018741",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_rotation_yaw_pitch_roll",
-    "size": 217
+    "size": 217,
+    "aliases": [
+      "?c_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x1001874E",
@@ -2029,7 +2320,10 @@
     "end": "0x10018754",
     "evidence": "exact",
     "name": "D3DXQuaternionMultiply",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionMultiply@12"
+    ]
   },
   {
     "address": "0x10018754",
@@ -2037,7 +2331,10 @@
     "end": "0x100187EA",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_multiply",
-    "size": 150
+    "size": 150,
+    "aliases": [
+      "?c_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x100187F7",
@@ -2045,7 +2342,10 @@
     "end": "0x100188B0",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_normalize",
-    "size": 185
+    "size": 185,
+    "aliases": [
+      "?c_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100188B0",
@@ -2053,7 +2353,10 @@
     "end": "0x100188BD",
     "evidence": "exact",
     "name": "d3dx_init_quaternion_inverse",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "?init_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100188BD",
@@ -2061,7 +2364,10 @@
     "end": "0x100188C3",
     "evidence": "exact",
     "name": "D3DXQuaternionInverse",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionInverse@8"
+    ]
   },
   {
     "address": "0x100188C3",
@@ -2069,7 +2375,10 @@
     "end": "0x10018977",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_inverse",
-    "size": 180
+    "size": 180,
+    "aliases": [
+      "?c_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10018977",
@@ -2077,7 +2386,10 @@
     "end": "0x1001897D",
     "evidence": "exact",
     "name": "D3DXQuaternionLn",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionLn@8"
+    ]
   },
   {
     "address": "0x1001897D",
@@ -2085,7 +2397,10 @@
     "end": "0x100189FB",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_ln",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "?c_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100189FB",
@@ -2093,7 +2408,10 @@
     "end": "0x10018A01",
     "evidence": "exact",
     "name": "D3DXQuaternionExp",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionExp@8"
+    ]
   },
   {
     "address": "0x10018A01",
@@ -2101,7 +2419,10 @@
     "end": "0x10018A9C",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_exp",
-    "size": 155
+    "size": 155,
+    "aliases": [
+      "?c_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10018A9C",
@@ -2109,7 +2430,10 @@
     "end": "0x10018AC0",
     "evidence": "exact",
     "name": "d3dx_init_quaternion_slerp",
-    "size": 36
+    "size": 36,
+    "aliases": [
+      "?init_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x10018AC0",
@@ -2117,7 +2441,10 @@
     "end": "0x10018AC6",
     "evidence": "exact",
     "name": "D3DXQuaternionSlerp",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionSlerp@16"
+    ]
   },
   {
     "address": "0x10018AC6",
@@ -2125,7 +2452,10 @@
     "end": "0x10018BA9",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_slerp",
-    "size": 227
+    "size": 227,
+    "aliases": [
+      "?c_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x10018BA9",
@@ -2133,7 +2463,10 @@
     "end": "0x10018BD3",
     "evidence": "exact",
     "name": "d3dx_init_quaternion_squad",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10018BD3",
@@ -2141,7 +2474,10 @@
     "end": "0x10018C2A",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_squad",
-    "size": 87
+    "size": 87,
+    "aliases": [
+      "?c_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10018C3B",
@@ -2149,7 +2485,10 @@
     "end": "0x10018C6A",
     "evidence": "exact",
     "name": "d3dx_init_quaternion_barycentric",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "?init_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10018C6A",
@@ -2157,7 +2496,10 @@
     "end": "0x10018CF5",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_barycentric",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "?c_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10018D02",
@@ -2165,7 +2507,10 @@
     "end": "0x10018D08",
     "evidence": "exact",
     "name": "D3DXPlaneNormalize",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXPlaneNormalize@8"
+    ]
   },
   {
     "address": "0x10018D08",
@@ -2173,7 +2518,10 @@
     "end": "0x10018DAC",
     "evidence": "exact",
     "name": "d3dx_c_plane_normalize",
-    "size": 164
+    "size": 164,
+    "aliases": [
+      "?c_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10018DB9",
@@ -2181,7 +2529,10 @@
     "end": "0x10018E5B",
     "evidence": "exact",
     "name": "d3dx_c_plane_intersect_line",
-    "size": 162
+    "size": 162,
+    "aliases": [
+      "?c_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ]
   },
   {
     "address": "0x10018E68",
@@ -2189,7 +2540,10 @@
     "end": "0x10018EA0",
     "evidence": "exact",
     "name": "d3dx_c_plane_from_point_normal",
-    "size": 56
+    "size": 56,
+    "aliases": [
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+    ]
   },
   {
     "address": "0x10018EAD",
@@ -2197,7 +2551,10 @@
     "end": "0x10018F4F",
     "evidence": "exact",
     "name": "d3dx_c_plane_from_points",
-    "size": 162
+    "size": 162,
+    "aliases": [
+      "?c_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
   },
   {
     "address": "0x10018F5C",
@@ -2205,7 +2562,10 @@
     "end": "0x10018FFB",
     "evidence": "exact",
     "name": "d3dx_c_plane_transform",
-    "size": 159
+    "size": 159,
+    "aliases": [
+      "?c_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10018FFB",
@@ -2213,7 +2573,10 @@
     "end": "0x10019088",
     "evidence": "exact",
     "name": "d3dx_c_vec2_normalize",
-    "size": 141
+    "size": 141,
+    "aliases": [
+      "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10019088",
@@ -2221,7 +2584,10 @@
     "end": "0x100190F3",
     "evidence": "exact",
     "name": "d3dx_c_vec2_transform",
-    "size": 107
+    "size": 107,
+    "aliases": [
+      "?c_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100190F3",
@@ -2229,7 +2595,10 @@
     "end": "0x10019173",
     "evidence": "exact",
     "name": "d3dx_c_vec2_transform_coord",
-    "size": 128
+    "size": 128,
+    "aliases": [
+      "?c_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10019173",
@@ -2237,7 +2606,10 @@
     "end": "0x100191AF",
     "evidence": "exact",
     "name": "d3dx_c_vec2_transform_normal",
-    "size": 60
+    "size": 60,
+    "aliases": [
+      "?c_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100191AF",
@@ -2245,7 +2617,10 @@
     "end": "0x1001924F",
     "evidence": "exact",
     "name": "d3dx_c_vec3_normalize",
-    "size": 160
+    "size": 160,
+    "aliases": [
+      "?c_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x1001924F",
@@ -2253,7 +2628,10 @@
     "end": "0x100192DA",
     "evidence": "exact",
     "name": "d3dx_c_vec3_transform",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "?c_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100192DA",
@@ -2261,7 +2639,10 @@
     "end": "0x10019399",
     "evidence": "exact",
     "name": "d3dx_c_vec3_transform_coord",
-    "size": 191
+    "size": 191,
+    "aliases": [
+      "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10019399",
@@ -2269,7 +2650,10 @@
     "end": "0x10019506",
     "evidence": "exact",
     "name": "d3dx_c_vec3_project",
-    "size": 365
+    "size": 365,
+    "aliases": [
+      "?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x10019526",
@@ -2277,7 +2661,10 @@
     "end": "0x100196AC",
     "evidence": "exact",
     "name": "d3dx_c_vec3_unproject",
-    "size": 390
+    "size": 390,
+    "aliases": [
+      "?c_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x100196CC",
@@ -2285,7 +2672,10 @@
     "end": "0x10019785",
     "evidence": "exact",
     "name": "d3dx_c_vec4_normalize",
-    "size": 185
+    "size": 185,
+    "aliases": [
+      "?c_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10019785",
@@ -2293,7 +2683,10 @@
     "end": "0x100197BE",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_yaw_pitch_roll",
-    "size": 57
+    "size": 57,
+    "aliases": [
+      "?c_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x100197BE",
@@ -2301,7 +2694,10 @@
     "end": "0x10019A72",
     "evidence": "exact",
     "name": "d3dx_c_matrix_transformation",
-    "size": 692
+    "size": 692,
+    "aliases": [
+      "?c_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "address": "0x10019A72",
@@ -2309,7 +2705,10 @@
     "end": "0x10019B4C",
     "evidence": "exact",
     "name": "d3dx_c_matrix_shadow",
-    "size": 218
+    "size": 218,
+    "aliases": [
+      "?c_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x10019B4C",
@@ -2317,7 +2716,10 @@
     "end": "0x10019C0B",
     "evidence": "exact",
     "name": "d3dx_c_matrix_reflect",
-    "size": 191
+    "size": 191,
+    "aliases": [
+      "?c_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x10019C0B",
@@ -2325,7 +2727,10 @@
     "end": "0x10019FE5",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_squad_setup",
-    "size": 986
+    "size": 986,
+    "aliases": [
+      "?c_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
   },
   {
     "address": "0x10019FE5",
@@ -2333,7 +2738,10 @@
     "end": "0x1001A075",
     "evidence": "exact",
     "name": "grim_d3d_debug_set_mute",
-    "size": 144
+    "size": 144,
+    "aliases": [
+      "?D3DXDebugMute@@YAXH@Z"
+    ]
   },
   {
     "address": "0x1001A075",
@@ -2341,7 +2749,10 @@
     "end": "0x1001A08E",
     "evidence": "exact",
     "name": "d3dx_image_ctor",
-    "size": 25
+    "size": 25,
+    "aliases": [
+      "??0CD3DXImage@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001A08E",
@@ -2349,7 +2760,10 @@
     "end": "0x1001A0E7",
     "evidence": "exact",
     "name": "d3dx_image_destroy",
-    "size": 89
+    "size": 89,
+    "aliases": [
+      "??1CD3DXImage@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001A0E7",
@@ -2357,7 +2771,10 @@
     "end": "0x1001A103",
     "evidence": "exact",
     "name": "d3dx_image_scalar_deleting_dtor",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "??_GCD3DXImage@@QAEPAXI@Z"
+    ]
   },
   {
     "address": "0x1001A103",
@@ -2365,7 +2782,10 @@
     "end": "0x1001A1C6",
     "evidence": "exact",
     "name": "d3dx_image_initialize",
-    "size": 195
+    "size": 195,
+    "aliases": [
+      "?Initialize@CD3DXImage@@QAEJPAUD3DX_BLT@@@Z"
+    ]
   },
   {
     "address": "0x1001A1C6",
@@ -2373,7 +2793,10 @@
     "end": "0x1001A8DC",
     "evidence": "exact",
     "name": "d3dx_image_load_dib",
-    "size": 1814
+    "size": 1814,
+    "aliases": [
+      "?LoadDIB@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001A8DC",
@@ -2381,7 +2804,10 @@
     "end": "0x1001ABC0",
     "evidence": "exact",
     "name": "d3dx_image_save_dib",
-    "size": 740
+    "size": 740,
+    "aliases": [
+      "?SaveDIB@CD3DXImage@@AAEJPAXH@Z"
+    ]
   },
   {
     "address": "0x1001ABC0",
@@ -2413,7 +2839,10 @@
     "end": "0x1001AE72",
     "evidence": "exact",
     "name": "d3dx_image_load_jpg",
-    "size": 624
+    "size": 624,
+    "aliases": [
+      "?LoadJPG@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001AE72",
@@ -2421,7 +2850,10 @@
     "end": "0x1001B319",
     "evidence": "exact",
     "name": "d3dx_image_load_tga",
-    "size": 1191
+    "size": 1191,
+    "aliases": [
+      "?LoadTGA@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001B319",
@@ -2429,7 +2861,10 @@
     "end": "0x1001B59F",
     "evidence": "exact",
     "name": "d3dx_image_load_ppm",
-    "size": 646
+    "size": 646,
+    "aliases": [
+      "?LoadPPM@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001B59F",
@@ -2437,7 +2872,10 @@
     "end": "0x1001B5E2",
     "evidence": "exact",
     "name": "d3dx_png_read_fn",
-    "size": 67
+    "size": 67,
+    "aliases": [
+      "?d3dx_png_read_fn@@YAXPAUpng_struct_def@D3DX@@PAEI@Z"
+    ]
   },
   {
     "address": "0x1001B5E2",
@@ -2453,7 +2891,10 @@
     "end": "0x1001BB84",
     "evidence": "exact",
     "name": "d3dx_image_load_png",
-    "size": 1430
+    "size": 1430,
+    "aliases": [
+      "?LoadPNG@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001BB84",
@@ -2461,7 +2902,10 @@
     "end": "0x1001BEC5",
     "evidence": "exact",
     "name": "d3dx_image_load_dds",
-    "size": 833
+    "size": 833,
+    "aliases": [
+      "?LoadDDS@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001BEC5",
@@ -2469,7 +2913,10 @@
     "end": "0x1001C16D",
     "evidence": "exact",
     "name": "d3dx_image_save_dds",
-    "size": 680
+    "size": 680,
+    "aliases": [
+      "?SaveDDS@CD3DXImage@@AAEJPAX@Z"
+    ]
   },
   {
     "address": "0x1001C16D",
@@ -2477,7 +2924,10 @@
     "end": "0x1001C436",
     "evidence": "exact",
     "name": "d3dx_image_save",
-    "size": 713
+    "size": 713,
+    "aliases": [
+      "?Save@CD3DXImage@@QAEJPBXW4_D3DXIMAGE_FILEFORMAT@@H@Z"
+    ]
   },
   {
     "address": "0x1001C436",
@@ -2485,7 +2935,10 @@
     "end": "0x1001C466",
     "evidence": "exact",
     "name": "d3dx_image_load_bmp",
-    "size": 48
+    "size": 48,
+    "aliases": [
+      "?LoadBMP@CD3DXImage@@AAEJPBXK@Z"
+    ]
   },
   {
     "address": "0x1001C466",
@@ -2493,7 +2946,10 @@
     "end": "0x1001C63B",
     "evidence": "exact",
     "name": "d3dx_image_load",
-    "size": 469
+    "size": 469,
+    "aliases": [
+      "?Load@CD3DXImage@@QAEJPBXKPAU_D3DXIMAGE_INFO@@H@Z"
+    ]
   },
   {
     "address": "0x1001C63B",
@@ -2501,7 +2957,10 @@
     "end": "0x1001C645",
     "evidence": "exact",
     "name": "d3dx_blt_ctor",
-    "size": 10
+    "size": 10,
+    "aliases": [
+      "??0CD3DXBlt@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001C645",
@@ -2509,7 +2968,10 @@
     "end": "0x1001C663",
     "evidence": "exact",
     "name": "d3dx_blt_dtor",
-    "size": 30
+    "size": 30,
+    "aliases": [
+      "??1CD3DXBlt@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001C663",
@@ -2517,7 +2979,10 @@
     "end": "0x1001C670",
     "evidence": "exact",
     "name": "d3dx_tf_row_ctor",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "??0TF_Row@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001C670",
@@ -2525,7 +2990,10 @@
     "end": "0x1001C679",
     "evidence": "exact",
     "name": "d3dx_tf_row_dtor",
-    "size": 9
+    "size": 9,
+    "aliases": [
+      "??1TF_Row@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001C679",
@@ -2533,7 +3001,10 @@
     "end": "0x1001C936",
     "evidence": "exact",
     "name": "d3dx_tf_setup_triangle",
-    "size": 701
+    "size": 701,
+    "aliases": [
+      "?TF_SetupTriangle@@YAPAEIIH@Z"
+    ]
   },
   {
     "address": "0x1001C936",
@@ -2541,7 +3012,10 @@
     "end": "0x1001C982",
     "evidence": "exact",
     "name": "d3dx_tf_row_scalar_deleting_dtor",
-    "size": 76
+    "size": 76,
+    "aliases": [
+      "??_ETF_Row@@QAEPAXI@Z"
+    ]
   },
   {
     "address": "0x1001C982",
@@ -2549,7 +3023,10 @@
     "end": "0x1001CDF6",
     "evidence": "exact",
     "name": "d3dx_blt_triangle_3d",
-    "size": 1140
+    "size": 1140,
+    "aliases": [
+      "?BltTriangle3D@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001CDF6",
@@ -2557,7 +3034,10 @@
     "end": "0x1001CF84",
     "evidence": "exact",
     "name": "d3dx_blt_same_dxtn",
-    "size": 398
+    "size": 398,
+    "aliases": [
+      "?BltSame_DXTn@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001CF84",
@@ -2565,7 +3045,10 @@
     "end": "0x1001D0AA",
     "evidence": "exact",
     "name": "d3dx_box_filter_2d_a8r8g8b8",
-    "size": 294
+    "size": 294,
+    "aliases": [
+      "?c_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
+    ]
   },
   {
     "address": "0x1001D0AA",
@@ -2573,7 +3056,10 @@
     "end": "0x1001D0DB",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a8r8g8b8",
-    "size": 49
+    "size": 49,
+    "aliases": [
+      "?BltBox2D_A8R8G8B8@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D0DB",
@@ -2581,7 +3067,10 @@
     "end": "0x1001D1C3",
     "evidence": "exact",
     "name": "d3dx_box_filter_2d_x8r8g8b8",
-    "size": 232
+    "size": 232,
+    "aliases": [
+      "?c_BoxFilter2D_X8R8G8B8@@YAJPAI0IIII@Z"
+    ]
   },
   {
     "address": "0x1001D1C3",
@@ -2589,7 +3078,10 @@
     "end": "0x1001D2D9",
     "evidence": "exact",
     "name": "d3dx_mmx_box_filter_2d_a8r8g8b8",
-    "size": 278
+    "size": 278,
+    "aliases": [
+      "?mmx_BoxFilter2D_A8R8G8B8@@YAJPAI0IIII@Z"
+    ]
   },
   {
     "address": "0x1001D340",
@@ -2597,7 +3089,10 @@
     "end": "0x1001D371",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_x8r8g8b8",
-    "size": 49
+    "size": 49,
+    "aliases": [
+      "?BltBox2D_X8R8G8B8@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D371",
@@ -2605,7 +3100,10 @@
     "end": "0x1001D4C1",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_r5g6b5",
-    "size": 336
+    "size": 336,
+    "aliases": [
+      "?BltBox2D_R5G6B5@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D4C1",
@@ -2613,7 +3111,10 @@
     "end": "0x1001D5E5",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_x1r5g5b5",
-    "size": 292
+    "size": 292,
+    "aliases": [
+      "?BltBox2D_X1R5G5B5@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D5E5",
@@ -2621,7 +3122,10 @@
     "end": "0x1001D734",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a1r5g5b5",
-    "size": 335
+    "size": 335,
+    "aliases": [
+      "?BltBox2D_A1R5G5B5@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D734",
@@ -2629,7 +3133,10 @@
     "end": "0x1001D887",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a4r4g4b4",
-    "size": 339
+    "size": 339,
+    "aliases": [
+      "?BltBox2D_A4R4G4B4@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D887",
@@ -2637,7 +3144,10 @@
     "end": "0x1001D9C6",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_r3g3b2",
-    "size": 319
+    "size": 319,
+    "aliases": [
+      "?BltBox2D_R3G3B2@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001D9C6",
@@ -2645,7 +3155,10 @@
     "end": "0x1001DA61",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a8",
-    "size": 155
+    "size": 155,
+    "aliases": [
+      "?BltBox2D_A8@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001DA61",
@@ -2653,7 +3166,10 @@
     "end": "0x1001DBAD",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a8r3g3b2",
-    "size": 332
+    "size": 332,
+    "aliases": [
+      "?BltBox2D_A8R3G3B2@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001DBAD",
@@ -2661,7 +3177,10 @@
     "end": "0x1001DCCE",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_x4r4g4b4",
-    "size": 289
+    "size": 289,
+    "aliases": [
+      "?BltBox2D_X4R4G4B4@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001DCCE",
@@ -2669,7 +3188,10 @@
     "end": "0x1001DE1A",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a8l8",
-    "size": 332
+    "size": 332,
+    "aliases": [
+      "?BltBox2D_A8L8@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001DE1A",
@@ -2677,7 +3199,10 @@
     "end": "0x1001DF59",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d_a4l4",
-    "size": 319
+    "size": 319,
+    "aliases": [
+      "?BltBox2D_A4L4@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001DF59",
@@ -2685,7 +3210,10 @@
     "end": "0x1001E091",
     "evidence": "exact",
     "name": "d3dx_blt_same",
-    "size": 312
+    "size": 312,
+    "aliases": [
+      "?BltSame@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001E091",
@@ -2693,7 +3221,10 @@
     "end": "0x1001E182",
     "evidence": "exact",
     "name": "d3dx_blt_copy",
-    "size": 241
+    "size": 241,
+    "aliases": [
+      "?BltCopy@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001E182",
@@ -2701,7 +3232,10 @@
     "end": "0x1001E384",
     "evidence": "exact",
     "name": "d3dx_blt_none",
-    "size": 514
+    "size": 514,
+    "aliases": [
+      "?BltNone@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001E384",
@@ -2709,7 +3243,10 @@
     "end": "0x1001E588",
     "evidence": "exact",
     "name": "d3dx_blt_point",
-    "size": 516
+    "size": 516,
+    "aliases": [
+      "?BltPoint@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001E588",
@@ -2717,7 +3254,10 @@
     "end": "0x1001E98B",
     "evidence": "exact",
     "name": "d3dx_blt_box_2d",
-    "size": 1027
+    "size": 1027,
+    "aliases": [
+      "?BltBox2D@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001E9AB",
@@ -2725,7 +3265,10 @@
     "end": "0x1001EE3D",
     "evidence": "exact",
     "name": "d3dx_blt_box_3d",
-    "size": 1170
+    "size": 1170,
+    "aliases": [
+      "?BltBox3D@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001EE3D",
@@ -2733,7 +3276,10 @@
     "end": "0x1001EF3D",
     "evidence": "exact",
     "name": "d3dx_lf_setup_linear",
-    "size": 256
+    "size": 256,
+    "aliases": [
+      "?LF_SetupLinear@@YAPAEIIH@Z"
+    ]
   },
   {
     "address": "0x1001EF3D",
@@ -2741,7 +3287,10 @@
     "end": "0x1001F323",
     "evidence": "exact",
     "name": "d3dx_blt_linear_2d",
-    "size": 998
+    "size": 998,
+    "aliases": [
+      "?BltLinear2D@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001F323",
@@ -2749,7 +3298,10 @@
     "end": "0x1001FA54",
     "evidence": "exact",
     "name": "d3dx_blt_linear_3d",
-    "size": 1841
+    "size": 1841,
+    "aliases": [
+      "?BltLinear3D@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001FA54",
@@ -2757,7 +3309,10 @@
     "end": "0x1001FDF6",
     "evidence": "exact",
     "name": "d3dx_blt_triangle_2d",
-    "size": 930
+    "size": 930,
+    "aliases": [
+      "?BltTriangle2D@CD3DXBlt@@IAEJXZ"
+    ]
   },
   {
     "address": "0x1001FDF6",
@@ -2765,7 +3320,10 @@
     "end": "0x1001FF10",
     "evidence": "exact",
     "name": "d3dx_blt_execute",
-    "size": 282
+    "size": 282,
+    "aliases": [
+      "?Blt@CD3DXBlt@@QAEJPAUD3DX_BLT@@0K@Z"
+    ]
   },
   {
     "address": "0x1001FF10",
@@ -2773,7 +3331,10 @@
     "end": "0x1001FF20",
     "evidence": "exact",
     "name": "d3dx_lock_surface_ctor",
-    "size": 16
+    "size": 16,
+    "aliases": [
+      "??0CD3DXLockSurface@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001FF20",
@@ -2781,7 +3342,10 @@
     "end": "0x1001FF89",
     "evidence": "exact",
     "name": "d3dx_lock_surface_unlock",
-    "size": 105
+    "size": 105,
+    "aliases": [
+      "?Unlock@CD3DXLockSurface@@QAEJXZ"
+    ]
   },
   {
     "address": "0x1001FF89",
@@ -2789,7 +3353,10 @@
     "end": "0x1001FF8F",
     "evidence": "exact",
     "name": "d3dx_lock_volume_ctor",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "??0CD3DXLockVolume@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001FF8F",
@@ -2797,7 +3364,10 @@
     "end": "0x1001FFA5",
     "evidence": "exact",
     "name": "d3dx_lock_volume_unlock",
-    "size": 22
+    "size": 22,
+    "aliases": [
+      "?Unlock@CD3DXLockVolume@@QAEJXZ"
+    ]
   },
   {
     "address": "0x1001FFA5",
@@ -2805,7 +3375,10 @@
     "end": "0x1001FFAA",
     "evidence": "exact",
     "name": "d3dx_lock_surface_dtor",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "??1CD3DXLockSurface@@QAE@XZ"
+    ]
   },
   {
     "address": "0x1001FFAA",
@@ -2813,7 +3386,10 @@
     "end": "0x100203BD",
     "evidence": "exact",
     "name": "d3dx_lock_surface_lock",
-    "size": 1043
+    "size": 1043,
+    "aliases": [
+      "?Lock@CD3DXLockSurface@@QAEJPAUD3DX_BLT@@PAUIDirect3DSurface8@@PBUtagPALETTEENTRY@@PBUtagRECT@@KK@Z"
+    ]
   },
   {
     "address": "0x100203BD",
@@ -2821,7 +3397,10 @@
     "end": "0x100203C2",
     "evidence": "exact",
     "name": "d3dx_lock_volume_dtor",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "??1CD3DXLockVolume@@QAE@XZ"
+    ]
   },
   {
     "address": "0x100203C2",
@@ -2829,7 +3408,10 @@
     "end": "0x1002071D",
     "evidence": "exact",
     "name": "d3dx_lock_volume_lock",
-    "size": 859
+    "size": 859,
+    "aliases": [
+      "?Lock@CD3DXLockVolume@@QAEJPAUD3DX_BLT@@PAUIDirect3DVolume8@@PBUtagPALETTEENTRY@@PBU_D3DBOX@@KK@Z"
+    ]
   },
   {
     "address": "0x1002071D",
@@ -2893,7 +3475,10 @@
     "end": "0x1002114F",
     "evidence": "exact",
     "name": "d3dx_codec_scalar_deleting_dtor",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "??_GCD3DXCodec@@UAEPAXI@Z"
+    ]
   },
   {
     "address": "0x1002114F",
@@ -2901,7 +3486,10 @@
     "end": "0x100211CA",
     "evidence": "exact",
     "name": "d3dx_codec_convert_from",
-    "size": 123
+    "size": 123,
+    "aliases": [
+      "?ConvertFrom@CD3DXCodec@@QAEJPAV1@@Z"
+    ]
   },
   {
     "address": "0x100211CA",
@@ -2925,7 +3513,10 @@
     "end": "0x100213F2",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_r8g8b8",
-    "size": 236
+    "size": 236,
+    "aliases": [
+      "?Encode@CD3DXCodec_R8G8B8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x100213F2",
@@ -2933,7 +3524,10 @@
     "end": "0x10021515",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a8r8g8b8",
-    "size": 291
+    "size": 291,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8R8G8B8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021515",
@@ -2941,7 +3535,10 @@
     "end": "0x10021616",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_x8r8g8b8",
-    "size": 257
+    "size": 257,
+    "aliases": [
+      "?Encode@CD3DXCodec_X8R8G8B8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021616",
@@ -2949,7 +3546,10 @@
     "end": "0x10021717",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_r5g6b5",
-    "size": 257
+    "size": 257,
+    "aliases": [
+      "?Encode@CD3DXCodec_R5G6B5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021717",
@@ -2957,7 +3557,10 @@
     "end": "0x10021818",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_x1r5g5b5",
-    "size": 257
+    "size": 257,
+    "aliases": [
+      "?Encode@CD3DXCodec_X1R5G5B5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021818",
@@ -2965,7 +3568,10 @@
     "end": "0x10021935",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a1r5g5b5",
-    "size": 285
+    "size": 285,
+    "aliases": [
+      "?Encode@CD3DXCodec_A1R5G5B5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021935",
@@ -2973,7 +3579,10 @@
     "end": "0x10021A58",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a4r4g4b4",
-    "size": 291
+    "size": 291,
+    "aliases": [
+      "?Encode@CD3DXCodec_A4R4G4B4@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021A58",
@@ -2981,7 +3590,10 @@
     "end": "0x10021B56",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_r3g3b2",
-    "size": 254
+    "size": 254,
+    "aliases": [
+      "?Encode@CD3DXCodec_R3G3B2@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021B56",
@@ -2989,7 +3601,10 @@
     "end": "0x10021BFF",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a8",
-    "size": 169
+    "size": 169,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021BFF",
@@ -2997,7 +3612,10 @@
     "end": "0x10021D22",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a8r3g3b2",
-    "size": 291
+    "size": 291,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8R3G3B2@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021D22",
@@ -3005,7 +3623,10 @@
     "end": "0x10021E23",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_x4r4g4b4",
-    "size": 257
+    "size": 257,
+    "aliases": [
+      "?Encode@CD3DXCodec_X4R4G4B4@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021E23",
@@ -3013,7 +3634,10 @@
     "end": "0x10021F46",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a2b10g10r10",
-    "size": 291
+    "size": 291,
+    "aliases": [
+      "?Encode@CD3DXCodec_A2B10G10R10@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10021F46",
@@ -3021,7 +3645,10 @@
     "end": "0x10022016",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_g16r16",
-    "size": 208
+    "size": 208,
+    "aliases": [
+      "?Encode@CD3DXCodec_G16R16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022016",
@@ -3029,7 +3656,10 @@
     "end": "0x1002212E",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a8p8",
-    "size": 280
+    "size": 280,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8P8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002212E",
@@ -3037,7 +3667,10 @@
     "end": "0x100221F3",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_p8",
-    "size": 197
+    "size": 197,
+    "aliases": [
+      "?Encode@CD3DXCodec_P8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x100221F3",
@@ -3045,7 +3678,10 @@
     "end": "0x100222B8",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_l8",
-    "size": 197
+    "size": 197,
+    "aliases": [
+      "?Encode@CD3DXCodec_L8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x100222B8",
@@ -3053,7 +3689,10 @@
     "end": "0x100223AE",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a8l8",
-    "size": 246
+    "size": 246,
+    "aliases": [
+      "?Encode@CD3DXCodec_A8L8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x100223AE",
@@ -3061,7 +3700,10 @@
     "end": "0x10022499",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a4l4",
-    "size": 235
+    "size": 235,
+    "aliases": [
+      "?Encode@CD3DXCodec_A4L4@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022499",
@@ -3069,7 +3711,10 @@
     "end": "0x1002256E",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_v8u8",
-    "size": 213
+    "size": 213,
+    "aliases": [
+      "?Encode@CD3DXCodec_V8U8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002256E",
@@ -3077,7 +3722,10 @@
     "end": "0x10022673",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_l6v5u5",
-    "size": 261
+    "size": 261,
+    "aliases": [
+      "?Encode@CD3DXCodec_L6V5U5@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022673",
@@ -3085,7 +3733,10 @@
     "end": "0x1002277E",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_x8l8v8u8",
-    "size": 267
+    "size": 267,
+    "aliases": [
+      "?Encode@CD3DXCodec_X8L8V8U8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002277E",
@@ -3093,7 +3744,10 @@
     "end": "0x100228B8",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_q8w8v8u8",
-    "size": 314
+    "size": 314,
+    "aliases": [
+      "?Encode@CD3DXCodec_Q8W8V8U8@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x100228B8",
@@ -3101,7 +3755,10 @@
     "end": "0x1002298E",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_v16u16",
-    "size": 214
+    "size": 214,
+    "aliases": [
+      "?Encode@CD3DXCodec_V16U16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002298E",
@@ -3109,7 +3766,10 @@
     "end": "0x10022A98",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_w11v11u10",
-    "size": 266
+    "size": 266,
+    "aliases": [
+      "?Encode@CD3DXCodec_W11V11U10@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022A98",
@@ -3117,7 +3777,10 @@
     "end": "0x10022BCE",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a2w10v10u10",
-    "size": 310
+    "size": 310,
+    "aliases": [
+      "?Encode@CD3DXCodec_A2W10V10U10@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022D5C",
@@ -3125,7 +3788,10 @@
     "end": "0x10022E4A",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a16l16",
-    "size": 238
+    "size": 238,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_A16L16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022E4A",
@@ -3133,7 +3799,10 @@
     "end": "0x10022F39",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_r16g16b16",
-    "size": 239
+    "size": 239,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_R16G16B16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10022F39",
@@ -3141,7 +3810,10 @@
     "end": "0x10023095",
     "evidence": "exact",
     "name": "d3dx_pixel_encode_a16r16g16b16",
-    "size": 348
+    "size": 348,
+    "aliases": [
+      "?Encode@CD3DXCodec_D3DX_A16R16G16B16@@UAEXIIPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x10023095",
@@ -3757,7 +4429,10 @@
     "end": "0x10025A1A",
     "evidence": "exact",
     "name": "grim_pixel_format_create",
-    "size": 1824
+    "size": 1824,
+    "aliases": [
+      "?Create@CD3DXCodec@@SAPAV1@PAUD3DX_BLT@@@Z"
+    ]
   },
   {
     "address": "0x10025A8E",
@@ -3773,7 +4448,10 @@
     "end": "0x10025AA5",
     "evidence": "exact",
     "name": "d3dx_file_ctor",
-    "size": 18
+    "size": 18,
+    "aliases": [
+      "??0CD3DXFile@@QAE@XZ"
+    ]
   },
   {
     "address": "0x10025AA5",
@@ -3781,7 +4459,10 @@
     "end": "0x10025BB5",
     "evidence": "exact",
     "name": "d3dx_file_open",
-    "size": 272
+    "size": 272,
+    "aliases": [
+      "?Open@CD3DXFile@@QAEJPBXH@Z"
+    ]
   },
   {
     "address": "0x10025BB5",
@@ -3789,7 +4470,10 @@
     "end": "0x10025C7F",
     "evidence": "exact",
     "name": "d3dx_file_create",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?Create@CD3DXFile@@QAEJPBXH@Z"
+    ]
   },
   {
     "address": "0x10025C7F",
@@ -3797,7 +4481,10 @@
     "end": "0x10025CC0",
     "evidence": "exact",
     "name": "d3dx_file_close",
-    "size": 65
+    "size": 65,
+    "aliases": [
+      "?Close@CD3DXFile@@QAEJXZ"
+    ]
   },
   {
     "address": "0x10025CC0",
@@ -3805,7 +4492,10 @@
     "end": "0x10025CCB",
     "evidence": "exact",
     "name": "d3dx_file_dtor",
-    "size": 11
+    "size": 11,
+    "aliases": [
+      "??1CD3DXFile@@QAE@XZ"
+    ]
   },
   {
     "address": "0x10025CCB",
@@ -3813,7 +4503,10 @@
     "end": "0x10025D27",
     "evidence": "exact",
     "name": "d3dx_get_registry_value",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?GetD3DRegValue@@YAHKPADPAXK@Z"
+    ]
   },
   {
     "address": "0x10025D27",
@@ -3821,7 +4514,10 @@
     "end": "0x10025D4C",
     "evidence": "exact",
     "name": "d3dx_asm_is_mmx",
-    "size": 37
+    "size": 37,
+    "aliases": [
+      "?_asm_isMMX@@YAHXZ"
+    ]
   },
   {
     "address": "0x10025D4C",
@@ -3829,7 +4525,10 @@
     "end": "0x10025DE5",
     "evidence": "exact",
     "name": "d3dx_is_mmx_processor",
-    "size": 153
+    "size": 153,
+    "aliases": [
+      "?isMMXprocessor@@YAHXZ"
+    ]
   },
   {
     "address": "0x10025DE5",
@@ -3837,7 +4536,10 @@
     "end": "0x10025E1D",
     "evidence": "exact",
     "name": "d3dx_is_x3d_processor",
-    "size": 56
+    "size": 56,
+    "aliases": [
+      "?isX3Dprocessor@@YAHXZ"
+    ]
   },
   {
     "address": "0x10025E1D",
@@ -3845,7 +4547,10 @@
     "end": "0x10025EC2",
     "evidence": "exact",
     "name": "d3dx_is_intel_sse_processor",
-    "size": 165
+    "size": 165,
+    "aliases": [
+      "?IsIntelSSEProcessor@@YAKXZ"
+    ]
   },
   {
     "address": "0x10025EC2",
@@ -3853,7 +4558,10 @@
     "end": "0x10025F76",
     "evidence": "exact",
     "name": "D3DXIsProcessorFeaturePresent",
-    "size": 180
+    "size": 180,
+    "aliases": [
+      "?D3DXIsProcessorFeaturePresent@@YAHI@Z"
+    ]
   },
   {
     "address": "0x10025F76",
@@ -3861,7 +4569,10 @@
     "end": "0x10026072",
     "evidence": "referenced",
     "name": "D3DXCpuOptimizations",
-    "size": 252
+    "size": 252,
+    "aliases": [
+      "_D3DXCpuOptimizations@4"
+    ]
   },
   {
     "address": "0x10026072",
@@ -3869,7 +4580,10 @@
     "end": "0x10026132",
     "evidence": "exact",
     "name": "d3dx_jpeg_create_decompress",
-    "size": 192
+    "size": 192,
+    "aliases": [
+      "?jpeg_CreateDecompress@D3DX@@YAXPAUjpeg_decompress_struct@1@HI@Z"
+    ]
   },
   {
     "address": "0x10026132",
@@ -3877,7 +4591,10 @@
     "end": "0x10026137",
     "evidence": "exact",
     "name": "d3dx_jpeg_destroy_decompress",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "?jpeg_destroy_decompress@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10026137",
@@ -3885,7 +4602,10 @@
     "end": "0x100262AA",
     "evidence": "exact",
     "name": "d3dx_jpeg_default_decompress_parms",
-    "size": 371
+    "size": 371,
+    "aliases": [
+      "?default_decompress_parms@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x100262AA",
@@ -3893,7 +4613,10 @@
     "end": "0x10026344",
     "evidence": "exact",
     "name": "d3dx_jpeg_consume_input",
-    "size": 154
+    "size": 154,
+    "aliases": [
+      "?jpeg_consume_input@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10026344",
@@ -3901,7 +4624,10 @@
     "end": "0x100263EB",
     "evidence": "exact",
     "name": "d3dx_jpeg_finish_decompress",
-    "size": 167
+    "size": 167,
+    "aliases": [
+      "?jpeg_finish_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x100263EB",
@@ -3909,7 +4635,10 @@
     "end": "0x1002644E",
     "evidence": "exact",
     "name": "d3dx_jpeg_read_header",
-    "size": 99
+    "size": 99,
+    "aliases": [
+      "?jpeg_read_header@D3DX@@YAHPAUjpeg_decompress_struct@1@E@Z"
+    ]
   },
   {
     "address": "0x1002644E",
@@ -3917,7 +4646,10 @@
     "end": "0x100264F7",
     "evidence": "exact",
     "name": "d3dx_jpeg_output_pass_setup",
-    "size": 169
+    "size": 169,
+    "aliases": [
+      "?output_pass_setup@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x100264F7",
@@ -3925,7 +4657,10 @@
     "end": "0x1002657B",
     "evidence": "exact",
     "name": "d3dx_jpeg_read_scanlines",
-    "size": 132
+    "size": 132,
+    "aliases": [
+      "?jpeg_read_scanlines@D3DX@@YAIPAUjpeg_decompress_struct@1@PAPAEI@Z"
+    ]
   },
   {
     "address": "0x1002657B",
@@ -3933,7 +4668,10 @@
     "end": "0x1002663C",
     "evidence": "exact",
     "name": "d3dx_jpeg_start_decompress",
-    "size": 193
+    "size": 193,
+    "aliases": [
+      "?jpeg_start_decompress@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x1002663C",
@@ -3941,7 +4679,10 @@
     "end": "0x100266CA",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_soi",
-    "size": 142
+    "size": 142,
+    "aliases": [
+      "?get_soi@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x100266CA",
@@ -3949,7 +4690,10 @@
     "end": "0x100269C5",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_sof",
-    "size": 763
+    "size": 763,
+    "aliases": [
+      "?get_sof@D3DX@@YAEPAUjpeg_decompress_struct@1@EE@Z"
+    ]
   },
   {
     "address": "0x100269C5",
@@ -3957,7 +4701,10 @@
     "end": "0x10026C77",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_sos",
-    "size": 690
+    "size": 690,
+    "aliases": [
+      "?get_sos@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10026C77",
@@ -3965,7 +4712,10 @@
     "end": "0x10026EB3",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_app0",
-    "size": 572
+    "size": 572,
+    "aliases": [
+      "?get_app0@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10026EB3",
@@ -3973,7 +4723,10 @@
     "end": "0x1002702D",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_app14",
-    "size": 378
+    "size": 378,
+    "aliases": [
+      "?get_app14@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x1002702D",
@@ -3981,7 +4734,10 @@
     "end": "0x10027184",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_dac",
-    "size": 343
+    "size": 343,
+    "aliases": [
+      "?get_dac@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027184",
@@ -3989,7 +4745,10 @@
     "end": "0x10027418",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_dht",
-    "size": 660
+    "size": 660,
+    "aliases": [
+      "?get_dht@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027418",
@@ -3997,7 +4756,10 @@
     "end": "0x10027641",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_dqt",
-    "size": 553
+    "size": 553,
+    "aliases": [
+      "?get_dqt@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027641",
@@ -4005,7 +4767,10 @@
     "end": "0x10027718",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_dri",
-    "size": 215
+    "size": 215,
+    "aliases": [
+      "?get_dri@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027718",
@@ -4013,7 +4778,10 @@
     "end": "0x100277B4",
     "evidence": "exact",
     "name": "d3dx_jpeg_skip_variable",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?skip_variable@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x100277B4",
@@ -4021,7 +4789,10 @@
     "end": "0x1002788B",
     "evidence": "exact",
     "name": "d3dx_jpeg_next_marker",
-    "size": 215
+    "size": 215,
+    "aliases": [
+      "?next_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x1002788B",
@@ -4029,7 +4800,10 @@
     "end": "0x10027922",
     "evidence": "exact",
     "name": "d3dx_jpeg_first_marker",
-    "size": 151
+    "size": 151,
+    "aliases": [
+      "?first_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027922",
@@ -4037,7 +4811,10 @@
     "end": "0x10027B0F",
     "evidence": "exact",
     "name": "d3dx_jpeg_read_markers",
-    "size": 493
+    "size": 493,
+    "aliases": [
+      "?read_markers@D3DX@@YAHPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027B0F",
@@ -4045,7 +4822,10 @@
     "end": "0x10027B8D",
     "evidence": "exact",
     "name": "d3dx_jpeg_read_restart_marker",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "?read_restart_marker@D3DX@@YAEPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027B8D",
@@ -4053,7 +4833,10 @@
     "end": "0x10027C7C",
     "evidence": "exact",
     "name": "d3dx_jpeg_resync_to_restart",
-    "size": 239
+    "size": 239,
+    "aliases": [
+      "?jpeg_resync_to_restart@D3DX@@YAEPAUjpeg_decompress_struct@1@H@Z"
+    ]
   },
   {
     "address": "0x10027C7C",
@@ -4069,7 +4852,10 @@
     "end": "0x10027D23",
     "evidence": "exact",
     "name": "d3dx_jpeg_init_marker_reader",
-    "size": 125
+    "size": 125,
+    "aliases": [
+      "?jinit_marker_reader@D3DX@@YAXPAUjpeg_decompress_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10027D23",
@@ -4125,7 +4911,10 @@
     "end": "0x10027F07",
     "evidence": "exact",
     "name": "d3dx_png_format_buffer",
-    "size": 135
+    "size": 135,
+    "aliases": [
+      "?png_format_buffer@D3DX@@YAXPAUpng_struct_def@1@PADPBD@Z"
+    ]
   },
   {
     "address": "0x10027F07",
@@ -4141,7 +4930,10 @@
     "end": "0x10027F3E",
     "evidence": "exact",
     "name": "d3dx_png_error",
-    "size": 29
+    "size": 29,
+    "aliases": [
+      "?d3dx_png_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+    ]
   },
   {
     "address": "0x10027F3F",
@@ -4157,7 +4949,10 @@
     "end": "0x10027F74",
     "evidence": "exact",
     "name": "d3dx_png_chunk_error",
-    "size": 32
+    "size": 32,
+    "aliases": [
+      "?png_chunk_error@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+    ]
   },
   {
     "address": "0x10027F79",
@@ -4165,7 +4960,10 @@
     "end": "0x10027F9E",
     "evidence": "exact",
     "name": "d3dx_png_chunk_warning",
-    "size": 37
+    "size": 37,
+    "aliases": [
+      "?png_chunk_warning@D3DX@@YAXPAUpng_struct_def@1@PBD@Z"
+    ]
   },
   {
     "address": "0x10027F9E",
@@ -4173,7 +4971,10 @@
     "end": "0x100280A1",
     "evidence": "exact",
     "name": "d3dx_png_create_read_struct",
-    "size": 259
+    "size": 259,
+    "aliases": [
+      "?d3dx_png_create_read_struct@D3DX@@YAPAUpng_struct_def@1@PBDPAXP6AXPAU21@0@Z3@Z"
+    ]
   },
   {
     "address": "0x100280A1",
@@ -4181,7 +4982,10 @@
     "end": "0x10028214",
     "evidence": "exact",
     "name": "d3dx_png_read_info",
-    "size": 371
+    "size": 371,
+    "aliases": [
+      "?png_read_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10028214",
@@ -4197,7 +5001,10 @@
     "end": "0x100285DB",
     "evidence": "exact",
     "name": "d3dx_png_read_row",
-    "size": 935
+    "size": 935,
+    "aliases": [
+      "?png_read_row@D3DX@@YAXPAUpng_struct_def@1@PAE1@Z"
+    ]
   },
   {
     "address": "0x100285DB",
@@ -4213,7 +5020,10 @@
     "end": "0x1002874B",
     "evidence": "exact",
     "name": "d3dx_png_read_destroy",
-    "size": 291
+    "size": 291,
+    "aliases": [
+      "?png_read_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@1@Z"
+    ]
   },
   {
     "address": "0x1002874B",
@@ -4221,7 +5031,10 @@
     "end": "0x100287CC",
     "evidence": "exact",
     "name": "d3dx_png_destroy_read_struct",
-    "size": 129
+    "size": 129,
+    "aliases": [
+      "?png_destroy_read_struct@D3DX@@YAXPAPAUpng_struct_def@1@PAPAUpng_info_struct@1@1@Z"
+    ]
   },
   {
     "address": "0x100287CC",
@@ -4269,7 +5082,10 @@
     "end": "0x10028937",
     "evidence": "exact",
     "name": "d3dx_png_get_ihdr",
-    "size": 209
+    "size": 209,
+    "aliases": [
+      "?png_get_IHDR@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAK2PAH3333@Z"
+    ]
   },
   {
     "address": "0x10028937",
@@ -4285,7 +5101,10 @@
     "end": "0x100289D1",
     "evidence": "exact",
     "name": "d3dx_png_get_trns",
-    "size": 103
+    "size": 103,
+    "aliases": [
+      "?png_get_tRNS@D3DX@@YAKPAUpng_struct_def@1@PAUpng_info_struct@1@PAPAEPAHPAPAUpng_color_16_struct@1@@Z"
+    ]
   },
   {
     "address": "0x100289D1",
@@ -4293,7 +5112,10 @@
     "end": "0x100289DA",
     "evidence": "exact",
     "name": "d3dx_png_set_bgr",
-    "size": 9
+    "size": 9,
+    "aliases": [
+      "?png_set_bgr@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x100289DA",
@@ -4301,7 +5123,10 @@
     "end": "0x100289EC",
     "evidence": "exact",
     "name": "d3dx_png_set_swap",
-    "size": 18
+    "size": 18,
+    "aliases": [
+      "?png_set_swap@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x100289EC",
@@ -4309,7 +5134,10 @@
     "end": "0x10028A05",
     "evidence": "exact",
     "name": "d3dx_png_set_packing",
-    "size": 25
+    "size": 25,
+    "aliases": [
+      "?png_set_packing@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x10028A05",
@@ -4317,7 +5145,10 @@
     "end": "0x10028A1E",
     "evidence": "exact",
     "name": "d3dx_png_set_interlace_handling",
-    "size": 25
+    "size": 25,
+    "aliases": [
+      "?png_set_interlace_handling@D3DX@@YAHPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x10028A1E",
@@ -4325,7 +5156,10 @@
     "end": "0x10028A6B",
     "evidence": "exact",
     "name": "d3dx_png_set_filler",
-    "size": 77
+    "size": 77,
+    "aliases": [
+      "?png_set_filler@D3DX@@YAXPAUpng_struct_def@1@KH@Z"
+    ]
   },
   {
     "address": "0x10028A6B",
@@ -4333,7 +5167,10 @@
     "end": "0x10028A98",
     "evidence": "exact",
     "name": "d3dx_png_do_swap",
-    "size": 45
+    "size": 45,
+    "aliases": [
+      "?png_do_swap@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ]
   },
   {
     "address": "0x10028A98",
@@ -4341,7 +5178,10 @@
     "end": "0x10028B57",
     "evidence": "exact",
     "name": "d3dx_png_do_bgr",
-    "size": 191
+    "size": 191,
+    "aliases": [
+      "?png_do_bgr@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ]
   },
   {
     "address": "0x10028B57",
@@ -4349,7 +5189,10 @@
     "end": "0x10028B8D",
     "evidence": "exact",
     "name": "d3dx_png_set_gamma",
-    "size": 54
+    "size": 54,
+    "aliases": [
+      "?png_set_gamma@D3DX@@YAXPAUpng_struct_def@1@NN@Z"
+    ]
   },
   {
     "address": "0x10028B8D",
@@ -4357,7 +5200,10 @@
     "end": "0x10028B96",
     "evidence": "exact",
     "name": "d3dx_png_set_expand",
-    "size": 9
+    "size": 9,
+    "aliases": [
+      "?png_set_expand@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x10028B96",
@@ -4365,7 +5211,10 @@
     "end": "0x10028C81",
     "evidence": "exact",
     "name": "d3dx_png_read_transform_info",
-    "size": 235
+    "size": 235,
+    "aliases": [
+      "?png_read_transform_info@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10028C81",
@@ -4373,7 +5222,10 @@
     "end": "0x10028D91",
     "evidence": "exact",
     "name": "d3dx_png_do_unpack",
-    "size": 272
+    "size": 272,
+    "aliases": [
+      "?png_do_unpack@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ]
   },
   {
     "address": "0x10028D91",
@@ -4381,7 +5233,10 @@
     "end": "0x10028F08",
     "evidence": "exact",
     "name": "d3dx_png_do_unshift",
-    "size": 375
+    "size": 375,
+    "aliases": [
+      "?png_do_unshift@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_8_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10028F08",
@@ -4389,7 +5244,10 @@
     "end": "0x10028F4C",
     "evidence": "exact",
     "name": "d3dx_png_do_chop",
-    "size": 68
+    "size": 68,
+    "aliases": [
+      "?png_do_chop@D3DX@@YAXPAUpng_row_info_struct@1@PAE@Z"
+    ]
   },
   {
     "address": "0x10028F4C",
@@ -4397,7 +5255,10 @@
     "end": "0x10029184",
     "evidence": "exact",
     "name": "d3dx_png_do_read_filler",
-    "size": 568
+    "size": 568,
+    "aliases": [
+      "?png_do_read_filler@D3DX@@YAXPAUpng_row_info_struct@1@PAEKK@Z"
+    ]
   },
   {
     "address": "0x10029184",
@@ -4405,7 +5266,10 @@
     "end": "0x100294D2",
     "evidence": "exact",
     "name": "d3dx_png_do_gamma",
-    "size": 846
+    "size": 846,
+    "aliases": [
+      "?png_do_gamma@D3DX@@YAXPAUpng_row_info_struct@1@PAE1PAPAGH@Z"
+    ]
   },
   {
     "address": "0x100294D2",
@@ -4413,7 +5277,10 @@
     "end": "0x100296DA",
     "evidence": "exact",
     "name": "d3dx_png_do_expand_palette",
-    "size": 520
+    "size": 520,
+    "aliases": [
+      "?png_do_expand_palette@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_struct@1@1H@Z"
+    ]
   },
   {
     "address": "0x100296DA",
@@ -4421,7 +5288,10 @@
     "end": "0x10029A2C",
     "evidence": "exact",
     "name": "d3dx_png_do_expand",
-    "size": 850
+    "size": 850,
+    "aliases": [
+      "?png_do_expand@D3DX@@YAXPAUpng_row_info_struct@1@PAEPAUpng_color_16_struct@1@@Z"
+    ]
   },
   {
     "address": "0x10029A2C",
@@ -4429,7 +5299,10 @@
     "end": "0x10029B3A",
     "evidence": "exact",
     "name": "d3dx_png_do_dither",
-    "size": 270
+    "size": 270,
+    "aliases": [
+      "?png_do_dither@D3DX@@YAXPAUpng_row_info_struct@1@PAE11@Z"
+    ]
   },
   {
     "address": "0x10029B3A",
@@ -4437,7 +5310,10 @@
     "end": "0x10029E43",
     "evidence": "exact",
     "name": "d3dx_png_build_gamma_table",
-    "size": 777
+    "size": 777,
+    "aliases": [
+      "?png_build_gamma_table@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x10029E43",
@@ -4445,7 +5321,10 @@
     "end": "0x10029F56",
     "evidence": "exact",
     "name": "d3dx_png_init_read_transformations",
-    "size": 275
+    "size": 275,
+    "aliases": [
+      "?png_init_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x10029F56",
@@ -4453,7 +5332,10 @@
     "end": "0x1002A10E",
     "evidence": "exact",
     "name": "d3dx_png_do_read_transformations",
-    "size": 440
+    "size": 440,
+    "aliases": [
+      "?png_do_read_transformations@D3DX@@YAXPAUpng_struct_def@1@@Z"
+    ]
   },
   {
     "address": "0x1002A10E",
@@ -4469,7 +5351,10 @@
     "end": "0x1002A1CA",
     "evidence": "exact",
     "name": "d3dx_png_set_ihdr",
-    "size": 161
+    "size": 161,
+    "aliases": [
+      "?png_set_IHDR@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@KKHHHHH@Z"
+    ]
   },
   {
     "address": "0x1002A1CA",
@@ -4541,7 +5426,10 @@
     "end": "0x1002A390",
     "evidence": "exact",
     "name": "png_zfree",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "?png_zfree@D3DX@@YAXPAX0@Z"
+    ]
   },
   {
     "address": "0x1002A390",
@@ -4565,7 +5453,10 @@
     "end": "0x1002A3F5",
     "evidence": "exact",
     "name": "png_info_destroy",
-    "size": 14
+    "size": 14,
+    "aliases": [
+      "?png_info_destroy@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@@Z"
+    ]
   },
   {
     "address": "0x1002A3F5",
@@ -4581,7 +5472,10 @@
     "end": "0x1002A467",
     "evidence": "exact",
     "name": "grim_dxt_decode_rgb565",
-    "size": 76
+    "size": 76,
+    "aliases": [
+      "?Decode565@@YAXPAUD3DXCOLOR@@G@Z"
+    ]
   },
   {
     "address": "0x1002A467",
@@ -4589,7 +5483,10 @@
     "end": "0x1002A4E5",
     "evidence": "exact",
     "name": "grim_dxt_unpremultiply_rgba_block",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "?DecodePremult@@YAJPAUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002A4E5",
@@ -4597,7 +5494,10 @@
     "end": "0x1002A515",
     "evidence": "exact",
     "name": "grim_dxt_premultiply_rgba_block",
-    "size": 48
+    "size": 48,
+    "aliases": [
+      "?EncodePremult@@YAJPAUD3DXCOLOR@@PBU1@@Z"
+    ]
   },
   {
     "address": "0x1002A515",
@@ -4605,7 +5505,10 @@
     "end": "0x1002A538",
     "evidence": "exact",
     "name": "fpu_save_control_word",
-    "size": 35
+    "size": 35,
+    "aliases": [
+      "?F2IBegin@@YAXXZ"
+    ]
   },
   {
     "address": "0x1002A538",
@@ -4613,7 +5516,10 @@
     "end": "0x1002A632",
     "evidence": "exact",
     "name": "grim_dxt_pack_rgb565",
-    "size": 250
+    "size": 250,
+    "aliases": [
+      "?Encode565@@YAGPBUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002A632",
@@ -4621,7 +5527,10 @@
     "end": "0x1002A937",
     "evidence": "exact",
     "name": "grim_dxt5_optimize_alpha_endpoints",
-    "size": 773
+    "size": 773,
+    "aliases": [
+      "?OptimizeAlpha@@YAXPAM0PBMI@Z"
+    ]
   },
   {
     "address": "0x1002A937",
@@ -4629,7 +5538,10 @@
     "end": "0x1002AEA2",
     "evidence": "exact",
     "name": "grim_dxt1_optimize_color_endpoints",
-    "size": 1387
+    "size": 1387,
+    "aliases": [
+      "?OptimizeRGB@@YAXPAUD3DXCOLOR@@0PBU1@I@Z"
+    ]
   },
   {
     "address": "0x1002AEA2",
@@ -4637,7 +5549,10 @@
     "end": "0x1002B6A6",
     "evidence": "exact",
     "name": "grim_dxt1_encode_color_block",
-    "size": 2052
+    "size": 2052,
+    "aliases": [
+      "?EncodeDXT1@@YAJPAEPBUD3DXCOLOR@@H@Z"
+    ]
   },
   {
     "address": "0x1002B6A6",
@@ -4645,7 +5560,10 @@
     "end": "0x1002B7E4",
     "evidence": "exact",
     "name": "grim_dxt1_decode_color_block",
-    "size": 318
+    "size": 318,
+    "aliases": [
+      "?D3DXDecodeDXT1@@YAJPAUD3DXCOLOR@@PBE@Z"
+    ]
   },
   {
     "address": "0x1002B7E4",
@@ -4653,7 +5571,10 @@
     "end": "0x1002B867",
     "evidence": "exact",
     "name": "grim_dxt3_decode_block",
-    "size": 131
+    "size": 131,
+    "aliases": [
+      "?D3DXDecodeDXT3@@YAJPAUD3DXCOLOR@@PBE@Z"
+    ]
   },
   {
     "address": "0x1002B867",
@@ -4661,7 +5582,10 @@
     "end": "0x1002B9A3",
     "evidence": "exact",
     "name": "grim_dxt5_decode_block",
-    "size": 316
+    "size": 316,
+    "aliases": [
+      "?D3DXDecodeDXT5@@YAJPAUD3DXCOLOR@@PBE@Z"
+    ]
   },
   {
     "address": "0x1002B9A3",
@@ -4669,7 +5593,10 @@
     "end": "0x1002B9BB",
     "evidence": "exact",
     "name": "grim_dxt1_encode_block",
-    "size": 24
+    "size": 24,
+    "aliases": [
+      "?D3DXEncodeDXT1@@YAJPAEPBUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002B9BB",
@@ -4677,7 +5604,10 @@
     "end": "0x1002BACF",
     "evidence": "exact",
     "name": "grim_dxt3_encode_block",
-    "size": 276
+    "size": 276,
+    "aliases": [
+      "?D3DXEncodeDXT3@@YAJPAEPBUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002BACF",
@@ -4685,7 +5615,10 @@
     "end": "0x1002BF21",
     "evidence": "exact",
     "name": "grim_dxt5_encode_block",
-    "size": 1106
+    "size": 1106,
+    "aliases": [
+      "?D3DXEncodeDXT5@@YAJPAEPBUD3DXCOLOR@@@Z"
+    ]
   },
   {
     "address": "0x1002BF21",
@@ -4725,7 +5658,10 @@
     "end": "0x1002C0E0",
     "evidence": "ordered",
     "name": "d3dx_sse_init_fast_table",
-    "size": 272
+    "size": 272,
+    "aliases": [
+      "?sse_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ]
   },
   {
     "address": "0x1002C0E0",
@@ -4733,7 +5669,10 @@
     "end": "0x1002C1EA",
     "evidence": "exact",
     "name": "d3dx_sse2_init_fast_table",
-    "size": 266
+    "size": 266,
+    "aliases": [
+      "?sse2_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ]
   },
   {
     "address": "0x1002C1F0",
@@ -4741,7 +5680,10 @@
     "end": "0x1002C2C3",
     "evidence": "referenced",
     "name": "d3dx_x3d_get_feature_flags",
-    "size": 211
+    "size": 211,
+    "aliases": [
+      "?get_feature_flags@@YAIXZ"
+    ]
   },
   {
     "address": "0x1002C2C3",
@@ -4749,7 +5691,10 @@
     "end": "0x1002C4E9",
     "evidence": "exact",
     "name": "d3dx_x3d_init_fast_table",
-    "size": 550
+    "size": 550,
+    "aliases": [
+      "?x3d_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ]
   },
   {
     "address": "0x1002C4E9",
@@ -4757,7 +5702,10 @@
     "end": "0x1002C552",
     "evidence": "exact",
     "name": "d3dx_x86_vec2_transform",
-    "size": 105
+    "size": 105,
+    "aliases": [
+      "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x1002C552",
@@ -4765,7 +5713,10 @@
     "end": "0x1002C587",
     "evidence": "exact",
     "name": "d3dx_x86_vec2_transform_normal",
-    "size": 53
+    "size": 53,
+    "aliases": [
+      "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x1002C70A",
@@ -4773,7 +5724,10 @@
     "end": "0x1002C7D4",
     "evidence": "exact",
     "name": "d3dx_x86_vec3_normalize",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x1002C7D4",
@@ -4781,7 +5735,10 @@
     "end": "0x1002C8B7",
     "evidence": "exact",
     "name": "d3dx_x86_matrix_multiply",
-    "size": 227
+    "size": 227,
+    "aliases": [
+      "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x1002C8B7",
@@ -4789,7 +5746,10 @@
     "end": "0x1002C945",
     "evidence": "exact",
     "name": "d3dx_x86_matrix_multiply_transpose",
-    "size": 142
+    "size": 142,
+    "aliases": [
+      "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x1002C945",
@@ -4797,7 +5757,10 @@
     "end": "0x1002C981",
     "evidence": "exact",
     "name": "d3dx_x86_init_fast_table",
-    "size": 60
+    "size": 60,
+    "aliases": [
+      "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ]
   },
   {
     "address": "0x1002C981",
@@ -4845,7 +5808,10 @@
     "end": "0x1002CA5F",
     "evidence": "exact",
     "name": "d3dx_jpeg_is_mmx",
-    "size": 50
+    "size": 50,
+    "aliases": [
+      "?IsMMX@D3DX@@YAHXZ"
+    ]
   },
   {
     "address": "0x1002CA5F",
@@ -4885,7 +5851,10 @@
     "end": "0x1002CEEF",
     "evidence": "exact",
     "name": "d3dx_jpeg_consume_markers",
-    "size": 147
+    "size": 147,
+    "aliases": [
+      "consume_markers"
+    ]
   },
   {
     "address": "0x1002CEEF",
@@ -4901,7 +5870,10 @@
     "end": "0x1002CF37",
     "evidence": "exact",
     "name": "d3dx_jpeg_finish_input_pass",
-    "size": 17
+    "size": 17,
+    "aliases": [
+      "finish_input_pass"
+    ]
   },
   {
     "address": "0x1002CF37",
@@ -5173,7 +6145,10 @@
     "end": "0x1002E53F",
     "evidence": "exact",
     "name": "png_destroy_struct",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "?png_destroy_struct@D3DX@@YAXPAX@Z"
+    ]
   },
   {
     "address": "0x1002E53F",
@@ -5181,7 +6156,10 @@
     "end": "0x1002E575",
     "evidence": "exact",
     "name": "d3dx_png_malloc",
-    "size": 54
+    "size": 54,
+    "aliases": [
+      "?d3dx_png_malloc@D3DX@@YAPAXPAUpng_struct_def@1@K@Z"
+    ]
   },
   {
     "address": "0x1002E575",
@@ -5261,7 +6239,10 @@
     "end": "0x1002ED39",
     "evidence": "exact",
     "name": "d3dx_png_read_filter_row",
-    "size": 379
+    "size": 379,
+    "aliases": [
+      "?png_read_filter_row@D3DX@@YAXPAUpng_struct_def@1@PAUpng_row_info_struct@1@PAE2H@Z"
+    ]
   },
   {
     "address": "0x1002ED39",
@@ -5293,7 +6274,10 @@
     "end": "0x1002F281",
     "evidence": "exact",
     "name": "d3dx_png_handle_plte",
-    "size": 298
+    "size": 298,
+    "aliases": [
+      "?png_handle_PLTE@D3DX@@YAXPAUpng_struct_def@1@PAUpng_info_struct@1@K@Z"
+    ]
   },
   {
     "address": "0x1002F281",
@@ -5349,7 +6333,10 @@
     "end": "0x1002F9F3",
     "evidence": "exact",
     "name": "d3dx_zlib_crc32",
-    "size": 265
+    "size": 265,
+    "aliases": [
+      "crc32"
+    ]
   },
   {
     "address": "0x1002FA00",
@@ -5357,7 +6344,10 @@
     "end": "0x1002FA40",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_transform",
-    "size": 64
+    "size": 64,
+    "aliases": [
+      "?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x1002FA40",
@@ -5365,7 +6355,10 @@
     "end": "0x1002FA99",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_transform_coord",
-    "size": 89
+    "size": 89,
+    "aliases": [
+      "?sse_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x1002FAA0",
@@ -5373,7 +6366,10 @@
     "end": "0x1002FAD9",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_transform_normal",
-    "size": 57
+    "size": 57,
+    "aliases": [
+      "?sse_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100304B0",
@@ -5381,7 +6377,10 @@
     "end": "0x1003054C",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_normalize",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?sse_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10030550",
@@ -5389,7 +6388,10 @@
     "end": "0x10030604",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_catmull_rom",
-    "size": 180
+    "size": 180,
+    "aliases": [
+      "?sse_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10030610",
@@ -5397,7 +6399,10 @@
     "end": "0x10030697",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_catmull_rom",
-    "size": 135
+    "size": 135,
+    "aliases": [
+      "?sse_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x100306A0",
@@ -5405,7 +6410,10 @@
     "end": "0x10030747",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_catmull_rom",
-    "size": 167
+    "size": 167,
+    "aliases": [
+      "?sse_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10030750",
@@ -5413,7 +6421,10 @@
     "end": "0x10030805",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_hermite",
-    "size": 181
+    "size": 181,
+    "aliases": [
+      "?sse_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10030810",
@@ -5421,7 +6432,10 @@
     "end": "0x100308AC",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_hermite",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?sse_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x100308B0",
@@ -5429,7 +6443,10 @@
     "end": "0x10030938",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_hermite",
-    "size": 136
+    "size": 136,
+    "aliases": [
+      "?sse_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10030940",
@@ -5437,7 +6454,10 @@
     "end": "0x1003099C",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_barycentric",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?sse_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x100309A0",
@@ -5445,7 +6465,10 @@
     "end": "0x100309E8",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_barycentric",
-    "size": 72
+    "size": 72,
+    "aliases": [
+      "?sse_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x100309F0",
@@ -5453,7 +6476,10 @@
     "end": "0x10030A41",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_barycentric",
-    "size": 81
+    "size": 81,
+    "aliases": [
+      "?sse_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10030A50",
@@ -5461,7 +6487,10 @@
     "end": "0x10030B0E",
     "evidence": "exact",
     "name": "d3dx_sse_plane_intersect_line",
-    "size": 190
+    "size": 190,
+    "aliases": [
+      "?sse_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ]
   },
   {
     "address": "0x10030EF0",
@@ -5469,7 +6498,10 @@
     "end": "0x10030F80",
     "evidence": "referenced",
     "name": "d3dx_sse_quaternion_multiply",
-    "size": 144
+    "size": 144,
+    "aliases": [
+      "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x10030F80",
@@ -5477,7 +6509,10 @@
     "end": "0x1003101C",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_normalize",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x1003127E",
@@ -5485,7 +6520,11 @@
     "end": "0x10031322",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_transform_normal_impl",
-    "size": 164
+    "size": 164,
+    "aliases": [
+      "?sse_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x1003133E",
@@ -5493,7 +6532,11 @@
     "end": "0x100313E1",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_transform_impl",
-    "size": 163
+    "size": 163,
+    "aliases": [
+      "?sse_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100313FE",
@@ -5501,7 +6544,11 @@
     "end": "0x100314E3",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_transform_coord_impl",
-    "size": 229
+    "size": 229,
+    "aliases": [
+      "?sse_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100314FE",
@@ -5509,7 +6556,11 @@
     "end": "0x100315AB",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_transform_impl",
-    "size": 173
+    "size": 173,
+    "aliases": [
+      "?sse_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100315BE",
@@ -5517,7 +6568,11 @@
     "end": "0x100316F6",
     "evidence": "exact",
     "name": "d3dx_sse_matrix_multiply_impl",
-    "size": 312
+    "size": 312,
+    "aliases": [
+      "?sse_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+      "?sse2_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x1003170E",
@@ -5525,7 +6580,11 @@
     "end": "0x100317C6",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_normalize_impl",
-    "size": 184
+    "size": 184,
+    "aliases": [
+      "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z",
+      "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100317DE",
@@ -5533,7 +6592,11 @@
     "end": "0x100318A8",
     "evidence": "exact",
     "name": "d3dx_sse_plane_normalize_impl",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z",
+      "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100318BE",
@@ -5541,7 +6604,11 @@
     "end": "0x10031B69",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_inverse_impl",
-    "size": 683
+    "size": 683,
+    "aliases": [
+      "?sse_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z",
+      "?sse2_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x10031B7E",
@@ -5549,7 +6616,11 @@
     "end": "0x10031CC8",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_multiply_transpose_impl",
-    "size": 330
+    "size": 330,
+    "aliases": [
+      "?sse_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z",
+      "?sse2_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x10031CDE",
@@ -5557,7 +6628,11 @@
     "end": "0x10031D76",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_cross_impl",
-    "size": 152
+    "size": 152,
+    "aliases": [
+      "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z",
+      "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x10031D8E",
@@ -5565,7 +6640,11 @@
     "end": "0x10031DFB",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_rotation_x_impl",
-    "size": 109
+    "size": 109,
+    "aliases": [
+      "?sse_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z",
+      "?sse2_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10031E0E",
@@ -5573,7 +6652,11 @@
     "end": "0x10031E82",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_rotation_y_impl",
-    "size": 116
+    "size": 116,
+    "aliases": [
+      "?sse_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z",
+      "?sse2_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10031E9E",
@@ -5581,7 +6664,11 @@
     "end": "0x10031F5B",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_determinant_impl",
-    "size": 189
+    "size": 189,
+    "aliases": [
+      "?sse_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z",
+      "?sse2_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10031F6E",
@@ -5589,7 +6676,11 @@
     "end": "0x10032044",
     "evidence": "exact",
     "name": "d3dx_sse_plane_from_points_impl",
-    "size": 214
+    "size": 214,
+    "aliases": [
+      "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z",
+      "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
   },
   {
     "address": "0x1003205E",
@@ -5597,7 +6688,11 @@
     "end": "0x100321DA",
     "evidence": "exact",
     "name": "d3dx_sse_matrix_shadow_impl",
-    "size": 380
+    "size": 380,
+    "aliases": [
+      "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z",
+      "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x100321EE",
@@ -5605,7 +6700,11 @@
     "end": "0x100322B4",
     "evidence": "exact",
     "name": "d3dx_sse_matrix_reflect_impl",
-    "size": 198
+    "size": 198,
+    "aliases": [
+      "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z",
+      "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x100322C0",
@@ -5613,7 +6712,10 @@
     "end": "0x100323D4",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_rotation_matrix",
-    "size": 276
+    "size": 276,
+    "aliases": [
+      "?sse_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x100323EE",
@@ -5621,7 +6723,11 @@
     "end": "0x100324A1",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll_impl",
-    "size": 179
+    "size": 179,
+    "aliases": [
+      "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z",
+      "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x100325A6",
@@ -5629,7 +6735,10 @@
     "end": "0x10032659",
     "evidence": "exact",
     "name": "x3d_quaternion_to_axis_angle",
-    "size": 179
+    "size": 179,
+    "aliases": [
+      "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ]
   },
   {
     "address": "0x10032659",
@@ -5637,7 +6746,10 @@
     "end": "0x10032875",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_matrix",
-    "size": 540
+    "size": 540,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10032875",
@@ -5645,7 +6757,10 @@
     "end": "0x10032A8A",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_matrix_k7",
-    "size": 533
+    "size": 533,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10032A8A",
@@ -5653,7 +6768,10 @@
     "end": "0x10032B4F",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_yaw_pitch_roll",
-    "size": 197
+    "size": 197,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10032B4F",
@@ -5661,7 +6779,10 @@
     "end": "0x10032BBB",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_axis",
-    "size": 108
+    "size": 108,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x10032BBB",
@@ -5669,7 +6790,10 @@
     "end": "0x10032CF2",
     "evidence": "exact",
     "name": "x3d_quaternion_slerp",
-    "size": 311
+    "size": 311,
+    "aliases": [
+      "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x10032CF2",
@@ -5677,7 +6801,10 @@
     "end": "0x10032D7F",
     "evidence": "exact",
     "name": "x3d_quaternion_barycentric",
-    "size": 141
+    "size": 141,
+    "aliases": [
+      "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10032D7F",
@@ -5685,7 +6812,10 @@
     "end": "0x10032E11",
     "evidence": "exact",
     "name": "x3d_quaternion_squad",
-    "size": 146
+    "size": 146,
+    "aliases": [
+      "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10032E11",
@@ -5693,7 +6823,10 @@
     "end": "0x10032E75",
     "evidence": "exact",
     "name": "x3d_quaternion_inverse",
-    "size": 100
+    "size": 100,
+    "aliases": [
+      "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10032E75",
@@ -5701,7 +6834,10 @@
     "end": "0x10032F1C",
     "evidence": "exact",
     "name": "x3d_quaternion_ln",
-    "size": 167
+    "size": 167,
+    "aliases": [
+      "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10032F1C",
@@ -5709,7 +6845,10 @@
     "end": "0x10032FC1",
     "evidence": "exact",
     "name": "x3d_quaternion_exp",
-    "size": 165
+    "size": 165,
+    "aliases": [
+      "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10032FC1",
@@ -5717,7 +6856,10 @@
     "end": "0x100339FA",
     "evidence": "referenced",
     "name": "x3d_quaternion_squad_setup",
-    "size": 2617
+    "size": 2617,
+    "aliases": [
+      "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
   },
   {
     "address": "0x100339FA",
@@ -5725,7 +6867,10 @@
     "end": "0x10033C2C",
     "evidence": "exact",
     "name": "x3d_matrix_multiply",
-    "size": 562
+    "size": 562,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x10033C2C",
@@ -5733,7 +6878,10 @@
     "end": "0x10033CFB",
     "evidence": "exact",
     "name": "x3d_matrix_determinant",
-    "size": 207
+    "size": 207,
+    "aliases": [
+      "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10033CFB",
@@ -5741,7 +6889,10 @@
     "end": "0x10033D4B",
     "evidence": "exact",
     "name": "x3d_matrix_translation",
-    "size": 80
+    "size": 80,
+    "aliases": [
+      "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10033D4B",
@@ -5749,7 +6900,10 @@
     "end": "0x10033E36",
     "evidence": "exact",
     "name": "x3d_matrix_shadow",
-    "size": 235
+    "size": 235,
+    "aliases": [
+      "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x10033E36",
@@ -5757,7 +6911,10 @@
     "end": "0x10033F12",
     "evidence": "exact",
     "name": "x3d_matrix_reflect",
-    "size": 220
+    "size": 220,
+    "aliases": [
+      "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x10033F12",
@@ -5765,7 +6922,10 @@
     "end": "0x10033F75",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_x",
-    "size": 99
+    "size": 99,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10033F75",
@@ -5773,7 +6933,10 @@
     "end": "0x10033FD3",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_y",
-    "size": 94
+    "size": 94,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x10033FD3",
@@ -5781,7 +6944,10 @@
     "end": "0x1003402C",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_z",
-    "size": 89
+    "size": 89,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x1003402C",
@@ -5789,7 +6955,10 @@
     "end": "0x10034073",
     "evidence": "exact",
     "name": "x3d_matrix_scaling",
-    "size": 71
+    "size": 71,
+    "aliases": [
+      "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x10034073",
@@ -5797,7 +6966,10 @@
     "end": "0x100340E2",
     "evidence": "exact",
     "name": "x3d_matrix_transpose",
-    "size": 111
+    "size": 111,
+    "aliases": [
+      "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100340E2",
@@ -5805,7 +6977,10 @@
     "end": "0x1003411B",
     "evidence": "exact",
     "name": "x3d_matrix_identity",
-    "size": 57
+    "size": 57,
+    "aliases": [
+      "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"
+    ]
   },
   {
     "address": "0x1003411B",
@@ -5813,7 +6988,10 @@
     "end": "0x100341ED",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_quaternion",
-    "size": 210
+    "size": 210,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "address": "0x100341ED",
@@ -5821,7 +6999,10 @@
     "end": "0x100342A2",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_quaternion_k7",
-    "size": 181
+    "size": 181,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "address": "0x100342A2",
@@ -5829,7 +7010,10 @@
     "end": "0x1003543A",
     "evidence": "exact",
     "name": "x3d_matrix_transformation",
-    "size": 4504
+    "size": 4504,
+    "aliases": [
+      "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "address": "0x1003543A",
@@ -5837,7 +7021,10 @@
     "end": "0x100355DF",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_yaw_pitch_roll",
-    "size": 421
+    "size": 421,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x100355DF",
@@ -5845,7 +7032,10 @@
     "end": "0x10035B13",
     "evidence": "exact",
     "name": "x3d_matrix_affine_transformation",
-    "size": 1332
+    "size": 1332,
+    "aliases": [
+      "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
   },
   {
     "address": "0x10035B13",
@@ -5853,7 +7043,10 @@
     "end": "0x10035C2C",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_axis",
-    "size": 281
+    "size": 281,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x10035C2C",
@@ -5861,7 +7054,10 @@
     "end": "0x10036D80",
     "evidence": "exact",
     "name": "x3d_matrix_transformation_k7",
-    "size": 4436
+    "size": 4436,
+    "aliases": [
+      "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "address": "0x10036D80",
@@ -5869,7 +7065,10 @@
     "end": "0x10037062",
     "evidence": "exact",
     "name": "x3d_matrix_inverse_k7",
-    "size": 738
+    "size": 738,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x10037062",
@@ -5877,7 +7076,10 @@
     "end": "0x1003745A",
     "evidence": "exact",
     "name": "x3d_matrix_multiply_transpose",
-    "size": 1016
+    "size": 1016,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x1003745A",
@@ -5885,7 +7087,10 @@
     "end": "0x1003778E",
     "evidence": "exact",
     "name": "x3d_matrix_inverse_inline",
-    "size": 820
+    "size": 820,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse_inline@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x1003778E",
@@ -5893,7 +7098,10 @@
     "end": "0x100377AA",
     "evidence": "exact",
     "name": "x3d_matrix_inverse",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x10037882",
@@ -5901,7 +7109,10 @@
     "end": "0x100378E1",
     "evidence": "exact",
     "name": "x3d_vec3_normalize",
-    "size": 95
+    "size": 95,
+    "aliases": [
+      "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x100378E1",
@@ -5909,7 +7120,10 @@
     "end": "0x10037952",
     "evidence": "exact",
     "name": "x3d_vec3_barycentric",
-    "size": 113
+    "size": 113,
+    "aliases": [
+      "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x10037952",
@@ -5917,7 +7131,10 @@
     "end": "0x10037A26",
     "evidence": "exact",
     "name": "x3d_vec3_hermite",
-    "size": 212
+    "size": 212,
+    "aliases": [
+      "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10037A26",
@@ -5925,7 +7142,10 @@
     "end": "0x10037B10",
     "evidence": "exact",
     "name": "x3d_vec3_catmull_rom",
-    "size": 234
+    "size": 234,
+    "aliases": [
+      "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10037B10",
@@ -5933,7 +7153,10 @@
     "end": "0x10037B9B",
     "evidence": "exact",
     "name": "x3d_vec3_transform_coord_inline",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10037B9B",
@@ -5941,7 +7164,10 @@
     "end": "0x10037D62",
     "evidence": "exact",
     "name": "x3d_matrix_multiply_inline",
-    "size": 455
+    "size": 455,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiply_inline@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x10037D62",
@@ -5949,7 +7175,10 @@
     "end": "0x10037D67",
     "evidence": "exact",
     "name": "x3d_vec3_transform_coord",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "?x3d_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10037D67",
@@ -5957,7 +7186,10 @@
     "end": "0x10037ECF",
     "evidence": "exact",
     "name": "x3d_vec3_project",
-    "size": 360
+    "size": 360,
+    "aliases": [
+      "?x3d_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x10037EEF",
@@ -5965,7 +7197,10 @@
     "end": "0x100380F5",
     "evidence": "exact",
     "name": "x3d_vec3_unproject",
-    "size": 518
+    "size": 518,
+    "aliases": [
+      "?x3d_D3DXVec3Unproject@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x10038115",
@@ -5973,7 +7208,10 @@
     "end": "0x10038248",
     "evidence": "exact",
     "name": "x3d_vec3_unproject_k7",
-    "size": 307
+    "size": 307,
+    "aliases": [
+      "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x1003860A",
@@ -5981,7 +7219,10 @@
     "end": "0x1003873C",
     "evidence": "exact",
     "name": "x3d_vec4_cross",
-    "size": 306
+    "size": 306,
+    "aliases": [
+      "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x1003873C",
@@ -5989,7 +7230,10 @@
     "end": "0x100387AD",
     "evidence": "exact",
     "name": "x3d_vec4_barycentric",
-    "size": 113
+    "size": 113,
+    "aliases": [
+      "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x100387AD",
@@ -5997,7 +7241,10 @@
     "end": "0x10038875",
     "evidence": "exact",
     "name": "x3d_vec4_hermite",
-    "size": 200
+    "size": 200,
+    "aliases": [
+      "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10038875",
@@ -6005,7 +7252,10 @@
     "end": "0x10038953",
     "evidence": "exact",
     "name": "x3d_vec4_catmull_rom",
-    "size": 222
+    "size": 222,
+    "aliases": [
+      "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x10038B38",
@@ -6013,7 +7263,10 @@
     "end": "0x10038B9C",
     "evidence": "exact",
     "name": "x3d_plane_normalize",
-    "size": 100
+    "size": 100,
+    "aliases": [
+      "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x10038B9C",
@@ -6021,7 +7274,10 @@
     "end": "0x10038C1A",
     "evidence": "exact",
     "name": "x3d_plane_transform",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x10038C1A",
@@ -6029,7 +7285,12 @@
     "end": "0x10038C25",
     "evidence": "exact",
     "name": "d3dx_jpeg_free_small",
-    "size": 11
+    "size": 11,
+    "aliases": [
+      "jpeg_free_small",
+      "jpeg_free_large",
+      "zcfree"
+    ]
   },
   {
     "address": "0x10038C25",
@@ -6037,7 +7298,11 @@
     "end": "0x10038C30",
     "evidence": "exact",
     "name": "d3dx_jpeg_get_small",
-    "size": 11
+    "size": 11,
+    "aliases": [
+      "jpeg_get_small",
+      "jpeg_get_large"
+    ]
   },
   {
     "address": "0x10038C30",
@@ -6861,7 +8126,10 @@
     "end": "0x1003F0AC",
     "evidence": "exact",
     "name": "d3dx_sse_sin_cos4",
-    "size": 492
+    "size": 492,
+    "aliases": [
+      "?sse_SinCos4@@YAXQBMQAM1@Z"
+    ]
   },
   {
     "address": "0x1003F0B0",
@@ -6869,7 +8137,10 @@
     "end": "0x1003F198",
     "evidence": "exact",
     "name": "d3dx_sse2_sincos",
-    "size": 232
+    "size": 232,
+    "aliases": [
+      "?sse2_sincos@@YG_K_K@Z"
+    ]
   },
   {
     "address": "0x1003F1A0",
@@ -6877,7 +8148,10 @@
     "end": "0x1003F2E9",
     "evidence": "exact",
     "name": "d3dx_sse2_sin_cos4",
-    "size": 329
+    "size": 329,
+    "aliases": [
+      "?sse2_SinCos4@@YAXQBMQAM1@Z"
+    ]
   },
   {
     "address": "0x1003F3C0",
@@ -6885,7 +8159,10 @@
     "end": "0x1003F4B5",
     "evidence": "exact",
     "name": "x3d_atan2",
-    "size": 245
+    "size": 245,
+    "aliases": [
+      "_a_atan2"
+    ]
   },
   {
     "address": "0x1003F4C0",
@@ -6893,7 +8170,10 @@
     "end": "0x1003F5B7",
     "evidence": "exact",
     "name": "x3d_acos",
-    "size": 247
+    "size": 247,
+    "aliases": [
+      "_a_acos"
+    ]
   },
   {
     "address": "0x1003F6C0",
@@ -6901,7 +8181,10 @@
     "end": "0x1003F7A9",
     "evidence": "exact",
     "name": "x3d_log",
-    "size": 233
+    "size": 233,
+    "aliases": [
+      "_a_log"
+    ]
   },
   {
     "address": "0x1003FAA0",
@@ -6909,7 +8192,11 @@
     "end": "0x1003FBA0",
     "evidence": "referenced",
     "name": "x3d_sincos",
-    "size": 256
+    "size": 256,
+    "aliases": [
+      "_a_cos",
+      "_a_sincos"
+    ]
   },
   {
     "address": "0x1003FBA0",
@@ -6917,7 +8204,10 @@
     "end": "0x1003FF58",
     "evidence": "referenced",
     "name": "x3d_sin",
-    "size": 952
+    "size": 952,
+    "aliases": [
+      "_a_sin"
+    ]
   },
   {
     "address": "0x1003FF58",
@@ -7101,7 +8391,10 @@
     "end": "0x1004627C",
     "evidence": "exact",
     "name": "grim_jpeg_memory_init_source",
-    "size": 12
+    "size": 12,
+    "aliases": [
+      "init_source"
+    ]
   },
   {
     "address": "0x10046280",
@@ -7109,7 +8402,10 @@
     "end": "0x1004631E",
     "evidence": "exact",
     "name": "grim_jpeg_memory_fill_input_buffer",
-    "size": 158
+    "size": 158,
+    "aliases": [
+      "fill_input_buffer"
+    ]
   },
   {
     "address": "0x10046320",
@@ -7117,7 +8413,10 @@
     "end": "0x1004635D",
     "evidence": "exact",
     "name": "grim_jpeg_memory_skip_input_data",
-    "size": 61
+    "size": 61,
+    "aliases": [
+      "skip_input_data"
+    ]
   },
   {
     "address": "0x10046360",
@@ -7125,7 +8424,10 @@
     "end": "0x10046361",
     "evidence": "exact",
     "name": "grim_jpeg_memory_term_source",
-    "size": 1
+    "size": 1,
+    "aliases": [
+      "term_source"
+    ]
   },
   {
     "address": "0x10046370",
@@ -7133,7 +8435,10 @@
     "end": "0x100463BC",
     "evidence": "exact",
     "name": "grim_jpeg_std_error",
-    "size": 76
+    "size": 76,
+    "aliases": [
+      "jpeg_std_error"
+    ]
   },
   {
     "address": "0x100463C0",
@@ -7181,7 +8486,10 @@
     "end": "0x10046571",
     "evidence": "exact",
     "name": "grim_jpeg_init_input_controller",
-    "size": 65
+    "size": 65,
+    "aliases": [
+      "jinit_input_controller"
+    ]
   },
   {
     "address": "0x10046580",
@@ -7229,7 +8537,10 @@
     "end": "0x10046EB6",
     "evidence": "exact",
     "name": "grim_jpeg_resync_to_restart",
-    "size": 246
+    "size": 246,
+    "aliases": [
+      "jpeg_resync_to_restart"
+    ]
   },
   {
     "address": "0x10046EC0",
@@ -7245,7 +8556,10 @@
     "end": "0x10047078",
     "evidence": "exact",
     "name": "grim_jpeg_init_marker_reader",
-    "size": 168
+    "size": 168,
+    "aliases": [
+      "jinit_marker_reader"
+    ]
   },
   {
     "address": "0x10047080",
@@ -7341,7 +8655,10 @@
     "end": "0x10048A70",
     "evidence": "referenced",
     "name": "grim_jpeg_init_memory_mgr",
-    "size": 320
+    "size": 320,
+    "aliases": [
+      "jinit_memory_mgr"
+    ]
   },
   {
     "address": "0x10048A70",
@@ -7349,7 +8666,10 @@
     "end": "0x10048BBB",
     "evidence": "exact",
     "name": "grim_jpeg_alloc_small",
-    "size": 331
+    "size": 331,
+    "aliases": [
+      "alloc_small"
+    ]
   },
   {
     "address": "0x10048BC0",
@@ -7357,7 +8677,10 @@
     "end": "0x10048C7B",
     "evidence": "exact",
     "name": "grim_jpeg_alloc_large",
-    "size": 187
+    "size": 187,
+    "aliases": [
+      "alloc_large"
+    ]
   },
   {
     "address": "0x10048C80",
@@ -7365,7 +8688,10 @@
     "end": "0x10048D28",
     "evidence": "exact",
     "name": "grim_jpeg_alloc_sarray",
-    "size": 168
+    "size": 168,
+    "aliases": [
+      "alloc_sarray"
+    ]
   },
   {
     "address": "0x10048D30",
@@ -7373,7 +8699,10 @@
     "end": "0x10048DE0",
     "evidence": "exact",
     "name": "grim_jpeg_alloc_barray",
-    "size": 176
+    "size": 176,
+    "aliases": [
+      "alloc_barray"
+    ]
   },
   {
     "address": "0x10048DE0",
@@ -7381,7 +8710,10 @@
     "end": "0x10048E48",
     "evidence": "exact",
     "name": "grim_jpeg_request_virt_sarray",
-    "size": 104
+    "size": 104,
+    "aliases": [
+      "request_virt_sarray"
+    ]
   },
   {
     "address": "0x10048E50",
@@ -7389,7 +8721,10 @@
     "end": "0x10048EB8",
     "evidence": "exact",
     "name": "grim_jpeg_request_virt_barray",
-    "size": 104
+    "size": 104,
+    "aliases": [
+      "request_virt_barray"
+    ]
   },
   {
     "address": "0x10048EC0",
@@ -7397,7 +8732,10 @@
     "end": "0x1004903B",
     "evidence": "exact",
     "name": "grim_jpeg_realize_virt_arrays",
-    "size": 379
+    "size": 379,
+    "aliases": [
+      "realize_virt_arrays"
+    ]
   },
   {
     "address": "0x10049040",
@@ -7405,7 +8743,10 @@
     "end": "0x10049181",
     "evidence": "exact",
     "name": "grim_jpeg_access_virt_sarray",
-    "size": 321
+    "size": 321,
+    "aliases": [
+      "access_virt_sarray"
+    ]
   },
   {
     "address": "0x10049190",
@@ -7413,7 +8754,10 @@
     "end": "0x1004922A",
     "evidence": "exact",
     "name": "grim_jpeg_do_sarray_io",
-    "size": 154
+    "size": 154,
+    "aliases": [
+      "do_sarray_io"
+    ]
   },
   {
     "address": "0x10049230",
@@ -7421,7 +8765,10 @@
     "end": "0x1004937C",
     "evidence": "exact",
     "name": "grim_jpeg_access_virt_barray",
-    "size": 332
+    "size": 332,
+    "aliases": [
+      "access_virt_barray"
+    ]
   },
   {
     "address": "0x10049380",
@@ -7429,7 +8776,10 @@
     "end": "0x1004941F",
     "evidence": "exact",
     "name": "grim_jpeg_do_barray_io",
-    "size": 159
+    "size": 159,
+    "aliases": [
+      "do_barray_io"
+    ]
   },
   {
     "address": "0x10049420",
@@ -7437,7 +8787,10 @@
     "end": "0x10049513",
     "evidence": "exact",
     "name": "grim_jpeg_free_pool",
-    "size": 243
+    "size": 243,
+    "aliases": [
+      "free_pool"
+    ]
   },
   {
     "address": "0x10049520",
@@ -7445,7 +8798,10 @@
     "end": "0x10049554",
     "evidence": "exact",
     "name": "grim_jpeg_self_destruct",
-    "size": 52
+    "size": 52,
+    "aliases": [
+      "self_destruct"
+    ]
   },
   {
     "address": "0x10049560",
@@ -7453,7 +8809,10 @@
     "end": "0x10049583",
     "evidence": "exact",
     "name": "grim_jpeg_abort",
-    "size": 35
+    "size": 35,
+    "aliases": [
+      "jpeg_abort"
+    ]
   },
   {
     "address": "0x10049590",
@@ -7461,7 +8820,10 @@
     "end": "0x100495AF",
     "evidence": "exact",
     "name": "grim_jpeg_destroy",
-    "size": 31
+    "size": 31,
+    "aliases": [
+      "jpeg_destroy"
+    ]
   },
   {
     "address": "0x100495B0",
@@ -7469,7 +8831,10 @@
     "end": "0x100495CC",
     "evidence": "exact",
     "name": "grim_jpeg_alloc_quant_table",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "jpeg_alloc_quant_table"
+    ]
   },
   {
     "address": "0x100495D0",
@@ -7477,7 +8842,10 @@
     "end": "0x100495EC",
     "evidence": "exact",
     "name": "grim_jpeg_alloc_huff_table",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "jpeg_alloc_huff_table"
+    ]
   },
   {
     "address": "0x100495F0",
@@ -7485,7 +8853,10 @@
     "end": "0x100497FC",
     "evidence": "exact",
     "name": "grim_jpeg_calc_output_dimensions",
-    "size": 524
+    "size": 524,
+    "aliases": [
+      "jpeg_calc_output_dimensions"
+    ]
   },
   {
     "address": "0x10049810",
@@ -7501,7 +8872,10 @@
     "end": "0x10049B29",
     "evidence": "exact",
     "name": "grim_jpeg_init_master_decompress",
-    "size": 649
+    "size": 649,
+    "aliases": [
+      "jinit_master_decompress"
+    ]
   },
   {
     "address": "0x10049B30",
@@ -7557,7 +8931,10 @@
     "end": "0x10049D8B",
     "evidence": "exact",
     "name": "grim_jpeg_zero_far",
-    "size": 27
+    "size": 27,
+    "aliases": [
+      "jzero_far"
+    ]
   },
   {
     "address": "0x10049D90",
@@ -7565,7 +8942,10 @@
     "end": "0x10049D95",
     "evidence": "exact",
     "name": "grim_jpeg_mem_available",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "jpeg_mem_available"
+    ]
   },
   {
     "address": "0x10049DA0",
@@ -7573,7 +8953,10 @@
     "end": "0x10049DB4",
     "evidence": "exact",
     "name": "grim_jpeg_open_backing_store",
-    "size": 20
+    "size": 20,
+    "aliases": [
+      "jpeg_open_backing_store"
+    ]
   },
   {
     "address": "0x10049DC0",
@@ -7581,7 +8964,10 @@
     "end": "0x10049DC3",
     "evidence": "exact",
     "name": "grim_jpeg_mem_init",
-    "size": 3
+    "size": 3,
+    "aliases": [
+      "jpeg_mem_init"
+    ]
   },
   {
     "address": "0x10049DD0",
@@ -7589,7 +8975,10 @@
     "end": "0x10049DD1",
     "evidence": "exact",
     "name": "grim_noop",
-    "size": 1
+    "size": 1,
+    "aliases": [
+      "?on_tick@MyApp@@QAEXXZ"
+    ]
   },
   {
     "address": "0x10049DE0",
@@ -7597,7 +8986,10 @@
     "end": "0x10049F56",
     "evidence": "exact",
     "name": "grim_jpeg_init_d_main_controller",
-    "size": 374
+    "size": 374,
+    "aliases": [
+      "jinit_d_main_controller"
+    ]
   },
   {
     "address": "0x10049F60",
@@ -7637,7 +9029,10 @@
     "end": "0x1004A5C5",
     "evidence": "exact",
     "name": "grim_jpeg_init_d_coef_controller",
-    "size": 261
+    "size": 261,
+    "aliases": [
+      "jinit_d_coef_controller"
+    ]
   },
   {
     "address": "0x1004A5D0",
@@ -7701,7 +9096,10 @@
     "end": "0x1004B6E7",
     "evidence": "exact",
     "name": "grim_jpeg_make_d_derived_tbl",
-    "size": 487
+    "size": 487,
+    "aliases": [
+      "jpeg_make_d_derived_tbl"
+    ]
   },
   {
     "address": "0x1004B6F0",
@@ -7709,7 +9107,10 @@
     "end": "0x1004B7E7",
     "evidence": "exact",
     "name": "grim_jpeg_fill_bit_buffer",
-    "size": 247
+    "size": 247,
+    "aliases": [
+      "jpeg_fill_bit_buffer"
+    ]
   },
   {
     "address": "0x1004B7F0",
@@ -7717,7 +9118,10 @@
     "end": "0x1004B8DF",
     "evidence": "exact",
     "name": "grim_jpeg_huff_decode",
-    "size": 239
+    "size": 239,
+    "aliases": [
+      "jpeg_huff_decode"
+    ]
   },
   {
     "address": "0x1004B8E0",
@@ -7725,7 +9129,10 @@
     "end": "0x1004B91C",
     "evidence": "exact",
     "name": "grim_jpeg_init_huff_decoder",
-    "size": 60
+    "size": 60,
+    "aliases": [
+      "jinit_huff_decoder"
+    ]
   },
   {
     "address": "0x1004B920",
@@ -7749,7 +9156,10 @@
     "end": "0x1004BF7E",
     "evidence": "exact",
     "name": "grim_jpeg_init_phuff_decoder",
-    "size": 110
+    "size": 110,
+    "aliases": [
+      "jinit_phuff_decoder"
+    ]
   },
   {
     "address": "0x1004BF80",
@@ -7797,7 +9207,10 @@
     "end": "0x1004CE79",
     "evidence": "exact",
     "name": "grim_jpeg_init_inverse_dct",
-    "size": 121
+    "size": 121,
+    "aliases": [
+      "jinit_inverse_dct"
+    ]
   },
   {
     "address": "0x1004CE80",
@@ -7813,7 +9226,10 @@
     "end": "0x1004D14F",
     "evidence": "exact",
     "name": "grim_jpeg_init_d_post_controller",
-    "size": 143
+    "size": 143,
+    "aliases": [
+      "jinit_d_post_controller"
+    ]
   },
   {
     "address": "0x1004D150",
@@ -8125,7 +9541,10 @@
     "end": "0x1004FCBB",
     "evidence": "exact",
     "name": "grim_jpeg_init_one_pass_quantizer",
-    "size": 571
+    "size": 571,
+    "aliases": [
+      "jinit_1pass_quantizer"
+    ]
   },
   {
     "address": "0x1004FCC0",
@@ -8261,7 +9680,10 @@
     "end": "0x10051FB0",
     "evidence": "exact",
     "name": "zlib_deflate_stored",
-    "size": 672
+    "size": 672,
+    "aliases": [
+      "deflate_stored"
+    ]
   },
   {
     "address": "0x10051FB0",
@@ -8269,7 +9691,10 @@
     "end": "0x1005214E",
     "evidence": "exact",
     "name": "zlib_fill_window",
-    "size": 414
+    "size": 414,
+    "aliases": [
+      "fill_window"
+    ]
   },
   {
     "address": "0x10052150",
@@ -8277,7 +9702,10 @@
     "end": "0x10052568",
     "evidence": "exact",
     "name": "zlib_deflate_fast",
-    "size": 1048
+    "size": 1048,
+    "aliases": [
+      "deflate_fast"
+    ]
   },
   {
     "address": "0x10052570",
@@ -8285,7 +9713,10 @@
     "end": "0x100526DF",
     "evidence": "exact",
     "name": "zlib_longest_match",
-    "size": 367
+    "size": 367,
+    "aliases": [
+      "longest_match"
+    ]
   },
   {
     "address": "0x100526E0",
@@ -8293,7 +9724,10 @@
     "end": "0x10052C56",
     "evidence": "exact",
     "name": "zlib_deflate_slow",
-    "size": 1398
+    "size": 1398,
+    "aliases": [
+      "deflate_slow"
+    ]
   },
   {
     "address": "0x10052C60",
@@ -8349,7 +9783,10 @@
     "end": "0x100533FA",
     "evidence": "exact",
     "name": "zlib_tr_stored_block",
-    "size": 346
+    "size": 346,
+    "aliases": [
+      "tr_stored_block"
+    ]
   },
   {
     "address": "0x10053400",
@@ -8357,7 +9794,10 @@
     "end": "0x1005395E",
     "evidence": "exact",
     "name": "zlib_tr_flush_block",
-    "size": 1374
+    "size": 1374,
+    "aliases": [
+      "tr_flush_block"
+    ]
   },
   {
     "address": "0x10053960",
@@ -8365,7 +9805,10 @@
     "end": "0x10053DEB",
     "evidence": "exact",
     "name": "zlib_build_tree",
-    "size": 1163
+    "size": 1163,
+    "aliases": [
+      "build_tree"
+    ]
   },
   {
     "address": "0x10053DF0",
@@ -8373,7 +9816,10 @@
     "end": "0x10053EC1",
     "evidence": "exact",
     "name": "zlib_pqdownheap",
-    "size": 209
+    "size": 209,
+    "aliases": [
+      "pqdownheap"
+    ]
   },
   {
     "address": "0x10053ED0",
@@ -8381,7 +9827,10 @@
     "end": "0x10053FB7",
     "evidence": "exact",
     "name": "zlib_scan_tree",
-    "size": 231
+    "size": 231,
+    "aliases": [
+      "scan_tree"
+    ]
   },
   {
     "address": "0x10053FC0",
@@ -8389,7 +9838,10 @@
     "end": "0x10054535",
     "evidence": "exact",
     "name": "zlib_send_tree",
-    "size": 1397
+    "size": 1397,
+    "aliases": [
+      "send_tree"
+    ]
   },
   {
     "address": "0x10054540",
@@ -8397,7 +9849,10 @@
     "end": "0x1005497B",
     "evidence": "exact",
     "name": "zlib_compress_block",
-    "size": 1083
+    "size": 1083,
+    "aliases": [
+      "compress_block"
+    ]
   },
   {
     "address": "0x10054980",
@@ -8405,7 +9860,10 @@
     "end": "0x100549FC",
     "evidence": "exact",
     "name": "zlib_bi_windup",
-    "size": 124
+    "size": 124,
+    "aliases": [
+      "bi_windup"
+    ]
   },
   {
     "address": "0x10054A00",
@@ -8501,7 +9959,10 @@
     "end": "0x1005694E",
     "evidence": "exact",
     "name": "zlib_inflate_trees_fixed",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "inflate_trees_fixed"
+    ]
   },
   {
     "address": "0x10056950",
@@ -8525,7 +9986,10 @@
     "end": "0x10056E47",
     "evidence": "exact",
     "name": "seh_prolog",
-    "size": 31
+    "size": 31,
+    "aliases": [
+      "__EH_prolog"
+    ]
   },
   {
     "address": "0x10056E47",
@@ -8533,7 +9997,10 @@
     "end": "0x10056EC7",
     "evidence": "exact",
     "name": "grim_vector_destructor_iterator",
-    "size": 128
+    "size": 128,
+    "aliases": [
+      "??_M@YGXPAXIHP6EX0@Z@Z"
+    ]
   },
   {
     "address": "0x10056EC7",
@@ -8541,7 +10008,10 @@
     "end": "0x10056F25",
     "evidence": "exact",
     "name": "msvc_array_unwind",
-    "size": 94
+    "size": 94,
+    "aliases": [
+      "?__ArrayUnwind@@YGXPAXIHP6EX0@Z@Z"
+    ]
   },
   {
     "address": "0x10056F25",
@@ -8549,7 +10019,10 @@
     "end": "0x10056FA7",
     "evidence": "exact",
     "name": "grim_vector_constructor_iterator_eh",
-    "size": 130
+    "size": 130,
+    "aliases": [
+      "??_L@YGXPAXIHP6EX0@Z1@Z"
+    ]
   },
   {
     "address": "0x10056FB0",
@@ -8605,7 +10078,10 @@
     "end": "0x1005748F",
     "evidence": "exact",
     "name": "crt_aullshr",
-    "size": 31
+    "size": 31,
+    "aliases": [
+      "__aullshr"
+    ]
   },
   {
     "address": "0x1005904F",
@@ -8613,7 +10089,10 @@
     "end": "0x10059052",
     "evidence": "exact",
     "name": "d3dx_jpeg_mem_init",
-    "size": 3
+    "size": 3,
+    "aliases": [
+      "jpeg_mem_init"
+    ]
   },
   {
     "address": "0x10059FB0",

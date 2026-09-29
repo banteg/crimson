@@ -85,7 +85,10 @@
     "end": "0x00401204",
     "evidence": "exact",
     "name": "console_log_node_free",
-    "size": 68
+    "size": 68,
+    "aliases": [
+      "?release@console_log_node_t@@QAEPAU1@E@Z"
+    ]
   },
   {
     "address": "0x00401210",
@@ -157,7 +160,10 @@
     "end": "0x004016AE",
     "evidence": "exact",
     "name": "console_init",
-    "size": 382
+    "size": 382,
+    "aliases": [
+      "??0console_queue_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x004016B0",
@@ -165,7 +171,10 @@
     "end": "0x0040176B",
     "evidence": "exact",
     "name": "console_destroy",
-    "size": 187
+    "size": 187,
+    "aliases": [
+      "??1console_queue_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x00401770",
@@ -173,7 +182,10 @@
     "end": "0x00401831",
     "evidence": "exact",
     "name": "console_push_line",
-    "size": 193
+    "size": 193,
+    "aliases": [
+      "?console_push_line@console_queue_t@@QAEXPAD@Z"
+    ]
   },
   {
     "address": "0x00401840",
@@ -205,7 +217,10 @@
     "end": "0x00401A0E",
     "evidence": "exact",
     "name": "console_exec_line",
-    "size": 254
+    "size": 254,
+    "aliases": [
+      "?exec_line@console_queue_t@@QAEXPAD@Z"
+    ]
   },
   {
     "address": "0x00401A10",
@@ -213,7 +228,10 @@
     "end": "0x00401D98",
     "evidence": "exact",
     "name": "console_update",
-    "size": 904
+    "size": 904,
+    "aliases": [
+      "?update@console_queue_t@@QAEXXZ"
+    ]
   },
   {
     "address": "0x00401DA0",
@@ -221,7 +239,10 @@
     "end": "0x00402320",
     "evidence": "ordered",
     "name": "console_render",
-    "size": 1408
+    "size": 1408,
+    "aliases": [
+      "?render@console_queue_t@@QAEXXZ"
+    ]
   },
   {
     "address": "0x00402320",
@@ -229,7 +250,10 @@
     "end": "0x00402447",
     "evidence": "exact",
     "name": "console_register_cvar",
-    "size": 295
+    "size": 295,
+    "aliases": [
+      "?console_register_cvar@console_queue_t@@QAEPAUconsole_cvar_entry_t@@PAD0@Z"
+    ]
   },
   {
     "address": "0x00402450",
@@ -261,7 +285,10 @@
     "end": "0x004025F1",
     "evidence": "exact",
     "name": "console_tokenize_line",
-    "size": 161
+    "size": 161,
+    "aliases": [
+      "?console_tokenize_line@console_queue_t@@QAEXPAD@Z"
+    ]
   },
   {
     "address": "0x00402600",
@@ -301,7 +328,10 @@
     "end": "0x004028A9",
     "evidence": "exact",
     "name": "console_flush_log",
-    "size": 121
+    "size": 121,
+    "aliases": [
+      "?flush_log@console_queue_t@@QAEEPAD@Z"
+    ]
   },
   {
     "address": "0x004028B0",
@@ -1485,7 +1515,10 @@
     "end": "0x0041245D",
     "evidence": "exact",
     "name": "quest_meta_entry_init",
-    "size": 45
+    "size": 45,
+    "aliases": [
+      "??0quest_meta_cpp_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x00412460",
@@ -1493,7 +1526,10 @@
     "end": "0x0041246F",
     "evidence": "exact",
     "name": "quest_meta_entry_release",
-    "size": 15
+    "size": 15,
+    "aliases": [
+      "??1quest_meta_cpp_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x00412470",
@@ -1597,7 +1633,10 @@
     "end": "0x0041268B",
     "evidence": "exact",
     "name": "bonus_meta_entry_init",
-    "size": 27
+    "size": 27,
+    "aliases": [
+      "??0bonus_meta_cpp_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x00412690",
@@ -1741,7 +1780,14 @@
     "end": "0x00417983",
     "evidence": "exact",
     "name": "ui_template_slot_ctor_noop",
-    "size": 3
+    "size": 3,
+    "aliases": [
+      "??0ui_template_slot_cpp_t@@QAE@XZ",
+      "??0ui_vec2_cpp_t@@QAE@XZ",
+      "?construct@effect_vertex_cpp_t@@QAEXXZ",
+      "?construct@ui_vec2_cpp_t@@QAEXXZ",
+      "?construct@ui_template_slot_cpp_t@@QAEXXZ"
+    ]
   },
   {
     "address": "0x004179A0",
@@ -1757,7 +1803,11 @@
     "end": "0x00417C4D",
     "evidence": "exact",
     "name": "ui_template_block_set_mode4",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "??0ui_template_block_cpp_t@@QAE@XZ",
+      "@ui_template_block_set_mode4@4"
+    ]
   },
   {
     "address": "0x00417C50",
@@ -1765,7 +1815,11 @@
     "end": "0x00417C80",
     "evidence": "exact",
     "name": "ui_template_triplet_reset_and_seed_modes",
-    "size": 48
+    "size": 48,
+    "aliases": [
+      "??0ui_element_cpp_t@@QAE@XZ",
+      "@ui_template_triplet_reset_and_seed_modes@4"
+    ]
   },
   {
     "address": "0x00417C80",
@@ -2037,7 +2091,10 @@
     "end": "0x0041DF56",
     "evidence": "exact",
     "name": "vorbis_pcm_seek",
-    "size": 22
+    "size": 22,
+    "aliases": [
+      "?pcm_seek@vorbis_stream_t@@QAEHI@Z"
+    ]
   },
   {
     "address": "0x0041DF60",
@@ -2045,7 +2102,10 @@
     "end": "0x0041E064",
     "evidence": "exact",
     "name": "vorbis_mem_open",
-    "size": 260
+    "size": 260,
+    "aliases": [
+      "?open@vorbis_stream_t@@QAEEPAXI@Z"
+    ]
   },
   {
     "address": "0x0041E070",
@@ -2053,7 +2113,10 @@
     "end": "0x0041E08D",
     "evidence": "exact",
     "name": "vorbis_mem_close",
-    "size": 29
+    "size": 29,
+    "aliases": [
+      "?close@vorbis_stream_t@@QAEXXZ"
+    ]
   },
   {
     "address": "0x0041E090",
@@ -2061,7 +2124,10 @@
     "end": "0x0041E0C7",
     "evidence": "exact",
     "name": "vorbis_read_pcm16",
-    "size": 55
+    "size": 55,
+    "aliases": [
+      "?read_pcm16@vorbis_stream_t@@QAEHPAXH@Z"
+    ]
   },
   {
     "address": "0x0041E0F0",
@@ -2797,7 +2863,10 @@
     "end": "0x00427961",
     "evidence": "exact",
     "name": "fx_queue_random_color_destroy",
-    "size": 1
+    "size": 1,
+    "aliases": [
+      "$E2"
+    ]
   },
   {
     "address": "0x00427970",
@@ -3253,7 +3322,10 @@
     "end": "0x0042FC0B",
     "evidence": "exact",
     "name": "perk_meta_entry_init",
-    "size": 27
+    "size": 27,
+    "aliases": [
+      "??0perk_meta_cpp_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x0042FC10",
@@ -3261,7 +3333,11 @@
     "end": "0x0042FC34",
     "evidence": "exact",
     "name": "bonus_meta_entry_release",
-    "size": 36
+    "size": 36,
+    "aliases": [
+      "??1bonus_meta_cpp_t@@QAE@XZ",
+      "??1perk_meta_cpp_t@@QAE@XZ"
+    ]
   },
   {
     "address": "0x0042FC40",
@@ -3949,7 +4025,10 @@
     "end": "0x0043B976",
     "evidence": "exact",
     "name": "sfx_entry_reset_runtime_state",
-    "size": 54
+    "size": 54,
+    "aliases": [
+      "?reset_runtime_state@sfx_entry_cpp_t@@QAEPAU1@XZ"
+    ]
   },
   {
     "address": "0x0043B980",
@@ -5421,7 +5500,10 @@
     "end": "0x00452FBD",
     "evidence": "exact",
     "name": "float_near_equal",
-    "size": 45
+    "size": 45,
+    "aliases": [
+      "?WithinEpsilon@@YAHMM@Z"
+    ]
   },
   {
     "address": "0x00452FCA",
@@ -5429,7 +5511,10 @@
     "end": "0x00452FD0",
     "evidence": "exact",
     "name": "D3DXVec2Normalize",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXVec2Normalize@8"
+    ]
   },
   {
     "address": "0x00452FD0",
@@ -5437,7 +5522,10 @@
     "end": "0x00452FFA",
     "evidence": "ordered",
     "name": "d3dx_init_vec2_hermite",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00452FFA",
@@ -5445,7 +5533,10 @@
     "end": "0x00453088",
     "evidence": "exact",
     "name": "d3dx_c_vec2_hermite",
-    "size": 142
+    "size": 142,
+    "aliases": [
+      "?c_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00453088",
@@ -5453,7 +5544,10 @@
     "end": "0x004530B2",
     "evidence": "exact",
     "name": "d3dx_init_vec2_catmull_rom",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004530B2",
@@ -5461,7 +5555,10 @@
     "end": "0x00453161",
     "evidence": "exact",
     "name": "d3dx_c_vec2_catmull_rom",
-    "size": 175
+    "size": 175,
+    "aliases": [
+      "?c_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00453190",
@@ -5469,7 +5566,10 @@
     "end": "0x004531D3",
     "evidence": "exact",
     "name": "d3dx_c_vec2_barycentric",
-    "size": 67
+    "size": 67,
+    "aliases": [
+      "?c_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00453207",
@@ -5477,7 +5577,10 @@
     "end": "0x00453237",
     "evidence": "referenced",
     "name": "D3DXVec3Normalize",
-    "size": 48
+    "size": 48,
+    "aliases": [
+      "_D3DXVec3Normalize@8"
+    ]
   },
   {
     "address": "0x00453237",
@@ -5485,7 +5588,10 @@
     "end": "0x004532E5",
     "evidence": "exact",
     "name": "d3dx_c_vec3_hermite",
-    "size": 174
+    "size": 174,
+    "aliases": [
+      "?c_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x0045330F",
@@ -5493,7 +5599,10 @@
     "end": "0x004533E0",
     "evidence": "exact",
     "name": "d3dx_c_vec3_catmull_rom",
-    "size": 209
+    "size": 209,
+    "aliases": [
+      "?c_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004533E0",
@@ -5501,7 +5610,10 @@
     "end": "0x0045340F",
     "evidence": "ordered",
     "name": "d3dx_init_vec3_barycentric",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "?init_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x0045340F",
@@ -5509,7 +5621,10 @@
     "end": "0x0045346C",
     "evidence": "exact",
     "name": "d3dx_c_vec3_barycentric",
-    "size": 93
+    "size": 93,
+    "aliases": [
+      "?c_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00453479",
@@ -5517,7 +5632,10 @@
     "end": "0x00453504",
     "evidence": "exact",
     "name": "d3dx_c_vec3_transform",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "?c_D3DXVec3Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00453511",
@@ -5525,7 +5643,10 @@
     "end": "0x00453524",
     "evidence": "ordered",
     "name": "d3dx_init_vec3_transform_coord",
-    "size": 19
+    "size": 19,
+    "aliases": [
+      "?init_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00453524",
@@ -5533,7 +5654,10 @@
     "end": "0x0045358A",
     "evidence": "exact",
     "name": "d3dx_c_vec3_transform_normal",
-    "size": 102
+    "size": 102,
+    "aliases": [
+      "?c_D3DXVec3TransformNormal@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004535B9",
@@ -5541,7 +5665,10 @@
     "end": "0x004536A9",
     "evidence": "exact",
     "name": "d3dx_c_vec4_cross",
-    "size": 240
+    "size": 240,
+    "aliases": [
+      "?c_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x004536B6",
@@ -5549,7 +5676,10 @@
     "end": "0x004536E0",
     "evidence": "exact",
     "name": "d3dx_init_vec4_hermite",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004536E0",
@@ -5557,7 +5687,10 @@
     "end": "0x004537B1",
     "evidence": "exact",
     "name": "d3dx_c_vec4_hermite",
-    "size": 209
+    "size": 209,
+    "aliases": [
+      "?c_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004537B1",
@@ -5565,7 +5698,10 @@
     "end": "0x004537DB",
     "evidence": "exact",
     "name": "d3dx_init_vec4_catmull_rom",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "?init_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004537DB",
@@ -5573,7 +5709,10 @@
     "end": "0x004538CE",
     "evidence": "exact",
     "name": "d3dx_c_vec4_catmull_rom",
-    "size": 243
+    "size": 243,
+    "aliases": [
+      "?c_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004538FD",
@@ -5581,7 +5720,10 @@
     "end": "0x00453974",
     "evidence": "exact",
     "name": "d3dx_c_vec4_barycentric",
-    "size": 119
+    "size": 119,
+    "aliases": [
+      "?c_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00453981",
@@ -5589,7 +5731,10 @@
     "end": "0x00453A20",
     "evidence": "exact",
     "name": "d3dx_c_vec4_transform",
-    "size": 159
+    "size": 159,
+    "aliases": [
+      "?c_D3DXVec4Transform@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00453A2D",
@@ -5597,7 +5742,10 @@
     "end": "0x00453AF7",
     "evidence": "exact",
     "name": "d3dx_c_matrixf_determinant",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?c_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00453B04",
@@ -5605,7 +5753,10 @@
     "end": "0x00453B0A",
     "evidence": "referenced",
     "name": "D3DXMatrixMultiply",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixMultiply@12"
+    ]
   },
   {
     "address": "0x00453B0A",
@@ -5613,7 +5764,10 @@
     "end": "0x00453D40",
     "evidence": "exact",
     "name": "d3dx_c_matrix_multiply",
-    "size": 566
+    "size": 566,
+    "aliases": [
+      "?c_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x00453D40",
@@ -5621,7 +5775,10 @@
     "end": "0x00453D4D",
     "evidence": "ordered",
     "name": "d3dx_init_matrix_transpose",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "?init_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00453D4D",
@@ -5629,7 +5786,10 @@
     "end": "0x00453D53",
     "evidence": "referenced",
     "name": "D3DXMatrixTranspose",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixTranspose@8"
+    ]
   },
   {
     "address": "0x00453D53",
@@ -5637,7 +5797,10 @@
     "end": "0x00453DC0",
     "evidence": "exact",
     "name": "d3dx_c_matrix_transpose",
-    "size": 109
+    "size": 109,
+    "aliases": [
+      "?c_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00453DCD",
@@ -5645,7 +5808,10 @@
     "end": "0x00454003",
     "evidence": "exact",
     "name": "d3dx_c_matrix_multiply_transpose",
-    "size": 566
+    "size": 566,
+    "aliases": [
+      "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x00454010",
@@ -5653,7 +5819,10 @@
     "end": "0x00454016",
     "evidence": "ordered",
     "name": "D3DXMatrixInverse",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixInverse@12"
+    ]
   },
   {
     "address": "0x00454016",
@@ -5661,7 +5830,10 @@
     "end": "0x004543A3",
     "evidence": "exact",
     "name": "d3dx_c_matrix_inverse",
-    "size": 909
+    "size": 909,
+    "aliases": [
+      "?c_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x004543A3",
@@ -5669,7 +5841,10 @@
     "end": "0x004543D1",
     "evidence": "exact",
     "name": "d3dx_init_matrix_scaling",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x004543D1",
@@ -5677,7 +5852,10 @@
     "end": "0x0045442D",
     "evidence": "exact",
     "name": "d3dx_c_matrix_scaling",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?c_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x0045445B",
@@ -5685,7 +5863,10 @@
     "end": "0x004544B7",
     "evidence": "exact",
     "name": "d3dx_c_matrix_translation",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?c_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x004544B7",
@@ -5693,7 +5874,10 @@
     "end": "0x004544D3",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_x",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "?init_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x004544D3",
@@ -5701,7 +5885,10 @@
     "end": "0x0045454D",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_x",
-    "size": 122
+    "size": 122,
+    "aliases": [
+      "?c_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x00454569",
@@ -5709,7 +5896,10 @@
     "end": "0x004545E4",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_y",
-    "size": 123
+    "size": 123,
+    "aliases": [
+      "?c_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x00454600",
@@ -5717,7 +5907,10 @@
     "end": "0x0045467C",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_z",
-    "size": 124
+    "size": 124,
+    "aliases": [
+      "?c_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x0045469C",
@@ -5725,7 +5918,10 @@
     "end": "0x0045479E",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_axis",
-    "size": 258
+    "size": 258,
+    "aliases": [
+      "?c_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x004547AB",
@@ -5733,7 +5929,10 @@
     "end": "0x004547B1",
     "evidence": "exact",
     "name": "D3DXMatrixRotationQuaternion",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXMatrixRotationQuaternion@8"
+    ]
   },
   {
     "address": "0x004547B1",
@@ -5741,7 +5940,10 @@
     "end": "0x00454893",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_quaternion",
-    "size": 226
+    "size": 226,
+    "aliases": [
+      "?c_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "address": "0x00454893",
@@ -5749,7 +5951,10 @@
     "end": "0x004548C1",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_yaw_pitch_roll",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x004548F9",
@@ -5757,7 +5962,10 @@
     "end": "0x004549DF",
     "evidence": "exact",
     "name": "d3dx_c_matrix_affine_transformation",
-    "size": 230
+    "size": 230,
+    "aliases": [
+      "?c_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
   },
   {
     "address": "0x00454A06",
@@ -5765,7 +5973,10 @@
     "end": "0x00454AA3",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_to_axis_angle",
-    "size": 157
+    "size": 157,
+    "aliases": [
+      "?c_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ]
   },
   {
     "address": "0x00454AB0",
@@ -5773,7 +5984,10 @@
     "end": "0x00454BE4",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_rotation_matrix",
-    "size": 308
+    "size": 308,
+    "aliases": [
+      "?c_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00454BE4",
@@ -5781,7 +5995,10 @@
     "end": "0x00454C04",
     "evidence": "exact",
     "name": "d3dx_init_matrix_rotation_axis",
-    "size": 32
+    "size": 32,
+    "aliases": [
+      "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x00454C04",
@@ -5789,7 +6006,10 @@
     "end": "0x00454C60",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_rotation_axis",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?c_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x00454C60",
@@ -5797,7 +6017,10 @@
     "end": "0x00454C8E",
     "evidence": "ordered",
     "name": "d3dx_init_quaternion_rotation_yaw_pitch_roll",
-    "size": 46
+    "size": 46,
+    "aliases": [
+      "?init_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x00454C8E",
@@ -5805,7 +6028,10 @@
     "end": "0x00454C94",
     "evidence": "referenced",
     "name": "D3DXQuaternionRotationYawPitchRoll",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionRotationYawPitchRoll@16"
+    ]
   },
   {
     "address": "0x00454C94",
@@ -5813,7 +6039,10 @@
     "end": "0x00454D6D",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_rotation_yaw_pitch_roll",
-    "size": 217
+    "size": 217,
+    "aliases": [
+      "?c_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x00454D7A",
@@ -5821,7 +6050,10 @@
     "end": "0x00454D80",
     "evidence": "referenced",
     "name": "D3DXQuaternionMultiply",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionMultiply@12"
+    ]
   },
   {
     "address": "0x00454D80",
@@ -5829,7 +6061,10 @@
     "end": "0x00454E16",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_multiply",
-    "size": 150
+    "size": 150,
+    "aliases": [
+      "?c_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x00454E23",
@@ -5837,7 +6072,10 @@
     "end": "0x00454EDC",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_normalize",
-    "size": 185
+    "size": 185,
+    "aliases": [
+      "?c_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00454EE9",
@@ -5845,7 +6083,10 @@
     "end": "0x00454EEF",
     "evidence": "referenced",
     "name": "D3DXQuaternionInverse",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionInverse@8"
+    ]
   },
   {
     "address": "0x00454EEF",
@@ -5853,7 +6094,10 @@
     "end": "0x00454FA3",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_inverse",
-    "size": 180
+    "size": 180,
+    "aliases": [
+      "?c_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00454FA3",
@@ -5861,7 +6105,10 @@
     "end": "0x00454FA9",
     "evidence": "exact",
     "name": "D3DXQuaternionLn",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionLn@8"
+    ]
   },
   {
     "address": "0x00454FA9",
@@ -5869,7 +6116,10 @@
     "end": "0x00455027",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_ln",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "?c_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00455027",
@@ -5877,7 +6127,10 @@
     "end": "0x0045502D",
     "evidence": "exact",
     "name": "D3DXQuaternionExp",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionExp@8"
+    ]
   },
   {
     "address": "0x0045502D",
@@ -5885,7 +6138,10 @@
     "end": "0x004550C8",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_exp",
-    "size": 155
+    "size": 155,
+    "aliases": [
+      "?c_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x004550EC",
@@ -5893,7 +6149,10 @@
     "end": "0x004550F2",
     "evidence": "referenced",
     "name": "D3DXQuaternionSlerp",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXQuaternionSlerp@16"
+    ]
   },
   {
     "address": "0x004550F2",
@@ -5901,7 +6160,10 @@
     "end": "0x004551D5",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_slerp",
-    "size": 227
+    "size": 227,
+    "aliases": [
+      "?c_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x004551FF",
@@ -5909,7 +6171,10 @@
     "end": "0x00455256",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_squad",
-    "size": 87
+    "size": 87,
+    "aliases": [
+      "?c_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00455296",
@@ -5917,7 +6182,10 @@
     "end": "0x00455321",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_barycentric",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "?c_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x0045532E",
@@ -5925,7 +6193,10 @@
     "end": "0x00455334",
     "evidence": "referenced",
     "name": "D3DXPlaneNormalize",
-    "size": 6
+    "size": 6,
+    "aliases": [
+      "_D3DXPlaneNormalize@8"
+    ]
   },
   {
     "address": "0x00455334",
@@ -5933,7 +6204,10 @@
     "end": "0x004553D8",
     "evidence": "exact",
     "name": "d3dx_c_plane_normalize",
-    "size": 164
+    "size": 164,
+    "aliases": [
+      "?c_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x004553E5",
@@ -5941,7 +6215,10 @@
     "end": "0x00455487",
     "evidence": "exact",
     "name": "d3dx_c_plane_intersect_line",
-    "size": 162
+    "size": 162,
+    "aliases": [
+      "?c_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ]
   },
   {
     "address": "0x00455494",
@@ -5949,7 +6226,10 @@
     "end": "0x004554CC",
     "evidence": "exact",
     "name": "d3dx_c_plane_from_point_normal",
-    "size": 56
+    "size": 56,
+    "aliases": [
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+    ]
   },
   {
     "address": "0x004554D9",
@@ -5957,7 +6237,10 @@
     "end": "0x0045557B",
     "evidence": "exact",
     "name": "d3dx_c_plane_from_points",
-    "size": 162
+    "size": 162,
+    "aliases": [
+      "?c_D3DXPlaneFromPoints@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
   },
   {
     "address": "0x00455588",
@@ -5965,7 +6248,10 @@
     "end": "0x00455627",
     "evidence": "exact",
     "name": "d3dx_c_plane_transform",
-    "size": 159
+    "size": 159,
+    "aliases": [
+      "?c_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00455627",
@@ -5973,7 +6259,10 @@
     "end": "0x004556B4",
     "evidence": "exact",
     "name": "d3dx_c_vec2_normalize",
-    "size": 141
+    "size": 141,
+    "aliases": [
+      "?c_D3DXVec2Normalize@@YGPAUD3DXVECTOR2@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x004556B4",
@@ -5981,7 +6270,10 @@
     "end": "0x0045571F",
     "evidence": "exact",
     "name": "d3dx_c_vec2_transform",
-    "size": 107
+    "size": 107,
+    "aliases": [
+      "?c_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045571F",
@@ -5989,7 +6281,10 @@
     "end": "0x0045579F",
     "evidence": "exact",
     "name": "d3dx_c_vec2_transform_coord",
-    "size": 128
+    "size": 128,
+    "aliases": [
+      "?c_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045579F",
@@ -5997,7 +6292,10 @@
     "end": "0x004557DB",
     "evidence": "exact",
     "name": "d3dx_c_vec2_transform_normal",
-    "size": 60
+    "size": 60,
+    "aliases": [
+      "?c_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004557DB",
@@ -6005,7 +6303,10 @@
     "end": "0x0045587B",
     "evidence": "exact",
     "name": "d3dx_c_vec3_normalize",
-    "size": 160
+    "size": 160,
+    "aliases": [
+      "?c_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045587B",
@@ -6013,7 +6314,10 @@
     "end": "0x0045593A",
     "evidence": "exact",
     "name": "d3dx_c_vec3_transform_coord",
-    "size": 191
+    "size": 191,
+    "aliases": [
+      "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00455C6D",
@@ -6021,7 +6325,10 @@
     "end": "0x00455D26",
     "evidence": "exact",
     "name": "d3dx_c_vec4_normalize",
-    "size": 185
+    "size": 185,
+    "aliases": [
+      "?c_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00455D26",
@@ -6029,7 +6336,10 @@
     "end": "0x00455D5F",
     "evidence": "exact",
     "name": "d3dx_c_matrix_rotation_yaw_pitch_roll",
-    "size": 57
+    "size": 57,
+    "aliases": [
+      "?c_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x00455D5F",
@@ -6037,7 +6347,10 @@
     "end": "0x00456013",
     "evidence": "exact",
     "name": "d3dx_c_matrix_transformation",
-    "size": 692
+    "size": 692,
+    "aliases": [
+      "?c_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "address": "0x00456013",
@@ -6045,7 +6358,10 @@
     "end": "0x004560ED",
     "evidence": "exact",
     "name": "d3dx_c_matrix_shadow",
-    "size": 218
+    "size": 218,
+    "aliases": [
+      "?c_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x004560ED",
@@ -6053,7 +6369,10 @@
     "end": "0x004561AC",
     "evidence": "exact",
     "name": "d3dx_c_matrix_reflect",
-    "size": 191
+    "size": 191,
+    "aliases": [
+      "?c_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x004561AC",
@@ -6061,7 +6380,10 @@
     "end": "0x00456586",
     "evidence": "exact",
     "name": "d3dx_c_quaternion_squad_setup",
-    "size": 986
+    "size": 986,
+    "aliases": [
+      "?c_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
   },
   {
     "address": "0x00456586",
@@ -6077,7 +6399,10 @@
     "end": "0x0045661A",
     "evidence": "exact",
     "name": "d3dx_is_x3d_processor",
-    "size": 56
+    "size": 56,
+    "aliases": [
+      "?isX3Dprocessor@@YAHXZ"
+    ]
   },
   {
     "address": "0x0045661A",
@@ -6085,7 +6410,10 @@
     "end": "0x004566BF",
     "evidence": "exact",
     "name": "d3dx_is_intel_sse_processor",
-    "size": 165
+    "size": 165,
+    "aliases": [
+      "?IsIntelSSEProcessor@@YAKXZ"
+    ]
   },
   {
     "address": "0x004566BF",
@@ -6101,7 +6429,10 @@
     "end": "0x00456850",
     "evidence": "referenced",
     "name": "D3DXCpuOptimizations",
-    "size": 221
+    "size": 221,
+    "aliases": [
+      "_D3DXCpuOptimizations@4"
+    ]
   },
   {
     "address": "0x00456850",
@@ -6125,7 +6456,10 @@
     "end": "0x00456B45",
     "evidence": "exact",
     "name": "d3dx_x3d_get_feature_flags",
-    "size": 213
+    "size": 213,
+    "aliases": [
+      "?get_feature_flags@@YAIXZ"
+    ]
   },
   {
     "address": "0x00456B45",
@@ -6141,7 +6475,10 @@
     "end": "0x00456DD4",
     "evidence": "exact",
     "name": "d3dx_x86_vec2_transform",
-    "size": 105
+    "size": 105,
+    "aliases": [
+      "?x86_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00456DD4",
@@ -6149,7 +6486,10 @@
     "end": "0x00456E09",
     "evidence": "exact",
     "name": "d3dx_x86_vec2_transform_normal",
-    "size": 53
+    "size": 53,
+    "aliases": [
+      "?x86_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00456F8C",
@@ -6157,7 +6497,10 @@
     "end": "0x00457056",
     "evidence": "exact",
     "name": "d3dx_x86_vec3_normalize",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00457056",
@@ -6165,7 +6508,10 @@
     "end": "0x00457139",
     "evidence": "exact",
     "name": "d3dx_x86_matrix_multiply",
-    "size": 227
+    "size": 227,
+    "aliases": [
+      "?x86_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x00457139",
@@ -6173,7 +6519,10 @@
     "end": "0x004571C7",
     "evidence": "exact",
     "name": "d3dx_x86_matrix_multiply_transpose",
-    "size": 142
+    "size": 142,
+    "aliases": [
+      "?x86_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x004571C7",
@@ -6181,7 +6530,10 @@
     "end": "0x00457203",
     "evidence": "exact",
     "name": "d3dx_x86_init_fast_table",
-    "size": 60
+    "size": 60,
+    "aliases": [
+      "?x86_D3DXInitFastTable@@YAXPAUD3DXFASTTABLE@@@Z"
+    ]
   },
   {
     "address": "0x00457210",
@@ -6189,7 +6541,10 @@
     "end": "0x00457250",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_transform",
-    "size": 64
+    "size": 64,
+    "aliases": [
+      "?sse_D3DXVec2Transform@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR2@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00457250",
@@ -6197,7 +6552,10 @@
     "end": "0x004572A9",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_transform_coord",
-    "size": 89
+    "size": 89,
+    "aliases": [
+      "?sse_D3DXVec2TransformCoord@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004572B0",
@@ -6205,7 +6563,10 @@
     "end": "0x004572E9",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_transform_normal",
-    "size": 57
+    "size": 57,
+    "aliases": [
+      "?sse_D3DXVec2TransformNormal@@YGPAUD3DXVECTOR2@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004572FE",
@@ -6213,7 +6574,10 @@
     "end": "0x004573E3",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_transform_coord_impl",
-    "size": 229
+    "size": 229,
+    "aliases": [
+      "?sse_D3DXVec3TransformCoord$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004573FE",
@@ -6221,7 +6585,10 @@
     "end": "0x004574AB",
     "evidence": "exact",
     "name": "d3dx_sse2_vec4_transform_impl",
-    "size": 173
+    "size": 173,
+    "aliases": [
+      "?sse2_D3DXVec4Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004574BE",
@@ -6229,7 +6596,10 @@
     "end": "0x00457576",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_normalize_impl",
-    "size": 184
+    "size": 184,
+    "aliases": [
+      "?sse_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045758E",
@@ -6237,7 +6607,10 @@
     "end": "0x00457658",
     "evidence": "exact",
     "name": "d3dx_sse_plane_normalize_impl",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?sse_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045766E",
@@ -6245,7 +6618,10 @@
     "end": "0x00457706",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_cross_impl",
-    "size": 152
+    "size": 152,
+    "aliases": [
+      "?sse_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x00457710",
@@ -6253,7 +6629,10 @@
     "end": "0x004577AC",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_normalize",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?sse_D3DXVec4Normalize@@YGPAUD3DXVECTOR4@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x004577B0",
@@ -6261,7 +6640,10 @@
     "end": "0x00457864",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_catmull_rom",
-    "size": 180
+    "size": 180,
+    "aliases": [
+      "?sse_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00457870",
@@ -6269,7 +6651,10 @@
     "end": "0x004578F7",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_catmull_rom",
-    "size": 135
+    "size": 135,
+    "aliases": [
+      "?sse_D3DXVec2CatmullRom@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00457900",
@@ -6277,7 +6662,10 @@
     "end": "0x004579A7",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_catmull_rom",
-    "size": 167
+    "size": 167,
+    "aliases": [
+      "?sse_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x004579B0",
@@ -6285,7 +6673,10 @@
     "end": "0x00457A65",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_hermite",
-    "size": 181
+    "size": 181,
+    "aliases": [
+      "?sse_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00457A70",
@@ -6293,7 +6684,10 @@
     "end": "0x00457B0C",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_hermite",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?sse_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00457B10",
@@ -6301,7 +6695,10 @@
     "end": "0x00457B98",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_hermite",
-    "size": 136
+    "size": 136,
+    "aliases": [
+      "?sse_D3DXVec2Hermite@@YGPAUD3DXVECTOR2@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00457BA0",
@@ -6309,7 +6706,10 @@
     "end": "0x00457BFC",
     "evidence": "exact",
     "name": "d3dx_sse_vec3_barycentric",
-    "size": 92
+    "size": 92,
+    "aliases": [
+      "?sse_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00457C00",
@@ -6317,7 +6717,10 @@
     "end": "0x00457C48",
     "evidence": "exact",
     "name": "d3dx_sse_vec4_barycentric",
-    "size": 72
+    "size": 72,
+    "aliases": [
+      "?sse_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00457C50",
@@ -6325,7 +6728,10 @@
     "end": "0x00457CA1",
     "evidence": "exact",
     "name": "d3dx_sse_vec2_barycentric",
-    "size": 81
+    "size": 81,
+    "aliases": [
+      "?sse_D3DXVec2BaryCentric@@YGPAUD3DXVECTOR2@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00457CB0",
@@ -6333,7 +6739,10 @@
     "end": "0x00457D6E",
     "evidence": "exact",
     "name": "d3dx_sse_plane_intersect_line",
-    "size": 190
+    "size": 190,
+    "aliases": [
+      "?sse_D3DXPlaneIntersectLine@@YGPAUD3DXVECTOR3@@PAU1@PBUD3DXPLANE@@PBU1@2@Z"
+    ]
   },
   {
     "address": "0x00457D7E",
@@ -6341,7 +6750,10 @@
     "end": "0x00457E54",
     "evidence": "exact",
     "name": "d3dx_sse_plane_from_points_impl",
-    "size": 214
+    "size": 214,
+    "aliases": [
+      "?sse_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
   },
   {
     "address": "0x00457E6E",
@@ -6349,7 +6761,10 @@
     "end": "0x00457FEA",
     "evidence": "exact",
     "name": "d3dx_sse_matrix_shadow_impl",
-    "size": 380
+    "size": 380,
+    "aliases": [
+      "?sse_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x00457FFE",
@@ -6357,7 +6772,10 @@
     "end": "0x004580C4",
     "evidence": "exact",
     "name": "d3dx_sse_matrix_reflect_impl",
-    "size": 198
+    "size": 198,
+    "aliases": [
+      "?sse_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x004580D0",
@@ -6365,7 +6783,10 @@
     "end": "0x00458152",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_multiply",
-    "size": 130
+    "size": 130,
+    "aliases": [
+      "?sse_D3DXQuaternionMultiply@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x00458160",
@@ -6373,7 +6794,10 @@
     "end": "0x004581FC",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_normalize",
-    "size": 156
+    "size": 156,
+    "aliases": [
+      "?sse_D3DXQuaternionNormalize@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045820E",
@@ -6381,7 +6805,10 @@
     "end": "0x0045826F",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_inverse_impl",
-    "size": 97
+    "size": 97,
+    "aliases": [
+      "?sse_D3DXQuaternionInverse$$1@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00458270",
@@ -6389,7 +6816,10 @@
     "end": "0x00458384",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_rotation_matrix",
-    "size": 276
+    "size": 276,
+    "aliases": [
+      "?sse_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045839E",
@@ -6397,7 +6827,10 @@
     "end": "0x00458451",
     "evidence": "exact",
     "name": "d3dx_sse_quaternion_rotation_yaw_pitch_roll_impl",
-    "size": 179
+    "size": 179,
+    "aliases": [
+      "?sse_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x0045846E",
@@ -6405,7 +6838,10 @@
     "end": "0x00458512",
     "evidence": "exact",
     "name": "d3dx_sse2_vec3_transform_normal_impl",
-    "size": 164
+    "size": 164,
+    "aliases": [
+      "?sse2_D3DXVec3TransformNormal$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045852E",
@@ -6413,7 +6849,10 @@
     "end": "0x004585D1",
     "evidence": "exact",
     "name": "d3dx_sse2_vec3_transform_impl",
-    "size": 163
+    "size": 163,
+    "aliases": [
+      "?sse2_D3DXVec3Transform$$1@@YGPAUD3DXVECTOR4@@PAU1@PBUD3DXVECTOR3@@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004585EE",
@@ -6421,7 +6860,10 @@
     "end": "0x00458726",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_multiply_impl",
-    "size": 312
+    "size": 312,
+    "aliases": [
+      "?sse2_D3DXMatrixMultiply$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x0045873E",
@@ -6429,7 +6871,10 @@
     "end": "0x004587F6",
     "evidence": "exact",
     "name": "d3dx_sse2_vec3_normalize_impl",
-    "size": 184
+    "size": 184,
+    "aliases": [
+      "?sse2_D3DXVec3Normalize$$1@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045880E",
@@ -6437,7 +6882,10 @@
     "end": "0x004588D8",
     "evidence": "exact",
     "name": "d3dx_sse2_plane_normalize_impl",
-    "size": 202
+    "size": 202,
+    "aliases": [
+      "?sse2_D3DXPlaneNormalize$$1@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x004588EE",
@@ -6445,7 +6893,10 @@
     "end": "0x00458B99",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_inverse_impl",
-    "size": 683
+    "size": 683,
+    "aliases": [
+      "?sse2_D3DXMatrixInverse$$1@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x00458BAE",
@@ -6453,7 +6904,10 @@
     "end": "0x00458CF8",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_multiply_transpose_impl",
-    "size": 330
+    "size": 330,
+    "aliases": [
+      "?sse2_D3DXMatrixMultiplyTranspose$$1@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x00458D0E",
@@ -6461,7 +6915,10 @@
     "end": "0x00458DA6",
     "evidence": "exact",
     "name": "d3dx_sse2_vec4_cross_impl",
-    "size": 152
+    "size": 152,
+    "aliases": [
+      "?sse2_D3DXVec4Cross$$1@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x00458DBE",
@@ -6469,7 +6926,10 @@
     "end": "0x00458E2B",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_rotation_x_impl",
-    "size": 109
+    "size": 109,
+    "aliases": [
+      "?sse2_D3DXMatrixRotationX$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x00458E3E",
@@ -6477,7 +6937,10 @@
     "end": "0x00458EB2",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_rotation_y_impl",
-    "size": 116
+    "size": 116,
+    "aliases": [
+      "?sse2_D3DXMatrixRotationY$$1@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x00458ECE",
@@ -6485,7 +6948,10 @@
     "end": "0x00458F8B",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_determinant_impl",
-    "size": 189
+    "size": 189,
+    "aliases": [
+      "?sse2_D3DXMatrixDeterminant$$1@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00458F9E",
@@ -6493,7 +6959,10 @@
     "end": "0x00459074",
     "evidence": "exact",
     "name": "d3dx_sse2_plane_from_points_impl",
-    "size": 214
+    "size": 214,
+    "aliases": [
+      "?sse2_D3DXPlaneFromPoints$$1@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@11@Z"
+    ]
   },
   {
     "address": "0x0045908E",
@@ -6501,7 +6970,10 @@
     "end": "0x0045920A",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_shadow_impl",
-    "size": 380
+    "size": 380,
+    "aliases": [
+      "?sse2_D3DXMatrixShadow$$1@@YGPAU_D3DMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x0045921E",
@@ -6509,7 +6981,10 @@
     "end": "0x004592E4",
     "evidence": "exact",
     "name": "d3dx_sse2_matrix_reflect_impl",
-    "size": 198
+    "size": 198,
+    "aliases": [
+      "?sse2_D3DXMatrixReflect$$1@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x004592F0",
@@ -6517,7 +6992,10 @@
     "end": "0x00459404",
     "evidence": "exact",
     "name": "d3dx_sse2_quaternion_rotation_matrix",
-    "size": 276
+    "size": 276,
+    "aliases": [
+      "?sse2_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045941E",
@@ -6525,7 +7003,10 @@
     "end": "0x004594D1",
     "evidence": "exact",
     "name": "d3dx_sse2_quaternion_rotation_yaw_pitch_roll_impl",
-    "size": 179
+    "size": 179,
+    "aliases": [
+      "?sse2_D3DXQuaternionRotationYawPitchRoll$$1@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x004595D6",
@@ -6533,7 +7014,10 @@
     "end": "0x00459689",
     "evidence": "exact",
     "name": "x3d_quaternion_to_axis_angle",
-    "size": 179
+    "size": 179,
+    "aliases": [
+      "?x3d_D3DXQuaternionToAxisAngle@@YGXPBUD3DXQUATERNION@@PAUD3DXVECTOR3@@PAM@Z"
+    ]
   },
   {
     "address": "0x00459689",
@@ -6541,7 +7025,10 @@
     "end": "0x004598A5",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_matrix",
-    "size": 540
+    "size": 540,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationMatrix@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x004598A5",
@@ -6549,7 +7036,10 @@
     "end": "0x00459ABA",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_matrix_k7",
-    "size": 533
+    "size": 533,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationMatrix_K7@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x00459ABA",
@@ -6557,7 +7047,10 @@
     "end": "0x00459B7F",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_yaw_pitch_roll",
-    "size": 197
+    "size": 197,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationYawPitchRoll@@YGPAUD3DXQUATERNION@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x00459B7F",
@@ -6565,7 +7058,10 @@
     "end": "0x00459BEB",
     "evidence": "exact",
     "name": "x3d_quaternion_rotation_axis",
-    "size": 108
+    "size": 108,
+    "aliases": [
+      "?x3d_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x00459BEB",
@@ -6573,7 +7069,10 @@
     "end": "0x00459D22",
     "evidence": "exact",
     "name": "x3d_quaternion_slerp",
-    "size": 311
+    "size": 311,
+    "aliases": [
+      "?x3d_D3DXQuaternionSlerp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@1M@Z"
+    ]
   },
   {
     "address": "0x00459D22",
@@ -6581,7 +7080,10 @@
     "end": "0x00459DAF",
     "evidence": "exact",
     "name": "x3d_quaternion_barycentric",
-    "size": 141
+    "size": 141,
+    "aliases": [
+      "?x3d_D3DXQuaternionBaryCentric@@YGPAUD3DXQUATERNION@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x00459DAF",
@@ -6589,7 +7091,10 @@
     "end": "0x00459E41",
     "evidence": "exact",
     "name": "x3d_quaternion_squad",
-    "size": 146
+    "size": 146,
+    "aliases": [
+      "?x3d_D3DXQuaternionSquad@@YGPAUD3DXQUATERNION@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x00459E41",
@@ -6597,7 +7102,10 @@
     "end": "0x00459EA5",
     "evidence": "exact",
     "name": "x3d_quaternion_inverse",
-    "size": 100
+    "size": 100,
+    "aliases": [
+      "?x3d_D3DXQuaternionInverse@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00459EA5",
@@ -6605,7 +7113,10 @@
     "end": "0x00459F4C",
     "evidence": "exact",
     "name": "x3d_quaternion_ln",
-    "size": 167
+    "size": 167,
+    "aliases": [
+      "?x3d_D3DXQuaternionLn@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00459F4C",
@@ -6613,7 +7124,10 @@
     "end": "0x00459FF1",
     "evidence": "exact",
     "name": "x3d_quaternion_exp",
-    "size": 165
+    "size": 165,
+    "aliases": [
+      "?x3d_D3DXQuaternionExp@@YGPAUD3DXQUATERNION@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x00459FF1",
@@ -6621,7 +7135,10 @@
     "end": "0x0045AA4A",
     "evidence": "exact",
     "name": "x3d_quaternion_squad_setup",
-    "size": 2649
+    "size": 2649,
+    "aliases": [
+      "?x3d_D3DXQuaternionSquadSetup@@YGXPAUD3DXQUATERNION@@00PBU1@111@Z"
+    ]
   },
   {
     "address": "0x0045AA4A",
@@ -6629,7 +7146,10 @@
     "end": "0x0045AC7C",
     "evidence": "exact",
     "name": "x3d_matrix_multiply",
-    "size": 562
+    "size": 562,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiply@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x0045AC7C",
@@ -6637,7 +7157,10 @@
     "end": "0x0045AD4B",
     "evidence": "exact",
     "name": "x3d_matrix_determinant",
-    "size": 207
+    "size": 207,
+    "aliases": [
+      "?x3d_D3DXMatrixfDeterminant@@YGMPBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045AD4B",
@@ -6645,7 +7168,10 @@
     "end": "0x0045AD9B",
     "evidence": "exact",
     "name": "x3d_matrix_translation",
-    "size": 80
+    "size": 80,
+    "aliases": [
+      "?x3d_D3DXMatrixTranslation@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x0045AD9B",
@@ -6653,7 +7179,10 @@
     "end": "0x0045AE86",
     "evidence": "exact",
     "name": "x3d_matrix_shadow",
-    "size": 235
+    "size": 235,
+    "aliases": [
+      "?x3d_D3DXMatrixShadow@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR4@@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x0045AE86",
@@ -6661,7 +7190,10 @@
     "end": "0x0045AF62",
     "evidence": "exact",
     "name": "x3d_matrix_reflect",
-    "size": 220
+    "size": 220,
+    "aliases": [
+      "?x3d_D3DXMatrixReflect@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXPLANE@@@Z"
+    ]
   },
   {
     "address": "0x0045AF62",
@@ -6669,7 +7201,10 @@
     "end": "0x0045AFC5",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_x",
-    "size": 99
+    "size": 99,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationX@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x0045AFC5",
@@ -6677,7 +7212,10 @@
     "end": "0x0045B023",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_y",
-    "size": 94
+    "size": 94,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationY@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x0045B023",
@@ -6685,7 +7223,10 @@
     "end": "0x0045B07C",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_z",
-    "size": 89
+    "size": 89,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationZ@@YGPAUD3DXMATRIX@@PAU1@M@Z"
+    ]
   },
   {
     "address": "0x0045B07C",
@@ -6693,7 +7234,10 @@
     "end": "0x0045B0C3",
     "evidence": "exact",
     "name": "x3d_matrix_scaling",
-    "size": 71
+    "size": 71,
+    "aliases": [
+      "?x3d_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x0045B0C3",
@@ -6701,7 +7245,10 @@
     "end": "0x0045B132",
     "evidence": "exact",
     "name": "x3d_matrix_transpose",
-    "size": 111
+    "size": 111,
+    "aliases": [
+      "?x3d_D3DXMatrixTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045B132",
@@ -6709,7 +7256,10 @@
     "end": "0x0045B16B",
     "evidence": "exact",
     "name": "x3d_matrix_identity",
-    "size": 57
+    "size": 57,
+    "aliases": [
+      "?x3d_D3DXMatrixIdentity@@YAPAUD3DXMATRIX@@PAU1@@Z"
+    ]
   },
   {
     "address": "0x0045B16B",
@@ -6717,7 +7267,10 @@
     "end": "0x0045B23D",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_quaternion",
-    "size": 210
+    "size": 210,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationQuaternion@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "address": "0x0045B23D",
@@ -6725,7 +7278,10 @@
     "end": "0x0045B2F2",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_quaternion_k7",
-    "size": 181
+    "size": 181,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationQuaternion_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXQUATERNION@@@Z"
+    ]
   },
   {
     "address": "0x0045B2F2",
@@ -6733,7 +7289,10 @@
     "end": "0x0045C48A",
     "evidence": "exact",
     "name": "x3d_matrix_transformation",
-    "size": 4504
+    "size": 4504,
+    "aliases": [
+      "?x3d_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "address": "0x0045C48A",
@@ -6741,7 +7300,10 @@
     "end": "0x0045C62F",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_yaw_pitch_roll",
-    "size": 421
+    "size": 421,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationYawPitchRoll@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
   },
   {
     "address": "0x0045C62F",
@@ -6749,7 +7311,10 @@
     "end": "0x0045CB63",
     "evidence": "exact",
     "name": "x3d_matrix_affine_transformation",
-    "size": 1332
+    "size": 1332,
+    "aliases": [
+      "?x3d_D3DXMatrixAffineTransformation@@YGPAUD3DXMATRIX@@PAU1@MPBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1@Z"
+    ]
   },
   {
     "address": "0x0045CB63",
@@ -6757,7 +7322,10 @@
     "end": "0x0045CC7C",
     "evidence": "exact",
     "name": "x3d_matrix_rotation_axis",
-    "size": 281
+    "size": 281,
+    "aliases": [
+      "?x3d_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
   },
   {
     "address": "0x0045CC7C",
@@ -6765,7 +7333,10 @@
     "end": "0x0045DDD0",
     "evidence": "exact",
     "name": "x3d_matrix_transformation_k7",
-    "size": 4436
+    "size": 4436,
+    "aliases": [
+      "?x3d_D3DXMatrixTransformation_K7@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
   },
   {
     "address": "0x0045DDD0",
@@ -6773,7 +7344,10 @@
     "end": "0x0045E0B2",
     "evidence": "exact",
     "name": "x3d_matrix_inverse_k7",
-    "size": 738
+    "size": 738,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse_K7@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x0045E0B2",
@@ -6781,7 +7355,10 @@
     "end": "0x0045E4AA",
     "evidence": "exact",
     "name": "x3d_matrix_multiply_transpose",
-    "size": 1016
+    "size": 1016,
+    "aliases": [
+      "?x3d_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
   },
   {
     "address": "0x0045E4AA",
@@ -6797,7 +7374,10 @@
     "end": "0x0045E7FA",
     "evidence": "exact",
     "name": "x3d_matrix_inverse",
-    "size": 28
+    "size": 28,
+    "aliases": [
+      "?x3d_D3DXMatrixInverse@@YGPAUD3DXMATRIX@@PAU1@PAMPBU1@@Z"
+    ]
   },
   {
     "address": "0x0045E8D2",
@@ -6805,7 +7385,10 @@
     "end": "0x0045E931",
     "evidence": "exact",
     "name": "x3d_vec3_normalize",
-    "size": 95
+    "size": 95,
+    "aliases": [
+      "?x3d_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045E931",
@@ -6813,7 +7396,10 @@
     "end": "0x0045E9A2",
     "evidence": "exact",
     "name": "x3d_vec3_barycentric",
-    "size": 113
+    "size": 113,
+    "aliases": [
+      "?x3d_D3DXVec3BaryCentric@@YGPAUD3DXVECTOR3@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x0045E9A2",
@@ -6821,7 +7407,10 @@
     "end": "0x0045EA76",
     "evidence": "exact",
     "name": "x3d_vec3_hermite",
-    "size": 212
+    "size": 212,
+    "aliases": [
+      "?x3d_D3DXVec3Hermite@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x0045EA76",
@@ -6829,7 +7418,10 @@
     "end": "0x0045EB60",
     "evidence": "exact",
     "name": "x3d_vec3_catmull_rom",
-    "size": 234
+    "size": 234,
+    "aliases": [
+      "?x3d_D3DXVec3CatmullRom@@YGPAUD3DXVECTOR3@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x0045EB60",
@@ -6837,7 +7429,10 @@
     "end": "0x0045EBEB",
     "evidence": "exact",
     "name": "x3d_vec3_transform_coord_inline",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "?x3d_D3DXVec3TransformCoord_inline@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045EBEB",
@@ -6853,7 +7448,10 @@
     "end": "0x0045EDB7",
     "evidence": "exact",
     "name": "vec3_transform_coord_thunk",
-    "size": 5
+    "size": 5,
+    "aliases": [
+      "?x3d_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045EDB7",
@@ -6877,7 +7475,10 @@
     "end": "0x0045F65A",
     "evidence": "referenced",
     "name": "x3d_vec3_unproject_k7",
-    "size": 1269
+    "size": 1269,
+    "aliases": [
+      "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
   },
   {
     "address": "0x0045F65A",
@@ -6885,7 +7486,10 @@
     "end": "0x0045F78C",
     "evidence": "exact",
     "name": "x3d_vec4_cross",
-    "size": 306
+    "size": 306,
+    "aliases": [
+      "?x3d_D3DXVec4Cross@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11@Z"
+    ]
   },
   {
     "address": "0x0045F78C",
@@ -6893,7 +7497,10 @@
     "end": "0x0045F7FD",
     "evidence": "exact",
     "name": "x3d_vec4_barycentric",
-    "size": 113
+    "size": 113,
+    "aliases": [
+      "?x3d_D3DXVec4BaryCentric@@YGPAUD3DXVECTOR4@@PAU1@PBU1@11MM@Z"
+    ]
   },
   {
     "address": "0x0045F7FD",
@@ -6901,7 +7508,10 @@
     "end": "0x0045F8C5",
     "evidence": "exact",
     "name": "x3d_vec4_hermite",
-    "size": 200
+    "size": 200,
+    "aliases": [
+      "?x3d_D3DXVec4Hermite@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x0045F8C5",
@@ -6909,7 +7519,10 @@
     "end": "0x0045F9A3",
     "evidence": "exact",
     "name": "x3d_vec4_catmull_rom",
-    "size": 222
+    "size": 222,
+    "aliases": [
+      "?x3d_D3DXVec4CatmullRom@@YGPAUD3DXVECTOR4@@PAU1@PBU1@111M@Z"
+    ]
   },
   {
     "address": "0x0045FB88",
@@ -6917,7 +7530,10 @@
     "end": "0x0045FBEC",
     "evidence": "exact",
     "name": "x3d_plane_normalize",
-    "size": 100
+    "size": 100,
+    "aliases": [
+      "?x3d_D3DXPlaneNormalize@@YGPAUD3DXPLANE@@PAU1@PBU1@@Z"
+    ]
   },
   {
     "address": "0x0045FBEC",
@@ -6925,7 +7541,10 @@
     "end": "0x0045FC6A",
     "evidence": "exact",
     "name": "x3d_plane_transform",
-    "size": 126
+    "size": 126,
+    "aliases": [
+      "?x3d_D3DXPlaneTransform@@YGPAUD3DXPLANE@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
   },
   {
     "address": "0x0045FC70",
@@ -6933,7 +7552,10 @@
     "end": "0x0045FE5C",
     "evidence": "exact",
     "name": "d3dx_sse_sin_cos4",
-    "size": 492
+    "size": 492,
+    "aliases": [
+      "?sse_SinCos4@@YAXQBMQAM1@Z"
+    ]
   },
   {
     "address": "0x0045FE60",
@@ -6941,7 +7563,10 @@
     "end": "0x0045FF48",
     "evidence": "exact",
     "name": "d3dx_sse2_sincos",
-    "size": 232
+    "size": 232,
+    "aliases": [
+      "?sse2_sincos@@YG_K_K@Z"
+    ]
   },
   {
     "address": "0x0045FF50",
@@ -6949,7 +7574,10 @@
     "end": "0x00460099",
     "evidence": "exact",
     "name": "d3dx_sse2_sin_cos4",
-    "size": 329
+    "size": 329,
+    "aliases": [
+      "?sse2_SinCos4@@YAXQBMQAM1@Z"
+    ]
   },
   {
     "address": "0x00460180",
@@ -6973,7 +7601,10 @@
     "end": "0x00460569",
     "evidence": "exact",
     "name": "x3d_log",
-    "size": 233
+    "size": 233,
+    "aliases": [
+      "_a_log"
+    ]
   },
   {
     "address": "0x00460860",
@@ -6997,7 +7628,10 @@
     "end": "0x00460DC8",
     "evidence": "exact",
     "name": "crt_cfltcvt_init",
-    "size": 56
+    "size": 56,
+    "aliases": [
+      "__cfltcvt_init"
+    ]
   },
   {
     "address": "0x00460DC8",
@@ -7013,7 +7647,10 @@
     "end": "0x00460E58",
     "evidence": "exact",
     "name": "crt_atexit",
-    "size": 18
+    "size": 18,
+    "aliases": [
+      "atexit"
+    ]
   },
   {
     "address": "0x00460E87",
@@ -7021,7 +7658,10 @@
     "end": "0x00460E92",
     "evidence": "exact",
     "name": "crt_free",
-    "size": 11
+    "size": 11,
+    "aliases": [
+      "??3@YAXPAX@Z"
+    ]
   },
   {
     "address": "0x00460E92",
@@ -7029,7 +7669,10 @@
     "end": "0x00460F1D",
     "evidence": "exact",
     "name": "crt_atol",
-    "size": 139
+    "size": 139,
+    "aliases": [
+      "_atol"
+    ]
   },
   {
     "address": "0x00460F1D",
@@ -7037,7 +7680,10 @@
     "end": "0x00460F4E",
     "evidence": "exact",
     "name": "crt_fclose",
-    "size": 49
+    "size": 49,
+    "aliases": [
+      "fclose"
+    ]
   },
   {
     "address": "0x00460F4E",
@@ -7045,7 +7691,10 @@
     "end": "0x00460F9A",
     "evidence": "exact",
     "name": "crt_fclose_lk",
-    "size": 76
+    "size": 76,
+    "aliases": [
+      "__fclose_lk"
+    ]
   },
   {
     "address": "0x00460FB0",
@@ -7053,7 +7702,10 @@
     "end": "0x0046106C",
     "evidence": "exact",
     "name": "crt_strchr",
-    "size": 188
+    "size": 188,
+    "aliases": [
+      "_strchr"
+    ]
   },
   {
     "address": "0x0046106C",
@@ -7077,7 +7729,10 @@
     "end": "0x00461112",
     "evidence": "exact",
     "name": "crt_fopen",
-    "size": 19
+    "size": 19,
+    "aliases": [
+      "fopen"
+    ]
   },
   {
     "address": "0x00461114",
@@ -7085,7 +7740,10 @@
     "end": "0x0046113B",
     "evidence": "exact",
     "name": "crt_ftol",
-    "size": 39
+    "size": 39,
+    "aliases": [
+      "__ftol"
+    ]
   },
   {
     "address": "0x0046113B",
@@ -7117,7 +7775,10 @@
     "end": "0x00461219",
     "evidence": "exact",
     "name": "crt_ci_pow",
-    "size": 25
+    "size": 25,
+    "aliases": [
+      "__CIpow"
+    ]
   },
   {
     "address": "0x00461222",
@@ -7149,7 +7810,10 @@
     "end": "0x00461508",
     "evidence": "exact",
     "name": "crt_strncmp",
-    "size": 56
+    "size": 56,
+    "aliases": [
+      "_strncmp"
+    ]
   },
   {
     "address": "0x00461508",
@@ -7157,7 +7821,10 @@
     "end": "0x00461537",
     "evidence": "exact",
     "name": "crt_fflush",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "fflush"
+    ]
   },
   {
     "address": "0x00461537",
@@ -7181,7 +7848,10 @@
     "end": "0x0046166E",
     "evidence": "exact",
     "name": "crt_flsall",
-    "size": 164
+    "size": 164,
+    "aliases": [
+      "_flsall"
+    ]
   },
   {
     "address": "0x0046166E",
@@ -7189,7 +7859,10 @@
     "end": "0x0046169D",
     "evidence": "exact",
     "name": "crt_fwrite",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "fwrite"
+    ]
   },
   {
     "address": "0x0046169D",
@@ -7205,7 +7878,10 @@
     "end": "0x004617F9",
     "evidence": "exact",
     "name": "crt_sprintf",
-    "size": 82
+    "size": 82,
+    "aliases": [
+      "sprintf"
+    ]
   },
   {
     "address": "0x004617F9",
@@ -7213,7 +7889,10 @@
     "end": "0x00461806",
     "evidence": "exact",
     "name": "crt_srand",
-    "size": 13
+    "size": 13,
+    "aliases": [
+      "srand"
+    ]
   },
   {
     "address": "0x00461806",
@@ -7221,7 +7900,10 @@
     "end": "0x00461828",
     "evidence": "exact",
     "name": "crt_rand",
-    "size": 34
+    "size": 34,
+    "aliases": [
+      "rand"
+    ]
   },
   {
     "address": "0x00461828",
@@ -7253,7 +7935,10 @@
     "end": "0x00461A41",
     "evidence": "exact",
     "name": "crt_timet_from_ft",
-    "size": 100
+    "size": 100,
+    "aliases": [
+      "___timet_from_ft"
+    ]
   },
   {
     "address": "0x00461A41",
@@ -7261,7 +7946,10 @@
     "end": "0x00461AC3",
     "evidence": "exact",
     "name": "crt_ehvec_ctor",
-    "size": 130
+    "size": 130,
+    "aliases": [
+      "??_L@YGXPAXIHP6EX0@Z1@Z"
+    ]
   },
   {
     "address": "0x00461AC3",
@@ -7269,7 +7957,10 @@
     "end": "0x00461B43",
     "evidence": "exact",
     "name": "crt_ehvec_dtor",
-    "size": 128
+    "size": 128,
+    "aliases": [
+      "??_M@YGXPAXIHP6EX0@Z@Z"
+    ]
   },
   {
     "address": "0x00461B43",
@@ -7285,7 +7976,10 @@
     "end": "0x00461BD0",
     "evidence": "exact",
     "name": "crt_fread",
-    "size": 47
+    "size": 47,
+    "aliases": [
+      "fread"
+    ]
   },
   {
     "address": "0x00461BD0",
@@ -7301,7 +7995,10 @@
     "end": "0x00461CDA",
     "evidence": "exact",
     "name": "crt_ftell",
-    "size": 34
+    "size": 34,
+    "aliases": [
+      "ftell"
+    ]
   },
   {
     "address": "0x00461CDA",
@@ -7317,7 +8014,10 @@
     "end": "0x00461E67",
     "evidence": "exact",
     "name": "crt_fseek",
-    "size": 44
+    "size": 44,
+    "aliases": [
+      "fseek"
+    ]
   },
   {
     "address": "0x00461E67",
@@ -7365,7 +8065,10 @@
     "end": "0x0046216A",
     "evidence": "exact",
     "name": "crt_alldiv",
-    "size": 170
+    "size": 170,
+    "aliases": [
+      "__alldiv"
+    ]
   },
   {
     "address": "0x00462170",
@@ -7373,7 +8076,10 @@
     "end": "0x004621A4",
     "evidence": "exact",
     "name": "crt_allmul",
-    "size": 52
+    "size": 52,
+    "aliases": [
+      "__allmul"
+    ]
   },
   {
     "address": "0x004621A4",
@@ -7421,7 +8127,10 @@
     "end": "0x00462479",
     "evidence": "exact",
     "name": "crt_getcwd",
-    "size": 39
+    "size": 39,
+    "aliases": [
+      "getcwd"
+    ]
   },
   {
     "address": "0x00462479",
@@ -7437,7 +8146,10 @@
     "end": "0x00462585",
     "evidence": "exact",
     "name": "crt_validdrive",
-    "size": 55
+    "size": 55,
+    "aliases": [
+      "__validdrive"
+    ]
   },
   {
     "address": "0x00462585",
@@ -7445,7 +8157,10 @@
     "end": "0x004625B9",
     "evidence": "exact",
     "name": "crt_sscanf",
-    "size": 52
+    "size": 52,
+    "aliases": [
+      "_sscanf"
+    ]
   },
   {
     "address": "0x004625C0",
@@ -7453,7 +8168,10 @@
     "end": "0x00462640",
     "evidence": "exact",
     "name": "crt_strstr",
-    "size": 128
+    "size": 128,
+    "aliases": [
+      "_strstr"
+    ]
   },
   {
     "address": "0x00462640",
@@ -7461,7 +8179,10 @@
     "end": "0x00462794",
     "evidence": "exact",
     "name": "crt_qsort",
-    "size": 340
+    "size": 340,
+    "aliases": [
+      "qsort"
+    ]
   },
   {
     "address": "0x00462794",
@@ -7485,7 +8206,10 @@
     "end": "0x0046283F",
     "evidence": "exact",
     "name": "crt_getc",
-    "size": 49
+    "size": 49,
+    "aliases": [
+      "fgetc"
+    ]
   },
   {
     "address": "0x00462840",
@@ -7493,7 +8217,13 @@
     "end": "0x00462910",
     "evidence": "exact",
     "name": "crt_stricmp",
-    "size": 208
+    "size": 208,
+    "aliases": [
+      "_stricmp",
+      "__strcmpi",
+      "strcmpi",
+      "stricmp"
+    ]
   },
   {
     "address": "0x0046293D",
@@ -7509,7 +8239,10 @@
     "end": "0x0046295F",
     "evidence": "exact",
     "name": "crt_immediate_exit",
-    "size": 17
+    "size": 17,
+    "aliases": [
+      "__exit"
+    ]
   },
   {
     "address": "0x0046295F",
@@ -7573,7 +8306,10 @@
     "end": "0x00462BE0",
     "evidence": "referenced",
     "name": "crt_amsg_exit",
-    "size": 82
+    "size": 82,
+    "aliases": [
+      "__amsg_exit"
+    ]
   },
   {
     "address": "0x00462BE0",
@@ -7581,7 +8317,10 @@
     "end": "0x00462CAB",
     "evidence": "referenced",
     "name": "crt_ci_acos",
-    "size": 203
+    "size": 203,
+    "aliases": [
+      "__CIacos"
+    ]
   },
   {
     "address": "0x00462CAB",
@@ -7589,7 +8328,10 @@
     "end": "0x00463128",
     "evidence": "referenced",
     "name": "crt_finite",
-    "size": 1149
+    "size": 1149,
+    "aliases": [
+      "__finite"
+    ]
   },
   {
     "address": "0x00463128",
@@ -7597,7 +8339,10 @@
     "end": "0x00463147",
     "evidence": "ordered",
     "name": "seh_prolog",
-    "size": 31
+    "size": 31,
+    "aliases": [
+      "__EH_prolog"
+    ]
   },
   {
     "address": "0x00463147",
@@ -7605,7 +8350,10 @@
     "end": "0x00463197",
     "evidence": "ordered",
     "name": "crt_cfltcvt",
-    "size": 80
+    "size": 80,
+    "aliases": [
+      "__cfltcvt"
+    ]
   },
   {
     "address": "0x00463197",
@@ -7613,7 +8361,10 @@
     "end": "0x004631C0",
     "evidence": "ordered",
     "name": "crt_ms_p5_mp_test_fdiv",
-    "size": 41
+    "size": 41,
+    "aliases": [
+      "__ms_p5_mp_test_fdiv"
+    ]
   },
   {
     "address": "0x004631C0",
@@ -7621,7 +8372,10 @@
     "end": "0x00463280",
     "evidence": "referenced",
     "name": "crt_forcdecpt",
-    "size": 192
+    "size": 192,
+    "aliases": [
+      "__forcdecpt"
+    ]
   },
   {
     "address": "0x00463280",
@@ -7629,7 +8383,10 @@
     "end": "0x004635E6",
     "evidence": "referenced",
     "name": "crt_fassign",
-    "size": 870
+    "size": 870,
+    "aliases": [
+      "__fassign"
+    ]
   },
   {
     "address": "0x004635E6",
@@ -7653,7 +8410,10 @@
     "end": "0x00463A15",
     "evidence": "referenced",
     "name": "crt_malloc",
-    "size": 18
+    "size": 18,
+    "aliases": [
+      "_malloc"
+    ]
   },
   {
     "address": "0x00463A15",
@@ -7661,7 +8421,10 @@
     "end": "0x00463B3D",
     "evidence": "referenced",
     "name": "crt_nh_malloc",
-    "size": 296
+    "size": 296,
+    "aliases": [
+      "__nh_malloc"
+    ]
   },
   {
     "address": "0x00463B3D",
@@ -7725,7 +8488,10 @@
     "end": "0x00463F06",
     "evidence": "referenced",
     "name": "crt_freebuf",
-    "size": 43
+    "size": 43,
+    "aliases": [
+      "__freebuf"
+    ]
   },
   {
     "address": "0x00463F06",
@@ -7773,7 +8539,10 @@
     "end": "0x00464C20",
     "evidence": "referenced",
     "name": "crt_fltin2",
-    "size": 135
+    "size": 135,
+    "aliases": [
+      "__fltin2"
+    ]
   },
   {
     "address": "0x00464C20",
@@ -7781,7 +8550,10 @@
     "end": "0x00465080",
     "evidence": "referenced",
     "name": "crt_strlen",
-    "size": 1120
+    "size": 1120,
+    "aliases": [
+      "_strlen"
+    ]
   },
   {
     "address": "0x00465080",
@@ -7789,7 +8561,10 @@
     "end": "0x004650E0",
     "evidence": "referenced",
     "name": "crt_start_two_arg_error_handling",
-    "size": 96
+    "size": 96,
+    "aliases": [
+      "__startTwoArgErrorHandling"
+    ]
   },
   {
     "address": "0x004650E0",
@@ -7797,7 +8572,10 @@
     "end": "0x004650F5",
     "evidence": "referenced",
     "name": "crt_two_to_tos",
-    "size": 21
+    "size": 21,
+    "aliases": [
+      "__twoToTOS"
+    ]
   },
   {
     "address": "0x004650F5",
@@ -7805,7 +8583,10 @@
     "end": "0x00465125",
     "evidence": "referenced",
     "name": "crt_load_cw",
-    "size": 48
+    "size": 48,
+    "aliases": [
+      "__load_CW"
+    ]
   },
   {
     "address": "0x00465125",
@@ -7813,7 +8594,10 @@
     "end": "0x004651C9",
     "evidence": "referenced",
     "name": "crt_fload_with_fb",
-    "size": 164
+    "size": 164,
+    "aliases": [
+      "__fload_withFB"
+    ]
   },
   {
     "address": "0x004651C9",
@@ -7821,7 +8605,10 @@
     "end": "0x0046526C",
     "evidence": "referenced",
     "name": "crt_check_range_exit",
-    "size": 163
+    "size": 163,
+    "aliases": [
+      "__check_range_exit"
+    ]
   },
   {
     "address": "0x0046526C",
@@ -7829,7 +8616,10 @@
     "end": "0x00465455",
     "evidence": "referenced",
     "name": "crt_powhlp",
-    "size": 489
+    "size": 489,
+    "aliases": [
+      "__powhlp"
+    ]
   },
   {
     "address": "0x00465455",
@@ -7941,7 +8731,10 @@
     "end": "0x00465F40",
     "evidence": "referenced",
     "name": "crt_except_handler3",
-    "size": 288
+    "size": 288,
+    "aliases": [
+      "__except_handler3"
+    ]
   },
   {
     "address": "0x00465F40",
@@ -7981,7 +8774,10 @@
     "end": "0x0046675D",
     "evidence": "referenced",
     "name": "crt_stbuf",
-    "size": 141
+    "size": 141,
+    "aliases": [
+      "__stbuf"
+    ]
   },
   {
     "address": "0x0046675D",
@@ -7989,7 +8785,10 @@
     "end": "0x00466787",
     "evidence": "referenced",
     "name": "crt_ftbuf",
-    "size": 42
+    "size": 42,
+    "aliases": [
+      "__ftbuf"
+    ]
   },
   {
     "address": "0x00466787",
@@ -8013,7 +8812,10 @@
     "end": "0x0046879A",
     "evidence": "referenced",
     "name": "crt_scan_input",
-    "size": 7518
+    "size": 7518,
+    "aliases": [
+      "__input"
+    ]
   },
   {
     "address": "0x0046879A",
@@ -8021,7 +8823,11 @@
     "end": "0x004688D0",
     "evidence": "referenced",
     "name": "crt_array_unwind_filter",
-    "size": 310
+    "size": 310,
+    "aliases": [
+      "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z",
+      "?FrameUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"
+    ]
   },
   {
     "address": "0x0046E8A9",
