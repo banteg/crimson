@@ -349,16 +349,11 @@ def _player_controls_from_parsed_bind_block(
     show_direction_arrow: bool,
 ) -> CrimsonPlayerControls:
     if _parsed_player_bind_block_is_uninitialized(raw_block):
-        defaults = default_player_controls(player_index)
-        return CrimsonPlayerControls(
+        return msgspec.structs.replace(
+            default_player_controls(player_index),
             movement=movement,
             aim_scheme=aim_scheme,
             show_direction_arrow=show_direction_arrow,
-            move_codes=defaults.move_codes,
-            fire_code=defaults.fire_code,
-            keyboard_aim_codes=defaults.keyboard_aim_codes,
-            aim_axis_codes=defaults.aim_axis_codes,
-            move_axis_codes=defaults.move_axis_codes,
         )
     return CrimsonPlayerControls(
         movement=movement,
@@ -464,17 +459,8 @@ def _saved_name_order_values() -> tuple[int, ...]:
 
 
 def default_player_controls(player_index: int) -> CrimsonPlayerControls:
-    defaults = _DEFAULT_PLAYER_CONTROL_TEMPLATES[_player_index(player_index)]
-    return CrimsonPlayerControls(
-        movement=defaults.movement,
-        aim_scheme=defaults.aim_scheme,
-        show_direction_arrow=defaults.show_direction_arrow,
-        move_codes=defaults.move_codes,
-        fire_code=defaults.fire_code,
-        keyboard_aim_codes=defaults.keyboard_aim_codes,
-        aim_axis_codes=defaults.aim_axis_codes,
-        move_axis_codes=defaults.move_axis_codes,
-    )
+    # A fresh copy: callers rebind its fields.
+    return msgspec.structs.replace(_DEFAULT_PLAYER_CONTROL_TEMPLATES[_player_index(player_index)])
 
 
 def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
