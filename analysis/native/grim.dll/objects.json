@@ -33,7 +33,7 @@
       {
         "path": "third_party/headers/crimsonland_types.h",
         "repository_relative": true,
-        "sha256": "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+        "sha256": "1ed463c5ec82390c0654e286520202d50a7851fd4b3b44f8dca7524caa2281f2"
       },
       {
         "path": "third_party/headers/d3d8.h",
@@ -444,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "47286abdd33bd9d431ceaff5d66dce1c8c97aaa194c6592a21376cd1f17210f9",
+  "audit_digest": "dc5c0a322fb95b36dbe44fafcb3771cb65de246045447bb473d8cf38b03678d6",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -7128,7 +7128,7 @@
         {
           "path": "third_party/headers/crimsonland_types.h",
           "repository_relative": true,
-          "sha256": "75e212be1d477fcc2938cd060476e982c4968733e76019dfb24578b35e742ba9"
+          "sha256": "1ed463c5ec82390c0654e286520202d50a7851fd4b3b44f8dca7524caa2281f2"
         },
         {
           "path": "tools/match/compilers/msvc6.5/Include/stddef.h",
@@ -7172,7 +7172,7 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "109765e57d6364ce90953963adacca674ed9b3e2c3ea50531b5dbe37d0f847ed",
+          "experiment_epoch": "8a4f982e946fbf02d4178c6aea21afc19b2c6f1d64c8296634cd89a2a36d3492",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,
