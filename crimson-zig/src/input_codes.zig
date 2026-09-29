@@ -149,8 +149,10 @@ pub fn raylibKeyFromInputCode(code: i32) ?rl.KeyboardKey {
         0x34 => @enumFromInt(46),
         0x35 => @enumFromInt(47),
         0x36 => @enumFromInt(344),
+        0x37 => @enumFromInt(332),
         0x38 => @enumFromInt(342),
         0x39 => @enumFromInt(32),
+        0x3A => @enumFromInt(280),
         0x3B => @enumFromInt(290),
         0x3C => @enumFromInt(291),
         0x3D => @enumFromInt(292),
@@ -161,9 +163,30 @@ pub fn raylibKeyFromInputCode(code: i32) ?rl.KeyboardKey {
         0x42 => @enumFromInt(297),
         0x43 => @enumFromInt(298),
         0x44 => @enumFromInt(299),
+        0x45 => @enumFromInt(282),
+        0x46 => @enumFromInt(281),
+        0x47 => @enumFromInt(327),
+        0x48 => @enumFromInt(328),
+        0x49 => @enumFromInt(329),
+        0x4A => @enumFromInt(333),
+        0x4B => @enumFromInt(324),
+        0x4C => @enumFromInt(325),
+        0x4D => @enumFromInt(326),
+        0x4E => @enumFromInt(334),
+        0x4F => @enumFromInt(321),
+        0x50 => @enumFromInt(322),
+        0x51 => @enumFromInt(323),
+        0x52 => @enumFromInt(320),
+        0x53 => @enumFromInt(330),
         0x57 => @enumFromInt(300),
         0x58 => @enumFromInt(301),
+        0x8D => @enumFromInt(336),
+        0x9C => @enumFromInt(335),
         0x9D => @enumFromInt(345),
+        0xB5 => @enumFromInt(331),
+        0xB7 => @enumFromInt(283),
+        0xB8 => @enumFromInt(346),
+        0xC5 => @enumFromInt(284),
         0xC7 => @enumFromInt(268),
         0xC8 => @enumFromInt(265),
         0xC9 => @enumFromInt(266),
@@ -174,8 +197,19 @@ pub fn raylibKeyFromInputCode(code: i32) ?rl.KeyboardKey {
         0xD1 => @enumFromInt(267),
         0xD2 => @enumFromInt(260),
         0xD3 => @enumFromInt(261),
+        0xDB => @enumFromInt(343),
+        0xDC => @enumFromInt(347),
+        0xDD => @enumFromInt(348),
         else => null,
     };
+}
+
+fn inputCodeFromRaylibKey(key: rl.KeyboardKey) ?i32 {
+    var code: i32 = 0;
+    while (code < 0x100) : (code += 1) {
+        if (raylibKeyFromInputCode(code) == key) return code;
+    }
+    return null;
 }
 
 pub fn raylibMouseButtonFromInputCode(code: i32) ?rl.MouseButton {
@@ -393,18 +427,7 @@ pub fn captureFirstPressedInputCode(
         while (true) {
             const key = rl.getKeyPressed();
             if (@intFromEnum(key) <= 0) break;
-            inline for ([_]i32{
-                0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-                0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E,
-                0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D,
-                0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x38, 0x39, 0x3B, 0x3C, 0x3D, 0x3E,
-                0x3F, 0x40, 0x41, 0x42, 0x43, 0x44, 0x57, 0x58, 0x9D, 0xC7, 0xC8, 0xC9, 0xCB, 0xCD, 0xCF,
-                0xD0, 0xD1, 0xD2, 0xD3,
-            }) |code| {
-                if (raylibKeyFromInputCode(code)) |mapped_key| {
-                    if (@intFromEnum(mapped_key) == @intFromEnum(key)) return code;
-                }
-            }
+            if (inputCodeFromRaylibKey(key)) |code| return code;
         }
     }
 
@@ -498,36 +521,146 @@ pub fn inputCodeName(key_code: i32) []const u8 {
         0x17A => "RIM2Btn4",
         0x17B => "RIM2Btn5",
         else => blk: {
-            if (key_code > 0x163) break :blk "RawInput ?";
-            break :blk switch (key_code) {
-                0x01 => "Escape",
-                0x0F => "Tab",
-                0x10 => "Q",
-                0x11 => "W",
-                0x12 => "E",
-                0x13 => "R",
-                0x1C => "Enter",
-                0x1D => "LControl",
-                0x1E => "A",
-                0x1F => "S",
-                0x20 => "D",
-                0x2A => "LShift",
-                0x36 => "RShift",
-                0x38 => "LAlt",
-                0x39 => "Space",
-                0x9D => "RControl",
-                0xC8 => "Up",
-                0xC9 => "PageUp",
-                0xCB => "Left",
-                0xCD => "Right",
-                0xD0 => "Down",
-                0xD1 => "PageDown",
-                0xD3 => "Delete",
-                else => "DIK",
-            };
+            if (key_code > 0x163 or key_code < 0) break :blk "RawInput ?";
+            if (key_code < 0x100) {
+                if (windowsKeyName(key_code) orelse extendedKeyName(key_code)) |name| break :blk name;
+            }
+            break :blk unnamed_code_names[@intCast(key_code)];
         },
     };
 }
+
+// Native `input_key_name` asks `GetKeyNameTextA(scan << 16)`; these are its US-layout answers for the
+// plain (non-extended) scancodes.
+fn windowsKeyName(code: i32) ?[]const u8 {
+    return switch (code) {
+        0x01 => "Esc",
+        0x02 => "1",
+        0x03 => "2",
+        0x04 => "3",
+        0x05 => "4",
+        0x06 => "5",
+        0x07 => "6",
+        0x08 => "7",
+        0x09 => "8",
+        0x0A => "9",
+        0x0B => "0",
+        0x0C => "-",
+        0x0D => "=",
+        0x0E => "Backspace",
+        0x0F => "Tab",
+        0x10 => "Q",
+        0x11 => "W",
+        0x12 => "E",
+        0x13 => "R",
+        0x14 => "T",
+        0x15 => "Y",
+        0x16 => "U",
+        0x17 => "I",
+        0x18 => "O",
+        0x19 => "P",
+        0x1A => "[",
+        0x1B => "]",
+        0x1C => "Enter",
+        0x1D => "Ctrl",
+        0x1E => "A",
+        0x1F => "S",
+        0x20 => "D",
+        0x21 => "F",
+        0x22 => "G",
+        0x23 => "H",
+        0x24 => "J",
+        0x25 => "K",
+        0x26 => "L",
+        0x27 => ";",
+        0x28 => "'",
+        0x29 => "`",
+        0x2A => "Shift",
+        0x2B => "\\",
+        0x2C => "Z",
+        0x2D => "X",
+        0x2E => "C",
+        0x2F => "V",
+        0x30 => "B",
+        0x31 => "N",
+        0x32 => "M",
+        0x33 => ",",
+        0x34 => ".",
+        0x35 => "/",
+        0x36 => "Right Shift",
+        0x37 => "Num *",
+        0x38 => "Alt",
+        0x39 => "Space",
+        0x3A => "Caps Lock",
+        0x3B => "F1",
+        0x3C => "F2",
+        0x3D => "F3",
+        0x3E => "F4",
+        0x3F => "F5",
+        0x40 => "F6",
+        0x41 => "F7",
+        0x42 => "F8",
+        0x43 => "F9",
+        0x44 => "F10",
+        0x45 => "Pause",
+        0x46 => "Scroll Lock",
+        0x47 => "Num 7",
+        0x48 => "Num 8",
+        0x49 => "Num 9",
+        0x4A => "Num -",
+        0x4B => "Num 4",
+        0x4C => "Num 5",
+        0x4D => "Num 6",
+        0x4E => "Num +",
+        0x4F => "Num 1",
+        0x50 => "Num 2",
+        0x51 => "Num 3",
+        0x52 => "Num 0",
+        0x53 => "Num Del",
+        0x57 => "F11",
+        0x58 => "F12",
+        else => null,
+    };
+}
+
+// Extended keys (DIK codes with the high bit) have no plain scancode name; the port keeps readable names.
+fn extendedKeyName(code: i32) ?[]const u8 {
+    return switch (code) {
+        0x8D => "Num =",
+        0x9C => "Num Enter",
+        0x9D => "RControl",
+        0xB5 => "Num /",
+        0xB7 => "PrintScreen",
+        0xB8 => "RAlt",
+        0xC5 => "Pause",
+        0xC7 => "Home",
+        0xC8 => "Up",
+        0xC9 => "PageUp",
+        0xCB => "Left",
+        0xCD => "Right",
+        0xCF => "End",
+        0xD0 => "Down",
+        0xD1 => "PageDown",
+        0xD2 => "Insert",
+        0xD3 => "Delete",
+        0xDB => "LWin",
+        0xDC => "RWin",
+        0xDD => "Menu",
+        else => null,
+    };
+}
+
+const unnamed_code_names = blk: {
+    @setEvalBranchQuota(200_000);
+    var names: [0x164][]const u8 = undefined;
+    for (&names, 0..) |*name, code| {
+        name.* = if (code < 0x100)
+            std.fmt.comptimePrint("DIK_{X:0>2}", .{code})
+        else
+            std.fmt.comptimePrint("KEY_{X:0>4}", .{code});
+    }
+    break :blk names;
+};
 
 fn inputPrimaryAnyDown(fire_codes: []const i32, player_count: i32) bool {
     if (inputCodeIsDown(0x100, 0)) return true;
@@ -626,6 +759,18 @@ test "input code name extended rim codes match original labels" {
     try std.testing.expectEqualStrings("RIM0Btn1", inputCodeName(0x16D));
     try std.testing.expectEqualStrings("RIM1Btn5", inputCodeName(0x176));
     try std.testing.expectEqualStrings("RIM2Btn5", inputCodeName(0x17B));
+}
+
+test "numpad, lock and windows keys round-trip to raylib and take native key names" {
+    for ([_]i32{ 0x47, 0x4E, 0x9C, 0xB8, 0x3A, 0xDB }) |code| {
+        try std.testing.expectEqual(@as(?i32, code), inputCodeFromRaylibKey(raylibKeyFromInputCode(code).?));
+    }
+    try std.testing.expectEqual(@as(?rl.KeyboardKey, .kp_add), raylibKeyFromInputCode(0x4E));
+    try std.testing.expectEqualStrings("B", inputCodeName(0x30));
+    try std.testing.expectEqualStrings("Num +", inputCodeName(0x4E));
+    try std.testing.expectEqualStrings("RAlt", inputCodeName(0xB8));
+    try std.testing.expectEqualStrings("DIK_54", inputCodeName(0x54));
+    try std.testing.expectEqualStrings("KEY_0105", inputCodeName(0x105));
 }
 
 test "input code name unbound and rawinput fallback" {

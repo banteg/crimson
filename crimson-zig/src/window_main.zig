@@ -573,6 +573,8 @@ const App = struct {
     fn update(self: *App, frame_dt: f32) void {
         self.applyGamepadProfiles();
         self.tickCursorPulse(frame_dt);
+        // Native `game_frame_update` quits whenever Q and left Alt are held.
+        if (rl.isKeyDown(.q) and rl.isKeyDown(.left_alt)) self.quit_requested = true;
         switch (self.screen) {
             .boot => self.updateBoot(frame_dt),
             .main_menu => self.updateMainMenu(frame_dt),
