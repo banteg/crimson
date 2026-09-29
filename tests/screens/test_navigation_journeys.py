@@ -306,3 +306,10 @@ def test_panel_back_accepts_the_pad_back_button(loop, mocker) -> None:
     _press_pad_buttons(mocker)
     finish_transition(loop)
     assert isinstance(loop.state.screens.active, menu.MenuView)
+
+
+def test_alt_q_quits_from_any_screen(loop, mocker) -> None:
+    held = {int(rl.KeyboardKey.KEY_Q), int(rl.KeyboardKey.KEY_LEFT_ALT)}
+    mocker.patch.object(rl, "is_key_down", side_effect=lambda key: int(key) in held)
+    loop.update(0.016)
+    assert loop.should_close()

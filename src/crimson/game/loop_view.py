@@ -94,6 +94,9 @@ class GameLoopView:
         self._handle_console_requests()
         self._sync_rtx_mode()
         _update_screen_fade(self.state, dt)
+        # Native `game_frame_update` quits whenever Q and left Alt are held, console open or not.
+        if rl.is_key_down(rl.KeyboardKey.KEY_Q) and rl.is_key_down(rl.KeyboardKey.KEY_LEFT_ALT):
+            self.state.quit_requested = True
         gameplay = self.state.screens.active_gameplay
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
