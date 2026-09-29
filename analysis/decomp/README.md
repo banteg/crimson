@@ -63,9 +63,12 @@ identification. File-alignment bytes outside virtual extents are excluded.
   historical objdiff matched series. Local relative relocations are resolved,
   audited external relocation fields are masked, and recognized terminal padding
   is excluded. This proves neither final data placement nor whole-image identity.
-- **Linked:** currently zero. The bespoke structural linker uses provider and
-  alias machinery and does not establish recovery of the original translation
-  units and code organization. Its receipts give no public linked credit.
+- **Linked:** verified source components linked at original virtual addresses,
+  with exact final bytes, section permissions and symbolic/base relocations.
+  The first component is Grim's four slot-state accessors and their two backing
+  arrays (64 code bytes and 1,024 data bytes). Zero-filled reservations earn no
+  credit. The broader structural linker still earns no public linked credit.
+  This establishes component placement, not whole-image or file-layout identity.
 - **Data:** source-built definitions verified against the original data bytes,
   reported separately from code. See the data accounting below. Native data-map
   records and generated linker data objects do not automatically earn credit.
@@ -146,8 +149,8 @@ including unmatched objects. **Libraries + attributed data** works the same way.
 **Unattributed data** exposes the remaining bytes. These subsets do not claim a
 complete Game & Engine or library data denominator. Data-only units have no
 functions and create no code treemap tiles. Data never changes code/fuzzy
-percentages, and no linked-data credit is claimed: source groupings do not recover
-original translation units or final data placement.
+percentages. Linked data requires a separate reference-layout receipt proving
+source-built storage at its original address; a source grouping alone earns none.
 
 ## 1.9.8
 

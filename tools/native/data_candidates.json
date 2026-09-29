@@ -442,6 +442,14 @@
       "symbols": [
         "grim_jpeg_natural_order"
       ]
+    },
+    {
+      "image": "grim.dll",
+      "source": "tools/match/data/grim_slot_state.cpp",
+      "symbols": [
+        "grim_slot_ints",
+        "grim_slot_floats"
+      ]
     }
   ],
   "excluded": [

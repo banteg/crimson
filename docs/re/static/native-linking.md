@@ -10,6 +10,43 @@ reference instruction streams. It does not prove that those objects close
 over symbols, share a compatible ABI, or can reproduce a PE image. The native
 linker track makes those remaining obligations explicit.
 
+## Reference-layout source components
+
+`uv run crimson match report --refresh` builds the configured components in
+`tools/native/reference_layout.json` and saves their receipts with the public
+matching evidence. `uv run crimson native reference-link` rebuilds the same
+components from fresh saved evidence. Artifacts live under
+`artifacts/native-reference-link/`.
+
+The first component is the already proven `grim-slot-state-accessors` source
+cluster: four functions at `0x100072c0`, `0x100072d0`, `0x100072e0` and
+`0x10007300`, backed by the independently bounded 128-element int/float arrays
+at `0x1005bf00` and `0x1005c100`. All four compiler sections stay together, in
+compiler order. Only COFF subsection names (including their section-definition symbols) and
+timestamps change; instructions, function/data symbols and relocation records
+remain intact. Ordinary C++ definitions supply
+the arrays, with compile-time size checks. The pinned VC6 linker and authentic
+MSVCRT archive resolve the component without runtime imports, address aliases
+or placeholder providers.
+
+Zero-filled COFF reservations retain the native section geometry around the
+component. They contain no copied reference payload and receive no code or data
+credit. Compiler alignment bytes also receive none. Verification checks linker
+map addresses, exact final function/storage bytes without masking, native
+section permissions, and the exact source/native PE base-relocation slots. Each
+relocation must target concrete storage compiled from the recorded source.
+The receipt binds source object, compiler/linker, archive and final PE hashes.
+CI validates the source-bound saved evidence; where ignored build artifacts
+exist, their hashes and final byte proof are checked again.
+
+This earns 64 linked code bytes and 1,024 linked data bytes in 1.9.93. It is a
+passive PE with no entry point, not a runnable engine. Data credit describes
+loaded virtual storage; zero-filled arrays may have different file backing.
+Complete original source-file boundaries, PE headers, unbuilt regions and
+whole-image identity remain unproven. Existing structural linker receipts
+continue to receive zero public linked credit. Additional versions need their
+own compiler, native placement and relocation proof before receiving credit.
+
 ## Image audits
 
 Both `grim.dll` and `crimsonland.exe` have native audit tracks. Their active

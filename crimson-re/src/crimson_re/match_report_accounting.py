@@ -11,7 +11,7 @@ from . import match as matchlib
 from . import match_toolchain
 
 VERIFICATION = "source-bound local compilation; CI checks freshness and report consistency"
-SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1"
+SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1"
 INVENTORY_POLICY = "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1"
 # Synthetic report input: locked versions of the libraries the scoring code imports.
 SCORING_DEPENDENCIES_INPUT = "uv.lock#scoring-dependencies"
@@ -45,7 +45,7 @@ def identities(
         "scoring": _digest({"policy": SCORING_POLICY, "toolchains": {
             profile: receipt["fingerprint"] for profile, receipt in (toolchains or {}).items()
         }, "implementation": {
-            p: h for p, h in inputs.items() if p.startswith("crimson-re/src/crimson_re/match") or p == SCORING_DEPENDENCIES_INPUT
+            p: h for p, h in inputs.items() if p.startswith("crimson-re/src/crimson_re/match") or p == "crimson-re/src/crimson_re/native_reference_link.py" or p == SCORING_DEPENDENCIES_INPUT
         }}),
         "inventory_policy": INVENTORY_POLICY,
         "scoring_policy": SCORING_POLICY,
@@ -274,7 +274,7 @@ def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: di
         lines.append(f"| {label} | {code} | {fuzzy} | {encoded} | {data} | {linked} |")
     lines.extend(["", ("Fuzzy = sum(original code bytes × source candidate score) / total original code bytes. "
                       "Prebuilt code gets no public credit; unresolved references or incomplete coverage stay below 100%."),
-                  "Linked credit requires recovery of original organization and placement; structural linker receipts earn none.", "",
+                  "Linked credit covers checked source components at native virtual addresses, including final bytes and relocations. Structural linker receipts earn none.", "",
                   "| Image | Executable virtual bytes | Curated code bytes | Unresolved executable bytes |",
                   "| --- | --- | --- | --- |"])
     for section in evidence["code_inventory"]:

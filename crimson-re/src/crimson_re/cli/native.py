@@ -271,3 +271,23 @@ def cmd_native_link(
     typer.echo(f"linked_image={artifacts.image}")
     typer.echo(f"link_manifest={artifacts.manifest}")
     typer.echo(f"link_log={artifacts.log}")
+
+
+@native_app.command("reference-link")
+def cmd_native_reference_link() -> None:
+    """Rebuild and verify closed source components at native virtual addresses."""
+    import json
+
+    from .. import match_report, native_reference_link
+
+    try:
+        evidence = json.loads(match_report.evidence_path(match_report.VERSION).read_text())
+        match_report.validate_evidence(evidence)
+        receipt = native_reference_link.refresh(evidence["functions"], evidence["data"])
+    except Exception as exc:
+        typer.echo(f"reference link failed: {exc}", err=True)
+        raise typer.Exit(code=2) from exc
+    records = [r for c in receipt["components"] for r in c["records"]]
+    typer.echo(f"linked_code={sum(r['size'] for r in records if r['kind'] == 'code')} "
+               f"linked_data={sum(r['size'] for r in records if r['kind'] == 'data')}")
+    typer.echo(f"receipt={native_reference_link.OUTPUT / 'receipt.json'}")

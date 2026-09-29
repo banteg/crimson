@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_builds, match_data_report, match_toolchain
+from . import match_builds, match_data_report, match_toolchain, native_reference_link
 from . import match_report_accounting as accounting
 
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
@@ -37,7 +37,7 @@ def evidence_path(version: str) -> Path:
 def _input_path(path: str) -> bool:
     """Pin relevant code/config, including newly staged or removed scratches."""
     p = Path(path)
-    if path in {"analysis/library_provenance.json", "analysis/matching_scope.json", "crimson-re/src/crimson_re/native_link.py"}:
+    if path in {"analysis/library_provenance.json", "analysis/matching_scope.json", "crimson-re/src/crimson_re/native_link.py", "crimson-re/src/crimson_re/native_reference_link.py"}:
         return True
     if path.startswith("crimson-re/src/crimson_re/") and p.suffix == ".py":
         return p.stem.startswith(("match", "library"))
@@ -262,6 +262,7 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     external, toolchains = _external_inputs(configs, before, version)
     _score(inventory, statuses)
     data = match_data_report.refresh_evidence(configs) if version == VERSION else None
+    linking = native_reference_link.refresh(inventory, data) if data is not None else None
     if repository_inputs() != before or _external_inputs(configs, before, version) != (external, toolchains):
         raise ValueError("report inputs changed during evaluation; refresh again")
     return {
@@ -276,6 +277,7 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
         "toolchains": toolchains,
         "functions": inventory,
         "data": data,
+        "linking": linking,
     }
 
 
@@ -329,7 +331,8 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         raise ValueError("executable inventory reconciliation differs")
     if version == VERSION:
         match_data_report.validate_evidence(evidence["data"])
-    elif evidence["data"] is not None:
+        native_reference_link.validate(evidence["linking"], evidence["functions"], evidence["data"])
+    elif evidence["data"] is not None or evidence.get("linking") is not None:
         raise ValueError("data evidence covers the canonical build only")
 
 
@@ -363,11 +366,26 @@ def _sum_measures(measures: list[dict[str, Any]]) -> dict[str, Any]:
         sum(m["complete_units"] for m in measures),
         total_data=sum(int(m.get("total_data", 0)) for m in measures),
         matched_data=sum(int(m.get("matched_data", 0)) for m in measures),
+        complete_data=sum(int(m.get("complete_data", 0)) for m in measures),
     )
 
 
-def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_report(
+    functions: list[dict[str, Any]], *, data: dict[str, Any] | None = None, linking: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """One function per unit, with overlapping image and proven library filters."""
+    linked_code: set[tuple[str, int]] = set()
+    linked_data: list[dict[str, Any]] = []
+    if linking is not None:
+        if data is None:
+            raise ValueError("linked credit requires concrete data evidence")
+        native_reference_link.validate(linking, functions, data)
+        for component in linking["components"]:
+            for record in component["records"]:
+                if record["kind"] == "code":
+                    linked_code.add((record["image"], record["address"]))
+                else:
+                    linked_data.append(record)
     labels, library_ranges = _category_definitions()
     if data is not None and "ownership" in data:
         labels.update({"game.data": "Game & Engine + attributed data",
@@ -401,7 +419,7 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             raise ValueError("linked credit is not established by the structural linker")
         eligible = row["candidate"] == "source"
         is_matched = eligible and row["matched"]
-        is_complete = eligible and row["linked"]
+        is_complete = is_matched and key in linked_code
         # objdiff's treemap paints 100% green. An unresolved-reference 100%
         # instruction score must remain visibly partial, like our `audit` state.
         percent = (100.0 if is_matched else min(ratio * 100, 99.99)) if eligible else 0.0
@@ -461,12 +479,17 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
         matched_functions += int(is_matched)
         complete_units += int(is_complete)
         fuzzy += size * percent
-    data_total = data_matched = 0
+    data_total = data_matched = data_complete = 0
     for span in match_data_report.report_spans(data) if data is not None else []:
         size = span["size"]
         matched_size = size if span["matched"] else 0
+        is_complete = span["matched"] and any(
+            r["image"] == span["image"] and r["source"] == span["source"]
+            and r["address"] <= span["address"] and span["address"] + size <= r["address"] + r["size"]
+            for r in linked_data
+        )
         metadata = {
-            "complete": False,
+            "complete": is_complete,
             "progress_categories": [{"crimsonland.exe": "exe", "grim.dll": "dll"}[span["image"]]],
         }
         if data is not None and "ownership" in data:
@@ -476,7 +499,8 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             metadata["source_path"] = span["source"]
         units.append({
             "name": f"{span['image']}/data/{span['section']}/{span['name']}@{span['address']:08x}",
-            "measures": _measures(0, 0, 0, 0.0, 0, 0, 1, 0, total_data=size, matched_data=matched_size),
+            "measures": _measures(0, 0, 0, 0.0, 0, 0, 1, int(is_complete), total_data=size, matched_data=matched_size,
+                                  complete_data=size if is_complete else 0),
             "sections": [{
                 "name": span["section"], "size": str(size),
                 "fuzzy_match_percent": 100.0 if span["matched"] else 0.0,
@@ -486,6 +510,8 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
         })
         data_total += size
         data_matched += matched_size
+        data_complete += size if is_complete else 0
+        complete_units += int(is_complete)
     return {
         "version": 2,
         "measures": _measures(
@@ -499,6 +525,7 @@ def build_report(functions: list[dict[str, Any]], *, data: dict[str, Any] | None
             complete_units,
             total_data=data_total,
             matched_data=data_matched,
+            complete_data=data_complete,
         ),
         "units": units,
         "categories": [
@@ -526,6 +553,7 @@ def _measures(
     *,
     total_data: int = 0,
     matched_data: int = 0,
+    complete_data: int = 0,
 ) -> dict[str, Any]:
     measures = {
         "total_code": str(total),
@@ -544,6 +572,6 @@ def _measures(
         measures.update({
             "total_data": str(total_data), "matched_data": str(matched_data),
             "matched_data_percent": 100 * matched_data / total_data,
-            "complete_data": "0", "complete_data_percent": 0.0,
+            "complete_data": str(complete_data), "complete_data_percent": 100 * complete_data / total_data,
         })
     return measures

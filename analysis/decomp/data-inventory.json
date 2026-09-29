@@ -925,34 +925,6 @@
       "unmatched_bytes": 512
     },
     {
-      "address": 268812032,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
-      "image": "grim.dll",
-      "name": "grim_slot_ints",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 512,
-      "type": null,
-      "unmatched_bytes": 512
-    },
-    {
-      "address": 268812544,
-      "blocker": "missing-type",
-      "extent_evidence": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
-      "image": "grim.dll",
-      "name": "grim_slot_floats",
-      "owners": [
-        "unknown"
-      ],
-      "reason": null,
-      "size": 512,
-      "type": null,
-      "unmatched_bytes": 512
-    },
-    {
       "address": 268803004,
       "blocker": "uncompiled-zero-definition",
       "extent_evidence": "analysis/ghidra/maps/data_map.json: unsigned char[510]; grim_window_proc bounds writes by grim_key_char_buffer_size, initialized to 510",
@@ -29949,6 +29921,34 @@
       "unmatched_bytes": 0
     },
     {
+      "address": 268812032,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
+      "image": "grim.dll",
+      "name": "grim_slot_ints",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 512,
+      "type": null,
+      "unmatched_bytes": 0
+    },
+    {
+      "address": 268812544,
+      "blocker": "matched",
+      "extent_evidence": "tools/match/scratches/grim_get_slot_* and grim_set_slot_*: unchecked four-byte slot arrays; Binary Ninja storage analysis bounds each backing array to its dedicated 0x200-byte zero region",
+      "image": "grim.dll",
+      "name": "grim_slot_floats",
+      "owners": [
+        "game"
+      ],
+      "reason": null,
+      "size": 512,
+      "type": null,
+      "unmatched_bytes": 0
+    },
+    {
       "address": 268814600,
       "blocker": "matched",
       "extent_evidence": "tools/match/scratches/grim_state_init: GrimUV grim_subrect_table_2[64]; tools/native/abi/grim.dll/abi_assertions.cpp: uv_is_8_bytes",
@@ -30399,8 +30399,8 @@
   ],
   "ownership": {
     "game": {
-      "matched_bytes": 312765,
-      "total_bytes": 347421
+      "matched_bytes": 313789,
+      "total_bytes": 348445
     },
     "libraries": {
       "matched_bytes": 14179,
@@ -30408,7 +30408,7 @@
     },
     "unknown": {
       "matched_bytes": 0,
-      "total_bytes": 128839
+      "total_bytes": 127815
     }
   },
   "ownership_complete": false,
@@ -64801,28 +64801,28 @@
     {
       "address": 268812032,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_slot_ints",
       "objects": [
         "grim_slot_ints"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 512,
-      "source": null
+      "source": "tools/match/data/grim_slot_state.cpp"
     },
     {
       "address": 268812544,
       "image": "grim.dll",
-      "matched": false,
-      "name": "unmatched",
+      "matched": true,
+      "name": "grim_slot_floats",
       "objects": [
         "grim_slot_floats"
       ],
-      "owner": "unknown",
+      "owner": "game",
       "section": ".data",
       "size": 512,
-      "source": null
+      "source": "tools/match/data/grim_slot_state.cpp"
     },
     {
       "address": 268813056,
@@ -66623,9 +66623,9 @@
     }
   ],
   "totals": {
-    "matched_bytes": 326944,
+    "matched_bytes": 327968,
     "total_bytes": 517738,
-    "unmatched_bytes": 190794,
+    "unmatched_bytes": 189770,
     "unnamed_bytes": 99898
   },
   "unbounded_objects": [

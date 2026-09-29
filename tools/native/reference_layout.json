@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "version": "1.9.93",
+  "components": [
+    {
+      "image": "grim.dll",
+      "cluster": "grim-slot-state-accessors",
+      "data_source": "tools/match/data/grim_slot_state.cpp",
+      "archive": "vc6-sp6-msvcrt"
+    }
+  ]
+}

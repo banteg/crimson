@@ -117,10 +117,11 @@ def test_evidence_is_bound_to_inputs_and_full_inventory(monkeypatch: pytest.Monk
     function = _function(1, 100, candidate=None, source=None, ratio=0, matched=False, proof=None)
     evidence: dict[str, Any] = {
         "schema": 3, "version": "1.9.93", "scope": "all", "inputs": {"scratch.c": "original"},
-        "external_inputs": {}, "toolchains": {}, "functions": [function], "data": {"sections": []},
+        "external_inputs": {}, "toolchains": {}, "functions": [function], "data": {"sections": []}, "linking": {},
     }
     monkeypatch.setattr(report, "repository_inputs", lambda: {"scratch.c": "original"})
     monkeypatch.setattr(report.match_data_report, "validate_evidence", lambda _: None)
+    monkeypatch.setattr(report.native_reference_link, "validate", lambda *_: None)
     monkeypatch.setattr(report, "_inventory", lambda _: [{k: function[k] for k in ("image", "address", "name", "size")}])
     evidence.update(verification=report.accounting.VERIFICATION,
                     identities=report.accounting.identities([function], evidence["inputs"], {}, data=evidence["data"]),

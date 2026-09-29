@@ -51,7 +51,7 @@
       }
     }
   ],
-  "audit_digest": "1fa56ab054f57744f79fab4e2881b3ffe66c1ba40bf68615818cd999864efcaa",
+  "audit_digest": "166bb328ae2f0d190938db2b23cc21a50864b77d33b0038a948ae34e8fe0156b",
   "entry": {
     "aliases": {
       "object": {
@@ -339,7 +339,7 @@
           "note": "The native closure classifier identifies __fltused as an MSVC toolchain external.",
           "path": "analysis/native/crimsonland.exe/closure.json",
           "repository_relative": true,
-          "sha256": "4b90e775c869486ec22ae23d5322d34f766b62fd51aab3216483fb4d39a337fa"
+          "sha256": "8484106899cfbd5c32b6146811986157436673f05e26f724bb26d16f51aa7569"
         },
         {
           "note": "The pinned VC6 SP6 LIBCMT archive contains the definition.",
@@ -1690,7 +1690,7 @@
           "note": "The WinMain archive-backed link identifies ten imports absent from the reference boundary; per-symbol COMDAT accounting proves all ten are discarded by /OPT:REF.",
           "path": "docs/re/static/native-linking.md",
           "repository_relative": true,
-          "sha256": "28907c4ae66fd01c1e91fc161231604fd82e908c19c48328d25d14445222abb7"
+          "sha256": "b4164c13decf0c91408b1f920c880b26a339cb09bc9c27dd6530a1b285cb0e81"
         },
         {
           "note": "None of the ten API names is present in the reference executable import table.",

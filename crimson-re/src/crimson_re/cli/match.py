@@ -60,7 +60,7 @@ def cmd_match_report(
             else:
                 evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
             match_report.validate_evidence(evidence)
-            report = match_report.build_report(evidence["functions"], data=evidence["data"])
+            report = match_report.build_report(evidence["functions"], data=evidence["data"], linking=evidence.get("linking"))
             if version == match_report.VERSION:
                 inventory = match_data_inventory.build_inventory(evidence["data"])
                 if refresh:

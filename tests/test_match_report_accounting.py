@@ -171,7 +171,7 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
     import json
 
     evidence = json.loads(match_report.evidence_path(version).read_text())
-    report = match_report.build_report(evidence["functions"], data=evidence["data"])
+    report = match_report.build_report(evidence["functions"], data=evidence["data"], linking=evidence.get("linking"))
     metrics = accounting.diagnostics(evidence, report=report)
     assert metrics["version"] == version
     assert metrics["data_measured"] == (evidence["data"] is not None)
@@ -189,8 +189,8 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
         assert int(measures["total_code"]) == code
         assert measures["fuzzy_match_percent"] == pytest.approx(weighted / code if code else 0)
         assert int(measures.get("total_data", 0)) == sum(int(s["size"]) for u in units for s in u.get("sections", []))
-        assert measures["complete_code"] == "0"
-        assert int(measures.get("complete_data", 0)) == 0
+        assert int(measures["complete_code"]) == sum(int(u["measures"]["complete_code"]) for u in units)
+        assert int(measures.get("complete_data", 0)) == sum(int(u["measures"].get("complete_data", 0)) for u in units)
     summary = accounting.render_summary(evidence, report, metrics)
     assert f"## Crimsonland {version}" in summary
     assert "Game & Engine" in summary and "Unresolved executable bytes" in summary
