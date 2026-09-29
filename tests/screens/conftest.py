@@ -31,6 +31,6 @@ def screen_io(mocker) -> None:
         "is_gamepad_available": False,
     }.items():
         mocker.patch.object(rl, name, return_value=value)
-    for name in ("draw_rectangle", "draw_rectangle_lines_ex", "draw_line", "draw_texture_pro"):
+    for name in ("draw_rectangle", "draw_rectangle_rec", "draw_rectangle_lines_ex", "draw_line", "draw_texture_pro"):
         mocker.patch.object(rl, name)
     mocker.patch.object(base, "ensure_menu_ground", return_value=None)

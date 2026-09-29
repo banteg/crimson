@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from enum import Enum, auto
-
 import msgspec
 
 from crimson.game_states import GameStateId
@@ -29,7 +27,7 @@ from ...input_codes import (
     player_gamepad_index,
 )
 from ...movement_controls import MovementControlType
-from ...ui.layout import DropdownLayoutBase
+from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -42,7 +40,6 @@ from .controls_labels import (
     input_configure_for_label,
     input_scheme_label,
 )
-from .hit_test import mouse_inside_rect_with_padding
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_3:Configure for:, timeline=300).
 CONTROLS_LEFT_PANEL_POS_X = -165.0
@@ -54,6 +51,12 @@ CONTROLS_BACK_POS_X = -155.0
 CONTROLS_BACK_POS_Y = 420.0
 # Port-only "Reset" button, beside the direction-arrow checkbox on the left panel.
 CONTROLS_RESET_BUTTON_OFFSET = Vec2(388.0, 166.0)
+# `controls_menu_update`: list origins off the left panel (`left_base + (10, 104)` etc.).
+CONTROLS_MOVE_METHOD_LIST_OFFSET = Vec2(214.0, 144.0)
+CONTROLS_AIM_METHOD_LIST_OFFSET = Vec2(214.0, 102.0)
+CONTROLS_PLAYER_LIST_OFFSET = Vec2(340.0, 56.0)
+# Native configures two players; the port configures four.
+CONTROLS_PLAYER_ITEMS = ("Player 1", "Player 2", "Player 3", "Player 4")
 
 # `ui_menu_item_update`: idle rebind value tint (rgb 70,180,240 @ alpha 0.6).
 CONTROLS_REBIND_VALUE_COLOR = rl.Color(70, 180, 240, 153)
@@ -166,12 +169,6 @@ def _controls_right_panel_pos_y(screen_width: float) -> float:
     return CONTROLS_RIGHT_PANEL_POS_Y
 
 
-class _ControlsDropdownLayout(DropdownLayoutBase, frozen=True):
-    arrow_pos: Vec2
-    arrow_size: Vec2
-    text_pos: Vec2
-
-
 class _RebindRowLayout(msgspec.Struct, frozen=True):
     row: RebindRowSpec
     row_y: float
@@ -183,12 +180,6 @@ class RebindCapture(msgspec.Struct):
     row: RebindRowSpec
     player_index: int
     skip_frames: int = 1
-
-
-class ControlsDropdown(Enum):
-    MOVEMENT = auto()
-    AIM = auto()
-    PLAYER = auto()
 
 
 class ControlsMenuView(PanelMenuView):
@@ -204,7 +195,9 @@ class ControlsMenuView(PanelMenuView):
             back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
         self._config_player = 1
-        self._dropdown: ControlsDropdown | None = None
+        self.move_method_list = UiListWidget()
+        self.aim_method_list = UiListWidget()
+        self.player_list = UiListWidget()
         self._dirty = False
         self._capture: RebindCapture | None = None
         self._reset_button = UiButtonState("Reset")
@@ -212,7 +205,7 @@ class ControlsMenuView(PanelMenuView):
     def open(self) -> None:
         super().open()
         self._config_player = max(1, min(4, int(self._config_player)))
-        self._dropdown = None
+        self._close_lists()
         self._dirty = False
         self._capture = None
         self._reset_button = UiButtonState("Reset")
@@ -231,15 +224,12 @@ class ControlsMenuView(PanelMenuView):
             self._update_back_button(dt, enabled=False)
             self._update_rebind_capture(right_top_left=right_top_left, font=font)
             return
-        dropdown_was_open = self._dropdown is not None
+        dropdown_was_open = self._list_open()
         if dropdown_was_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._dropdown = None
+            self._close_lists()
             self._update_back_button(dt, enabled=False)
             return
-        click_consumed = self._update_method_dropdowns(
-            left_top_left=left_top_left,
-            font=font,
-        )
+        click_consumed = self._update_method_lists(left_top_left=left_top_left, resources=resources)
         click_consumed = click_consumed or dropdown_was_open
         if not click_consumed:
             click_consumed = self._update_rebind_capture(
@@ -273,7 +263,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _start_rebind_capture(self, *, row: RebindRowSpec, player_index: int) -> None:
         self._capture = RebindCapture(row, player_index)
-        self._dropdown = None
+        self._close_lists()
 
     @staticmethod
     def _capture_prompt_for_binding(row: RebindRowSpec) -> str:
@@ -325,8 +315,19 @@ class ControlsMenuView(PanelMenuView):
     def _set_direction_arrow_enabled(self, enabled: bool) -> None:
         self.state.config.controls.player(self._current_player_index()).show_direction_arrow = bool(enabled)
 
+    def _lists(self) -> tuple[UiListWidget, ...]:
+        return (self.move_method_list, self.aim_method_list, self.player_list)
+
+    def _list_open(self) -> bool:
+        return any(widget.open for widget in self._lists())
+
+    def _close_lists(self) -> None:
+        for widget in self._lists():
+            widget.open = False
+
     def _checkbox_enabled(self) -> bool:
-        return self._capture is None and self._dropdown in (None, ControlsDropdown.PLAYER)
+        # `controls_menu_update`: an open method list disables the direction-arrow checkbox.
+        return self._capture is None and not (self.move_method_list.open or self.aim_method_list.open)
 
     def _checkbox_hovered(
         self,
@@ -370,7 +371,7 @@ class ControlsMenuView(PanelMenuView):
 
     def _update_reset_button(self, dt: float, *, left_top_left: Vec2, enabled: bool) -> bool:
         button = self._reset_button
-        button.enabled = enabled and self._checkbox_enabled() and self._dropdown is None
+        button.enabled = enabled and self._checkbox_enabled() and not self._list_open()
         if not button_update(
             require_runtime_resources(self.state),
             button,
@@ -510,7 +511,7 @@ class ControlsMenuView(PanelMenuView):
                 self._capture = None
             return True
 
-        if self._dropdown is not None:
+        if self._list_open():
             return False
 
         if not rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
@@ -539,144 +540,70 @@ class ControlsMenuView(PanelMenuView):
             items.append(MovementControlType.MOUSE_POINT_CLICK)
         return tuple(items)
 
-    def _dropdown_layout(
-        self,
-        *,
-        pos: Vec2,
-        items: tuple[str, ...],
-        font: SmallFontData,
-    ) -> _ControlsDropdownLayout:
-        max_label_w = 0.0
-        for label in items:
-            max_label_w = max(max_label_w, measure_small_text_width(font, label))
-        width = max_label_w + 48.0
-        header_h = 16.0
-        row_h = 16.0
-        full_h = float(len(items)) * 16.0 + 24.0
-        arrow = 16.0
-        return _ControlsDropdownLayout(
-            pos=pos,
-            width=width,
-            header_h=header_h,
-            row_h=row_h,
-            rows_y0=pos.y + 17.0,
-            full_h=full_h,
-            arrow_pos=Vec2(pos.x + width - arrow - 1.0, pos.y),
-            arrow_size=Vec2(arrow, arrow),
-            text_pos=pos + Vec2(4.0, 1.0),
-        )
-
-    def _update_dropdown(
-        self,
-        *,
-        layout: _ControlsDropdownLayout,
-        item_count: int,
-        is_open: bool,
-        enabled: bool,
-    ) -> tuple[bool, int | None, bool]:
-        mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0,
-        )
-        if hovered_header and click:
-            return (not is_open), None, True
-        if not is_open:
-            return is_open, None, False
-
-        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(Vec2.from_xy(mouse))
-        if click and not list_hovered:
-            return False, None, True
-
-        for idx in range(item_count):
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = bool(enabled) and mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0,
-            )
-            if hovered and click:
-                return False, idx, True
-
-        return is_open, None, False
-
-    def _update_method_dropdowns(self, *, left_top_left: Vec2, font: SmallFontData) -> bool:
-        config = self.state.config
+    def _sync_lists(self) -> tuple[tuple[MovementControlType, ...], tuple[AimScheme, ...]]:
+        """`controls_menu_update`: refill the lists from the player's controls; an open list disables the others."""
         player_idx = self._current_player_index()
-        player_controls = config.controls.player(player_idx)
-        aim_scheme = player_controls.aim_scheme
-        move_mode = player_controls.movement
-        move_mode_ids = self._move_method_ids(move_mode=move_mode)
-        move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
-        aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
-        aim_items = tuple(input_configure_for_label(scheme) for scheme in aim_item_ids)
-        player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
+        player_controls = self.state.config.controls.player(player_idx)
+        move_mode_ids = self._move_method_ids(move_mode=player_controls.movement)
+        aim_item_ids = controls_aim_method_dropdown_ids(player_controls.aim_scheme)
+        # A scheme the lists do not offer (a hand-edited config) shows as the first item.
+        self.move_method_list.items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
+        self.move_method_list.selected_index = (
+            move_mode_ids.index(player_controls.movement) if player_controls.movement in move_mode_ids else 0
+        )
+        self.aim_method_list.items = tuple(input_configure_for_label(scheme) for scheme in aim_item_ids)
+        self.aim_method_list.selected_index = (
+            aim_item_ids.index(player_controls.aim_scheme) if player_controls.aim_scheme in aim_item_ids else 0
+        )
+        self.player_list.items = CONTROLS_PLAYER_ITEMS
+        self.player_list.selected_index = player_idx
 
-        move_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 144.0),
-            items=move_items,
-            font=font,
-        )
-        aim_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 102.0),
-            items=aim_items,
-            font=font,
-        )
-        player_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 340.0, left_top_left.y + 56.0),
-            items=player_items,
-            font=font,
+        idle = self._capture is None
+        self.move_method_list.enabled = idle and not (self.player_list.open or self.aim_method_list.open)
+        self.aim_method_list.enabled = idle and not (self.move_method_list.open or self.player_list.open)
+        self.player_list.enabled = idle and not (self.move_method_list.open or self.aim_method_list.open)
+        return move_mode_ids, aim_item_ids
+
+    def _activate_list(
+        self, resources: RuntimeResources, widget: UiListWidget, pos: Vec2, *, mouse: Vec2, pressed: bool,
+    ) -> int | None:
+        """`activate_list`: a press on the header or an open list toggles it; returns the row taken, if any.
+
+        `None` means the press was not the list's; -1 means the list took it without taking a row.
+        """
+        selected = ui_list_widget_update(resources, widget, pos, mouse=mouse)
+        if selected <= -2 or not pressed:
+            return None
+        widget.open = not widget.open
+        return selected
+
+    def _update_method_lists(self, *, left_top_left: Vec2, resources: RuntimeResources) -> bool:
+        player_idx = self._current_player_index()
+        move_mode_ids, aim_item_ids = self._sync_lists()
+        mouse = Vec2.from_xy(canvas.mouse_position())
+        # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
+        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or rl.is_key_pressed(
+            rl.KeyboardKey.KEY_ENTER,
         )
 
-        move_enabled = self._capture is None and self._dropdown in (None, ControlsDropdown.MOVEMENT)
-        aim_enabled = self._capture is None and self._dropdown in (None, ControlsDropdown.AIM)
-        player_enabled = self._capture is None and self._dropdown in (None, ControlsDropdown.PLAYER)
-
-        is_open, move_selected, consumed = self._update_dropdown(
-            layout=move_layout,
-            item_count=len(move_items),
-            is_open=(self._dropdown is ControlsDropdown.MOVEMENT),
-            enabled=move_enabled,
+        move_selected = self._activate_list(
+            resources, self.move_method_list, left_top_left + CONTROLS_MOVE_METHOD_LIST_OFFSET, mouse=mouse, pressed=pressed,
         )
-        if consumed:
-            self._dropdown = ControlsDropdown.MOVEMENT if is_open else None
-        if move_selected is not None:
-            selected_idx = max(0, min(int(move_selected), len(move_mode_ids) - 1))
-            self._set_player_move_mode(player_index=player_idx, move_mode=move_mode_ids[selected_idx])
+        if move_selected is not None and move_selected >= 0:
+            self._set_player_move_mode(player_index=player_idx, move_mode=move_mode_ids[move_selected])
             self._dirty = True
-        if consumed:
-            return True
-
-        is_open, aim_selected, consumed = self._update_dropdown(
-            layout=aim_layout,
-            item_count=len(aim_items),
-            is_open=(self._dropdown is ControlsDropdown.AIM),
-            enabled=aim_enabled,
+        aim_selected = self._activate_list(
+            resources, self.aim_method_list, left_top_left + CONTROLS_AIM_METHOD_LIST_OFFSET, mouse=mouse, pressed=pressed,
         )
-        if consumed:
-            self._dropdown = ControlsDropdown.AIM if is_open else None
-        if aim_selected is not None:
-            selected_idx = max(0, min(int(aim_selected), len(aim_item_ids) - 1))
-            self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_item_ids[selected_idx])
+        if aim_selected is not None and aim_selected >= 0:
+            self._set_player_aim_scheme(player_index=player_idx, aim_scheme=aim_item_ids[aim_selected])
             self._dirty = True
-        if consumed:
-            return True
-
-        is_open, player_selected, consumed = self._update_dropdown(
-            layout=player_layout,
-            item_count=len(player_items),
-            is_open=(self._dropdown is ControlsDropdown.PLAYER),
-            enabled=player_enabled,
+        player_selected = self._activate_list(
+            resources, self.player_list, left_top_left + CONTROLS_PLAYER_LIST_OFFSET, mouse=mouse, pressed=pressed,
         )
-        if consumed:
-            self._dropdown = ControlsDropdown.PLAYER if is_open else None
-        if player_selected is not None:
-            self._config_player = max(1, min(4, player_selected + 1))
-        return bool(consumed)
+        if player_selected is not None and player_selected >= 0:
+            self._config_player = player_selected + 1
+        return move_selected is not None or aim_selected is not None or player_selected is not None
 
     def _draw_panel(self) -> None:
         shadows_enabled = self.state.config.display.shadows_enabled
@@ -720,35 +647,6 @@ class ControlsMenuView(PanelMenuView):
         player_controls = config.controls.player(player_idx)
         aim_scheme = player_controls.aim_scheme
         move_mode = player_controls.movement
-        move_mode_ids = self._move_method_ids(move_mode=move_mode)
-        move_items = tuple(input_scheme_label(mode) for mode in move_mode_ids)
-        aim_item_ids = controls_aim_method_dropdown_ids(aim_scheme)
-        aim_items = tuple(input_configure_for_label(scheme) for scheme in aim_item_ids)
-        player_items = ("Player 1", "Player 2", "Player 3", "Player 4")
-        try:
-            move_selected = move_mode_ids.index(move_mode)
-        except ValueError:
-            move_selected = 0
-        try:
-            aim_selected = aim_item_ids.index(aim_scheme)
-        except ValueError:
-            aim_selected = 0
-        player_selected = max(0, min(len(player_items) - 1, player_idx))
-        move_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 144.0),
-            items=move_items,
-            font=font,
-        )
-        aim_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 214.0, left_top_left.y + 102.0),
-            items=aim_items,
-            font=font,
-        )
-        player_layout = self._dropdown_layout(
-            pos=Vec2(left_top_left.x + 340.0, left_top_left.y + 56.0),
-            items=player_items,
-            font=font,
-        )
 
         # --- Left panel: "Configure for" + method selectors (state_3 in trace) ---
         text_controls = resources.texture(TextureId.UI_TEXT_CONTROLS)
@@ -821,54 +719,12 @@ class ControlsMenuView(PanelMenuView):
 
         button_draw(resources, self._reset_button, pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET)
 
-        dropdowns: tuple[tuple[bool, _ControlsDropdownLayout, tuple[str, ...], int, bool], ...] = (
-            (
-                (self._dropdown is ControlsDropdown.PLAYER),
-                player_layout,
-                player_items,
-                player_selected,
-                self._capture is None and self._dropdown in (None, ControlsDropdown.PLAYER),
-            ),
-            (
-                (self._dropdown is ControlsDropdown.AIM),
-                aim_layout,
-                aim_items,
-                aim_selected,
-                self._capture is None and self._dropdown in (None, ControlsDropdown.AIM),
-            ),
-            (
-                (self._dropdown is ControlsDropdown.MOVEMENT),
-                move_layout,
-                move_items,
-                move_selected,
-                self._capture is None and self._dropdown in (None, ControlsDropdown.MOVEMENT),
-            ),
-        )
-        # Active list must render last so overlapping widgets don't occlude open options.
-        for is_open, layout, items, selected_index, enabled in dropdowns:
-            if is_open:
-                continue
-            self._draw_dropdown(
-                layout=layout,
-                items=items,
-                selected_index=selected_index,
-                is_open=is_open,
-                enabled=enabled,
-                resources=resources,
-                font=font,
-            )
-        for is_open, layout, items, selected_index, enabled in dropdowns:
-            if not is_open:
-                continue
-            self._draw_dropdown(
-                layout=layout,
-                items=items,
-                selected_index=selected_index,
-                is_open=is_open,
-                enabled=enabled,
-                resources=resources,
-                font=font,
-            )
+        # `controls_menu_update` draws the lists in update order, so an open list covers the ones below it.
+        self._sync_lists()
+        mouse = Vec2.from_xy(canvas.mouse_position())
+        ui_list_widget_draw(resources, self.move_method_list, left_top_left + CONTROLS_MOVE_METHOD_LIST_OFFSET, mouse=mouse)
+        ui_list_widget_draw(resources, self.aim_method_list, left_top_left + CONTROLS_AIM_METHOD_LIST_OFFSET, mouse=mouse)
+        ui_list_widget_draw(resources, self.player_list, left_top_left + CONTROLS_PLAYER_LIST_OFFSET, mouse=mouse)
 
         # --- Right panel: configured bindings list ---
         def _draw_section_heading(title: str, *, y: float) -> None:
@@ -905,8 +761,7 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
         row_iter = iter(rows)
-        mouse = Vec2.from_xy(canvas.mouse_position())
-        dropdown_blocked = self._dropdown is not None
+        dropdown_blocked = self._list_open()
 
         y = right_top_left.y + 64.0
         for section_title, section_rows in sections:
@@ -959,73 +814,3 @@ class ControlsMenuView(PanelMenuView):
                 hint_pos,
                 rl.Color(255, 226, 188, 220),
             )
-
-    def _draw_dropdown(
-        self,
-        *,
-        layout: _ControlsDropdownLayout,
-        items: tuple[str, ...],
-        selected_index: int,
-        is_open: bool,
-        enabled: bool,
-        resources: RuntimeResources,
-        font: SmallFontData,
-    ) -> None:
-        mouse = canvas.mouse_position()
-        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0,
-        )
-        widget_h = layout.full_h if is_open else layout.header_h
-        rl.draw_rectangle(int(layout.pos.x), int(layout.pos.y), int(layout.width), int(widget_h), rl.WHITE)
-        inner_w = max(0, int(layout.width) - 2)
-        inner_h = max(0, int(widget_h) - 2)
-        rl.draw_rectangle(int(layout.pos.x) + 1, int(layout.pos.y) + 1, inner_w, inner_h, rl.BLACK)
-
-        if (is_open or hovered_header) and enabled:
-            line_h = 1
-            rl.draw_rectangle(
-                int(layout.pos.x),
-                int(layout.pos.y + 15.0),
-                int(layout.width),
-                line_h,
-                rl.Color(255, 255, 255, 128),
-            )
-        arrow_tex = (
-            resources.texture(TextureId.UI_DROP_ON)
-            if ((is_open or hovered_header) and enabled)
-            else resources.texture(TextureId.UI_DROP_OFF)
-        )
-        rl.draw_texture_pro(
-            arrow_tex,
-            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-            rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
-
-        idx = max(0, min(len(items) - 1, int(selected_index))) if items else 0
-        header_alpha = 242 if ((is_open or hovered_header) and enabled) else 191
-        if items:
-            draw_small_text(font, items[idx], layout.text_pos, rl.Color(255, 255, 255, header_alpha))
-
-        if not is_open:
-            return
-
-        for idx, item in enumerate(items):
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = bool(enabled) and mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0,
-            )
-            alpha = 153
-            if hovered:
-                alpha = 242
-            if idx == selected_index:
-                alpha = max(alpha, 245)
-            draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))

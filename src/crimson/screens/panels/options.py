@@ -16,10 +16,10 @@ from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
+from ...ui.hit_test import mouse_inside_rect_with_padding
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
-from .hit_test import mouse_inside_rect_with_padding
 
 
 class SliderState(msgspec.Struct):

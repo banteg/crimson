@@ -26,7 +26,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.checkbox import UiCheckbox, ui_checkbox_update
-from ...ui.layout import DropdownLayoutBase
+from ...ui.dropdown import UiListWidget, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update
 from ..actions import ShowScores
@@ -44,34 +44,25 @@ from ..high_scores_layout import (
     HS_QUEST_ARROW_Y,
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
-    HS_RIGHT_GAME_MODE_WIDGET_W,
-    HS_RIGHT_GAME_MODE_WIDGET_X,
-    HS_RIGHT_GAME_MODE_WIDGET_Y,
+    HS_RIGHT_GAME_MODE_WIDGET,
     HS_RIGHT_PANEL_HEIGHT,
     HS_RIGHT_PANEL_POS_Y,
-    HS_RIGHT_PLAYER_COUNT_WIDGET_W,
-    HS_RIGHT_PLAYER_COUNT_WIDGET_X,
-    HS_RIGHT_PLAYER_COUNT_WIDGET_Y,
-    HS_RIGHT_SCORE_LIST_WIDGET_W,
-    HS_RIGHT_SCORE_LIST_WIDGET_X,
-    HS_RIGHT_SCORE_LIST_WIDGET_Y,
-    HS_RIGHT_SHOW_SCORES_WIDGET_W,
-    HS_RIGHT_SHOW_SCORES_WIDGET_X,
-    HS_RIGHT_SHOW_SCORES_WIDGET_Y,
+    HS_RIGHT_PLAYER_COUNT_WIDGET,
+    HS_RIGHT_SCORE_LIST_WIDGET,
+    HS_RIGHT_SHOW_SCORES_WIDGET,
     hs_left_panel_pos_x,
     hs_right_options_x_shift,
     hs_right_panel_pos_x,
 )
-from ..panels.hit_test import mouse_inside_rect_with_padding
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
 from .records import load_records
-from .right_panel import ScoreDropdown, draw_right_panel
+from .right_panel import draw_right_panel
 
-
-class _ScoresDropdownLayout(DropdownLayoutBase, frozen=True):
-    pass
+DATE_FILTER_ITEMS = ("Best of all time", "Best of month", "Best of week", "Best of day")
+# Native lists two players; the port plays up to four.
+PLAYER_COUNT_ITEMS = ("1 player", "2 players", "3 players", "4 players")
 
 
 class HighScoresView:
@@ -90,8 +81,12 @@ class HighScoresView:
         self._scroll_index = 0
         self._dirty = False
 
-        # Right-panel list widget state (quests variant).
-        self._dropdown: ScoreDropdown | None = None
+        # `highscore_screen`'s list widgets. The score list stands in for `ui_profile_menu_update`'s name list
+        # (the port has no add/delete flow).
+        self.score_list = UiListWidget()
+        self.date_filter_list = UiListWidget()
+        self.player_count_list = UiListWidget()
+        self.game_mode_list = UiListWidget()
         self.internet_checkbox = UiCheckbox("Show internet scores")
         self.hardcore_checkbox = UiCheckbox("Hardcore")
 
@@ -106,7 +101,7 @@ class HighScoresView:
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
 
-        self._dropdown = None
+        self._close_lists()
 
         request = self._request
         self._records = load_records(self.state, request)
@@ -120,7 +115,47 @@ class HighScoresView:
         self._records = []
         self._scroll_index = 0
         self._dirty = False
-        self._dropdown = None
+        self._close_lists()
+
+    def _lists(self) -> tuple[UiListWidget, ...]:
+        return (self.score_list, self.date_filter_list, self.player_count_list, self.game_mode_list)
+
+    def _close_lists(self) -> None:
+        for widget in self._lists():
+            widget.open = False
+
+    def _mode_items(self) -> tuple[tuple[str, GameMode], ...]:
+        # Typ'o'Shooter is listed from 40 unlocked quests.
+        modes = (("Quests", GameMode.QUESTS), ("Rush", GameMode.RUSH), ("Survival", GameMode.SURVIVAL))
+        if self.state.status.quest_unlock_index >= 40:
+            modes += (("Typ'o'Shooter", GameMode.TYPO),)
+        return modes
+
+    def sync_lists(self) -> None:
+        """`highscore_screen`: refill the lists from the config, and disable the lists an open one covers."""
+        config = self.state.config
+        names = config.profile.saved_name_labels()
+        self.score_list.items = names
+        self.score_list.selected_index = min(config.profile.selected_saved_name_slot, len(names) - 1)
+        self.date_filter_list.items = DATE_FILTER_ITEMS
+        self.date_filter_list.selected_index = int(config.profile.score_date_mode)
+        self.player_count_list.items = PLAYER_COUNT_ITEMS
+        self.player_count_list.selected_index = config.gameplay.player_count - 1
+        modes = self._mode_items()
+        self.game_mode_list.items = tuple(label for label, _mode in modes)
+        self.game_mode_list.selected_index = next(
+            (index for index, (_label, mode) in enumerate(modes) if mode == config.gameplay.mode), 0,
+        )
+
+        self.game_mode_list.enabled = not (self.player_count_list.open or self.date_filter_list.open)
+        self.date_filter_list.enabled = not (self.game_mode_list.open or self.player_count_list.open)
+        self.score_list.enabled = not (
+            self.game_mode_list.open or self.player_count_list.open or self.date_filter_list.open
+        )
+        # Typ'o'Shooter scores are single-player only.
+        self.player_count_list.enabled = config.gameplay.mode != GameMode.TYPO
+        if not self.player_count_list.enabled:
+            self.player_count_list.selected_index = 0
 
     def _panel_top_left(self, *, pos: Vec2) -> Vec2:
         return Vec2(
@@ -143,8 +178,8 @@ class HighScoresView:
         enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
-            if self._dropdown is not None:
-                self._dropdown = None
+            if any(widget.open for widget in self._lists()):
+                self._close_lists()
                 return
             self._begin_close_transition(Route.BACK)
             return
@@ -174,7 +209,7 @@ class HighScoresView:
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
         if enabled:
-            dropdown_was_open = self._dropdown is not None
+            dropdown_was_open = any(widget.open for widget in self._lists())
             if self._update_right_panel_widgets(
                 right_top_left=right_panel_top_left,
                 resources=resources,
@@ -282,57 +317,6 @@ class HighScoresView:
             StartRun(request.game_mode_id, request.quest_level),
         )
 
-    def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int) -> _ScoresDropdownLayout:
-        header_h = 16.0
-        row_h = 16.0
-        full_h = float(item_count) * 16.0 + 24.0
-        return _ScoresDropdownLayout(
-            pos=pos,
-            width=float(width),
-            header_h=header_h,
-            row_h=row_h,
-            rows_y0=pos.y + 17.0,
-            full_h=full_h,
-        )
-
-    def _update_dropdown(
-        self,
-        *,
-        layout: _ScoresDropdownLayout,
-        item_count: int,
-        is_open: bool,
-        enabled: bool,
-    ) -> tuple[bool, int | None, bool]:
-        mouse = canvas.mouse_position()
-        click = bool(enabled) and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        hovered_header = bool(enabled) and mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0,
-        )
-        if hovered_header and click:
-            return (not is_open), None, True
-        if not is_open:
-            return is_open, None, False
-
-        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(Vec2.from_xy(mouse))
-        if click and not list_hovered:
-            return False, None, True
-
-        for idx in range(item_count):
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = bool(enabled) and mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0,
-            )
-            if hovered and click:
-                return False, idx, True
-
-        return is_open, None, False
-
     def _reload_records(self) -> None:
         request = self._request
         self._records = load_records(self.state, request)
@@ -349,9 +333,13 @@ class HighScoresView:
 
         # Widgets are only shown in the "options" right panel (not the local-score detail panel).
         # We don't explicitly track which right panel is active; hit tests are enough.
-        dropdown_blocked = self._dropdown is not None
+        dropdown_blocked = any(widget.open for widget in self._lists())
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x, 0.0)
+        mouse = Vec2.from_xy(canvas.mouse_position())
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
+        pressed = click or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
 
         # Checkbox: "Show internet scores" (config.show_online_scores).
         if not dropdown_blocked:
@@ -361,143 +349,73 @@ class HighScoresView:
                 resources,
                 checkbox,
                 shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y),
-                mouse=Vec2.from_xy(canvas.mouse_position()),
-                click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+                mouse=mouse,
+                click=click,
             ):
                 self.state.config.profile.show_internet_scores = checkbox.checked
                 self._dirty = True
                 self._reload_records()
                 return True
 
-        # Dropdown: show scores date filter (config.highscore_date_mode).
-        show_scores_items = ("Best of all time", "Best of month", "Best of week", "Best of day")
-        show_scores_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_SHOW_SCORES_WIDGET_X,
-            HS_RIGHT_SHOW_SCORES_WIDGET_Y,
-        )
-        show_scores_layout = self._dropdown_layout(
-            pos=show_scores_pos,
-            width=float(HS_RIGHT_SHOW_SCORES_WIDGET_W),
-            item_count=len(show_scores_items),
-        )
-        show_scores_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.PROFILE})
-        is_open, show_scores_selected, consumed = self._update_dropdown(
-            layout=show_scores_layout,
-            item_count=len(show_scores_items),
-            is_open=(self._dropdown is ScoreDropdown.DATE),
-            enabled=bool(show_scores_enabled),
-        )
-        if consumed:
-            self._dropdown = ScoreDropdown.DATE if is_open else None
-        if show_scores_selected is not None:
-            self.state.config.profile.score_date_mode = HighScoreDateMode(int(show_scores_selected))
-            self._dirty = True
-            self._reload_records()
-        if consumed:
-            # Close other dropdowns when this one opens.
-            return True
+        self.sync_lists()
+        consumed = False
 
-        # Dropdown: player count (config.player_count).
-        player_items = ("1 player", "2 players", "3 players", "4 players")
-        player_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_PLAYER_COUNT_WIDGET_X,
-            HS_RIGHT_PLAYER_COUNT_WIDGET_Y,
-        )
-        player_layout = self._dropdown_layout(
-            pos=player_pos,
-            width=float(HS_RIGHT_PLAYER_COUNT_WIDGET_W),
-            item_count=len(player_items),
-        )
-        player_enabled = not (self._dropdown in {ScoreDropdown.MODE, ScoreDropdown.DATE, ScoreDropdown.PROFILE})
-        is_open, player_selected, consumed = self._update_dropdown(
-            layout=player_layout,
-            item_count=len(player_items),
-            is_open=(self._dropdown is ScoreDropdown.PLAYERS),
-            enabled=bool(player_enabled),
-        )
-        if consumed:
-            self._dropdown = ScoreDropdown.PLAYERS if is_open else None
-        if player_selected is not None:
-            new_count = int(player_selected) + 1
-            if self.state.config.gameplay.player_count != new_count:
-                self.state.config.gameplay.player_count = new_count
+        # Selected score list (profile slots).
+        widget = self.score_list
+        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_SCORE_LIST_WIDGET, mouse=mouse)
+        if selected > -2 and pressed:
+            widget.open = not widget.open
+            consumed = True
+            if selected >= 0:
+                self.state.config.profile.selected_saved_name_slot = selected
                 self._dirty = True
                 self._reload_records()
-        if consumed:
-            return True
 
-        # Dropdown: game mode (config.game_mode / request.game_mode_id).
-        # Typ-o shooter entry is unlocked at quest_unlock_index>=40 in the native.
-        mode_items: list[tuple[str, GameMode]] = [
-            ("Quests", GameMode.QUESTS),
-            ("Rush", GameMode.RUSH),
-            ("Survival", GameMode.SURVIVAL),
-        ]
-        if int(self.state.status.quest_unlock_index) >= 0x28:
-            mode_items.append(("Typ'o'Shooter", GameMode.TYPO))
-        game_mode_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_GAME_MODE_WIDGET_X,
-            HS_RIGHT_GAME_MODE_WIDGET_Y,
-        )
-        game_mode_layout = self._dropdown_layout(
-            pos=game_mode_pos,
-            width=float(HS_RIGHT_GAME_MODE_WIDGET_W),
-            item_count=len(mode_items),
-        )
-        game_mode_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.DATE, ScoreDropdown.PROFILE})
-        is_open, game_mode_selected, consumed = self._update_dropdown(
-            layout=game_mode_layout,
-            item_count=len(mode_items),
-            is_open=(self._dropdown is ScoreDropdown.MODE),
-            enabled=bool(game_mode_enabled),
-        )
-        if consumed:
-            self._dropdown = ScoreDropdown.MODE if is_open else None
-        if game_mode_selected is not None:
-            _label, mode_id = mode_items[max(0, min(int(game_mode_selected), len(mode_items) - 1))]
-            self.state.config.gameplay.mode = mode_id
-            request.game_mode_id = mode_id
-            match mode_id:
-                case GameMode.TYPO:
-                    # Native forces Typ-o shooter scores to 1 player.
-                    self.state.config.gameplay.player_count = 1
-                case GameMode.QUESTS:
-                    # Ensure quest selection exists when switching into quests.
-                    if request.quest_level is None:
-                        request.quest_level = self.state.config.gameplay.quest_level or QuestLevel(1, 1)
-                case _:
-                    pass
-            self._dirty = True
-            self._reload_records()
-        if consumed:
-            return True
+        # Show scores: the date filter (config.highscore_date_mode).
+        widget = self.date_filter_list
+        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_SHOW_SCORES_WIDGET, mouse=mouse)
+        if selected > -2 and pressed:
+            widget.open = not widget.open
+            consumed = True
+            if selected >= 0:
+                self.state.config.profile.score_date_mode = HighScoreDateMode(selected)
+                self._dirty = True
+                self._reload_records()
 
-        # Dropdown: selected score list (profile slots). We currently expose the selection
-        # but do not emulate the full native add/delete flow.
-        score_list_enabled = not (self._dropdown in {ScoreDropdown.PLAYERS, ScoreDropdown.MODE, ScoreDropdown.DATE})
-        names = list(self.state.config.profile.saved_name_labels())
-        score_list_pos = shifted_right_top_left + Vec2(
-            HS_RIGHT_SCORE_LIST_WIDGET_X,
-            HS_RIGHT_SCORE_LIST_WIDGET_Y,
-        )
-        score_list_layout = self._dropdown_layout(
-            pos=score_list_pos,
-            width=float(HS_RIGHT_SCORE_LIST_WIDGET_W),
-            item_count=len(names),
-        )
-        is_open, score_list_selected, consumed = self._update_dropdown(
-            layout=score_list_layout,
-            item_count=len(names),
-            is_open=(self._dropdown is ScoreDropdown.PROFILE),
-            enabled=bool(score_list_enabled),
-        )
-        if consumed:
-            self._dropdown = ScoreDropdown.PROFILE if is_open else None
-        if score_list_selected is not None:
-            self.state.config.profile.selected_saved_name_slot = int(score_list_selected)
-            self._dirty = True
-            self._reload_records()
-        return bool(consumed)
+        # Number of players (config.player_count).
+        widget = self.player_count_list
+        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_PLAYER_COUNT_WIDGET, mouse=mouse)
+        if selected > -2 and pressed:
+            widget.open = not widget.open
+            consumed = True
+            if selected >= 0 and self.state.config.gameplay.player_count != selected + 1:
+                self.state.config.gameplay.player_count = selected + 1
+                self._dirty = True
+                self._reload_records()
+
+        # Game mode (config.game_mode / request.game_mode_id).
+        widget = self.game_mode_list
+        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_GAME_MODE_WIDGET, mouse=mouse)
+        if selected > -2 and pressed:
+            widget.open = not widget.open
+            consumed = True
+            if selected >= 0:
+                _label, mode_id = self._mode_items()[selected]
+                self.state.config.gameplay.mode = mode_id
+                request.game_mode_id = mode_id
+                match mode_id:
+                    case GameMode.TYPO:
+                        # Native forces Typ-o shooter scores to 1 player.
+                        self.state.config.gameplay.player_count = 1
+                    case GameMode.QUESTS:
+                        # Ensure quest selection exists when switching into quests.
+                        if request.quest_level is None:
+                            request.quest_level = self.state.config.gameplay.quest_level or QuestLevel(1, 1)
+                    case _:
+                        pass
+                self._dirty = True
+                self._reload_records()
+        return consumed
 
     def _update_quest_arrows(
         self,

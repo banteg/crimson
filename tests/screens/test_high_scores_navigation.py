@@ -5,36 +5,53 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScoreQuery, ScoreReturnContext, ShowScores, StartRun
-from crimson.screens.high_scores_layout import HS_QUEST_ARROW_X, HS_QUEST_ARROW_Y
+from crimson.screens.high_scores_layout import (
+    HS_QUEST_ARROW_X,
+    HS_QUEST_ARROW_Y,
+    HS_RIGHT_GAME_MODE_WIDGET,
+    HS_RIGHT_PANEL_POS_Y,
+    hs_right_options_x_shift,
+    hs_right_panel_pos_x,
+)
 from crimson.screens.high_scores_view import view as scores_module
-from crimson.screens.high_scores_view.right_panel import ScoreDropdown
 from crimson.screens.high_scores_view.view import HighScoresView
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
+LISTS = ("score_list", "date_filter_list", "player_count_list", "game_mode_list")
 
-@pytest.mark.parametrize("dropdown", list(ScoreDropdown))
-def test_dropdown_consumes_escape_before_back(scores_view, dropdown, mocker) -> None:
+
+@pytest.mark.parametrize("name", LISTS)
+def test_open_list_consumes_escape_before_back(scores_view, name, mocker) -> None:
     view = scores_view
     view.open()
     view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
-    view._dropdown = dropdown
+    getattr(view, name).open = True
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     view.update(0.016)
-    assert view._dropdown is None
+    assert not getattr(view, name).open
     assert not view.state.ui.closing
     view.update(0.016)
     assert view.state.ui.pending is Route.BACK
 
 
-def test_dismissing_dropdown_does_not_click_through_to_play(scores_view, mocker) -> None:
+def test_list_press_does_not_click_through_to_play(scores_view, mocker) -> None:
     view = scores_view
     view.open()
-    view._dropdown = ScoreDropdown.MODE
+    width = float(view.state.config.display.width)
+    right_top_left = view._panel_top_left(pos=Vec2(hs_right_panel_pos_x(width), HS_RIGHT_PANEL_POS_Y))
+    header = right_top_left + Vec2(hs_right_options_x_shift(width), 0.0) + HS_RIGHT_GAME_MODE_WIDGET
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(header.x + 5.0, header.y + 5.0))
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     click_button(view, "Play a game", mocker)
-    assert view._dropdown is None
+    assert view.game_mode_list.open
     assert not view.state.ui.closing
+    # Leaving the list closes it; the next press reaches the button.
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(-1000, -1000))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
+    view.update(0.016)
+    assert not view.game_mode_list.open
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     click_button(view, "Play a game", mocker)
     assert isinstance(view.state.ui.pending, StartRun)
 

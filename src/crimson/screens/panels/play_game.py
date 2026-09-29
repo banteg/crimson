@@ -21,11 +21,11 @@ from grim.raylib_api import rl
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...input_codes import PadCode, pad_nav_pressed
+from ...ui.hit_test import mouse_inside_rect_with_padding
 from ...ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
-from .hit_test import mouse_inside_rect_with_padding
 
 
 class _PlayGameModeEntry(msgspec.Struct):

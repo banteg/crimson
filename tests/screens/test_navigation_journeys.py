@@ -19,6 +19,7 @@ from crimson.screens.actions import (
     ShowScores,
     StartRun,
 )
+from crimson.screens.high_scores_layout import HS_RIGHT_GAME_MODE_WIDGET, hs_right_options_x_shift
 from crimson.screens.high_scores_view import view as scores_module
 from crimson.screens.panels import alien_zookeeper, credits, stats
 from crimson.screens.panels.controls import ControlsMenuView
@@ -112,20 +113,18 @@ def test_scores_back_restores_original_run_context_through_loop(loop, screen_res
     loop.update(0.016)
     scores = state.screens.active
     assert isinstance(scores, scores_module.HighScoresView)
-    mocker.patch.object(
-        scores,
-        "_update_dropdown",
-        side_effect=[
-            (False, None, False),
-            (False, None, False),
-            (False, 1, True),
-        ],
-    )
+    # Take "Rush", the second row of the open game mode list.
+    scores.game_mode_list.open = True
+    row = Vec2(hs_right_options_x_shift(float(state.config.display.width)), 0.0) + HS_RIGHT_GAME_MODE_WIDGET
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(row.x + 5.0, row.y + 16.0 * 2 + 5.0))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     scores._update_right_panel_widgets(
         right_top_left=Vec2(),
         resources=screen_resources,
     )
     assert state.config.gameplay.mode == GameMode.RUSH
+    assert not scores.game_mode_list.open
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
     scores._begin_close_transition(Route.BACK)
     # The closing branch does not poll any dropdowns.
     for _ in range(4):

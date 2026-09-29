@@ -8,28 +8,35 @@ from crimson.screens.panels.controls import ControlsMenuView, RebindCapture
 from crimson.screens.panels.controls_labels import RebindRowSpec, RebindTarget
 from grim.raylib_api import rl
 
+LISTS = (
+    ("move_method_list", controls.CONTROLS_MOVE_METHOD_LIST_OFFSET),
+    ("aim_method_list", controls.CONTROLS_AIM_METHOD_LIST_OFFSET),
+    ("player_list", controls.CONTROLS_PLAYER_LIST_OFFSET),
+)
 
-@pytest.mark.parametrize("dropdown", list(controls.ControlsDropdown))
-def test_dropdown_consumes_escape_before_back(controls_view, dropdown, mocker) -> None:
+
+@pytest.mark.parametrize(("name", "_offset"), LISTS)
+def test_open_list_consumes_escape_before_back(controls_view, name, _offset, mocker) -> None:
     view = controls_view
     view._capture = None
-    view._dropdown = dropdown
+    getattr(view, name).open = True
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     view.update(0.016)
-    assert view._dropdown is None
+    assert not getattr(view, name).open
     assert not view.state.ui.closing
     view.update(0.016)
     assert view.state.ui.pending is Route.BACK
 
 
-@pytest.mark.parametrize("dropdown", list(controls.ControlsDropdown))
-def test_open_dropdown_blocks_enter_navigation(controls_view, dropdown, mocker) -> None:
+@pytest.mark.parametrize(("name", "offset"), LISTS)
+def test_enter_on_a_list_header_opens_it_instead_of_leaving(controls_view, name, offset, mocker) -> None:
     view = controls_view
     view._capture = None
-    view._dropdown = dropdown
+    header = view._left_panel_top_left() + offset
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(header.x + 5.0, header.y + 5.0))
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
     view.update(0.016)
-    assert view._dropdown is dropdown
+    assert getattr(view, name).open
     assert not view.state.ui.closing
 
 
