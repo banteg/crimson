@@ -9,6 +9,7 @@ from crimson.screens.actions import ScreenAction
 from grim.rand import Crand
 
 from ..game_modes import GameMode
+from ..game_states import GameStateId
 from ..paths import default_runtime_dir
 from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
@@ -61,6 +62,9 @@ class Screen(Protocol):
 class GameplayScreen(Screen, PauseBackground, Protocol):
     close_requested: bool
     default_game_mode_id: GameMode
+
+    @property
+    def game_state_id(self) -> GameStateId: ...
 
     def bind_status(self, status: GameStatus | None) -> None: ...
 

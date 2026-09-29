@@ -8,6 +8,7 @@ from grim.raylib_api import rl
 from grim.texture_mode import texture_mode
 
 from ..debug import debug_enabled
+from ..game_states import GameStateId
 from ..gamepad_profile import PadUpgrade, auto_apply_pad_profiles
 from ..input_codes import input_begin_frame, player_gamepad_index
 from ..modes.quest_mode import QuestMode
@@ -153,14 +154,12 @@ class GameLoopView:
         log.flush()
 
     def _tick_statistics_playtime(self, dt: float) -> None:
-        # Native `_play_time_ms` advances on gameplay frames only (state 9)
-        # and is used by the Statistics "played for ... hours ... minutes" row.
-        if self.state.screens.active_gameplay is None:
+        # `game_frame_update`: `play_time_ms += (int)(frame_dt * 1000.0f)` on `GAME_STATE_GAMEPLAY` frames of a
+        # run with the console closed, so Typ-o (its own state), the perk menu and game over don't count.
+        gameplay = self.state.screens.active_gameplay
+        if gameplay is None or gameplay.game_state_id != GameStateId.GAMEPLAY or self.state.console.open_flag:
             return
-        delta_ms = ftol_ms_i32(dt)
-        if delta_ms <= 0:
-            return
-        self.state.status.play_time_ms = (self.state.status.play_time_ms + delta_ms) & 0xFFFFFFFF
+        self.state.status.play_time_ms = (self.state.status.play_time_ms + ftol_ms_i32(dt)) & 0xFFFFFFFF
 
     def _sync_console_elapsed_ms(self) -> None:
         gameplay = self.state.screens.gameplay

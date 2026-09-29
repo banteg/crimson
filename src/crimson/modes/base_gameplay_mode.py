@@ -475,6 +475,15 @@ class BaseGameplayMode:
             mono=mono,
         )
 
+    @property
+    def game_state_id(self) -> GameStateId:
+        """Native `game_state_id` while this run is on screen: its gameplay state, or the perk menu or game over over it."""
+        if self._game_over_active:
+            return GameStateId.GAME_OVER
+        if self._perk_menu.active:
+            return GameStateId.PERK_SELECTION
+        return GameStateId.TYPO_GAMEPLAY if self.default_game_mode_id == GameMode.TYPO else GameStateId.GAMEPLAY
+
     def _hud_alpha(self) -> float:
         """`hud_update_and_render`: the HUD fades in with the timeline over `ui_element_table[28]`'s span."""
         return min(1.0, max(0.0, self._ui_timeline.timeline_ms / ui_element_timeline_window(28)[1]))
