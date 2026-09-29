@@ -365,7 +365,8 @@ class HighScoresView:
         # Show scores: the date filter (config.highscore_date_mode).
         widget = self.date_filter_list
         selected = ui_list_widget_update(
-            resources, widget, shifted_right_top_left + HS_RIGHT_SHOW_SCORES_WIDGET, focus=focus, mouse=mouse,
+            resources, widget, shifted_right_top_left + HS_RIGHT_SHOW_SCORES_WIDGET, focus=focus, mouse=mouse, click=click,
+            preserve_bugs=self.state.preserve_bugs,
         )
         if selected > -2 and pressed:
             widget.open = not widget.open
@@ -377,7 +378,8 @@ class HighScoresView:
         # Number of players (config.player_count).
         widget = self.player_count_list
         selected = ui_list_widget_update(
-            resources, widget, shifted_right_top_left + HS_RIGHT_PLAYER_COUNT_WIDGET, focus=focus, mouse=mouse,
+            resources, widget, shifted_right_top_left + HS_RIGHT_PLAYER_COUNT_WIDGET, focus=focus, mouse=mouse, click=click,
+            preserve_bugs=self.state.preserve_bugs,
         )
         if selected > -2 and pressed:
             widget.open = not widget.open
@@ -389,7 +391,8 @@ class HighScoresView:
         # Game mode (config.game_mode / request.game_mode_id).
         widget = self.game_mode_list
         selected = ui_list_widget_update(
-            resources, widget, shifted_right_top_left + HS_RIGHT_GAME_MODE_WIDGET, focus=focus, mouse=mouse,
+            resources, widget, shifted_right_top_left + HS_RIGHT_GAME_MODE_WIDGET, focus=focus, mouse=mouse, click=click,
+            preserve_bugs=self.state.preserve_bugs,
         )
         if selected > -2 and pressed:
             widget.open = not widget.open
@@ -462,7 +465,9 @@ class HighScoresView:
 
         self.sync_lists()
         widget = self.score_list
-        selected = ui_list_widget_update(resources, widget, xy, focus=focus, mouse=mouse)
+        selected = ui_list_widget_update(
+            resources, widget, xy, focus=focus, mouse=mouse, click=click, preserve_bugs=self.state.preserve_bugs,
+        )
         if selected > -2 and (click or enter):
             self._profile_list_open = not self._profile_list_open
             add_item = len(widget.items) - 1

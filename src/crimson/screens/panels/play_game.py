@@ -312,9 +312,18 @@ class PlayGameMenuView(PanelMenuView):
         widget = self.player_count_list
         widget.selected_index = self.state.config.gameplay.player_count - 1
         focus = self.state.focus
-        selected = ui_list_widget_update(resources, widget, pos, focus=focus, mouse=Vec2.from_xy(canvas.mouse_position()))
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        selected = ui_list_widget_update(
+            resources,
+            widget,
+            pos,
+            focus=focus,
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=click,
+            preserve_bugs=self.state.preserve_bugs,
+        )
         # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
-        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or focus.enter
+        pressed = click or focus.enter
         if selected <= -2 or not pressed:
             return False
         widget.open = not widget.open

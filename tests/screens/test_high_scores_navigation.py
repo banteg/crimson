@@ -66,9 +66,11 @@ def test_open_list_keeps_focus_until_a_press_closes_it(scores_view, mocker) -> N
     frame(header + Vec2(5.0, 5.0), click=False)
     frame(Vec2(-1000.0, -1000.0), click=False)
     assert view.game_mode_list.open
-    # The next press closes it on its active row, and reaches nothing else.
+    # The next press closes it without taking a row (native takes the last hovered one), and reaches nothing else.
+    mode = view.state.config.gameplay.mode
     frame(Vec2(-1000.0, -1000.0), click=True)
     assert not view.game_mode_list.open
+    assert view.state.config.gameplay.mode == mode
     assert not view.state.ui.closing
     frame(play + Vec2(20.0, 10.0), click=True)
     assert isinstance(view.state.ui.pending, StartRun)

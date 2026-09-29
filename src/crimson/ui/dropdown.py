@@ -32,7 +32,14 @@ def _list_widget_size(resources: RuntimeResources, widget: UiListWidget) -> tupl
 
 
 def ui_list_widget_update(
-    resources: RuntimeResources, widget: UiListWidget, pos: Vec2, *, focus: UiFocus, mouse: Vec2,
+    resources: RuntimeResources,
+    widget: UiListWidget,
+    pos: Vec2,
+    *,
+    focus: UiFocus,
+    mouse: Vec2,
+    click: bool,
+    preserve_bugs: bool,
 ) -> int:
     """`ui_list_widget_update`'s input half.
 
@@ -42,6 +49,10 @@ def ui_list_widget_update(
 
     Native only opens a list from the keyboard with the arrow keys, and its Enter reaches the list only while the
     mouse is on the header; the port also reports the header hit on Enter while focused, so Enter opens it.
+
+    Hovering an open list focuses it, so native keeps it open after the mouse leaves, and the next click anywhere
+    takes the row last hovered. The port reports that stray click as a header hit instead: the caller closes the
+    list without taking a row. `preserve_bugs` keeps the native pick.
     """
     focused = focus.update(widget)
     widget.focused = focused
@@ -79,6 +90,8 @@ def ui_list_widget_update(
             widget.active_index = index
     if not widget.hovered and not focused:
         widget.open = False
+    if click and not widget.hovered and not header_hit and not preserve_bugs:
+        return -1
     return widget.active_index
 
 

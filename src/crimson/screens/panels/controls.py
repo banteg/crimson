@@ -554,7 +554,15 @@ class ControlsMenuView(PanelMenuView):
 
         `None` means the press was not the list's; -1 means the list took it without taking a row.
         """
-        selected = ui_list_widget_update(resources, widget, pos, focus=self.state.focus, mouse=mouse)
+        selected = ui_list_widget_update(
+            resources,
+            widget,
+            pos,
+            focus=self.state.focus,
+            mouse=mouse,
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            preserve_bugs=self.state.preserve_bugs,
+        )
         if selected <= -2 or not pressed:
             return None
         widget.open = not widget.open
