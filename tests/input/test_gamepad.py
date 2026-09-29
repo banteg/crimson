@@ -480,6 +480,6 @@ def test_menu_navigation_accepts_any_pad(pads: FakePads) -> None:
 
 def test_perk_prompt_names_the_bound_level_up_input() -> None:
     config = default_crimson_cfg(Path("<memory>"))
-    assert PerkPromptUi.label(config, pending_count=1) == "Press Mouse2 to pick a perk"
+    assert PerkPromptUi.label(config) == "Press Mouse2 to pick a perk"
     apply_pad_profile(config.controls, 0)
-    assert PerkPromptUi.label(config, pending_count=2) == "Press Triangle / Y to pick a perk (2)"
+    assert PerkPromptUi.label(config) == "Press Triangle / Y to pick a perk"

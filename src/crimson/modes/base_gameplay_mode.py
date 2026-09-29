@@ -59,7 +59,7 @@ from ..ui.hud import HudState, draw_target_health_bar
 from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record_for_game_over
-from .components.perk_menu_controller import UI_TEXT_COLOR, PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
+from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
 from .components.perk_prompt_controller import PerkPromptState
 
 if TYPE_CHECKING:
@@ -77,9 +77,6 @@ class _ModePerkMenuRuntime(PerkMenuRuntime):
 
     def ui_timeline(self) -> UiTimeline:
         return self.mode._ui_timeline
-
-    def on_close(self) -> None:
-        self.mode._perk_menu_closed()
 
     def play_sfx(self, sfx_id: SfxId) -> None:
         self.mode.audio_bridge.play_sfx(sfx_id)
@@ -346,9 +343,6 @@ class BaseGameplayMode:
     def _perk_menu_runtime(self) -> PerkMenuRuntime:
         return _ModePerkMenuRuntime(mode=self)
 
-    def _perk_menu_closed(self) -> None:
-        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
-
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
             player=self.player,
@@ -372,8 +366,6 @@ class BaseGameplayMode:
 
         perk_ctx = self._perk_menu_ui_context()
         pending_count = self._ui_pending_perk_count()
-        any_alive = self._any_player_alive()
-        self._perk_prompt.begin_frame()
         if self._perk_menu.open:
             choice_index = self._perk_menu.handle_input(
                 perk_ctx,
@@ -382,37 +374,30 @@ class BaseGameplayMode:
             )
             if choice_index is not None:
                 self.record_perk_pick_command(int(choice_index), player_index=0)
+        if not self._paused:
+            self._perk_prompt.tick_pulse(float(dt_ui_ms))
+        players = self.world.players
+        # Native checks player one, and player two only in a two-player game.
+        alive = players[0].health > 0.0 or (len(players) == 2 and players[1].health > 0.0)
         if self._perk_prompt.poll_open_request(
             ctx=perk_ctx,
             config=self.config,
             pending_count=pending_count,
-            player_count=max(1, len(self.world.players)),
-            any_alive=any_alive,
+            alive=alive,
             paused=self._paused,
             menu_active=self._perk_menu.active,
+            player_count=len(players),
         ):
             self._request_perk_menu()
         self._perk_prompt.tick_timer(
             pending_count=pending_count,
-            any_alive=any_alive,
-            paused=self._paused,
             menu_active=self._perk_menu.active,
             dt_ui_ms=float(dt_ui_ms),
         )
-        if not self._paused:
-            self._perk_prompt.tick_pulse(float(dt_ui_ms))
         self._perk_menu.tick_timeline()
 
     def _draw_perk_prompt(self) -> None:
-        self._perk_prompt.draw(
-            ctx=self._perk_menu_ui_context(),
-            pending_count=self._ui_pending_perk_count(),
-            any_alive=self._any_player_alive(),
-            menu_active=self._perk_menu.active,
-            config=self.config,
-            ui_text_width=self._ui_text_width,
-            text_color=UI_TEXT_COLOR,
-        )
+        self._perk_prompt.draw(ctx=self._perk_menu_ui_context(), config=self.config, ui_text_width=self._ui_text_width)
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return self._ui_mouse.to_rl()

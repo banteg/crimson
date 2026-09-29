@@ -71,12 +71,14 @@ def test_tutorial_perk_menu_opens_from_the_level_up_prompt(mocker, make_mode_con
     mode.open()
     mode.state.tutorial.stage_index = 6
     mode.state.perk_selection.pending_count = 1
-    pressed: set[int] = set()
+    held: set[int] = set()
     mocker.patch.object(
         perk_prompt_controller,
-        "input_code_is_pressed",
-        side_effect=lambda code, player_index=0: code in pressed,
+        "input_code_is_down",
+        side_effect=lambda code, player_index=0: code in held,
     )
+    mocker.patch.object(perk_prompt_controller.rl, "is_key_pressed", return_value=False)
+    mocker.patch.object(perk_prompt_controller.rl, "is_mouse_button_down", return_value=False)
     mocker.patch.object(perk_prompt_controller, "input_primary_just_pressed", return_value=False)
 
     for _ in range(30):
@@ -84,7 +86,7 @@ def test_tutorial_perk_menu_opens_from_the_level_up_prompt(mocker, make_mode_con
     assert not mode._perk_menu.active
     assert mode._perk_prompt.timer_ms > 0.0
 
-    pressed.add(mode.config.controls.pick_perk_code)
+    held.add(mode.config.controls.pick_perk_code)
     mode.update(1.0 / 60.0)
     assert mode._perk_menu.open
 
