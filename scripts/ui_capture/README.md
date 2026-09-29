@@ -7,7 +7,7 @@ pixel-identical, so every difference in a diff comes from the change.
 `capture.py` replaces the `pyray` input and time functions (all game code reads them through
 `grim.raylib_api`) with a scripted timeline, runs `run_game` in a hidden window at native size with a fixed seed,
 a throwaway base dir and volume 0, and writes a PNG for each `("shot", name)` step. Scenarios in `scenarios/`
-are lists of steps (`wait`, `key`, `hold`, `move`, `click`, `rclick`, `fire`, `text`, `hook`, `shot`); `hook`
+are lists of steps (`wait`, `key`, `hold`, `pad`, `move`, `click`, `rclick`, `fire`, `text`, `hook`, `shot`); `hook`
 runs a function on the live `GameState`, which is how scenarios reach level-ups, deaths and quest completion
 without playing. Menu clicks need about 150 frames after boot; panel layouts depend on the window width, so the
 `small_*` scenarios carry their own coordinates.

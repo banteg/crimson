@@ -5,6 +5,7 @@ usage: uv run python scripts/ui_capture/capture.py <scenario.py> <out_dir> [--se
 A scenario module defines STEPS, a list of ops:
   ("wait", frames)            advance frames with no new input
   ("key", "KEY_ENTER")        press and release a key over one frame
+  ("pad", "GAMEPAD_BUTTON_RIGHT_FACE_DOWN")  press a button on pad 0 over one frame (connects the pad)
   ("hold", "KEY_W", frames)   hold a key down
   ("move", x, y)              put the mouse at canvas coords (sticky)
   ("click", x, y)             move and click the left button for one frame
@@ -41,6 +42,8 @@ class Driver:
         self.mouse = rl.Vector2(0.0, 0.0)
         self.prev_mouse = rl.Vector2(0.0, 0.0)
         self.mouse_pressed: set[int] = set()
+        self.pad_connected = False
+        self.pad_pressed: set[int] = set()
         self.mouse_held = 0
         self.chars: list[int] = []
         self.key_queue: list[int] = []
@@ -63,6 +66,7 @@ class Driver:
         self.frame += 1
         self.pressed.clear()
         self.mouse_pressed.clear()
+        self.pad_pressed.clear()
         self.chars.clear()
         self.key_queue.clear()
         self.prev_mouse = rl.Vector2(self.mouse.x, self.mouse.y)
@@ -94,6 +98,10 @@ class Driver:
                     self.pressed.add(key)
                     self.down.add(key)
                     self.key_queue.append(key)
+                    return False
+                case "pad":
+                    self.pad_connected = True
+                    self.pad_pressed.add(int(getattr(rl.GamepadButton, args[0])))
                     return False
                 case "move":
                     self.mouse = rl.Vector2(float(args[0]), float(args[1]))
@@ -153,9 +161,10 @@ class Driver:
         )
         rl.is_mouse_button_released = lambda _button: False
         rl.set_mouse_position = lambda x, y: setattr(self, "mouse", rl.Vector2(float(x), float(y)))
-        rl.is_gamepad_available = lambda _pad: False
-        rl.is_gamepad_button_down = lambda _pad, _button: False
-        rl.is_gamepad_button_pressed = lambda _pad, _button: False
+        rl.is_gamepad_available = lambda pad: self.pad_connected and int(pad) == 0
+        rl.get_gamepad_name = lambda _pad: "Capture Pad"
+        rl.is_gamepad_button_down = lambda pad, button: int(pad) == 0 and int(button) in self.pad_pressed
+        rl.is_gamepad_button_pressed = lambda pad, button: int(pad) == 0 and int(button) in self.pad_pressed
         rl.get_gamepad_axis_movement = lambda _pad, _axis: 0.0
 
 
