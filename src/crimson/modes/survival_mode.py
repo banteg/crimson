@@ -93,9 +93,6 @@ class SurvivalMode(BaseGameplayMode):
             self._perk_menu.close()
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
-
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self._debug_cheat_used()
@@ -228,9 +225,6 @@ class SurvivalMode(BaseGameplayMode):
                 UI_HINT_COLOR,
             )
             y_extra = y + line * 3.0
-            if self._paused:
-                self._draw_ui_text("paused (TAB)", Vec2(x, y_extra), UI_HINT_COLOR)
-                y_extra += line
             if self.player.health <= 0.0:
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
@@ -239,6 +233,8 @@ class SurvivalMode(BaseGameplayMode):
                 self._perk_menu_ui_context(),
                 perk_selection_prepared_choices(self.state),
             )
+        if not self._game_over_active:
+            self._draw_keybind_help()
         if (not self._game_over_active) and perk_menu_active:
             self._draw_game_cursor()
 

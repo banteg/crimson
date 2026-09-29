@@ -91,9 +91,6 @@ class TutorialMode(BaseGameplayMode):
             self._perk_menu.close()
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()
             return
@@ -237,10 +234,9 @@ class TutorialMode(BaseGameplayMode):
         self._draw_perk_prompt()
         self._draw_aim_indicators(show_aim=not perk_menu_active, entity_alpha=entity_alpha)
 
-        hud_bottom = 0.0
         if not perk_menu_active:
             self._draw_target_health_bar()
-            hud_bottom = draw_hud_overlay(
+            draw_hud_overlay(
                 HudRenderContext(
                     resources=self.render_resources.resources,
                     state=self._hud_state,
@@ -257,16 +253,17 @@ class TutorialMode(BaseGameplayMode):
                 frame_dt_ms=self._last_dt_ms,
             )
 
-        self._draw_tutorial_prompts(hud_bottom=hud_bottom)
+        self._draw_tutorial_prompts()
 
         self._perk_menu.draw(
             self._perk_menu_ui_context(),
             perk_selection_prepared_choices(self.state),
         )
+        self._draw_keybind_help()
         if perk_menu_active:
             self._draw_game_cursor()
 
-    def _draw_tutorial_prompts(self, *, hud_bottom: float) -> None:
+    def _draw_tutorial_prompts(self) -> None:
         overlay = self.state.tutorial_overlay
         draw_tutorial_overlay_panels(
             overlay,
@@ -304,9 +301,4 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.alpha > 1e-3:
             y = float(canvas.height()) - 50.0
             button_draw(resources, self._skip_button, pos=Vec2(10.0, y))
-
-        if self._paused:
-            x = 18.0
-            y = max(18.0, hud_bottom + 10.0)
-            self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 

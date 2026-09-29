@@ -13,7 +13,7 @@ run() { # name scenario size
   (cd "$checkout" && timeout 600 uv run python "$here/capture.py" "$here/scenarios/$2.py" "$out/$1" --size "$3" --assets "$assets" \
     >"$out/$1.log" 2>&1; echo "$1 exit=$? shots=$(grep -c '^shot' "$out/$1.log")") &
 }
-for scenario in menus menus_unlocked pause perk game_over quest quest_fail rush tutorial typo; do
+for scenario in menus menus_unlocked pause key_info perk game_over quest quest_fail rush tutorial typo; do
   run "$scenario" "$scenario" 1024x768
 done
 for panel in play options stats; do

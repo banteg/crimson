@@ -12,6 +12,7 @@ from grim import canvas
 from grim.audio import AudioState, play_music, stop_music, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -55,6 +56,7 @@ from ..sim.timing import ftol_ms_i32
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from ..ui.hud import HudState, draw_target_health_bar
+from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record_for_game_over
 from .components.perk_menu_controller import UI_TEXT_COLOR, PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
@@ -91,6 +93,8 @@ class _ModeFrameState(msgspec.Struct, frozen=True):
 class BaseGameplayMode:
     # Whether the tick that ends the run starts the run-down; Typ-o starts it after its death animation.
     _RUN_DOWN_ON_OUTCOME = True
+    # `gameplay_update_and_render` pauses on F1 and shows the key info; Typ-o's update has no pause.
+    _KEY_INFO_PAUSE = True
 
     def __init__(
         self,
@@ -104,6 +108,7 @@ class BaseGameplayMode:
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._small: SmallFontData | None = None
+        self._grim_mono: GrimMonoFont | None = None
         self._hud_state = HudState()
         self.default_game_mode_id = default_game_mode_id
 
@@ -113,7 +118,9 @@ class BaseGameplayMode:
 
         self.close_requested = False
         self._action: ScreenAction | None = None
+        # Native `game_paused_flag` and `pause_keybind_help_alpha_ms`.
         self._paused = False
+        self._keybind_help_alpha_ms = 0
         self._status_base: GameStatus | None = None
         self._status_sim: GameStatus | None = None
         self._local_input: LocalInputInterpreter = LocalInputInterpreter()
@@ -432,7 +439,34 @@ class BaseGameplayMode:
             self._ui_timeline.advance(int(dt_ui_ms))
             if self._hud_alpha() >= 1.0:
                 self._gameplay_transition_latch = False
+        if self._KEY_INFO_PAUSE and not self._game_over_active:
+            self._update_key_info_pause(int(dt_ui_ms))
         return dt, dt_ui_ms
+
+    def _update_key_info_pause(self, dt_ms: int) -> None:
+        """`gameplay_update_and_render`: F1 toggles `game_paused_flag`, and the key info fades with it."""
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F1):
+            self._paused = not self._paused
+        step = dt_ms * 2 if self._paused else -dt_ms * 4
+        self._keybind_help_alpha_ms = min(1000, max(0, self._keybind_help_alpha_ms + step))
+        # The world is frozen, but native keeps moving the timeline by the frame, so a pending exit still happens.
+        session = self._sim_session
+        if self._paused and (self._pause_pending or self._run_ending) and session is not None:
+            self._run_down_gameplay(dt_ms, session)
+
+    def _draw_keybind_help(self) -> None:
+        if self._keybind_help_alpha_ms <= 0:
+            return
+        small = self._small
+        mono = self._grim_mono
+        assert small is not None and mono is not None, "key info needs the loaded fonts"
+        ui_render_keybind_help(
+            Vec2(float(canvas.width()) * 0.5 - 256.0, float(canvas.height()) * 0.5 - 128.0),
+            self._keybind_help_alpha_ms * 0.001,
+            config=self.config,
+            small=small,
+            mono=mono,
+        )
 
     def _hud_alpha(self) -> float:
         """`hud_update_and_render`: the HUD fades in with the timeline over `ui_element_table[28]`'s span."""
@@ -440,6 +474,7 @@ class BaseGameplayMode:
 
     def _enter_gameplay_timeline(self) -> None:
         """`game_state_set(GAME_STATE_GAMEPLAY)`."""
+        self._paused = False
         self._pause_pending = False
         self._run_ending = False
         self._ui_timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
@@ -452,13 +487,13 @@ class BaseGameplayMode:
         self._pause_pending = True
         self._ui_timeline.begin()
 
-    def _run_down_gameplay(self, step: DeterministicSessionTick, session: DeterministicSession) -> bool:
-        """Advance a pending exit with the tick that just ran; True once the timeline is out and the exit happened.
+    def _run_down_gameplay(self, dt_ms: int, session: DeterministicSession) -> bool:
+        """Advance a pending exit by `dt_ms`; True once the timeline is out and the exit happened.
 
         Native simulates and moves the timeline by the same `frame_dt_ms`, so the run-down lasts its timeline
         span of simulated time, at most 500ms after the run ends (the verifiers bound recordings by this).
         """
-        self._ui_timeline.advance(ftol_ms_i32(step.dt_sim))
+        self._ui_timeline.advance(dt_ms)
         if not self._ui_timeline.ready:
             return False
         if self._run_ending:
@@ -632,7 +667,9 @@ class BaseGameplayMode:
         self.close_requested = False
         self._action = None
         self._paused = False
+        self._keybind_help_alpha_ms = 0
         self._small = load_small_font(self._assets_root)
+        self._grim_mono = load_grim_mono_font(self._assets_root)
         self._hud_state = HudState()
 
         self._game_over_active = False
@@ -914,6 +951,6 @@ class BaseGameplayMode:
             # Mode callbacks can save the finished replay, so record the tick first.
             if not self._on_tick_applied(step) or (step.outcome is not None and not self._RUN_DOWN_ON_OUTCOME):
                 break
-            if (self._pause_pending or self._run_ending) and self._run_down_gameplay(step, session):
+            if (self._pause_pending or self._run_ending) and self._run_down_gameplay(ftol_ms_i32(step.dt_sim), session):
                 break
         apply_presentation_plans(plans=plans, runtime=self._world_runtime)

@@ -8,7 +8,6 @@ from grim.config import (
     CrimsonConfig,
 )
 from grim.console import ConsoleState
-from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
@@ -84,7 +83,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_level: QuestLevel | None = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_highscore_random_tag: int = 0
         self._outcome: QuestRunOutcome | None = None
-        self._grim_mono: GrimMonoFont | None = None
         self._quest_spawn_state = QuestSpawnState()
         self._replay_recorder: ReplayRecorder | None = None
 
@@ -94,7 +92,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_level = self.config.gameplay.quest_level or QuestLevel(1, 1)
         self._quest_highscore_random_tag = 0
         self._outcome = None
-        self._grim_mono = load_grim_mono_font(self._assets_root)
 
         self._reset_gameplay_frame_clock()
         self._replay_recorder = None
@@ -103,7 +100,6 @@ class QuestMode(BaseGameplayMode):
         self._sim_session = None
 
     def close(self) -> None:
-        self._grim_mono = None
         self._sim_session = None
         super().close()
 
@@ -169,9 +165,6 @@ class QuestMode(BaseGameplayMode):
             self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
             return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
@@ -277,7 +270,6 @@ class QuestMode(BaseGameplayMode):
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
-        debug_overlay_height = 0.0
         entity_alpha = self._world_entity_alpha()
         self._draw_world(entity_alpha=entity_alpha)
         self._draw_screen_fade()
@@ -312,10 +304,7 @@ class QuestMode(BaseGameplayMode):
             x = 18.0
             y = max(18.0, hud_bottom + 10.0)
             god = "on" if self.state.debug_god_mode else "off"
-            line = float(self._ui_line_height())
             self._draw_ui_text(f"debug: [/] weapon  F3 perk+1  F2 god={god}", Vec2(x, y), UI_HINT_COLOR)
-            overlay_end_y = y + line
-            debug_overlay_height = max(0.0, float(overlay_end_y) - float(y))
 
         self._draw_quest_title()
         self._draw_quest_complete_banner()
@@ -325,14 +314,9 @@ class QuestMode(BaseGameplayMode):
             perk_selection_prepared_choices(self.state),
         )
 
+        self._draw_keybind_help()
         if perk_menu_active:
             self._draw_game_cursor()
-        elif self._paused:
-            self._draw_game_cursor()
-            x = 18.0
-            y = max(18.0, hud_bottom + 10.0)
-            y += float(debug_overlay_height)
-            self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
 
 
     def _draw_quest_title(self) -> None:

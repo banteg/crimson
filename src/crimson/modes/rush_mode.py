@@ -60,9 +60,6 @@ class RushMode(BaseGameplayMode):
                 self.close_requested = True
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()
             return
@@ -138,14 +135,11 @@ class RushMode(BaseGameplayMode):
                 UI_TEXT_COLOR,
             )
             self._draw_ui_text(f"kills={self.creatures.kill_count}", Vec2(x, y + line), UI_HINT_COLOR)
-            y_extra = y + line * 2.0
-            if self._paused:
-                self._draw_ui_text("paused (TAB)", Vec2(x, y_extra), UI_HINT_COLOR)
-                y_extra += line
             if self.player.health <= 0.0:
-                self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
-                y_extra += line
+                self._draw_ui_text("game over", Vec2(x, y + line * 2.0), UI_ERROR_COLOR)
 
+        if not self._game_over_active:
+            self._draw_keybind_help()
         if self._game_over_active:
             self._draw_game_cursor()
             if self._game_over_record is not None:

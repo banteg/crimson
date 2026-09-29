@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
@@ -100,6 +102,7 @@ def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
     )
     stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
     mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))
+    mocker.patch.object(base_gameplay_mode, "load_grim_mono_font", return_value=SimpleNamespace(texture=None))
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)
     mocker.patch.object(base_gameplay_mode.rl, "get_render_width", return_value=1024)
@@ -126,14 +129,13 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker, mak
     assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
 
 
-def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
+@pytest.mark.usefixtures("headless_resources")
+def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config, assets_dir) -> None:
+    ctx = ViewContext(assets_dir=assets_dir)
     config = make_mode_config(game_mode=GameMode.RUSH)
     mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mocker.patch.object(mode, "apply_terrain_setup")
     mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mocker.patch.object(mode, "_save_replay")
     mode.open()
     session = mode._sim_session

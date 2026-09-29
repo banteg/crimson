@@ -24,6 +24,7 @@ from .base_gameplay_mode import BaseGameplayMode
 
 class TypoShooterMode(BaseGameplayMode):
     _RUN_DOWN_ON_OUTCOME = False
+    _KEY_INFO_PAUSE = False
 
     def __init__(
         self,
@@ -81,9 +82,6 @@ class TypoShooterMode(BaseGameplayMode):
                 self.close_requested = True
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._request_pause()
             return
@@ -127,18 +125,16 @@ class TypoShooterMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
-        dt_world = 0.0 if self._paused else dt
-
         # `typo_gameplay_update_and_render`: game over is pending once the trooper death animation
         # finishes, then the HUD fades out before it opens. Typ-o plays both outside ticks.
         if self.player.health <= 0.0:
-            if dt_world > 0.0:
-                self.player.death_timer -= float(dt_world) * 20.0
+            if dt > 0.0:
+                self.player.death_timer -= float(dt) * 20.0
             if self.player.death_timer < 0.0 and not self._run_ending:
                 self._run_ending = True
                 self._pause_pending = False
                 self._ui_timeline.begin()
-            if (self._run_ending or self._pause_pending) and dt_world > 0.0:
+            if (self._run_ending or self._pause_pending) and dt > 0.0:
                 self._ui_timeline.advance(int(self._last_dt_ms))
                 if self._ui_timeline.ready and self._run_ending:
                     self._run_ending = False
@@ -149,10 +145,10 @@ class TypoShooterMode(BaseGameplayMode):
                     self._action = Route.PAUSE
             return
 
-        if dt_world > 0.0:
+        if dt > 0.0:
             self._enqueue_typing_commands()
 
-        if dt_world <= 0.0:
+        if dt <= 0.0:
             return
 
         session = self._sim_session
@@ -160,7 +156,7 @@ class TypoShooterMode(BaseGameplayMode):
             return
 
         self._run_deterministic_session_ticks(
-            dt_frame=float(dt_world),
+            dt_frame=float(dt),
             session=session,
             recorder=self._replay_recorder,
         )

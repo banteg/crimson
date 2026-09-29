@@ -163,3 +163,37 @@ def test_typo_opens_game_over_after_the_death_animation_and_the_hud_fade(make_mo
 
     # One frame ends the death animation, then 500ms at 16ms a frame.
     assert frames == 32
+
+
+def test_f1_pause_freezes_the_world_and_esc_still_reaches_the_pause_menu(mocker, make_mode_config, assets_dir) -> None:
+    mode = SurvivalMode(
+        ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.SURVIVAL), audio_rng=Crand(1),
+    )
+    mode.open()
+    session = mode._sim_session
+    assert session is not None
+    pressed: set[int] = set()
+    mocker.patch.object(base_gameplay_mode.rl, "is_key_pressed", side_effect=lambda key: key in pressed)
+    for _ in range(40):
+        mode.update(1 / 60)
+    elapsed = session.elapsed_ms
+
+    pressed.add(base_gameplay_mode.rl.KeyboardKey.KEY_F1)
+    mode.update(1 / 60)
+    pressed.clear()
+    for _ in range(40):
+        mode.update(1 / 60)
+    assert mode._paused
+    assert session.elapsed_ms == elapsed
+    assert mode._keybind_help_alpha_ms == 1000
+
+    # Native moves the timeline by the frame while `game_paused_flag` freezes the world.
+    pressed.add(base_gameplay_mode.rl.KeyboardKey.KEY_ESCAPE)
+    mode.update(1 / 60)
+    pressed.clear()
+    for _ in range(40):
+        mode.update(1 / 60)
+        if mode._action == Route.PAUSE:
+            break
+    assert mode._action == Route.PAUSE
+    assert session.elapsed_ms == elapsed
