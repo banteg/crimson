@@ -9,6 +9,10 @@ import pytest
 from crimson_re import match_report as report
 
 
+def test_reviewed_historical_map_is_a_pinned_report_input() -> None:
+    assert report._input_path("analysis/decomp/1.9.8/crimsonland.exe/recovered.json")
+
+
 def _function(address: int, size: int, **changes: Any) -> dict[str, Any]:
     return {
         "image": "crimsonland.exe", "address": address, "name": f"function_{address}", "size": size,

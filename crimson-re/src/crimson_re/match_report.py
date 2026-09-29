@@ -27,7 +27,7 @@ from . import match_report_accounting as accounting
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
 VERSION = "1.9.93"
 DEFAULT_REPORTS = matchlib.REPO_ROOT / "artifacts" / "decomp"
-BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata)\.json")
+BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata|recovered)\.json")
 
 
 def evidence_path(version: str) -> Path:
