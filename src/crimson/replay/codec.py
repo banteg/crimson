@@ -24,9 +24,11 @@ from ..typo.names import (
 from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
+_ZSTD_LEVEL = 19
+# zstd frames may not ask for a larger decompression window than this.
+MAX_ZSTD_WINDOW_BYTES = 8 * 1024 * 1024
 MAX_REPLAY_PAYLOAD_BYTES = 64 * 1024 * 1024
 MAX_REPLAY_FILE_BYTES = 65 * 1024 * 1024
-_REPLAY_ZSTD_LEVEL = 19
 
 _I32_MIN = -(1 << 31)
 _I32_MAX = (1 << 31) - 1
@@ -42,8 +44,6 @@ _MODE_OUTCOMES = {
     GameMode.TUTORIAL: frozenset({RunOutcome.TUTORIAL_COMPLETED, RunOutcome.INCOMPLETE}),
 }
 _TYPO_COMMANDS = (TypoCharCommand, TypoBackspaceCommand, TypoSubmitCommand)
-# zstd frames may not ask for a larger decompression window than this.
-MAX_ZSTD_WINDOW_BYTES = 8 * 1024 * 1024
 
 _ENCODER = msgspec.msgpack.Encoder()
 _DECODER = msgspec.msgpack.Decoder(type=Replay)
@@ -56,6 +56,45 @@ class ReplayCodecError(ValueError):
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise ReplayCodecError(message)
+
+
+def zstd_pack(payload: bytes) -> bytes:
+    """The zstd envelope replays and their checkpoint sidecars are stored in."""
+
+    return zstd.ZstdCompressor(level=_ZSTD_LEVEL).compress(payload)
+
+
+def zstd_unpack(
+    data: bytes,
+    *,
+    what: str,
+    max_file_bytes: int,
+    max_payload_bytes: int,
+    error: type[ValueError],
+) -> bytes:
+    """The payload of a zstd envelope, enforcing the file, window and payload size ceilings."""
+
+    def require(condition: bool, message: str) -> None:
+        if not condition:
+            raise error(message)
+
+    require(len(data) <= max_file_bytes, f"{what} file too large (> {max_file_bytes} bytes)")
+    require(data.startswith(_ZSTD_MAGIC), f"{what} must use the zstd envelope")
+    try:
+        require(
+            zstd.get_frame_parameters(data).window_size <= MAX_ZSTD_WINDOW_BYTES,
+            f"{what} zstd frame window exceeds {MAX_ZSTD_WINDOW_BYTES // (1024 * 1024)} MiB",
+        )
+        content_size = zstd.frame_content_size(data)
+        require(
+            content_size in (zstd.CONTENTSIZE_UNKNOWN, zstd.CONTENTSIZE_ERROR) or content_size <= max_payload_bytes,
+            f"{what} payload too large (> {max_payload_bytes} bytes)",
+        )
+        payload = zstd.ZstdDecompressor().decompress(data, max_output_size=max_payload_bytes, allow_extra_data=False)
+    except zstd.ZstdError as exc:
+        raise error(f"invalid {what} zstd payload") from exc
+    require(len(payload) <= max_payload_bytes, f"{what} payload too large (> {max_payload_bytes} bytes)")
+    return payload
 
 
 def _require_int(value: int, *, low: int, high: int, field: str) -> None:
@@ -179,7 +218,7 @@ def encode_replay_payload(replay: Replay) -> bytes:
 def dump_replay(replay: Replay) -> bytes:
     """Serialize a replay as a zstd-compressed msgpack blob."""
 
-    data = zstd.ZstdCompressor(level=_REPLAY_ZSTD_LEVEL).compress(encode_replay_payload(replay))
+    data = zstd_pack(encode_replay_payload(replay))
     _require(len(data) <= MAX_REPLAY_FILE_BYTES, f"replay file too large (> {MAX_REPLAY_FILE_BYTES} bytes)")
     return data
 
@@ -187,27 +226,13 @@ def dump_replay(replay: Replay) -> bytes:
 def inflate_replay_payload(data: bytes) -> bytes:
     """Return the msgpack payload of a replay file, enforcing size ceilings."""
 
-    _require(len(data) <= MAX_REPLAY_FILE_BYTES, f"replay file too large (> {MAX_REPLAY_FILE_BYTES} bytes)")
-    _require(data.startswith(_ZSTD_MAGIC), "replay must use the zstd envelope")
-    try:
-        _require(
-            zstd.get_frame_parameters(data).window_size <= MAX_ZSTD_WINDOW_BYTES,
-            f"replay zstd frame window exceeds {MAX_ZSTD_WINDOW_BYTES // (1024 * 1024)} MiB",
-        )
-        content_size = zstd.frame_content_size(data)
-        _require(
-            content_size in (zstd.CONTENTSIZE_UNKNOWN, zstd.CONTENTSIZE_ERROR) or content_size <= MAX_REPLAY_PAYLOAD_BYTES,
-            f"replay payload too large (> {MAX_REPLAY_PAYLOAD_BYTES} bytes)",
-        )
-        payload = zstd.ZstdDecompressor().decompress(
-            data,
-            max_output_size=MAX_REPLAY_PAYLOAD_BYTES,
-            allow_extra_data=False,
-        )
-    except zstd.ZstdError as exc:
-        raise ReplayCodecError("invalid replay zstd payload") from exc
-    _require(len(payload) <= MAX_REPLAY_PAYLOAD_BYTES, f"replay payload too large (> {MAX_REPLAY_PAYLOAD_BYTES} bytes)")
-    return payload
+    return zstd_unpack(
+        data,
+        what="replay",
+        max_file_bytes=MAX_REPLAY_FILE_BYTES,
+        max_payload_bytes=MAX_REPLAY_PAYLOAD_BYTES,
+        error=ReplayCodecError,
+    )
 
 
 def decode_replay_payload(payload: bytes) -> Replay:

@@ -301,7 +301,7 @@ def test_checkpoints_reject_values_outside_native_wire(
 
 
 def test_load_checkpoints_rejects_raw_msgpack_payload() -> None:
-    with pytest.raises(ReplayCheckpointsError, match="canonical zstd envelope"):
+    with pytest.raises(ReplayCheckpointsError, match="must use the zstd envelope"):
         load_checkpoints(msgspec.msgpack.encode({"version": FORMAT_VERSION}))
 
 
@@ -311,7 +311,7 @@ def test_load_checkpoints_rejects_noncanonical_f32(base_world: WorldState) -> No
     checkpoint = msgspec.structs.replace(checkpoint, players=[player])
     payload = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[checkpoint])
 
-    with pytest.raises(ReplayCheckpointsError, match="health must be canonical f32"):
+    with pytest.raises(ReplayCheckpointsError, match="not canonically encoded"):
         load_checkpoints(_wire(payload))
 
 
@@ -381,7 +381,7 @@ def test_load_checkpoints_rejects_integer_tokens_for_f32_fields(
         assert isinstance(current, dict)
         cast("dict[str, object]", current)[leaf] = 0
 
-    with pytest.raises(ReplayCheckpointsError, match="msgpack float"):
+    with pytest.raises(ReplayCheckpointsError, match="not canonically encoded"):
         load_checkpoints(_wire(root))
 
 
