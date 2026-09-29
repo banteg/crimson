@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 
 import msgspec
 
@@ -35,25 +35,6 @@ UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 
-class PerkMenuRuntime(msgspec.Struct, kw_only=True):
-    standalone_timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
-    standalone_focus: UiFocus = msgspec.field(default_factory=UiFocus)
-
-    def ui_timeline(self) -> UiTimeline:
-        """The menu timeline the perk selection state runs on."""
-        return self.standalone_timeline
-
-    def ui_focus(self) -> UiFocus:
-        """The menu keyboard focus the choices and Cancel register with."""
-        return self.standalone_focus
-
-    def on_close(self) -> None:
-        return None
-
-    def play_sfx(self, sfx_id: SfxId) -> None:
-        _ = sfx_id
-
-
 class PerkMenuUiContext(msgspec.Struct, frozen=True):
     player: PlayerState
     perks: PerkCounts
@@ -68,11 +49,17 @@ class PerkMenuController:
     def __init__(
         self,
         *,
+        timeline: UiTimeline,
+        focus: UiFocus,
+        play_sfx: Callable[[SfxId], None],
         cancel_label: str = "Cancel",
-        runtime: PerkMenuRuntime | None = None,
     ) -> None:
+        # The menu timeline perk selection runs on and the keyboard focus its choices register with; the game
+        # shares both across screens and rebinds them here.
+        self.timeline = timeline
+        self.focus = focus
+        self._play_sfx = play_sfx
         self._cancel_label = cancel_label
-        self._runtime = runtime if runtime is not None else PerkMenuRuntime()
         self.reset()
 
     @property
@@ -95,14 +82,6 @@ class PerkMenuController:
         self._selected_index = int(value)
 
     @property
-    def timeline(self) -> UiTimeline:
-        return self._runtime.ui_timeline()
-
-    @property
-    def focus(self) -> UiFocus:
-        return self._runtime.ui_focus()
-
-    @property
     def active(self) -> bool:
         """Open, or still sliding out: gameplay resumes once the timeline drops below 0."""
         return self._open or self._closing
@@ -122,13 +101,12 @@ class PerkMenuController:
         self._open = False
         self._closing = True
         self.timeline.begin()
-        self._runtime.on_close()
 
     def open_menu(self) -> None:
         """`game_state_set(GAME_STATE_PERK_SELECTION)`."""
         if self._open:
             return
-        self._runtime.play_sfx(SfxId.UI_PANELCLICK)
+        self._play_sfx(SfxId.UI_PANELCLICK)
         self._open = True
         self._selected_index = 0
         # The choices register first, so this focuses the first one (native keeps whatever index was focused).
@@ -204,7 +182,7 @@ class PerkMenuController:
             mouse=ctx.mouse,
             click=click,
         ):
-            self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
+            self._play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return None
 
@@ -212,7 +190,7 @@ class PerkMenuController:
         if picked is None and (focus.enter or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE)):
             picked = self._selected_index
         if picked is not None:
-            self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
+            self._play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
             return int(picked)
         return None

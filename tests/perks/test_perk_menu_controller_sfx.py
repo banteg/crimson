@@ -4,12 +4,12 @@ from collections.abc import Callable
 from types import SimpleNamespace
 from typing import cast
 
-import msgspec
-
 import crimson.modes.components.perk_menu_controller as perk_menu_controller_module
-from crimson.modes.components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
+from crimson.modes.components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
 from crimson.perks import PerkId
+from crimson.screens.ui_timeline import UiTimeline
 from crimson.sim.state_types import PerkCounts, PlayerState
+from crimson.ui.focus import UiFocus
 from grim.assets import RuntimeResources
 from grim.fonts.small import SmallFontData
 from grim.geom import Vec2
@@ -36,15 +36,8 @@ def _dummy_font() -> SmallFontData:
     return SmallFontData(widths=[8] * 256, texture=_texture(), cell_size=16, grid=16)
 
 
-class _RecordingPerkMenuRuntime(PerkMenuRuntime):
-    played: list[SfxId] = msgspec.field(default_factory=list)
-    closed_count: int = 0
-
-    def on_close(self) -> None:
-        self.closed_count += 1
-
-    def play_sfx(self, sfx_id: SfxId) -> None:
-        self.played.append(sfx_id)
+def _menu(played: list[SfxId]) -> PerkMenuController:
+    return PerkMenuController(timeline=UiTimeline(), focus=UiFocus(), play_sfx=played.append)
 
 
 def _patch_perk_menu_raylib(
@@ -83,18 +76,18 @@ def _ctx() -> PerkMenuUiContext:
 
 
 def test_open_perk_menu_plays_panel_click() -> None:
-    runtime = _RecordingPerkMenuRuntime()
-    menu = PerkMenuController(runtime=runtime)
+    played: list[SfxId] = []
+    menu = _menu(played)
 
     assert menu.open is False
     menu.open_menu()
     assert menu.open is True
-    assert runtime.played == [SfxId.UI_PANELCLICK]
+    assert played == [SfxId.UI_PANELCLICK]
 
 
 def test_perk_menu_pick_returns_selected_index_and_plays_button_click(mocker) -> None:
-    runtime = _RecordingPerkMenuRuntime()
-    menu = PerkMenuController(runtime=runtime)
+    played: list[SfxId] = []
+    menu = _menu(played)
     menu.open = True
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
@@ -111,14 +104,14 @@ def test_perk_menu_pick_returns_selected_index_and_plays_button_click(mocker) ->
     )
 
     assert choice_index == 0
-    assert runtime.played == [SfxId.UI_BUTTONCLICK]
-    assert runtime.closed_count == 1
+    assert played == [SfxId.UI_BUTTONCLICK]
     assert menu.open is False
+    assert menu.active
 
 
 def test_perk_menu_cancel_plays_button_click_and_returns_none(mocker) -> None:
-    runtime = _RecordingPerkMenuRuntime()
-    menu = PerkMenuController(runtime=runtime)
+    played: list[SfxId] = []
+    menu = _menu(played)
     menu.open = True
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: True)
@@ -131,13 +124,13 @@ def test_perk_menu_cancel_plays_button_click_and_returns_none(mocker) -> None:
     )
 
     assert choice_index is None
-    assert runtime.played == [SfxId.UI_BUTTONCLICK]
-    assert runtime.closed_count == 1
+    assert played == [SfxId.UI_BUTTONCLICK]
     assert menu.open is False
+    assert menu.active
 
 
 def test_draw_accepts_prepared_choices_without_selection_helpers(mocker) -> None:
-    menu = PerkMenuController()
+    menu = _menu([])
     menu.open = True
     menu.timeline.timeline_ms = int(1_000.0)
     mocker.patch.object(perk_menu_controller_module, "draw_classic_menu_panel", return_value=None)

@@ -24,6 +24,7 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..game_states import GameStateId
+from ..input_codes import PadCode, pad_nav_pressed
 from ..local_input import PAD_AIM_DIST_MUL_DEFAULT, LocalInputInterpreter
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
@@ -61,7 +62,7 @@ from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_h
 from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record
-from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
+from .components.perk_menu_controller import PerkMenuController, PerkMenuUiContext
 from .components.perk_prompt_controller import PerkPromptState
 
 if TYPE_CHECKING:
@@ -72,19 +73,6 @@ if TYPE_CHECKING:
     from ..persistence.save_status import GameStatus
     from ..sim.state_types import PlayerState
     from ..sim.world_state import WorldEvents, WorldState
-
-
-class _ModePerkMenuRuntime(PerkMenuRuntime):
-    mode: BaseGameplayMode
-
-    def ui_timeline(self) -> UiTimeline:
-        return self.mode._ui_timeline
-
-    def ui_focus(self) -> UiFocus:
-        return self.mode._ui_focus
-
-    def play_sfx(self, sfx_id: SfxId) -> None:
-        self.mode.audio_bridge.play_sfx(sfx_id)
 
 
 class _ModeFrameState(msgspec.Struct, frozen=True):
@@ -159,7 +147,6 @@ class BaseGameplayMode:
         self._game_over_record: HighScoreRecord | None = None
         # The level-up prompt and perk menu `gameplay_update_and_render` runs outside Rush and Typ-o.
         self._perk_prompt = PerkPromptState()
-        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
         self._perk_menu_requested = False
         self._counted_level = 1
         self._game_over_banner = "reaper"
@@ -170,6 +157,9 @@ class BaseGameplayMode:
         self._ui_timeline = UiTimeline()
         # The menu keyboard focus (GameState.focus once bound) for the perk menu, tutorial and game over widgets.
         self._ui_focus = UiFocus()
+        self._perk_menu = PerkMenuController(
+            timeline=self._ui_timeline, focus=self._ui_focus, play_sfx=self.audio_bridge.play_sfx,
+        )
         self._gameplay_transition_latch = False
         # Native `game_state_pending` while gameplay runs the timeline down: the pause menu, or the run's end.
         self._pause_pending = False
@@ -337,6 +327,8 @@ class BaseGameplayMode:
             self._game_over_ui.timeline = fade.ui
             self._ui_focus = fade.focus
             self._game_over_ui.focus = fade.focus
+            self._perk_menu.timeline = fade.ui
+            self._perk_menu.focus = fade.focus
 
     def bind_audio(self, audio: AudioState | None, audio_rng: CrandLike) -> None:
         self._world_runtime.audio = audio
@@ -363,9 +355,6 @@ class BaseGameplayMode:
         font = self._small
         assert font is not None, "small font must be loaded before ui text draw"
         draw_small_text(font, text, pos, color)
-
-    def _perk_menu_runtime(self) -> PerkMenuRuntime:
-        return _ModePerkMenuRuntime(mode=self)
 
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
@@ -530,7 +519,14 @@ class BaseGameplayMode:
         self._update_audio(dt)
 
         frame_dt, frame_dt_ui_ms = self._tick_frame(dt)
-        self._handle_input()
+        if self._perk_menu.open and (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
+        ):
+            # Escape (or the pad's B) backs out of the perk menu before the mode sees it, so it cannot also pause.
+            self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
+            self._perk_menu.close()
+        else:
+            self._handle_input()
         if self._action == Route.PAUSE:
             return None
         return _ModeFrameState(

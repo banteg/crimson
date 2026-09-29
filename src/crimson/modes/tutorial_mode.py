@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from crimson.screens.actions import Route
 from grim import canvas
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -81,12 +80,6 @@ class TutorialMode(BaseGameplayMode):
         return f"tutorial_{stamp}"
 
     def _handle_input(self) -> None:
-        if self._perk_menu.open and (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
-        ):
-            self._perk_menu.close()
-            return
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()
             return
@@ -190,14 +183,10 @@ class TutorialMode(BaseGameplayMode):
                 self._finish_tutorial_run(restart=False)
 
     def update(self, dt: float) -> None:
-        self._update_audio(dt)
-        dt, dt_ui_ms = self._tick_frame(dt)
-
-        self._handle_input()
-        if self._action == Route.PAUSE:
+        frame = self._begin_mode_update(dt)
+        if frame is None or self.close_requested:
             return
-        if self.close_requested:
-            return
+        dt, dt_ui_ms = frame.dt, frame.dt_ui_ms
 
         self._update_perk_ui(dt_ui_ms=dt_ui_ms)
 

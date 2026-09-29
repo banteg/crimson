@@ -84,13 +84,6 @@ class SurvivalMode(BaseGameplayMode):
                 self._action = Route.MENU
                 self.close_requested = True
             return
-        if self._perk_menu.open and (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
-        ):
-            self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
-            self._perk_menu.close()
-            return
-
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
                 self._debug_cheat_used()
