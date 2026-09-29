@@ -67,6 +67,10 @@ def ui_list_widget_update(
 
     header_hit = widget.enabled and mouse_inside_rect_with_padding(mouse, pos=pos, width=width, height=14.0)
     result = -1 if header_hit or (focused and focus.enter and widget.enabled) else -2
+    if focused:
+        # A list that stays open (Enter makes the caller toggle it) walks its rows with the pad's up/down.
+        stays_open = widget.open != (focus.enter and widget.enabled)
+        focus.hold(up=stays_open, down=stays_open)
     if not widget.open:
         return result
     for index in range(len(widget.items)):

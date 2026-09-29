@@ -53,6 +53,12 @@ def ui_scrollbar_update_keys(focus: UiFocus, bar: UiScrollbar, *, cursor: bool =
     if focus.page_down:
         bar.scroll_offset += bar.visible_rows - 1
     bar.clamp()
+    if focused:
+        # The pad's up/down walk the list until its end, then move the focus on.
+        if cursor:
+            focus.hold(up=bar.selected_index > 0, down=bar.selected_index < bar.item_count - 1)
+        else:
+            focus.hold(up=bar.scroll_offset > 0, down=bar.scroll_offset < bar.max_scroll)
 
 
 def ui_scrollbar_draw_focus(focus: UiFocus, bar: UiScrollbar, pos: Vec2) -> None:

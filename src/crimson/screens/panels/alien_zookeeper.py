@@ -249,6 +249,8 @@ class AlienZooKeeperView:
         col = max(0, min(_BOARD_SIDE - 1, col + int(focus.right) - int(focus.left)))
         row = max(0, min(_BOARD_SIDE - 1, row + int(focus.down) - int(focus.up)))
         self._cursor_index = row * _BOARD_SIDE + col
+        # The pad's up/down walk the rows until the board's edge, then move the focus on.
+        focus.hold(up=row > 0, down=row < _BOARD_SIDE - 1)
         if focus.enter:
             self._click_tile(self._cursor_index)
 

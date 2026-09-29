@@ -585,6 +585,22 @@ def pad_nav_pressed(code: PadCode) -> bool:
     )
 
 
+def pad_nav_stick() -> tuple[float, float]:
+    """The left stick of whichever connected pad pushes it furthest, per axis (menu navigation)."""
+
+    x = y = 0.0
+    for gamepad in range(GAMEPAD_SLOT_COUNT):
+        if not rl.is_gamepad_available(gamepad):
+            continue
+        pad_x = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[PadCode.LEFT_STICK_X]))
+        pad_y = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[PadCode.LEFT_STICK_Y]))
+        if abs(pad_x) > abs(x):
+            x = pad_x
+        if abs(pad_y) > abs(y):
+            y = pad_y
+    return x, y
+
+
 class GamepadSnapshot(msgspec.Struct, frozen=True):
     """Live pad readout in standard-code terms, for checking bindings on real hardware."""
 
