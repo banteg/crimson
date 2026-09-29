@@ -24,18 +24,10 @@ class RunStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 
     @classmethod
     def from_status_data(cls, data: GameStatusData) -> RunStatus:
-        return cls(
-            quest_unlock_index=data.quest_unlock_index,
-            quest_unlock_index_full=data.quest_unlock_index_full,
-            weapon_usage_counts=tuple(data.weapon_usage_counts),
-        )
+        return cls(**{name: getattr(data, name) for name in cls.__struct_fields__})
 
     def as_status_data(self) -> GameStatusData:
-        return GameStatusData(
-            quest_unlock_index=self.quest_unlock_index,
-            quest_unlock_index_full=self.quest_unlock_index_full,
-            weapon_usage_counts=self.weapon_usage_counts,
-        )
+        return GameStatusData(**msgspec.structs.asdict(self))
 
 
 class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):

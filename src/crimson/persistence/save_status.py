@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import contextlib
 from pathlib import Path
-from typing import Annotated, Final
+from typing import Annotated, Any, Final
 
 import msgspec
 from construct import Array, Bytes, Int16ul, Int32ul, Struct
@@ -35,21 +35,6 @@ type QuestPlayCounts = Annotated[
 
 _ZERO_QUEST_PLAY_COUNTS: Final[QuestPlayCounts] = tuple(0 for _ in range(QUEST_PLAY_COUNT))
 _ZERO_RESERVED_SEED_WORDS: Final[bytes] = b"\x00" * RESERVED_SEED_WORDS_BYTE_SIZE
-_STATUS_FIELD_NAMES: Final[frozenset[str]] = frozenset(
-    {
-        "quest_unlock_index",
-        "quest_unlock_index_full",
-        "weapon_usage_counts",
-        "quest_play_counts",
-        "mode_play_survival",
-        "mode_play_rush",
-        "mode_play_typo",
-        "mode_play_other",
-        "play_time_ms",
-        "reserved_seed_words",
-    },
-)
-
 GAME_STATUS_STRUCT = Struct(
     "quest_unlock_index" / Int16ul,
     "quest_unlock_index_full" / Int16ul,
@@ -82,6 +67,11 @@ class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
     reserved_seed_words: bytes = _ZERO_RESERVED_SEED_WORDS
 
 
+# `GameStatusData` spells out the blob fields; everything else walks them in this order.
+_STATUS_FIELD_NAMES: Final[tuple[str, ...]] = GameStatusData.__struct_fields__
+assert tuple(GAME_STATUS_STRUCT.subcons[i].name for i in range(len(GAME_STATUS_STRUCT.subcons))) == _STATUS_FIELD_NAMES
+
+
 class GameStatus(GameStatusData, kw_only=True):
     path: Path
     dirty: bool = False
@@ -98,34 +88,11 @@ class GameStatus(GameStatusData, kw_only=True):
 
     @classmethod
     def from_data(cls, *, path: Path, data: GameStatusData, dirty: bool = False) -> GameStatus:
-        return cls(
-            path=path,
-            dirty=dirty,
-            quest_unlock_index=data.quest_unlock_index,
-            quest_unlock_index_full=data.quest_unlock_index_full,
-            weapon_usage_counts=tuple(data.weapon_usage_counts),
-            quest_play_counts=tuple(data.quest_play_counts),
-            mode_play_survival=data.mode_play_survival,
-            mode_play_rush=data.mode_play_rush,
-            mode_play_typo=data.mode_play_typo,
-            mode_play_other=data.mode_play_other,
-            play_time_ms=data.play_time_ms,
-            reserved_seed_words=bytes(data.reserved_seed_words),
-        )
+        return cls(path=path, dirty=dirty, **_status_fields(data))
 
     def as_data(self) -> GameStatusData:
-        return GameStatusData(
-            quest_unlock_index=self.quest_unlock_index,
-            quest_unlock_index_full=self.quest_unlock_index_full,
-            weapon_usage_counts=tuple(self.weapon_usage_counts),
-            quest_play_counts=tuple(self.quest_play_counts),
-            mode_play_survival=self.mode_play_survival,
-            mode_play_rush=self.mode_play_rush,
-            mode_play_typo=self.mode_play_typo,
-            mode_play_other=self.mode_play_other,
-            play_time_ms=self.play_time_ms,
-            reserved_seed_words=bytes(self.reserved_seed_words),
-        )
+        """The status without its file binding."""
+        return GameStatusData(**_status_fields(self))
 
     def mode_play_count_for_mode(self, game_mode: GameMode) -> int:
         return getattr(self, _mode_count_field_for_mode(game_mode))
@@ -195,19 +162,8 @@ def _require_index(index: int, *, size: int, field: str) -> int:
     raise IndexError(f"{field} out of range: {idx}")
 
 
-def _status_blob_dict(data: GameStatusData) -> dict[str, object]:
-    return {
-        "quest_unlock_index": data.quest_unlock_index,
-        "quest_unlock_index_full": data.quest_unlock_index_full,
-        "weapon_usage_counts": list(data.weapon_usage_counts),
-        "quest_play_counts": list(data.quest_play_counts),
-        "mode_play_survival": data.mode_play_survival,
-        "mode_play_rush": data.mode_play_rush,
-        "mode_play_typo": data.mode_play_typo,
-        "mode_play_other": data.mode_play_other,
-        "play_time_ms": data.play_time_ms,
-        "reserved_seed_words": bytes(data.reserved_seed_words),
-    }
+def _status_fields(data: GameStatusData) -> dict[str, Any]:
+    return {name: getattr(data, name) for name in _STATUS_FIELD_NAMES}
 
 
 def default_status_data() -> GameStatusData:
@@ -218,22 +174,13 @@ def parse_status_blob(decoded: bytes) -> GameStatusData:
     if len(decoded) != BLOB_SIZE:
         raise ValueError(f"expected decoded blob of {BLOB_SIZE:#x} bytes, got {len(decoded):#x}")
     raw = GAME_STATUS_STRUCT.parse(decoded)
-    return GameStatusData(
-        quest_unlock_index=int(raw["quest_unlock_index"]),
-        quest_unlock_index_full=int(raw["quest_unlock_index_full"]),
-        weapon_usage_counts=tuple(int(value) for value in raw["weapon_usage_counts"]),
-        quest_play_counts=tuple(int(value) for value in raw["quest_play_counts"]),
-        mode_play_survival=int(raw["mode_play_survival"]),
-        mode_play_rush=int(raw["mode_play_rush"]),
-        mode_play_typo=int(raw["mode_play_typo"]),
-        mode_play_other=int(raw["mode_play_other"]),
-        play_time_ms=int(raw["play_time_ms"]),
-        reserved_seed_words=bytes(raw["reserved_seed_words"]),
-    )
+    # construct parses the arrays as lists; the struct holds tuples.
+    fields: dict[str, Any] = {name: raw[name] for name in _STATUS_FIELD_NAMES}
+    return msgspec.convert(fields, GameStatusData)
 
 
 def build_status_blob(data: GameStatusData) -> bytes:
-    return GAME_STATUS_STRUCT.build(_status_blob_dict(data))
+    return GAME_STATUS_STRUCT.build(_status_fields(data))
 
 
 def to_s8(value: int) -> int:
@@ -289,8 +236,8 @@ def load_status(path: Path) -> GameStatus:
     return GameStatus.from_data(path=path, data=parse_status_blob(decoded), dirty=False)
 
 
-def save_status(path: Path, status: GameStatusData | GameStatus) -> None:
-    decoded = build_status_blob(status.as_data() if isinstance(status, GameStatus) else status)
+def save_status(path: Path, status: GameStatusData) -> None:
+    decoded = build_status_blob(status)
     checksum = compute_checksum(decoded)
     encoded = encode_blob(decoded)
     atomic_write_bytes(path, GAME_CFG_STRUCT.build({"encoded": encoded, "checksum": checksum}))
