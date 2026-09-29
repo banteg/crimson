@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from crimson.camera import CameraUpdate
+from crimson.effects import FxQueueEntry, FxQueueRotatedEntry
 from crimson.math_parity import f32
 from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.presentation_step import DeterministicPresentationPlan
-from crimson.sim.terrain_fx import TerrainCorpseFx, TerrainDecalFx, TerrainFxBatch, TerrainFxScratch
+from crimson.sim.terrain_fx import TerrainFxBatch, TerrainFxScratch
 from crimson.world.runtime import WorldRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -13,7 +14,7 @@ from grim.geom import Vec2
 def _terrain_batch() -> TerrainFxBatch:
     return TerrainFxBatch(
         decals=(
-            TerrainDecalFx(
+            FxQueueEntry(
                 effect_id=5,
                 rotation=1.25,
                 pos=Vec2(12.0, 34.0),
@@ -23,7 +24,7 @@ def _terrain_batch() -> TerrainFxBatch:
             ),
         ),
         corpses=(
-            TerrainCorpseFx(
+            FxQueueRotatedEntry(
                 top_left=Vec2(40.0, 44.0),
                 color=RGBA(1.0, 1.0, 1.0, f32(0.8)),
                 rotation=0.5,
@@ -57,6 +58,9 @@ def test_terrain_fx_scratch_take_batch_copies_active_entries_and_clears() -> Non
     assert batch == _terrain_batch()
     assert scratch.decals.count == 0
     assert scratch.corpses.count == 0
+    # The next tick reuses the slots; the taken batch keeps its own entries.
+    scratch.decals.add(effect_id=6, pos=Vec2(), width=1.0, height=1.0, rotation=0.0, rgba=RGBA())
+    assert batch == _terrain_batch()
 
 
 def test_apply_presentation_plans_applies_terrain_fx_in_tick_order(mocker) -> None:
