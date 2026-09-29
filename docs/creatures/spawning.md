@@ -378,11 +378,9 @@ Notes:
 - Rush mode (pure models): `src/crimson/creatures/spawn.py`
   - `tick_rush_mode_spawns`, `build_rush_mode_spawn_creature`
   - Tests: `tests/modes/test_rush_mode_spawn.py`
-- Tutorial timeline (pure models): `src/crimson/creatures/spawn.py`
-  - `build_tutorial_stage3_fire_spawns`, `build_tutorial_stage4_clear_spawns`,
-    `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
-
-  - Tests: `tests/modes/test_tutorial_timeline_spawns.py`
+- Tutorial timeline: `src/crimson/tutorial/timeline.py`
+  - `tutorial_timeline_update` (spawns into the world after the world render, before the level-up check)
+  - Tests: `tests/modes/test_tutorial_timeline_update.py`, `tests/native_oracle/test_tutorial_timeline.py`
 - Quest timeline: `src/crimson/quests/timeline.py`
   - `quest_spawn_timeline_update` (spawns into the world), `quest_spawn_table_empty`
   - Tests: `tests/modes/test_quest_spawn_timeline.py`

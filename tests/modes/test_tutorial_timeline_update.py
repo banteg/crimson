@@ -1,157 +1,94 @@
 from __future__ import annotations
 
-import pytest
-
 from crimson.bonuses import BonusId
-from crimson.tutorial.timeline import TutorialState, tick_tutorial_timeline, tutorial_stage5_bonus_carrier_config
+from crimson.creatures.spawn_ids import CreatureFlags, SpawnId
+from crimson.game_modes import GameMode
+from crimson.sim.input import PlayerInput
+from crimson.sim.world_state import WorldState
+from crimson.tutorial.timeline import tutorial_timeline_update
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
+from tests.support.builders.session import make_session, make_world
 
 
-def test_stage_transition_advances_from_bootstrap() -> None:
-    state = TutorialState(stage_index=-1, stage_timer_ms=0, stage_transition_timer_ms=-1000)
-    state, _actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=1000.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=True,
-        bonus_pool_empty=True,
-        perk_pending_count=0,
-    )
-    assert state.stage_index == 0
-    assert state.stage_transition_timer_ms == 0
+def _tutorial_world() -> WorldState:
+    world = make_world()
+    world.state.game_mode = GameMode.TUTORIAL
+    return world
 
 
-def test_stage0_triggers_after_6000ms() -> None:
-    state = TutorialState(stage_index=0, stage_timer_ms=6001, stage_transition_timer_ms=-1, hint_index=2, hint_alpha=1000, hint_fade_in=True)
-    state, actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=16.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=True,
-        bonus_pool_empty=True,
-        perk_pending_count=0,
-    )
-    assert state.stage_transition_timer_ms == -1000
-    assert state.repeat_spawn_count == 0
-    assert state.hint_index == -1
-    assert state.hint_fade_in is False
-    assert actions.play_levelup_sfx is False
+def test_the_first_stage_starts_after_the_bootstrap_transition() -> None:
+    world = _tutorial_world()
+
+    tutorial_timeline_update(world, dt_ms=1000)
+
+    assert world.state.tutorial.stage_index == 0
+    assert world.state.tutorial.stage_transition_timer_ms == 0
+    assert world.state.tutorial_overlay.prompt_text == "In this tutorial you'll learn how to play Crimsonland"
 
 
-def test_stage1_move_spawns_point_bonuses() -> None:
-    state = TutorialState(stage_index=1, stage_timer_ms=0, stage_transition_timer_ms=-1)
-    state, actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=16.0,
-        any_move_active=True,
-        any_fire_active=False,
-        creatures_none_active=True,
-        bonus_pool_empty=True,
-        perk_pending_count=0,
-    )
-    assert state.stage_transition_timer_ms == -1000
-    assert actions.play_levelup_sfx is True
-    assert [(c.bonus_id, c.amount, c.pos) for c in actions.spawn_bonuses] == [
+def test_moving_on_stage_1_seeds_three_point_bonuses() -> None:
+    world = _tutorial_world()
+    tutorial = world.state.tutorial
+    tutorial.stage_index, tutorial.stage_transition_timer_ms = 1, -1
+    tutorial.move_active_this_tick = True
+
+    tutorial_timeline_update(world, dt_ms=16)
+
+    assert tutorial.stage_transition_timer_ms == -1000
+    assert [(b.bonus_id, b.amount, b.pos) for b in world.state.bonus_pool.iter_active()] == [
         (BonusId.POINTS, 500, Vec2(260.0, 260.0)),
         (BonusId.POINTS, 1000, Vec2(600.0, 400.0)),
         (BonusId.POINTS, 500, Vec2(300.0, 400.0)),
     ]
+    assert [request.sfx_id for request in world.state.sfx_queue] == [SfxId.UI_LEVELUP]
 
 
-def test_stage5_bonus_carrier_config() -> None:
-    assert tutorial_stage5_bonus_carrier_config(1) == (BonusId.SPEED, -1)
-    assert tutorial_stage5_bonus_carrier_config(2) == (BonusId.WEAPON, 5)
-    assert tutorial_stage5_bonus_carrier_config(3) == (BonusId.DOUBLE_EXPERIENCE, -1)
-    assert tutorial_stage5_bonus_carrier_config(4) == (BonusId.NUKE, -1)
-    assert tutorial_stage5_bonus_carrier_config(5) == (BonusId.REFLEX_BOOST, -1)
-    assert tutorial_stage5_bonus_carrier_config(0) is None
-    assert tutorial_stage5_bonus_carrier_config(6) is None
+def test_stage_5_repeats_give_the_carrier_its_bonus() -> None:
+    world = _tutorial_world()
+    tutorial = world.state.tutorial
+    tutorial.stage_index, tutorial.stage_transition_timer_ms, tutorial.repeat_spawn_count = 5, -1, 1
+
+    tutorial_timeline_update(world, dt_ms=16)
+
+    assert tutorial.repeat_spawn_count == 2
+    assert tutorial.hint_bonus_creature_ref is not None
+    carrier = world.creatures.entries[tutorial.hint_bonus_creature_ref]
+    assert carrier.pos == Vec2(1056.0, 1056.0)
+    assert (carrier.bonus_id, carrier.bonus_duration_override) == (BonusId.WEAPON, 5)
+    assert carrier.flags & CreatureFlags.BONUS_ON_DEATH
 
 
-@pytest.mark.parametrize(
-    ("hint_index", "original_text"),
-    [
-        (
-            1,
-            "This is a weapon powerup. Picking it you gets a new weapon.",
-        ),
-        (
-            3,
-            "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
-        ),
-    ],
-)
-def test_hint_text_preserves_original(hint_index: int, original_text: str) -> None:
-    state = TutorialState(
-        stage_index=0,
-        stage_timer_ms=0,
-        stage_transition_timer_ms=-1,
-        hint_index=hint_index,
-        hint_alpha=1000,
-        hint_fade_in=True,
-    )
-    _state, actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=0.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=True,
-        bonus_pool_empty=True,
-        perk_pending_count=0,
-    )
-    assert actions.hint_text == original_text
+def test_a_dead_carrier_from_an_earlier_repeat_latches_the_next_hint_again() -> None:
+    world = _tutorial_world()
+    tutorial = world.state.tutorial
+    carrier_index = world.creatures.spawn_template(
+        SpawnId.ALIEN_BONUS_CARRIER_27, Vec2(-32.0, 1056.0), 3.1415927, state=world.state, detail_preset=5,
+    )[1]
+    assert carrier_index is not None
+    carrier = world.creatures.entries[carrier_index]
+    carrier.hp, carrier.active = 0.0, False
+    tutorial.stage_index, tutorial.stage_transition_timer_ms = 5, -1000
+    tutorial.hint_bonus_creature_ref, tutorial.hint_index, tutorial.hint_alpha = carrier_index, 4, 1000
+
+    tutorial_timeline_update(world, dt_ms=16)
+
+    # Repeats 6 and 7 spawn no carrier, so native latches on the old one: a pair spawns and the hint moves on.
+    assert tutorial.hint_fade_in
+    assert tutorial.hint_index == 5
+    assert [c.pos for c in world.creatures.iter_active()] == [Vec2(128.0, 128.0), Vec2(152.0, 160.0)]
+    # The hint fades out on the latch frame and in from the next one.
+    assert tutorial.hint_alpha == 1000 - 16 * 3
 
 
-@pytest.mark.parametrize("repeat", [1, 2, 5])
-def test_stage5_emits_bonus_carrier_drop_for_first_repeats(repeat: int) -> None:
-    state = TutorialState(stage_index=5, stage_timer_ms=0, stage_transition_timer_ms=-1, repeat_spawn_count=repeat - 1)
-    _state, actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=16.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=True,
-        bonus_pool_empty=True,
-        perk_pending_count=0,
-    )
-    assert actions.stage5_bonus_carrier_drop == tutorial_stage5_bonus_carrier_config(repeat)
+def test_stage_5_experience_levels_up_in_the_same_world_step() -> None:
+    session, world = make_session(game_mode=GameMode.TUTORIAL)
+    tutorial = world.state.tutorial
+    tutorial.stage_index, tutorial.stage_transition_timer_ms, tutorial.repeat_spawn_count = 5, -1, 7
 
+    session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(aim=Vec2(512.0, 512.0))])
 
-def test_hint_carrier_death_keeps_native_one_frame_fade_out() -> None:
-    state = TutorialState(
-        stage_index=5,
-        stage_timer_ms=0,
-        stage_transition_timer_ms=-1,
-        hint_index=-1,
-        hint_alpha=600,
-        hint_fade_in=False,
-    )
-    state, actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=100.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=False,
-        bonus_pool_empty=False,
-        perk_pending_count=0,
-        hint_bonus_died=True,
-    )
-
-    assert state.hint_fade_in is True
-    assert state.hint_index == 0
-    assert state.hint_alpha == 300
-    assert actions.hint_alpha == pytest.approx(0.3)
-
-    state, actions = tick_tutorial_timeline(
-        state,
-        frame_dt_ms=100.0,
-        any_move_active=False,
-        any_fire_active=False,
-        creatures_none_active=False,
-        bonus_pool_empty=False,
-        perk_pending_count=0,
-    )
-    assert state.hint_alpha == 600
-    assert actions.hint_alpha == pytest.approx(0.6)
+    # `tutorial_timeline_update` runs before the level-up check, which turns the 3000 XP into a perk.
+    assert world.players[0].experience == 3000
+    assert world.players[0].level == 2
+    assert world.state.perk_selection.pending_count == 1

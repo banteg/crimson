@@ -2,16 +2,8 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from grim.sfx_map import SfxId
-from grim.sfx_types import SfxRequest
-
-from ..creatures.runtime import CreatureFlags
-from ..creatures.spawn import SpawnId
-from ..gameplay import survival_check_level_up
 from ..sim.input import PlayerInput
 from ..sim.world_state import WorldState
-from .state import TutorialOverlayState
-from .timeline import TutorialFrameActions, tick_tutorial_timeline
 
 
 def tutorial_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
@@ -24,89 +16,3 @@ def tutorial_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -
         tutorial.move_active_this_tick = False
         tutorial.fire_active_this_tick = False
     return inputs
-
-
-def _tutorial_overlay_from_actions(actions: TutorialFrameActions) -> TutorialOverlayState:
-    return TutorialOverlayState(
-        prompt_text=str(actions.prompt_text),
-        prompt_alpha=float(actions.prompt_alpha),
-        hint_text=str(actions.hint_text),
-        hint_alpha=float(actions.hint_alpha),
-    )
-
-
-def tutorial_post_step(world: WorldState, *, dt_ms: float) -> None:
-    state = world.state
-    tutorial = state.tutorial
-    # Native latches once the carrier's slot is inactive (its corpse culled) with
-    # health spent and the bonus-on-death flag still set.
-    hint_ref = tutorial.hint_bonus_creature_ref
-    hint_bonus_died = False
-    if hint_ref is not None:
-        carrier = world.creatures.entries[int(hint_ref)]
-        hint_bonus_died = (
-            not carrier.active and carrier.hp <= 0.0 and bool(carrier.flags & CreatureFlags.BONUS_ON_DEATH)
-        )
-
-    tutorial, actions = tick_tutorial_timeline(
-        tutorial,
-        frame_dt_ms=float(dt_ms),
-        any_move_active=bool(tutorial.move_active_this_tick),
-        any_fire_active=bool(tutorial.fire_active_this_tick),
-        creatures_none_active=not bool(world.creatures.iter_active()),
-        bonus_pool_empty=not bool(state.bonus_pool.iter_active()),
-        perk_pending_count=int(state.perk_selection.pending_count),
-        hint_bonus_died=hint_bonus_died,
-    )
-    tutorial.move_active_this_tick = False
-    tutorial.fire_active_this_tick = False
-    state.tutorial = tutorial
-    state.tutorial_overlay = _tutorial_overlay_from_actions(actions)
-
-    players = world.players
-    players[0].health = float(actions.force_player_health)
-    if actions.force_player_experience is not None:
-        players[0].experience = int(actions.force_player_experience)
-        survival_check_level_up(players[0], state.perk_selection)
-
-    if actions.play_levelup_sfx:
-        state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))
-
-    for index, call in enumerate(actions.spawn_bonuses):
-        # Native tutorial code overwrites slots 0..2 directly with 100-second
-        # timers (no bonus_spawn_at clamp or 16-particle burst).
-        spawned = state.bonus_pool.seed_tutorial_entry(
-            index,
-            pos=call.pos,
-            bonus_id=call.bonus_id,
-            amount=int(call.amount),
-        )
-        state.effects.spawn_burst(
-            pos=spawned.pos,
-            count=12,
-            rng=state.rng,
-            detail_preset=world.state.detail_preset,
-        )
-
-    for call in actions.spawn_templates:
-        mapping, primary = world.creatures.spawn_template(
-            call.template_id,
-            call.pos,
-            float(call.heading),
-            state=state,
-            detail_preset=world.state.detail_preset,
-        )
-        _ = mapping
-        if primary is None or actions.stage5_bonus_carrier_drop is None:
-            continue
-        if int(call.template_id) != int(SpawnId.ALIEN_BONUS_CARRIER_27):
-            continue
-        drop_id, drop_amount = actions.stage5_bonus_carrier_drop
-        tutorial.hint_bonus_creature_ref = int(primary)
-        if 0 <= int(primary) < len(world.creatures.entries):
-            creature = world.creatures.entries[int(primary)]
-            creature.flags |= CreatureFlags.BONUS_ON_DEATH
-            creature.bonus_id = drop_id
-            creature.bonus_duration_override = int(drop_amount)
-
-    state.tutorial = tutorial

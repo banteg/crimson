@@ -77,10 +77,6 @@ __all__ = [
     "build_rush_mode_spawn_creature",
     "build_spawn_plan",
     "build_survival_spawn_creature",
-    "build_tutorial_stage3_fire_spawns",
-    "build_tutorial_stage4_clear_spawns",
-    "build_tutorial_stage5_repeat_spawns",
-    "build_tutorial_stage6_perks_done_spawns",
     "resolve_tint",
     "spawn_id_label",
     "tick_rush_mode_spawns",
@@ -1708,87 +1704,6 @@ def tick_rush_mode_spawns(
         spawns.append(c)
 
     return float(cooldown), tuple(spawns)
-
-
-def build_tutorial_stage3_fire_spawns() -> tuple[SpawnTemplateCall, ...]:
-    """Spawn pack triggered by the stage-3 fire-key transition in `tutorial_timeline_update` (0x00408990)."""
-    heading = float(math.pi)
-    return (
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(-164.0, 412.0), heading=heading),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_SMALL_GRAY_26, pos=Vec2(-184.0, 512.0), heading=heading),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(-154.0, 612.0), heading=heading),
-    )
-
-
-def build_tutorial_stage4_clear_spawns() -> tuple[SpawnTemplateCall, ...]:
-    """Spawn pack triggered by the stage-4 "all clear" transition in `tutorial_timeline_update` (0x00408990)."""
-    heading = float(math.pi)
-    return (
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 412.0), heading=heading),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_SMALL_GRAY_26, pos=Vec2(1208.0, 512.0), heading=heading),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading),
-    )
-
-
-def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnTemplateCall, ...]:
-    """Spawn packs triggered by the stage-5 repeat loop in `tutorial_timeline_update` (0x00408990).
-
-    `repeat_spawn_count` is the incremented counter value (1..7). When it reaches 8, the tutorial
-    transitions instead of spawning more creatures.
-
-    Note: the original also stores the returned creature pointer from template `0x27` in
-    `tutorial_hint_bonus_ptr` and rewrites its packed bonus args (`link_index` low/high 16-bit fields)
-    depending on `repeat_spawn_count`. This helper only reproduces the `creature_spawn_template` calls.
-    """
-    n = int(repeat_spawn_count)
-    if n < 1 or n >= 8:
-        return ()
-
-    heading = float(math.pi)
-    spawns: list[SpawnTemplateCall] = []
-
-    if (n & 1) == 0:
-        # Even: right-side spawn pack (with an off-screen bottom-right spawn).
-        if n < 6:
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.ALIEN_BONUS_CARRIER_27, pos=Vec2(1056.0, 1056.0), heading=heading,
-                ),
-            )
-        spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1188.0, 1136.0), heading=heading),
-        )
-        spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_SMALL_GRAY_26, pos=Vec2(1208.0, 512.0), heading=heading),
-        )
-        spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(1178.0, 612.0), heading=heading),
-        )
-        if n == 4:
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_SMALL_BLUE_40, pos=Vec2(512.0, 1056.0), heading=heading,
-                ),
-            )
-        return tuple(spawns)
-
-    # Odd: left-side spawn pack.
-    if n < 6:
-        spawns.append(
-            SpawnTemplateCall(template_id=SpawnId.ALIEN_BONUS_CARRIER_27, pos=Vec2(-32.0, 1056.0), heading=heading),
-        )
-    spawns.extend(build_tutorial_stage3_fire_spawns())
-    return tuple(spawns)
-
-
-def build_tutorial_stage6_perks_done_spawns() -> tuple[SpawnTemplateCall, ...]:
-    """Spawn pack triggered by the stage-6 "no perks pending" transition in `tutorial_timeline_update` (0x00408990)."""
-    heading = float(math.pi)
-    return (
-        *build_tutorial_stage3_fire_spawns(),
-        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PURPLE_28, pos=Vec2(-32.0, -32.0), heading=heading),
-        *build_tutorial_stage4_clear_spawns(),
-    )
 
 
 # Quest-retry stat scales (reward, move speed, contact damage, health) keyed by
