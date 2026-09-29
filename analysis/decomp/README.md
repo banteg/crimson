@@ -172,6 +172,28 @@ progress.
 A reference counts only when 1.9.8's own maps name its target, so an exact
 instruction body whose globals the map does not name yet stays at `audit`.
 
+The shared C++ interface now describes 1.9.8's actual Grim vtable. That build
+has two legacy methods at offsets `0x04` and `0x08`, whose semantics remain
+unrecovered, and lacks the four later state-slot accessors. These changes shift
+different parts of the interface in opposite directions. Slot correspondence
+comes from the pinned DLL vtables and their mapped functions. The mapper can
+propagate names from native callers whose normalized bodies differ only at
+those dispatch offsets; compiled candidates still require the usual complete
+instruction and reference checks, with encoding identity measured separately.
+
+Build maps retain decorated function aliases and co-located object/member
+names, so source references can resolve without replacing the readable native
+names. Function searches and exact placements use decoded code extents with
+verified terminal padding excluded. Different alignment padding does not hide
+a shared body or extend its comparison into the next function. Grim maps are
+generated before EXE maps that consume their interface correspondence.
+
+Weapon layout is a separate remaining difference: 1.9.8's table indexing and
+default-construction loops use `0x78`-byte rows, versus `0x7c` in 1.9.93.
+Its initialization loop also lacks the later pellet-count store. Adapting that
+layout requires recovering the older firing behavior as well; the current
+weapon declarations retain the canonical layout.
+
 ## Refresh and publish
 
 On a machine with the matching compilers, reference images and pinned archives:

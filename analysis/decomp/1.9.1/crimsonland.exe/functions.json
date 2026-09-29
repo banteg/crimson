@@ -4425,10 +4425,10 @@
   {
     "address": "0x0043BDF0",
     "canonical_address": "0x00441270",
-    "end": "0x0043BF20",
-    "evidence": "ordered",
+    "end": "0x0043BEF0",
+    "evidence": "exact",
     "name": "highscore_format_date_label",
-    "size": 304
+    "size": 256
   },
   {
     "address": "0x0043BF20",
@@ -4776,11 +4776,11 @@
   },
   {
     "address": "0x00441D30",
-    "canonical_address": "0x004475D0",
-    "end": "0x004423D0",
-    "evidence": "ordered",
-    "name": "options_menu_update",
-    "size": 1696
+    "canonical_address": "0x00447580",
+    "end": "0x00441D69",
+    "evidence": "exact",
+    "name": "config_apply_detail_preset",
+    "size": 57
   },
   {
     "address": "0x004423D0",
@@ -4831,20 +4831,12 @@
     "size": 1
   },
   {
-    "address": "0x00442430",
-    "canonical_address": "0x00447C90",
-    "end": "0x00442490",
-    "evidence": "ordered",
-    "name": "input_configure_for_label",
-    "size": 96
-  },
-  {
     "address": "0x00442490",
-    "canonical_address": "0x00447D40",
-    "end": "0x00443240",
-    "evidence": "ordered",
-    "name": "quest_select_menu_update",
-    "size": 3504
+    "canonical_address": "0x00447CF0",
+    "end": "0x004424C5",
+    "evidence": "exact",
+    "name": "input_scheme_label",
+    "size": 53
   },
   {
     "address": "0x00443240",
@@ -5279,13 +5271,13 @@
   },
   {
     "address": "0x0044C7D6",
-    "canonical_address": "0x00453464",
+    "canonical_address": "0x00453471",
     "end": "0x0044C7E9",
-    "evidence": "ordered",
-    "name": "d3dx_init_vec3_transform_coord",
+    "evidence": "referenced",
+    "name": "D3DXVec3TransformCoord",
     "size": 19,
     "aliases": [
-      "?init_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      "_D3DXVec3TransformCoord@12"
     ]
   },
   {
@@ -5990,6 +5982,17 @@
     "size": 191,
     "aliases": [
       "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "address": "0x0044EC8A",
+    "canonical_address": "0x0045589A",
+    "end": "0x0044EDF7",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_project",
+    "size": 365,
+    "aliases": [
+      "?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ]
   },
   {
@@ -7030,26 +7033,26 @@
   {
     "address": "0x004588E7",
     "canonical_address": "0x0045ED17",
-    "end": "0x00458A6F",
-    "evidence": "referenced",
+    "end": "0x00458A4F",
+    "evidence": "exact",
     "name": "vec3_project",
-    "size": 392
+    "size": 360
   },
   {
     "address": "0x00458A6F",
     "canonical_address": "0x0045EE9F",
-    "end": "0x00458C95",
-    "evidence": "referenced",
+    "end": "0x00458C75",
+    "evidence": "exact",
     "name": "vec3_unproject",
-    "size": 550
+    "size": 518
   },
   {
     "address": "0x00458C95",
     "canonical_address": "0x0045F0C5",
-    "end": "0x0045918A",
-    "evidence": "referenced",
+    "end": "0x00458DC8",
+    "evidence": "exact",
     "name": "x3d_vec3_unproject_k7",
-    "size": 1269,
+    "size": 307,
     "aliases": [
       "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ]
@@ -9843,10 +9846,10 @@
   {
     "address": "0x00464125",
     "canonical_address": "0x0046B265",
-    "end": "0x00464600",
-    "evidence": "referenced",
+    "end": "0x004645C6",
+    "evidence": "exact",
     "name": "crt_fp_parse",
-    "size": 1243
+    "size": 1185
   },
   {
     "address": "0x00464600",

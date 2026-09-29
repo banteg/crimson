@@ -23,7 +23,7 @@ public:
     virtual void grim_release(void) = 0;
 #if CL_BUILD == 10908
     // Two real legacy methods at 0x04/0x08 in the 1.9.8 DLL's vtable.
-    // Their semantics are still under study; no recovered game call uses them.
+    // Their semantics are still under study.
     virtual void grim_legacy_slot_04(void) = 0;
     virtual bool grim_legacy_slot_08(void) = 0;
 #endif
