@@ -47,7 +47,7 @@ def resume_audio(state: AudioState) -> None:
     state.suspended_sounds.clear()
 
 
-def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState) -> AudioState:
+def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState, rng: CrandLike) -> AudioState:
     music_disabled = config.audio.music_disabled
     sound_disabled = config.audio.sound_disabled
     music_volume = config.audio.music_volume
@@ -61,7 +61,7 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
         return AudioState(
             ready=False,
             music=music.init_music_state(ready=False, enabled=False, volume=music_volume),
-            sfx=sfx.init_sfx_state(ready=False, enabled=False, volume=sfx_volume),
+            sfx=sfx.init_sfx_state(ready=False, enabled=False, volume=sfx_volume, rng=rng),
         )
 
     owns_device = not rl.is_audio_device_ready()
@@ -74,13 +74,13 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
         return AudioState(
             ready=False,
             music=music.init_music_state(ready=False, enabled=False, volume=music_volume),
-            sfx=sfx.init_sfx_state(ready=False, enabled=False, volume=sfx_volume),
+            sfx=sfx.init_sfx_state(ready=False, enabled=False, volume=sfx_volume, rng=rng),
         )
 
     state = AudioState(
         ready=True,
         music=music.init_music_state(ready=True, enabled=music_enabled, volume=music_volume),
-        sfx=sfx.init_sfx_state(ready=True, enabled=sfx_enabled, volume=sfx_volume),
+        sfx=sfx.init_sfx_state(ready=True, enabled=sfx_enabled, volume=sfx_volume, rng=rng),
         owns_device=owns_device,
     )
     with ExitStack() as cleanup:

@@ -25,6 +25,7 @@ from grim.console import create_console, register_core_cvars
 from grim.fonts.small import measure_small_text_width
 from grim.geom import Vec2
 from grim.music import MusicState, MusicTrack
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
@@ -116,7 +117,7 @@ def test_game_tune_script_queues_its_tunes_through_snd_add_game_tune(open_playba
         volume=1.0,
         tracks={name: MusicTrack(stream=rl.Music(), track_id=index) for index, name in enumerate(("gt1_ingame", "gt2_harppen"))},
     )
-    view._audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0))
+    view._audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)))
 
     view._load_game_tune_queue()
 

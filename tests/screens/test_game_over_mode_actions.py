@@ -51,7 +51,7 @@ def test_game_over_requests_result_music_until_the_exit_transition(mocker, make_
     mode.audio = AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
     )
     play_music = mocker.patch.object(base_gameplay_mode, "play_music")
     mocker.patch.object(GameOverUi, "update", return_value=None)
@@ -98,7 +98,7 @@ def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
     mode.audio = AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
     )
     stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
     mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))

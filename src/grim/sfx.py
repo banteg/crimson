@@ -13,6 +13,7 @@ from . import paq
 from .audio_math import native_sound_gain, raylib_pan
 from .console import ConsoleState
 from .math import f32
+from .rand import CrandLike
 from .sfx_map import SFX_NATIVE_ORDER, SFX_SPECS, SfxId
 
 SFX_PAK_NAME = "sfx.paq"
@@ -57,7 +58,6 @@ class SfxSample(msgspec.Struct):
     entry_name: str
     source: SfxVoice
     aliases: list[SfxVoice]
-    next_voice: int = 0
 
     def voices(self) -> Iterable[SfxVoice]:
         yield self.source
@@ -69,14 +69,13 @@ class SfxSample(msgspec.Struct):
             for alias in self.aliases:
                 cleanup.callback(rl.unload_sound_alias, alias.sound)
 
-    def acquire_voice(self) -> SfxVoice:
+    def acquire_voice(self, rng: CrandLike) -> SfxVoice:
+        """`sfx_entry_start_playback`: the first idle voice, else a random one (`rand() % 16`) restarted."""
         for voice in self.voices():
             if not rl.is_sound_playing(voice.sound):
                 return voice
         voices = [self.source, *self.aliases]
-        idx = self.next_voice % len(voices)
-        self.next_voice += 1
-        return voices[idx]
+        return voices[rng.rand() % len(voices)]
 
 
 class SfxState(msgspec.Struct):
@@ -86,6 +85,8 @@ class SfxState(msgspec.Struct):
     voice_count: int
     samples: dict[SfxId, SfxSample]
     rate_scale_hz: int
+    # The CRT `rand()` stream voice stealing draws from.
+    rng: CrandLike
     owned_samples: list[SfxSample] = msgspec.field(default_factory=list)
     cooldowns: dict[SfxId, float] = msgspec.field(default_factory=dict)
 
@@ -102,6 +103,7 @@ def init_sfx_state(
     ready: bool,
     enabled: bool,
     volume: float,
+    rng: CrandLike,
     voice_count: int = DEFAULT_VOICE_COUNT,
 ) -> SfxState:
     return SfxState(
@@ -111,6 +113,7 @@ def init_sfx_state(
         voice_count=max(1, int(voice_count)),
         samples={},
         rate_scale_hz=int(_SFX_RATE_BASE_HZ),
+        rng=rng,
     )
 
 
@@ -202,7 +205,7 @@ def play_sfx(
         reflex_boost_timer=float(reflex_boost_timer),
     )
     state.cooldowns[sfx] = f32(0.44 if sfx in (SfxId.FLAMER_FIRE_01, SfxId.FLAMER_FIRE_02) else 0.05)
-    voice = sample.acquire_voice()
+    voice = sample.acquire_voice(state.rng)
     voice.gain = gain
     pan_value, voice.pan_compensation = raylib_pan(pan)
     rl.set_sound_pitch(voice.sound, _pitch_scale_from_rate_hz(int(state.rate_scale_hz)))

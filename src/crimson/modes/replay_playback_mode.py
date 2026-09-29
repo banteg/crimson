@@ -298,8 +298,8 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._driver = None
 
-        audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
         audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
+        audio = init_audio_state(self._config, self._ctx.assets_dir, self._console, audio_rng)
         self._audio = audio
         self._audio_rng = audio_rng
         self._register_replay_audio_commands()

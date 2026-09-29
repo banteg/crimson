@@ -66,7 +66,7 @@ def test_contract_6_state_apply_and_presentation_apply_stay_separate(mocker, tmp
     audio = AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=False, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=False, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)),
     )
     runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0xBEEF), audio=audio)
     runtime.world.players[0].weapon.shot_cooldown = 0.0

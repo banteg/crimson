@@ -20,7 +20,7 @@ def test_runtime_open_eagerly_loads_runtime_resources_and_audio(make_game_state,
     view.open()
 
     load_runtime_resources.assert_called_once_with(state.assets_dir)
-    init_audio_state.assert_called_once_with(state.config, state.assets_dir, state.console)
+    init_audio_state.assert_called_once_with(state.config, state.assets_dir, state.console, state.rng)
     assert state.resources is resources
     assert state.audio is audio
 

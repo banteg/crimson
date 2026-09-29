@@ -9,6 +9,7 @@ import pytest
 from grim import audio, music, paq, sfx
 from grim.config import default_crimson_cfg
 from grim.console import ConsoleLog, ConsoleState
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SFX_SPECS, SfxId
 
@@ -69,7 +70,7 @@ def test_invalid_optional_music_uses_real_decoder_and_does_not_consume_an_id(tmp
 
 def test_invalid_wave_uses_real_decoder_and_fails_before_voice_creation(mocker) -> None:
     load_sound = mocker.patch.object(rl, "load_sound_from_wave")
-    state = sfx.init_sfx_state(ready=True, enabled=True, volume=1.0)
+    state = sfx.init_sfx_state(ready=True, enabled=True, volume=1.0, rng=Crand(0x1234))
     with pytest.raises(ValueError, match="failed to decode sfx"):
         sfx._load_sample_from_data(state, entry_name="corrupt.wav", data=b"RIFF")
     load_sound.assert_not_called()
@@ -92,7 +93,7 @@ def test_failed_initialization_releases_every_acquired_resource(audio_assets, au
     else:
         mocker.patch.object(rl, "load_sound_from_wave", side_effect=RuntimeError("sound allocation failed"))
     with pytest.raises((ValueError, RuntimeError)):
-        audio.init_audio_state(default_crimson_cfg(), root, console)
+        audio.init_audio_state(default_crimson_cfg(), root, console, Crand(0x1234))
     assert Counter(created) == Counter(_releases(released))
     close.assert_called_once_with()
 
@@ -103,7 +104,7 @@ def test_missing_music_entry_is_preflighted_and_loaded_sfx_are_released(audio_as
     paq.write_paq(root / music.MUSIC_PAK_NAME, [("music/intro.ogg", b"stub Vorbis")])
     load_music = mocker.spy(rl, "load_music_stream_from_memory")
     with pytest.raises(FileNotFoundError, match="shortie_monk"):
-        audio.init_audio_state(default_crimson_cfg(), root, console)
+        audio.init_audio_state(default_crimson_cfg(), root, console, Crand(0x1234))
     load_music.assert_not_called()
     assert any(kind == "source" for kind, _ in created)
     assert Counter(created) == Counter(_releases(released))
@@ -120,7 +121,7 @@ def test_shutdown_releases_aliases_before_sources_and_only_owns_its_device(
     root, console = audio_assets
     created, released, close = audio_backend
     mocker.patch.object(rl, "is_audio_device_ready", side_effect=[borrowed_device, True])
-    state = audio.init_audio_state(default_crimson_cfg(), root, console)
+    state = audio.init_audio_state(default_crimson_cfg(), root, console, Crand(0x1234))
     owned = list(state.sfx.owned_samples)
     assert state.sfx.samples[SfxId.SHOCK_FIRE] is state.sfx.samples[SfxId.SHOCK_FIRE_ALT]
     audio.shutdown_audio(state)
@@ -137,7 +138,7 @@ def test_shutdown_releases_aliases_before_sources_and_only_owns_its_device(
 def test_failed_reload_keeps_existing_samples_and_successful_retry_replaces_them(audio_assets, audio_backend, mocker):
     root, console = audio_assets
     created, released, _ = audio_backend
-    state = sfx.init_sfx_state(ready=True, enabled=True, volume=1.0)
+    state = sfx.init_sfx_state(ready=True, enabled=True, volume=1.0, rng=Crand(0x1234))
     sfx.load_sfx_index(state, root, console)
     original = dict(state.samples)
     validity = mocker.patch.object(rl, "is_sound_valid", return_value=False)

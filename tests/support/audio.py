@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from grim.rand import Crand
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
@@ -16,7 +17,7 @@ def make_sfx_state(*ids: SfxId):
     from grim.sfx import SfxSample, SfxVoice, init_sfx_state
     from grim.sfx_map import SFX_SPECS
 
-    state = init_sfx_state(ready=True, enabled=True, volume=1.0)
+    state = init_sfx_state(ready=True, enabled=True, volume=1.0, rng=Crand(0x1234))
     samples: dict[str, SfxSample] = {}
     for sfx_id in ids:
         entry = SFX_SPECS[sfx_id].entry_name
