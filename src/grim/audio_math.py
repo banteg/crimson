@@ -1,24 +1,18 @@
 from __future__ import annotations
 
-import struct
 from functools import lru_cache
 
 from .geom import Vec2
-
-_F32 = struct.Struct("<f")
-
-
-def _f32(value: float) -> float:
-    return _F32.unpack(_F32.pack(value))[0]
+from .math import f32
 
 
 def native_sound_pan(position: Vec2 | None, *, camera: Vec2, screen_width: float) -> int:
     """sfx_play_panned: horizontal position to DirectSound hundredths of dB."""
     if position is None:
         return 0
-    screen_x = _f32(_f32(camera.x) + _f32(position.x))
-    fraction = _f32(screen_x / _f32(screen_width))
-    pan = int(_f32(_f32(fraction - 0.5) * 1700.0))
+    screen_x = f32(f32(camera.x) + f32(position.x))
+    fraction = f32(screen_x / f32(screen_width))
+    pan = int(f32(f32(fraction - 0.5) * 1700.0))
     return min(10_000, max(-10_000, pan))
 
 
@@ -29,8 +23,8 @@ def native_sound_gain(volume: float) -> float:
     if volume <= 0.0:
         return 0.0
     # Native runs these operations at x87 PC=24 and __ftol truncates to zero.
-    mapped = _f32(_f32(_f32(volume) + 2.0) * _f32(1.0 / 3.0))
-    attenuation = int(_f32(_f32(1.0 - mapped) * -10_000.0))
+    mapped = f32(f32(f32(volume) + 2.0) * f32(1.0 / 3.0))
+    attenuation = int(f32(f32(1.0 - mapped) * -10_000.0))
     return 10.0 ** (min(0, max(-10_000, attenuation)) / 2000.0)
 
 

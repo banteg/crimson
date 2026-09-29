@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import math
-import struct
 
 from grim.geom import Vec2
+from grim.math import f32, f32_bits_i32, f32_from_bits
 
 __all__ = [
     "NATIVE_HALF_PI",
@@ -39,32 +39,12 @@ __all__ = [
 ]
 
 
-def f32_from_bits(bits: int) -> float:
-    return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
-
-
-def f32_bits_i32(value: float) -> int:
-    """Reinterpret a float32 as its signed int32 bit pattern (a float/int union read)."""
-
-    return struct.unpack("<i", struct.pack("<f", float(value)))[0]
-
-
-# Reuse bound struct methods in the float32 hot path.
-_F32_STRUCT = struct.Struct("<f")
-_F32_PACK = _F32_STRUCT.pack
-_F32_UNPACK = _F32_STRUCT.unpack
-
-
 # Native movement/heading code uses these exact float32 literals.
 NATIVE_PI = f32_from_bits(0x40490FDB)
 NATIVE_HALF_PI = f32_from_bits(0x3FC90FDB)
 NATIVE_QUARTER_PI = f32_from_bits(0x3F490FDB)
 NATIVE_TAU = f32_from_bits(0x40C90FDB)
 NATIVE_TURN_RATE_SCALE = f32_from_bits(0x3FAAAAAB)
-
-
-def f32(value: float) -> float:
-    return _F32_UNPACK(_F32_PACK(float(value)))[0]
 
 
 def x87_pc24_add(lhs: float, rhs: float) -> float:

@@ -21,10 +21,6 @@ from .types import (
 )
 
 
-def _quantize_f32(value: float) -> float:
-    return f32(value)
-
-
 def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
     flags = pack_input_flags(
         fire_down=bool(inp.fire_down),
@@ -42,10 +38,10 @@ def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
         turn_right_pressed=inp.turn_right_pressed,
     )
     return (
-        _quantize_f32(inp.move.x),
-        _quantize_f32(inp.move.y),
-        _quantize_f32(inp.aim.x),
-        _quantize_f32(inp.aim.y),
+        f32(inp.move.x),
+        f32(inp.move.y),
+        f32(inp.aim.x),
+        f32(inp.aim.y),
         int(flags),
     )
 

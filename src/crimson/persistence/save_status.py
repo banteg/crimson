@@ -67,9 +67,9 @@ class GameStatusData(msgspec.Struct, forbid_unknown_fields=True):
     reserved_seed_words: bytes = _ZERO_RESERVED_SEED_WORDS
 
 
-# `GameStatusData` spells out the blob fields; everything else walks them in this order.
+# `GameStatusData` spells out the blob fields in `GAME_STATUS_STRUCT` order; everything else walks them.
 _STATUS_FIELD_NAMES: Final[tuple[str, ...]] = GameStatusData.__struct_fields__
-assert tuple(GAME_STATUS_STRUCT.subcons[i].name for i in range(len(GAME_STATUS_STRUCT.subcons))) == _STATUS_FIELD_NAMES
+assert tuple(subcon.name for subcon in GAME_STATUS_STRUCT.subcons) == _STATUS_FIELD_NAMES
 
 
 class GameStatus(GameStatusData, kw_only=True):

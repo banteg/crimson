@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from grim.math import i32
 from grim.sfx_types import SfxRequest
 
 from ..math_parity import f32, x87_pc24_mul
@@ -79,8 +80,7 @@ def most_used_weapon_id_for_player(
         return WeaponId(fallback_weapon_id)
 
     def signed_time(weapon_id: int) -> int:
-        value = int(times[weapon_id]) & 0xFFFFFFFF
-        return value - 0x100000000 if value & 0x80000000 else value
+        return i32(int(times[weapon_id]))
 
     best = 1
     for weapon_id in range(2, min(len(times), 64)):

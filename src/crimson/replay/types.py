@@ -145,10 +145,6 @@ def current_replay_game_version() -> str:
         return version
 
 
-def quantize_f32(value: float) -> float:
-    return f32(value)
-
-
 def pack_input_flags(
     *,
     fire_down: bool,

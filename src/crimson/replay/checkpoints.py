@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Annotated
 
 import msgspec
 
@@ -12,6 +13,7 @@ from ..bonuses import BonusId
 from ..creatures.runtime import CreatureDeath
 from ..game_modes import GameMode
 from ..math_parity import f32
+from ..msgspec_types import I32, U32, NonNegativeI32
 from ..sim.state_types import PlayerState
 from ..sim.timing import nearest_ms_i32
 from ..sim.world_state import WorldEvents, WorldState
@@ -38,32 +40,32 @@ class ReplayPlayerCheckpoint(msgspec.Struct, frozen=True, forbid_unknown_fields=
     health: float
     weapon_id: WeaponId
     ammo: float
-    experience: int
-    level: int
+    experience: I32
+    level: I32
 
 
 class ReplayTypoNameEntry(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    creature_index: int
+    creature_index: I32
     name: str
 
 
 class ReplayTypoSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     input_text: str
-    submit_count: int
-    match_count: int
-    spawn_cooldown_ms: int
+    submit_count: I32
+    match_count: I32
+    spawn_cooldown_ms: I32
     active_names: list[ReplayTypoNameEntry]
 
 
 class ReplayTutorialSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    stage_index: int
-    stage_timer_ms: int
-    stage_transition_timer_ms: int
-    hint_index: int
-    hint_alpha: int
+    stage_index: I32
+    stage_timer_ms: I32
+    stage_transition_timer_ms: I32
+    hint_index: I32
+    hint_alpha: I32
     hint_fade_in: bool
-    repeat_spawn_count: int
-    hint_bonus_creature_ref: int | None
+    repeat_spawn_count: I32
+    hint_bonus_creature_ref: I32 | None
     prompt_text: str
     prompt_alpha: float
     hint_text: str
@@ -71,15 +73,15 @@ class ReplayTutorialSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=
 
 
 class ReplayCheckpoint(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    tick_index: int
-    rng_state: int
-    elapsed_ms: int
-    score_xp: int
-    kills: int
-    creature_count: int
-    perk_pending: int
-    players: list[ReplayPlayerCheckpoint]
-    bonus_timers: dict[str, int]
+    tick_index: NonNegativeI32
+    rng_state: U32
+    elapsed_ms: NonNegativeI32
+    score_xp: NonNegativeI32
+    kills: NonNegativeI32
+    creature_count: NonNegativeI32
+    perk_pending: NonNegativeI32
+    players: Annotated[list[ReplayPlayerCheckpoint], msgspec.Meta(min_length=1)]
+    bonus_timers: dict[str, I32]
     deaths: list[ReplayDeathLedgerEntry]
     perk: ReplayPerkSnapshot
     events: ReplayEventSummary
@@ -88,39 +90,39 @@ class ReplayCheckpoint(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 
 
 class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    creature_index: int
-    type_id: int
+    creature_index: I32
+    type_id: I32
     reward_value: float
-    xp_awarded: int
-    owner_id: int
+    xp_awarded: I32
+    owner_id: I32
 
 
 class ReplayHitSummaryEntry(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    type_id: int
+    type_id: I32
     origin: ReplayCheckpointVec2
     hit: ReplayCheckpointVec2
     target: ReplayCheckpointVec2
 
 
 class ReplayPerkSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    pending_count: int
+    pending_count: I32
     choices_dirty: bool
-    choices: list[int]
-    player_nonzero_counts: list[list[list[int]]]
+    choices: Annotated[list[I32], msgspec.Meta(min_length=7, max_length=7)]
+    player_nonzero_counts: list[list[list[I32]]]
 
 
 class ReplayEventSummary(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    hit_count: int
-    pickup_count: int
-    sfx_count: int
+    hit_count: I32
+    pickup_count: I32
+    sfx_count: I32
     sfx_head: list[str]
     hit_head: list[ReplayHitSummaryEntry]
 
 
 class ReplayCheckpoints(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    version: int
-    sample_rate: int
-    checkpoints: list[ReplayCheckpoint]
+    version: I32
+    sample_rate: Annotated[int, msgspec.Meta(ge=1, le=(1 << 31) - 1)]
+    checkpoints: Annotated[list[ReplayCheckpoint], msgspec.Meta(min_length=1)]
 
 
 _CHECKPOINTS_ENCODER = msgspec.msgpack.Encoder()
@@ -374,92 +376,19 @@ def _canonical_checkpoint(checkpoint: ReplayCheckpoint) -> ReplayCheckpoint:
     )
 
 
-def _require_i32(value: int, *, field: str) -> int:
-    integer = int(value)
-    if not (-(1 << 31) <= integer <= (1 << 31) - 1):
-        raise ReplayCheckpointsError(f"{field} must fit i32")
-    return integer
-
-
-def _validate_checkpoint_integer_widths(checkpoint: ReplayCheckpoint, *, index: int) -> None:
-    prefix = f"checkpoints[{index}]"
-    if not (0 <= int(checkpoint.rng_state) <= 0xFFFFFFFF):
-        raise ReplayCheckpointsError(f"{prefix}.rng_state must be a uint32")
-    for field in ("tick_index", "elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending"):
-        value = _require_i32(getattr(checkpoint, field), field=f"{prefix}.{field}")
-        if value < 0:
-            raise ReplayCheckpointsError(f"{prefix}.{field} must be non-negative")
-    for key, value in checkpoint.bonus_timers.items():
-        _require_i32(value, field=f"{prefix}.bonus_timers[{key!r}]")
-    for player_index, player in enumerate(checkpoint.players):
-        for field in ("weapon_id", "experience", "level"):
-            _require_i32(getattr(player, field), field=f"{prefix}.players[{player_index}].{field}")
-    for death_index, death in enumerate(checkpoint.deaths):
-        for field in ("creature_index", "type_id", "xp_awarded", "owner_id"):
-            _require_i32(getattr(death, field), field=f"{prefix}.deaths[{death_index}].{field}")
-    _require_i32(checkpoint.perk.pending_count, field=f"{prefix}.perk.pending_count")
-    for choice_index, choice in enumerate(checkpoint.perk.choices):
-        _require_i32(choice, field=f"{prefix}.perk.choices[{choice_index}]")
-    for player_index, rows in enumerate(checkpoint.perk.player_nonzero_counts):
-        for row_index, row in enumerate(rows):
-            for value_index, value in enumerate(row):
-                _require_i32(
-                    value,
-                    field=f"{prefix}.perk.player_nonzero_counts[{player_index}][{row_index}][{value_index}]",
-                )
-    for field in ("hit_count", "pickup_count", "sfx_count"):
-        _require_i32(getattr(checkpoint.events, field), field=f"{prefix}.events.{field}")
-    for hit_index, hit in enumerate(checkpoint.events.hit_head):
-        _require_i32(hit.type_id, field=f"{prefix}.events.hit_head[{hit_index}].type_id")
-    if checkpoint.tutorial is not None:
-        tutorial = checkpoint.tutorial
-        for field in (
-            "stage_index",
-            "stage_timer_ms",
-            "stage_transition_timer_ms",
-            "hint_index",
-            "hint_alpha",
-            "repeat_spawn_count",
-        ):
-            _require_i32(getattr(tutorial, field), field=f"{prefix}.tutorial.{field}")
-        if tutorial.hint_bonus_creature_ref is not None:
-            _require_i32(
-                tutorial.hint_bonus_creature_ref,
-                field=f"{prefix}.tutorial.hint_bonus_creature_ref",
-            )
-    if checkpoint.typo is not None:
-        typo = checkpoint.typo
-        for field in ("submit_count", "match_count", "spawn_cooldown_ms"):
-            _require_i32(getattr(typo, field), field=f"{prefix}.typo.{field}")
-        for name_index, entry in enumerate(typo.active_names):
-            _require_i32(entry.creature_index, field=f"{prefix}.typo.active_names[{name_index}].creature_index")
-
-
 def _validate_and_canonicalize(checkpoints: ReplayCheckpoints) -> ReplayCheckpoints:
-    _require_i32(checkpoints.version, field="checkpoints.version")
-    _require_i32(checkpoints.sample_rate, field="checkpoints.sample_rate")
-    if int(checkpoints.version) != FORMAT_VERSION:
-        raise ReplayCheckpointsError(f"unsupported checkpoints version: {int(checkpoints.version)}")
-    if int(checkpoints.sample_rate) <= 0:
-        raise ReplayCheckpointsError("checkpoints sample_rate must be positive")
-    if not checkpoints.checkpoints:
-        raise ReplayCheckpointsError("checkpoints must contain at least one row")
+    """Checks the schema cannot express, and floats rounded to the f32 the game stores."""
+    if checkpoints.version != FORMAT_VERSION:
+        raise ReplayCheckpointsError(f"unsupported checkpoints version: {checkpoints.version}")
     canonical = [
         _canonical_checkpoint(checkpoint) for checkpoint in checkpoints.checkpoints
     ]
     previous_tick: int | None = None
     for index, checkpoint in enumerate(canonical):
-        _validate_checkpoint_integer_widths(checkpoint, index=index)
-        tick = int(checkpoint.tick_index)
-        if tick < 0:
-            raise ReplayCheckpointsError(f"checkpoints[{index}].tick_index must be non-negative")
+        tick = checkpoint.tick_index
         if previous_tick is not None and tick <= previous_tick:
             raise ReplayCheckpointsError("checkpoint tick indices must be strictly increasing and unique")
-        if not checkpoint.players:
-            raise ReplayCheckpointsError(f"checkpoints[{index}].players must be non-empty")
-        if len(checkpoint.perk.choices) != 7:
-            raise ReplayCheckpointsError(f"checkpoints[{index}].perk.choices must contain exactly 7 slots")
-        if int(checkpoint.perk_pending) != int(checkpoint.perk.pending_count):
+        if checkpoint.perk_pending != checkpoint.perk.pending_count:
             raise ReplayCheckpointsError(
                 f"checkpoints[{index}].perk_pending must equal perk.pending_count",
             )
@@ -471,7 +400,7 @@ def dump_checkpoints(checkpoints: ReplayCheckpoints) -> bytes:
     try:
         decoded = _CHECKPOINTS_DECODER.decode(_CHECKPOINTS_ENCODER.encode(checkpoints))
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCheckpointsError("invalid checkpoints payload for the current schema") from exc
+        raise ReplayCheckpointsError(f"invalid checkpoints payload: {exc}") from exc
     return zstd_pack(_CHECKPOINTS_ENCODER.encode(_validate_and_canonicalize(decoded)))
 
 
@@ -492,7 +421,7 @@ def load_checkpoints(data: bytes) -> ReplayCheckpoints:
     try:
         decoded = _CHECKPOINTS_DECODER.decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
-        raise ReplayCheckpointsError("invalid checkpoints msgpack payload") from exc
+        raise ReplayCheckpointsError(f"invalid checkpoints payload: {exc}") from exc
     checkpoints = _validate_and_canonicalize(decoded)
     if _CHECKPOINTS_ENCODER.encode(checkpoints) != payload:
         raise ReplayCheckpointsError("checkpoints payload is not canonically encoded")

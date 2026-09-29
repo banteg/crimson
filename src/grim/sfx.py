@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import struct
 from collections.abc import Iterable
 from contextlib import ExitStack
 from pathlib import Path
@@ -13,30 +12,24 @@ from grim.raylib_api import rl
 from . import paq
 from .audio_math import native_sound_gain, raylib_pan
 from .console import ConsoleState
+from .math import f32
 from .sfx_map import SFX_NATIVE_ORDER, SFX_SPECS, SfxId
 
 SFX_PAK_NAME = "sfx.paq"
 DEFAULT_VOICE_COUNT = 4
-_F32_STRUCT = struct.Struct("<f")
-_F32_PACK = _F32_STRUCT.pack
-_F32_UNPACK = _F32_STRUCT.unpack
 _SFX_RATE_BASE_HZ = 44100
 _SFX_RATE_MIN_HZ = 22050
-
-
-def _f32(value: float) -> float:
-    return _F32_UNPACK(_F32_PACK(float(value)))[0]
 
 
 def _next_rate_scale_hz(*, current_rate_scale_hz: int, reflex_boost_timer: float) -> int:
     # Native `sfx_play` / `sfx_play_panned` update a global rate scalar from
     # `bonus_reflex_boost_timer` before each voice start.
-    reflex_f32 = _f32(float(reflex_boost_timer))
+    reflex_f32 = f32(float(reflex_boost_timer))
     if reflex_f32 <= 0.0:
         return int(_SFX_RATE_BASE_HZ)
     if reflex_f32 <= 1.0:
         if reflex_f32 < 1.0:
-            rate_expr = _f32((_f32(1.0) - reflex_f32 + _f32(1.0)) * _f32(float(_SFX_RATE_MIN_HZ)))
+            rate_expr = f32((f32(1.0) - reflex_f32 + f32(1.0)) * f32(float(_SFX_RATE_MIN_HZ)))
             # Native __ftol sets RC=truncate before fistp (0x00461054).
             return int(rate_expr)
         # Native keeps prior `sfx_rate_scale` when timer is exactly 1.0.
@@ -45,7 +38,7 @@ def _next_rate_scale_hz(*, current_rate_scale_hz: int, reflex_boost_timer: float
 
 
 def _pitch_scale_from_rate_hz(rate_scale_hz: int) -> float:
-    return float(_f32(float(rate_scale_hz) / float(_SFX_RATE_BASE_HZ)))
+    return float(f32(float(rate_scale_hz) / float(_SFX_RATE_BASE_HZ)))
 
 
 class SfxVoice(msgspec.Struct):
@@ -55,7 +48,7 @@ class SfxVoice(msgspec.Struct):
 
     def set_volume(self, master_volume: float) -> None:
         rl.set_sound_volume(
-            self.sound, native_sound_gain(_f32(master_volume) * _f32(self.gain)) * self.pan_compensation,
+            self.sound, native_sound_gain(f32(master_volume) * f32(self.gain)) * self.pan_compensation,
         )
 
 
@@ -207,7 +200,7 @@ def play_sfx(
         current_rate_scale_hz=int(state.rate_scale_hz),
         reflex_boost_timer=float(reflex_boost_timer),
     )
-    state.cooldowns[sfx] = _f32(0.44 if sfx in (SfxId.FLAMER_FIRE_01, SfxId.FLAMER_FIRE_02) else 0.05)
+    state.cooldowns[sfx] = f32(0.44 if sfx in (SfxId.FLAMER_FIRE_01, SfxId.FLAMER_FIRE_02) else 0.05)
     voice = sample.acquire_voice()
     voice.gain = gain
     pan_value, voice.pan_compensation = raylib_pan(pan)
@@ -221,11 +214,11 @@ def update_sfx(state: SfxState, dt: float) -> None:
     """Native audio_update decays cooldowns after the frame's sound requests."""
     if not state.ready or not state.enabled or dt <= 0.0:
         return
-    dt_f32 = _f32(dt)
+    dt_f32 = f32(dt)
     for sfx_id, cooldown in state.cooldowns.items():
         if cooldown > 0.0:
             # Native keeps negative zero-crossing residue until the next start.
-            state.cooldowns[sfx_id] = _f32(cooldown - dt_f32)
+            state.cooldowns[sfx_id] = f32(cooldown - dt_f32)
 
 
 def sfx_id_for_native_id(sfx_id: int) -> SfxId | None:

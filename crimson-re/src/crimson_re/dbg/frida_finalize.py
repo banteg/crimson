@@ -22,12 +22,12 @@ from crimson.persistence.save_status import (
 from crimson.quests.level import QuestLevel
 from crimson.replay import PackedTickInputs
 from crimson.replay.checkpoints import ReplayCheckpoint
-from crimson.replay.types import quantize_f32
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.sim.state_types import TERRAIN_SIZE
 from crimson.sim.world_reset import CreatureSlotResidue
 from grim.geom import Vec2
+from grim.math import f32
 
 from .canonical_channels import (
     EntitySamplesSnapshot,
@@ -855,7 +855,7 @@ def _replay_tick_inputs_from_step(
 ) -> PackedTickInputs:
     if not math.isfinite(float(replay_step.dt)) or float(replay_step.dt) < 0.0:
         raise FridaFinalizeError(f"{field}.dt must be finite and >= 0")
-    if float(replay_step.dt) != quantize_f32(float(replay_step.dt)):
+    if float(replay_step.dt) != f32(float(replay_step.dt)):
         raise FridaFinalizeError(f"{field}.dt must already be canonical f32")
     if len(replay_step.inputs) != int(expected_players):
         raise FridaFinalizeError(
@@ -873,7 +873,7 @@ def _replay_tick_inputs_from_step(
         for scalar_name, scalar_value in scalars:
             if not math.isfinite(float(scalar_value)):
                 raise FridaFinalizeError(f"{player_field}.{scalar_name} must be finite")
-            if float(scalar_value) != quantize_f32(float(scalar_value)):
+            if float(scalar_value) != f32(float(scalar_value)):
                 raise FridaFinalizeError(f"{player_field}.{scalar_name} must already be canonical f32")
         flags = _capture_u32(sample.flags, field=f"{player_field}.flags")
         out.append((float(sample.move_x), float(sample.move_y), float(sample.aim_x), float(sample.aim_y), flags))
@@ -1021,8 +1021,6 @@ def _validate_tick_channels(
     field: str,
 ) -> None:
     checkpoint_players = list(channels.checkpoint.players)
-    if len(checkpoint_players) <= 0:
-        raise FridaFinalizeError(f"{field}.checkpoint.players must be non-empty")
     if len(checkpoint_players) != int(expected_players):
         raise FridaFinalizeError(
             f"{field}.checkpoint.players length {len(checkpoint_players)} "
@@ -1038,9 +1036,6 @@ def _validate_tick_channels(
             f"{field}.checkpoint.elapsed_ms={int(channels.checkpoint.elapsed_ms)} "
             f"does not match tick.elapsed_ms {int(elapsed_ms)}",
         )
-    rng_state = int(channels.checkpoint.rng_state)
-    if rng_state < 0 or rng_state > 0xFFFFFFFF:
-        raise FridaFinalizeError(f"{field}.checkpoint.rng_state must be a uint32")
     sim_players = list(channels.sim_state.players)
     if len(sim_players) != len(checkpoint_players):
         raise FridaFinalizeError(

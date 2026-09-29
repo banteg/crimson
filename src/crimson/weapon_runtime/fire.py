@@ -8,6 +8,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.math import i32
 from grim.rand import CrandLike
 
 from ..effects import ParticleStyleId
@@ -199,9 +200,8 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             factor = 4.0 if ammo_class == 1 else 200.0
             # Native rounds FMUL and FSUBP at PC=24 before the truncating _ftol.
             cost = x87_pc24_mul(reload_time, factor)
-            remaining = int(x87_pc24_sub(float(player.experience), cost)) & 0xFFFFFFFF
             # _ftol returns the low signed 32 bits in EAX before the negative clamp.
-            player.experience = remaining - 0x100000000 if remaining & 0x80000000 else remaining
+            player.experience = i32(int(x87_pc24_sub(float(player.experience), cost)))
             if player.experience < 0:
                 player.experience = 0
         elif use_ammunition_within:

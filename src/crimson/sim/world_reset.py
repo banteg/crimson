@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import struct
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
@@ -8,6 +7,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.math import f32_from_bits
 
 from ..creatures.runtime import CreatureAiMode, CreatureState, CreatureTypeId
 from ..creatures.spawn_ids import CreatureFlags
@@ -106,14 +106,10 @@ def apply_creature_pool_residue(
         entry.link_index = int(slot.link_index)
         entry.target_offset = Vec2(float(slot.target_offset.x), float(slot.target_offset.y))
         entry.orbit_angle = float(slot.orbit_angle)
-        entry.orbit_radius = _f32_from_bits(int(slot.orbit_radius_u32))
+        entry.orbit_radius = f32_from_bits(int(slot.orbit_radius_u32))
         entry.flags = CreatureFlags(int(slot.flags))
         entry.ai_mode = CreatureAiMode(int(slot.ai_mode))
         entry.anim_phase = float(slot.anim_phase)
-
-
-def _f32_from_bits(bits: int) -> float:
-    return struct.unpack("<f", struct.pack("<I", int(bits) & 0xFFFFFFFF))[0]
 
 
 def _reset_player_weapon_native(player: PlayerState) -> None:

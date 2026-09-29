@@ -149,7 +149,7 @@ def test_load_checkpoints_rejects_missing_current_checkpoint_fields() -> None:
             },
         ],
     }
-    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints msgpack payload"):
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints payload"):
         load_checkpoints(_wire(payload_obj))
 
 
@@ -194,7 +194,7 @@ def test_load_checkpoints_rejects_missing_death_owner_id() -> None:
             },
         ],
     }
-    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints msgpack payload"):
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints payload"):
         load_checkpoints(_wire(payload_obj))
 
 
@@ -224,7 +224,7 @@ def test_build_checkpoint_captures_typo_sidecar(base_world: WorldState) -> None:
 
 
 def test_load_checkpoints_rejects_invalid_msgpack_payload() -> None:
-    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints msgpack payload"):
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints payload"):
         load_checkpoints(zstd.ZstdCompressor().compress(b"\x81\xa7version\xc3"))
 
 
@@ -253,14 +253,14 @@ def test_checkpoints_reject_nonpositive_sample_rate(base_world: WorldState, samp
     checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
     payload = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=sample_rate, checkpoints=[checkpoint])
 
-    with pytest.raises(ReplayCheckpointsError, match="sample_rate must be positive"):
+    with pytest.raises(ReplayCheckpointsError, match=r"\$\.sample_rate"):
         dump_checkpoints(payload)
 
 
 def test_checkpoints_reject_empty_rows() -> None:
     payload = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[])
 
-    with pytest.raises(ReplayCheckpointsError, match="at least one row"):
+    with pytest.raises(ReplayCheckpointsError, match=r"length >= 1 - at `\$\.checkpoints`"):
         dump_checkpoints(payload)
 
 
@@ -279,11 +279,11 @@ def test_checkpoints_reject_duplicate_or_out_of_order_ticks(base_world: WorldSta
 @pytest.mark.parametrize(
     ("field", "value", "message"),
     [
-        ("rng_state", -1, "uint32"),
-        ("rng_state", 1 << 32, "uint32"),
-        ("elapsed_ms", 1 << 31, "fit i32"),
-        ("score_xp", 1 << 31, "fit i32"),
-        ("kills", -1, "non-negative"),
+        ("rng_state", -1, ">= 0"),
+        ("rng_state", 1 << 32, "<= 4294967295"),
+        ("elapsed_ms", 1 << 31, "<= 2147483647"),
+        ("score_xp", 1 << 31, "<= 2147483647"),
+        ("kills", -1, ">= 0"),
     ],
 )
 def test_checkpoints_reject_values_outside_native_wire(
@@ -389,7 +389,7 @@ def test_checkpoints_require_fixed_perk_slots_and_matching_pending(base_world: W
     checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
     short_perk = msgspec.structs.replace(checkpoint.perk, choices=[1, 2, 3])
     short = msgspec.structs.replace(checkpoint, perk=short_perk)
-    with pytest.raises(ReplayCheckpointsError, match="exactly 7 slots"):
+    with pytest.raises(ReplayCheckpointsError, match=r"perk\.choices"):
         dump_checkpoints(ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[short]))
 
     mismatched = msgspec.structs.replace(checkpoint, perk_pending=int(checkpoint.perk.pending_count) + 1)
@@ -413,7 +413,7 @@ def test_load_checkpoints_requires_exact_vec2_fields(base_world: WorldState, mut
     else:
         pos["extra"] = 1
 
-    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints msgpack payload"):
+    with pytest.raises(ReplayCheckpointsError, match="invalid checkpoints payload"):
         load_checkpoints(_wire(root))
 
 
