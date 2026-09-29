@@ -154,6 +154,8 @@ class CrimsonGameplayConfig(msgspec.Struct):
     hardcore: bool
     quest_level: QuestLevel | None
     show_info_texts: bool
+    # Native counts level-ups and turns the info texts off after 50.
+    level_up_count: int = 0
 
 
 class CrimsonProfileConfig(msgspec.Struct):
@@ -264,6 +266,8 @@ class CrimsonConfig(msgspec.Struct):
     gameplay: CrimsonGameplayConfig
     profile: CrimsonProfileConfig
     controls: CrimsonControlsConfig
+    # The file's bytes; saving overlays the fields above, so the rest (unparsed flags, ids, bind slots 4-9) survives.
+    wire: bytes = msgspec.field(default_factory=lambda: _DEFAULT_WIRE)
 
     def save(self) -> None:
         atomic_write_bytes(self.path, encode_crimson_cfg(self))
@@ -552,6 +556,7 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
             hardcore=bool(raw["hardcore_flag"]),
             quest_level=None,
             show_info_texts=bool(raw["ui_info_texts"]),
+            level_up_count=int(raw["level_up_count"]),
         ),
         profile=CrimsonProfileConfig(
             player_name=_decode_player_name(raw["player_name"]),
@@ -585,15 +590,26 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
             pick_perk_code=int(raw["keybind_pick_perk"]),
             reload_code=int(raw["keybind_reload"]),
         ),
+        wire=bytes(blob),
     )
 
 
-def _canonical_wire_data() -> dict:
-    return dict(CRIMSON_CFG_STRUCT.parse(bytes(CRIMSON_CFG_SIZE)))
+def _default_wire() -> bytes:
+    """A fresh crimson.cfg: zeroes plus the constants native writes."""
+    data = dict(CRIMSON_CFG_STRUCT.parse(bytes(CRIMSON_CFG_SIZE)))
+    data["unknown_1a4"] = 100
+    data["aim_pov_right"] = 9000
+    data["aim_pov_left"] = 27000
+    data["ten_tons_logging_completed"] = 1
+    data["sound_freq_adjustment_enabled"] = 1
+    return CRIMSON_CFG_STRUCT.build(data)
+
+
+_DEFAULT_WIRE = _default_wire()
 
 
 def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
-    data = _canonical_wire_data()
+    data = dict(CRIMSON_CFG_STRUCT.parse(config.wire))
 
     data["sound_disabled"] = 1 if config.audio.sound_disabled else 0
     data["music_disabled"] = 1 if config.audio.music_disabled else 0
@@ -633,9 +649,6 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
         maximum=PLAYER_NAME_MAX_BYTES,
         field="player_name_len",
     )
-    data["unknown_1a4"] = 100
-    data["aim_pov_right"] = 9000
-    data["aim_pov_left"] = 27000
     data["screen_bpp"] = int(config.display.bpp)
     data["screen_width"] = int(config.display.width)
     data["screen_height"] = int(config.display.height)
@@ -645,8 +658,7 @@ def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     ]
     data["hardcore_flag"] = 1 if config.gameplay.hardcore else 0
     data["ui_info_texts"] = 1 if config.gameplay.show_info_texts else 0
-    data["ten_tons_logging_completed"] = 1
-    data["sound_freq_adjustment_enabled"] = 1
+    data["level_up_count"] = int(config.gameplay.level_up_count)
     data["sfx_volume"] = float(config.audio.sfx_volume)
     data["music_volume"] = float(config.audio.music_volume)
     data["violence_disabled"] = int(config.display.violence_disabled)
@@ -680,14 +692,12 @@ def apply_detail_preset(config: CrimsonConfig, preset: int | None = None) -> int
     selected = config.display.detail_preset if preset is None else int(preset)
     selected = _require_range(selected, minimum=1, maximum=5, field="detail_preset")
     config.display.detail_preset = selected
-    if selected <= 1:
-        config.display.shadows_enabled = False
-        config.display.flame_glow_enabled = False
+    # Native `config_apply_detail_preset`: preset 1 turns smoke off and falls through to 2, which leaves it alone.
+    if selected == 1:
         config.display.smoke_enabled = False
-    elif selected == 2:
+    if selected <= 2:
         config.display.shadows_enabled = False
         config.display.flame_glow_enabled = False
-        config.display.smoke_enabled = True
     else:
         config.display.shadows_enabled = True
         config.display.flame_glow_enabled = True

@@ -31,6 +31,33 @@ def test_crimson_cfg_save_load(tmp_path: Path) -> None:
     assert rebuilt == raw
 
 
+def test_crimson_cfg_save_keeps_fields_the_port_does_not_edit() -> None:
+    data = grim_config.CRIMSON_CFG_STRUCT.parse(grim_config.encode_crimson_cfg(grim_config.default_crimson_cfg()))
+    data["unique_id_1"] = 0x1234
+    data["highscore_duplicate_mode"] = 1
+    data["level_up_count"] = 7
+    data["movement_schemes"][6] = 2
+    blob = grim_config.CRIMSON_CFG_STRUCT.build(data)
+
+    cfg = grim_config.decode_crimson_cfg(Path("crimson.cfg"), blob)
+    assert grim_config.encode_crimson_cfg(cfg) == blob
+
+    cfg.audio.sfx_volume = 0.25
+    saved = grim_config.CRIMSON_CFG_STRUCT.parse(grim_config.encode_crimson_cfg(cfg))
+    assert float(saved["sfx_volume"]) == 0.25
+    assert (saved["unique_id_1"], saved["highscore_duplicate_mode"], saved["level_up_count"]) == (0x1234, 1, 7)
+    assert saved["movement_schemes"][6] == 2
+
+
+def test_detail_preset_two_leaves_smoke_alone() -> None:
+    # Native `config_apply_detail_preset`: only preset 1 turns smoke off before falling through to 2.
+    cfg = grim_config.default_crimson_cfg()
+    grim_config.apply_detail_preset(cfg, 1)
+    grim_config.apply_detail_preset(cfg, 2)
+    assert not cfg.display.smoke_enabled
+    assert not cfg.display.shadows_enabled
+
+
 def test_crimson_cfg_backfills_zero_keybinds(tmp_path: Path) -> None:
     cfg = grim_config.default_crimson_cfg()
     data = grim_config.CRIMSON_CFG_STRUCT.parse(grim_config.encode_crimson_cfg(cfg))

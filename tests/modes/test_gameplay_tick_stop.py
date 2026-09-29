@@ -197,3 +197,24 @@ def test_f1_pause_freezes_the_world_and_esc_still_reaches_the_pause_menu(mocker,
             break
     assert mode._action == Route.PAUSE
     assert session.elapsed_ms == elapsed
+
+
+def test_fifty_level_ups_turn_the_info_texts_off(make_mode_config, assets_dir) -> None:
+    mode = SurvivalMode(
+        ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.SURVIVAL), audio_rng=Crand(1),
+    )
+    mode.open()
+    session = mode._sim_session
+    assert session is not None
+    gameplay = mode.config.gameplay
+    gameplay.level_up_count = 49
+    gameplay.show_info_texts = True
+
+    mode.player.experience = 2001
+    mode._run_deterministic_session_ticks(dt_frame=1 / 60, session=session, recorder=None)
+    assert (mode.player.level, gameplay.level_up_count, gameplay.show_info_texts) == (2, 50, True)
+
+    mode.player.experience = 100_000
+    mode._run_deterministic_session_ticks(dt_frame=1 / 60, session=session, recorder=None)
+    assert mode.player.level == 3
+    assert (gameplay.level_up_count, gameplay.show_info_texts) == (0, False)

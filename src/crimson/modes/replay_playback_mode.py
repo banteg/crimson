@@ -15,6 +15,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -592,7 +593,10 @@ class ReplayPlaybackMode:
         players = world.players
         assert players, "Replay runtime must have at least one player before draw"
         self._draw_world()
-        runtime.draw_aim_indicators(show_aim=True)
+        runtime.draw_aim_indicators(
+            show_aim=True,
+            aim_enhancement_fade=clamp(self._console.cvars["cv_aimEnhancementFade"].value_f, 0.0, 1.0),
+        )
         mode_id = replay.run.game_mode_id
         show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
         quest_progress_ratio: float | None = None

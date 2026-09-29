@@ -16,7 +16,8 @@ from .math import f32
 from .sfx_map import SFX_NATIVE_ORDER, SFX_SPECS, SfxId
 
 SFX_PAK_NAME = "sfx.paq"
-DEFAULT_VOICE_COUNT = 4
+# Native `sfx_entry_create_buffers` makes 16 buffers per sample.
+DEFAULT_VOICE_COUNT = 16
 _SFX_RATE_BASE_HZ = 44100
 _SFX_RATE_MIN_HZ = 22050
 

@@ -18,7 +18,6 @@ from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
-from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...input_codes import PadCode, pad_nav_pressed
@@ -459,7 +458,8 @@ class PlayGameMenuView(PanelMenuView):
 
         entries, y_step, y_start, y_end = self._mode_entries()
         y = base_pos.y + y_start
-        show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
+        # Native shows the times-played counts while F1 is held.
+        show_counts = rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         if show_counts:
             draw_small_text(font, "times played:", base_pos + Vec2(132.0, 16.0), text_color)

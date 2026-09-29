@@ -641,7 +641,8 @@ def register_boot_commands(
         "rendermode",
         "togglertx",
     )
-    for name in commands:
+    # The native boot commands, then any rewrite-only commands the caller adds.
+    for name in dict.fromkeys((*commands, *resolved)):
         handler = resolved.get(name)
         if handler is None:
             handler = _make_noop_command(console, name)

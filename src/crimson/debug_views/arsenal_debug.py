@@ -122,7 +122,7 @@ class ArsenalDebugView:
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.draw(entity_alpha=entity_alpha)
-        self._runtime.draw_aim_indicators(show_aim=draw_aim_indicators, entity_alpha=entity_alpha)
+        self._runtime.draw_aim_indicators(show_aim=draw_aim_indicators, aim_enhancement_fade=1.0, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self._runtime.world_to_screen(pos)
@@ -412,7 +412,7 @@ class ArsenalDebugView:
 
         resources = self._runtime.render_resources.resources
         mouse = canvas.mouse_position()
-        draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse), alpha=1.0)
 
 
 @register_view("arsenal", "Arsenal")

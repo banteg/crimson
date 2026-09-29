@@ -144,8 +144,10 @@ class WorldRuntime:
         self.render_resources.process_ground_pending()
         draw_world(self._render_ctx(), entity_alpha=entity_alpha)
 
-    def draw_aim_indicators(self, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
-        ui_render_aim_indicators(self._render_ctx(), show_aim=show_aim, entity_alpha=entity_alpha)
+    def draw_aim_indicators(self, *, show_aim: bool, aim_enhancement_fade: float, entity_alpha: float = 1.0) -> None:
+        ui_render_aim_indicators(
+            self._render_ctx(), show_aim=show_aim, aim_enhancement_fade=aim_enhancement_fade, entity_alpha=entity_alpha,
+        )
 
     def _render_ctx(self) -> WorldRenderCtx:
         return WorldRenderCtx(frame=self.build_render_frame(), view=self.view_transform())

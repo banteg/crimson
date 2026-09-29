@@ -15,7 +15,7 @@ from ..effects_atlas import EffectId, effect_src_rect
 CURSOR_EFFECT_ID = int(EffectId.GLOW)
 
 
-def draw_cursor_glow(particles: rl.Texture | None, *, pos: Vec2) -> None:
+def draw_cursor_glow(particles: rl.Texture | None, *, pos: Vec2, alpha: float) -> None:
     """The aim reticle's single additive glow quad."""
     if particles is None:
         return
@@ -29,7 +29,7 @@ def draw_cursor_glow(particles: rl.Texture | None, *, pos: Vec2) -> None:
         rl.Rectangle(float(pos.x - 32.0), float(pos.y - 32.0), 64.0, 64.0),
         rl.Vector2(0.0, 0.0),
         0.0,
-        rl.WHITE,
+        grim_color(1.0, 1.0, 1.0, alpha),
     )
     rl.end_blend_mode()
 
@@ -39,8 +39,10 @@ def draw_aim_cursor(
     aim: rl.Texture | None,
     *,
     pos: Vec2,
+    alpha: float,
 ) -> None:
-    draw_cursor_glow(particles, pos=pos)
+    """`ui_render_aim_enhancement`: the glow and reticle quads, both tinted by `cv_aimEnhancementFade`."""
+    draw_cursor_glow(particles, pos=pos, alpha=alpha)
     if aim is None:
         color = rl.Color(235, 235, 235, 220)
         rl.draw_circle_lines(int(pos.x), int(pos.y), 10, color)
@@ -51,7 +53,7 @@ def draw_aim_cursor(
         return
     src = rl.Rectangle(0.0, 0.0, float(aim.width), float(aim.height))
     dst = rl.Rectangle(float(pos.x - 10.0), float(pos.y - 10.0), 20.0, 20.0)
-    rl.draw_texture_pro(aim, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+    rl.draw_texture_pro(aim, src, dst, rl.Vector2(0.0, 0.0), 0.0, grim_color(1.0, 1.0, 1.0, alpha))
 
 
 class _CursorPulse(msgspec.Struct):

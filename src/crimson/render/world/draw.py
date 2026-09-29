@@ -457,13 +457,18 @@ def draw_aim_indicators(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
                 )
 
 
-def draw_aim_enhancements(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+def draw_aim_enhancements(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, fade: float) -> None:
     view = render_ctx.view
     for player in iter_visible_aim_players(render_ctx):
         if player.health <= 0.0:
             continue
         aim_screen = viewport.world_to_screen_with(player.aim, camera=view.camera, view_scale=view.view_scale)
-        draw_aim_cursor(ctx.particles_texture, render_ctx.frame.resources.texture(TextureId.UI_AIM), pos=aim_screen)
+        draw_aim_cursor(
+            ctx.particles_texture,
+            render_ctx.frame.resources.texture(TextureId.UI_AIM),
+            pos=aim_screen,
+            alpha=fade,
+        )
 
 
 def _creature_texture(resources: RuntimeResources, asset_name: str | None) -> rl.Texture | None:
@@ -500,7 +505,9 @@ def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
         draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
 
 
-def ui_render_aim_indicators(render_ctx: WorldRenderCtx, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
+def ui_render_aim_indicators(
+    render_ctx: WorldRenderCtx, *, show_aim: bool, aim_enhancement_fade: float, entity_alpha: float = 1.0,
+) -> None:
     """Port of `ui_render_aim_indicators`: after the perk prompt, before the HUD."""
 
     with render_ctx.frame.resources.alpha_test.scope():
@@ -508,10 +515,11 @@ def ui_render_aim_indicators(render_ctx: WorldRenderCtx, *, show_aim: bool, enti
             render_ctx,
             ctx=build_draw_context(render_ctx, entity_alpha=clamp(float(entity_alpha), 0.0, 1.0)),
             show_aim=show_aim,
+            aim_enhancement_fade=aim_enhancement_fade,
         )
 
 
-def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim: bool) -> None:
+def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim: bool, aim_enhancement_fade: float) -> None:
     if show_aim:
         with profile_pass("aim_indicators"):
             draw_aim_indicators(render_ctx, ctx=ctx)
@@ -527,7 +535,7 @@ def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim:
 
     if show_aim:
         with profile_pass("aim_enhancements"):
-            draw_aim_enhancements(render_ctx, ctx=ctx)
+            draw_aim_enhancements(render_ctx, ctx=ctx, fade=aim_enhancement_fade)
 
 
 __all__ = [

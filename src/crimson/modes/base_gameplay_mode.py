@@ -15,6 +15,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -159,6 +160,7 @@ class BaseGameplayMode:
         self._perk_prompt = PerkPromptState()
         self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
         self._perk_menu_requested = False
+        self._counted_level = 1
         self._game_over_banner = "reaper"
 
         self._ui_mouse = Vec2()
@@ -221,7 +223,9 @@ class BaseGameplayMode:
         self._world_runtime.draw(entity_alpha=entity_alpha)
 
     def _draw_aim_indicators(self, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
-        self._world_runtime.draw_aim_indicators(show_aim=show_aim, entity_alpha=entity_alpha)
+        # Native clamps `cv_aimEnhancementFade` into 0..1 each time it draws the reticle.
+        fade = clamp(self._cvar_float("cv_aimEnhancementFade", 0.7), 0.0, 1.0)
+        self._world_runtime.draw_aim_indicators(show_aim=show_aim, aim_enhancement_fade=fade, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self._world_runtime.world_to_screen(pos)
@@ -664,6 +668,7 @@ class BaseGameplayMode:
         self._perk_prompt.reset()
         self._perk_menu.reset()
         self._perk_menu_requested = False
+        self._counted_level = 1
 
         # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
@@ -877,9 +882,21 @@ class BaseGameplayMode:
         self._replay_checkpoints_last_tick = None
         self._replay_result = None
 
+    def _count_level_ups(self) -> None:
+        """`gameplay_update_and_render` counts each level-up in the config and turns the info texts off after 50."""
+        level = self.world.players[0].level
+        gameplay = self.config.gameplay
+        for _ in range(level - self._counted_level):
+            gameplay.level_up_count += 1
+            if gameplay.level_up_count > 50:
+                gameplay.level_up_count = 0
+                gameplay.show_info_texts = False
+        self._counted_level = level
+
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
         """Return False to stop running ticks this frame."""
 
+        self._count_level_ups()
         # The request rode in this tick; the tick opened the menu only if native would have.
         requested = self._perk_menu_requested
         self._perk_menu_requested = False
