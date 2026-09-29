@@ -144,7 +144,7 @@ def run_replay_render_video(
 ) -> ReplayRenderResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
     from grim.config import ensure_crimson_cfg
-    from grim.console import create_console
+    from grim.console import create_console, register_core_cvars
     from grim.raylib_api import rl
     from grim.view import ViewContext
 
@@ -184,6 +184,7 @@ def run_replay_render_video(
         )
 
     console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
+    register_core_cvars(console, render_width, render_height)
     download_missing_paqs(runtime_assets_dir, console)
     ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
 

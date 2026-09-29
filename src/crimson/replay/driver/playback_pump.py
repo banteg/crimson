@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol
 
@@ -33,7 +34,9 @@ def advance_playback_frame(
     max_ticks: int | None,
     tick_limit: int,
 ) -> PlaybackFrameAdvance:
-    ticks_requested = int(clock.advance(float(dt_seconds)))
+    # Replay time, not a frame's: the viewer caps the frame dt before scaling it by the playback speed,
+    # and a skip asks for all of its seconds at once.
+    ticks_requested = int(clock.advance(float(dt_seconds), max_dt=math.inf))
     if max_ticks is not None:
         ticks_requested = min(ticks_requested, max(0, int(max_ticks)))
 

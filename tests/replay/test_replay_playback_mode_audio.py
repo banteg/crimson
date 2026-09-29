@@ -51,14 +51,10 @@ def _record(run: RunSpec, ticks: int, *, inputs: PlayerInput = IDLE, commands: S
 
 @pytest.fixture
 def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
-    """Open the replay viewer on `replay` saved to disk, with audio off (no device in tests).
-
-    The console gets the core cvars the game runtime registers; the replay CLI's own
-    console lacks them (see the xfail below).
-    """
+    """Open the replay viewer on `replay` saved to disk, with audio off (no device in tests)."""
 
     def _open(
-        replay: Replay, *, config: CrimsonConfig | None = None, core_cvars: bool = True,
+        replay: Replay, *, config: CrimsonConfig | None = None,
     ) -> ReplayPlaybackMode:
         replay_path = tmp_path / "playback.crd"
         replay_path.write_bytes(dump_replay(replay))
@@ -66,8 +62,7 @@ def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
         cfg.audio.music_disabled = True
         cfg.audio.sound_disabled = True
         console = create_console(tmp_path, assets_dir=assets_dir)
-        if core_cvars:
-            register_core_cvars(console, cfg.display.width, cfg.display.height)
+        register_core_cvars(console, cfg.display.width, cfg.display.height)
         view = ReplayPlaybackMode(
             ViewContext(assets_dir=assets_dir, preserve_bugs=False),
             replay_path=replay_path,
@@ -184,10 +179,6 @@ def test_skip_forward_is_silent_and_playback_after_it_is_not(open_playback: Open
     assert SfxId.PISTOL_FIRE in audio.played()
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="bug: the skip's playback clock clamps each advance to 0.1 s, so 5 s skips only 6 ticks",
-)
 def test_right_arrow_skips_five_seconds(open_playback: OpenPlayback, mocker) -> None:
     view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 400))
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT)
@@ -195,6 +186,18 @@ def test_right_arrow_skips_five_seconds(open_playback: OpenPlayback, mocker) -> 
     view.update(0.0)
 
     assert view.tick_index == 5 * 60
+
+
+def test_eight_times_speed_runs_eight_ticks_a_frame(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 400))
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT_BRACKET)
+    for _ in range(3):
+        view.update(0.0)
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
+
+    view.update(1.0 / 60.0)
+
+    assert view.tick_index == 8
 
 
 def test_skip_forward_restores_sfx_flag_when_tick_raises(open_playback: OpenPlayback, mocker) -> None:
@@ -288,11 +291,3 @@ def test_tutorial_replay_draws_the_world_tutorial_overlay(open_playback: OpenPla
     assert overlay.prompt_text
     overlay_panels.assert_called_once()
     assert overlay_panels.call_args.args == (overlay,)
-
-
-@pytest.mark.xfail(strict=True, raises=KeyError, reason="bug: the replay CLI console never registers cv_aimEnhancementFade")
-def test_replay_viewer_draws_with_the_cli_console(open_playback: OpenPlayback, mocker) -> None:
-    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 6), core_cvars=False)
-    view.update(0.1)
-
-    _draw(view, mocker)

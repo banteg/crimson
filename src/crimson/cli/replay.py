@@ -356,7 +356,7 @@ def cmd_replay_play(
     """Play back a recorded replay."""
     from grim.app import RunViewHooks, run_view
     from grim.config import ensure_crimson_cfg
-    from grim.console import create_console
+    from grim.console import create_console, register_core_cvars
     from grim.view import ViewContext
 
     from ..assets_fetch import download_missing_paqs
@@ -373,6 +373,7 @@ def cmd_replay_play(
     if height is None:
         height = cfg.display.height
     console = create_console(base_dir, assets_dir=assets_dir)
+    register_core_cvars(console, width, height)
     download_missing_paqs(assets_dir, console)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
