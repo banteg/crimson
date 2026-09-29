@@ -71,9 +71,11 @@ const UiButtonState = struct {
 };
 
 pub const State = struct {
+    // Native `perk_prompt_timer`, `perk_prompt_hover_active`, `perk_prompt_pulse` and `mouse_button_down`.
     prompt_timer_ms: f32 = 0.0,
     prompt_hover: bool = false,
     prompt_pulse: f32 = 0.0,
+    mouse_down: bool = false,
     menu_open: bool = false,
     selected_index: usize = 0,
     timeline_ms: f32 = 0.0,
@@ -105,59 +107,59 @@ const ComputedLayout = struct {
     cancel_pos: rl.Vector2,
 };
 
+/// The level-up prompt and perk menu input of `gameplay_update_and_render`.
 pub fn update(
     state: *State,
     frame_dt: f32,
     runtime_assets: ?*const window_assets.RuntimeAssets,
     config: *const formats.crimson_cfg.CrimsonCfg,
     runner: *live_runner.LiveRunner,
-    any_alive: bool,
+    paused: bool,
 ) UpdateResult {
     const dt_ui_ms = @min(@max(frame_dt, 0.0), 0.1) * 1000.0;
     const pending_count = runner.perkPendingCount();
-    _ = runner.player0Const() orelse {
-        state.reset();
-        return .{};
-    };
-
-    if (pending_count <= 0 or !any_alive) {
-        state.menu_open = false;
-        state.prompt_hover = false;
-        state.prompt_timer_ms = clampf(state.prompt_timer_ms - dt_ui_ms, 0.0, perk_prompt_max_timer_ms);
-        state.prompt_pulse = clampf(state.prompt_pulse - dt_ui_ms * 2.0, 0.0, 1000.0);
-        state.timeline_ms = clampf(state.timeline_ms - dt_ui_ms, 0.0, perk_menu_transition_ms);
-        return .{ .menu_active = state.active() };
-    }
-
-    const choices = runner.preparedPerkChoices();
-    if (state.selected_index >= choices.len) state.selected_index = 0;
-    if (state.menu_open and choices.len == 0) {
-        closeMenu(state, pending_count);
-    }
-
     var result: UpdateResult = .{};
-    state.prompt_hover = false;
 
-    if (state.menu_open and choices.len > 0) {
-        if (rl.isKeyPressed(.escape) or input_codes.padNavPressed(.face_right)) {
-            closeMenu(state, pending_count);
+    if (state.menu_open) {
+        const choices = runner.preparedPerkChoices();
+        if (state.selected_index >= choices.len) state.selected_index = 0;
+        if (choices.len == 0 or rl.isKeyPressed(.escape) or input_codes.padNavPressed(.face_right)) {
+            closeMenu(state);
         } else {
             result = updateMenuInput(state, runtime_assets, runner, choices, dt_ui_ms);
         }
-    } else {
-        // The menu opens mid-tick; `openMenu` follows once the frame reports it.
-        if (promptOpenRequested(state, runtime_assets, config, runner)) runner.requestPerkMenu();
     }
 
-    const prompt_visible = pending_count > 0 and any_alive and !state.active();
-    const timer_delta: f32 = if (prompt_visible) dt_ui_ms else -dt_ui_ms;
-    state.prompt_timer_ms = clampf(state.prompt_timer_ms + timer_delta, 0.0, perk_prompt_max_timer_ms);
-    const pulse_delta = dt_ui_ms * (if (state.prompt_hover) @as(f32, 6.0) else @as(f32, -2.0));
-    state.prompt_pulse = clampf(state.prompt_pulse + pulse_delta, 0.0, 1000.0);
+    // The sign glows up while hovered and fades otherwise; native runs this before the open check.
+    if (!paused) {
+        const pulse_delta = dt_ui_ms * (if (state.prompt_hover) @as(f32, 6.0) else @as(f32, -2.0));
+        state.prompt_pulse = clampf(state.prompt_pulse + pulse_delta, 0.0, 1000.0);
+    }
+    // The menu opens mid-tick; `openMenu` follows once the frame reports it.
+    if (promptOpenRequested(state, runtime_assets, config, runner, paused)) runner.requestPerkMenu();
+    state.prompt_timer_ms = promptTimerStep(state.prompt_timer_ms, pending_count, state.active(), dt_ui_ms);
+
     const timeline_delta: f32 = if (state.menu_open) dt_ui_ms else -dt_ui_ms;
     state.timeline_ms = clampf(state.timeline_ms + timeline_delta, 0.0, perk_menu_transition_ms);
     result.menu_active = state.active();
     return result;
+}
+
+/// `perk_prompt_update_and_render`: the sign swings in while a perk is pending in gameplay, out otherwise.
+fn promptTimerStep(timer_ms: f32, pending_count: i32, menu_active: bool, dt_ui_ms: f32) f32 {
+    const delta = if (pending_count > 0 and !menu_active) dt_ui_ms else -dt_ui_ms;
+    return clampf(timer_ms + delta, 0.0, perk_prompt_max_timer_ms);
+}
+
+/// Native checks player one, and player two only in a two-player game.
+fn promptPlayersAlive(players: []const cz.state.PlayerState) bool {
+    if (players.len == 0) return false;
+    return players[0].health > 0.0 or (players.len == 2 and players[1].health > 0.0);
+}
+
+/// `gameplay_update_and_render`'s gate on the prompt: a mouse button held on the previous frame blocks it.
+fn promptOpenAllowed(paused: bool, mouse_was_down: bool, pending_count: i32, alive: bool, menu_active: bool) bool {
+    return !paused and !mouse_was_down and pending_count > 0 and alive and !menu_active;
 }
 
 /// Show the menu the runner opened during the frame's ticks.
@@ -166,16 +168,12 @@ pub fn openMenu(state: *State) void {
     state.selected_index = 0;
 }
 
+/// `perk_prompt_update_and_render`: the hint text (with the info texts on) and the swinging level-up sign.
 pub fn drawPrompt(
     state: *const State,
     runtime_assets: *const window_assets.RuntimeAssets,
     config: *const formats.crimson_cfg.CrimsonCfg,
-    pending_count: i32,
 ) void {
-    var label_buf: [64]u8 = undefined;
-    const label = promptLabel(config, pending_count, &label_buf);
-    if (label.len == 0) return;
-
     const alpha = state.prompt_timer_ms / perk_prompt_max_timer_ms;
     if (alpha <= 1e-3) return;
 
@@ -183,10 +181,14 @@ pub fn drawPrompt(
     const rot_deg = -(1.0 - alpha) * 90.0;
     const tint = rl.Color.init(255, 255, 255, alphaByte(alpha));
 
-    const text_w = window_ui.measureSmallText(runtime_assets, label);
-    const x = @as(f32, @floatFromInt(rl.getScreenWidth())) - perk_prompt_text_margin_x - text_w;
-    const y = hinge.y + perk_prompt_text_offset_y;
-    window_ui.drawSmallText(runtime_assets, label, x, y, rl.Color.init(text_color.r, text_color.g, text_color.b, alphaByte(alpha)));
+    var label_buf: [64]u8 = undefined;
+    const label = promptLabel(config, &label_buf);
+    if (label.len > 0) {
+        const text_w = window_ui.measureSmallText(runtime_assets, label);
+        const x = @as(f32, @floatFromInt(rl.getScreenWidth())) - perk_prompt_text_margin_x - text_w;
+        const y = hinge.y + perk_prompt_text_offset_y;
+        window_ui.drawSmallText(runtime_assets, label, x, y, window_ui.colorWithAlpha(rl.Color.white, alpha));
+    }
 
     const bar = runtime_assets.texture(.ui_menu_item);
     const bar_w = @as(f32, @floatFromInt(bar.width)) * perk_prompt_bar_scale;
@@ -207,7 +209,7 @@ pub fn drawPrompt(
     const level_local_y = perk_prompt_level_up_base_offset_y * perk_prompt_level_up_scale + perk_prompt_level_up_shift_y;
     const level_w = perk_prompt_level_up_base_w * perk_prompt_level_up_scale;
     const level_h = perk_prompt_level_up_base_h * perk_prompt_level_up_scale;
-    const pulse_alpha = clampf(alpha * ((100.0 + state.prompt_pulse * 0.155) / 255.0), 0.0, 1.0);
+    const pulse_alpha = clampf(alpha * ((100.0 + @floor(state.prompt_pulse * 155.0 / 1000.0)) / 255.0), 0.0, 1.0);
     const pulse_tint = rl.Color.init(255, 255, 255, alphaByte(pulse_alpha));
     const src = rl.Rectangle.init(0.0, 0.0, @floatFromInt(level_up.width), @floatFromInt(level_up.height));
     const dst = rl.Rectangle.init(hinge.x, hinge.y, level_w, level_h);
@@ -292,7 +294,7 @@ fn updateMenuInput(
         if (rl.checkCollisionPointRec(rl.getMousePosition(), rect)) {
             state.selected_index = idx;
             if (click) {
-                closeMenu(state, runner.perkPendingCount());
+                closeMenu(state);
                 result.perk_choice_index = @intCast(idx);
                 result.play_button_click = true;
             }
@@ -302,13 +304,13 @@ fn updateMenuInput(
 
     const cancel_w = buttonWidth(assets, state.cancel_button.label, state.cancel_button.force_wide);
     if (buttonUpdate(&state.cancel_button, layout.cancel_pos, cancel_w, dt_ui_ms, rl.getMousePosition(), click)) {
-        closeMenu(state, runner.perkPendingCount());
+        closeMenu(state);
         result.play_button_click = true;
         return result;
     }
 
     if (window_ui.confirmPressed()) {
-        closeMenu(state, runner.perkPendingCount());
+        closeMenu(state);
         result.perk_choice_index = @intCast(state.selected_index);
         result.play_button_click = true;
     }
@@ -361,53 +363,47 @@ fn computeLayout(
     };
 }
 
+/// The pick-perk key held, Space, keypad + or a click on the sign opens the menu.
 fn promptOpenRequested(
     state: *State,
     runtime_assets: ?*const window_assets.RuntimeAssets,
     config: *const formats.crimson_cfg.CrimsonCfg,
     runner: *live_runner.LiveRunner,
+    paused: bool,
 ) bool {
-    var label_buf: [64]u8 = undefined;
-    const label = promptLabel(config, runner.perkPendingCount(), &label_buf);
-    if (label.len > 0 and runtime_assets != null) {
-        state.prompt_hover = rl.checkCollisionPointRec(rl.getMousePosition(), promptRect(runtime_assets.?));
-    }
-    const player_bind = formats.crimson_cfg.playerBindBlock(config, 0);
-    const pick_code: i32 = @bitCast(config.keybind_pick_perk);
-    const fire_code: i32 = @bitCast(player_bind.fire);
-    if (input_codes.inputCodeIsPressed(pick_code, 0) and !input_codes.inputCodeIsDown(fire_code, 0)) {
+    const mouse_was_down = state.mouse_down;
+    state.mouse_down = rl.isMouseButtonDown(.left);
+    const alive = promptPlayersAlive(runner.session.playersConst());
+    if (!promptOpenAllowed(paused, mouse_was_down, runner.perkPendingCount(), alive, state.active())) return false;
+
+    if (input_codes.inputCodeIsDown(@bitCast(config.keybind_pick_perk), 0) or
+        rl.isKeyPressed(.space) or
+        rl.isKeyPressed(.kp_add))
+    {
         state.prompt_pulse = 1000.0;
         return true;
     }
 
+    const assets = runtime_assets orelse return false;
+    state.prompt_hover = rl.checkCollisionPointRec(rl.getMousePosition(), promptRect(assets));
     var fire_codes: [4]i32 = [_]i32{input_codes.input_code_unbound} ** 4;
     const player_count = std.math.clamp(runner.session.player_count, 1, 4);
     var idx: usize = 0;
     while (idx < @as(usize, @intCast(player_count))) : (idx += 1) {
         fire_codes[idx] = @bitCast(formats.crimson_cfg.playerBindBlock(config, idx).fire);
     }
-    if (state.prompt_hover and input_codes.inputPrimaryJustPressed(fire_codes[0..], player_count)) {
-        state.prompt_pulse = 1000.0;
-        return true;
-    }
-    return false;
+    return state.prompt_hover and input_codes.inputPrimaryJustPressed(fire_codes[0..], player_count);
 }
 
-fn closeMenu(state: *State, pending_count: i32) void {
+fn closeMenu(state: *State) void {
     state.menu_open = false;
-    if (pending_count > 0) {
-        state.prompt_timer_ms = 0.0;
-        state.prompt_hover = false;
-        state.prompt_pulse = 0.0;
-    }
 }
 
-fn promptLabel(config: *const formats.crimson_cfg.CrimsonCfg, pending_count: i32, buf: []u8) []const u8 {
-    if (config.ui_info_texts == 0 or pending_count <= 0) return "";
-    // Native `perk_prompt_update_and_render` formats `input_key_name(config_key_pick_perk)`.
+/// `perk_prompt_update_and_render` draws the hint only with the info texts on.
+fn promptLabel(config: *const formats.crimson_cfg.CrimsonCfg, buf: []u8) []const u8 {
+    if (config.ui_info_texts == 0) return "";
     const key_name = input_codes.inputCodeName(@bitCast(config.keybind_pick_perk));
-    if (pending_count == 1) return std.fmt.bufPrint(buf, "Press {s} to pick a perk", .{key_name}) catch "";
-    return std.fmt.bufPrint(buf, "Press {s} to pick a perk ({d})", .{ key_name, pending_count }) catch "";
+    return std.fmt.bufPrint(buf, "Press {s} to pick a perk", .{key_name}) catch "";
 }
 
 fn promptHinge() rl.Vector2 {
@@ -572,4 +568,36 @@ test "panel slide matches classic ui timeline" {
     try std.testing.expectApproxEqAbs(@as(f32, -510.0), panelSlideX(0.0, 510.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, -255.0), panelSlideX(250.0, 510.0), 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 0.0), panelSlideX(400.0, 510.0), 1e-6);
+}
+
+test "perk prompt opens only for player one, or player two of two, while alive" {
+    const Player = cz.state.PlayerState;
+    const alive: Player = .{ .index = 0, .pos = .{ .x = 0.0, .y = 0.0 } };
+    var dead = alive;
+    dead.health = 0.0;
+    try std.testing.expect(promptPlayersAlive(&.{alive}));
+    try std.testing.expect(!promptPlayersAlive(&.{dead}));
+    try std.testing.expect(promptPlayersAlive(&.{ dead, alive }));
+    try std.testing.expect(!promptPlayersAlive(&.{ dead, alive, alive }));
+}
+
+test "perk prompt gate: pause, a mouse button held last frame and the open menu block it" {
+    try std.testing.expect(promptOpenAllowed(false, false, 1, true, false));
+    try std.testing.expect(!promptOpenAllowed(true, false, 1, true, false));
+    try std.testing.expect(!promptOpenAllowed(false, true, 1, true, false));
+    try std.testing.expect(!promptOpenAllowed(false, false, 0, true, false));
+    try std.testing.expect(!promptOpenAllowed(false, false, 1, false, false));
+    try std.testing.expect(!promptOpenAllowed(false, false, 1, true, true));
+}
+
+test "perk prompt swings in while a perk is pending and out once the menu takes over" {
+    var timer: f32 = 0.0;
+    timer = promptTimerStep(timer, 1, false, 150.0);
+    try std.testing.expectEqual(@as(f32, 150.0), timer);
+    timer = promptTimerStep(timer, 1, false, 150.0);
+    try std.testing.expectEqual(perk_prompt_max_timer_ms, timer);
+    timer = promptTimerStep(timer, 1, true, 50.0);
+    try std.testing.expectEqual(@as(f32, 150.0), timer);
+    timer = promptTimerStep(timer, 0, false, 500.0);
+    try std.testing.expectEqual(@as(f32, 0.0), timer);
 }

@@ -835,21 +835,18 @@ const App = struct {
             );
             self.runtime.recordGameplayFrame(frame_dt);
             var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
-            if (gameplay.runner.session.game_mode == .tutorial and
-                gameplay.runner.perkPendingCount() > 0 and
-                gameplay.runner.session.state.tutorial.stage_index == 6 and
-                !gameplay.perk_ui.active())
-            {
-                gameplay.runner.requestPerkMenu();
-            }
-            const perk_ui_update = window_perk_menu.update(
-                &gameplay.perk_ui,
-                frame_dt,
-                if (self.runtime_assets) |*assets| assets else null,
-                &self.runtime.config,
-                &gameplay.runner,
-                !gameplay.runner.allPlayersDead(),
-            );
+            // The level-up prompt and perk menu run outside Rush and Typ-o.
+            const perk_ui_update: window_perk_menu.UpdateResult = if (perkPromptMode(gameplay.runner.session.game_mode))
+                window_perk_menu.update(
+                    &gameplay.perk_ui,
+                    frame_dt,
+                    if (self.runtime_assets) |*assets| assets else null,
+                    &self.runtime.config,
+                    &gameplay.runner,
+                    gameplay.key_info.paused,
+                )
+            else
+                .{};
             input.perk_choice_index = perk_ui_update.perk_choice_index;
             input.perk_menu_active = perk_ui_update.menu_active;
             if (perk_ui_update.play_panel_click) {
@@ -1686,8 +1683,8 @@ const App = struct {
             if (runner.session.game_mode == .typo) {
                 drawTypoNameLabels(runner, assets, transform, 1.0);
             }
-            if (!perk_menu_active) {
-                window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
+            if (perkPromptMode(runner.session.game_mode)) {
+                window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config);
             }
             uiRenderAimIndicators(runner, assets, &self.runtime.config, transform, 1.0, !perk_menu_active);
         }
@@ -6177,6 +6174,13 @@ fn drawTutorialPromptButtons(gameplay: *const GameplayScreen, assets: *const win
     const button = tutorialSkipButton();
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
     window_ui.drawButton(button, false, hovered, assets);
+}
+
+fn perkPromptMode(mode: game_ids.GameModeId) bool {
+    return switch (mode) {
+        .survival, .quests, .tutorial => true,
+        .rush, .typo => false,
+    };
 }
 
 fn zeroSessionSummary() runtime_session.SessionSummary {
