@@ -42,7 +42,9 @@ def _record() -> HighScoreRecord:
     return record
 
 
-def _open_ui(tmp_path: Path, assets_dir: Path, make_mode_config, *, phase: int) -> QuestResultsUi:
+def _open_ui(
+    tmp_path: Path, assets_dir: Path, make_mode_config, *, phase: int, faded_in: bool = True,
+) -> QuestResultsUi:
     """Open the results for a first-place quest time, then jump to `phase` with the panel slid in."""
     config = make_mode_config(game_mode=GameMode.QUESTS)
     config.display.shadows_enabled = False
@@ -58,6 +60,8 @@ def _open_ui(tmp_path: Path, assets_dir: Path, make_mode_config, *, phase: int) 
     )
     ui.phase = phase
     ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
+    if faded_in:
+        ui._anim_timer = 500
     ui._panel_open_sfx_played = True
     ui._consume_enter = False
     return ui
@@ -81,6 +85,23 @@ def test_quest_results_name_entry_uses_native_offsets_and_colors(tmp_path: Path,
     xy, record, _alpha, rank = score_card.call_args.args
     assert (xy, record, rank) == (INPUT + Vec2(26.0, 46.0), ui.record, 1)
     assert score_card.call_args.kwargs["ui_phase"] == 1
+
+
+def test_quest_results_fade_in_over_half_a_second(tmp_path: Path, assets_dir: Path, make_mode_config, mocker) -> None:
+    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=2, faded_in=False)
+    score_card = mocker.spy(quest_results_module, "ui_text_input_render")
+
+    # `quest_results_anim_timer += frame_dt_ms`, alpha = timer * 0.002.
+    for _ in range(15):
+        ui.update(1.0 / 60.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
+    assert score_card.call_args.args[2] == pytest.approx(15 * 16 * 0.002)
+    assert ui._play_next_button.alpha == pytest.approx(15 * 16 * 0.002)
+
+    for _ in range(30):
+        ui.update(1.0 / 60.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
+    ui.draw(mouse=rl.Vector2(0.0, 0.0))
+    assert score_card.call_args.args[2] == 1.0
 
 
 def test_quest_results_buttons_phase_passes_its_phase_to_the_card(tmp_path: Path, assets_dir: Path, make_mode_config, mocker) -> None:

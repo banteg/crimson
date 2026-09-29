@@ -1,48 +1,39 @@
 from __future__ import annotations
 
-from crimson.quests.results import (
-    QuestResultsBreakdownAnim,
-    compute_quest_final_time,
-    tick_quest_results_breakdown_anim,
-)
+from crimson.quests.results import QuestResultsReveal, compute_quest_final_time
+
+TARGET = compute_quest_final_time(base_time_ms=5000, player_health_values=(12.6,), pending_perk_count=2)
 
 
-def test_breakdown_anim_reaches_final_values() -> None:
-    target = compute_quest_final_time(
-        base_time_ms=5000,
-        player_health_values=(100.0,),
-        pending_perk_count=3,
-    )
-    anim = QuestResultsBreakdownAnim.start()
-
-    clinks = tick_quest_results_breakdown_anim(anim, frame_dt_ms=10_000, target=target)
-
-    assert clinks > 0
-    assert anim.done is True
-    assert anim.base_time_ms == target.base_time_ms
-    assert anim.life_bonus_ms == target.life_bonus_ms
-    assert anim.unpicked_perk_bonus_s == target.unpicked_perk_bonus_ms // 1000
-    assert anim.final_time_ms == target.final_time_ms
+def _run(reveal: QuestResultsReveal, frames: int, dt_ms: int = 1000) -> list[str | None]:
+    return [reveal.tick(dt_ms, TARGET) for _ in range(frames)]
 
 
-def test_breakdown_anim_can_skip_to_final() -> None:
-    target = compute_quest_final_time(
-        base_time_ms=12345,
-        player_health_values=(42.0,),
-        pending_perk_count=7,
-    )
-    anim = QuestResultsBreakdownAnim.start()
-    anim.set_final(target)
+def test_reveal_takes_one_step_per_frame() -> None:
+    reveal = QuestResultsReveal()
 
-    assert anim.done is True
-    assert anim.base_time_ms == target.base_time_ms
-    assert anim.life_bonus_ms == target.life_bonus_ms
-    assert anim.unpicked_perk_bonus_s == target.unpicked_perk_bonus_ms // 1000
-    assert anim.final_time_ms == target.final_time_ms
+    assert reveal.tick(10_000, TARGET) == "clink"
+    assert (reveal.step, reveal.base_time_ms) == (0, 2000)
 
 
-def test_breakdown_anim_highlight_alpha_decays_on_final_step() -> None:
-    anim = QuestResultsBreakdownAnim.start()
-    anim.step = 3
-    anim.blink_ticks = 5
-    assert anim.highlight_alpha() == 0.5
+def test_reveal_counts_up_then_takes_flat_seconds_off_the_total() -> None:
+    reveal = QuestResultsReveal()
+
+    # Base 5000 in 2000 steps: 2000, 4000, 5000 (clamped).
+    assert _run(reveal, 3) == ["clink"] * 3
+    assert (reveal.step, reveal.base_time_ms, reveal.total_time_ms) == (1, 5000, 5000)
+    # One life-bonus tick reaches 600 ms, but native takes a full second off the running total.
+    assert _run(reveal, 1) == ["clink"]
+    assert (reveal.step, reveal.health_bonus_ms, reveal.total_time_ms) == (2, 600, 4000)
+    # Two unpicked perks, then the total snaps to the computed final time.
+    assert _run(reveal, 2) == ["clink"] * 2
+    assert (reveal.step, reveal.perk_bonus_s, reveal.total_time_ms) == (3, 2, TARGET.final_time_ms)
+    assert _run(reveal, 2) == ["blink"] * 2
+
+
+def test_reveal_waits_for_its_step_timer() -> None:
+    reveal = QuestResultsReveal()
+
+    assert reveal.tick(699, TARGET) is None
+    assert reveal.tick(1, TARGET) == "clink"
+    assert reveal.tick(39, TARGET) is None

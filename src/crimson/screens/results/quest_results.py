@@ -13,6 +13,7 @@ from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, worl
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
+from grim.color import grim_color
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -31,7 +32,7 @@ from ...persistence.highscores import (
     upsert_highscore_record,
 )
 from ...quests.level import QuestLevel
-from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
+from ...quests.results import QuestFinalTime, QuestResultsReveal
 from ...ui.formatting import format_time_mm_ss
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
@@ -103,7 +104,9 @@ class QuestResultsUi(msgspec.Struct):
 
     record: HighScoreRecord | None = None
     breakdown: QuestFinalTime | None = None
-    _breakdown_anim: QuestResultsBreakdownAnim | None = None
+    _reveal: QuestResultsReveal = msgspec.field(default_factory=QuestResultsReveal)
+    # Native `quest_results_anim_timer`: blink ticks during the breakdown, then ms of the name/results fade-in.
+    _anim_timer: int = 0
     _scores_path: Path | None = None
 
     save_error: str | None = None
@@ -154,7 +157,8 @@ class QuestResultsUi(msgspec.Struct):
         self.unlock_perk_name = str(unlock_perk_name or "")
         self.record = record.copy()
         self.breakdown = breakdown
-        self._breakdown_anim = QuestResultsBreakdownAnim.start()
+        self._reveal = QuestResultsReveal()
+        self._anim_timer = 0
         self._saved = False
 
         # Native behavior: the final quest replaces "Play Next" with "Show End Note".
@@ -201,6 +205,16 @@ class QuestResultsUi(msgspec.Struct):
             return
         self._close_action = action
         self.timeline.begin()
+
+    def _enter_rank_phase(self, *, qualifies: bool) -> None:
+        if qualifies:
+            self.phase = 1
+            self._arm_name_input_after_control_release()
+        else:
+            self.phase = 2
+
+    def _fade_alpha(self) -> float:
+        return min(1.0, self._anim_timer * 0.002)
 
     def _arm_name_input_after_control_release(self) -> None:
         self._defer_name_input_until_controls_released = True
@@ -271,35 +285,23 @@ class QuestResultsUi(msgspec.Struct):
         qualifies = int(self.rank) < TABLE_MAX
 
         if self.phase == 0:
-            anim = self._breakdown_anim
-            if anim is None:
-                self._breakdown_anim = QuestResultsBreakdownAnim.start()
-                anim = self._breakdown_anim
-
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or click:
-                anim.set_final(self.breakdown)
-                if qualifies:
-                    self.phase = 1
-                    self._arm_name_input_after_control_release()
-                else:
-                    self.phase = 2
-                return None
-
-            clinks = tick_quest_results_breakdown_anim(
-                anim,
-                frame_dt_ms=int(dt_s * 1000.0),
-                target=self.breakdown,
-            )
-            if clinks > 0 and play_sfx is not None:
-                play_sfx(SfxId.UI_CLINK_01)
-            if anim.done:
-                if qualifies:
-                    self.phase = 1
-                    self._arm_name_input_after_control_release()
-                else:
-                    self.phase = 2
+            match self._reveal.tick(int(dt_ms), self.breakdown):
+                case "clink":
+                    if play_sfx is not None:
+                        play_sfx(SfxId.UI_CLINK_01)
+                case "blink":
+                    self._anim_timer += 1
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or rl.is_mouse_button_pressed(
+                rl.MouseButton.MOUSE_BUTTON_LEFT,
+            ):
+                self._enter_rank_phase(qualifies=qualifies)
+            elif self._anim_timer > 10:
+                self._anim_timer = 0
+                self._enter_rank_phase(qualifies=qualifies)
             return None
+
+        # Name entry and results fade in together: native keeps counting the same timer.
+        self._anim_timer = self._anim_timer + int(dt_ms) if self._anim_timer < 500 else 500
 
         if self.phase == 1:
             if self._defer_name_input_until_controls_released:
@@ -324,6 +326,7 @@ class QuestResultsUi(msgspec.Struct):
             input_pos = content_pos.offset(dy=150.0)
             ok_pos = input_pos + Vec2(170.0, -8.0)
             resources = runtime_resources_for(self.assets_root)
+            self._ok_button.alpha = self._fade_alpha()
             ok_clicked = button_update(resources, self._ok_button, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
 
             if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
@@ -386,6 +389,9 @@ class QuestResultsUi(msgspec.Struct):
 
             button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
             resources = runtime_resources_for(self.assets_root)
+            alpha = self._fade_alpha()
+            for button in (self._play_next_button, self._play_again_button, self._high_scores_button, self._main_menu_button):
+                button.alpha = alpha
 
             if button_update(
                 resources,
@@ -478,72 +484,41 @@ class QuestResultsUi(msgspec.Struct):
         if self.phase == 0:
             label_x = content_pos.x + 32.0
             value_x = label_x + 132.0
+            reveal = self._reveal
+            alpha = max(0.0, min(1.0, 1.0 - self._anim_timer * 0.1))
+            current = grim_color(0.1, 0.8, 0.1, alpha)
 
-            anim = self._breakdown_anim
-            step = 4
-            highlight_alpha = 1.0
-            base_time_ms = int(self.breakdown.base_time_ms)
-            life_bonus_ms = int(self.breakdown.life_bonus_ms)
-            perk_bonus_ms = int(self.breakdown.unpicked_perk_bonus_ms)
-            final_time_ms = int(self.breakdown.final_time_ms)
-            if anim is not None and not anim.done:
-                step = int(anim.step)
-                highlight_alpha = float(anim.highlight_alpha())
-                base_time_ms = int(anim.base_time_ms)
-                life_bonus_ms = int(anim.life_bonus_ms)
-                perk_bonus_ms = int(anim.unpicked_perk_bonus_s) * 1000
-                final_time_ms = int(anim.final_time_ms)
-
-            def _row_color(idx: int, *, final: bool = False) -> rl.Color:
-                if anim is None or anim.done:
-                    return COLOR_TEXT
-                alpha = 0.2
-                if idx < step:
-                    alpha = 0.4
-                elif idx == step:
-                    alpha = 1.0
-                    if final:
-                        alpha *= highlight_alpha
-                rgb = (255, 255, 255)
-                if idx == step:
-                    rgb = (COLOR_GREEN.r, COLOR_GREEN.g, COLOR_GREEN.b)
-                return rl.Color(rgb[0], rgb[1], rgb[2], int(255 * max(0.0, min(1.0, alpha))))
+            def _row_color(row: int) -> rl.Color:
+                # The revealing row is green, earlier and later rows dimmed (later ones more).
+                if reveal.step == row:
+                    return current
+                return grim_color(1.0, 1.0, 1.0, alpha * (0.2 if reveal.step < row else 0.4))
 
             y = panel_layout.top_left.y + 156.0
-            base_value = format_time_mm_ss(base_time_ms)
-            life_value = format_time_mm_ss(life_bonus_ms)
-            perk_value = format_time_mm_ss(perk_bonus_ms)
-            final_value = format_time_mm_ss(final_time_ms)
+            rows = (
+                ("Base Time:", format_time_mm_ss(reveal.base_time_ms)),
+                ("Life Bonus:", format_time_mm_ss(reveal.health_bonus_ms)),
+                ("Unpicked Perk Bonus:", format_time_mm_ss(reveal.perk_bonus_s * 1000)),
+            )
+            for row, (label, value) in enumerate(rows):
+                self._draw_small(font, label, Vec2(label_x, y), _row_color(row))
+                self._draw_small(font, value, Vec2(value_x, y), _row_color(row))
+                y += 20.0
 
-            self._draw_small(font, "Base Time:", Vec2(label_x, y), _row_color(0))
-            self._draw_small(font, base_value, Vec2(value_x, y), _row_color(0))
-            y += 20.0
-
-            self._draw_small(font, "Life Bonus:", Vec2(label_x, y), _row_color(1))
-            self._draw_small(font, life_value, Vec2(value_x, y), _row_color(1))
-            y += 20.0
-
-            self._draw_small(font, "Unpicked Perk Bonus:", Vec2(label_x, y), _row_color(2))
-            self._draw_small(font, perk_value, Vec2(value_x, y), _row_color(2))
-            y += 20.0
-
-            # Final time underline + row (matches the extra quad draw in native).
-            line_y = y + 1.0
-            line_color = rl.Color(255, 255, 255, _row_color(3, final=True).a)
-            rl.draw_rectangle(int(label_x - 4.0), int(line_y), 168, 1, line_color)
-
+            total_color = grim_color(1.0, 1.0, 1.0, alpha)
+            rl.draw_rectangle(int(label_x - 4.0), int(y + 1.0), 168, 1, total_color)
             y += 8.0
-            self._draw_small(font, "Final Time:", Vec2(label_x, y), _row_color(3, final=True))
-            self._draw_small(font, final_value, Vec2(value_x, y), _row_color(3, final=True))
+            self._draw_small(font, "Final Time:", Vec2(label_x, y), total_color)
+            self._draw_small(font, format_time_mm_ss(reveal.total_time_ms), Vec2(value_x, y), total_color)
 
         elif self.phase == 1:
+            alpha = self._fade_alpha()
             text_y = panel_layout.top_left.y + 118.0
-            name_prompt = "State your name trooper!"
             self._draw_small(
                 font,
-                name_prompt,
+                "State your name trooper!",
                 Vec2(content_pos.x + 42.0, text_y),
-                COLOR_UI_ACCENT,
+                rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha)),
             )
 
             input_pos = content_pos.offset(dy=150.0)
@@ -552,20 +527,20 @@ class QuestResultsUi(msgspec.Struct):
                 int(input_pos.y),
                 int(INPUT_BOX_W),
                 int(INPUT_BOX_H),
-                rl.WHITE,
+                grim_color(1.0, 1.0, 1.0, alpha),
             )
             rl.draw_rectangle(
                 int(input_pos.x + 1.0),
                 int(input_pos.y + 1.0),
                 int(INPUT_BOX_W - 2.0),
                 int(INPUT_BOX_H - 2.0),
-                rl.Color(0, 0, 0, 255),
+                grim_color(0.0, 0.0, 0.0, alpha),
             )
             draw_ui_text(
                 resources,
                 self.input_text,
                 input_pos + Vec2(4.0, 2.0),
-                color=COLOR_TEXT_MUTED,
+                color=grim_color(1.0, 1.0, 1.0, 0.8 * alpha),
             )
             if self.save_error is not None:
                 draw_ui_text(
@@ -575,7 +550,7 @@ class QuestResultsUi(msgspec.Struct):
             caret_alpha = 1.0
             if math.sin(float(rl.get_time()) * 4.0) > 0.0:
                 caret_alpha = 0.4
-            caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
+            caret_color = grim_color(1.0, 1.0, 1.0, caret_alpha * alpha)
             caret_x = (
                 input_pos.x + 4.0 + self._text_width(font, self.input_text[: self.input_caret])
             )
@@ -593,11 +568,12 @@ class QuestResultsUi(msgspec.Struct):
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0, 46.0)
             ui_text_input_render(
-                score_card_pos, self.record, 1.0, self.rank + 1,
+                score_card_pos, self.record, alpha, self.rank + 1,
                 game_state=GameStateId.QUEST_RESULTS, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
         else:
+            alpha = self._fade_alpha()
             score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT)
             var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0)
             if not qualifies:
@@ -605,12 +581,12 @@ class QuestResultsUi(msgspec.Struct):
                     font,
                     "Score too low for top100.",
                     Vec2(score_card_pos.x + 8.0, panel_layout.top_left.y + 102.0),
-                    rl.Color(200, 200, 200, 255),
+                    grim_color(1.0, 1.0, 1.0, alpha),
                 )
 
             card_y = var_c_12 + 16.0
             ui_text_input_render(
-                Vec2(score_card_pos.x, card_y), self.record, 1.0, self.rank + 1,
+                Vec2(score_card_pos.x, card_y), self.record, alpha, self.rank + 1,
                 game_state=GameStateId.QUEST_RESULTS, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
