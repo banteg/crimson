@@ -8874,10 +8874,10 @@
   {
     "address": "0x1003CF70",
     "canonical_address": "0x1003D000",
-    "end": "0x1003D000",
+    "end": "0x1003CFF8",
     "evidence": "exact",
     "name": "grim_jpeg_read_restart_marker",
-    "size": 144
+    "size": 136
   },
   {
     "address": "0x1003D000",
@@ -9461,10 +9461,10 @@
   {
     "address": "0x10041850",
     "canonical_address": "0x100418E0",
-    "end": "0x10041950",
+    "end": "0x10041949",
     "evidence": "exact",
     "name": "grim_jpeg_start_pass_dpost",
-    "size": 256
+    "size": 249
   },
   {
     "address": "0x10041950",

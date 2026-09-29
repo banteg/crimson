@@ -3736,6 +3736,11 @@
       "program": "1.9.1/crimsonland.exe"
     },
     {
+      "address": "0x004c42c8",
+      "name": "highscore_date_label_buffer",
+      "program": "1.9.1/crimsonland.exe"
+    },
+    {
       "address": "0x004c461c",
       "name": "ui_focus_count",
       "program": "1.9.1/crimsonland.exe"

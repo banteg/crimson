@@ -26,6 +26,16 @@
       "program": "1.9.1/grim.dll"
     },
     {
+      "address": "0x1005b150",
+      "name": "?bConversion@?1??D3DXScoreFormat@@YAIPBU_D3DXFORMAT_INFO@@0@Z@4QAY04$$CBHA",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005b150",
+      "name": "d3dx_format_conversion_matrix",
+      "program": "1.9.1/grim.dll"
+    },
+    {
       "address": "0x1005b274",
       "name": "grim_vertex_space_converter_vtable",
       "program": "1.9.1/grim.dll"
@@ -231,6 +241,26 @@
       "program": "1.9.1/grim.dll"
     },
     {
+      "address": "0x1005c97c",
+      "name": "png_pass_mask",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005c998",
+      "name": "png_pass_dsp_mask",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ccbc",
+      "name": "grim_png_signature",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ccbc",
+      "name": "png_sig",
+      "program": "1.9.1/grim.dll"
+    },
+    {
       "address": "0x1005ccc4",
       "name": "IID_IDirect3DVolumeTexture8",
       "program": "1.9.1/grim.dll"
@@ -371,6 +401,66 @@
       "program": "1.9.1/grim.dll"
     },
     {
+      "address": "0x1005d1a0",
+      "name": "d3dx_jpeg_first_pool_slop",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d1a8",
+      "name": "d3dx_jpeg_extra_pool_slop",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d230",
+      "name": "png_pass_start",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d24c",
+      "name": "png_pass_inc",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d268",
+      "name": "png_pass_ystart",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d284",
+      "name": "png_pass_yinc",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d730",
+      "name": "crc_table",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005d730",
+      "name": "d3dx_zlib_crc_table",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005db48",
+      "name": "d3dx_jpeg_huff_extend_test",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005db88",
+      "name": "d3dx_jpeg_huff_extend_offset",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005dc30",
+      "name": "d3dx_jpeg_phuff_extend_test",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005dc70",
+      "name": "d3dx_jpeg_phuff_extend_offset",
+      "program": "1.9.1/grim.dll"
+    },
+    {
       "address": "0x1005dcb0",
       "name": "d3dx_jpeg_idct_aanscales",
       "program": "1.9.1/grim.dll"
@@ -388,6 +478,11 @@
     {
       "address": "0x1005de70",
       "name": "d3dx_jpeg_quant1_rgb_order",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005de80",
+      "name": "d3dx_zlib_inflate_border",
       "program": "1.9.1/grim.dll"
     },
     {
@@ -446,8 +541,48 @@
       "program": "1.9.1/grim.dll"
     },
     {
+      "address": "0x1005ece0",
+      "name": "first_pool_slop",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ece0",
+      "name": "grim_jpeg_first_pool_slop",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ece8",
+      "name": "extra_pool_slop",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ece8",
+      "name": "grim_jpeg_extra_pool_slop",
+      "program": "1.9.1/grim.dll"
+    },
+    {
       "address": "0x1005ecf0",
       "name": "grim_jpeg_natural_order",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ee30",
+      "name": "grim_jpeg_huff_extend_test",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005ee70",
+      "name": "grim_jpeg_huff_extend_offset",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005eeb0",
+      "name": "grim_jpeg_phuff_extend_test",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005eef0",
+      "name": "grim_jpeg_phuff_extend_offset",
       "program": "1.9.1/grim.dll"
     },
     {
@@ -471,6 +606,26 @@
       "program": "1.9.1/grim.dll"
     },
     {
+      "address": "0x1005f1c4",
+      "name": "zlib_extra_literal_bits",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005f238",
+      "name": "zlib_extra_distance_bits",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005f2fc",
+      "name": "bl_order",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005f2fc",
+      "name": "zlib_bit_length_order",
+      "program": "1.9.1/grim.dll"
+    },
+    {
       "address": "0x1005f310",
       "name": "static_ltree",
       "program": "1.9.1/grim.dll"
@@ -488,6 +643,36 @@
     {
       "address": "0x1005f790",
       "name": "zlib_static_distance_tree",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005f808",
+      "name": "dist_code",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005f808",
+      "name": "zlib_distance_code",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005fa08",
+      "name": "length_code",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005fa08",
+      "name": "zlib_length_code",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005fb08",
+      "name": "zlib_base_length",
+      "program": "1.9.1/grim.dll"
+    },
+    {
+      "address": "0x1005fb7c",
+      "name": "zlib_base_distance",
       "program": "1.9.1/grim.dll"
     },
     {

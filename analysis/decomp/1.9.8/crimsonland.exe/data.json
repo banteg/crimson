@@ -1221,6 +1221,21 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x0047e06e",
+      "name": "config_shadows_enabled",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e070",
+      "name": "config_flame_glow_enabled",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0047e071",
+      "name": "config_smoke_enabled",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x0047e074",
       "name": "config_player_count",
       "program": "1.9.8/crimsonland.exe"
@@ -3008,6 +3023,11 @@
     {
       "address": "0x004c9f5c",
       "name": "highscore_card_divider_color_r",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004ce0a0",
+      "name": "highscore_date_label_buffer",
       "program": "1.9.8/crimsonland.exe"
     },
     {

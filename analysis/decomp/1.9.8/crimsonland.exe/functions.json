@@ -4596,10 +4596,10 @@
   {
     "address": "0x004408F0",
     "canonical_address": "0x00441270",
-    "end": "0x00440A20",
-    "evidence": "ordered",
+    "end": "0x004409F0",
+    "evidence": "exact",
     "name": "highscore_format_date_label",
-    "size": 304
+    "size": 256
   },
   {
     "address": "0x00440A20",
@@ -4963,11 +4963,11 @@
   },
   {
     "address": "0x004469D0",
-    "canonical_address": "0x004475D0",
-    "end": "0x00447070",
-    "evidence": "ordered",
-    "name": "options_menu_update",
-    "size": 1696
+    "canonical_address": "0x00447580",
+    "end": "0x00446A09",
+    "evidence": "exact",
+    "name": "config_apply_detail_preset",
+    "size": 57
   },
   {
     "address": "0x00447070",
@@ -5020,10 +5020,10 @@
   {
     "address": "0x004470D0",
     "canonical_address": "0x00447C90",
-    "end": "0x00447130",
-    "evidence": "ordered",
+    "end": "0x0044710A",
+    "evidence": "exact",
     "name": "input_configure_for_label",
-    "size": 96
+    "size": 58
   },
   {
     "address": "0x00447130",
@@ -5466,13 +5466,13 @@
   },
   {
     "address": "0x00450FC6",
-    "canonical_address": "0x00453464",
+    "canonical_address": "0x00453471",
     "end": "0x00450FD9",
-    "evidence": "ordered",
-    "name": "d3dx_init_vec3_transform_coord",
+    "evidence": "referenced",
+    "name": "D3DXVec3TransformCoord",
     "size": 19,
     "aliases": [
-      "?init_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+      "_D3DXVec3TransformCoord@12"
     ]
   },
   {
@@ -6166,6 +6166,17 @@
     "size": 191,
     "aliases": [
       "?c_D3DXVec3TransformCoord@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBUD3DXMATRIX@@@Z"
+    ]
+  },
+  {
+    "address": "0x0045347A",
+    "canonical_address": "0x0045589A",
+    "end": "0x004535E7",
+    "evidence": "exact",
+    "name": "d3dx_c_vec3_project",
+    "size": 365,
+    "aliases": [
+      "?c_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ]
   },
   {
@@ -7206,26 +7217,26 @@
   {
     "address": "0x0045D0D7",
     "canonical_address": "0x0045ED17",
-    "end": "0x0045D25F",
-    "evidence": "referenced",
+    "end": "0x0045D23F",
+    "evidence": "exact",
     "name": "vec3_project",
-    "size": 392
+    "size": 360
   },
   {
     "address": "0x0045D25F",
     "canonical_address": "0x0045EE9F",
-    "end": "0x0045D485",
-    "evidence": "referenced",
+    "end": "0x0045D465",
+    "evidence": "exact",
     "name": "vec3_unproject",
-    "size": 550
+    "size": 518
   },
   {
     "address": "0x0045D485",
     "canonical_address": "0x0045F0C5",
-    "end": "0x0045D97A",
-    "evidence": "referenced",
+    "end": "0x0045D5B8",
+    "evidence": "exact",
     "name": "x3d_vec3_unproject_k7",
-    "size": 1269,
+    "size": 307,
     "aliases": [
       "?x3d_D3DXVec3Unproject_K7@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
     ]
@@ -10101,10 +10112,10 @@
   {
     "address": "0x00469455",
     "canonical_address": "0x0046B265",
-    "end": "0x00469930",
-    "evidence": "referenced",
+    "end": "0x004698F6",
+    "evidence": "exact",
     "name": "crt_fp_parse",
-    "size": 1243
+    "size": 1185
   },
   {
     "address": "0x00469930",

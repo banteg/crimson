@@ -177,6 +177,12 @@ class _Body:
     lines: tuple[matchlib.DisassemblyLine, ...]
     signature: tuple[tuple[str, tuple[tuple[str, ...], ...]], ...]
 
+    @property
+    def size(self) -> int:
+        # The disassembler removes only verified terminal alignment padding.
+        # Raw manifest extents can contain different padding in another build.
+        return max((line.offset + line.size for line in self.lines), default=0)
+
 
 def _body(image: matchlib.LoadedImage, start: int, size: int) -> _Body:
     """Normalize a body so that only relinking-invariant content remains."""
@@ -321,6 +327,16 @@ def _grim_virtual_calls(body: _Body, interface_address: int) -> dict[int, int]:
         opcode = line.text.split(" ", 1)[0]
         if opcode in {"push", "cmp", "test", "nop"} or opcode.startswith("f") and opcode != "fnstsw":
             continue
+        # Only model instructions with a single explicit register destination.
+        # MUL/DIV, CDQ, XCHG and similar instructions can also overwrite tracked
+        # registers through implicit or additional destinations.
+        if opcode not in {
+            "mov", "movzx", "movsx", "lea", "pop", "add", "sub", "adc", "sbb",
+            "and", "or", "xor", "not", "neg", "inc", "dec", "shl", "shr", "sar",
+            "sal", "rol", "ror", "rcl", "rcr",
+        }:
+            registers.clear()
+            continue
         if not (assignment := re.match(r"\w+ (\w+)(?:, (.*))?$", line.text)):
             registers.clear()
             continue
@@ -463,7 +479,7 @@ class _Mapper:
     def accept(self, address: int, target: int, evidence: str) -> bool:
         """Map a canonical function; report whether its body is exact there."""
         self.mapped[address] = target
-        target_body = self.body_at(target, self.by_address[address].size)
+        target_body = self.body_at(target, self.bodies[address].size)
         exact = target_body.signature == self.bodies[address].signature
         interface = not exact and self.interface_equivalent(address, target_body)
         self.evidence[address] = "exact" if exact else "interface" if interface else evidence
@@ -514,7 +530,7 @@ class _Mapper:
         """Find bodies that survived relinking unchanged."""
         for function in self.functions:
             body = self.bodies[function.address]
-            data = self.source.function_bytes(function.address, function.address + function.size)
+            data = self.source.function_bytes(function.address, function.address + body.size)
             runs = _fixed_runs(body, data, function.address)
             anchor_offset, anchor = max(runs, key=lambda run: len(run[1]), default=(0, b""))
             if len(anchor) < MIN_ANCHOR_BYTES:
@@ -528,7 +544,7 @@ class _Mapper:
                     if all(
                         self.target.mapped[offset + run_offset : offset + run_offset + len(run)] == run
                         for run_offset, run in runs
-                    ) and self.body_at(position, function.size).signature == body.signature:
+                    ) and self.body_at(position, body.size).signature == body.signature:
                         positions.append(position)
                     found = section.find(anchor, found + 1)
             self.hits[function.address] = positions
@@ -538,7 +554,7 @@ class _Mapper:
         function = self.by_address[address]
         pairs = zip(
             self.bodies[address].lines,
-            self.body_at(self.mapped[address], function.size).lines,
+            self.body_at(self.mapped[address], self.bodies[address].size).lines,
             strict=True,
         )
         for source_line, target_line in pairs:
@@ -658,8 +674,8 @@ class _Mapper:
             if not missing or not candidates:
                 continue
             pairs = _align(
-                [len(self.source.function_bytes(address, self.by_address[address].end)) for address in missing],
-                [len(self.target.function_bytes(address, self.extent(address))) for address in candidates],
+                [self.bodies[address].size for address in missing],
+                [self.body_at(address, self.extent(address) - address).size for address in candidates],
             )
             for source_index, target_index in pairs:
                 if self.accept(missing[source_index], candidates[target_index], "ordered"):
@@ -674,7 +690,7 @@ class _Mapper:
             function = self.by_address[address]
             evidence = self.evidence[address]
             # A changed body runs at most to the next known function.
-            end = target + function.size if evidence in {"exact", "interface"} else self.extent(target)
+            end = target + self.bodies[address].size if evidence in {"exact", "interface"} else self.extent(target)
             rows[target] = {
                 "address": f"0x{target:08X}",
                 "canonical_address": f"0x{address:08X}",
@@ -790,6 +806,7 @@ def write_build_map(image: BuildImage, payload: dict[str, Any]) -> None:
     image.map_dir.mkdir(parents=True, exist_ok=True)
     for path, text in build_map_files(image, payload).items():
         path.write_text(text, encoding="utf-8")
+    _reference_catalog.cache_clear()
 
 
 def stale_build_map_files(image: BuildImage, payload: dict[str, Any]) -> list[Path]:
@@ -801,13 +818,13 @@ def stale_build_map_files(image: BuildImage, payload: dict[str, Any]) -> list[Pa
 
 
 def mapped_images(registry: Registry) -> list[BuildImage]:
-    """Images of every non-canonical build that belongs to a family."""
-    return [
+    """Family builds, with Grim mapped before callers that use its interface."""
+    return sorted((
         image
         for images in registry.builds.values()
         for image in images.values()
         if image.canonical_build is not None and not image.is_canonical
-    ]
+    ), key=lambda image: (image.build, image.name != "grim.dll", image.name))
 
 
 @dataclass(frozen=True, slots=True)

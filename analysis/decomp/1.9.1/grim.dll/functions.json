@@ -1370,12 +1370,12 @@
     "size": 106
   },
   {
-    "address": "0x1000C97E",
+    "address": "0x1000D920",
     "canonical_address": "0x1000AA92",
-    "end": "0x1000C987",
+    "end": "0x1000D930",
     "evidence": "ordered",
     "name": "_initterm",
-    "size": 9
+    "size": 16
   },
   {
     "address": "0x1000DA10",
@@ -8668,10 +8668,10 @@
   {
     "address": "0x10048490",
     "canonical_address": "0x1003D000",
-    "end": "0x10048520",
+    "end": "0x10048518",
     "evidence": "exact",
     "name": "grim_jpeg_read_restart_marker",
-    "size": 144
+    "size": 136
   },
   {
     "address": "0x10048520",
@@ -9255,10 +9255,10 @@
   {
     "address": "0x1004CD70",
     "canonical_address": "0x100418E0",
-    "end": "0x1004CE70",
+    "end": "0x1004CE69",
     "evidence": "exact",
     "name": "grim_jpeg_start_pass_dpost",
-    "size": 256
+    "size": 249
   },
   {
     "address": "0x1004CE70",

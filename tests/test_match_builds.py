@@ -12,6 +12,11 @@ REGISTRY = match_builds.load_registry()
 MAPPED_IMAGES = match_builds.mapped_images(REGISTRY)
 
 
+def test_engine_maps_precede_the_game_interface_consumer() -> None:
+    for build in {image.build for image in MAPPED_IMAGES}:
+        assert [image.name for image in MAPPED_IMAGES if image.build == build] == ["grim.dll", "crimsonland.exe"]
+
+
 @pytest.mark.parametrize("image", MAPPED_IMAGES, ids=lambda image: image.target.image_name)
 def test_committed_build_maps_bind_canonical_names_to_the_pinned_image(image: match_builds.BuildImage) -> None:
     canonical = REGISTRY.canonical(image)
@@ -76,6 +81,31 @@ def test_layout_alignment_skips_added_and_dropped_functions() -> None:
     assert match_builds._increasing([(1, 10), (2, 50), (3, 20), (4, 30)]) == [(1, 10), (3, 20), (4, 30)]
 
 
+def test_body_search_ignores_verified_padding_without_reading_the_next_function() -> None:
+    code = bytes.fromhex("b8 78563412 b9 21436587 ba ccddffee c3")
+    original = code + b"\xcc" * 16
+    # Another build pads less and immediately starts an unrelated function.
+    target = code + b"\x90" * 8 + bytes.fromhex("31 c0 c3") + b"\xcc" * 5
+    mapper = match_builds._Mapper.__new__(match_builds._Mapper)
+    mapper.source = matchlib.LoadedImage(original, 0x1000, len(original))
+    mapper.target = matchlib.LoadedImage(target, 0x2000, len(target))
+    function = matchlib.FunctionSymbol("example", 0x1000, 0x1020, 32)
+    mapper.functions = [function]
+    mapper.by_address = {function.address: function}
+    mapper.bodies = {function.address: match_builds._body(mapper.source, function.address, function.size)}
+    mapper.code = [(0x2000, target)]
+    mapper.hits = {}
+    mapper.mapped = {}
+    mapper.evidence = {}
+    mapper.grim_address = None
+    mapper.grim_slots = {}
+    mapper.search()
+    assert mapper.hits == {0x1000: [0x2000]}
+    assert mapper.accept(0x1000, 0x2000, "ordered")
+    assert mapper.evidence[0x1000] == "exact"
+    assert mapper.bodies[0x1000].size == len(code)
+
+
 def test_cross_build_catalog_keeps_cpp_method_aliases() -> None:
     image = REGISTRY.image("1.9.8", "crimsonland.exe")
     catalog = match_builds._reference_catalog(image)
@@ -107,6 +137,10 @@ def test_198_virtual_slots_are_paired_from_the_actual_dll_vtables() -> None:
         (["mov ecx, ebx"], False),
         (["mov cl, 0x1"], False),
         (["imul edx, edx, 0x2"], False),
+        (["mul ebx"], False),
+        (["div ebx"], False),
+        (["cdq"], False),
+        (["xchg edx, ebx"], False),
         (["call ADDR"], False),
         (["jmp Lf"], False),
     ],
