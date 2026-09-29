@@ -14,7 +14,6 @@ from ..persistence.highscores import scores_path_for_mode
 from ..replay import Replay
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
@@ -42,7 +41,6 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._sim_session: DeterministicSession | None = None
         # Native `game_time_s`, which blinks the typing caret.
         self._game_time_s = 0.0
 
@@ -57,11 +55,10 @@ class TypoShooterMode(BaseGameplayMode):
         )
         highscore_names = tuple(load_typo_highscore_names(scores_path))
 
-        prepared = self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
-        self._sim_session = prepared.session
+        self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         super().close()
 
     def _runtime_player_count(self) -> int:

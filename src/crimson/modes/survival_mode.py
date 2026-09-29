@@ -70,13 +70,12 @@ class SurvivalMode(BaseGameplayMode):
         self._cursor_time = 0.0
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.SURVIVAL)
-        self._sim_session = prepared.session
         spawn_state = prepared.session.mode_state
         assert isinstance(spawn_state, SurvivalSpawnState)
         self._spawn_state = spawn_state
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         super().close()
 
     def _handle_input(self) -> None:

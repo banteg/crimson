@@ -337,7 +337,7 @@ class ReplayPlaybackMode:
                 trace_rng=bool(self._trace_rng),
             )
             driver = self._driver
-            runtime.load_world_state(driver.world)
+            runtime.start_session(driver.session)
         except ReplayRunnerError as exc:  # pragma: no cover
             raise ValueError(f"unsupported replay game_mode_id: {int(replay.run.game_mode_id)}") from exc
 

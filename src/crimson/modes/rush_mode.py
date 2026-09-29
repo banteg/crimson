@@ -45,11 +45,10 @@ class RushMode(BaseGameplayMode):
     def open(self) -> None:
         super().open()
         self._reset_gameplay_frame_clock()
-        prepared = self._initialize_run(GameMode.RUSH)
-        self._sim_session = prepared.session
+        self._initialize_run(GameMode.RUSH)
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         super().close()
 
     def _handle_input(self) -> None:

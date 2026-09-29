@@ -88,10 +88,9 @@ class QuestMode(BaseGameplayMode):
         self._replay_recorder = None
         self._replay_checkpoints.clear()
         self._replay_checkpoints_last_tick = None
-        self._sim_session = None
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         super().close()
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
@@ -118,7 +117,7 @@ class QuestMode(BaseGameplayMode):
             self._quest_def = None
             self._quest_level = level
             self._quest_highscore_random_tag = 0
-            self._sim_session = None
+            self._world_runtime.end_session()
             return
         self._outcome = None
         self._replay_recorder = None
@@ -134,13 +133,10 @@ class QuestMode(BaseGameplayMode):
         self._run_reset_seed = int(seed)
 
         player_count = self.config.gameplay.player_count
-        self._sync_world_runtime_config()
         self.world_runtime.reset(seed=seed, player_count=max(1, min(4, player_count)))
-        self._bind_world()
         self._local_input.reset(players=self.world.players)
         self.bind_status(status)
         prepared = self._initialize_run(GameMode.QUESTS, quest_level=quest.level)
-        self._sim_session = prepared.session
         spawn_state = prepared.session.mode_state
         assert isinstance(spawn_state, QuestSpawnState)
         self._quest_spawn_state = spawn_state

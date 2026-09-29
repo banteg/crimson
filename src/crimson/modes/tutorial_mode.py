@@ -16,7 +16,6 @@ from ..input_codes import PadCode, input_code_is_down, input_code_is_pressed, pa
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSession
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
     draw_tutorial_overlay_panels,
@@ -50,7 +49,6 @@ class TutorialMode(BaseGameplayMode):
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
-        self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._frame_input_state: PlayerInput | None = None
 
@@ -70,11 +68,10 @@ class TutorialMode(BaseGameplayMode):
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
 
-        prepared = self._initialize_run(GameMode.TUTORIAL)
-        self._sim_session = prepared.session
+        self._initialize_run(GameMode.TUTORIAL)
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         self._replay_recorder = None
         self._frame_input_state = None
         super().close()

@@ -16,7 +16,7 @@ from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
@@ -124,7 +124,6 @@ class BaseGameplayMode:
         self._paused = False
         self._keybind_help_alpha_ms = 0
         self._status_base: GameStatus | None = None
-        self._status_sim: GameStatus | None = None
         self._local_input: LocalInputInterpreter = LocalInputInterpreter()
         self._game_over_ui: GameOverUi = GameOverUi(
             assets_root=self._assets_root,
@@ -137,26 +136,25 @@ class BaseGameplayMode:
         # The next run's flags; the run spec carries them into the gameplay state.
         self.hardcore = False
         self.quest_fail_retry_count = 0
-        self.audio = audio
-        self.audio_rng = audio_rng
-        self.rtx_mode = RtxRenderMode.CLASSIC
+        # The runtime owns the run (session, world), audio and render mode; the mode reads them from it.
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
             preserve_bugs=bool(ctx.preserve_bugs),
             config=self.config,
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-            rtx_mode=self.rtx_mode,
+            audio=audio,
+            audio_rng=audio_rng,
+            rtx_mode=RtxRenderMode.CLASSIC,
         )
         self.render_resources = self._world_runtime.render_resources
         self.audio_bridge = self._world_runtime.audio_bridge
         self.terrain_runtime = self._world_runtime.terrain_runtime
 
         self.camera = Vec2(-1.0, -1.0)
-        self._sync_world_runtime_config()
         player_count = self._runtime_player_count()
         self._world_runtime.reset(player_count=max(1, min(4, int(player_count))))
-        self._bind_world()
+        preserve_bugs = self._world_runtime.preserve_bugs
+        self._local_input.set_preserve_bugs(preserve_bugs)
+        self._hud_state.preserve_bugs = preserve_bugs
 
         self._game_over_active = False
         self._game_over_record: HighScoreRecord | None = None
@@ -186,7 +184,6 @@ class BaseGameplayMode:
         self._replay_checkpoints_enabled = bool(ctx.replay_checkpoints)
         self._replay_checkpoints_last_tick: int | None = None
         self._replay_result: RunResult | None = None
-        self._sim_session: DeterministicSession | None = None
         self._live_ticks = LiveTickSource()
         self._tick_clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
 
@@ -199,6 +196,34 @@ class BaseGameplayMode:
         return self._world_runtime.world
 
     @property
+    def state(self) -> GameplayState:
+        return self._world_runtime.world.state
+
+    @property
+    def creatures(self) -> CreaturePool:
+        return self._world_runtime.world.creatures
+
+    @property
+    def player(self) -> PlayerState:
+        return self._world_runtime.world.players[0]
+
+    @property
+    def _sim_session(self) -> DeterministicSession | None:
+        return self._world_runtime.session
+
+    @property
+    def audio(self) -> AudioState | None:
+        return self._world_runtime.audio
+
+    @property
+    def audio_rng(self) -> CrandLike:
+        return self._world_runtime.audio_rng
+
+    @property
+    def rtx_mode(self) -> RtxRenderMode:
+        return self._world_runtime.rtx_mode
+
+    @property
     def camera(self) -> Vec2:
         return self._world_runtime.camera
 
@@ -209,13 +234,6 @@ class BaseGameplayMode:
     @property
     def preserve_bugs(self) -> bool:
         return self._world_runtime.preserve_bugs
-
-    def _sync_world_runtime_config(self) -> None:
-        runtime = self._world_runtime
-        runtime.config = self.config
-        runtime.audio = self.audio
-        runtime.audio_rng = self.audio_rng
-        runtime.rtx_mode = self.rtx_mode
 
     def apply_terrain_setup(
         self,
@@ -311,16 +329,6 @@ class BaseGameplayMode:
                 continue
             draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha)
 
-    def _bind_world(self) -> None:
-        self.state: GameplayState = self.world.state
-        self.creatures: CreaturePool = self.world.creatures
-        self.player: PlayerState = self.world.players[0]
-        preserve_bugs = self.state.preserve_bugs
-        self._local_input.set_preserve_bugs(preserve_bugs)
-        self._hud_state.preserve_bugs = preserve_bugs
-        self._game_over_ui.preserve_bugs = preserve_bugs
-        self.state.status = self._status_sim
-
     def _any_player_alive(self) -> bool:
         return any(player.health > 0.0 for player in self.world.players)
 
@@ -328,13 +336,8 @@ class BaseGameplayMode:
     def save_status(self) -> GameStatus | None:
         return self._status_base
 
-    @property
-    def sim_status(self) -> GameStatus | None:
-        return self._status_sim
-
     def bind_status(self, status: GameStatus | None) -> None:
         self._status_base = status
-        self._status_sim = status
         self.state.status = status
 
     def bind_screen_fade(self, fade: GameState | None) -> None:
@@ -346,14 +349,11 @@ class BaseGameplayMode:
             self._ui_focus = fade.focus
             self._game_over_ui.focus = fade.focus
 
-    def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None:
-        self.audio = audio
-        self.audio_rng = audio_rng
+    def bind_audio(self, audio: AudioState | None, audio_rng: CrandLike) -> None:
         self._world_runtime.audio = audio
         self._world_runtime.audio_rng = audio_rng
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
-        self.rtx_mode = mode
         self._world_runtime.rtx_mode = mode
 
     def _update_audio(self, dt: float) -> None:
@@ -718,10 +718,8 @@ class BaseGameplayMode:
         seed = int(self.state.rng.state)
         self._run_reset_seed = int(seed) & 0xFFFFFFFF
 
-        self._sync_world_runtime_config()
         self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
         self._world_runtime.open_runtime()
-        self._bind_world()
         self._local_input.reset(players=self.world.players)
         self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=False)
@@ -739,7 +737,7 @@ class BaseGameplayMode:
         dictionary_words: tuple[str, ...] = (),
         highscore_names: tuple[str, ...] = (),
     ) -> PreparedRun:
-        status = self.state.status
+        status = self._status_base
         spec = RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
@@ -756,9 +754,7 @@ class BaseGameplayMode:
             typo_highscore_names=highscore_names,
         )
         prepared = initialize_run(spec, status=status)
-        self._world_runtime.load_world_state(prepared.session.world)
-        self._status_sim = prepared.session.world.state.status
-        self._bind_world()
+        self._world_runtime.start_session(prepared.session)
         self._local_input.reset(players=self.world.players)
         self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
         self._reset_live_ticks()

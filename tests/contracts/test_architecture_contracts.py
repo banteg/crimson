@@ -108,7 +108,7 @@ def test_contract_8_live_and_replay_frames_advance_the_presentation_clock_alike(
     replay = idle_replay(16, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0))
     driver = build_runtime_playback_driver(replay, max_ticks=None, trace_rng=False)
     replay_runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0))
-    replay_runtime.load_world_state(driver.world)
+    replay_runtime.start_session(driver.session)
     replay_clock = FixedStepClock(tick_rate=60)
 
     next_tick = 0

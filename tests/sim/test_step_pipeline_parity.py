@@ -64,7 +64,7 @@ def _live_runtime_checkpoints(
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )
-    runtime.load_world_state(driver.world)
+    runtime.start_session(driver.session)
 
     checkpoints: list[ReplayCheckpoint] = []
     for tick_index in range(len(replay.ticks)):

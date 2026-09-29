@@ -14,6 +14,7 @@ from ..render.rtx.mode import RtxRenderMode
 from ..render.world import viewport
 from ..render.world.context import WorldRenderCtx
 from ..render.world.draw import draw_world, ui_render_aim_indicators
+from ..sim.sessions import DeterministicSession
 from ..sim.world_reset import build_reset_world
 from ..sim.world_state import WorldState
 from .audio_bridge import AudioBridge
@@ -22,9 +23,14 @@ from .terrain_runtime import TerrainRuntime
 
 
 class WorldRuntime:
-    """Binds the simulated world to camera, terrain, audio and render resources."""
+    """Owns the active run: its session and world, bound to camera, terrain, audio and render resources.
+
+    `reset` installs an idle world and drops the session; `start_session` installs a run. Everything else (the
+    gameplay modes, the replay viewer) reads the world and session from here.
+    """
 
     world: WorldState
+    session: DeterministicSession | None
     presentation_elapsed_ms: float
     bonus_anim_phase: float
 
@@ -93,6 +99,7 @@ class WorldRuntime:
             self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
 
     def _reset_world(self, *, seed: int, player_count: int) -> None:
+        self.session = None
         self.world = build_reset_world(
             seed=seed,
             player_count=player_count,
@@ -101,8 +108,14 @@ class WorldRuntime:
         self.presentation_elapsed_ms = 0.0
         self.bonus_anim_phase = 0.0
 
-    def load_world_state(self, world: WorldState) -> None:
-        self.world = world
+    def start_session(self, session: DeterministicSession) -> None:
+        """Install a run: its world is the one stepped, drawn and read until the next reset."""
+        self.session = session
+        self.world = session.world
+
+    def end_session(self) -> None:
+        """Stop stepping the run; its world stays on screen until the next reset."""
+        self.session = None
 
     def advance_presentation_clock(self, *, dt_sim: float) -> None:
         """Advance the render-only clocks by one simulated tick."""

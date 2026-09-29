@@ -48,10 +48,13 @@ def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> Non
 
 def test_game_over_requests_result_music_until_the_exit_transition(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode.audio = AudioState(
-        ready=False,
-        music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+    mode.bind_audio(
+        AudioState(
+            ready=False,
+            music=init_music_state(ready=False, enabled=True, volume=1.0),
+            sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+        ),
+        mode.audio_rng,
     )
     play_music = mocker.patch.object(base_gameplay_mode, "play_music")
     mocker.patch.object(GameOverUi, "update", return_value=None)
@@ -95,10 +98,13 @@ def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config) 
 
 def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode.audio = AudioState(
-        ready=False,
-        music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+    mode.bind_audio(
+        AudioState(
+            ready=False,
+            music=init_music_state(ready=False, enabled=True, volume=1.0),
+            sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+        ),
+        mode.audio_rng,
     )
     stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
     mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))
