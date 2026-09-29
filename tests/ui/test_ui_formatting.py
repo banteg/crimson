@@ -40,7 +40,8 @@ def test_format_ordinal(value: int, expected: str) -> None:
 @pytest.mark.parametrize(
     ("ms", "expected"),
     [
-        (-1, "0:00"),
+        (-1, "-0:00"),
+        (-61_500, "-1:01"),
         (0, "0:00"),
         (999, "0:00"),
         (1000, "0:01"),

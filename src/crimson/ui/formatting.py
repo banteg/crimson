@@ -22,7 +22,7 @@ def highscore_format_date_label(day: int, month_index: int, year: int) -> str:
 
 
 def format_time_mm_ss(ms: int) -> str:
-    total_s = max(0, int(ms)) // 1000
-    minutes = total_s // 60
-    seconds = total_s % 60
-    return f"{minutes}:{seconds:02d}"
+    """`time_format_mm_ss(ms / 1000)`, signed: quest final times can go negative, which native prints as "0:0-1"."""
+    total_s = abs(int(ms)) // 1000
+    sign = "-" if ms < 0 else ""
+    return f"{sign}{total_s // 60}:{total_s % 60:02d}"
