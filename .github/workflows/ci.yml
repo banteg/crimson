@@ -167,3 +167,17 @@ jobs:
         env:
           MATCH_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: ${{ matrix.command }}
+
+      - name: Run native parity smoke tests
+        if: ${{ matrix.task == 'pytest' }}
+        env:
+          CRIMSON_NATIVE_ORACLE: "1"
+        run: |
+          # Fail if Unicorn is missing instead of silently skipping the oracle tests.
+          uv run --no-sync python -c "import unicorn"
+          uv run --no-sync pytest -q \
+            tests/native_oracle/test_quest_builders.py \
+            tests/native_oracle/test_creature_xp.py \
+            tests/native_oracle/test_creature_anim.py \
+            tests/native_oracle/test_camera_shake.py \
+            tests/native_oracle/test_sprite_effects.py
