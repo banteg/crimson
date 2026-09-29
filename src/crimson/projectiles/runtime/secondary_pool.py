@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ...collision_math import within_native_find_radius
+from ...creatures.damage import creature_apply_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import SpriteEffectPool
@@ -32,7 +33,7 @@ from ..types import (
     SecondaryProjectile,
     SecondaryProjectileTypeId,
 )
-from .collision import _apply_damage_to_creature, creature_find_nearest_alive
+from .collision import creature_find_nearest_alive
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -132,13 +133,7 @@ def _step_detonation(
                 x87_pc24_mul(impulse_dir.x, _DETONATION_IMPULSE_SCALE),
                 x87_pc24_mul(impulse_dir.y, _DETONATION_IMPULSE_SCALE),
             )
-            _apply_damage_to_creature(
-                creature_idx,
-                damage,
-                damage_type=CreatureDamageType.EXPLOSION,
-                step_runtime=step_runtime,
-                impulse=impulse,
-            )
+            creature_apply_damage(step_runtime, creature_idx, damage, CreatureDamageType.EXPLOSION, impulse)
             creature_spatial.sync_index(int(creature_idx))
             if hp_before > 0.0 and float(creature.hp) <= 0.0:
                 # Native detonation AoE does an extra two random decals and a
@@ -357,20 +352,6 @@ class SecondaryProjectilePool:
         if dt <= 0.0:
             return 0
 
-        def _apply_secondary_damage(
-            creature_index: int,
-            damage: float,
-            *,
-            impulse: Vec2 = Vec2(),
-        ) -> None:
-            _apply_damage_to_creature(
-                int(creature_index),
-                float(damage),
-                damage_type=CreatureDamageType.EXPLOSION,
-                impulse=impulse,
-                step_runtime=step_runtime,
-            )
-
         rng = runtime_state.rng
         freeze_active = float(runtime_state.bonuses.freeze) > 0.0
         effects = runtime_state.effects
@@ -413,14 +394,9 @@ class SecondaryProjectilePool:
 
                 if freeze_active:
                     for _ in range(4):
-                        shard_angle = (
-                            float(
-                                rng.rand_tagged(
-                                    RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
-                                )
-                                % 612,
-                            )
-                            * 0.01
+                        shard_angle = x87_pc24_mul(
+                            float(rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE) % 612),
+                            f32(0.01),
                         )
                         effects.spawn_freeze_shard(
                             pos=entry.pos,
@@ -458,11 +434,7 @@ class SecondaryProjectilePool:
                     x87_pc24_mul(inv_dt, entry.vel.x),
                     x87_pc24_mul(inv_dt, entry.vel.y),
                 )
-                _apply_secondary_damage(
-                    hit_idx,
-                    damage,
-                    impulse=impulse,
-                )
+                creature_apply_damage(step_runtime, hit_idx, damage, CreatureDamageType.EXPLOSION, impulse)
                 creature_spatial.sync_index(int(hit_idx))
 
                 # Each rocket type detonates at its own scale, with freeze shards or scorch decals.
@@ -498,13 +470,18 @@ class SecondaryProjectilePool:
                 entry.detonation_scale = f32(det_scale)
                 if freeze_active:
                     for _ in range(8):
-                        shard_angle = float(rng.rand_tagged(shard_caller) % 612) * 0.01
+                        shard_angle = x87_pc24_mul(float(rng.rand_tagged(shard_caller) % 612), f32(0.01))
                         effects.spawn_freeze_shard(pos=shard_pos, angle=shard_angle, rng=rng, detail_preset=detail_preset)
                 else:
                     for _ in range(decal_count):
-                        angle = float(rng.rand_tagged(angle_caller) % 628) * 0.01
+                        # Native: `(float)(crt_rand() % 628) * 0.01f`, then `cos(angle) * radius` added at PC24.
+                        angle = x87_pc24_mul(float(rng.rand_tagged(angle_caller) % 628), f32(0.01))
                         radius = float(rng.rand_tagged(radius_caller) % radius_mod)
-                        fx_queue.add_random(pos=center + Vec2.from_angle(angle) * radius, rng=rng)
+                        decal_pos = Vec2(
+                            x87_pc24_add(x87_pc24_cos_mul(angle, radius), center.x),
+                            x87_pc24_add(x87_pc24_sin_mul(angle, radius), center.y),
+                        )
+                        fx_queue.add_random(pos=decal_pos, rng=rng)
 
                 step = math.tau / 10.0
                 for idx in range(10):

@@ -8,7 +8,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ...collision_math import within_native_find_radius
-from ...creatures.damage import creatures_apply_radius_damage
+from ...creatures.damage import creature_apply_damage, creatures_apply_radius_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
@@ -46,7 +46,6 @@ from .behaviors import (
     _ProjectileHitInfo,
     _ProjectileUpdateCtx,
 )
-from .collision import _apply_damage_to_creature
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -451,24 +450,12 @@ class ProjectilePool:
                         impulse = Vec2(float(impulse_axis), float(impulse_axis))
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
-                            _apply_damage_to_creature(
-                                int(hit_idx),
-                                float(damage_amount),
-                                damage_type=damage_type,
-                                impulse=impulse,
-                                step_runtime=step_runtime,
-                            )
+                            creature_apply_damage(step_runtime, int(hit_idx), float(damage_amount), damage_type, impulse)
                             creature_spatial.sync_index(int(hit_idx))
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
-                            _apply_damage_to_creature(
-                                int(hit_idx),
-                                float(remaining),
-                                damage_type=damage_type,
-                                impulse=impulse,
-                                step_runtime=step_runtime,
-                            )
+                            creature_apply_damage(step_runtime, int(hit_idx), float(remaining), damage_type, impulse)
                             creature_spatial.sync_index(int(hit_idx))
                             proj.damage_pool = x87_pc24_sub(proj.damage_pool, creature.hp)
 

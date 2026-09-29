@@ -16,6 +16,7 @@ from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
 from .effects_atlas import EffectId
 from .math_parity import (
+    NATIVE_HALF_PI,
     NATIVE_PI,
     NATIVE_TAU,
     f32,
@@ -1005,14 +1006,21 @@ class EffectPool:
     ) -> None:
         """Port of `effect_spawn_freeze_shatter` (0x0042ee00)."""
 
-        lifetime = 1.1
+        lifetime = f32(1.1)
         for idx in range(4):
-            rotation = float(idx) * (math.pi / 2.0) + float(angle)
-            velocity = Vec2.from_angle(rotation) * 42.0
+            # Native `angle + (float)index * 1.57079637f`, and the rest, in single precision.
+            rotation = x87_pc24_add(angle, x87_pc24_mul(float(idx), NATIVE_HALF_PI))
+            velocity = Vec2(x87_pc24_cos_mul(rotation, 42.0), x87_pc24_sin_mul(rotation, 42.0))
             half = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_HALF) % 10 + 18)
-            rotation_step = (
-                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP) % 20) * 0.1 - 1.0
-            ) * 1.9
+            rotation_step = x87_pc24_mul(
+                x87_pc24_sub(
+                    x87_pc24_mul(
+                        float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP) % 20), f32(0.1),
+                    ),
+                    1.0,
+                ),
+                f32(1.9),
+            )
 
             self.spawn(
                 effect_id=int(EffectId.FREEZE_SHATTER),
@@ -1032,11 +1040,8 @@ class EffectPool:
             )
 
         for _ in range(4):
-            shard_angle = (
-                float(
-                    rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612,
-                )
-                * 0.01
+            shard_angle = x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612), f32(0.01),
             )
             self.spawn_freeze_shard(
                 pos=pos,

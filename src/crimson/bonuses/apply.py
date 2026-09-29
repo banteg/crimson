@@ -111,11 +111,15 @@ def bonus_apply(
                 if not creature.active or creature.hp > 0.0:
                     continue
                 for _ in range(8):
-                    angle = float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
+                    angle = x87_pc24_mul(
+                        float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612), f32(0.01),
+                    )
                     state.effects.spawn_freeze_shard(
                         pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
                     )
-                angle = float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
+                angle = x87_pc24_mul(
+                    float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612), f32(0.01),
+                )
                 state.effects.spawn_freeze_shatter(
                     pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
                 )
