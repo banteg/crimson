@@ -943,13 +943,13 @@ fn drawHighScoreMainPanel(
         const selected_rank = selectedHighScoreRank(state, left_rect);
         const start = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
         const end = @min(start + 10, state.records.len);
-        for (state.records[start..end], 0..) |record, row| {
+        for (state.records[start..end], 0..) |*record, row| {
             const idx = start + row;
             const color = if (selected_rank != null and selected_rank.? == idx) text_color else muted_text;
             var value_buf: [32]u8 = undefined;
             const y = frame.y + 8.0 + @as(f32, @floatFromInt(row)) * 16.0;
             window_ui.drawSmallTextFmt("{d}", assets, .{idx + 1}, left_rect.x + 216.0, y, color);
-            window_ui.drawSmallText(assets, formatHighScoreValue(&value_buf, record), left_rect.x + 246.0, y, color);
+            window_ui.drawSmallText(assets, formatHighScoreValue(&value_buf, record.*), left_rect.x + 246.0, y, color);
             window_ui.drawSmallText(assets, clippedRecordName(record), left_rect.x + 304.0, y, color);
         }
     }
@@ -2154,7 +2154,8 @@ fn buildPerkList(dest: *[state_mod.perk_count_size]game_ids.PerkId, status: form
     return count;
 }
 
-fn clippedRecordName(record: persistence.highscores.HighScoreRecord) []const u8 {
+// Takes the record by pointer: the name slice points into its data.
+fn clippedRecordName(record: *const persistence.highscores.HighScoreRecord) []const u8 {
     const name = record.name();
     return if (name.len > 16) name[0..16] else name;
 }
