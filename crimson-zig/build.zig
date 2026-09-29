@@ -11,6 +11,8 @@ pub fn build(b: *std.Build) void {
     const raylib_dep = b.dependency("raylib_zig", .{
         .target = target,
         .optimize = optimize,
+        // raylib 6 builds without JPG; the .jaz textures decode through it.
+        .config = @as([]const u8, "-DSUPPORT_FILEFORMAT_JPG=1"),
     });
     const raylib_module = raylib_dep.module("raylib");
     const raylib_artifact = raylib_dep.artifact("raylib");
@@ -130,6 +132,8 @@ pub fn build(b: *std.Build) void {
     const web_raylib_dep = b.dependency("raylib_zig", .{
         .target = web_target,
         .optimize = optimize,
+        // raylib 6 builds without JPG; the .jaz textures decode through it.
+        .config = @as([]const u8, "-DSUPPORT_FILEFORMAT_JPG=1"),
     });
     const web_raylib_module = web_raylib_dep.module("raylib");
     const web_raylib_artifact = web_raylib_dep.artifact("raylib");
