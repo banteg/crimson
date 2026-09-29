@@ -94,10 +94,6 @@ class WorldRuntime:
         self.render_resources.clear_pending_terrain_fx()
         self.camera = Vec2(-1.0, -1.0)
 
-        if self.render_resources.ground is not None:
-            terrain_seed = self.world.state.rng.state
-            self.terrain_runtime.schedule_from_rng_seed(seed=terrain_seed)
-
     def _reset_world(self, *, seed: int, player_count: int) -> None:
         self.session = None
         self.world = build_reset_world(
@@ -126,7 +122,8 @@ class WorldRuntime:
 
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
-        self.render_resources.open(terrain_seed=self.world.state.rng.state)
+        self.render_resources.open()
+        self.terrain_runtime.setup = None
 
     def close_runtime(self) -> None:
         self.render_resources.close()

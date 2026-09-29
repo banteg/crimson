@@ -25,6 +25,8 @@ from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import TERRAIN_SIZE
+from ..sim.terrain_generate import terrain_generate
+from ..terrain_slots import DEFAULT_TERRAIN_SLOTS
 from ..ui.cursor import draw_aim_cursor
 from ..weapons import WEAPON_BY_ID, WeaponId
 from ..world import WorldRuntime
@@ -2072,6 +2074,10 @@ class LightingDebugView:
 
     def _reset_scene(self) -> None:
         self._runtime.reset(seed=0xBEEF, player_count=1)
+        # Fresh ground from a detached rng seeded like the world's; the sim stream stays untouched.
+        self._runtime.terrain_runtime.apply_terrain_setup(
+            terrain_generate(Crand(self._runtime.world.state.rng.state), DEFAULT_TERRAIN_SLOTS),
+        )
         self._tick_harness.reset()
         self._player = self._runtime.world.players[0] if self._runtime.world.players else None
         self._apply_debug_player_cheats()

@@ -5,7 +5,7 @@ from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
-from ..sim.bootstrap import advance_unlock_terrain
+from ..sim.terrain_generate import terrain_generate_random
 from ..terrain_slots import resolve_terrain_slots
 from .assets import require_runtime_resources
 
@@ -23,10 +23,8 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
     generated_new_terrain = ground is None or bool(regenerate)
 
     if generated_new_terrain:
-        terrain = advance_unlock_terrain(
-            state.rng,
-            unlock_index=int(state.status.quest_unlock_index),
-        )
+        # Stands in for native startup's `terrain_generate_random()` on the application stream.
+        terrain = terrain_generate_random(state.rng, int(state.status.quest_unlock_index))
         base, overlay, detail = resolve_terrain_slots(terrain.terrain_slots, resources.texture)
     else:
         assert ground is not None
@@ -50,7 +48,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         ground.overlay_detail = detail
     if generated_new_terrain:
         assert ground is not None
-        ground.schedule_generate(seed=terrain.terrain_seed, generation_kind="unlock_random")
+        ground.schedule_stamps(terrain.layers)
         state.menu_ground_camera = None
     return ground
 

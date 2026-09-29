@@ -6,64 +6,22 @@ from contextlib import contextmanager
 
 import msgspec
 
-from crimson.rng_caller_static import RngCallerStatic
 from grim import canvas
 from grim.raylib_api import rd, rl
 
 from .blend import blend_custom, opaque_blend
 from .geom import Vec2
-from .rand import CrtRand
 from .shaders import AlphaTestShader
+from .terrain_stamps import TerrainLayers, TerrainStampLayer
 from .texture_mode import texture_mode
 
 TERRAIN_TEXTURE_SIZE = 1024
 TERRAIN_PATCH_SIZE = 128.0
-TERRAIN_PATCH_OVERSCAN = 64.0
 TERRAIN_CLEAR_COLOR = rl.Color(63, 56, 25, 255)
 TERRAIN_BASE_TINT = rl.Color(178, 178, 178, 230)
 TERRAIN_OVERLAY_TINT = rl.Color(178, 178, 178, 230)
 TERRAIN_DETAIL_TINT = rl.Color(178, 178, 178, 153)
-TERRAIN_DENSITY_BASE = 800
-TERRAIN_DENSITY_OVERLAY = 0x23
-TERRAIN_DENSITY_DETAIL = 0x0F
-TERRAIN_DENSITY_SHIFT = 19
-TERRAIN_ROTATION_MAX = 0x13A
 
-_UNLOCK_RANDOM_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
-    (
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_BASE_ROTATION,
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_BASE_Y,
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_BASE_X,
-    ),
-    (
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_OVERLAY_ROTATION,
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_OVERLAY_Y,
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_OVERLAY_X,
-    ),
-    (
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_DETAIL_ROTATION,
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_DETAIL_Y,
-        RngCallerStatic.TERRAIN_GENERATE_RANDOM_DETAIL_X,
-    ),
-)
-
-_EXPLICIT_TERRAIN_CALLERS: tuple[tuple[int, int, int], ...] = (
-    (
-        RngCallerStatic.TERRAIN_GENERATE_BASE_ROTATION,
-        RngCallerStatic.TERRAIN_GENERATE_BASE_Y,
-        RngCallerStatic.TERRAIN_GENERATE_BASE_X,
-    ),
-    (
-        RngCallerStatic.TERRAIN_GENERATE_OVERLAY_ROTATION,
-        RngCallerStatic.TERRAIN_GENERATE_OVERLAY_Y,
-        RngCallerStatic.TERRAIN_GENERATE_OVERLAY_X,
-    ),
-    (
-        RngCallerStatic.TERRAIN_GENERATE_DETAIL_ROTATION,
-        RngCallerStatic.TERRAIN_GENERATE_DETAIL_Y,
-        RngCallerStatic.TERRAIN_GENERATE_DETAIL_X,
-    ),
-)
 
 @contextmanager
 def _color_mask(*, write_alpha: bool) -> Iterator[None]:
@@ -113,8 +71,7 @@ class GroundRenderer(msgspec.Struct):
     render_target: rl.RenderTexture | None = None
     alpha_test: AlphaTestShader = msgspec.field(default_factory=AlphaTestShader)
     _render_target_ready: bool = False
-    _scheduled_seed: int | None = None
-    _scheduled_generation_kind: str = "explicit"
+    _scheduled_layers: TerrainLayers | None = None
 
     def close(self) -> None:
         if self.render_target is not None:
@@ -122,19 +79,18 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self.alpha_test.close()
         self._render_target_ready = False
-        self._scheduled_seed = None
+        self._scheduled_layers = None
 
     def render_target_ready(self) -> bool:
         """True when the terrain render target exists and is ready for drawing."""
         return self.render_target is not None and self._render_target_ready
 
     def process_pending(self) -> None:
-        seed = self._scheduled_seed
-        if seed is None:
+        layers = self._scheduled_layers
+        if layers is None:
             return
-        generation_kind = self._scheduled_generation_kind
-        self._generate_texture(seed=seed, generation_kind=generation_kind)
-        self._scheduled_seed = None
+        self._generate_texture(layers)
+        self._scheduled_layers = None
 
     def _ensure_render_target(self) -> None:
         scale = min(max(self.texture_scale, 0.5), 4.0)
@@ -151,21 +107,15 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def schedule_generate(self, seed: int, *, generation_kind: str = "explicit") -> None:
-        self._scheduled_seed = seed
-        self._scheduled_generation_kind = str(generation_kind)
+    def schedule_stamps(self, layers: TerrainLayers) -> None:
+        """Queue drawing generated terrain stamps; the target is (re)built on the next `process_pending`."""
+        self._scheduled_layers = layers
 
-    def _generate_texture(self, seed: int, *, generation_kind: str) -> None:
+    def _generate_texture(self, layers: TerrainLayers) -> None:
         self._ensure_render_target()
         if self.render_target is None:
             return
         self._render_target_ready = False
-        rng = CrtRand(seed)
-        caller_sets = (
-            _UNLOCK_RANDOM_TERRAIN_CALLERS
-            if generation_kind == "unlock_random"
-            else _EXPLICIT_TERRAIN_CALLERS
-        )
         with texture_mode(self.render_target):
             rl.clear_background(TERRAIN_CLEAR_COLOR)
             # Intentional rewrite deviation: the classic game appears to point-sample
@@ -178,27 +128,9 @@ class GroundRenderer(msgspec.Struct):
                 rd.RL_ONE_MINUS_SRC_ALPHA,
                 rd.RL_FUNC_ADD,
             ):
-                self._scatter_texture(
-                    self.texture,
-                    TERRAIN_BASE_TINT,
-                    rng,
-                    TERRAIN_DENSITY_BASE,
-                    callers=caller_sets[0],
-                )
-                self._scatter_texture(
-                    self.overlay,
-                    TERRAIN_OVERLAY_TINT,
-                    rng,
-                    TERRAIN_DENSITY_OVERLAY,
-                    callers=caller_sets[1],
-                )
-                self._scatter_texture(
-                    self.overlay_detail,
-                    TERRAIN_DETAIL_TINT,
-                    rng,
-                    TERRAIN_DENSITY_DETAIL,
-                    callers=caller_sets[2],
-                )
+                self._draw_stamps(self.texture, TERRAIN_BASE_TINT, layers.base)
+                self._draw_stamps(self.overlay, TERRAIN_OVERLAY_TINT, layers.overlay)
+                self._draw_stamps(self.overlay_detail, TERRAIN_DETAIL_TINT, layers.detail)
         self._render_target_ready = True
 
     def bake_decals(self, decals: Sequence[GroundDecal]) -> bool:
@@ -329,36 +261,19 @@ class GroundRenderer(msgspec.Struct):
         view_h = min(world_h, out_h / scale)
         return view_w, view_h
 
-    def _scatter_texture(
-        self,
-        texture: rl.Texture,
-        tint: rl.Color,
-        rng: CrtRand,
-        density: int,
-        *,
-        callers: tuple[int, int, int],
-    ) -> None:
-        area = self.width * self.height
-        count = (area * density) >> TERRAIN_DENSITY_SHIFT
-        if count <= 0:
-            return
+    def _draw_stamps(self, texture: rl.Texture, tint: rl.Color, stamps: TerrainStampLayer) -> None:
         inv_scale = 1.0 / self._normalized_texture_scale()
         size = TERRAIN_PATCH_SIZE * inv_scale
         src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
         origin = rl.Vector2(size * 0.5, size * 0.5)
-        span_w = self.width + int(TERRAIN_PATCH_OVERSCAN * 2)
-        # The original exe uses `terrain_texture_width` for both axes. Terrain is
-        # square (1024x1024) so this is equivalent, but keep it for parity.
-        span_h = span_w
-        for _ in range(count):
-            angle = ((rng.rand_tagged(callers[0]) % TERRAIN_ROTATION_MAX) * 0.01) % math.tau
-            # IMPORTANT: The exe consumes RNG as rotation, then Y, then X.
-            y = ((rng.rand_tagged(callers[1]) % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
-            x = ((rng.rand_tagged(callers[2]) % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
+        for rotation, x, y in stamps:
+            # `position *= inv_scale` on the native pre-scale top-left.
+            x *= inv_scale
+            y *= inv_scale
             # raylib's DrawTexturePro positions the quad by the *origin point*,
             # while the original engine uses x/y as the quad top-left.
             dst = rl.Rectangle(float(x + size * 0.5), float(y + size * 0.5), size, size)
-            rl.draw_texture_pro(texture, src, dst, origin, math.degrees(angle), tint)
+            rl.draw_texture_pro(texture, src, dst, origin, math.degrees(rotation), tint)
 
     def _clamp_camera(self, camera: Vec2, screen_w: float, screen_h: float) -> Vec2:
         min_x = screen_w - float(self.width)

@@ -347,10 +347,7 @@ class ReplayPlaybackMode:
         assert driver is not None, "Replay driver must be initialized before replay view setup"
         terrain_setup = driver.terrain_setup
         if terrain_setup is not None:
-            runtime.terrain_runtime.apply_terrain_setup(
-                terrain_slots=terrain_setup.terrain_slots,
-                seed=int(terrain_setup.terrain_seed),
-            )
+            runtime.terrain_runtime.apply_terrain_setup(terrain_setup)
 
         quest = driver.quest_definition
         if quest is not None:

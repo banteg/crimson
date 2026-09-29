@@ -8,11 +8,15 @@ from typing import TYPE_CHECKING, Any, Protocol, cast
 import pytest
 
 from crimson.render.world import viewport
+from crimson.sim.terrain_generate import terrain_generate
+from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from crimson.world import runtime as world_runtime
 from grim import terrain_render
 from grim.config import CrimsonConfig, default_crimson_cfg
 from grim.geom import Vec2
+from grim.rand import Crand
 from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
+from grim.terrain_stamps import TerrainLayers, TerrainStamp
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -72,6 +76,10 @@ def _ground(
         height=height,
         texture_scale=texture_scale,
     )
+
+
+def _layers(seed: int) -> TerrainLayers:
+    return terrain_generate(Crand(seed), DEFAULT_TERRAIN_SLOTS).layers
 
 
 def _runtime_world(
@@ -256,16 +264,16 @@ def test_ground_draw_uses_runtime_dimensions_when_screen_size_is_omitted(mocker)
     assert fit_inputs == [(1280.0, 720.0)]
 
 
-def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None:
+def test_scheduled_stamps_draw_each_layer_with_its_texture(mocker) -> None:
     base = _TextureStub(id=1)
     overlay = _TextureStub(id=2)
     detail = _TextureStub(id=3)
     ground = _ground(texture=base, overlay=overlay, detail=detail)
     ground.render_target = _as_render_texture(_RenderTextureStub())
 
-    rt_scatter = mocker.patch.object(
+    draw_stamps = mocker.patch.object(
         terrain_render.GroundRenderer,
-        "_scatter_texture",
+        "_draw_stamps",
         autospec=True,
     )
     mocker.patch.object(terrain_render.GroundRenderer, "_ensure_render_target", autospec=True, side_effect=lambda _self: None)
@@ -281,11 +289,33 @@ def test_scheduled_generation_uses_overlay_detail_for_third_pass(mocker) -> None
     mocker.patch.object(terrain_render, "_terrain_rt_blend", side_effect=_noop_blend)
     alpha_test = mocker.patch.object(terrain_render.AlphaTestShader, "scope", side_effect=_noop_blend)
 
-    ground.schedule_generate(seed=1337)
+    layers = _layers(1337)
+    ground.schedule_stamps(layers)
     ground.process_pending()
 
-    assert [call.args[1] for call in rt_scatter.call_args_list] == [base, overlay, detail]
+    assert [(call.args[1], call.args[3]) for call in draw_stamps.call_args_list] == [
+        (base, layers.base),
+        (overlay, layers.overlay),
+        (detail, layers.detail),
+    ]
     alpha_test.assert_called_once_with()
+
+
+def test_draw_stamps_scales_native_top_left_into_raylib_origin(mocker) -> None:
+    ground = _ground(texture_scale=2.0)
+    mocker.patch.object(GroundRenderer, "_render_pixel_ratio", return_value=1.0)
+    draw_texture_pro = mocker.patch.object(terrain_render.rl, "draw_texture_pro")
+    texture = _as_texture(_TextureStub(width=128, height=128))
+
+    ground._draw_stamps(texture, terrain_render.TERRAIN_BASE_TINT, (TerrainStamp(rotation=1.5, x=-64.0, y=100.0),))
+
+    (_, src, dst, origin, degrees, tint), _ = draw_texture_pro.call_args
+    assert (src.x, src.y, src.width, src.height) == (0.0, 0.0, 128.0, 128.0)
+    # `position *= inv_scale` gives the top-left (-32, 50); raylib places the 64-unit quad by its center.
+    assert (dst.x, dst.y, dst.width, dst.height) == (0.0, 82.0, 64.0, 64.0)
+    assert (origin.x, origin.y) == (32.0, 32.0)
+    assert_float_close(degrees, 85.94366926962348)
+    assert tint == terrain_render.TERRAIN_BASE_TINT
 
 
 def test_terrain_rt_blend_mask_alpha_writes_uses_color_mask(mocker) -> None:
@@ -380,7 +410,7 @@ def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker
         return_value=False,
     )
 
-    ground.schedule_generate(seed=1337)
+    ground.schedule_stamps(_layers(1337))
     ground.process_pending()
     ground.process_pending()
 
@@ -503,7 +533,7 @@ def test_ground_draw_without_render_target_clears_background(mocker) -> None:
     draw_texture_pro.assert_not_called()
 
 
-def test_generation_failure_unbinds_target_and_retains_pending_seed(mocker) -> None:
+def test_generation_failure_unbinds_target_and_retains_pending_stamps(mocker) -> None:
     ground = _ground()
     ground.render_target = _as_render_texture(_RenderTextureStub())
     ground._render_target_ready = True
@@ -513,12 +543,13 @@ def test_generation_failure_unbinds_target_and_retains_pending_seed(mocker) -> N
     end_target = mocker.patch.object(terrain_render.rl, "end_texture_mode")
     mocker.patch.object(terrain_render.rl, "clear_background")
     mocker.patch.object(terrain_render.rl, "load_shader_from_memory", side_effect=RuntimeError("compile failed"))
-    ground.schedule_generate(seed=123)
+    layers = _layers(123)
+    ground.schedule_stamps(layers)
     with pytest.raises(RuntimeError, match="compile failed"):
         ground.process_pending()
     end_target.assert_called_once()
     assert not ground.render_target_ready()
-    assert ground._scheduled_seed == 123
+    assert ground._scheduled_layers is layers
 
 
 def test_alpha_shader_scope_reuses_handle_and_close_allows_reload(mocker) -> None:

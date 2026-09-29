@@ -11,6 +11,7 @@ from grim.config import CrimsonConfig
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
+from grim.terrain_stamps import TerrainLayers
 
 from ..creatures.anim import creature_corpse_frame_for_type
 from ..creatures.runtime import CreaturePool
@@ -81,10 +82,10 @@ class RenderResources(msgspec.Struct):
             self.ground.overlay_detail = detail
         self.sync_ground_settings()
 
-    def schedule_ground_generation(self, *, seed: int) -> None:
+    def schedule_ground_stamps(self, layers: TerrainLayers) -> None:
         if self.ground is None:
             return
-        self.ground.schedule_generate(seed=seed)
+        self.ground.schedule_stamps(layers)
 
     def process_ground_pending(self) -> None:
         if self.ground is None:
@@ -105,15 +106,15 @@ class RenderResources(msgspec.Struct):
                 corpse_frame_for_type=creature_corpse_frame_for_type,
             )
 
-    def open(self, *, terrain_seed: int) -> None:
+    def open(self) -> None:
         self.close()
         resources = runtime_resources_for(self.assets_dir)
         self._resources = resources
 
         base = resources.texture(TextureId.TER_Q1_BASE)
         overlay = resources.texture(TextureId.TER_Q1_OVERLAY)
+        # The ground stays clear until a terrain setup is applied.
         self.set_ground_textures(base=base, overlay=overlay, detail=base)
-        self.schedule_ground_generation(seed=terrain_seed)
         self.fx_textures = FxQueueTextures(
             particles=resources.texture(TextureId.PARTICLES),
             bodyset=resources.texture(TextureId.BODYSET),

@@ -4,24 +4,19 @@ from typing import cast
 
 import msgspec
 
-from ..terrain_slots import (
-    TerrainSlotTriplet,
-    resolve_terrain_slots,
-)
+from ..sim.terrain_generate import TerrainSetup
+from ..terrain_slots import resolve_terrain_slots
 from .render_resources import RenderResources
 
 
 class TerrainRuntime(msgspec.Struct):
     render_resources: RenderResources = cast(RenderResources, None)
+    # The setup the ground was last drawn from; applying it again draws the same stamps.
+    setup: TerrainSetup | None = None
 
-    def apply_terrain_setup(
-        self,
-        *,
-        terrain_slots: TerrainSlotTriplet,
-        seed: int,
-    ) -> None:
+    def apply_terrain_setup(self, setup: TerrainSetup) -> None:
         base, overlay, detail = resolve_terrain_slots(
-            terrain_slots,
+            setup.terrain_slots,
             self.render_resources.registry_texture,
         )
         self.render_resources.set_ground_textures(
@@ -29,10 +24,8 @@ class TerrainRuntime(msgspec.Struct):
             overlay=overlay,
             detail=detail,
         )
-        self.render_resources.schedule_ground_generation(seed=seed)
-
-    def schedule_from_rng_seed(self, *, seed: int) -> None:
-        self.render_resources.schedule_ground_generation(seed=seed)
+        self.render_resources.schedule_ground_stamps(setup.layers)
+        self.setup = setup
 
     def process_pending(self) -> None:
         self.render_resources.process_ground_pending()

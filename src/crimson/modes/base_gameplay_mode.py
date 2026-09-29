@@ -53,8 +53,8 @@ from ..sim.run_init import PreparedRun, initialize_run
 from ..sim.run_result import RunOutcome, RunResult, build_run_result
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
+from ..sim.terrain_generate import TerrainSetup, terrain_generate
 from ..sim.timing import ftol_ms_i32
-from ..terrain_slots import TerrainSlotTriplet
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from ..ui.focus import UiFocus
 from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar
@@ -235,13 +235,8 @@ class BaseGameplayMode:
     def preserve_bugs(self) -> bool:
         return self._world_runtime.preserve_bugs
 
-    def apply_terrain_setup(
-        self,
-        *,
-        terrain_slots: TerrainSlotTriplet,
-        seed: int,
-    ) -> None:
-        self.terrain_runtime.apply_terrain_setup(terrain_slots=terrain_slots, seed=seed)
+    def apply_terrain_setup(self, setup: TerrainSetup) -> None:
+        self.terrain_runtime.apply_terrain_setup(setup)
 
     def _draw_world(self, *, entity_alpha: float = 1.0) -> None:
         self._world_runtime.draw(entity_alpha=entity_alpha)
@@ -756,7 +751,7 @@ class BaseGameplayMode:
         prepared = initialize_run(spec, status=status)
         self._world_runtime.start_session(prepared.session)
         self._local_input.reset(players=self.world.players)
-        self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
+        self.apply_terrain_setup(prepared.terrain)
         self._reset_live_ticks()
         self._replay_recorder = ReplayRecorder(spec)
         self._replay_checkpoints.clear()
@@ -876,12 +871,15 @@ class BaseGameplayMode:
         return float(self._world_runtime.presentation_elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
-        if self.render_resources.ground is None:
+        setup = self.terrain_runtime.setup
+        if self.render_resources.ground is None or setup is None:
             return
-        # Keep this deterministic without consuming gameplay RNG.
+        # Native `generateterrain` runs `terrain_generate_random()` on the live stream, which a replay
+        # cannot reproduce from its ticks. The port keeps the gameplay RNG and the current textures, and
+        # stamps from a detached rng seeded off the gameplay state plus a counter, so repeats differ.
         self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
         terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
-        self.render_resources.ground.schedule_generate(seed=terrain_seed)
+        self.terrain_runtime.apply_terrain_setup(terrain_generate(Crand(terrain_seed), setup.terrain_slots))
 
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0

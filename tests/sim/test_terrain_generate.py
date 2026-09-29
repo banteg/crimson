@@ -2,8 +2,15 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.game_modes import GameMode
+from crimson.quests import quest_by_level
+from crimson.quests.level import QuestLevel
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim import run_init
+from crimson.sim.bootstrap import advance_gameplay_reset_rng
+from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.sim.terrain_generate import terrain_generate, terrain_generate_random
+from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import (
     DEFAULT_TERRAIN_SLOTS,
     Q2_TERRAIN_SLOTS,
@@ -127,6 +134,56 @@ def test_stamp_rotation_is_the_native_float32_product() -> None:
 
     assert stamp.rotation == 3.129999876022339
     assert (stamp.x, stamp.y) == (1087.0, -64.0)
+
+
+def test_quest_startup_draws_random_terrain_then_score_tag_then_quest_terrain(monkeypatch) -> None:
+    callers: list[CallerStatic | None] = []
+    build = WorldState.build
+
+    def traced_build(*, hardcore: bool, quest_fail_retry_count: int, preserve_bugs: bool = False) -> WorldState:
+        world = build(hardcore=hardcore, quest_fail_retry_count=quest_fail_retry_count, preserve_bugs=preserve_bugs)
+        rng = world.state.rng
+        assert isinstance(rng, Crand)
+        rng.set_trace_sink(lambda _before, _after, _value, caller: callers.append(caller))
+        return world
+
+    monkeypatch.setattr(run_init.WorldState, "build", traced_build)
+    level = QuestLevel(1, 1)
+    quest = quest_by_level(level)
+    assert quest is not None
+    # Seed 0x103 passes the 4.x unlock roll, so the discarded first terrain is the delegated explicit one.
+    spec = RunSpec(
+        game_mode_id=GameMode.QUESTS,
+        seed=0x103,
+        quest_level=level,
+        status=RunStatus(quest_unlock_index=40),
+    )
+
+    prepared = run_init.initialize_run(spec)
+
+    rng = Crand(0x103)
+    advance_gameplay_reset_rng(rng)
+    random_terrain = terrain_generate_random(rng, 40)
+    rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
+    quest_terrain = terrain_generate(rng, quest.terrain_slots)
+    assert random_terrain.terrain_slots == Q4_TERRAIN_SLOTS
+    assert prepared.terrain == quest_terrain
+
+    reset = [
+        RngCallerStatic.GAMEPLAY_RESET_STATE_RANDOM_TAG,
+        *[RngCallerStatic.GAMEPLAY_RESET_STATE_CREATURE_ANIM_PHASE] * 384,
+        RngCallerStatic.GAMEPLAY_RESET_STATE_HIGHSCORE_RANDOM_TAG,
+    ]
+    startup = [
+        *reset,
+        *_PRELUDE,
+        _Q4,
+        *_EXPLICIT_STAMPS,
+        RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG,
+        *_EXPLICIT_STAMPS,
+    ]
+    assert callers[: len(startup)] == startup
+    assert callers[-1] == RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED
 
 
 def _advanced(seed: int, draws: int) -> Crand:

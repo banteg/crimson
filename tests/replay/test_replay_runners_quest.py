@@ -8,9 +8,10 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import advance_explicit_terrain, advance_gameplay_reset_rng, advance_unlock_terrain
+from crimson.sim.bootstrap import advance_gameplay_reset_rng
 from crimson.sim.hooks import TickResult
 from crimson.sim.run_result import RunOutcome
+from crimson.sim.terrain_generate import terrain_generate, terrain_generate_random
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WEAPON_BY_ID
 from grim.rand import Crand
@@ -60,16 +61,10 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
 
     rng = Crand(int(replay.run.seed))
     advance_gameplay_reset_rng(rng)
-    advance_unlock_terrain(
-        rng,
-        unlock_index=int(replay.run.status.quest_unlock_index),
-    )
+    terrain_generate_random(rng, int(replay.run.status.quest_unlock_index))
     # Native `quest_start_selected()` burns one `crt_rand()` before quest terrain.
     rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-    quest_terrain = advance_explicit_terrain(
-        rng,
-        terrain_slots=quest.terrain_slots,
-    )
+    quest_terrain = terrain_generate(rng, quest.terrain_slots)
     spawn_entries = build_quest_spawn_table(
         quest,
         QuestContext(player_count=int(replay.run.player_count), hardcore=bool(replay.run.hardcore), rng=rng),
@@ -83,7 +78,7 @@ def test_quest_runner_burns_spawn_builder_rng_even_with_injected_spawn_entries()
     terrain_setup = baseline_driver.terrain_setup
     assert terrain_setup is not None
     assert terrain_setup.terrain_slots == quest.terrain_slots
-    assert terrain_setup.terrain_seed == int(quest_terrain.terrain_seed)
+    assert terrain_setup == quest_terrain
     assert int(baseline_driver.world.state.rng.state) == expected_rng_state
     assert int(injected_driver.world.state.rng.state) == expected_rng_state
 

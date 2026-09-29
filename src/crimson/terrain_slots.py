@@ -3,10 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from grim.rand import CrandLike
 from grim.texture_ids import TextureId
-
-from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
     from .quests.level import QuestLevel
@@ -18,18 +15,6 @@ Q2_TERRAIN_SLOTS: TerrainSlotTriplet = (2, 3, 2)
 Q3_TERRAIN_SLOTS: TerrainSlotTriplet = (4, 5, 4)
 Q4_TERRAIN_SLOTS: TerrainSlotTriplet = (6, 7, 6)
 DEFAULT_TERRAIN_SLOTS: TerrainSlotTriplet = Q1_TERRAIN_SLOTS
-
-UNLOCK_TERRAIN_SLOTS: dict[int, TerrainSlotTriplet] = {
-    40: Q4_TERRAIN_SLOTS,  # after quest 4.10 "The End of All"
-    30: Q3_TERRAIN_SLOTS,  # after quest 3.10 "Zombie Masters"
-    20: Q2_TERRAIN_SLOTS,  # after quest 2.10 "Spideroids"
-}
-
-_UNLOCK_TERRAIN_RULES: tuple[tuple[int, TerrainSlotTriplet, RngCallerStatic], ...] = (
-    (40, Q4_TERRAIN_SLOTS, RngCallerStatic.UNLOCK_TERRAIN_Q4),
-    (30, Q3_TERRAIN_SLOTS, RngCallerStatic.UNLOCK_TERRAIN_Q3),
-    (20, Q2_TERRAIN_SLOTS, RngCallerStatic.UNLOCK_TERRAIN_Q2),
-)
 
 _TEXTURE_ID_BY_TERRAIN_SLOT: dict[int, TextureId] = {
     0: TextureId.TER_Q1_BASE,
@@ -51,18 +36,6 @@ def terrain_slots_for_quest(level: QuestLevel) -> TerrainSlotTriplet:
             return base, alt, base
         return base, base, alt
     return level.minor & 3, 1, 3
-
-
-def choose_unlock_terrain_slots(
-    *,
-    unlock_index: int,
-    rng: CrandLike,
-) -> TerrainSlotTriplet:
-    # Keep the thresholds descending to preserve the native chained 1/8 roll order.
-    for threshold, slots, caller in _UNLOCK_TERRAIN_RULES:
-        if unlock_index >= threshold and (rng.rand_tagged(caller) & 7) == 3:
-            return slots
-    return DEFAULT_TERRAIN_SLOTS
 
 
 def terrain_slots_to_texture_ids(
@@ -89,9 +62,7 @@ __all__ = [
     "Q2_TERRAIN_SLOTS",
     "Q3_TERRAIN_SLOTS",
     "Q4_TERRAIN_SLOTS",
-    "UNLOCK_TERRAIN_SLOTS",
     "TerrainSlotTriplet",
-    "choose_unlock_terrain_slots",
     "resolve_terrain_slots",
     "terrain_slots_for_quest",
     "terrain_slots_to_texture_ids",

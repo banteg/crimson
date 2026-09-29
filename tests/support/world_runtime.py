@@ -7,7 +7,6 @@ from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import SurvivalSpawnState
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
-from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
@@ -62,17 +61,6 @@ class WorldRuntimeHost(WorldRuntime):
     def sync_ground_settings(self) -> None:
         self.render_resources.config = self.config
         self.render_resources.sync_ground_settings()
-
-    def apply_terrain_setup(
-        self,
-        *,
-        terrain_slots: TerrainSlotTriplet,
-        seed: int,
-    ) -> None:
-        self.terrain_runtime.apply_terrain_setup(
-            terrain_slots=terrain_slots,
-            seed=int(seed),
-        )
 
     def step_survival_frame(
         self,

@@ -15,10 +15,11 @@ from ..tutorial import reset_tutorial_state
 from ..typo.state import reset_typo_state
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WeaponId
-from .bootstrap import TerrainSetup, advance_explicit_terrain, advance_gameplay_reset_rng, advance_unlock_terrain
+from .bootstrap import advance_gameplay_reset_rng
 from .mode_updates import ModeState, QuestSpawnState, RushSpawnState, SurvivalSpawnState
 from .run_spec import RunSpec
 from .sessions import DeterministicSession
+from .terrain_generate import TerrainSetup, terrain_generate, terrain_generate_random
 from .world_reset import CreatureSlotResidue, apply_creature_pool_residue, reset_world_players
 from .world_state import WorldState
 
@@ -72,9 +73,7 @@ def initialize_run(
     # The seed is the rng entering `gameplay_reset_state()`, which every mode's run start calls.
     for creature, anim_phase in zip(world.creatures.entries, advance_gameplay_reset_rng(world.state.rng), strict=True):
         creature.anim_phase = anim_phase
-    terrain = advance_unlock_terrain(
-        world.state.rng, unlock_index=spec.status.quest_unlock_index,
-    )
+    terrain = terrain_generate_random(world.state.rng, spec.status.quest_unlock_index)
     world.state.game_mode = spec.game_mode_id
     highscore_tag = 0
     mode_state: ModeState = None
@@ -85,11 +84,10 @@ def initialize_run(
             mode_state = RushSpawnState()
         case GameMode.QUESTS:
             assert quest is not None
-            # Native burns the score tag between generic and quest terrain setup.
+            # `quest_start_selected` draws the score tag, then generates the quest terrain over the
+            # reset's random one: that first terrain's draws stay, its stamps are never shown.
             highscore_tag = world.state.rng.rand_tagged(RngCallerStatic.QUEST_START_SELECTED_HIGHSCORE_RANDOM_TAG)
-            terrain = advance_explicit_terrain(
-                world.state.rng, terrain_slots=quest.terrain_slots,
-            )
+            terrain = terrain_generate(world.state.rng, quest.terrain_slots)
             generated_entries = build_quest_spawn_table(
                 quest, QuestContext(player_count=spec.player_count, hardcore=spec.hardcore, rng=world.state.rng),
             )

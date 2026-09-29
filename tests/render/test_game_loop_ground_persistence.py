@@ -9,7 +9,7 @@ from crimson.game.types import GameState
 from crimson.persistence import save_status
 from crimson.screens.chrome import ensure_menu_ground
 from crimson.screens.stack import ScreenEntry
-from crimson.sim.bootstrap import advance_unlock_terrain
+from crimson.sim.terrain_generate import terrain_generate_random
 from grim.assets import RuntimeResources, TextureId
 from grim.config import ensure_crimson_cfg
 from grim.console import create_console
@@ -174,21 +174,18 @@ def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path)
     assert ground.overlay_detail is resources.texture(TextureId.TER_Q4_BASE)
 
 
-def test_regenerate_menu_ground_uses_mutated_app_rng_and_schedules_terrain_seed(tmp_path: Path) -> None:
+def test_regenerate_menu_ground_draws_random_terrain_from_app_rng(tmp_path: Path) -> None:
     state = _build_state(tmp_path)
     state.resources = cast(RuntimeResources, _ResourcesStub())
     state.status.quest_unlock_index = 0x28
     state.rng.srand(0x1234)
     expected_rng = Crand(int(state.rng.state))
-    expected_terrain = advance_unlock_terrain(
-        expected_rng,
-        unlock_index=int(state.status.quest_unlock_index),
-    )
+    expected_terrain = terrain_generate_random(expected_rng, int(state.status.quest_unlock_index))
 
     ground = ensure_menu_ground(state, regenerate=True)
 
     assert ground is not None
-    assert int(ground._scheduled_seed or -1) == int(expected_terrain.terrain_seed)
+    assert ground._scheduled_layers == expected_terrain.layers
     assert int(state.rng.state) == int(expected_rng.state)
 
 
@@ -199,7 +196,7 @@ def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Pa
     ground = ensure_menu_ground(state, regenerate=True)
     state.menu_ground_camera = Vec2(-100.0, -200.0)
     before_rng_state = int(state.rng.state)
-    before_seed = int(ground._scheduled_seed or -1)
+    before_layers = ground._scheduled_layers
 
     state.config.display.texture_scale = 0.5
 
@@ -207,6 +204,6 @@ def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Pa
 
     assert same_ground is ground
     assert float(same_ground.texture_scale) == 1.0
-    assert int(same_ground._scheduled_seed or -1) == before_seed
+    assert same_ground._scheduled_layers is before_layers
     assert int(state.rng.state) == before_rng_state
     assert state.menu_ground_camera == Vec2(-100.0, -200.0)

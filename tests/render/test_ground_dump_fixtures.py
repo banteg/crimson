@@ -12,7 +12,9 @@ from typing import Any, cast
 import pytest
 from PIL import Image, ImageChops, ImageStat
 
+from crimson.sim.terrain_generate import terrain_generate
 from grim.assets import _load_texture_asset_from_bytes, load_paq_entries
+from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
 
@@ -147,7 +149,8 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
         )
         # Compare at the capture's pixel dimensions even on a Retina display.
         renderer.texture_scale = renderer._render_pixel_ratio()
-        renderer.schedule_generate(seed=case.seed)
+        slots = (case.tex0_index, case.tex1_index, case.tex2_index)
+        renderer.schedule_stamps(terrain_generate(Crand(case.seed), slots).layers)
         renderer.process_pending()
         assert renderer.render_target_ready()
         assert renderer.render_target is not None

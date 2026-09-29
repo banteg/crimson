@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.bootstrap import advance_gameplay_reset_rng, advance_unlock_terrain
+from crimson.sim.bootstrap import advance_gameplay_reset_rng
 from crimson.sim.run_result import RunOutcome
+from crimson.sim.terrain_generate import terrain_generate_random
 from grim.rand import Crand
 from tests.support.replay_runner_helpers import _blank_tutorial_replay, _run_verify_playback, finish_replay
 
@@ -15,16 +16,12 @@ def test_tutorial_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
 
     rng = Crand(int(replay.run.seed))
     advance_gameplay_reset_rng(rng)
-    terrain = advance_unlock_terrain(
-        rng,
-        unlock_index=int(replay.run.status.quest_unlock_index),
-    )
+    terrain = terrain_generate_random(rng, int(replay.run.status.quest_unlock_index))
     rng.rand_tagged(RngCallerStatic.GAME_FRAME_UPDATE_DISCARDED)
 
     terrain_setup = driver.terrain_setup
     assert terrain_setup is not None
-    assert terrain_setup.terrain_slots == terrain.terrain_slots
-    assert terrain_setup.terrain_seed == int(terrain.terrain_seed)
+    assert terrain_setup == terrain
     assert int(driver.world.state.rng.state) == int(rng.state)
 
 
