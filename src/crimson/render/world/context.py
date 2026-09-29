@@ -9,10 +9,10 @@ from grim.geom import Vec2
 from grim.math import clamp
 from grim.raylib_api import rd, rl
 
-from ...effects_atlas import effect_src_rect
 from ...math_parity import f32, f32_vec2
 from ...projectiles.types import ProjectileTemplateId
 from . import viewport
+from .atlas import effect_cell_src
 from .constants import _RAD_TO_DEG
 
 if TYPE_CHECKING:
@@ -78,13 +78,8 @@ def draw_late_bullet_pass_sprite(
     angle: float,
     alpha: float,
 ) -> None:
-    src_rect = effect_src_rect(
-        _LATE_BULLET_PASS_EFFECT_ID,
-        texture_width=float(texture.width),
-        texture_height=float(texture.height),
-    )
-    assert src_rect is not None
-    src = rl.Rectangle(*src_rect)
+    src = effect_cell_src(texture, _LATE_BULLET_PASS_EFFECT_ID)
+    assert src is not None
     dst = rl.Rectangle(screen_pos.x, screen_pos.y, size, size)
     origin = rl.Vector2(size * 0.5, size * 0.5)
     tint = rl.Color(204, 204, 204, int(clamp(alpha * 0.9, 0.0, 1.0) * 255.0))

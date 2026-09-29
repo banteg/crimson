@@ -8,8 +8,9 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...effects import EffectEntry, ParticleStyleId
-from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
+from ...effects_atlas import EffectId
 from . import viewport
+from .atlas import effect_cell_src, effect_cell_src_inset
 from .constants import _RAD_TO_DEG
 from .context import WorldRenderCtx
 
@@ -29,28 +30,9 @@ def draw_particle_pool(
 
     scale = viewport.view_scale_avg(view_scale)
 
-    def src_rect(effect_id: int) -> rl.Rectangle | None:
-        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
-        if atlas is None:
-            return None
-        grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-        if not grid:
-            return None
-        frame = int(atlas.frame)
-        col = frame % grid
-        row = frame // grid
-        cell_w = float(texture.width) / float(grid)
-        cell_h = float(texture.height) / float(grid)
-        return rl.Rectangle(
-            cell_w * float(col),
-            cell_h * float(row),
-            max(0.0, cell_w - 2.0),
-            max(0.0, cell_h - 2.0),
-        )
-
-    src_large = src_rect(13)
-    src_normal = src_rect(12)
-    src_style_8 = src_rect(2)
+    src_large = effect_cell_src_inset(texture, 13)
+    src_normal = effect_cell_src_inset(texture, 12)
+    src_style_8 = effect_cell_src_inset(texture, 2)
     if src_normal is None or src_style_8 is None:
         return
 
@@ -125,18 +107,9 @@ def draw_sprite_effect_pool(
     if not any(entry.active for entry in effects):
         return
 
-    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(EffectId.EXPLOSION_PUFF))
-    if atlas is None:
+    src = effect_cell_src(texture, EffectId.EXPLOSION_PUFF)
+    if src is None:
         return
-    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-    if not grid:
-        return
-    frame = int(atlas.frame)
-    col = frame % grid
-    row = frame // grid
-    cell_w = float(texture.width) / float(grid)
-    cell_h = float(texture.height) / float(grid)
-    src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
     scale = viewport.view_scale_avg(view_scale)
 
     rl.begin_blend_mode(rl.BlendMode.BLEND_ALPHA)
@@ -170,37 +143,9 @@ def draw_effect_pool(
 
     scale = viewport.view_scale_avg(view_scale)
 
-    src_cache: dict[int, rl.Rectangle] = {}
-
-    def src_rect(effect_id: int) -> rl.Rectangle | None:
-        cached = src_cache.get(effect_id)
-        if cached is not None:
-            return cached
-
-        atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
-        if atlas is None:
-            return None
-        grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-        if not grid:
-            return None
-        frame = int(atlas.frame)
-        col = frame % grid
-        row = frame // grid
-        cell_w = float(texture.width) / float(grid)
-        cell_h = float(texture.height) / float(grid)
-        # Native effect pool clamps UVs to (cell_size - 2px) to avoid bleeding.
-        src = rl.Rectangle(
-            cell_w * float(col),
-            cell_h * float(row),
-            max(0.0, cell_w - 2.0),
-            max(0.0, cell_h - 2.0),
-        )
-        src_cache[effect_id] = src
-        return src
-
     def draw_entry(entry: EffectEntry) -> None:
         effect_id = int(entry.effect_id)
-        src = src_rect(effect_id)
+        src = effect_cell_src_inset(texture, effect_id)
         if src is None:
             return
 

@@ -302,12 +302,3 @@ def button_draw(
     text_w = _ui_text_width(resources, state.label)
     text_pos = Vec2(pos.x + width * 0.5 - text_w * 0.5 + 1.0, pos.y + 10.0)
     draw_ui_text(resources, state.label, text_pos, color=text_tint)
-
-
-def cursor_draw(resources: RuntimeResources, *, mouse: rl.Vector2, alpha: float = 1.0) -> None:
-    tex = resources.texture(TextureId.UI_CURSOR)
-    a = int(255 * clamp(alpha, 0.0, 1.0))
-    tint = rl.Color(255, 255, 255, a)
-    src = rl.Rectangle(0.0, 0.0, tex.width, tex.height)
-    dst = rl.Rectangle(mouse.x, mouse.y, 32.0, 32.0)
-    rl.draw_texture_pro(tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)

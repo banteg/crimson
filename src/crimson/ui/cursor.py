@@ -10,7 +10,8 @@ from grim.color import grim_color
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-from ..effects_atlas import EffectId, effect_src_rect
+from ..effects_atlas import EffectId
+from ..render.world.atlas import effect_cell_src
 
 CURSOR_EFFECT_ID = int(EffectId.GLOW)
 
@@ -19,13 +20,13 @@ def draw_cursor_glow(particles: rl.Texture | None, *, pos: Vec2, alpha: float) -
     """The aim reticle's single additive glow quad."""
     if particles is None:
         return
-    src = effect_src_rect(CURSOR_EFFECT_ID, texture_width=float(particles.width), texture_height=float(particles.height))
+    src = effect_cell_src(particles, CURSOR_EFFECT_ID)
     if src is None:
         return
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     rl.draw_texture_pro(
         particles,
-        rl.Rectangle(*src),
+        src,
         rl.Rectangle(float(pos.x - 32.0), float(pos.y - 32.0), 64.0, 64.0),
         rl.Vector2(0.0, 0.0),
         0.0,
@@ -71,14 +72,14 @@ def ui_cursor_render(resources: RuntimeResources, *, dt: float, pos: Vec2 | None
     if pos is None:
         pos = Vec2.from_xy(canvas.mouse_position())
     particles = resources.texture(TextureId.PARTICLES)
-    src = effect_src_rect(CURSOR_EFFECT_ID, texture_width=float(particles.width), texture_height=float(particles.height))
+    src = effect_cell_src(particles, CURSOR_EFFECT_ID)
     if src is not None:
         tint = grim_color(1.0, 1.0, 1.0, (math.sin(_pulse.phase) ** 2 + 2.0) * 0.32)
         rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
         for dx, dy, size in ((-28.0, -28.0, 64.0), (-10.0, -18.0, 64.0), (-18.0, -10.0, 64.0), (-48.0, -48.0, 128.0)):
             rl.draw_texture_pro(
                 particles,
-                rl.Rectangle(*src),
+                src,
                 rl.Rectangle(float(pos.x + dx), float(pos.y + dy), size, size),
                 rl.Vector2(0.0, 0.0),
                 0.0,

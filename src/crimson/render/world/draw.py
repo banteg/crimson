@@ -12,11 +12,12 @@ from grim.math import clamp
 from grim.raylib_api import rl
 
 from ...creatures.spawn import CreatureFlags, CreatureTypeId
-from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
+from ...effects_atlas import EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
 from ...ui.cursor import draw_aim_cursor
 from . import viewport
+from .atlas import effect_cell_src_inset
 from .bonuses import draw_bonus_hover_labels, draw_bonus_pickups
 from .constants import _RAD_TO_DEG, monster_vision_fade_alpha
 from .context import WorldRenderCtx
@@ -118,26 +119,6 @@ def draw_background(
     )
 
 
-def effect_src_rect(texture: rl.Texture, effect_id: EffectId) -> rl.Rectangle | None:
-    atlas = EFFECT_ID_ATLAS_TABLE_BY_ID.get(int(effect_id))
-    if atlas is None:
-        return None
-    grid = SIZE_CODE_GRID.get(int(atlas.size_code))
-    if not grid:
-        return None
-    frame = int(atlas.frame)
-    col = frame % grid
-    row = frame // grid
-    cell_w = float(texture.width) / float(grid)
-    cell_h = float(texture.height) / float(grid)
-    return rl.Rectangle(
-        cell_w * float(col),
-        cell_h * float(row),
-        max(0.0, cell_w - 2.0),
-        max(0.0, cell_h - 2.0),
-    )
-
-
 def build_draw_context(
     render_ctx: WorldRenderCtx,
     *,
@@ -151,11 +132,11 @@ def build_draw_context(
     monster_vision = PerkId.MONSTER_VISION in frame.state.perks
     monster_vision_src = None
     if monster_vision:
-        monster_vision_src = effect_src_rect(particles_texture, EffectId.AURA)
+        monster_vision_src = effect_cell_src_inset(particles_texture, EffectId.AURA)
 
     # Native uses `effect_select_texture(0x10)` (EffectId.AURA) for creature overlays
     # (monster vision, shadow, poison aura).
-    poison_src = effect_src_rect(particles_texture, EffectId.AURA)
+    poison_src = effect_cell_src_inset(particles_texture, EffectId.AURA)
 
     return WorldDrawContext(
         entity_alpha=entity_alpha,
@@ -383,7 +364,7 @@ def draw_freeze_overlay(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
     if freeze_timer <= 0.0:
         return
 
-    src = effect_src_rect(ctx.particles_texture, EffectId.FREEZE_SHATTER)
+    src = effect_cell_src_inset(ctx.particles_texture, EffectId.FREEZE_SHATTER)
     if src is None:
         return
 

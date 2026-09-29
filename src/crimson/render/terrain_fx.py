@@ -4,7 +4,7 @@ from collections.abc import Callable
 
 import msgspec
 
-from crimson.effects_atlas import effect_src_rect
+from crimson.render.world.atlas import effect_cell_src
 from crimson.sim.terrain_fx import TerrainFxBatch
 from grim.raylib_api import rl
 from grim.terrain_render import GroundCorpseDecal, GroundDecal, GroundRenderer
@@ -28,17 +28,13 @@ def bake_terrain_fx_batch(
 
     decals: list[GroundDecal] = []
     for entry in batch.decals:
-        src = effect_src_rect(
-            entry.effect_id,
-            texture_width=float(textures.particles.width),
-            texture_height=float(textures.particles.height),
-        )
+        src = effect_cell_src(textures.particles, entry.effect_id)
         if src is None:
             continue
         decals.append(
             GroundDecal(
                 texture=textures.particles,
-                src=rl.Rectangle(*src),
+                src=src,
                 pos=entry.pos,
                 width=entry.width,
                 height=entry.height,
