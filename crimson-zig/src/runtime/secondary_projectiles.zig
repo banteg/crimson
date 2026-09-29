@@ -14,6 +14,14 @@ const terrain_fx_mod = @import("terrain_fx.zig");
 
 const narrowF32 = native_math.roundF32;
 
+/// Native `center + (cos(angle) * radius, sin(angle) * radius)` at PC24: the cosine is not rounded before the multiply.
+fn scorchDecalPos(center: state_mod.Vec2, angle: f32, radius: f32) state_mod.Vec2 {
+    return .{
+        .x = native_math.pc24Add(native_math.pc24Mul(@cos(@as(f64, angle)), radius), center.x),
+        .y = native_math.pc24Add(native_math.pc24Mul(@sin(@as(f64, angle)), radius), center.y),
+    };
+}
+
 pub const secondary_projectile_pool_size: usize = 0x40;
 
 pub const SecondaryProjectileTypeId = enum(i32) {
@@ -460,13 +468,11 @@ pub const SecondaryProjectilePool = struct {
                         const angle = @as(f32, @floatFromInt(state.rng.randTagged(angle_caller) % 0x274)) * 0.01;
                         if (det_scale == 0.35) {
                             const radius = @as(f32, @floatFromInt(state.rng.randTagged(radius_caller) & 0x3F));
-                            const pos = state_mod.Vec2.add(creatures.entries[idx].pos, state_mod.Vec2.fromAngle(angle).mul(radius));
-                            _ = terrain_fx.decals.addRandom(state, pos);
+                            _ = terrain_fx.decals.addRandom(state, scorchDecalPos(creatures.entries[idx].pos, angle, radius));
                         } else {
                             const radius_mod = @max(extra_radius, 1);
                             const radius = state.rng.randTagged(radius_caller) % @as(u32, @intCast(radius_mod));
-                            const pos = state_mod.Vec2.add(creatures.entries[idx].pos, state_mod.Vec2.fromAngle(angle).mul(@floatFromInt(radius)));
-                            _ = terrain_fx.decals.addRandom(state, pos);
+                            _ = terrain_fx.decals.addRandom(state, scorchDecalPos(creatures.entries[idx].pos, angle, @floatFromInt(radius)));
                         }
                     }
                 }
