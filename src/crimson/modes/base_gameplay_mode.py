@@ -24,7 +24,7 @@ from grim.view import ViewContext
 
 from ..game_modes import GameMode
 from ..game_states import GameStateId
-from ..local_input import LocalInputInterpreter
+from ..local_input import PAD_AIM_DIST_MUL_DEFAULT, LocalInputInterpreter
 from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
@@ -890,6 +890,7 @@ class BaseGameplayMode:
             mouse_screen=self._ui_mouse,
             screen_to_world=self.screen_to_world,
             dt=float(dt),
+            pad_aim_dist_mul=self._cvar_float("cv_padAimDistMul", PAD_AIM_DIST_MUL_DEFAULT),
             creatures=self.creatures.entries,
         )
 

@@ -97,7 +97,13 @@ def _pad_config(*, player_count: int = 1) -> CrimsonConfig:
     return config
 
 
-def _build_input(config: CrimsonConfig, *, player_index: int = 0, interpreter: LocalInputInterpreter | None = None):
+def _build_input(
+    config: CrimsonConfig,
+    *,
+    player_index: int = 0,
+    interpreter: LocalInputInterpreter | None = None,
+    pad_aim_dist_mul: float = 96.0,
+):
     interpreter = interpreter or LocalInputInterpreter()
     player = PlayerState(index=player_index, pos=Vec2(100.0, 100.0), aim=Vec2(100.0, 40.0))
     return interpreter.build_player_input(
@@ -108,6 +114,7 @@ def _build_input(config: CrimsonConfig, *, player_index: int = 0, interpreter: L
         mouse_world=Vec2(),
         screen_center=Vec2(),
         dt=0.016,
+        pad_aim_dist_mul=pad_aim_dist_mul,
     )
 
 
@@ -268,12 +275,14 @@ def test_right_stick_aims_the_way_it_is_pushed(pads: FakePads) -> None:
     assert out.aim.y == pytest.approx(100.0 - (42.0 + 0.5 * 96.0))
 
 
-def test_aim_reach_clamps_stick_length_like_native(pads: FakePads) -> None:
+@pytest.mark.parametrize("pad_aim_dist_mul", [96.0, 200.0])
+def test_aim_reach_clamps_stick_length_like_native(pads: FakePads, pad_aim_dist_mul: float) -> None:
     pads.axes[(0, RIGHT_X)] = 1.0
     pads.axes[(0, RIGHT_Y)] = 1.0
-    out = _build_input(_pad_config())
+    out = _build_input(_pad_config(), pad_aim_dist_mul=pad_aim_dist_mul)
     reach = math.hypot(out.aim.x - 100.0, out.aim.y - 100.0)
-    assert reach == pytest.approx(42.0 + 96.0)
+    # `cv_padAimDistMul` scales the clamped stick length on top of 42.
+    assert reach == pytest.approx(42.0 + pad_aim_dist_mul)
 
 
 def test_released_aim_stick_keeps_last_direction(pads: FakePads) -> None:
