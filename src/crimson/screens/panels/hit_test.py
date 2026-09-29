@@ -12,11 +12,11 @@ def mouse_inside_rect_with_padding(
     left_pad: float = 10.0,
     top_pad: float = 2.0,
 ) -> bool:
-    """Port of `ui_mouse_inside_rect_with_padding` (0x00403430)."""
+    """Port of `ui_mouse_inside_rect_with_padding` (0x00403430): every edge is exclusive."""
 
     x = float(pos.x)
     y = float(pos.y)
     return (
-        x - float(left_pad) <= float(mouse.x) <= x + float(width)
-        and y - float(top_pad) <= float(mouse.y) <= y + float(height)
+        x - float(left_pad) < float(mouse.x) < x + float(width)
+        and y - float(top_pad) < float(mouse.y) < y + float(height)
     )
