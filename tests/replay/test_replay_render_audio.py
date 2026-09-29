@@ -44,7 +44,7 @@ def test_infer_effective_capture_sample_rate_rejects_out_of_range() -> None:
         _infer_effective_capture_sample_rate(captured_frames=10_000_000, captured_ticks=1, replay_tick_rate=60)
 
 
-def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(mocker, tmp_path: Path) -> None:
+def test_capture_audio_track_counts_captured_ticks(mocker, tmp_path: Path) -> None:
     import crimson.modes.replay_playback_mode as replay_playback_mode_mod
     import crimson.replay.driver.replay_render as replay_render_mod
 
@@ -103,21 +103,6 @@ def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(moc
         def __init__(self) -> None:
             self.audio = SimpleNamespace(sound_disabled=False, music_disabled=False)
 
-    class _Progress(replay_render_mod.ReplayRenderProgress):
-        events: list[tuple[str, int, int, int]]
-
-        def update(
-            self,
-            *,
-            phase: replay_render_mod.ReplayRenderPhase,
-            frame_count: int,
-            tick_index: int,
-            total_ticks: int,
-        ) -> None:
-            self.events.append((phase, int(frame_count), int(tick_index), int(total_ticks)))
-
-    progress = _Progress(events=[])
-
     captured = replay_render_mod._capture_replay_audio_track(
         rl=_FakeRl(),
         ctx=object(),
@@ -128,7 +113,7 @@ def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(moc
         trace_rng=False,
         output_path=tmp_path / "audio.raw",
         replay_tick_rate=60,
-        progress=progress,
+        show_progress=False,
         total_ticks=120,
     )
 
@@ -137,11 +122,6 @@ def test_capture_audio_track_reports_progress_without_manual_fx_queue_clears(moc
     assert captured.channels == 2
     assert captured.captured_frames == 2400
     assert captured.captured_ticks == 3
-    assert progress.events == [
-        ("audio", 0, 1, 120),
-        ("audio", 0, 2, 120),
-        ("audio", 0, 3, 120),
-    ]
 
 
 def test_mux_raw_audio_with_video_uses_output_safety_and_sync_filter_without_time_warp(mocker, tmp_path: Path) -> None:

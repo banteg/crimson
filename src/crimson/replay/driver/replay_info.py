@@ -52,6 +52,7 @@ _CORE_EVENT_KINDS: frozenset[ReplayInfoCoreEventKind] = frozenset(
 class ReplayInfoTimelineEvent(msgspec.Struct, frozen=True):
     tick_index: int
     elapsed_ms: int
+    elapsed_s: float
     kind: ReplayInfoEventKind
     player_index: int | None
     detail: str
@@ -111,6 +112,7 @@ def _append_event(
         ReplayInfoTimelineEvent(
             tick_index=tick_index,
             elapsed_ms=elapsed_ms,
+            elapsed_s=elapsed_ms / 1000.0,
             kind=kind,
             player_index=player_index,
             detail=detail,

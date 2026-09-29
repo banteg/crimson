@@ -27,108 +27,24 @@ from .render_telemetry_charts import write_render_telemetry_charts
 
 ProfileSortKey = Literal["cumtime", "tottime"]
 HotspotSource = Literal["project", "all"]
-ReplayBenchmarkPhase = Literal["warmup", "measure", "profile", "telemetry"]
 
 
-class ReplayBenchmarkTickProgress(PlaybackWalkObserver):
-    tick_total: int
-    completed_ticks: int = 0
+class _TickBar(PlaybackWalkObserver):
+    """Advances a tqdm tick bar as the playback walk reaches each tick."""
 
-    def _advance(self, value: int) -> None:
-        _ = value
+    bar: tqdm
 
     def progress(self, next_tick_index: int) -> None:
-        target_tick = max(0, min(int(self.tick_total), int(next_tick_index)))
-        if target_tick <= int(self.completed_ticks):
-            return
-        self._advance(target_tick - int(self.completed_ticks))
-        self.completed_ticks = target_tick
-
-    def complete(self) -> None:
-        self.progress(int(self.tick_total))
-
-    def close(self) -> None:
-        return None
+        self.bar.update(next_tick_index - self.bar.n)
 
 
-class ReplayBenchmarkProgress(msgspec.Struct):
-    def begin_ticks(self, *, tick_desc: str, tick_total: int) -> ReplayBenchmarkTickProgress | None:
-        _ = tick_desc, tick_total
-        return None
-
-    def complete_step(
-        self,
-        *,
-        phase: ReplayBenchmarkPhase,
-        sample_index: int | None = None,
-        sample_count: int | None = None,
-    ) -> None:
-        _ = phase, sample_index, sample_count
-
-    def close(self) -> None:
-        return None
+def _step_done(run_bar: tqdm, postfix: str) -> None:
+    run_bar.set_postfix_str(postfix, refresh=False)
+    run_bar.update(1)
 
 
-class _TqdmReplayBenchmarkTickProgress(ReplayBenchmarkTickProgress):
-    tick_bar: Any = None
-
-    def _advance(self, value: int) -> None:
-        self.tick_bar.update(int(value))
-
-    def close(self) -> None:
-        self.tick_bar.close()
-
-
-class _TqdmReplayBenchmarkProgress(ReplayBenchmarkProgress):
-    run_bar: Any
-    tqdm_factory: Any = tqdm
-
-    def begin_ticks(self, *, tick_desc: str, tick_total: int) -> ReplayBenchmarkTickProgress | None:
-        if int(tick_total) <= 0:
-            return None
-        return _TqdmReplayBenchmarkTickProgress(
-            tick_total=int(tick_total),
-            tick_bar=self.tqdm_factory(
-                total=int(tick_total),
-                unit="tick",
-                desc=str(tick_desc),
-                leave=False,
-            ),
-        )
-
-    def complete_step(
-        self,
-        *,
-        phase: ReplayBenchmarkPhase,
-        sample_index: int | None = None,
-        sample_count: int | None = None,
-    ) -> None:
-        self.run_bar.update(1)
-        postfix = f"phase={phase}"
-        if phase == "measure" and sample_index is not None and sample_count is not None:
-            postfix = f"{postfix} sample={int(sample_index)}/{int(sample_count)}"
-        self.run_bar.set_postfix_str(postfix, refresh=False)
-
-    def close(self) -> None:
-        self.run_bar.close()
-
-
-def _replay_benchmark_progress(
-    *,
-    show_progress: bool,
-    planned_steps: int,
-    desc: str,
-) -> ReplayBenchmarkProgress:
-    if not bool(show_progress) or int(planned_steps) <= 0:
-        return ReplayBenchmarkProgress()
-    return _TqdmReplayBenchmarkProgress(
-        run_bar=tqdm(
-            total=int(planned_steps),
-            unit="run",
-            desc=str(desc),
-            leave=False,
-        ),
-    )
+def _path_text(path: Path | None) -> str | None:
+    return None if path is None else str(path)
 
 
 class ReplayBenchmarkError(ValueError):
@@ -197,12 +113,12 @@ class ReplayRenderTelemetrySummary(msgspec.Struct, frozen=True):
 
 
 class ReplayRenderTelemetryArtifacts(msgspec.Struct, frozen=True):
-    telemetry_json_path: Path | None = None
-    charts_dir: Path | None = None
-    frame_timing_svg: Path | None = None
-    draw_calls_svg: Path | None = None
-    pass_timing_stacked_svg: Path | None = None
-    report_md: Path | None = None
+    telemetry_json_path: str | None = None
+    charts_dir: str | None = None
+    frame_timing_svg: str | None = None
+    draw_calls_svg: str | None = None
+    pass_timing_stacked_svg: str | None = None
+    report_md: str | None = None
 
 
 class ReplayRenderTelemetryResult(msgspec.Struct, frozen=True):
@@ -303,29 +219,19 @@ def run_replay_render_benchmark(
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    progress = ReplayBenchmarkProgress()
+    planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
+    run_bar = tqdm(total=planned_steps, unit="run", desc="render benchmark", leave=False, disable=not show_progress)
     try:
         resources = load_runtime_resources(runtime_assets_dir)
-        planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
-        progress = _replay_benchmark_progress(
-            show_progress=bool(show_progress),
-            planned_steps=planned_steps,
-            desc="render benchmark",
-        )
 
-        def _run_once_with_progress(
+        def _run_once(
             *,
             tick_desc: str,
             rtx: bool,
             telemetry_session: RenderTelemetrySession | None = None,
         ) -> _RenderOnceResult:
-            tick_progress = progress.begin_ticks(
-                tick_desc=str(tick_desc),
-                tick_total=tick_total,
-            )
-            completed_run = False
-            try:
-                result = _run_render_once(
+            with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
+                return _run_render_once(
                     ctx=ctx,
                     replay_path=replay_path,
                     cfg=cfg,
@@ -334,27 +240,20 @@ def run_replay_render_benchmark(
                     trace_rng=bool(trace_rng),
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
-                    observer=tick_progress,
+                    observer=_TickBar(bar=bar),
                 )
-                completed_run = True
-                return result
-            finally:
-                if tick_progress is not None:
-                    if completed_run:
-                        tick_progress.complete()
-                    tick_progress.close()
 
         for _ in range(int(warmup_runs)):
-            _run_once_with_progress(
+            _run_once(
                 tick_desc="render ticks warmup",
                 rtx=bool(rtx),
             )
-            progress.complete_step(phase="warmup")
+            _step_done(run_bar, "phase=warmup")
 
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
             start_ns = time.perf_counter_ns()
-            measured = _run_once_with_progress(
+            measured = _run_once(
                 tick_desc=f"render ticks sample {sample_idx + 1}/{int(runs)}",
                 rtx=bool(rtx),
             )
@@ -375,17 +274,13 @@ def run_replay_render_benchmark(
                 measured.run_result,
                 where=f"render run {sample_idx + 1}",
             )
-            progress.complete_step(
-                phase="measure",
-                sample_index=sample_idx + 1,
-                sample_count=int(runs),
-            )
+            _step_done(run_bar, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
 
         profile_result: ReplayProfileResult | None = None
         if bool(profile):
             prof = cProfile.Profile()
             prof.enable()
-            profiled = _run_once_with_progress(
+            profiled = _run_once(
                 tick_desc="render ticks profile",
                 rtx=bool(rtx),
             )
@@ -408,13 +303,13 @@ def run_replay_render_benchmark(
                 source=source,
                 hotspots=tuple(hotspots),
             )
-            progress.complete_step(phase="profile")
+            _step_done(run_bar, "phase=profile")
 
         telemetry_result: ReplayRenderTelemetryResult | None = None
         if telemetry_requested:
             telemetry_session = RenderTelemetrySession()
             with telemetry_session:
-                collected = _run_once_with_progress(
+                collected = _run_once(
                     tick_desc="render ticks telemetry",
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
@@ -450,12 +345,12 @@ def run_replay_render_benchmark(
                 )
 
             artifacts = ReplayRenderTelemetryArtifacts(
-                telemetry_json_path=telemetry_json_path,
-                charts_dir=(Path(render_charts_out_dir) if render_charts_out_dir is not None else None),
-                frame_timing_svg=chart_paths.get("frame_timing_svg"),
-                draw_calls_svg=chart_paths.get("draw_calls_svg"),
-                pass_timing_stacked_svg=chart_paths.get("pass_timing_stacked_svg"),
-                report_md=chart_paths.get("report_md"),
+                telemetry_json_path=_path_text(telemetry_json_path),
+                charts_dir=_path_text(render_charts_out_dir),
+                frame_timing_svg=_path_text(chart_paths.get("frame_timing_svg")),
+                draw_calls_svg=_path_text(chart_paths.get("draw_calls_svg")),
+                pass_timing_stacked_svg=_path_text(chart_paths.get("pass_timing_stacked_svg")),
+                report_md=_path_text(chart_paths.get("report_md")),
             )
             telemetry_result = ReplayRenderTelemetryResult(
                 frames=frames,
@@ -463,9 +358,9 @@ def run_replay_render_benchmark(
                 artifacts=artifacts,
                 preview=tuple(frames[:10]),
             )
-            progress.complete_step(phase="telemetry")
+            _step_done(run_bar, "phase=telemetry")
     finally:
-        progress.close()
+        run_bar.close()
         unload_runtime_resources(resources)
         if window_open:
             rl.close_window()
@@ -505,48 +400,23 @@ def run_replay_benchmark(
     if max_ticks is not None:
         tick_total = min(tick_total, max(0, int(max_ticks)))
 
-    progress = ReplayBenchmarkProgress()
+    planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
+    run_bar = tqdm(total=planned_steps, unit="run", desc="headless benchmark", leave=False, disable=not show_progress)
     try:
-        planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
-        progress = _replay_benchmark_progress(
-            show_progress=bool(show_progress),
-            planned_steps=planned_steps,
-            desc="headless benchmark",
-        )
-
-        def _run_once_with_progress(*, tick_desc: str) -> RunResult:
-            tick_progress = progress.begin_ticks(
-                tick_desc=str(tick_desc),
-                tick_total=tick_total,
-            )
-            completed_run = False
-
-            try:
-                driver = build_verify_playback_driver(
-                    replay,
-                    max_ticks=max_ticks,
-                    trace_rng=bool(trace_rng),
-                )
-                result = driver.run(
-                    observer=tick_progress,
-                )
-                completed_run = True
-                return result
-            finally:
-                if tick_progress is not None:
-                    if completed_run:
-                        tick_progress.complete()
-                    tick_progress.close()
+        def _run_once(*, tick_desc: str) -> RunResult:
+            with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
+                driver = build_verify_playback_driver(replay, max_ticks=max_ticks, trace_rng=bool(trace_rng))
+                return driver.run(observer=_TickBar(bar=bar))
 
         for _ in range(int(warmup_runs)):
-            _run_once_with_progress(tick_desc="headless ticks warmup")
-            progress.complete_step(phase="warmup")
+            _run_once(tick_desc="headless ticks warmup")
+            _step_done(run_bar, "phase=warmup")
 
         baseline_result: RunResult | None = None
         samples: list[BenchmarkSample] = []
         for sample_idx in range(int(runs)):
             start_ns = time.perf_counter_ns()
-            result = _run_once_with_progress(
+            result = _run_once(
                 tick_desc=f"headless ticks sample {sample_idx + 1}/{int(runs)}",
             )
             elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
@@ -565,18 +435,14 @@ def run_replay_benchmark(
                 baseline_result = result
             else:
                 _assert_consistent_run_result(baseline_result, result, where=f"measured run {sample_idx + 1}")
-            progress.complete_step(
-                phase="measure",
-                sample_index=sample_idx + 1,
-                sample_count=int(runs),
-            )
+            _step_done(run_bar, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
 
         assert baseline_result is not None
         profile_result: ReplayProfileResult | None = None
         if bool(profile):
             prof = cProfile.Profile()
             prof.enable()
-            prof_result = _run_once_with_progress(tick_desc="headless ticks profile")
+            prof_result = _run_once(tick_desc="headless ticks profile")
             prof.disable()
             _assert_consistent_run_result(baseline_result, prof_result, where="profiled run")
 
@@ -592,9 +458,9 @@ def run_replay_benchmark(
                 source=source,
                 hotspots=tuple(hotspots),
             )
-            progress.complete_step(phase="profile")
+            _step_done(run_bar, "phase=profile")
     finally:
-        progress.close()
+        run_bar.close()
 
     wall_values = [sample.wall_ms for sample in samples]
     tps_values = [sample.ticks_per_second for sample in samples]
