@@ -31,13 +31,13 @@ def test_apply_terrain_setup_keeps_sim_rng_state(assets_dir: Path, monkeypatch) 
     before_rng_state = int(runtime.world.state.rng.state)
     setup = terrain_generate(Crand(1337), DEFAULT_TERRAIN_SLOTS)
 
-    runtime.terrain_runtime.apply_terrain_setup(setup)
-    runtime.terrain_runtime.apply_terrain_setup(setup)
+    runtime.apply_terrain_setup(setup)
+    runtime.apply_terrain_setup(setup)
 
     assert int(runtime.world.state.rng.state) == before_rng_state
     assert runtime.render_resources.ground is not None
     assert runtime.render_resources.ground._scheduled_layers is setup.layers
-    assert runtime.terrain_runtime.setup is setup
+    assert runtime.terrain_setup is setup
 
 
 def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(assets_dir: Path, monkeypatch) -> None:
@@ -60,7 +60,7 @@ def test_apply_terrain_setup_updates_render_cache_without_touching_sim_rng(asset
     monkeypatch.setattr(type(runtime.render_resources), "registry_texture", _texture, raising=True)
 
     setup = terrain_generate(Crand(before_rng_state), (0, 1, 3))
-    runtime.terrain_runtime.apply_terrain_setup(setup)
+    runtime.apply_terrain_setup(setup)
 
     assert int(runtime.world.state.rng.state) == before_rng_state
     assert runtime.render_resources.ground is not None
@@ -76,14 +76,14 @@ def test_reset_keeps_the_ground_and_its_setup(assets_dir: Path) -> None:
     ground = GroundRenderer(texture=texture, overlay=texture, overlay_detail=texture)
     runtime.render_resources.ground = ground
     setup = terrain_generate(Crand(7), DEFAULT_TERRAIN_SLOTS)
-    runtime.terrain_runtime.setup = setup
+    runtime.terrain_setup = setup
 
     runtime.reset(seed=4242, player_count=1)
 
     assert int(runtime.world.state.rng.state) == 4242
     assert runtime.render_resources.ground is ground
     assert ground._scheduled_layers is None
-    assert runtime.terrain_runtime.setup is setup
+    assert runtime.terrain_setup is setup
 
 
 def test_process_ground_pending_does_not_live_sync_texture_scale_from_config(assets_dir: Path) -> None:

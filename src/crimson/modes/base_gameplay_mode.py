@@ -147,7 +147,6 @@ class BaseGameplayMode:
         )
         self.render_resources = self._world_runtime.render_resources
         self.audio_bridge = self._world_runtime.audio_bridge
-        self.terrain_runtime = self._world_runtime.terrain_runtime
 
         self.camera = Vec2(-1.0, -1.0)
         player_count = self._runtime_player_count()
@@ -236,7 +235,7 @@ class BaseGameplayMode:
         return self._world_runtime.preserve_bugs
 
     def apply_terrain_setup(self, setup: TerrainSetup) -> None:
-        self.terrain_runtime.apply_terrain_setup(setup)
+        self._world_runtime.apply_terrain_setup(setup)
 
     def _draw_world(self, *, entity_alpha: float = 1.0) -> None:
         self._world_runtime.draw(entity_alpha=entity_alpha)
@@ -866,7 +865,7 @@ class BaseGameplayMode:
         return float(self._world_runtime.presentation_elapsed_ms)
 
     def regenerate_terrain_for_console(self) -> None:
-        setup = self.terrain_runtime.setup
+        setup = self._world_runtime.terrain_setup
         if self.render_resources.ground is None or setup is None:
             return
         # Native `generateterrain` runs `terrain_generate_random()` on the live stream, which a replay
@@ -874,7 +873,7 @@ class BaseGameplayMode:
         # stamps from a detached rng seeded off the gameplay state plus a counter, so repeats differ.
         self._terrain_regen_counter = (int(self._terrain_regen_counter) + 1) & 0xFFFFFFFF
         terrain_seed = (int(self.state.rng.state) + int(self._terrain_regen_counter)) & 0xFFFFFFFF
-        self.terrain_runtime.apply_terrain_setup(terrain_generate(Crand(terrain_seed), setup.terrain_slots))
+        self._world_runtime.apply_terrain_setup(terrain_generate(Crand(terrain_seed), setup.terrain_slots))
 
     def _draw_screen_fade(self) -> None:
         fade_alpha = 0.0

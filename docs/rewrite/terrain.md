@@ -160,7 +160,7 @@ Simulation collects generic and corpse decals in `src/crimson/sim/terrain_fx.py`
 The session captures each tick's batch in its presentation plan;
 `src/crimson/sim/batch_apply.py` delivers it to
 `src/crimson/world/render_resources.py` for baking.
-`src/crimson/world/terrain_runtime.py` installs a `TerrainSetup` and remembers it. GPU calls do not run inside
+`WorldRuntime.apply_terrain_setup` (`src/crimson/world/runtime.py`) installs a `TerrainSetup` and remembers it. GPU calls do not run inside
 the authoritative world step. See [run startup](replay-run-start.md#terrain-rng-and-rendering)
 for terrain generation and RNG ownership.
 

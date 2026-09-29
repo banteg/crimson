@@ -50,14 +50,14 @@ def test_gameplay_terrain_regeneration_keeps_gameplay_rng_and_slots(make_mode_co
         audio_rng=Crand(0xBEEF),
     )
     mode.open()
-    started = mode.terrain_runtime.setup
+    started = mode.world_runtime.terrain_setup
     assert started is not None
     rng_state = mode.state.rng.state
 
     mode.regenerate_terrain_for_console()
-    first = mode.terrain_runtime.setup
+    first = mode.world_runtime.terrain_setup
     mode.regenerate_terrain_for_console()
-    second = mode.terrain_runtime.setup
+    second = mode.world_runtime.terrain_setup
 
     assert first is not None
     assert second is not None

@@ -15,11 +15,12 @@ from ..render.world import viewport
 from ..render.world.context import WorldRenderCtx
 from ..render.world.draw import draw_world, ui_render_aim_indicators
 from ..sim.sessions import DeterministicSession
+from ..sim.terrain_generate import TerrainSetup
 from ..sim.world_reset import build_reset_world
 from ..sim.world_state import WorldState
+from ..terrain_slots import resolve_terrain_slots
 from .audio_bridge import AudioBridge
 from .render_resources import RenderResources
-from .terrain_runtime import TerrainRuntime
 
 
 class WorldRuntime:
@@ -63,9 +64,8 @@ class WorldRuntime:
             audio=self.audio,
             audio_rng=self.audio_rng,
         )
-        self.terrain_runtime = TerrainRuntime(
-            render_resources=render_resources,
-        )
+        # The setup the ground was last drawn from; applying it again draws the same stamps.
+        self.terrain_setup: TerrainSetup | None = None
 
         self.camera = Vec2(-1.0, -1.0)
 
@@ -123,7 +123,14 @@ class WorldRuntime:
     def open_runtime(self) -> None:
         self.render_resources.config = self.config
         self.render_resources.open()
-        self.terrain_runtime.setup = None
+        self.terrain_setup = None
+
+    def apply_terrain_setup(self, setup: TerrainSetup) -> None:
+        """Bind the setup's terrain textures and draw its stamps into the ground."""
+        base, overlay, detail = resolve_terrain_slots(setup.terrain_slots, self.render_resources.registry_texture)
+        self.render_resources.set_ground_textures(base=base, overlay=overlay, detail=detail)
+        self.render_resources.schedule_ground_stamps(setup.layers)
+        self.terrain_setup = setup
 
     def close_runtime(self) -> None:
         self.render_resources.close()

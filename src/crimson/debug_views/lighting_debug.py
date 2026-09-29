@@ -2075,7 +2075,7 @@ class LightingDebugView:
     def _reset_scene(self) -> None:
         self._runtime.reset(seed=0xBEEF, player_count=1)
         # Fresh ground from a detached rng seeded like the world's; the sim stream stays untouched.
-        self._runtime.terrain_runtime.apply_terrain_setup(
+        self._runtime.apply_terrain_setup(
             terrain_generate(Crand(self._runtime.world.state.rng.state), DEFAULT_TERRAIN_SLOTS),
         )
         self._tick_harness.reset()
