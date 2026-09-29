@@ -155,8 +155,12 @@ class ConsoleLog(msgspec.Struct):
     base_dir: Path
     lines: list[str] = msgspec.field(default_factory=list)
     flushed_index: int = 0
+    # Native `console_printf` / `console_push_line` drop every line while `echo off` is in effect.
+    echo_enabled: bool = True
 
     def log(self, message: str) -> None:
+        if not self.echo_enabled:
+            return
         self.lines.append(message)
         if len(self.lines) > MAX_CONSOLE_LINES:
             overflow = len(self.lines) - MAX_CONSOLE_LINES
@@ -195,7 +199,6 @@ class ConsoleState(msgspec.Struct):
     history_pending: str = ""
     scroll_offset: int = 0
     height_px: int = DEFAULT_CONSOLE_HEIGHT
-    echo_enabled: bool = True
     quit_requested: bool = False
     prompt_string: str = "> %s"
     _mono_font: GrimMonoFont | None = None
@@ -238,8 +241,9 @@ class ConsoleState(msgspec.Struct):
         name, args = tokens[0], tokens[1:]
         cvar = self.cvars.get(name)
         if cvar is not None:
-            if args:
-                value = " ".join(args)
+            # Native assigns only for exactly `<cvar> <value>`; any other count prints the value.
+            if len(args) == 1:
+                value = args[0]
                 cvar.value = value
                 cvar.value_f = _parse_float(value)
                 self.log.log(f"\"{cvar.name}\" set to \"{cvar.value}\" ({cvar.value_f:.6f})")
@@ -425,7 +429,7 @@ class ConsoleState(msgspec.Struct):
         self.history_index = None
         if not line:
             return
-        if self.echo_enabled:
+        if self.log.echo_enabled:
             if "%s" in self.prompt_string:
                 self.log.log(self.prompt_string.replace("%s", line))
             else:
@@ -680,24 +684,22 @@ def register_core_commands(console: ConsoleState) -> None:
         console.log.log(f"{len(console.cvars)} variables")
 
     def cmd_set(args: list[str]) -> None:
-        if len(args) < 2:
-            console.log.log("Usage: set <var> <value>")
+        if len(args) != 2:
+            console.log.log("set <var> <value>")
             return
-        name = args[0]
-        value = " ".join(args[1:])
+        name, value = args
         console.register_cvar(name, value)
         console.log.log(f"'{name}' set to '{value}'")
 
     def cmd_echo(args: list[str]) -> None:
-        if not args:
-            console.log.log(f"echo is {'on' if console.echo_enabled else 'off'}")
+        """`console_echo`: `echo off` / `echo on` toggle all console output, anything else is printed."""
+        if args == ["off"]:
+            console.log.echo_enabled = False
             return
-        mode = args[0].lower()
-        if mode in {"on", "off"}:
-            console.echo_enabled = mode == "on"
-            console.log.log(f"echo {mode}")
+        if args == ["on"]:
+            console.log.echo_enabled = True
             return
-        console.log.log(" ".join(args))
+        console.log.log("".join(f"{arg} " for arg in args))
 
     def cmd_quit(_args: list[str]) -> None:
         console.quit_requested = True

@@ -144,8 +144,8 @@ Tracking which console commands are implemented in `src/` vs still partial.
 | --- | --- | --- | --- |
 | `cmdlist` | core | implemented | Prints registered commands. |
 | `vars` | core | implemented | Prints registered cvars. |
-| `set` | core | implemented | `set <var> <value>` with console log. |
-| `echo` | core | implemented | `echo on/off` or echo args. |
+| `set` | core | implemented | Exactly `set <var> <value>`, like native; `<cvar> <value>` assigns only with one value. |
+| `echo` | core | implemented | `echo off` silences every console line until `echo on`; other args are printed. |
 | `quit` | core | implemented | Sets quit flag. |
 | `clear` | core | implemented | Clears console log. |
 | `extendconsole` | core | implemented | Expands console height to 480. |
@@ -155,10 +155,12 @@ Tracking which console commands are implemented in `src/` vs still partial.
 | `snd_addGameTune` | startup | implemented | Loads `music/<name>` and queues. |
 | `generateterrain` | startup | implemented | Requests terrain regeneration for menu and active gameplay terrain. |
 | `telltimesurvived` | startup | implemented | Reports active gameplay elapsed time (seconds). |
-| `setresourcepaq` | startup | implemented | Validates path and swaps resource paq entries. |
-| `loadtexture` | startup | implemented | Loads from current resource paq; logs ok/failed. |
+| `setresourcepaq` | startup | stub | Mod support; prints that the rewrite does not swap resource paqs. |
+| `loadtexture` | startup | stub | Mod support; prints that the rewrite does not load textures by id. |
 | `openurl` | startup | implemented | Launches browser. |
 | `sndfreqadjustment` | startup | implemented | Toggles runtime flag with native-style enabled/disabled log text. |
+| `rendermode`, `togglertx` | rewrite | implemented | Rewrite-only: switch the RTX render mode. |
+| `gamepads` | rewrite | implemented | Rewrite-only: lists connected pads and each player's bindings. |
 
 ## Known console variables (cvars)
 
