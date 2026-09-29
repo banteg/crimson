@@ -806,7 +806,8 @@ If you’re rebuilding from scratch, you need these components:
 
 The reference rewrite models this pipeline in:
 
-- `src/grim/terrain_render.py` (generation, decal baking helpers, and screen blit)
+- `src/crimson/sim/terrain_generate.py` (the RNG draws and the stamps of both generators)
+- `src/grim/terrain_render.py` (stamp drawing, decal baking helpers, and screen blit)
 - `docs/rewrite/terrain.md` (rewrite-specific notes and TODOs)
 
 ---

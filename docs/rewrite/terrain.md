@@ -19,12 +19,44 @@ terrain pipeline (see also: `docs/crimsonland-exe/terrain.md`).
 
 ## Where this lives in the rewrite
 
-Implementation: `src/grim/terrain_render.py`
+Generation: `src/crimson/sim/terrain_generate.py`; drawing: `src/grim/terrain_render.py`
 
+- `terrain_generate(rng, slots)` and `terrain_generate_random(rng, unlock_index)` mirror the two native
+  functions. They consume the authoritative `crt_rand` stream eagerly and return a `TerrainSetup`: the
+  texture slots plus three stamp layers (`grim.terrain_stamps.TerrainLayers`). Each stamp is the native
+  pre-scale value: float32 rotation `(float)(rand % 314) * 0.01f`, and a top-left `rand % 1152 - 64`
+  that already includes the overscan, drawn rotation, then y, then x.
 - `GroundRenderer` maintains an internal RT sized from `1024/texture_scale`.
-- `GroundRenderer.schedule_generate(seed=...)` queues terrain generation, and `GroundRenderer.process_pending()` performs the scheduled RT creation/generation work.
+- `GroundRenderer.schedule_stamps(layers)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
+  performs the scheduled RT creation and stamping. It applies `inv_scale`, moves the native top-left to
+  raylib's quad center, and never touches an RNG, so drawing or re-applying a setup is free.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
 - `texture_scale` is treated as a terrain-setup input, not a live runtime knob. Existing menu/gameplay grounds keep the scale they were created with until terrain is explicitly replaced.
+
+A ground only changes when a setup is applied: gameplay and replay playback install `PreparedRun.terrain`,
+menus draw their own `terrain_generate_random` on the application stream (or keep the gameplay ground
+they took over), and the arsenal and lighting debug views apply a detached terrain on each scene reset.
+Resetting the world or reopening render resources leaves the ground alone.
+
+### Generation scope
+
+- The simulation assumes the terrain texture never fails (`terrain_texture_failed == 0`), as it assumes audio
+  is on. Natively a failed texture makes `terrain_generate` bind the descriptor's base texture and return
+  before any stamp draw, while `terrain_generate_random` still draws its three selector draws and the eligible
+  unlock rolls: a successful roll delegates to that draw-free fallback, and the default branch returns
+  without stamping. A capture from such a run would need that flag recorded in its run metadata.
+- Native recovery regeneration is not modelled. When Grim sets config var `0x57` (texture backup failure,
+  DC-mode `WM_PAINT`), `game_frame_update` regenerates terrain mid-run on the live stream:
+  `terrain_generate_random()`, or during quests `terrain_generate(&quest_selected_meta[minor * 10 + major])`
+  with minor and major wrapped separately, a swapped index that can read past the 50-entry table (quest 1.6
+  gives 50). A capture containing it cannot replay exactly. Should the port ever rebuild a lost render
+  target, it would redraw the retained setup rather than draw new terrain.
+- The console `generateterrain` command natively runs `terrain_generate_random()` on the live stream. The
+  port keeps the gameplay RNG and the current texture slots, and stamps with `terrain_generate` from a
+  detached `Crand` seeded from the gameplay RNG state plus a counter that advances per command. The menu
+  ground regenerates with `terrain_generate_random` on the application stream.
+- Demo/attract terrain (`demo_setup_variant_1`/`_3` and the reset inside `demo_mode_start`) is excluded
+  with the rest of attract mode.
 
 Intentional rewrite deviations:
 
@@ -128,9 +160,9 @@ Simulation collects generic and corpse decals in `src/crimson/sim/terrain_fx.py`
 The session captures each tick's batch in its presentation plan;
 `src/crimson/sim/batch_apply.py` delivers it to
 `src/crimson/world/render_resources.py` for baking.
-`src/crimson/world/terrain_runtime.py` applies terrain setup and generation requests. GPU calls do not run inside
+`src/crimson/world/terrain_runtime.py` installs a `TerrainSetup` and remembers it. GPU calls do not run inside
 the authoritative world step. See [run startup](replay-run-start.md#terrain-rng-and-rendering)
-for detached terrain generation and RNG ownership.
+for terrain generation and RNG ownership.
 
 The captured fixtures cover specific terrain configurations. Broader weapon,
 bonus and corpse visual parity still needs corresponding runtime evidence.

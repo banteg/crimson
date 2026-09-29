@@ -203,21 +203,22 @@ perk picks run before timing is derived.
 
 ## Terrain RNG and rendering
 
-`src/crimson/sim/bootstrap.py` owns terrain RNG advancement. Both
-`advance_unlock_terrain` and `advance_explicit_terrain` mutate the supplied RNG
-through all procedural stamping draws and return a `TerrainSetup` with the
-selected slots, the state before stamping, and the generation kind.
-Unlock-driven generation first consumes the native three-draw prelude and
-unlock-gated slot selection; explicit generation uses the supplied slots.
+`src/crimson/sim/terrain_generate.py` owns terrain RNG. `terrain_generate(rng, slots)` and
+`terrain_generate_random(rng, unlock_index)` mirror the native functions: both draw every stamp from the
+supplied RNG before returning a `TerrainSetup` of texture slots and stamp layers. The random generator
+draws three overwritten texture selectors, then the unlock rolls (`>= 40`, `>= 30`, `>= 20`, each drawn only
+when its threshold passes). A successful roll delegates to `terrain_generate` with quest 4.2's, 3.2's or
+2.2's slots, `(6, 7, 6)`, `(4, 5, 4)` or `(2, 3, 2)`, so its stamp draws carry the explicit generator's
+callers. Only the fallthrough stamps with the random generator's own callers and slots `(0, 1, 0)`.
 
-The authoritative stream is already past the terrain window when simulation
-continues. `GroundRenderer` reconstructs the image from a local `CrtRand` seeded
-with `TerrainSetup.terrain_seed`; drawing or replacing a render target must not
-advance gameplay RNG again. The setup is derived during initialization, not
-stored as a second replay seed or serialized `TerrainSetup` in the CRD header.
+The renderer draws the setup's stamps and never regenerates them, so drawing or re-applying a setup consumes
+no RNG. `PreparedRun.terrain` is derived during initialization, not stored in the
+CRD header or checkpoints. The `.rng` goldens trace ticks, not initialization, so startup ordering is
+pinned by the tests named below instead.
 
-Quest ordering is generic unlock terrain, score-tag draw, explicit quest terrain,
-then spawn-table construction. Menu terrain uses the unlock helper. Keep those
-native differences at setup call sites.
-See `tests/sim/test_terrain_bootstrap.py` and
+Every run's reset ends with `terrain_generate_random`. Quests then draw the score tag and generate the
+quest terrain with `terrain_generate`: two complete generations, of which only the second is shown. The
+first one's draws stay; only its stamps are discarded. The menu ground uses `terrain_generate_random` on
+the application RNG, which stands in for native startup's generation outside the recorded run.
+See `tests/sim/test_terrain_generate.py`, `tests/render/test_ground_stamp_cases.py` and
 `tests/render/test_terrain_runtime_boundaries.py` for the boundary tests.
