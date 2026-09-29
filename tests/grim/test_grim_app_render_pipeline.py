@@ -41,6 +41,9 @@ class _FakeRl:
         self.frame += 1
         return 1.0 / 60.0
 
+    def is_window_focused(self) -> bool:
+        return True
+
     def _keys(self) -> set[int]:
         return self.keys_by_frame[self.frame] if self.frame < len(self.keys_by_frame) else set()
 
