@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from grim.assets import TextureId
 from grim.rand import CrandLike
+from grim.texture_ids import TextureId
 
 from .rng_caller_static import RngCallerStatic
 
