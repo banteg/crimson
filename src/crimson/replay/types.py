@@ -15,7 +15,7 @@ from ..sim.commands import GameCommand
 from ..sim.run_result import RunResult
 from ..sim.run_spec import RunSpec
 
-REPLAY_FORMAT_VERSION = 25
+REPLAY_FORMAT_VERSION = 26
 # Replays step a fixed 60 Hz schedule; every tick uses this float32 delta.
 REPLAY_TICK_RATE = 60
 REPLAY_TICK_DT = f32(1.0 / REPLAY_TICK_RATE)

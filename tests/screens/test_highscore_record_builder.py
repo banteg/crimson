@@ -1,28 +1,21 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
-from crimson.modes.components.highscore_record_builder import (
-    build_highscore_record_for_game_over,
-    clamp_shots,
-    shots_from_state,
-)
+from crimson.modes.components.highscore_record_builder import build_highscore_record_for_game_over
 from crimson.persistence.highscores import UNI_NUM_MASK
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.run_result import run_shot_counts
 from crimson.sim.state_types import PlayerState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 
 
-def test_clamp_shots_clamps_hit_and_nonnegative() -> None:
-    assert clamp_shots(-5, 10) == (0, 0)
-    assert clamp_shots(5, -1) == (5, 0)
-    assert clamp_shots(5, 10) == (5, 5)
-
-
-def test_shots_from_state_handles_out_of_bounds_player() -> None:
+def test_run_shot_counts_clamp_piercing_hits_to_shots() -> None:
     state = GameplayState()
-    assert shots_from_state(state, player_index=99) == (0, 0)
+    state.shots_fired = 5
+    state.shots_hit = 10
+    assert run_shot_counts(state) == (5, 5)
 
 
 def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> None:
@@ -33,8 +26,8 @@ def test_build_highscore_record_for_game_over_uses_weapon_stats_and_shots() -> N
     player.weapon.weapon_id = WeaponId.PISTOL
 
     state.weapon_usage_time[2] = 10
-    state.shots_fired[0] = 20
-    state.shots_hit[0] = 15
+    state.shots_fired = 20
+    state.shots_hit = 15
     state.game_mode = GameMode.SURVIVAL
 
     record = build_highscore_record_for_game_over(

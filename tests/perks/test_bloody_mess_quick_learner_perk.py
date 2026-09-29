@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import player_owner_id
 from crimson.perks import PerkId, perk_display_description, perk_display_name
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
@@ -21,7 +21,7 @@ def test_creature_handle_death_awards_bloody_mess_quick_learner_xp() -> None:
     creature.hp = 10.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.reward_value = 12.7
-    creature.last_hit_owner = OwnerRef.from_player(0)
+    creature.last_hit_owner_id = player_owner_id(0)
 
     death = pool.handle_death(
         0,

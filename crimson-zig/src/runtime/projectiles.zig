@@ -6,7 +6,7 @@ const bonus_runtime = @import("bonuses.zig");
 const creatures_mod = @import("creatures.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const effects_mod = @import("effects.zig");
-const owner_ref = @import("owner_ref.zig");
+const owner_id_mod = @import("owner_id.zig");
 const perks = @import("perks.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
@@ -37,8 +37,7 @@ pub const Projectile = struct {
     damage_pool: f32 = 1.0,
     hit_radius: f32 = 1.0,
     travel_budget: f32 = 0.0,
-    owner: owner_ref.OwnerRef = .{ .none = {} },
-    hits_players: bool = false,
+    owner_id: i32 = 0,
 };
 
 /// A creature hit by a primary projectile (Python `ProjectileHit`).
@@ -77,9 +76,8 @@ pub const ProjectilePool = struct {
         pos: state_mod.Vec2,
         angle: f32,
         type_id: i32,
-        owner: owner_ref.OwnerRef,
+        owner_id: i32,
         travel_budget: f32,
-        hits_players: bool,
     ) usize {
         var index: usize = self.entries.len - 1;
         for (self.entries, 0..) |entry, idx| {
@@ -110,8 +108,7 @@ pub const ProjectilePool = struct {
             .damage_pool = 1.0,
             .hit_radius = 1.0,
             .travel_budget = budget,
-            .owner = owner,
-            .hits_players = hits_players,
+            .owner_id = owner_id,
         };
 
         if (type_id == @intFromEnum(game_ids.ProjectileTypeId.ion_minigun)) {
@@ -257,7 +254,7 @@ pub const ProjectilePool = struct {
             }
 
             var steps: i32 = @intFromFloat(proj.travel_budget);
-            if (barrel_greaser_active and proj.owner.isPlayer()) {
+            if (barrel_greaser_active and proj.owner_id < 0) {
                 steps *= 2;
             }
             const heading_radians = native_math.pc24Sub(proj.angle, native_half_pi);
@@ -338,12 +335,9 @@ pub const ProjectilePool = struct {
                     }
                 }
 
-                if (hit_idx) |idx| {
-                    if (proj.owner.creatureIndexInBounds(creatures.entries.len)) |owner_idx| {
-                        if (idx == owner_idx) {
-                            hit_idx = null;
-                        }
-                    }
+                // Native `creature_find_in_radius` does not skip the owner; a creature's own shot passes through it.
+                if (hit_idx != null and @as(i32, @intCast(hit_idx.?)) == proj.owner_id) {
+                    hit_idx = null;
                 }
                 if (hit_idx == null) {
                     var can_hit_players = true;
@@ -351,14 +345,14 @@ pub const ProjectilePool = struct {
                         can_hit_players = false;
                     }
 
-                    if (proj.hits_players and can_hit_players) {
+                    // Only -100, the local player's shots with friendly fire off, never hit players;
+                    // `player_find_in_radius` skips the shooter at `-1 - owner_id`.
+                    if (proj.owner_id != owner_id_mod.owner_local_player and can_hit_players) {
                         var hit_player_idx: ?usize = null;
-                        const owner_player_idx = proj.owner.playerIndexInBounds(players.len);
+                        const skip_index: i32 = -1 - proj.owner_id;
 
                         for (players, 0..) |player, idx| {
-                            if (owner_player_idx) |owner_idx| {
-                                if (owner_idx == idx) continue;
-                            }
+                            if (@as(i32, @intCast(idx)) == skip_index) continue;
                             if (!(player.health > 0.0)) continue;
                             if (runtime_helpers.withinNativeFindRadius(
                                 proj.pos,
@@ -393,8 +387,10 @@ pub const ProjectilePool = struct {
                     tick_stats.hit_head_len += 1;
                 }
 
-                const owner_player_idx = proj.owner.playerIndexInBounds(players.len);
-                const presentation_player = if (owner_player_idx) |idx| &players[idx] else if (players.len > 0) &players[0] else null;
+                const owner_player_idx: i32 = -1 - proj.owner_id;
+                const presentation_player = if (owner_player_idx >= 0 and owner_player_idx < players.len)
+                    &players[@intCast(owner_player_idx)]
+                else if (players.len > 0) &players[0] else null;
                 const presentation_perk_player = if (state.preserve_bugs and players.len > 0)
                     &players[0]
                 else
@@ -447,14 +443,10 @@ pub const ProjectilePool = struct {
                     );
                 }
 
-                // Native increments the global shots-hit counter for any owner
-                // (creature-owned splitter children included); non-player owners
-                // map to the player-1 global slot.
-                {
-                    const hit_slot: usize = owner_player_idx orelse 0;
-                    if (hit_slot < state.shots_hit.len and creature_lifecycle.isAlive(creatures.entries[hit_idx.?].lifecycle_stage)) {
-                        state.shots_hit[hit_slot] += 1;
-                    }
+                // Native counts a hit for any owner (creature-owned splitter children included)
+                // while the target is still at the alive sentinel.
+                if (creature_lifecycle.isAlive(creatures.entries[hit_idx.?].lifecycle_stage)) {
+                    state.shots_hit += 1;
                 }
 
                 if (proj.life_timer != 0.25 and
@@ -540,7 +532,7 @@ pub const ProjectilePool = struct {
                             narrowF32(damage_amount),
                             .bullet,
                             impulse,
-                            proj.owner,
+                            proj.owner_id,
                             narrowF32(dt),
                             narrowF32(world_size),
                         );
@@ -557,7 +549,7 @@ pub const ProjectilePool = struct {
                             remaining,
                             .bullet,
                             impulse,
-                            proj.owner,
+                            proj.owner_id,
                             narrowF32(dt),
                             narrowF32(world_size),
                         );
@@ -672,22 +664,21 @@ fn spawnSplitterChildren(
 ) void {
     const angle_offset: f32 = 1.0471976;
     const child_type = @intFromEnum(game_ids.ProjectileTypeId.splitter_gun);
-    const child_owner = owner_ref.OwnerRef.fromCreature(hit_idx);
+    // The children belong to the creature hit, so they can hit players even when the parent was the local player's.
+    const child_owner_id: i32 = @intCast(hit_idx);
     _ = pool.spawn(
         pos,
         native_math.pc24Sub(angle, angle_offset),
         child_type,
-        child_owner,
+        child_owner_id,
         travel_budget,
-        true,
     );
     _ = pool.spawn(
         pos,
         native_math.pc24Add(angle, angle_offset),
         child_type,
-        child_owner,
+        child_owner_id,
         travel_budget,
-        true,
     );
 }
 
@@ -732,9 +723,8 @@ fn spawnPlasmaCannonChildren(
             child_pos,
             ring_angle,
             child_type,
-            owner_ref.OwnerRef.fromLocalPlayer(0),
+            owner_id_mod.owner_local_player,
             child_travel_budget,
-            false,
         );
     }
 }
@@ -783,7 +773,7 @@ fn applyIonLingerDamage(
                 narrowF32(damage),
                 .ion,
                 .{},
-                proj.owner,
+                proj.owner_id,
                 dt,
                 world_size,
             );
@@ -1152,9 +1142,8 @@ fn postHitIonRifleShockChain(
         origin_pos,
         angle,
         proj.type_id,
-        owner_ref.OwnerRef.fromCreature(hit_idx),
+        @intCast(hit_idx),
         proj.travel_budget,
-        false,
     );
     state.shock_chain_projectile_id = @intCast(spawned_idx);
 }
@@ -1293,9 +1282,8 @@ test "projectile spawn keeps trig wide until velocity store" {
         .{},
         -1.4083715677261353,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         55.0,
-        false,
     );
 
     try std.testing.expectEqual(@as(f32, 0.2425672858953476), pool.entries[index].vel.x);
@@ -1340,9 +1328,8 @@ test "projectile hit consumes hit-presentation rng" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromPlayer(0),
+        owner_id_mod.playerOwnerId(0),
         55.0,
-        false,
     );
     const rng_before = state.rng.state;
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
@@ -1444,9 +1431,8 @@ test "pulse gun hit applies post-hit target push" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
     _ = base_pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     const base_dx = creatures.entries[0].pos.x - initial_creature_x;
@@ -1463,9 +1449,8 @@ test "pulse gun hit applies post-hit target push" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pulse_gun),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
     const pulse_tick = pulse_pool.update(&state, players[0..], &creatures, &bonuses, 1.0 / 60.0, 1024.0);
     const pulse_dx = creatures.entries[0].pos.x - initial_creature_x;
@@ -1498,9 +1483,8 @@ test "splitter hit spawns native creature-owned child projectiles" {
         .{ .x = 100.0, .y = 100.0 },
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.splitter_gun),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         30.0,
-        false,
     );
 
     const tick = pool.updateWithEffects(
@@ -1523,8 +1507,7 @@ test "splitter hit spawns native creature-owned child projectiles" {
             @intFromEnum(game_ids.ProjectileTypeId.splitter_gun),
             child.type_id,
         );
-        try std.testing.expectEqual(@as(i32, 0), child.owner.toLegacy());
-        try std.testing.expect(child.hits_players);
+        try std.testing.expectEqual(@as(i32, 0), child.owner_id);
     }
     try expectFloatClose(-1.0471976, pool.entries[1].angle);
     try expectFloatClose(1.0471976, pool.entries[2].angle);
@@ -1553,9 +1536,8 @@ test "plasma cannon hit spawns native twelve-projectile ring" {
         .{ .x = 100.0, .y = 100.0 },
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.plasma_cannon),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         10.0,
-        false,
     );
 
     const tick = pool.updateWithEffects(
@@ -1576,7 +1558,7 @@ test "plasma cannon hit spawns native twelve-projectile ring" {
         if (!child.active) continue;
         if (child.type_id != @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)) continue;
         plasma_children += 1;
-        try std.testing.expectEqual(@as(i32, -100), child.owner.toLegacy());
+        try std.testing.expectEqual(@as(i32, -100), child.owner_id);
     }
     try std.testing.expectEqual(@as(usize, 12), plasma_children);
     try std.testing.expect(!state.bonus_spawn_guard);
@@ -1614,9 +1596,8 @@ test "shock chain continuation clears native spawn guard" {
         creatures.entries[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         10.0,
-        false,
     );
 
     const tick = pool.updateWithEffects(
@@ -1661,9 +1642,8 @@ test "shrinkifier hit shrinks and handles sub-sixteen corpse death" {
         .{ .x = 100.0, .y = 100.0 },
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.shrinkifier),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
 
     const tick = pool.updateWithEffects(
@@ -1711,9 +1691,8 @@ test "plague spreader hit infects the target before damage" {
         .{ .x = 100.0, .y = 100.0 },
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.plague_spreader),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         15.0,
-        false,
     );
 
     const tick = pool.updateWithEffects(
@@ -1766,9 +1745,8 @@ test "projectile hit pass hits split children born earlier in the same pass" {
         .{ .x = 100.0, .y = 100.0 },
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         300.0,
-        false,
     );
     pool.entries[proj_idx].hit_radius = 8.0;
 
@@ -1814,9 +1792,8 @@ test "poison bullets sets weak self-damage flag when rng roll hits" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
 
     const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
@@ -1857,9 +1834,8 @@ test "poison bullets does not set self-damage flag when rng roll misses" {
         players[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
 
     const tick = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
@@ -1901,9 +1877,8 @@ test "poison bullets with toxic avenger still applies weak bullet poison only" {
         creatures.entries[0].pos,
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
 
     _ = pool.update(&state, players[0..], &creatures, &bonuses, 0.016, 1024.0);
@@ -1923,9 +1898,8 @@ test "barrel greaser doubles pistol projectile movement steps" {
         .{},
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         weapon_data.weapon_stats.get(WeaponId.pistol).travel_budget,
-        false,
     );
     _ = base_pool.update(
         &base_state,
@@ -1947,9 +1921,8 @@ test "barrel greaser doubles pistol projectile movement steps" {
         .{},
         std.math.pi / 2.0,
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         weapon_data.weapon_stats.get(WeaponId.pistol).travel_budget,
-        false,
     );
     _ = greased_pool.update(
         &greased_state,
@@ -1991,9 +1964,8 @@ test "ion linger damage stores rate product at native precision" {
         .{},
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
     pool.entries[idx].life_timer = 0.39;
 
@@ -2037,9 +2009,8 @@ test "ion gun master increases ion rifle linger radius" {
         .{},
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
     pool_without.entries[idx_without].life_timer = 0.39;
     _ = pool_without.update(
@@ -2077,9 +2048,8 @@ test "ion gun master increases ion rifle linger radius" {
         .{},
         0.0,
         @intFromEnum(game_ids.ProjectileTypeId.ion_rifle),
-        owner_ref.OwnerRef.fromLocalPlayer(0),
+        owner_id_mod.owner_local_player,
         45.0,
-        false,
     );
     pool_with.entries[idx_with].life_timer = 0.39;
     _ = pool_with.update(
@@ -2110,9 +2080,8 @@ test "ranged projectile can damage player when no creature is hit" {
         .{},
         native_half_pi,
         @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-        owner_ref.OwnerRef.fromCreature(0),
+        0,
         45.0,
-        true,
     );
 
     _ = pool.update(
@@ -2147,9 +2116,8 @@ test "death clock blocks ranged projectiles unless preserving bugs" {
             .{},
             native_half_pi,
             @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-            owner_ref.OwnerRef.fromCreature(0),
+            0,
             45.0,
-            true,
         );
         _ = pool.update(&state, players[0..], &creatures, &bonuses, 0.001, 1024.0);
 
@@ -2201,9 +2169,8 @@ test "ranged projectile can damage creature before player collision" {
         .{},
         native_half_pi,
         @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-        owner_ref.OwnerRef.fromCreature(0),
+        0,
         45.0,
-        true,
     );
 
     _ = pool.update(
@@ -2294,8 +2261,7 @@ test "primary movement threshold preserves native position and player damage" {
             .damage_pool = 0,
             .hit_radius = item.radius,
             .travel_budget = item.travel,
-            .owner = owner_ref.OwnerRef.fromLegacy(item.owner),
-            .hits_players = item.owner != -100,
+            .owner_id = item.owner,
         };
         const stats = pool.update(&state, players[0..witness.input.players.len], &creatures, &bonuses, witness.input.dt, 1024.0);
         try std.testing.expectEqual(@as(i32, 0), stats.hit_count);
@@ -2315,7 +2281,7 @@ test "primary movement threshold preserves native position and player damage" {
             .damage = projectile.damage_pool,
             .radius = projectile.hit_radius,
             .travel = projectile.travel_budget,
-            .owner = projectile.owner.toLegacy(),
+            .owner = projectile.owner_id,
         };
         inline for (std.meta.fields(Sample)) |field| {
             if (field.type == f32) {
@@ -2480,7 +2446,7 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
             .damage_pool = item.damage,
             .hit_radius = item.radius,
             .travel_budget = item.travel,
-            .owner = owner_ref.OwnerRef.fromLegacy(item.owner),
+            .owner_id = item.owner,
         };
         var effects: effects_mod.EffectPool = .{};
         var terrain: terrain_fx_mod.TerrainFxScratch = .{};
@@ -2502,7 +2468,7 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
             .damage = projectile.damage_pool,
             .radius = projectile.hit_radius,
             .travel = projectile.travel_budget,
-            .owner = projectile.owner.toLegacy(),
+            .owner = projectile.owner_id,
         });
         const creature = creatures.entries[target.index];
         try Checks.same(CreatureSample, witness.expected.creature, .{
@@ -2560,7 +2526,7 @@ fn expectNativePrimaryImpacts(data: []const u8, minimum_count: usize) !void {
             };
             try std.testing.expectEqualDeep(expected, actual);
         }
-        try std.testing.expectEqual(witness.expected.shots_hit, state.shots_hit[0]);
+        try std.testing.expectEqual(witness.expected.shots_hit, state.shots_hit);
         try std.testing.expectEqual(witness.expected.rng_state, state.rng.state);
         try std.testing.expectEqual(witness.expected.draws.len, trace.count);
         for (trace.records[0..trace.count], witness.expected.draws, witness.expected.rng_callers) |draw, expected, caller| {

@@ -16,6 +16,7 @@ from .state_types import PlayerState
 from .timing import ftol_ms_i32
 
 if TYPE_CHECKING:
+    from .gameplay_state import GameplayState
     from .sessions import DeterministicSession
 
 
@@ -29,8 +30,6 @@ class RunOutcome(StrEnum):
 class PlayerRunResult(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     experience: int
     health: float
-    shots_fired: int
-    shots_hit: int
     most_used_weapon_id: WeaponId
 
 
@@ -40,6 +39,9 @@ class RunResult(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     outcome: RunOutcome
     elapsed_ms: int
     kills: int
+    # One count for every player, like native `highscore_record_shots_fired` / `_hit`.
+    shots_fired: int
+    shots_hit: int
     rng_state: int
     pending_perks: int
     # Only set for completed quests: base time minus life and unpicked-perk bonuses.
@@ -75,33 +77,30 @@ def death_transition_ready(players: Sequence[PlayerState]) -> bool:
     return all_players_dead(players) and all(float(player.death_timer) < 0.0 for player in players)
 
 
+def run_shot_counts(state: GameplayState) -> tuple[int, int]:
+    """The high-score record's shots: typed and matched words in Typ-o, otherwise the native counters with hits
+    clamped to shots, since piercing shots can hit several creatures."""
+    if state.game_mode == GameMode.TYPO:
+        return typo_shot_counts(state.typo)
+    fired = max(0, state.shots_fired)
+    return fired, max(0, min(state.shots_hit, fired))
+
+
 def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> RunResult:
     world = session.world
     state = world.state
     players = world.players
     elapsed_ms = session.run_elapsed_ms
 
-    player_results: list[PlayerRunResult] = []
-    for index, player in enumerate(players):
-        if state.game_mode == GameMode.TYPO:
-            shots_fired, shots_hit = typo_shot_counts(state.typo)
-        else:
-            # Piercing shots can hit several creatures; the high-score record
-            # clamps hits to shots fired.
-            shots_fired = max(0, int(state.shots_fired[index]))
-            shots_hit = max(0, min(int(state.shots_hit[index]), shots_fired))
-        player_results.append(
-            PlayerRunResult(
-                experience=int(player.experience),
-                health=f32(player.health),
-                shots_fired=int(shots_fired),
-                shots_hit=int(shots_hit),
-                most_used_weapon_id=most_used_weapon_id_for_player(
-                    state,
-                    fallback_weapon_id=player.weapon.weapon_id,
-                ),
-            ),
+    player_results = [
+        PlayerRunResult(
+            experience=int(player.experience),
+            health=f32(player.health),
+            most_used_weapon_id=most_used_weapon_id_for_player(state, fallback_weapon_id=player.weapon.weapon_id),
         )
+        for player in players
+    ]
+    shots_fired, shots_hit = run_shot_counts(state)
 
     quest_final_ms = None
     if outcome == RunOutcome.QUEST_COMPLETED:
@@ -116,6 +115,8 @@ def build_run_result(session: DeterministicSession, *, outcome: RunOutcome) -> R
         outcome=outcome,
         elapsed_ms=int(elapsed_ms),
         kills=int(world.creatures.kill_count),
+        shots_fired=shots_fired,
+        shots_hit=shots_hit,
         rng_state=int(state.rng.state) & 0xFFFFFFFF,
         pending_perks=int(state.perk_selection.pending_count),
         quest_final_ms=quest_final_ms,

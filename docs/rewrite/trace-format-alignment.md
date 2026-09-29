@@ -27,7 +27,7 @@ all consumers see the same typed tick data and no producer-specific aliases.
 | Frida evidence sidecar | 3 | `crimson-re/src/crimson_re/dbg/frida_finalize.py` |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CDT payload schema | 19 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CRD replay | 25 | `src/crimson/replay/types.py` |
+| CRD replay | 26 | `src/crimson/replay/types.py` |
 | Capture replay | 1 | `crimson-re/src/crimson_re/dbg/capture_replay.py` |
 
 These artifacts are throwaway debugging data. Readers and finalizers require

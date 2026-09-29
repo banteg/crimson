@@ -15,7 +15,7 @@ import pytest
 from crimson.creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
@@ -38,7 +38,7 @@ from ._support import (
 )
 from .test_projectiles import _python_projectile
 
-_LOCAL_PLAYER_OWNER_ID = -100
+_OWNER_LOCAL_PLAYER = -100
 _PLAYER_POS = Vec2(900.0, 900.0)
 
 
@@ -355,9 +355,9 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
         angle = f32(approach + math.pi / 2.0 + rng.uniform(-0.05, 0.05))
         oracle.write_f32(pos_arg, start.x)
         oracle.write_f32(pos_arg + 4, start.y)
-        index = oracle.call("projectile_spawn", pos_arg, angle, int(type_id), _LOCAL_PLAYER_OWNER_ID).eax
+        index = oracle.call("projectile_spawn", pos_arg, angle, int(type_id), _OWNER_LOCAL_PLAYER).eax
         python_index = state.projectiles.spawn(
-            pos=start, angle=angle, type_id=type_id, owner=OwnerRef.from_local_player(0),
+            pos=start, angle=angle, type_id=type_id, owner_id=OWNER_LOCAL_PLAYER,
         )
         assert python_index == index
         if type_id == ProjectileTemplateId.ION_RIFLE:

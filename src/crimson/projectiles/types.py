@@ -6,7 +6,7 @@ import msgspec
 
 from grim.geom import Vec2
 
-from ..owner_ref import OwnerRef
+from ..owner_id import OWNER_LOCAL_PLAYER
 
 MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
@@ -73,8 +73,7 @@ class Projectile(msgspec.Struct):
     damage_pool: float = 1.0
     hit_radius: float = 1.0
     travel_budget: float = 0.0
-    owner: OwnerRef = msgspec.field(default_factory=OwnerRef.none)
-    hits_players: bool = False
+    owner_id: int = 0
 
 
 class SecondaryProjectile(msgspec.Struct):
@@ -87,7 +86,7 @@ class SecondaryProjectile(msgspec.Struct):
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
     type_id: SecondaryProjectileTypeId = SecondaryProjectileTypeId.NONE
-    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
+    owner_id: int = OWNER_LOCAL_PLAYER
     trail_timer: float = 0.0
     target_id: int = -1
 
@@ -95,7 +94,6 @@ class SecondaryProjectile(msgspec.Struct):
 __all__ = [
     "MAIN_PROJECTILE_POOL_SIZE",
     "SECONDARY_PROJECTILE_POOL_SIZE",
-    "OwnerRef",
     "Projectile",
     "ProjectileCollisionProfile",
     "ProjectileHit",

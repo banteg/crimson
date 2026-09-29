@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
@@ -18,7 +18,7 @@ def test_uranium_filled_bullets_doubles_bullet_damage() -> None:
     perks[PerkId.URANIUM_FILLED_BULLETS] = 1
 
     world = world_with_creature(creature, rng=Crand(0x1234), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OwnerRef.from_local_player(0))
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OWNER_LOCAL_PLAYER)
 
     assert killed is False
     assert_float_close(creature.hp, 80.0)

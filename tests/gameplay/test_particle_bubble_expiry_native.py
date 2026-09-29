@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import player_owner_id
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
@@ -32,7 +32,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     creature = world.creatures.entries[item["index"]]
     creature.active = False
     creature.pos = Vec2(item["x"], item["y"])
-    previous_owner = creature.last_hit_owner
+    previous_owner = creature.last_hit_owner_id
     for item in case["particles"]:
         particle = state.particles.entries[item["index"]]
         particle.active = True
@@ -40,7 +40,7 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
         particle.intensity = item["intensity"]
         particle.style_id = ParticleStyleId.BUBBLEGUN
         particle.target_id = item["target"]
-        particle.owner = OwnerRef.from_player(0)
+        particle.owner_id = player_owner_id(0)
     world.state.game_tune_started = True
     runtime = WorldStepRuntime(
         world=world,
@@ -61,4 +61,4 @@ def test_inactive_bubble_expiry_matches_native_death_prelude(witness) -> None:
     assert rng.state == witness["rng_state"]
     assert rng.calls == 0
     assert not creature.active
-    assert creature.last_hit_owner == previous_owner
+    assert creature.last_hit_owner_id == previous_owner

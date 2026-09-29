@@ -39,8 +39,8 @@ def test_typo_runner_is_deterministic_and_uses_submit_counts_for_run_result() ->
 
     assert result0 == result1 == replay.result
     assert result0.elapsed_ms == 7 * int(1000.0 / 60.0)
-    assert result0.players[0].shots_fired == 1
-    assert result0.players[0].shots_hit == 0
+    assert result0.shots_fired == 1
+    assert result0.shots_hit == 0
 
 
 def test_typo_runner_uses_header_seed_for_startup_terrain_prelude() -> None:
@@ -110,6 +110,6 @@ def test_typo_runner_ignores_input_fire_flags() -> None:
 
     result = finish_replay(firing).result
 
-    assert result.players[0].shots_fired == 0
+    assert result.shots_fired == 0
     assert result.kills == baseline.result.kills
     assert result.players[0].experience == baseline.result.players[0].experience

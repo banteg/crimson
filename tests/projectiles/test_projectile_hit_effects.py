@@ -4,7 +4,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import EffectPool
 from crimson.math_parity import f32
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.effects import _spawn_ion_hit_effects
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
@@ -40,7 +40,7 @@ def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> World
         pos=Vec2(),
         angle=0.0,
         type_id=type_id,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
     step_runtime = make_step_runtime(world, dt=0.016)
     world.state.projectiles.step(
@@ -86,10 +86,9 @@ def test_splitter_gun_hit_spawns_split_projectiles_and_sparks() -> None:
         for p in world.state.projectiles.entries
         if p.active
         and int(p.type_id) == int(ProjectileTemplateId.SPLITTER_GUN)
-        and p.owner == OwnerRef.from_creature(0)
+        and p.owner_id == 0
     ]
     assert len(split) == 2
-    assert all(bool(p.hits_players) for p in split)
     assert [record.caller for record in rng.records_since()[:9]] == [
         RngCallerStatic.SPLITTER_HIT_ANGLE,
         RngCallerStatic.SPLITTER_HIT_RADIUS,

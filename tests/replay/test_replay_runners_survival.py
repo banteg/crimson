@@ -31,9 +31,8 @@ def test_survival_runner_is_deterministic() -> None:
     assert result0.elapsed_ms == 10 * int(1000.0 / 60.0)
     assert result0.kills == 0
     assert result0.quest_final_ms is None
-    assert result0.players == (
-        PlayerRunResult(experience=0, health=100.0, shots_fired=0, shots_hit=0, most_used_weapon_id=WeaponId.PISTOL),
-    )
+    assert (result0.shots_fired, result0.shots_hit) == (0, 0)
+    assert result0.players == (PlayerRunResult(experience=0, health=100.0, most_used_weapon_id=WeaponId.PISTOL),)
 
 
 def test_survival_runner_uses_header_seed_for_startup_terrain_prelude() -> None:

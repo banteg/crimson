@@ -206,7 +206,7 @@ def build_checkpoint(
                 type_id=int(death.type_id),
                 reward_value=float(death.reward_value),
                 xp_awarded=int(death.xp_awarded),
-                owner_id=int(death.owner.to_legacy()),
+                owner_id=int(death.owner_id),
             ),
         )
 

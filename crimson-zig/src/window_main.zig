@@ -1553,15 +1553,6 @@ const App = struct {
         if (runner.session.game_mode == .quests and reason == .dead) return .{};
 
         const player = runner.player0Const() orelse return .{};
-        const shot_options: persistence.highscore_record_builder.BuildRecordOptions = switch (runner.session.game_mode) {
-            .typo => .{
-                .shots_fired = runner.session.state.typo.typing.submit_count,
-                .shots_hit = runner.session.state.typo.typing.match_count,
-                .clamp_shots_hit = false,
-            },
-            else => .{},
-        };
-
         const elapsed_ms = if (runner.session.game_mode == .quests)
             quest_results.computeQuestFinalTime(
                 @intCast(runner.summary().elapsed_ms_sim),
@@ -1577,12 +1568,7 @@ const App = struct {
             elapsed_ms,
             @intCast(runner.session.creatures.kill_count),
             runner.session.game_mode,
-            .{
-                .shots_fired = shot_options.shots_fired,
-                .shots_hit = shot_options.shots_hit,
-                .clamp_shots_hit = shot_options.clamp_shots_hit,
-                .hardcore = runner.session.state.hardcore,
-            },
+            .{ .hardcore = runner.session.state.hardcore },
         );
 
         const score_path = persistence.highscores.scoresPathForMode(

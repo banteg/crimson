@@ -6,7 +6,7 @@ const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const owner_ref = @import("owner_ref.zig");
+const owner_id_mod = @import("owner_id.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
 const state_mod = @import("state.zig");
@@ -51,7 +51,7 @@ pub const Particle = struct {
     spin: f32 = 0.0,
     style_id: ParticleStyleId = .flamethrower,
     target_id: i32 = -1,
-    owner: owner_ref.OwnerRef = .{ .none = {} },
+    owner_id: i32 = owner_id_mod.owner_local_player,
 };
 
 pub const ParticlePool = struct {
@@ -67,7 +67,7 @@ pub const ParticlePool = struct {
         pos: state_mod.Vec2,
         angle: f32,
         intensity: f32,
-        owner: owner_ref.OwnerRef,
+        owner_id: i32,
     ) usize {
         const index = self.allocSlot(state, rng_callers.fx_spawn_particle_alloc);
         const entry = &self.entries[index];
@@ -88,7 +88,7 @@ pub const ParticlePool = struct {
             .spin = nativeParticleSpin(state.rng.randTagged(rng_callers.fx_spawn_particle_spin)),
             .style_id = ParticleStyleId.flamethrower,
             .target_id = -1,
-            .owner = owner,
+            .owner_id = owner_id,
         };
         return index;
     }
@@ -98,7 +98,7 @@ pub const ParticlePool = struct {
         state: *state_mod.GameplayState,
         pos: state_mod.Vec2,
         angle: f32,
-        owner: owner_ref.OwnerRef,
+        owner_id: i32,
     ) usize {
         const index = self.allocSlot(state, rng_callers.fx_spawn_particle_slow_alloc);
         const entry = &self.entries[index];
@@ -119,7 +119,7 @@ pub const ParticlePool = struct {
             .spin = nativeParticleSpin(state.rng.randTagged(rng_callers.fx_spawn_particle_slow_spin)),
             .style_id = ParticleStyleId.bubblegun,
             .target_id = -1,
-            .owner = owner,
+            .owner_id = owner_id,
         };
         return index;
     }
@@ -181,7 +181,7 @@ pub const ParticlePool = struct {
                             if (creatures_mod.deathSfxBank(creatures.entries[target_idx].type_id)) |bank| {
                                 state.step_sfx.append(bank[sound_slot]);
                             }
-                            creatures.entries[target_idx].last_hit_owner = entry.owner;
+                            creatures.entries[target_idx].last_hit_owner_id = entry.owner_id;
                         }
                         _ = creatures.handleDeath(state, players, bonuses, terrain_fx, target_idx, false, dt_f32, world_size);
                     }
@@ -281,7 +281,7 @@ pub const ParticlePool = struct {
                                 damage,
                                 .fire,
                                 .{},
-                                entry.owner,
+                                entry.owner_id,
                                 dt_f32,
                                 world_size,
                             );
@@ -732,7 +732,7 @@ test "inactive bubble expiry matches native death history and reward gates" {
         var creatures: creatures_mod.CreaturePool = .{ .effects = &effects };
         const target = witness.input.creatures[0];
         creatures.entries[target.index].pos = .{ .x = target.x, .y = target.y };
-        const previous_owner = creatures.entries[target.index].last_hit_owner;
+        const previous_owner_id = creatures.entries[target.index].last_hit_owner_id;
         var bonuses: bonus_runtime.BonusPool = .{};
         var sprites: effects_mod.SpriteEffectPool = .{};
         var terrain: terrain_fx_mod.TerrainFxScratch = .{};
@@ -743,7 +743,7 @@ test "inactive bubble expiry matches native death history and reward gates" {
             .intensity = item.intensity,
             .style_id = .bubblegun,
             .target_id = item.target,
-            .owner = owner_ref.OwnerRef.fromPlayer(0),
+            .owner_id = owner_id_mod.playerOwnerId(0),
         };
         pool.update(&state, &players, &creatures, &bonuses, &sprites, &terrain, witness.input.dt, 1024.0);
         try std.testing.expectEqual(witness.history_count, state.survival_recent_death_count);
@@ -757,6 +757,6 @@ test "inactive bubble expiry matches native death history and reward gates" {
         try std.testing.expectEqual(witness.rng_state, state.rng.state);
         try std.testing.expectEqual(@as(usize, 0), state.step_sfx.len);
         try std.testing.expect(!creatures.entries[target.index].active);
-        try std.testing.expectEqual(previous_owner, creatures.entries[target.index].last_hit_owner);
+        try std.testing.expectEqual(previous_owner_id, creatures.entries[target.index].last_hit_owner_id);
     }
 }

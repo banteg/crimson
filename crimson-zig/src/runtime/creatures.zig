@@ -6,7 +6,7 @@ const runtime_anim = @import("anim.zig");
 const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const effects_mod = @import("effects.zig");
-const owner_ref = @import("owner_ref.zig");
+const owner_id_mod = @import("owner_id.zig");
 const perks = @import("perks.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const spawn_mod = @import("spawn.zig");
@@ -35,7 +35,6 @@ const creature_speed_scale: f32 = 30.0;
 const creature_turn_rate_scale: f32 = native_math.native_turn_rate_scale;
 const contact_damage_cooldown: f32 = 1.0;
 const plague_collision_period: f32 = 0.5;
-const owner_local_player: owner_ref.OwnerRef = owner_ref.OwnerRef.fromLocalPlayer(0);
 const native_half_pi: f32 = native_math.native_half_pi;
 const native_pi: f32 = native_math.native_pi;
 const native_tau: f32 = native_math.native_tau;
@@ -108,7 +107,7 @@ pub const CreatureState = struct {
     lifecycle_stage: creature_lifecycle.Stage = creature_lifecycle.alive,
     attack_cooldown: f32 = 0.0,
     hit_flash_timer: f32 = 0.0,
-    last_hit_owner: owner_ref.OwnerRef = owner_local_player,
+    last_hit_owner_id: i32 = owner_id_mod.owner_local_player,
     flags: u32 = 0,
 };
 
@@ -158,7 +157,7 @@ pub const CreatureDeath = struct {
     type_id: i32,
     reward_value: f32,
     xp_awarded: i32,
-    owner: owner_ref.OwnerRef,
+    owner_id: i32,
 };
 
 /// A tick's deaths. Re-entrant death handling can record a creature twice.
@@ -237,13 +236,13 @@ pub const CreaturePool = struct {
         self.tick_deaths.clear();
     }
 
-    fn recordDeath(self: *CreaturePool, index: usize, type_id: i32, reward_value: f32, xp_awarded: i32, owner: owner_ref.OwnerRef) void {
+    fn recordDeath(self: *CreaturePool, index: usize, type_id: i32, reward_value: f32, xp_awarded: i32, owner_id: i32) void {
         self.tick_deaths.append(.{
             .index = index,
             .type_id = type_id,
             .reward_value = reward_value,
             .xp_awarded = xp_awarded,
-            .owner = owner,
+            .owner_id = owner_id,
         });
     }
 
@@ -346,7 +345,7 @@ pub const CreaturePool = struct {
             .collision_timer = 0.0,
             .lifecycle_stage = creature_lifecycle.alive,
             .attack_cooldown = 0.0,
-            .last_hit_owner = owner_local_player,
+            .last_hit_owner_id = owner_id_mod.owner_local_player,
             .flags = init.flags,
         };
         return slot;
@@ -2255,7 +2254,7 @@ pub const CreaturePool = struct {
                         self_tick_damage,
                         .self_tick,
                         .{},
-                        creature.last_hit_owner,
+                        creature.last_hit_owner_id,
                         dt_f32,
                         world_size,
                     );
@@ -2338,7 +2337,7 @@ pub const CreaturePool = struct {
                     self_damage,
                     .bullet,
                     .{},
-                    creature.last_hit_owner,
+                    creature.last_hit_owner_id,
                     dt_f32,
                     world_size,
                 );
@@ -2496,7 +2495,7 @@ pub const CreaturePool = struct {
                             creature.pos,
                             creature.heading,
                             @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-                            owner_ref.OwnerRef.fromCreature(idx),
+                            @intCast(idx),
                         );
                         state.step_sfx.append(.shock_fire);
                         creature.attack_cooldown = native_math.pc24Add(creature.attack_cooldown, @as(f32, 1.0));
@@ -2511,7 +2510,7 @@ pub const CreaturePool = struct {
                             creature.pos,
                             creature.heading,
                             projectile_type,
-                            owner_ref.OwnerRef.fromCreature(idx),
+                            @intCast(idx),
                         );
                         state.step_sfx.append(.plasmaminigun_fire);
                         const randomized_cooldown = native_math.pc24Mul(
@@ -2572,7 +2571,7 @@ pub const CreaturePool = struct {
                         25.0,
                         .melee,
                         .{},
-                        owner_ref.OwnerRef.fromPlayer(@intCast(contact_player.index)),
+                        owner_id_mod.playerOwnerId(contact_player.index),
                         dt_f32,
                         world_size,
                     );
@@ -2664,14 +2663,14 @@ pub const CreaturePool = struct {
         damage: f32,
         damage_type: DamageType,
         impulse: state_mod.Vec2,
-        owner: owner_ref.OwnerRef,
+        owner_id: i32,
         dt: f32,
         world_size: f32,
     ) i32 {
         const creature = &self.entries[creature_index];
         creature.hit_flash_timer = 0.2;
         if (players.len == 0 or !creature.active) return 0;
-        creature.last_hit_owner = owner;
+        creature.last_hit_owner_id = owner_id;
 
         var damage_amount = damage;
         switch (damage_type) {
@@ -2784,7 +2783,7 @@ pub const CreaturePool = struct {
         }
         survival_progression.survivalRecordRecentDeath(state, creature.pos);
         if (!creature.active) {
-            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner);
+            self.recordDeath(creature_index, creature.type_id, creature.reward_value, 0, creature.last_hit_owner_id);
             return 0;
         }
 
@@ -2796,8 +2795,8 @@ pub const CreaturePool = struct {
             creature.active = false;
         }
 
-        const xp_gained = awardExperienceForOwner(state, players, creature.last_hit_owner, creature.reward_value);
-        self.recordDeath(creature_index, creature.type_id, creature.reward_value, xp_gained, creature.last_hit_owner);
+        const xp_gained = awardExperienceForOwner(state, players, creature.last_hit_owner_id, creature.reward_value);
+        self.recordDeath(creature_index, creature.type_id, creature.reward_value, xp_gained, creature.last_hit_owner_id);
 
         if (bonus_pool.trySpawnOnKill(creature.pos, state, players, world_size) != null) {
             emitBonusOnKillBurst(state, effects, creature.pos);
@@ -2846,7 +2845,7 @@ pub const CreaturePool = struct {
         effects.spawnExplosionBurst(state, player.pos, 1.8, detail_preset);
         state.bonus_spawn_guard = true;
 
-        const owner = owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+        const owner_id = owner_id_mod.playerOwnerId(player.index);
         for (self.entries, 0..) |creature, idx| {
             if (!creature.active) continue;
             const dx = native_math.pc24Sub(creature.pos.x, player.pos.x);
@@ -2856,7 +2855,7 @@ pub const CreaturePool = struct {
             const remaining = native_math.pc24Sub(512.0, distance);
             if (!(remaining > 0.0)) continue;
             const damage = native_math.pc24Mul(remaining, 5.0);
-            _ = self.applyDamage(state, players, bonuses, terrain_fx, idx, damage, .explosion, .{}, owner, dt, world_size);
+            _ = self.applyDamage(state, players, bonuses, terrain_fx, idx, damage, .explosion, .{}, owner_id, dt, world_size);
         }
         // Native stores a literal zero rather than restoring the incoming guard.
         state.bonus_spawn_guard = false;
@@ -3695,22 +3694,20 @@ fn tickAi7LinkTimer(
     }
 }
 
-fn ownerToPlayerIndex(owner: owner_ref.OwnerRef, player_count: usize) ?usize {
-    return owner.playerIndexInBounds(player_count);
-}
-
 fn awardExperienceForOwner(
     state: *state_mod.GameplayState,
     players: []state_mod.PlayerState,
-    owner: owner_ref.OwnerRef,
+    owner_id: i32,
     reward_value: f32,
 ) i32 {
     if (players.len == 0) return 0;
-    const slot = if (state.preserve_bugs)
-        0
-    else
-        ownerToPlayerIndex(owner, players.len) orelse 0;
-    return awardExperienceFromReward(state, &players[slot], reward_value);
+    // Native credits every kill to player one; the rewrite credits the player who last hit it.
+    var killer = &players[0];
+    const owner_player_index = -1 - owner_id;
+    if (!state.preserve_bugs and owner_player_index >= 0 and owner_player_index < players.len) {
+        killer = &players[@intCast(owner_player_index)];
+    }
+    return awardExperienceFromReward(state, killer, reward_value);
 }
 
 fn awardExperienceFromReward(
@@ -3776,7 +3773,7 @@ fn queueCreatureProjectile(
     pos: state_mod.Vec2,
     angle: f32,
     type_id: i32,
-    owner: owner_ref.OwnerRef,
+    owner_id: i32,
 ) void {
     if (type_id <= 0) return;
     if (state.pending_creature_projectile_count < 0) {
@@ -3787,7 +3784,7 @@ fn queueCreatureProjectile(
 
     state.pending_creature_projectiles[pending_count] = .{
         .type_id = type_id,
-        .owner = owner,
+        .owner_id = owner_id,
         .angle = narrowF32(angle),
         .pos = .{
             .x = narrowF32(pos.x),
@@ -4547,7 +4544,7 @@ test "bloody mess quick learner reward is still doubled by double experience bon
         50.0,
         .self_tick,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         1.0 / 60.0,
         1024.0,
     );
@@ -4661,7 +4658,7 @@ test "explosion xp uses pre-split reward when a full pool declines children" {
         10.0,
         .explosion,
         .{ .x = 1.0, .y = 2.0 },
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         1.0 / 60.0,
         1024.0,
     );
@@ -4710,7 +4707,7 @@ test "applyDamage runs death side effects for a hit on a positive-hp non-alive c
         10.0,
         .self_tick,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         1.0 / 60.0,
         1024.0,
     );
@@ -5001,7 +4998,7 @@ test "damage refreshes hit flash for native live corpse and zero damage witnesse
             .hit_flash_timer = row.hit_flash,
             .lifecycle_stage = row.lifecycle,
         };
-        _ = pool.applyDamage(&state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, @enumFromInt(case.input.damage_type), .{}, owner_local_player, case.input.dt, 1024);
+        _ = pool.applyDamage(&state, players[0..case.input.players.len], &bonuses, &terrain, row.index, case.input.damage, @enumFromInt(case.input.damage_type), .{}, owner_id_mod.owner_local_player, case.input.dt, 1024);
         try std.testing.expectEqual(case.timer_bits, @as(u32, @bitCast(pool.entries[row.index].hit_flash_timer)));
     }
 }
@@ -7562,7 +7559,7 @@ test "doctor increases projectile damage by 20 percent" {
         10.0,
         .bullet,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         10_000.0,
     );
@@ -7630,7 +7627,7 @@ test "pyromaniac increases fire damage and consumes rng" {
         10.0,
         .fire,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         1024.0,
     );
@@ -7675,7 +7672,7 @@ test "fire damage without pyromaniac keeps base damage and rng state" {
         10.0,
         .fire,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         1024.0,
     );
@@ -7720,7 +7717,7 @@ test "living fortress scales projectile damage by alive player timers" {
         10.0,
         .bullet,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         10_000.0,
     );
@@ -7745,7 +7742,7 @@ test "living fortress scales bullet damage before doctor" {
         .flags = spawn_mod.CreatureFlags.anim_ping_pong,
     };
 
-    _ = pool.applyDamage(&state, players[0..], &bonuses, &terrain_fx, 0, 10.0, .bullet, .{}, owner_local_player, 0.016, 1024.0);
+    _ = pool.applyDamage(&state, players[0..], &bonuses, &terrain_fx, 0, 10.0, .bullet, .{}, owner_id_mod.owner_local_player, 0.016, 1024.0);
 
     // Python creature_apply_damage on the same inputs; doctor first gives 0x3f333340.
     try std.testing.expectEqual(@as(u32, 0x3f333330), @as(u32, @bitCast(pool.entries[0].hp)));
@@ -7784,7 +7781,7 @@ test "barrel greaser increases projectile damage by 40 percent" {
         10.0,
         .bullet,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         10_000.0,
     );
@@ -7824,7 +7821,7 @@ test "ion gun master increases ion damage by 20 percent" {
         10.0,
         .ion,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         10_000.0,
     );
@@ -7864,7 +7861,7 @@ test "uranium filled bullets doubles projectile damage" {
         10.0,
         .bullet,
         .{},
-        owner_local_player,
+        owner_id_mod.owner_local_player,
         0.016,
         10_000.0,
     );
@@ -7956,7 +7953,7 @@ test "no-corpse death awards player zero for non-player owner" {
         .reward_value = 90.0,
         .contact_damage = 10.0,
     });
-    pool.entries[0].last_hit_owner = owner_ref.OwnerRef.fromCreature(0);
+    pool.entries[0].last_hit_owner_id = 0;
 
     const gained = pool.handleDeath(
         &state,
@@ -8088,7 +8085,7 @@ test "ranged shock creature queues projectile along heading not direct aim" {
 
     try std.testing.expectEqual(@as(i32, 1), state.pending_creature_projectile_count);
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), state.pending_creature_projectiles[0].type_id);
-    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectiles[0].owner.toLegacy());
+    try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectiles[0].owner_id);
     try expectFloatClose(pool.entries[0].heading, state.pending_creature_projectiles[0].angle);
 
     const direct_aim = narrowF32(math.atan2(
@@ -8327,7 +8324,7 @@ test "energizer eat preserves native position owner and guard stores" {
         .move_speed = 0.0,
         .reward_value = 10.0,
         .contact_damage = 999.0,
-        .last_hit_owner = owner_ref.OwnerRef.fromCreature(77),
+        .last_hit_owner_id = 77,
     };
 
     try pool.update(&state, players[0..], 0.016, 1024.0, &bonuses);
@@ -8335,7 +8332,7 @@ test "energizer eat preserves native position owner and guard stores" {
     try std.testing.expect(!pool.entries[0].active);
     try expectFloatClose(-10.0, pool.entries[0].pos.x);
     try expectFloatClose(0.0, pool.entries[0].pos.y);
-    try std.testing.expectEqual(@as(?usize, 77), pool.entries[0].last_hit_owner.creatureIndex());
+    try std.testing.expectEqual(@as(i32, 77), pool.entries[0].last_hit_owner_id);
     try std.testing.expectEqual(@as(i32, 20), players[0].experience);
     try std.testing.expect(!state.bonus_spawn_guard);
     try std.testing.expectEqual(@as(f32, 0.0), pool.entries[0].hp);
@@ -8472,7 +8469,7 @@ test "plague timer kill preserves split-on-death child spawn behavior" {
     });
     pool.entries[0].plague_infected = true;
     pool.entries[0].collision_timer = 0.01;
-    pool.entries[0].last_hit_owner = owner_ref.OwnerRef.fromPlayer(0);
+    pool.entries[0].last_hit_owner_id = owner_id_mod.playerOwnerId(0);
 
     try pool.update(&state, players[0..], 0.2, 1024.0, &bonuses);
 

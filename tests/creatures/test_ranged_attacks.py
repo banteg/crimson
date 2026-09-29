@@ -5,7 +5,6 @@ import math
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
 from crimson.math_parity import f32, f32_from_bits
-from crimson.owner_ref import OwnerRef
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
@@ -47,7 +46,8 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
     proj = spawned[0]
-    assert proj.hits_players is True
+    # A creature owns it, so it can hit players.
+    assert proj.owner_id >= 0
     assert int(proj.type_id) == 9
     assert_float_close(proj.angle, creature.heading)
 
@@ -103,7 +103,8 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
     proj = spawned[0]
-    assert proj.hits_players is True
+    # A creature owns it, so it can hit players.
+    assert proj.owner_id >= 0
     assert int(proj.type_id) == 26
     assert creature.attack_cooldown == f32(0.4)
     assert step_runtime.sfx == [SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8)]
@@ -139,8 +140,7 @@ def test_ranged_projectile_can_damage_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
-        owner=OwnerRef.from_creature(0),
-        hits_players=True,
+        owner_id=0,
     )
 
     world.state.projectiles.step(
@@ -168,8 +168,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
-        owner=OwnerRef.from_creature(0),
-        hits_players=True,
+        owner_id=0,
     )
 
     world.state.projectiles.step(

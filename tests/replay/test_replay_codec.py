@@ -46,6 +46,8 @@ def _result(*, player_count: int = 1, outcome: RunOutcome = RunOutcome.DEATH, qu
         outcome=outcome,
         elapsed_ms=1234,
         kills=5,
+        shots_fired=10,
+        shots_hit=4,
         rng_state=0xDEADBEEF,
         pending_perks=1,
         quest_final_ms=quest_final_ms,
@@ -53,8 +55,6 @@ def _result(*, player_count: int = 1, outcome: RunOutcome = RunOutcome.DEATH, qu
             PlayerRunResult(
                 experience=100 + index,
                 health=-2.5,
-                shots_fired=10,
-                shots_hit=4,
                 most_used_weapon_id=WeaponId.SHOTGUN,
             )
             for index in range(player_count)

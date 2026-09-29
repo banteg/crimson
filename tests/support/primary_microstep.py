@@ -11,7 +11,6 @@ from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.helpers import owner_ref_from_native
 
 
 def observe(case):
@@ -31,8 +30,7 @@ def observe(case):
     projectile.damage_pool = 0.0
     projectile.hit_radius = item["radius"]
     projectile.travel_budget = item["travel"]
-    projectile.owner = owner_ref_from_native(item["owner"])
-    projectile.hits_players = item["owner"] != -100
+    projectile.owner_id = item["owner"]
     for item in case.get("players", []):
         world.players.append(
             PlayerState(
@@ -81,7 +79,7 @@ def observe(case):
             "damage": projectile.damage_pool,
             "radius": projectile.hit_radius,
             "travel": projectile.travel_budget,
-            "owner": projectile.owner.to_legacy(),
+            "owner": projectile.owner_id,
         },
         "players": [
             {

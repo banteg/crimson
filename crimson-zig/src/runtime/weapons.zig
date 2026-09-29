@@ -4,7 +4,7 @@ const native_math = @import("native_math.zig");
 
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const owner_ref = @import("owner_ref.zig");
+const owner_id_mod = @import("owner_id.zig");
 const particles_mod = @import("particles.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
@@ -410,17 +410,14 @@ pub fn stepPlayerForTickWithEffects(
                 const count = 7 + @as(i32, @intFromFloat(player.weapon.reload_timer_max * 4.0));
                 state.bonus_spawn_guard = true;
 
-                const owner = if (!state.friendly_fire_enabled)
-                    owner_ref.OwnerRef.fromLocalPlayer(0)
-                else
-                    owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+                const owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
                 if (count > 0) {
                     const step = native_tau / @as(f32, @floatFromInt(count));
                     for (0..@as(usize, @intCast(count))) |idx| {
                         const angle = @as(f32, @floatFromInt(idx)) * step + 0.1;
                         const type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_minigun);
                         const meta = weapon_data.weapon_stats.get(.plasma_minigun).travel_budget;
-                        _ = projectiles.spawn(player.pos, angle, type_id, owner, meta, false);
+                        _ = projectiles.spawn(player.pos, angle, type_id, owner_id, meta);
                     }
                 }
                 state.bonus_spawn_guard = false;
@@ -658,17 +655,14 @@ fn tryFireWeaponWithGate(
     };
     // Native encodes friendly fire in the owner id (-1 - player_index): with
     // the cvar enabled, primary player shots can hit other players.
-    const projectile_owner = if (state.friendly_fire_enabled)
-        owner_ref.OwnerRef.fromPlayer(@intCast(player.index))
-    else
-        owner_ref.OwnerRef.fromLocalPlayer(0);
-    const uses_player_projectile_path = !state.preserve_bugs or
-        projectile_owner.usesNativePlayerProjectilePath();
+    const projectile_owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
+    const uses_player_projectile_path = owner_id_mod.projectileSpawnUsesPlayerPath(projectile_owner_id, state.preserve_bugs);
+    // Flame and bubble particles credit their kills to the shooter (native particles carry no owner).
+    const particle_owner_id = owner_id_mod.playerOwnerId(player.index);
     const projectile_spawn_override = uses_player_projectile_path and
         !state.bonus_spawn_guard and
         !is_fire_bullets and
         projectileSpawnFireBulletsActive(state, player, all_players);
-    const projectile_hits_players = state.friendly_fire_enabled;
     if (is_fire_bullets and pellet_count == 1) {
         shot_cooldown = weapon_data.weapon_stats.get(fire_bullets_weapon_id).shot_cooldown;
     }
@@ -716,8 +710,7 @@ fn tryFireWeaponWithGate(
         .sprite_effects = sprite_effects,
         .muzzle = muzzle,
         .aim_heading = aim_heading,
-        .owner = projectile_owner,
-        .hits_players = projectile_hits_players,
+        .owner_id = projectile_owner_id,
         .fire_bullets_override = projectile_spawn_override,
     };
     var ammo_cost: f32 = 1.0;
@@ -790,7 +783,7 @@ fn tryFireWeaponWithGate(
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
-                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                    particle_owner_id,
                 );
                 counts_accuracy_shots = false;
                 ammo_cost = 0.1;
@@ -801,7 +794,7 @@ fn tryFireWeaponWithGate(
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
-                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                    particle_owner_id,
                 );
                 particles.entries[particle].style_id = .hr_flamer;
                 counts_accuracy_shots = false;
@@ -813,7 +806,7 @@ fn tryFireWeaponWithGate(
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
-                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                    particle_owner_id,
                 );
                 particles.entries[particle].style_id = .blow_torch;
                 counts_accuracy_shots = false;
@@ -925,7 +918,7 @@ fn tryFireWeaponWithGate(
                     state,
                     muzzle,
                     native_math.pc24Sub(shot_angle, native_math.native_half_pi),
-                    owner_ref.OwnerRef.fromLocalPlayer(0),
+                    particle_owner_id,
                 );
                 counts_accuracy_shots = false;
                 ammo_cost = 0.15;
@@ -942,17 +935,16 @@ fn tryFireWeaponWithGate(
         0
     else
         shot_count * shot.credit_multiplier;
-    if (player_idx >= 0 and player_idx < state.shots_fired.len) {
+    if (counts_accuracy_shots) {
+        state.shots_fired += projectile_spawn_shot_count;
+    }
+    if (player_idx >= 0 and player_idx < state.weapon_shots_fired.len) {
         const idx: usize = @intCast(player_idx);
-        if (counts_accuracy_shots) {
-            state.shots_fired[idx] += projectile_spawn_shot_count;
-        }
         const weapon_idx: usize = @intCast(@intFromEnum(player.weapon.weapon_id));
         if (weapon_idx < state.weapon_shots_fired[idx].len) {
             state.weapon_shots_fired[idx][weapon_idx] += shot_count;
         }
     }
-    state.shots_fired_total += projectile_spawn_shot_count;
 
     if (state.bonuses.reflex_boost <= 0.0 and !is_fire_bullets) {
         player.weapon.ammo -= ammo_cost;
@@ -1024,10 +1016,7 @@ fn tickManBomb(
     player.man_bomb_timer = native_math.pc24Add(player.man_bomb_timer, dt);
     if (player.man_bomb_timer <= state.perk_interval_man_bomb) return;
 
-    const owner = if (!state.friendly_fire_enabled)
-        owner_ref.OwnerRef.fromLocalPlayer(0)
-    else
-        owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+    const owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
     for (0..8) |idx| {
         const type_id: ProjectileTypeId = if ((idx & 1) == 0)
             .ion_minigun
@@ -1044,7 +1033,7 @@ fn tickManBomb(
             player.pos,
             angle,
             type_id,
-            owner,
+            owner_id,
         );
     }
     state.sfx_queue.append(.explosion_small);
@@ -1087,10 +1076,7 @@ fn tickFireCaugh(
     player.fire_cough_timer = native_math.pc24Add(player.fire_cough_timer, dt);
     if (player.fire_cough_timer <= state.perk_interval_fire_cough) return;
 
-    const owner = if (!state.friendly_fire_enabled)
-        owner_ref.OwnerRef.fromLocalPlayer(0)
-    else
-        owner_ref.OwnerRef.fromPlayer(@intCast(player.index));
+    const owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
     state.sfx_queue.append(.autorifle_fire);
     state.sfx_queue.append(.plasmaminigun_fire);
     const aim_heading = player.aim_heading;
@@ -1116,7 +1102,7 @@ fn tickFireCaugh(
         muzzle,
         angle,
         .fire_bullets,
-        owner,
+        owner_id,
     );
 
     _ = sprite_effects.spawn(
@@ -1147,10 +1133,7 @@ fn tickHotTempered(
     player.hot_tempered_timer = native_math.pc24Add(player.hot_tempered_timer, dt);
     if (player.hot_tempered_timer <= state.perk_interval_hot_tempered) return;
 
-    const owner = if (state.friendly_fire_enabled)
-        owner_ref.OwnerRef.fromPlayer(@intCast(player.index))
-    else
-        owner_ref.OwnerRef.fromLocalPlayer(0);
+    const owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
     for (0..8) |idx| {
         const type_id: ProjectileTypeId = if ((idx & 1) == 0)
             .plasma_minigun
@@ -1165,7 +1148,7 @@ fn tickHotTempered(
             player.pos,
             angle,
             type_id,
-            owner,
+            owner_id,
         );
     }
     state.sfx_queue.append(.explosion_small);
@@ -1193,13 +1176,11 @@ fn spawnPerkProjectile(
     pos: state_mod.Vec2,
     angle: f32,
     type_id: ProjectileTypeId,
-    owner: owner_ref.OwnerRef,
+    owner_id: i32,
 ) void {
     var spawn_type_id = type_id;
     var shot_credit: i32 = 0;
-    const player_owned_spawn = owner.playerIndexInBounds(state.shots_fired.len) != null and
-        (!state.preserve_bugs or owner.usesNativePlayerProjectilePath());
-    if (!state.bonus_spawn_guard and player_owned_spawn) {
+    if (!state.bonus_spawn_guard and owner_id_mod.projectileSpawnUsesPlayerPath(owner_id, state.preserve_bugs)) {
         shot_credit = 1;
         if (spawn_type_id != .fire_bullets and
             projectileSpawnFireBulletsActive(state, player, all_players))
@@ -1210,26 +1191,14 @@ fn spawnPerkProjectile(
         }
     }
 
-    const spawn_type_id_i32 = @intFromEnum(spawn_type_id);
-    const meta = projectileTravelBudgetFromTypeId(spawn_type_id);
+    state.shots_fired += shot_credit;
     _ = projectiles.spawn(
         pos,
         angle,
-        spawn_type_id_i32,
-        owner,
-        meta,
-        false,
+        @intFromEnum(spawn_type_id),
+        owner_id,
+        projectileTravelBudgetFromTypeId(spawn_type_id),
     );
-    if (shot_credit > 0 and state.shots_fired.len > 0) {
-        const shooter_idx = owner.playerIndexInBounds(state.shots_fired.len) orelse return;
-        state.shots_fired[shooter_idx] += shot_credit;
-        state.shots_fired_total += shot_credit;
-        if (shooter_idx < state.weapon_shots_fired.len and
-            spawn_type_id_i32 >= 0 and spawn_type_id_i32 < state.weapon_shots_fired[shooter_idx].len)
-        {
-            state.weapon_shots_fired[shooter_idx][@intCast(spawn_type_id_i32)] += shot_credit;
-        }
-    }
 }
 
 /// The muzzle, owner and pools every `player_update` fire branch spawns into.
@@ -1240,8 +1209,7 @@ const ShotSpawner = struct {
     sprite_effects: *effects_mod.SpriteEffectPool,
     muzzle: state_mod.Vec2,
     aim_heading: f32,
-    owner: owner_ref.OwnerRef,
-    hits_players: bool,
+    owner_id: i32,
     /// Another player's Fire Bullets turns primary shots into fire bullets.
     fire_bullets_override: bool,
     spawned_primary: bool = false,
@@ -1255,9 +1223,8 @@ const ShotSpawner = struct {
             self.muzzle,
             angle,
             @intFromEnum(spawn_type),
-            self.owner,
+            self.owner_id,
             projectileTravelBudgetFromTypeId(spawn_type),
-            self.hits_players,
         );
     }
 
@@ -1268,7 +1235,7 @@ const ShotSpawner = struct {
         target_hint: ?state_mod.Vec2,
         creatures: ?*const creatures_mod.CreaturePool,
     ) void {
-        _ = self.secondary_projectiles.spawn(self.muzzle, angle, type_id, self.owner, 2.0, target_hint, creatures);
+        _ = self.secondary_projectiles.spawn(self.muzzle, angle, type_id, self.owner_id, 2.0, target_hint, creatures);
     }
 
     fn muzzleSprite(self: *ShotSpawner, speed: f32, scale: f32, alpha: f32) void {
@@ -1374,7 +1341,7 @@ test "weapon runtime starts reload when ammo is depleted" {
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
     try std.testing.expect(player.weapon.reload_active);
     try std.testing.expect(player.weapon.reload_timer > 0.0);
-    try std.testing.expectEqual(@as(i32, 1), state.shots_fired[0]);
+    try std.testing.expectEqual(@as(i32, 1), state.shots_fired);
 
     const reload_time = player.weapon.reload_timer;
     try stepPlayerForTick(
@@ -1583,11 +1550,11 @@ test "angry reloader spawns plasma ring at half reload" {
     try expectFloatClose(0.9, player.weapon.reload_timer);
     try std.testing.expectEqual(@as(usize, 15), activeProjectileCount(&projectiles));
     try std.testing.expect(!state.bonus_spawn_guard);
-    try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
+    try std.testing.expectEqual(@as(i32, 0), state.shots_fired);
     for (projectiles.entries[0..15]) |proj| {
         try std.testing.expect(proj.active);
         try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_minigun), proj.type_id);
-        try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
+        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
     }
 }
 
@@ -1643,7 +1610,7 @@ test "man bomb spawns eight ion projectiles and preserves bonus guard latch" {
     try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, @intFromEnum(game_ids.ProjectileTypeId.ion_rifle)));
     for (projectiles.entries[0..8]) |proj| {
         try std.testing.expect(proj.active);
-        try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
+        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
     }
 }
 
@@ -1707,7 +1674,7 @@ test "hot tempered spawns alternating plasma projectiles when charged" {
     try std.testing.expectEqual(@as(usize, 4), activeProjectileTypeCount(&projectiles, @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle)));
     for (projectiles.entries[0..8]) |proj| {
         try std.testing.expect(proj.active);
-        try std.testing.expectEqual(@as(i32, -100), proj.owner.toLegacy());
+        try std.testing.expectEqual(@as(i32, -100), proj.owner_id);
     }
 }
 
@@ -1744,12 +1711,7 @@ test "hot tempered preserves global fire bullets projectile override" {
         &projectiles,
         @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
     ));
-    try std.testing.expectEqual(@as(i32, 16), state.shots_fired[0]);
-    try std.testing.expectEqual(@as(i32, 16), state.shots_fired_total);
-    try std.testing.expectEqual(
-        @as(i32, 16),
-        state.weapon_shots_fired[0][@intFromEnum(game_ids.ProjectileTypeId.fire_bullets)],
-    );
+    try std.testing.expectEqual(@as(i32, 16), state.shots_fired);
 }
 
 test "stationary reloader triples reload speed" {
@@ -2352,13 +2314,13 @@ test "multi plasma and mini rocket use special shot counts" {
 
     player_runtime.weaponAssignPlayer(&player, weaponId(10));
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
-    try std.testing.expectEqual(@as(i32, 5), state.shots_fired[0]);
+    try std.testing.expectEqual(@as(i32, 5), state.shots_fired);
 
     player_runtime.weaponAssignPlayer(&player, weaponId(17));
     player.weapon.ammo = 4.0;
     player.weapon.shot_cooldown = 0.0;
     try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
-    try std.testing.expectEqual(@as(i32, 9), state.shots_fired[0]);
+    try std.testing.expectEqual(@as(i32, 9), state.shots_fired);
 }
 
 test "multi plasma fires five projectiles with fixed spread profile" {
@@ -2496,7 +2458,7 @@ test "weapons without a native fire branch spend the shot but spawn nothing" {
         try std.testing.expect(try tryFireWeapon(&state, &player, &projectiles, &secondary_projectiles, &creatures, &particles));
 
         try std.testing.expectEqual(@as(usize, 0), activeProjectileCount(&projectiles));
-        try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
+        try std.testing.expectEqual(@as(i32, 0), state.shots_fired);
         try expectFloatClose(ammo - 1.0, player.weapon.ammo);
     }
 }
@@ -2686,8 +2648,7 @@ test "projectile spawn preserves global fire bullets override and shot credit" {
         try std.testing.expectEqual(@as(usize, 1), activeProjectileCount(&projectiles));
         try std.testing.expectEqual(@intFromEnum(case.expected_type_id), projectiles.entries[0].type_id);
         try expectFloatClose(ammo_before - 1.0, players[firing_idx].weapon.ammo);
-        try std.testing.expectEqual(case.expected_shots, state.shots_fired[firing_idx]);
-        try std.testing.expectEqual(case.expected_shots, state.shots_fired_total);
+        try std.testing.expectEqual(case.expected_shots, state.shots_fired);
         try std.testing.expectEqual(
             @as(i32, 1),
             state.weapon_shots_fired[firing_idx][@intFromEnum(WeaponId.pistol)],

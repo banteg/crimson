@@ -2,7 +2,7 @@ const std = @import("std");
 
 const bonuses_mod = @import("../bonuses.zig");
 const creatures_mod = @import("../creatures.zig");
-const owner_ref = @import("../owner_ref.zig");
+const owner_id_mod = @import("../owner_id.zig");
 const projectiles_mod = @import("../projectiles.zig");
 const secondary_projectiles_mod = @import("../secondary_projectiles.zig");
 const state_mod = @import("../state.zig");
@@ -53,7 +53,7 @@ pub const ReplayTickRng = struct {
 pub const ReplayTickSummary = struct {
     score_xp: i32,
     kills: i32,
-    shots_fired_p0: i32,
+    shots_fired: i32,
     creature_count: usize,
     perk_pending: i32,
 };
@@ -195,7 +195,7 @@ pub fn buildReplayTickTrace(
         .summary = .{
             .score_xp = score_xp,
             .kills = creatures.kill_count,
-            .shots_fired_p0 = if (state.shots_fired.len > 0) state.shots_fired[0] else 0,
+            .shots_fired = state.shots_fired,
             .creature_count = creatures.activeCount(),
             .perk_pending = state.perk_selection.pending_count,
         },
@@ -405,7 +405,7 @@ fn collectProjectileSamples(
             .damage_pool = @floatCast(projectile.damage_pool),
             .hit_radius = projectile.hit_radius,
             .travel_budget = projectile.travel_budget,
-            .owner_id = owner_ref.OwnerRef.toLegacy(projectile.owner),
+            .owner_id = projectile.owner_id,
         });
     }
     return rows.toOwnedSlice(allocator);
@@ -428,7 +428,7 @@ fn collectSecondaryProjectileSamples(
             .vel = projectile.vel,
             .speed = projectile.speed,
             .trail_timer = projectile.trail_timer,
-            .owner_id = owner_ref.OwnerRef.toLegacy(projectile.owner),
+            .owner_id = projectile.owner_id,
             .target_id = projectile.target_id,
         });
     }
@@ -497,8 +497,8 @@ test "entity samples retain allocation generations across unobserved reuse" {
         // Force the native overwrite path: all projectile slots remain active.
         for (&projectiles.entries) |*entry| entry.active = true;
         for (&secondary.entries) |*entry| entry.active = true;
-        const projectile = projectiles.spawn(.{}, 0, 1, owner_ref.OwnerRef.fromLocalPlayer(0), 0, false);
-        const rocket = secondary.spawn(.{}, 0, .rocket, owner_ref.OwnerRef.fromLocalPlayer(0), 2, null, null);
+        const projectile = projectiles.spawn(.{}, 0, 1, owner_id_mod.owner_local_player, 0);
+        const rocket = secondary.spawn(.{}, 0, .rocket, owner_id_mod.owner_local_player, 2, null, null);
         _ = bonuses.spawnAt(.{}, .points, -1, &state, 1024);
         const cs = try collectCreatureSamples(allocator, &creatures);
         defer allocator.free(cs);

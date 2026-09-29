@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.runtime import CreatureState
 from crimson.math_parity import NATIVE_HALF_PI, f32, native_fire_muzzle_pos, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import player_owner_id
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldState
@@ -43,7 +43,7 @@ def test_particle_weapons_spawn_particles_and_use_fractional_ammo() -> None:
         particles = [entry for entry in state.particles.entries if entry.active]
         assert len(particles) == 1
         assert int(particles[0].style_id) == expected_style
-        assert particles[0].owner == OwnerRef.from_player(0)
+        assert particles[0].owner_id == player_owner_id(0)
         if weapon_id == WeaponId.BUBBLEGUN:
             # Bubblegun particles use the jittered shot angle: native heading is
             # f32(atan2(pos - aim) - half_pi), one ulp below f32 pi/2 here.
@@ -177,7 +177,7 @@ def test_bubblegun_particle_kills_attached_target_on_expire() -> None:
     particles.update(2.0, step_runtime=step_runtime)
 
     assert particle.target_id == 0
-    assert [(death.index, death.owner) for death in step_runtime.deaths] == [(0, OwnerRef.from_player(0))]
+    assert [(death.index, death.owner_id) for death in step_runtime.deaths] == [(0, player_owner_id(0))]
     assert creature.active is False
     assert [request.position for request in step_runtime.sfx] == [Vec2(80.0, 40.0)]
     assert callers == [

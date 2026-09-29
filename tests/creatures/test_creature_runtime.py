@@ -26,7 +26,7 @@ from crimson.creatures.spawn import (
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
@@ -1261,7 +1261,7 @@ def test_death_award_player_source_policy(
     pool.entries[0].active = True
     pool.entries[0].hp = 0.0
     pool.entries[0].reward_value = 10.0
-    pool.entries[0].last_hit_owner = OwnerRef.from_local_player(1)
+    pool.entries[0].last_hit_owner_id = player_owner_id(1)
 
     death = pool.handle_death(
         0,
@@ -1619,7 +1619,7 @@ def test_spawn_inits_resets_native_spawn_state_fields() -> None:
     assert_float_close(entry.collision_timer, 0.0)
     assert_float_close(entry.hit_flash_timer, 0.0)
     assert_float_close(entry.anim_phase, 0.0)
-    assert entry.last_hit_owner == OwnerRef.from_local_player(0)
+    assert entry.last_hit_owner_id == OWNER_LOCAL_PLAYER
 
 
 def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:

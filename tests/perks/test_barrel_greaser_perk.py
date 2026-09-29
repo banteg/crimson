@@ -4,7 +4,7 @@ import math
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
@@ -23,7 +23,7 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
     perks[PerkId.BARREL_GREASER] = 1
 
     world = world_with_creature(creature, rng=Crand(0x1234), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OwnerRef.from_local_player(0))
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OWNER_LOCAL_PLAYER)
 
     assert killed is False
     assert_float_close(creature.hp, 86.0)
@@ -37,7 +37,7 @@ def _step_pistol_projectile(*, barrel_greaser: bool) -> float:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     pool.step(

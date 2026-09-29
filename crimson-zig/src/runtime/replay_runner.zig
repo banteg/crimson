@@ -194,11 +194,14 @@ pub fn buildRunResult(
     const state = &session.state;
     const players = session.playersConst();
     const elapsed_ms: replay_codec.Int = @intFromFloat(session.runElapsedMs());
+    const shots = survival_progression.runShotCounts(state.*);
 
     var result: RunResult = .{
         .outcome = outcome,
         .elapsed_ms = elapsed_ms,
         .kills = session.creatures.kill_count,
+        .shots_fired = shots.fired,
+        .shots_hit = shots.hit,
         .rng_state = state.rng.state,
         .pending_perks = state.perk_selection.pending_count,
         .quest_final_ms = null,
@@ -206,22 +209,9 @@ pub fn buildRunResult(
     };
     var health_values: [state_mod.max_players]f32 = undefined;
     for (players, result.players_buffer[0..players.len], 0..) |player, *player_result, index| {
-        var shots_fired: i32 = undefined;
-        var shots_hit: i32 = undefined;
-        if (session.game_mode == .typo) {
-            shots_fired = state.typo.typing.submit_count;
-            shots_hit = state.typo.typing.match_count;
-        } else {
-            // Piercing shots can hit several creatures; the high-score record
-            // clamps hits to shots fired.
-            shots_fired = @max(0, state.shots_fired[index]);
-            shots_hit = @max(0, @min(state.shots_hit[index], shots_fired));
-        }
         player_result.* = .{
             .experience = player.experience,
             .health = player.health,
-            .shots_fired = shots_fired,
-            .shots_hit = shots_hit,
             .most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(state.*, index, player.weapon.weapon_id),
         };
         health_values[index] = player.health;
@@ -415,6 +405,8 @@ fn testReplay(
             .outcome = .incomplete,
             .elapsed_ms = 0,
             .kills = 0,
+            .shots_fired = 0,
+            .shots_hit = 0,
             .rng_state = 0,
             .pending_perks = 0,
             .quest_final_ms = null,
@@ -531,18 +523,19 @@ test "survival run derives a deterministic incomplete result" {
     try testing.expectEqual(game_ids.WeaponId.pistol, result.players()[0].most_used_weapon_id);
 }
 
-test "shots are reported per player and hits clamp to shots fired" {
+test "shots are one count for every player and hits clamp to shots fired" {
     const run: replay_codec.RunSpec = .{ .game_mode = .survival, .seed = 1, .player_count = 2 };
     var playback = try playThrough(testReplay(run, &aimed_inputs, &.{}, zero_command_ends[0..1]), .{});
-    playback.session.state.shots_fired[0] = 2;
-    playback.session.state.shots_hit[0] = 5;
-    playback.session.state.shots_fired[1] = -3;
-    playback.session.state.shots_hit[1] = -1;
-    const result = playback.result();
-    try testing.expectEqual(@as(replay_codec.Int, 2), result.players()[0].shots_fired);
-    try testing.expectEqual(@as(replay_codec.Int, 2), result.players()[0].shots_hit);
-    try testing.expectEqual(@as(replay_codec.Int, 0), result.players()[1].shots_fired);
-    try testing.expectEqual(@as(replay_codec.Int, 0), result.players()[1].shots_hit);
+    playback.session.state.shots_fired = 2;
+    playback.session.state.shots_hit = 5;
+    var result = playback.result();
+    try testing.expectEqual(@as(replay_codec.Int, 2), result.shots_fired);
+    try testing.expectEqual(@as(replay_codec.Int, 2), result.shots_hit);
+    playback.session.state.shots_fired = -3;
+    playback.session.state.shots_hit = -1;
+    result = playback.result();
+    try testing.expectEqual(@as(replay_codec.Int, 0), result.shots_fired);
+    try testing.expectEqual(@as(replay_codec.Int, 0), result.shots_hit);
 }
 
 test "a prefix reports incomplete unless it reached a terminal outcome" {
@@ -633,10 +626,9 @@ test "typo run reports submitted words as shots fired" {
         .{ .typo_submit = .{ .player_index = 0 } },
     };
     const run = try runReplay(testReplay(.{ .game_mode = .typo, .seed = 1 }, &aimed_inputs, &commands, &.{ 1, 2, 3, 4, 5, 6, 7 }));
-    const player = run.result.players()[0];
-    try testing.expectEqual(@as(replay_codec.Int, 1), player.shots_fired);
-    try testing.expectEqual(@as(replay_codec.Int, 0), player.shots_hit);
-    try testing.expectEqual(game_ids.WeaponId.shotgun, player.most_used_weapon_id);
+    try testing.expectEqual(@as(replay_codec.Int, 1), run.result.shots_fired);
+    try testing.expectEqual(@as(replay_codec.Int, 0), run.result.shots_hit);
+    try testing.expectEqual(game_ids.WeaponId.shotgun, run.result.players()[0].most_used_weapon_id);
 }
 
 test "typo run spawns creatures after creature update phase" {

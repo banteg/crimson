@@ -25,7 +25,7 @@ from ..quests.level import QuestLevel
 from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import QuestSpawnState
-from ..sim.run_result import RunOutcome
+from ..sim.run_result import RunOutcome, run_shot_counts
 from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
@@ -36,7 +36,6 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
-from .components.highscore_record_builder import shots_from_state
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -213,7 +212,7 @@ class QuestMode(BaseGameplayMode):
     def _close_run(self, kind: str) -> None:
         if self._outcome is None:
             assert self._quest_level is not None, "quest outcome requires active quest level"
-            fired, hit = shots_from_state(self.state, player_index=int(self.player.index))
+            fired, hit = run_shot_counts(self.state)
             most_used_weapon_id = most_used_weapon_id_for_player(
                 self.state,
                 fallback_weapon_id=self.player.weapon.weapon_id,

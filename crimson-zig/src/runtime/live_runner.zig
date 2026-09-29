@@ -491,26 +491,7 @@ pub const LiveRunner = struct {
     ) FrameUpdate {
         const run_summary = self.session.finalize();
         const player_health = if (self.player0Const()) |player| player.health else 0.0;
-        const ShotCounts = struct {
-            fired: i32,
-            hit: i32,
-        };
-        const shot_counts: ShotCounts = switch (self.session.game_mode) {
-            .typo => .{
-                .fired = self.session.state.typo.typing.submit_count,
-                .hit = self.session.state.typo.typing.match_count,
-            },
-            else => blk: {
-                var shots_hit_total: i32 = 0;
-                for (self.session.state.shots_hit) |shots_hit| {
-                    shots_hit_total += shots_hit;
-                }
-                break :blk .{
-                    .fired = self.session.state.shots_fired_total,
-                    .hit = shots_hit_total,
-                };
-            },
-        };
+        const shot_counts = survival_progression.runShotCounts(self.session.state);
         return .{
             .ticks_advanced = ticks_advanced,
             .paused_for_perk_pick = paused_for_perk_pick,

@@ -270,7 +270,7 @@ def _entity_samples_for_world(
                 damage_pool=_trace_f32(projectile.damage_pool),
                 hit_radius=_trace_f32(projectile.hit_radius),
                 travel_budget=_trace_f32(projectile.travel_budget),
-                owner_id=int(projectile.owner.to_legacy()),
+                owner_id=int(projectile.owner_id),
             ),
         )
 
@@ -292,7 +292,7 @@ def _entity_samples_for_world(
                 vel=SnapshotVec2(x=_trace_f32(projectile.vel.x), y=_trace_f32(projectile.vel.y)),
                 speed=_trace_f32(projectile.speed),
                 trail_timer=_trace_f32(projectile.trail_timer),
-                owner_id=int(projectile.owner.to_legacy()),
+                owner_id=int(projectile.owner_id),
                 target_id=int(projectile.target_id),
             ),
         )

@@ -22,7 +22,6 @@ from ..gameplay import (
     survival_progression_update,
 )
 from ..math_parity import f32, x87_pc24_mul
-from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.effects import perks_update_effects
 from ..perks.selection import perk_selection_open_choices
@@ -149,10 +148,10 @@ class WorldStepRuntime(msgspec.Struct):
             return
         self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
 
-    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
+    def kill_creature_no_corpse(self, creature_index: int, owner_id: int) -> None:
         creature = self.world.creatures.entries[creature_index]
         if creature.active:
-            creature.last_hit_owner = owner
+            creature.last_hit_owner_id = owner_id
         self.handle_creature_death(creature_index, keep_corpse=False)
 
     def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:

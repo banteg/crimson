@@ -13,7 +13,6 @@ from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.helpers import owner_ref_from_native
 
 
 def bits(x):
@@ -41,7 +40,7 @@ def observe(case):
     projectile.damage_pool = item["damage"]
     projectile.hit_radius = item["radius"]
     projectile.travel_budget = item["travel"]
-    projectile.owner = owner_ref_from_native(item["owner"])
+    projectile.owner_id = item["owner"]
     target = case["creatures"][0]
     creature = world.creatures.entries[target["index"]]
     creature.active = True
@@ -106,7 +105,7 @@ def observe(case):
             "damage": projectile.damage_pool,
             "radius": projectile.hit_radius,
             "travel": projectile.travel_budget,
-            "owner": projectile.owner.to_legacy(),
+            "owner": projectile.owner_id,
         },
         "creature": {
             "active": int(creature.active),
@@ -166,7 +165,7 @@ def observe(case):
             for d in state.effects.iter_active()
         ],
         "damage_calls": damage_calls,
-        "shots_hit": state.shots_hit[0],
+        "shots_hit": state.shots_hit,
         "splatters": splatters,
         "random_positions": random_positions,
         "rng_state": rng.state,

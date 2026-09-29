@@ -28,7 +28,7 @@ from .math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from .owner_ref import OwnerRef
+from .owner_id import OWNER_LOCAL_PLAYER
 from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
@@ -111,7 +111,7 @@ class Particle(msgspec.Struct):
     spin: float = 0.0
     style_id: ParticleStyleId = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
-    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
+    owner_id: int = OWNER_LOCAL_PLAYER
 
 
 class ParticlePool:
@@ -139,7 +139,7 @@ class ParticlePool:
         pos: Vec2,
         angle: float,
         intensity: float = 1.0,
-        owner: OwnerRef = OwnerRef.from_local_player(0),
+        owner_id: int = OWNER_LOCAL_PLAYER,
         rng: CrandLike,
     ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
@@ -160,7 +160,7 @@ class ParticlePool:
         entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN))
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
-        entry.owner = owner
+        entry.owner_id = owner_id
         return idx
 
     def spawn_particle_slow(
@@ -168,7 +168,7 @@ class ParticlePool:
         *,
         pos: Vec2,
         angle: float,
-        owner: OwnerRef = OwnerRef.from_local_player(0),
+        owner_id: int = OWNER_LOCAL_PLAYER,
         rng: CrandLike,
     ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
@@ -189,7 +189,7 @@ class ParticlePool:
         entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN))
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
-        entry.owner = owner
+        entry.owner_id = owner_id
         return idx
 
     def iter_active(self) -> list[Particle]:
@@ -252,7 +252,7 @@ class ParticlePool:
                             )
                             step_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
                         # Death history and forced bonuses precede the native active check.
-                        step_runtime.kill_creature_no_corpse(target_id, entry.owner)
+                        step_runtime.kill_creature_no_corpse(target_id, entry.owner_id)
                 continue
 
             if entry.render_flag:
@@ -329,7 +329,7 @@ class ParticlePool:
                         damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
                         if damage > 0.0:
                             creature_apply_damage(
-                                step_runtime, hit_idx, damage, CreatureDamageType.FIRE, Vec2(), entry.owner,
+                                step_runtime, hit_idx, damage, CreatureDamageType.FIRE, Vec2(), entry.owner_id,
                             )
 
                         tint = creature.tint

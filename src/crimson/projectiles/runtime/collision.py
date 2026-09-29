@@ -9,7 +9,6 @@ from ...collision_math import native_find_size_margin
 from ...creatures.damage import creature_apply_damage
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
-from ...owner_ref import OwnerRef
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
@@ -78,12 +77,12 @@ def _apply_damage_to_creature(
     *,
     damage_type: int,
     impulse: Vec2,
-    owner: OwnerRef,
+    owner_id: int,
     step_runtime: WorldStepRuntime,
 ) -> None:
     if damage <= 0.0 or not step_runtime.world.creatures.entries[creature_index].active:
         return
-    creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner)
+    creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner_id)
 
 
 __all__ = [

@@ -70,4 +70,4 @@ def test_mini_rocket_swarmer_empty_clip_fires_no_rockets() -> None:
 
     assert not any(entry.active for entry in state.secondary_projectiles.entries)
     assert player.weapon.ammo == 0.0
-    assert state.shots_fired[0] == 0
+    assert state.shots_fired == 0

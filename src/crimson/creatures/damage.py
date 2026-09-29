@@ -11,7 +11,6 @@ from grim.sfx_types import SfxRequest
 from ..collision_math import within_native_find_radius
 from ..effects_atlas import EffectId
 from ..math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul, x87_pc24_sub
-from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..rng_caller_static import RngCallerStatic
 from .damage_types import CreatureDamageType
@@ -146,7 +145,7 @@ def creature_apply_damage(
     damage: float,
     damage_type: int,
     impulse: Vec2,
-    owner: OwnerRef,
+    owner_id: int,
 ) -> bool:
     """Port of `creature_apply_damage` (0x004207c0), returning whether the creature is dead.
 
@@ -158,7 +157,7 @@ def creature_apply_damage(
     perks = state.perks
     rng = state.rng
     creature = step_runtime.world.creatures.entries[creature_index]
-    creature.last_hit_owner = owner
+    creature.last_hit_owner_id = owner_id
     creature.hit_flash_timer = f32(0.2)
     damage = f32(damage)
     impulse = Vec2(f32(impulse.x), f32(impulse.y))
@@ -228,7 +227,7 @@ def creatures_apply_radius_damage(
     radius: float,
     damage: float,
     damage_type: int,
-    owner: OwnerRef,
+    owner_id: int,
 ) -> None:
     """Port of `creatures_apply_radius_damage`: damage every collidable creature touching the circle."""
 
@@ -236,4 +235,4 @@ def creatures_apply_radius_damage(
         if not creature.active or not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         if within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
-            creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2(), owner)
+            creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2(), owner_id)

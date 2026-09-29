@@ -10,7 +10,7 @@ from crimson.collision_math import native_find_size_margin, within_native_find_r
 from crimson.creatures.runtime import CreatureState
 from crimson.effects import FxQueue
 from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.runtime import (
     PrimaryStepCtx,
     ProjectilePool,
@@ -85,7 +85,7 @@ def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
         pos=Vec2(-49.92948532104492, 681.1566772460938),
         angle=-0.8641037344932556,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     pool.step(
@@ -101,7 +101,7 @@ def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTemplateId.GAUSS_GUN,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
     pool.entries[idx].life_timer = 0.011000030674040318
 
@@ -118,7 +118,7 @@ def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTemplateId.ION_RIFLE,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
     pool.entries[idx].life_timer = 0.39
     creature = _creature(pos=Vec2(), hp=12.0)
@@ -145,12 +145,6 @@ def _normalize_hit(hit: ProjectileHit) -> dict[str, object]:
     }
 
 
-def _normalize_owner(owner: OwnerRef) -> dict[str, object]:
-    return {
-        "kind": int(owner.kind),
-        "index": int(owner.index),
-        "local_host": bool(owner.local_host),
-    }
 
 
 def _normalize_primary_pool(
@@ -165,7 +159,7 @@ def _normalize_primary_pool(
         "projectile": {
             "active": bool(projectile.active),
             "type_id": int(projectile.type_id),
-            "owner": _normalize_owner(projectile.owner),
+            "owner_id": projectile.owner_id,
             "life_timer": round(float(projectile.life_timer), 6),
             "pos": _normalize_vec2(projectile.pos),
             "damage_pool": round(float(projectile.damage_pool), 6),
@@ -289,7 +283,7 @@ def test_primary_spawn_uses_collision_profile_defaults() -> None:
             pos=Vec2(),
             angle=0.0,
             type_id=type_id,
-            owner=OwnerRef.from_local_player(0),
+            owner_id=OWNER_LOCAL_PLAYER,
         )
         entry = pool.entries[idx]
         profile = projectile_collision_profile(type_id)
@@ -341,7 +335,7 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
             pos=Vec2(),
             angle=math.pi / 2.0,
             type_id=ProjectileTemplateId(int(case["type_id"])),
-            owner=OwnerRef.from_local_player(0),
+            owner_id=OWNER_LOCAL_PLAYER,
         )
         creatures = case["creatures"]
         world = _world_with(creatures, seed=int(case.get("seed", 3)))
@@ -359,7 +353,7 @@ def test_primary_spawn_persists_velocity_vector() -> None:
         pos=Vec2(12.0, 34.0),
         angle=math.pi / 3.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     entry = pool.entries[idx]
@@ -509,7 +503,7 @@ def test_secondary_projectile_direct_hit_snapshot(snapshot: SnapshotAssertion) -
         {
             "hp": round(float(creature.hp), 6),
             "vel": _normalize_vec2(creature.vel),
-            "last_hit_owner": _normalize_owner(creature.last_hit_owner),
+            "last_hit_owner_id": creature.last_hit_owner_id,
         },
     )
 

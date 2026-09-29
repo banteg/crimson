@@ -5,33 +5,9 @@ const highscores = @import("highscores.zig");
 const state_mod = @import("../runtime/state.zig");
 const survival_progression = @import("../runtime/survival_progression.zig");
 
-pub const ShotCounts = struct {
-    fired: i32,
-    hit: i32,
-};
-
 pub const BuildRecordOptions = struct {
-    shots_fired: ?i32 = null,
-    shots_hit: ?i32 = null,
-    clamp_shots_hit: bool = true,
     hardcore: bool = false,
 };
-
-pub fn clampShots(fired: i32, hit: i32) ShotCounts {
-    const safe_fired = @max(0, fired);
-    const safe_hit = std.math.clamp(hit, @as(i32, 0), safe_fired);
-    return .{
-        .fired = safe_fired,
-        .hit = safe_hit,
-    };
-}
-
-pub fn shotsFromState(state: state_mod.GameplayState, player_index: usize) ShotCounts {
-    if (player_index >= state.shots_fired.len or player_index >= state.shots_hit.len) {
-        return .{ .fired = 0, .hit = 0 };
-    }
-    return clampShots(state.shots_fired[player_index], state.shots_hit[player_index]);
-}
 
 pub fn buildHighscoreRecordForGameOver(
     state: state_mod.GameplayState,
@@ -57,45 +33,29 @@ pub fn buildHighscoreRecordForGameOver(
     );
     record.setGameModeId(game_mode_id);
 
-    const shot_counts: ShotCounts = blk: {
-        if (options.shots_fired == null or options.shots_hit == null) {
-            break :blk shotsFromState(state, player_index);
-        }
-
-        if (options.clamp_shots_hit) {
-            break :blk clampShots(options.shots_fired.?, options.shots_hit.?);
-        }
-
-        break :blk ShotCounts{
-            .fired = options.shots_fired.?,
-            .hit = options.shots_hit.?,
-        };
-    };
-    record.setShotsFired(@intCast(@max(0, shot_counts.fired)));
-    record.setShotsHit(@intCast(@max(0, shot_counts.hit)));
+    const shots = survival_progression.runShotCounts(state);
+    record.setShotsFired(@intCast(shots.fired));
+    record.setShotsHit(@intCast(shots.hit));
     record.setHardcoreMarker(if (options.hardcore) 0x75 else 0);
     return record;
 }
 
-test "clamp shots clamps hit and nonnegative" {
-    const a = clampShots(-5, 10);
-    try std.testing.expectEqual(@as(i32, 0), a.fired);
-    try std.testing.expectEqual(@as(i32, 0), a.hit);
-
-    const b = clampShots(5, -1);
-    try std.testing.expectEqual(@as(i32, 5), b.fired);
-    try std.testing.expectEqual(@as(i32, 0), b.hit);
-
-    const c = clampShots(5, 10);
-    try std.testing.expectEqual(@as(i32, 5), c.fired);
-    try std.testing.expectEqual(@as(i32, 5), c.hit);
+fn expectRunShots(state: state_mod.GameplayState, fired: i32, hit: i32) !void {
+    const shots = survival_progression.runShotCounts(state);
+    try std.testing.expectEqual(fired, shots.fired);
+    try std.testing.expectEqual(hit, shots.hit);
 }
 
-test "shots from state handles out of bounds player" {
-    const state = state_mod.GameplayState.init(0);
-    const counts = shotsFromState(state, 99);
-    try std.testing.expectEqual(@as(i32, 0), counts.fired);
-    try std.testing.expectEqual(@as(i32, 0), counts.hit);
+test "run shot counts clamp hits to nonnegative shots fired" {
+    var state = state_mod.GameplayState.init(0);
+    state.shots_fired = -5;
+    state.shots_hit = 10;
+    try expectRunShots(state, 0, 0);
+    state.shots_fired = 5;
+    state.shots_hit = -1;
+    try expectRunShots(state, 5, 0);
+    state.shots_hit = 10;
+    try expectRunShots(state, 5, 5);
 }
 
 test "build highscore record uses weapon stats and shots" {
@@ -109,8 +69,8 @@ test "build highscore record uses weapon stats and shots" {
 
     state.highscore_score_xp = 1234;
     state.weapon_usage_time[2] = 10;
-    state.shots_fired[0] = 20;
-    state.shots_hit[0] = 15;
+    state.shots_fired = 20;
+    state.shots_hit = 15;
 
     const record = buildHighscoreRecordForGameOver(
         state,
@@ -132,8 +92,11 @@ test "build highscore record uses weapon stats and shots" {
     try std.testing.expectEqual(@as(u32, 6), record.uniNum());
 }
 
-test "build highscore record can skip clamp" {
-    const state = state_mod.GameplayState.init(0);
+test "typo highscore records keep typed and matched words unclamped" {
+    var state = state_mod.GameplayState.init(0);
+    state.game_mode = .typo;
+    state.typo.typing.submit_count = 3;
+    state.typo.typing.match_count = 5;
     const player: state_mod.PlayerState = .{
         .index = 0,
         .pos = .{},
@@ -145,11 +108,7 @@ test "build highscore record can skip clamp" {
         0,
         0,
         .typo,
-        .{
-            .shots_fired = 3,
-            .shots_hit = 5,
-            .clamp_shots_hit = false,
-        },
+        .{},
     );
 
     try std.testing.expectEqual(@as(u32, 3), record.shotsFired());

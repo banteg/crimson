@@ -1129,7 +1129,7 @@ fn buildDeaths(
             .type_id = death.type_id,
             .reward_value = death.reward_value,
             .xp_awarded = death.xp_awarded,
-            .owner_id = death.owner.toLegacy(),
+            .owner_id = death.owner_id,
         };
     }
     return deaths;

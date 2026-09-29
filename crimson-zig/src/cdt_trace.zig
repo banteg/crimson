@@ -3003,7 +3003,7 @@ test "CDT checkpoint keeps replay event counts" {
         .summary = .{
             .score_xp = 0,
             .kills = 0,
-            .shots_fired_p0 = 0,
+            .shots_fired = 0,
             .creature_count = 0,
             .perk_pending = 0,
         },

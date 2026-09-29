@@ -141,4 +141,4 @@ def test_wheel_fire_binding_reaches_exactly_one_simulation_tick(mocker, wheel: f
         tick = ticks.next_tick()
         assert unpack_player_input(tick.inputs[0]).fire_down is (index == 0)
         step_replay_tick(session, tick)
-    assert session.world.state.shots_fired[0] == 1
+    assert session.world.state.shots_fired == 1

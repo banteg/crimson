@@ -26,7 +26,7 @@ from ...math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from ...owner_ref import OwnerRef
+from ...owner_id import OWNER_LOCAL_PLAYER
 from ...rng_caller_static import RngCallerStatic
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
@@ -67,7 +67,7 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
     pos: Vec2
     angle: float
     type_id: SecondaryProjectileTypeId
-    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
+    owner_id: int = OWNER_LOCAL_PLAYER
     time_to_live: float = 2.0
     target_hint: Vec2 | None = None
     creatures: Sequence[CreatureState] | None = None
@@ -139,7 +139,7 @@ def _step_detonation(
                 damage,
                 damage_type=CreatureDamageType.EXPLOSION,
                 step_runtime=step_runtime,
-                owner=entry.owner,
+                owner_id=entry.owner_id,
                 impulse=impulse,
             )
             creature_spatial.sync_index(int(creature_idx))
@@ -293,7 +293,7 @@ class SecondaryProjectilePool:
         pos = Vec2(f32(spec.pos.x), f32(spec.pos.y))
         angle = f32(spec.angle)
         type_id = SecondaryProjectileTypeId(spec.type_id)
-        owner = spec.owner
+        owner = spec.owner_id
         time_to_live = float(spec.time_to_live)
         target_hint = spec.target_hint
         creatures = spec.creatures
@@ -313,7 +313,7 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = type_id
         entry.pos = pos
-        entry.owner = owner
+        entry.owner_id = owner
         entry.trail_timer = 0.0
         entry.vel = Vec2()
         entry.detonation_t = 0.0
@@ -366,7 +366,7 @@ class SecondaryProjectilePool:
             creature_index: int,
             damage: float,
             *,
-            owner: OwnerRef,
+            owner_id: int,
             impulse: Vec2 = Vec2(),
         ) -> None:
             _apply_damage_to_creature(
@@ -374,7 +374,7 @@ class SecondaryProjectilePool:
                 float(damage),
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
-                owner=owner,
+                owner_id=owner_id,
                 step_runtime=step_runtime,
             )
 
@@ -415,12 +415,8 @@ class SecondaryProjectilePool:
                     break
             if hit_idx is not None:
                 hit_count += 1
-                owner_player_index = entry.owner.player_index_in_bounds(len(runtime_state.shots_hit))
-                if owner_player_index is not None and creature_lifecycle_is_alive(
-                    creatures[int(hit_idx)].lifecycle_stage,
-                ):
-                    shots_hit = runtime_state.shots_hit
-                    shots_hit[owner_player_index] += 1
+                if creature_lifecycle_is_alive(creatures[int(hit_idx)].lifecycle_stage):
+                    runtime_state.shots_hit += 1
 
                 if freeze_active:
                     for _ in range(4):
@@ -472,7 +468,7 @@ class SecondaryProjectilePool:
                 _apply_secondary_damage(
                     hit_idx,
                     damage,
-                    owner=entry.owner,
+                    owner_id=entry.owner_id,
                     impulse=impulse,
                 )
                 creature_spatial.sync_index(int(hit_idx))

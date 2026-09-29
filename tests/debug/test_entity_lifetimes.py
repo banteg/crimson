@@ -5,7 +5,7 @@ from crimson.bonuses.pool import BonusPool
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureInit
 from crimson.game_modes import GameMode
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.runtime import ProjectilePool, SecondaryProjectilePool, SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
@@ -28,7 +28,7 @@ def test_entity_uids_follow_allocations_between_snapshots() -> None:
     def spawn_all() -> None:
         world.creatures.spawn_init(CreatureInit(origin_template_id=0, pos=Vec2(), heading=0.0, phase_seed=0))
         world.state.projectiles.spawn(
-            pos=Vec2(), angle=0.0, type_id=ProjectileTemplateId.PISTOL, owner=OwnerRef.from_local_player(0),
+            pos=Vec2(), angle=0.0, type_id=ProjectileTemplateId.PISTOL, owner_id=OWNER_LOCAL_PLAYER,
         )
         world.state.secondary_projectiles.spawn_from_spec(
             SecondarySpawnSpec(pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET),

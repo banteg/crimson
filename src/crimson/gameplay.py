@@ -30,6 +30,7 @@ from .math_parity import (
     x87_pc24_sub,
 )
 from .movement_controls import MovementControlType
+from .owner_id import player_projectile_owner_id
 from .perks import PerkId
 from .perks.state import PerkSelectionState
 from .projectiles.types import ProjectileTemplateId
@@ -44,9 +45,6 @@ from .weapon_runtime import (
 )
 from .weapon_runtime import (
     fire_weapon as _fire_weapon,
-)
-from .weapon_runtime import (
-    owner_ref_for_player_projectiles as _owner_ref_for_player_projectiles,
 )
 from .weapon_runtime import (
     player_start_reload as _player_start_reload,
@@ -497,7 +495,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
     if PerkId.MAN_BOMB in state.perks:
         player.man_bomb_timer = x87_pc24_add(player.man_bomb_timer, dt)
         if player.man_bomb_timer > intervals.man_bomb:
-            owner = _owner_ref_for_player_projectiles(state, player.index)
+            owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
             for idx in range(8):
                 if idx & 1:
                     type_id = ProjectileTemplateId.ION_RIFLE
@@ -514,7 +512,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
                     0.25,
                 )
                 _projectile_spawn(
-                    state, players=players, pos=player.pos, angle=angle, type_id=type_id, owner=owner,
+                    state, players=players, pos=player.pos, angle=angle, type_id=type_id, owner_id=owner_id,
                     owner_player_index=player.index,
                 )
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
@@ -531,7 +529,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
     if PerkId.FIRE_CAUGH in state.perks:
         player.fire_cough_timer = x87_pc24_add(player.fire_cough_timer, dt)
         if player.fire_cough_timer > intervals.fire_cough:
-            owner = _owner_ref_for_player_projectiles(state, player.index)
+            owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
             state.sfx_queue.append(SfxRequest(SfxId.AUTORIFLE_FIRE, player.pos))
             state.sfx_queue.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, player.pos))
             muzzle = native_fire_muzzle_pos(player.pos, player.aim_heading)
@@ -543,7 +541,7 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
             )
             _projectile_spawn(
                 state, players=players, pos=muzzle, angle=angle, type_id=ProjectileTemplateId.FIRE_BULLETS,
-                owner=owner, owner_player_index=player.index,
+                owner_id=owner_id, owner_player_index=player.index,
             )
             state.sprite_effects.spawn(
                 pos=muzzle, vel=Vec2.from_angle(player.aim_heading) * 25.0, scale=1.0,
@@ -557,12 +555,12 @@ def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[
     if PerkId.HOT_TEMPERED in state.perks:
         player.hot_tempered_timer = x87_pc24_add(player.hot_tempered_timer, dt)
         if player.hot_tempered_timer > intervals.hot_tempered:
-            owner = _owner_ref_for_player_projectiles(state, player.index)
+            owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
             for idx in range(8):
                 type_id = ProjectileTemplateId.PLASMA_RIFLE if idx & 1 else ProjectileTemplateId.PLASMA_MINIGUN
                 _projectile_spawn(
                     state, players=players, pos=player.pos, angle=x87_pc24_mul(float(idx), NATIVE_QUARTER_PI),
-                    type_id=type_id, owner=owner, owner_player_index=player.index,
+                    type_id=type_id, owner_id=owner_id, owner_player_index=player.index,
                 )
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
             player.hot_tempered_timer = x87_pc24_sub(player.hot_tempered_timer, intervals.hot_tempered)
@@ -876,7 +874,7 @@ def _player_tick_reload(
                     count=count,
                     angle_offset=0.1,
                     type_id=ProjectileTemplateId.PLASMA_MINIGUN,
-                    owner=_owner_ref_for_player_projectiles(state, player.index),
+                    owner_id=player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index),
                     owner_player_index=player.index,
                     players=players,
                 )

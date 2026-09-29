@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `25` |
+| `format_version` | int | `26` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -111,16 +111,17 @@ discarded RNG draw, and so does run setup; frames outside gameplay add none.
 | `outcome` | str | `death`, `quest_completed`, `tutorial_completed` or `incomplete` |
 | `elapsed_ms` | int | Quest spawn timeline for quests, session time otherwise (truncated) |
 | `kills` | int | Creature kill count (all players) |
+| `shots_fired` | int | Shots fired by all players, native `highscore_record_shots_fired` (since v26) |
+| `shots_hit` | int | Creature hits by any shot, native `highscore_record_shots_hit` |
 | `rng_state` | u32 | CRT RNG state after the final tick |
 | `pending_perks` | int | Unpicked perks |
 | `quest_final_ms` | int or nil | Set only for `quest_completed`: base time minus life and unpicked-perk bonuses; may be negative, exactly zero becomes 1 |
 | `players` | array of `PlayerResult` | Exactly `player_count` entries |
 
-`PlayerResult` is a map of `experience` (int), `health` (f32),
-`shots_fired` (int), `shots_hit` (int) and `most_used_weapon_id` (int). As in
-the high-score record, hits are clamped to shots fired (a piercing shot can hit
-several creatures). Typ-o reports submitted words as shots fired and matched
-words as hits.
+`PlayerResult` is a map of `experience` (int), `health` (f32) and
+`most_used_weapon_id` (int). As in the high-score record, hits are clamped to
+shots fired (a piercing shot can hit several creatures). Typ-o reports
+submitted words as shots fired and matched words as hits.
 
 ## Run end
 

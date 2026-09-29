@@ -10,12 +10,7 @@ from .assign import (
 )
 from .availability import prepare_weapon_availability, weapon_pick_random_available
 from .fire import WeaponFireCtx, WeaponFireResult, capture_fire_gate, fire_weapon
-from .spawn import (
-    owner_ref_for_player,
-    owner_ref_for_player_projectiles,
-    projectile_spawn,
-    spawn_projectile_ring,
-)
+from .spawn import projectile_spawn, spawn_projectile_ring
 
 __all__ = [
     "WeaponFireCtx",
@@ -24,8 +19,6 @@ __all__ = [
     "fire_weapon",
     "init_default_alt_weapon",
     "most_used_weapon_id_for_player",
-    "owner_ref_for_player",
-    "owner_ref_for_player_projectiles",
     "player_start_reload",
     "player_swap_alt_weapon",
     "prepare_weapon_availability",

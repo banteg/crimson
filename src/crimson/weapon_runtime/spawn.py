@@ -5,28 +5,13 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ..math_parity import NATIVE_TAU, f32, x87_pc24_add, x87_pc24_div, x87_pc24_mul
-from ..owner_ref import OwnerRef
+from ..owner_id import OWNER_LOCAL_PLAYER
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.state_types import PlayerState
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-
-
-def owner_ref_for_player(player_index: int) -> OwnerRef:
-    return OwnerRef.from_player(int(player_index))
-
-
-def owner_ref_for_player_projectiles(state: GameplayState, player_index: int) -> OwnerRef:
-    if not state.friendly_fire_enabled:
-        return OwnerRef.from_local_player(0)
-    return owner_ref_for_player(player_index)
-
-
-def _uses_native_player_projectile_path(owner: OwnerRef) -> bool:
-    legacy_owner = int(owner.to_legacy())
-    return legacy_owner == -100 or -3 <= legacy_owner <= -1
 
 
 def projectile_spawn(
@@ -36,19 +21,20 @@ def projectile_spawn(
     pos: Vec2,
     angle: float,
     type_id: ProjectileTemplateId,
-    owner: OwnerRef,
+    owner_id: int,
     owner_player_index: int,
-    hits_players: bool = False,
 ) -> int:
     """Port of `projectile_spawn` (0x00420440): a player's shot counts as fired and becomes Fire Bullets."""
 
-    uses_player_projectile_path = owner.is_player() and (
-        not state.preserve_bugs or _uses_native_player_projectile_path(owner)
-    )
+    # Native lists -100, -1, -2 and -3, so a fourth player's friendly-fire shots skip it; the rewrite takes any player.
+    if state.preserve_bugs:
+        uses_player_projectile_path = owner_id == OWNER_LOCAL_PLAYER or -3 <= owner_id <= -1
+    else:
+        uses_player_projectile_path = owner_id < 0
     if not state.bonus_spawn_guard and uses_player_projectile_path:
         # Native loops once more after converting, so a converted shot counts twice.
         while True:
-            state.shots_fired[owner_player_index] += 1
+            state.shots_fired += 1
             if type_id == ProjectileTemplateId.FIRE_BULLETS:
                 break
             # Native reads both players' timers whoever fired; the rewrite reads the shooter's.
@@ -64,8 +50,7 @@ def projectile_spawn(
         pos=pos,
         angle=float(angle),
         type_id=type_id,
-        owner=owner,
-        hits_players=bool(hits_players),
+        owner_id=owner_id,
     )
 
 
@@ -76,7 +61,7 @@ def spawn_projectile_ring(
     count: int,
     angle_offset: float,
     type_id: ProjectileTemplateId,
-    owner: OwnerRef,
+    owner_id: int,
     owner_player_index: int,
     players: list[PlayerState],
 ) -> None:
@@ -94,6 +79,6 @@ def spawn_projectile_ring(
             pos=origin_pos,
             angle=x87_pc24_add(x87_pc24_mul(float(idx), step), offset),
             type_id=type_id,
-            owner=owner,
+            owner_id=owner_id,
             owner_player_index=owner_player_index,
         )

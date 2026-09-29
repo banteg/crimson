@@ -11,7 +11,7 @@ from grim.view import ViewContext
 
 
 @pytest.mark.usefixtures("headless_resources")
-def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker, make_mode_config, assets_dir) -> None:
+def test_survival_high_score_record_in_multiplayer(mocker, make_mode_config, assets_dir) -> None:
     ctx = ViewContext(assets_dir=assets_dir)
     config = make_mode_config(game_mode=GameMode.SURVIVAL, updates={"player_count": 2})
 
@@ -27,10 +27,9 @@ def test_survival_high_score_record_uses_player0_stats_in_multiplayer(mocker, ma
     player1.experience = 9999
     mode.state.highscore_score_xp = 1234
 
-    mode.state.shots_fired[0] = 10
-    mode.state.shots_hit[0] = 7
-    mode.state.shots_fired[1] = 999
-    mode.state.shots_hit[1] = 888
+    # Native counts every player's shots in one pair of counters.
+    mode.state.shots_fired = 10
+    mode.state.shots_hit = 7
 
     mode.state.weapon_usage_time[1] = 5
     mode.state.weapon_shots_fired[1][2] = 999

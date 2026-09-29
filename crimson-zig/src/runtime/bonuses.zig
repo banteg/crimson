@@ -4,7 +4,7 @@ const native_math = @import("native_math.zig");
 
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const owner_ref = @import("owner_ref.zig");
+const owner_id_mod = @import("owner_id.zig");
 const perks = @import("perks.zig");
 const player_runtime = @import("player.zig");
 const projectiles_mod = @import("projectiles.zig");
@@ -407,7 +407,7 @@ pub fn applyPendingCreatureProjectiles(
         const type_id = pending.type_id;
         if (type_id <= 0) continue;
         const meta = projectileTravelBudgetFromRawId(type_id);
-        _ = projectiles.spawn(pending.pos, narrowF32(pending.angle), type_id, pending.owner, meta, true);
+        _ = projectiles.spawn(pending.pos, narrowF32(pending.angle), type_id, pending.owner_id, meta);
     }
     state.pending_creature_projectile_count = 0;
 }
@@ -443,10 +443,7 @@ fn applyBonus(
     const perk_player = if (state.preserve_bugs) players[0] else player.*;
     const multiplier: f32 = if (perkActive(perk_player, PerkId.bonus_economist)) 1.5 else 1.0;
     // Native encodes friendly fire in the owner id (-1 - player_index).
-    const player_owner = if (state.friendly_fire_enabled)
-        owner_ref.OwnerRef.fromPlayer(player_index)
-    else
-        owner_ref.OwnerRef.fromLocalPlayer(0);
+    const player_owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
 
     switch (bonus_id) {
         .weapon => {
@@ -507,7 +504,7 @@ fn applyBonus(
                 const type_id = @intFromEnum(game_ids.ProjectileTypeId.ion_rifle);
                 state.bonus_spawn_guard = true;
                 state.shock_chain_links_left = 0x20;
-                const proj_idx = step.projectiles.spawn(origin, angle, type_id, player_owner, projectileTravelBudgetFromRawId(type_id), false);
+                const proj_idx = step.projectiles.spawn(origin, angle, type_id, player_owner_id, projectileTravelBudgetFromRawId(type_id));
                 state.shock_chain_projectile_id = @intCast(proj_idx);
                 state.bonus_spawn_guard = false;
                 state.sfx_queue.append(.shock_hit_01);
@@ -518,7 +515,7 @@ fn applyBonus(
             state.bonus_spawn_guard = true;
             for (0..16) |ring_idx| {
                 const angle = @as(f32, @floatFromInt(ring_idx)) * 0.39269909;
-                _ = step.projectiles.spawn(origin, angle, type_id, player_owner, projectileTravelBudgetFromRawId(type_id), false);
+                _ = step.projectiles.spawn(origin, angle, type_id, player_owner_id, projectileTravelBudgetFromRawId(type_id));
             }
             state.bonus_spawn_guard = false;
             state.sfx_queue.append(.explosion_medium);
@@ -537,7 +534,7 @@ fn applyBonus(
             state.bonuses.double_experience = narrowF32(state.bonuses.double_experience + 6.0 * multiplier);
         },
         .nuke => {
-            const projectile_owner = owner_ref.OwnerRef.fromLocalPlayer(0);
+            const projectile_owner_id = owner_id_mod.owner_local_player;
             const bullet_count = (state.rng.randTagged(rng_callers.bonus_apply_nuke_bullet_count) & 3) + 4;
             for (0..bullet_count) |_| {
                 const angle = native_math.pc24Mul(
@@ -545,8 +542,8 @@ fn applyBonus(
                     @as(f32, 0.01),
                 );
                 var type_id = @intFromEnum(game_ids.ProjectileTypeId.pistol);
-                applyPlayerProjectileSpawnRules(state, players, projectile_owner, player_index, &type_id);
-                const proj_idx = step.projectiles.spawn(origin, angle, type_id, projectile_owner, projectileTravelBudgetFromRawId(type_id), false);
+                applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, player_index, &type_id);
+                const proj_idx = step.projectiles.spawn(origin, angle, type_id, projectile_owner_id, projectileTravelBudgetFromRawId(type_id));
                 const speed_scale = native_math.pc24Add(
                     native_math.pc24Mul(
                         @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.bonus_apply_nuke_pistol_speed_scale) % 50)),
@@ -565,15 +562,15 @@ fn applyBonus(
                     @as(f32, 0.01),
                 );
                 var type_id = @intFromEnum(game_ids.ProjectileTypeId.gauss_gun);
-                applyPlayerProjectileSpawnRules(state, players, projectile_owner, player_index, &type_id);
-                _ = step.projectiles.spawn(origin, angle, type_id, projectile_owner, projectileTravelBudgetFromRawId(type_id), false);
+                applyPlayerProjectileSpawnRules(state, players, projectile_owner_id, player_index, &type_id);
+                _ = step.projectiles.spawn(origin, angle, type_id, projectile_owner_id, projectileTravelBudgetFromRawId(type_id));
             }
             step.effects.spawnExplosionBurst(state, origin, 1.0, step.detail_preset);
             state.camera_shake_pulses = 0x14;
             state.camera_shake_timer = 0.2;
 
             state.bonus_spawn_guard = true;
-            const damage_owner = owner_ref.OwnerRef.fromPlayer(player_index);
+            const damage_owner_id = owner_id_mod.playerOwnerId(player.index);
             for (step.creatures.entries, 0..) |creature, idx| {
                 // Corpses take the blast too, which shrinks them faster.
                 if (!creature.active) continue;
@@ -595,7 +592,7 @@ fn applyBonus(
                     native_math.pc24Mul(damage_base, @as(f32, 5.0)),
                     .explosion,
                     .{},
-                    damage_owner,
+                    damage_owner_id,
                     step.dt,
                     step.world_size,
                 );
@@ -972,47 +969,28 @@ fn projectileTravelBudgetFromRawId(raw_id: i32) f32 {
 fn applyPlayerProjectileSpawnRules(
     state: *state_mod.GameplayState,
     players: []const state_mod.PlayerState,
-    owner: owner_ref.OwnerRef,
-    owner_player_index: ?usize,
+    owner_id: i32,
+    owner_player_index: usize,
     type_id: *i32,
 ) void {
     if (state.bonus_spawn_guard) return;
-    const player_ref = switch (owner) {
-        .player => |ref| ref,
-        else => return,
-    };
-    if (state.preserve_bugs and !owner.usesNativePlayerProjectilePath()) return;
-    const inferred_player_index: ?usize = if (player_ref.local_host and player_ref.index == 0)
-        if (players.len == 1) @as(?usize, 0) else null
-    else if (player_ref.index < players.len)
-        player_ref.index
-    else
-        null;
-    const player_index: ?usize = if (owner_player_index) |idx|
-        idx
-    else
-        inferred_player_index;
+    if (!owner_id_mod.projectileSpawnUsesPlayerPath(owner_id, state.preserve_bugs)) return;
 
     var shot_credit: i32 = 1;
+    // Native reads both players' timers whoever fired; the rewrite reads the shooter's.
     const fire_bullets_active = if (state.preserve_bugs) blk: {
         for (players[0..@min(players.len, 2)]) |player| {
             if (player.fire_bullets_timer > 0.0) break :blk true;
         }
         break :blk false;
-    } else if (player_index) |idx|
-        idx < players.len and players[idx].fire_bullets_timer > 0.0
-    else
-        false;
+    } else players[owner_player_index].fire_bullets_timer > 0.0;
     if (type_id.* != @intFromEnum(game_ids.ProjectileTypeId.fire_bullets) and
         fire_bullets_active)
     {
         type_id.* = @intFromEnum(game_ids.ProjectileTypeId.fire_bullets);
         shot_credit = 2;
     }
-    if (player_index) |idx| {
-        if (idx < state.shots_fired.len) state.shots_fired[idx] += shot_credit;
-    }
-    state.shots_fired_total += shot_credit;
+    state.shots_fired += shot_credit;
 }
 
 test "player projectile spawn rules preserve global fire bullets timer" {
@@ -1020,7 +998,7 @@ test "player projectile spawn rules preserve global fire bullets timer" {
         .{ .index = 0, .pos = .{} },
         .{ .index = 1, .pos = .{}, .fire_bullets_timer = 1.0 },
     };
-    const owner = owner_ref.OwnerRef.fromLocalPlayer(0);
+    const owner_id = owner_id_mod.owner_local_player;
 
     var preserved_state = state_mod.GameplayState.init(1);
     preserved_state.preserve_bugs = true;
@@ -1028,7 +1006,7 @@ test "player projectile spawn rules preserve global fire bullets timer" {
     applyPlayerProjectileSpawnRules(
         &preserved_state,
         players[0..],
-        owner,
+        owner_id,
         0,
         &preserved_type_id,
     );
@@ -1036,8 +1014,7 @@ test "player projectile spawn rules preserve global fire bullets timer" {
         @intFromEnum(game_ids.ProjectileTypeId.fire_bullets),
         preserved_type_id,
     );
-    try std.testing.expectEqual(@as(i32, 2), preserved_state.shots_fired[0]);
-    try std.testing.expectEqual(@as(i32, 2), preserved_state.shots_fired_total);
+    try std.testing.expectEqual(@as(i32, 2), preserved_state.shots_fired);
 
     var corrected_state = state_mod.GameplayState.init(1);
     corrected_state.preserve_bugs = false;
@@ -1045,7 +1022,7 @@ test "player projectile spawn rules preserve global fire bullets timer" {
     applyPlayerProjectileSpawnRules(
         &corrected_state,
         players[0..],
-        owner,
+        owner_id,
         0,
         &corrected_type_id,
     );
@@ -1053,8 +1030,7 @@ test "player projectile spawn rules preserve global fire bullets timer" {
         @intFromEnum(game_ids.ProjectileTypeId.pistol),
         corrected_type_id,
     );
-    try std.testing.expectEqual(@as(i32, 1), corrected_state.shots_fired[0]);
-    try std.testing.expectEqual(@as(i32, 1), corrected_state.shots_fired_total);
+    try std.testing.expectEqual(@as(i32, 1), corrected_state.shots_fired);
 }
 
 fn appendPickupRecord(
@@ -2012,9 +1988,9 @@ test "fireblast spawns sixteen plasma rifle projectiles owned by the picker unde
     try std.testing.expectEqual(@as(usize, 16), world.activeProjectileCount(.plasma_rifle));
     for (world.projectiles.entries) |entry| {
         if (!entry.active) continue;
-        try std.testing.expectEqual(@as(?usize, 1), entry.owner.playerIndex());
+        try std.testing.expectEqual(owner_id_mod.playerOwnerId(1), entry.owner_id);
     }
-    try std.testing.expectEqual(@as(i32, 0), state.shots_fired_total);
+    try std.testing.expectEqual(@as(i32, 0), state.shots_fired);
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
@@ -2059,7 +2035,7 @@ test "nuke spawns pistol and gauss projectiles and credits the picker's shots" {
     try std.testing.expectEqual(@as(usize, 2), world.activeProjectileCount(.gauss_gun));
     for (world.projectiles.entries) |entry| {
         if (!entry.active) continue;
-        try std.testing.expectEqual(owner_ref.OwnerRef.fromLocalPlayer(0), entry.owner);
+        try std.testing.expectEqual(owner_id_mod.owner_local_player, entry.owner_id);
         if (entry.type_id == @intFromEnum(game_ids.ProjectileTypeId.pistol)) {
             try std.testing.expectApproxEqAbs(@as(f32, 55.0), entry.travel_budget, 1e-6);
             try std.testing.expect(entry.speed_scale >= 0.5 and entry.speed_scale < 1.0);
@@ -2069,9 +2045,7 @@ test "nuke spawns pistol and gauss projectiles and credits the picker's shots" {
         }
     }
     const shots: i32 = @intCast(pistol_count + 2);
-    try std.testing.expectEqual(@as(i32, 0), state.shots_fired[0]);
-    try std.testing.expectEqual(shots, state.shots_fired[1]);
-    try std.testing.expectEqual(shots, state.shots_fired_total);
+    try std.testing.expectEqual(shots, state.shots_fired);
     try std.testing.expect(!state.bonus_spawn_guard);
 }
 
@@ -2097,7 +2071,7 @@ test "nuke then freeze in one pickup pass shatters the nuke's kill" {
     try std.testing.expect(!world.creatures.entries[1].active);
     try std.testing.expectEqual(@as(f32, -830.0), world.creatures.entries[0].hp);
     try std.testing.expectEqual(@as(f32, 4.984000205993652), state.bonuses.freeze);
-    try std.testing.expectEqual(@as(i32, 6), state.shots_fired_total);
+    try std.testing.expectEqual(@as(i32, 6), state.shots_fired);
     try std.testing.expectEqual(@as(u32, 0x40db2b34), state.rng.state);
 }
 
@@ -2108,7 +2082,7 @@ test "pending creature projectile queue materializes hostile shots before projec
     state.pending_creature_projectile_count = 1;
     state.pending_creature_projectiles[0] = .{
         .type_id = @intFromEnum(game_ids.ProjectileTypeId.plasma_rifle),
-        .owner = owner_ref.OwnerRef.fromCreature(17),
+        .owner_id = 17,
         .angle = std.math.pi / 2.0,
         .pos = .{ .x = 100.0, .y = 200.0 },
     };
@@ -2117,9 +2091,8 @@ test "pending creature projectile queue materializes hostile shots before projec
 
     try std.testing.expectEqual(@as(i32, 0), state.pending_creature_projectile_count);
     try std.testing.expect(projectiles.entries[0].active);
-    try std.testing.expect(projectiles.entries[0].hits_players);
     try std.testing.expectEqual(@intFromEnum(game_ids.ProjectileTypeId.plasma_rifle), projectiles.entries[0].type_id);
-    try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner.toLegacy());
+    try std.testing.expectEqual(@as(i32, 17), projectiles.entries[0].owner_id);
     try std.testing.expectApproxEqAbs(@as(f32, 100.0), projectiles.entries[0].pos.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 200.0), projectiles.entries[0].pos.y, 1e-6);
 }
