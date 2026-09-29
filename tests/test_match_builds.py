@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from itertools import pairwise
 
 import pytest
@@ -10,6 +11,53 @@ from crimson_re import match_builds
 
 REGISTRY = match_builds.load_registry()
 MAPPED_IMAGES = match_builds.mapped_images(REGISTRY)
+
+
+@pytest.fixture
+def recovered_198_map():
+    image = REGISTRY.image("1.9.8", "crimsonland.exe")
+    if not image.path.is_file():
+        pytest.skip("pinned historical executable unavailable")
+    recovery = json.loads((image.map_dir / "recovered.json").read_text())
+    payload = {
+        "functions": json.loads(image.target.functions_path.read_text()),
+        "data": json.loads(image.target.data_map_path.read_text()),
+        "summary": {},
+    }
+    return image, REGISTRY.canonical(image), payload, recovery
+
+
+def test_reviewed_historical_identities_retain_complete_extents_and_data(recovered_198_map) -> None:
+    image, canonical, payload, recovery = recovered_198_map
+    match_builds.apply_recovered_map(image, canonical, payload, recovery)
+    rows = {row["name"]: row for row in payload["functions"]}
+    assert (rows["projectile_spawn"]["size"], rows["weapon_table_init"]["size"]) == (390, 3974)
+    assert rows["player_update"]["address"] == "0x00413C10"
+    entries = {row["name"]: row["address"] for row in payload["data"]["entries"]}
+    assert entries["player_state_table"] == "0x0048e5a0"
+    assert entries["weapon_table"] == "0x004d4c74"
+    # Identity evidence does not imply an instruction or encoded-body match.
+    assert rows["projectile_spawn"]["evidence"] == "recovered"
+
+
+@pytest.mark.parametrize("invalid", ["image", "body", "instruction", "operand", "name", "overlap"])
+def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, invalid: str) -> None:
+    image, canonical, payload, original = recovered_198_map
+    recovery = deepcopy(original)
+    if invalid == "image":
+        recovery["sha256"] = "0" * 64
+    elif invalid == "body":
+        recovery["functions"][0]["body_sha256"] = "0" * 64
+    elif invalid == "instruction":
+        recovery["data"][0]["bytes"] = "00"
+    elif invalid == "operand":
+        recovery["data"][0]["address"] = "0x00484d20"
+    elif invalid == "name":
+        recovery["data"][0]["name"] = "unrecovered_identity"
+    else:
+        payload["functions"].append({"name": "interior_false_positive", "address": "0x0041FC21", "end": "0x0041FC22"})
+    with pytest.raises(ValueError):
+        match_builds.apply_recovered_map(image, canonical, payload, recovery)
 
 
 def test_engine_maps_precede_the_game_interface_consumer() -> None:

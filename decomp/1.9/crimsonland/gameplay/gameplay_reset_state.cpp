@@ -286,7 +286,7 @@ void gameplay_reset_state(void)
     for (i = 0; i < 16; ++i) {
         bonus_pool[i].bonus_id = BONUS_ID_NONE;
     }
-    for (i = 0; i < 0x60; ++i) {
+    for (i = 0; i < PROJECTILE_POOL_CAPACITY; ++i) {
         projectile_pool[i].active = 0;
     }
     for (i = 0; i < 0x180; ++i) {

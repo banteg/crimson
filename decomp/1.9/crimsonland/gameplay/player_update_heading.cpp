@@ -292,6 +292,7 @@ extern "C" void player_update(void)
         player->shot_cooldown = 0.0f;
     }
 
+#if CL_BUILD != 10908
     if (perk_count_get(perk_id_man_bomb) != 0) {
         player->man_bomb_timer = player->man_bomb_timer + frame_dt;
         if (player->man_bomb_timer > perk_man_bomb_trigger_interval_s) {
@@ -416,6 +417,8 @@ extern "C" void player_update(void)
     } else {
         player->fire_cough_timer = 0.0f;
     }
+
+#endif
 
     if (perk_count_get(perk_id_hot_tempered) != 0) {
         player->hot_tempered_timer = player->hot_tempered_timer + frame_dt;
@@ -880,8 +883,10 @@ extern "C" void player_update(void)
             reload_scale = 3.0f;
         }
     } else {
+#if CL_BUILD != 10908
         player->man_bomb_timer = 0.0f;
         player->living_fortress_timer = 0.0f;
+#endif
     }
 
     if (perk_count_get(perk_id_angry_reloader) != 0
@@ -1179,6 +1184,7 @@ extern "C" void player_update(void)
             *(vec2_t *)&player_state_table[spread_index].position - spread_target)
             - 1.5707964f;
 
+#if CL_BUILD != 10908
         if (grim_interface_ptr->grim_is_key_active(0x22)) {
             player->fire_bullets_timer = 10.0f;
         }
@@ -1230,6 +1236,9 @@ extern "C" void player_update(void)
                     + fire_bullets_fallback_spread_heat * 1.3f;
             }
         } else {
+#else
+        {
+#endif
             player->shot_cooldown =
                 weapon_table[player->weapon_id].shot_cooldown;
             *muzzle_flash_alpha = *muzzle_flash_alpha

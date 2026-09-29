@@ -36,7 +36,7 @@ MAX_SIZE_RATIO = 1.5
 FUNCTION_ALIGNMENT = 16
 IMAGE_SCN_MEM_EXECUTE = 0x20000000
 # How a build's function was placed, strongest first; see _Mapper.
-EVIDENCE = ("exact", "interface", "referenced", "called", "ordered")
+EVIDENCE = ("exact", "interface", "recovered", "referenced", "called", "ordered")
 # Scratch states from worst to best; a scan keeps each scratch's best compiler.
 SCAN_STATES = ("error", "wip", "audit", "match")
 
@@ -262,7 +262,66 @@ def _imports(path: Path) -> list[dict[str, Any]]:
 
 def map_build_image(image: BuildImage, canonical: BuildImage) -> dict[str, Any]:
     """Derive ``image``'s function and data maps from its family's canonical image."""
-    return _Mapper(image, canonical).run()
+    payload = _Mapper(image, canonical).run()
+    recovery = image.map_dir / "recovered.json"
+    if recovery.is_file():
+        apply_recovered_map(image, canonical, payload, json.loads(recovery.read_text(encoding="utf-8")))
+    return payload
+
+
+def apply_recovered_map(
+    image: BuildImage, canonical: BuildImage, payload: dict[str, Any], recovery: dict[str, Any],
+) -> None:
+    """Retain reviewed native identities and extents across heuristic map refreshes.
+
+    Pins bind function bodies and the instructions identifying data to this
+    image. These annotations establish identity, never compiled match credit.
+    """
+    if recovery.get("schema") != 1:
+        raise ValueError("unsupported recovered map schema")
+    if recovery["sha256"] != image.sha256 or image.state() != "ok":
+        raise ValueError("recovered map image hash mismatch")
+    native = matchlib.load_image(image.path)
+    manifest = matchlib.load_function_manifest(
+        canonical.target.functions_path, metadata_path=canonical.target.metadata_path,
+        image_name=canonical.target.image_name, scope="all",
+    )
+    functions = {function.name: function for function in manifest.functions}
+    rows = {row["name"]: row for row in payload["functions"]}
+    for recovered in recovery.get("functions", ()):
+        function = functions[recovered["name"]]
+        start, end = (matchlib.parse_int(recovered[key]) for key in ("address", "end"))
+        if end <= start or hashlib.sha256(native.function_bytes(start, end)).hexdigest() != recovered["body_sha256"]:
+            raise ValueError(f"recovered function body hash mismatch: {function.name}")
+        row = dict(rows.get(function.name, {}))
+        row.update(
+            address=f"0x{start:08X}", end=f"0x{end:08X}", size=end - start,
+            canonical_address=f"0x{function.address:08X}", name=function.name, evidence="recovered",
+        )
+        rows[function.name] = row
+    entries = {row["name"]: row for row in payload["data"]["entries"]}
+    names = _reference_catalog(canonical)
+    for recovered in recovery.get("data", ()):
+        name = recovered["name"]
+        if not names.knows_name(name):
+            raise ValueError(f"unknown recovered data identity: {name}")
+        address = matchlib.parse_int(recovered["address"])
+        reference = matchlib.parse_int(recovered["reference"])
+        encoded = bytes.fromhex(recovered["bytes"])
+        value = address + recovered.get("offset", 0)
+        if not encoded or native.function_bytes(reference, reference + len(encoded)) != encoded:
+            raise ValueError(f"recovered data reference bytes mismatch: {name}")
+        if struct.pack("<I", value) not in encoded:
+            raise ValueError(f"recovered data reference value mismatch: {name}")
+        entries[name] = {"address": f"0x{address:08x}", "name": name, "program": image.target.image_name}
+    ordered = sorted(rows.values(), key=lambda row: matchlib.parse_int(row["address"]))
+    if any(matchlib.parse_int(left["end"]) > matchlib.parse_int(right["address"]) for left, right in pairwise(ordered)):
+        raise ValueError("recovered function extents overlap mapped functions")
+    payload["functions"] = ordered
+    payload["data"]["entries"] = sorted(entries.values(), key=lambda row: (matchlib.parse_int(row["address"]), row["name"]))
+    payload["data"]["notes"] += " Reviewed native identities also retain their pinned instruction references in recovered.json."
+    payload["summary"].update({evidence: sum(row["evidence"] == evidence for row in ordered) for evidence in EVIDENCE})
+    payload["summary"]["data"] = len(entries)
 
 
 def _grim_slot_offsets(build: str) -> dict[int, int]:

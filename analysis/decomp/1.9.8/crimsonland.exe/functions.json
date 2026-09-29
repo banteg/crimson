@@ -1622,6 +1622,14 @@
     "size": 368
   },
   {
+    "address": "0x00413C10",
+    "end": "0x004171F1",
+    "size": 13793,
+    "canonical_address": "0x004136B0",
+    "name": "player_update",
+    "evidence": "recovered"
+  },
+  {
     "address": "0x00417200",
     "canonical_address": "0x00417660",
     "end": "0x0041721A",
@@ -2604,10 +2612,10 @@
   {
     "address": "0x0041F4C0",
     "canonical_address": "0x0041FC60",
-    "end": "0x0041F4E0",
-    "evidence": "ordered",
+    "end": "0x0041F4D2",
+    "evidence": "recovered",
     "name": "weapon_table_entry",
-    "size": 32
+    "size": 18
   },
   {
     "address": "0x0041F4E0",
@@ -2660,10 +2668,10 @@
   {
     "address": "0x0041FC20",
     "canonical_address": "0x00420440",
-    "end": "0x0041FDB0",
-    "evidence": "ordered",
+    "end": "0x0041FDA6",
+    "evidence": "recovered",
     "name": "projectile_spawn",
-    "size": 400
+    "size": 390
   },
   {
     "address": "0x0041FDB0",
@@ -5284,18 +5292,18 @@
   {
     "address": "0x0044F8C0",
     "canonical_address": "0x00451910",
-    "end": "0x0044F940",
-    "evidence": "ordered",
+    "end": "0x0044F933",
+    "evidence": "recovered",
     "name": "weapon_table_defaults_global_init",
-    "size": 128
+    "size": 115
   },
   {
     "address": "0x0044F940",
     "canonical_address": "0x004519B0",
-    "end": "0x00450000",
-    "evidence": "called",
+    "end": "0x004508C6",
+    "evidence": "recovered",
     "name": "weapon_table_init",
-    "size": 1728
+    "size": 3974
   },
   {
     "address": "0x004508D0",

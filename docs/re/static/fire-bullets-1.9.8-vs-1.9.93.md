@@ -159,8 +159,56 @@ The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branc
 
 ### 1.9.8
 
-- Recursive add-on shot in `sub_41fc20`: `crimsonland_1.9.8.txt:25166`, `25170`, `25188`
-- Cooldown from weapon table in `player_update`: `crimsonland_1.9.8.txt:17517`, `18793`
+The pinned executable is SHA-256
+`0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e`.
+Native identities, complete function extents and identifying data-reference
+instructions are retained in
+`analysis/decomp/1.9.8/crimsonland.exe/recovered.json`. The map refresh checks
+these pins; a recovered identity alone never earns compiled match credit.
+
+The shared 1.9 source selects this behavior with `CL_BUILD=10908`:
+
+- `projectile_spawn`, `0x0041fc20..0x0041fda6`: **130/130 instructions**, full
+  prefix, **13 resolved references**, relocation-aware **encoded-body exact**.
+- `weapon_table_init`, `0x0044f940..0x004508c6`: **657/657 instructions**, full
+  prefix, **462 resolved references**, relocation-aware **encoded-body exact**.
+- The weapon accessor and default constructor, projectile pool constructor
+  and reset, player constructor, and plugin pool clear also match their
+  complete native encoded bodies.
+
+At `0x0041fc91`, the projectile spawner recursively emits type `0x2d` before
+allocating the original projectile. The type guard at `0x0041fc53` prevents
+recursion, and the tests at `0x0041fc5e` and `0x0041fc73` read both players'
+Fire Bullets timers. Either active timer enables the add-on for any eligible
+player-owned projectile. The recursive call also increments the shots-fired
+counter; the bonus-spawn guard suppresses both counting and the add-on.
+
+The pool has **64 entries**, compared with 96 in 1.9.93. Both versions fall
+back to overwriting the final slot when full. In 1.9.8, a full pool lets the
+original shot immediately overwrite its recursive fire shot. The DPS tables
+above are static estimates, not measurements of pool saturation or firing
+cadence under a running frame loop.
+
+Weapon storage and consumer views have a **120-byte stride**, retain the
+leading ammo class, and lack the later pellet-count member. The constructor
+and accessor independently verify the stride. The complete initializer also
+verifies the older ordering of ammo-class/SFX stores and the sawed-off
+shotgun's flags/clip stores.
+
+Player records have a **0x354-byte stride**, compared with `0x360` in 1.9.93.
+The older layout omits the Man Bomb, Living Fortress and Fire Cough timers;
+its Fire Bullets timer is at `0x310`, compared with `0x31c`. The constructor
+matches with these three fields and assignments omitted. The corresponding
+three perk-update blocks and later dedicated Fire Bullets branch are excluded
+from the older `player_update` source. That entire function is still partial;
+its full extent is recovered, but it has not earned exact-match credit.
+
+Reproduce the two central matches with:
+
+```sh
+uv run crimson match scratch tools/match/scratches/projectile_spawn --build 1.9.8 --json
+uv run crimson match scratch tools/match/scratches/weapon_table_init --build 1.9.8 --json
+```
 
 ### 1.9.93
 

@@ -11,7 +11,7 @@ extern "C" void plugin_runtime_clear_pools(void)
         creature_pool[index].active = 0;
         creature_pool[index].health = -1.0f;
     }
-    for (index = 0; index < 0x60; ++index) {
+    for (index = 0; index < PROJECTILE_POOL_CAPACITY; ++index) {
         projectile_pool[index].active = 0;
     }
 

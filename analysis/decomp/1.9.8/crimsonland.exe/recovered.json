@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "sha256": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
+  "functions": [
+    {
+      "name": "projectile_spawn",
+      "address": "0x41fc20",
+      "end": "0x41fda6",
+      "body_sha256": "9814517207b4cd964d7fb1525bf280c2f288a282950e49c97968808e1a061141",
+      "note": "Recursive Fire Bullets add-on, 64-slot allocator, all return paths."
+    },
+    {
+      "name": "weapon_table_entry",
+      "address": "0x41f4c0",
+      "end": "0x41f4d2",
+      "body_sha256": "1e9725a38944671ca7671ed4ef8a7680d379eef951abfd85458ef4e13e932976",
+      "note": "Native table accessor multiplies the weapon id by 120."
+    },
+    {
+      "name": "weapon_table_defaults_global_init",
+      "address": "0x44f8c0",
+      "end": "0x44f933",
+      "body_sha256": "c88fd6f6c77d030dc0c5249e5277f6524d6bfff63fccdf12786e00d599bbf9c5",
+      "note": "64 constructor iterations with a 120-byte stride."
+    },
+    {
+      "name": "weapon_table_init",
+      "address": "0x44f940",
+      "end": "0x4508c6",
+      "body_sha256": "89f8cc2e6ee17ade70356fd85001dda98d21e3af4f89c6172db9cc5d9ff9cb24",
+      "note": "Complete initializer; the heuristic entry-point inventory split its body at an interior address."
+    },
+    {
+      "name": "player_update",
+      "address": "0x413c10",
+      "end": "0x4171f1",
+      "body_sha256": "ebc922834ffd6e8de4e2877700cdcc77bd299665961308d3b95d08e78dfe87e4",
+      "note": "Native gameplay caller has a 0x354-byte player stride and no dedicated Fire Bullets firing branch."
+    }
+  ],
+  "data": [
+    {
+      "name": "bonus_spawn_guard",
+      "address": "0x484d1c",
+      "reference": "0x41fc20",
+      "bytes": "a01c4d4800",
+      "offset": 0,
+      "note": "First instruction of projectile_spawn."
+    },
+    {
+      "name": "player_state_table",
+      "address": "0x48e5a0",
+      "reference": "0x41fc5e",
+      "bytes": "d905b0e84800",
+      "offset": 784,
+      "note": "Player-zero Fire Bullets timer; player-one timer is at 0x48ec04, confirming 0x354 stride."
+    },
+    {
+      "name": "weapon_table",
+      "address": "0x4d4c74",
+      "reference": "0x41fcd3",
+      "bytes": "8b14d5e04c4d00",
+      "offset": 108,
+      "note": "Travel budget load in projectile_spawn; accessor independently returns this table base."
+    },
+    {
+      "name": "weapon_ammo_class",
+      "address": "0x4d4c70",
+      "reference": "0x44f8ca",
+      "bytes": "b8e44c4d00",
+      "offset": 116,
+      "note": "Constructor cursor at damage_scale, 0x74 bytes after the storage base."
+    }
+  ]
+}

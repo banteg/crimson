@@ -10,13 +10,25 @@ extern "C" int projectile_spawn(
     int type_id,
     int owner_id)
 {
+#if CL_BUILD != 10908
     float default_damage = 1.0f;
+#endif
     int index;
     int result;
     projectile_t *projectile;
     projectile_t *spawned;
 
     if (!bonus_spawn_guard) {
+#if CL_BUILD == 10908
+        if (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3) {
+            ++highscore_record_shots_fired;
+            if (type_id != PROJECTILE_TYPE_FIRE_BULLETS
+                && (player_state_table[0].fire_bullets_timer > 0.0f
+                    || player_state_table[1].fire_bullets_timer > 0.0f)) {
+                projectile_spawn(pos, angle, PROJECTILE_TYPE_FIRE_BULLETS, owner_id);
+            }
+        }
+#else
         while (
             (owner_id == -100 || owner_id == -1 || owner_id == -2 || owner_id == -3)
             && (
@@ -29,15 +41,16 @@ extern "C" int projectile_spawn(
             type_id = PROJECTILE_TYPE_FIRE_BULLETS;
             default_damage = 1.0f;
         }
+#endif
     }
 
-    for (index = 0; index < 0x60; index++) {
+    for (index = 0; index < PROJECTILE_POOL_CAPACITY; index++) {
         if (!projectile_pool[index].active) {
             result = index;
             goto initialize;
         }
     }
-    result = 0x5f;
+    result = PROJECTILE_POOL_CAPACITY - 1;
 
 initialize:
     spawned = &projectile_pool[result];
@@ -56,12 +69,22 @@ initialize:
 
     if (type_id == PROJECTILE_TYPE_ION_MINIGUN) {
         spawned->fields.hit_radius = 3.0f;
+
+#if CL_BUILD == 10908
+        spawned->fields.damage_pool = 1.0f;
+#else
         memcpy(&spawned->fields.damage_pool, &default_damage, sizeof(default_damage));
+#endif
         return result;
     }
     if (type_id == PROJECTILE_TYPE_ION_RIFLE) {
         spawned->fields.hit_radius = 5.0f;
+
+#if CL_BUILD == 10908
+        spawned->fields.damage_pool = 1.0f;
+#else
         memcpy(&spawned->fields.damage_pool, &default_damage, sizeof(default_damage));
+#endif
         return result;
     }
     if (type_id == PROJECTILE_TYPE_ION_CANNON || type_id == PROJECTILE_TYPE_PLASMA_CANNON) {
@@ -81,6 +104,11 @@ initialize:
             return result;
         }
     }
+
+#if CL_BUILD == 10908
+    spawned->fields.damage_pool = 1.0f;
+#else
     memcpy(&spawned->fields.damage_pool, &default_damage, sizeof(default_damage));
+#endif
     return result;
 }

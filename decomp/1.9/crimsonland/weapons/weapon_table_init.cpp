@@ -36,7 +36,9 @@ extern "C" void weapon_table_init(void)
 
     for (weapon_id = 0; weapon_id < 64; ++weapon_id) {
         W(weapon_id).hud_icon_id = weapon_id - 1;
+#if CL_BUILD != 10908
         W(weapon_id).pellet_count = 1;
+#endif
     }
     W(WEAPON_ID_NONE).hud_icon_id = 0;
 
@@ -100,7 +102,9 @@ extern "C" void weapon_table_init(void)
 
     strcpy(W(WEAPON_ID_SHOTGUN).name, "Shotgun");
     W(WEAPON_ID_SHOTGUN).clip_size = 12;
+#if CL_BUILD != 10908
     W(WEAPON_ID_SHOTGUN).pellet_count = 12;
+#endif
     W(WEAPON_ID_SHOTGUN).flags = 1;
     W(WEAPON_ID_SHOTGUN).shot_cooldown = 0.85f;
     W(WEAPON_ID_SHOTGUN).reload_time = 1.9f;
@@ -109,9 +113,16 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_SHOTGUN).reload_sfx_id = sfx_shotgun_reload;
 
     strcpy(W(WEAPON_ID_SAWED_OFF_SHOTGUN).name, "Sawed-off Shotgun");
-    W(WEAPON_ID_SAWED_OFF_SHOTGUN).clip_size = 12;
-    W(WEAPON_ID_SAWED_OFF_SHOTGUN).pellet_count = 12;
+#if CL_BUILD == 10908
     W(WEAPON_ID_SAWED_OFF_SHOTGUN).flags = 1;
+#endif
+    W(WEAPON_ID_SAWED_OFF_SHOTGUN).clip_size = 12;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_SAWED_OFF_SHOTGUN).pellet_count = 12;
+#endif
+#if CL_BUILD != 10908
+    W(WEAPON_ID_SAWED_OFF_SHOTGUN).flags = 1;
+#endif
     W(WEAPON_ID_SAWED_OFF_SHOTGUN).shot_cooldown = 0.87f;
     W(WEAPON_ID_SAWED_OFF_SHOTGUN).reload_time = 1.9f;
     W(WEAPON_ID_SAWED_OFF_SHOTGUN).spread_heat = 0.13f;
@@ -124,7 +135,9 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_JACKHAMMER).shot_cooldown = 0.14f;
     W(WEAPON_ID_JACKHAMMER).reload_time = 3.0f;
     W(WEAPON_ID_JACKHAMMER).spread_heat = 0.16f;
+#if CL_BUILD != 10908
     W(WEAPON_ID_JACKHAMMER).pellet_count = 4;
+#endif
     W(WEAPON_ID_JACKHAMMER).shot_sfx_base_id = sfx_shotgun_fire;
     W(WEAPON_ID_JACKHAMMER).reload_sfx_id = sfx_shotgun_reload;
 
@@ -144,8 +157,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_FLAMETHROWER).shot_cooldown = 0.008113f;
     W(WEAPON_ID_FLAMETHROWER).reload_time = 2.0f;
     W(WEAPON_ID_FLAMETHROWER).spread_heat = 0.015f;
-    W(WEAPON_ID_FLAMETHROWER).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD == 10908
     W(WEAPON_ID_FLAMETHROWER).ammo_class = 1;
+#endif
+    W(WEAPON_ID_FLAMETHROWER).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_FLAMETHROWER).ammo_class = 1;
+#endif
     W(WEAPON_ID_FLAMETHROWER).reload_sfx_id = sfx_autorifle_reload;
 
     strcpy(W(WEAPON_ID_PLASMA_RIFLE).name, "Plasma Rifle");
@@ -162,7 +180,9 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_MULTI_PLASMA).reload_time = 1.4f;
     W(WEAPON_ID_MULTI_PLASMA).spread_heat = 0.32f;
     W(WEAPON_ID_MULTI_PLASMA).shot_sfx_base_id = sfx_shock_fire;
+#if CL_BUILD != 10908
     W(WEAPON_ID_MULTI_PLASMA).pellet_count = 3;
+#endif
     W(WEAPON_ID_MULTI_PLASMA).reload_sfx_id = sfx_autorifle_reload;
 
     strcpy(W(WEAPON_ID_PLASMA_MINIGUN).name, "Plasma Minigun");
@@ -188,9 +208,14 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_ROCKET_LAUNCHER).shot_cooldown = 0.7408117f;
     W(WEAPON_ID_ROCKET_LAUNCHER).reload_time = 1.2f;
     W(WEAPON_ID_ROCKET_LAUNCHER).spread_heat = 0.42f;
+#if CL_BUILD == 10908
+    W(WEAPON_ID_ROCKET_LAUNCHER).ammo_class = 2;
+#endif
     W(WEAPON_ID_ROCKET_LAUNCHER).shot_sfx_base_id = sfx_rocket_fire;
     W(WEAPON_ID_ROCKET_LAUNCHER).reload_sfx_id = sfx_autorifle_reload_alt;
+#if CL_BUILD != 10908
     W(WEAPON_ID_ROCKET_LAUNCHER).ammo_class = 2;
+#endif
 
     strcpy(W(WEAPON_ID_SEEKER_ROCKETS).name, "Seeker Rockets");
     W(WEAPON_ID_SEEKER_ROCKETS).flags = 8;
@@ -198,9 +223,14 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_SEEKER_ROCKETS).shot_cooldown = 0.3108117f;
     W(WEAPON_ID_SEEKER_ROCKETS).reload_time = 1.2f;
     W(WEAPON_ID_SEEKER_ROCKETS).spread_heat = 0.32f;
+#if CL_BUILD == 10908
+    W(WEAPON_ID_SEEKER_ROCKETS).ammo_class = 2;
+#endif
     W(WEAPON_ID_SEEKER_ROCKETS).shot_sfx_base_id = sfx_rocket_fire;
     W(WEAPON_ID_SEEKER_ROCKETS).reload_sfx_id = sfx_autorifle_reload_alt;
+#if CL_BUILD != 10908
     W(WEAPON_ID_SEEKER_ROCKETS).ammo_class = 2;
+#endif
 
     strcpy(W(WEAPON_ID_MEAN_MINIGUN).name, "Mean Minigun");
     W(WEAPON_ID_MEAN_MINIGUN).flags = 3;
@@ -217,7 +247,9 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_PLASMA_SHOTGUN).reload_time = 3.1f;
     W(WEAPON_ID_PLASMA_SHOTGUN).spread_heat = 0.11f;
     W(WEAPON_ID_PLASMA_SHOTGUN).shot_sfx_base_id = sfx_plasmashotgun_fire;
+#if CL_BUILD != 10908
     W(WEAPON_ID_PLASMA_SHOTGUN).pellet_count = 14;
+#endif
     W(WEAPON_ID_PLASMA_SHOTGUN).reload_sfx_id = sfx_shotgun_reload;
 
     strcpy(W(WEAPON_ID_BLOW_TORCH).name, "Blow Torch");
@@ -227,8 +259,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_BLOW_TORCH).shot_cooldown = 0.006113f;
     W(WEAPON_ID_BLOW_TORCH).reload_time = 1.5f;
     W(WEAPON_ID_BLOW_TORCH).spread_heat = 0.01f;
-    W(WEAPON_ID_BLOW_TORCH).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD == 10908
     W(WEAPON_ID_BLOW_TORCH).ammo_class = 1;
+#endif
+    W(WEAPON_ID_BLOW_TORCH).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_BLOW_TORCH).ammo_class = 1;
+#endif
     W(WEAPON_ID_BLOW_TORCH).reload_sfx_id = sfx_autorifle_reload;
 
     strcpy(W(WEAPON_ID_HR_FLAMER).name, "HR Flamer");
@@ -238,8 +275,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_HR_FLAMER).shot_cooldown = 0.0085f;
     W(WEAPON_ID_HR_FLAMER).reload_time = 1.8f;
     W(WEAPON_ID_HR_FLAMER).spread_heat = 0.01f;
-    W(WEAPON_ID_HR_FLAMER).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD == 10908
     W(WEAPON_ID_HR_FLAMER).ammo_class = 1;
+#endif
+    W(WEAPON_ID_HR_FLAMER).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_HR_FLAMER).ammo_class = 1;
+#endif
     W(WEAPON_ID_HR_FLAMER).reload_sfx_id = sfx_autorifle_reload;
 
     strcpy(W(WEAPON_ID_MINI_ROCKET_SWARMERS).name, "Mini-Rocket Swarmers");
@@ -248,9 +290,14 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_MINI_ROCKET_SWARMERS).shot_cooldown = 1.8f;
     W(WEAPON_ID_MINI_ROCKET_SWARMERS).reload_time = 1.8f;
     W(WEAPON_ID_MINI_ROCKET_SWARMERS).spread_heat = 0.12f;
+#if CL_BUILD == 10908
+    W(WEAPON_ID_MINI_ROCKET_SWARMERS).ammo_class = 2;
+#endif
     W(WEAPON_ID_MINI_ROCKET_SWARMERS).shot_sfx_base_id = sfx_rocket_fire;
     W(WEAPON_ID_MINI_ROCKET_SWARMERS).reload_sfx_id = sfx_autorifle_reload_alt;
+#if CL_BUILD != 10908
     W(WEAPON_ID_MINI_ROCKET_SWARMERS).ammo_class = 2;
+#endif
 
     strcpy(W(WEAPON_ID_ROCKET_MINIGUN).name, "Rocket Minigun");
     W(WEAPON_ID_ROCKET_MINIGUN).flags = 8;
@@ -258,9 +305,14 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_ROCKET_MINIGUN).shot_cooldown = 0.12f;
     W(WEAPON_ID_ROCKET_MINIGUN).reload_time = 1.8f;
     W(WEAPON_ID_ROCKET_MINIGUN).spread_heat = 0.12f;
+#if CL_BUILD == 10908
+    W(WEAPON_ID_ROCKET_MINIGUN).ammo_class = 2;
+#endif
     W(WEAPON_ID_ROCKET_MINIGUN).shot_sfx_base_id = sfx_rocketmini_fire;
     W(WEAPON_ID_ROCKET_MINIGUN).reload_sfx_id = sfx_autorifle_reload_alt;
+#if CL_BUILD != 10908
     W(WEAPON_ID_ROCKET_MINIGUN).ammo_class = 2;
+#endif
 
     strcpy(W(WEAPON_ID_PULSE_GUN).name, "Pulse Gun");
     W(WEAPON_ID_PULSE_GUN).flags = 8;
@@ -268,8 +320,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_PULSE_GUN).shot_cooldown = 0.1f;
     W(WEAPON_ID_PULSE_GUN).reload_time = 0.1f;
     W(WEAPON_ID_PULSE_GUN).spread_heat = 0.0f;
-    W(WEAPON_ID_PULSE_GUN).shot_sfx_base_id = sfx_pulse_fire;
+#if CL_BUILD == 10908
     W(WEAPON_ID_PULSE_GUN).ammo_class = 3;
+#endif
+    W(WEAPON_ID_PULSE_GUN).shot_sfx_base_id = sfx_pulse_fire;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_PULSE_GUN).ammo_class = 3;
+#endif
     W(WEAPON_ID_PULSE_GUN).reload_sfx_id = sfx_autorifle_reload;
 
     strcpy(W(WEAPON_ID_ION_RIFLE).name, "Ion Rifle");
@@ -278,8 +335,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_ION_RIFLE).shot_cooldown = 0.4f;
     W(WEAPON_ID_ION_RIFLE).reload_time = 1.35f;
     W(WEAPON_ID_ION_RIFLE).spread_heat = 0.112f;
-    W(WEAPON_ID_ION_RIFLE).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD == 10908
     W(WEAPON_ID_ION_RIFLE).ammo_class = 4;
+#endif
+    W(WEAPON_ID_ION_RIFLE).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_ION_RIFLE).ammo_class = 4;
+#endif
     W(WEAPON_ID_ION_RIFLE).reload_sfx_id = sfx_shock_reload;
 
     strcpy(W(WEAPON_ID_ION_MINIGUN).name, "Ion Minigun");
@@ -288,8 +350,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_ION_MINIGUN).shot_cooldown = 0.1f;
     W(WEAPON_ID_ION_MINIGUN).reload_time = 1.8f;
     W(WEAPON_ID_ION_MINIGUN).spread_heat = 0.09f;
-    W(WEAPON_ID_ION_MINIGUN).shot_sfx_base_id = sfx_shockminigun_fire;
+#if CL_BUILD == 10908
     W(WEAPON_ID_ION_MINIGUN).ammo_class = 4;
+#endif
+    W(WEAPON_ID_ION_MINIGUN).shot_sfx_base_id = sfx_shockminigun_fire;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_ION_MINIGUN).ammo_class = 4;
+#endif
     W(WEAPON_ID_ION_MINIGUN).reload_sfx_id = sfx_shock_reload;
 
     strcpy(W(WEAPON_ID_ION_CANNON).name, "Ion Cannon");
@@ -297,8 +364,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_ION_CANNON).shot_cooldown = 1.0f;
     W(WEAPON_ID_ION_CANNON).reload_time = 3.0f;
     W(WEAPON_ID_ION_CANNON).spread_heat = 0.68f;
-    W(WEAPON_ID_ION_CANNON).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD == 10908
     W(WEAPON_ID_ION_CANNON).ammo_class = 4;
+#endif
+    W(WEAPON_ID_ION_CANNON).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_ION_CANNON).ammo_class = 4;
+#endif
     W(WEAPON_ID_ION_CANNON).reload_sfx_id = sfx_shock_reload;
 
     strcpy(W(WEAPON_ID_ION_SHOTGUN).name, "Ion Shotgun");
@@ -307,9 +379,16 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_ION_SHOTGUN).shot_cooldown = 0.85f;
     W(WEAPON_ID_ION_SHOTGUN).reload_time = 1.9f;
     W(WEAPON_ID_ION_SHOTGUN).spread_heat = 0.27f;
-    W(WEAPON_ID_ION_SHOTGUN).shot_sfx_base_id = sfx_shock_fire_alt;
-    W(WEAPON_ID_ION_SHOTGUN).pellet_count = 8;
+#if CL_BUILD == 10908
     W(WEAPON_ID_ION_SHOTGUN).ammo_class = 4;
+#endif
+    W(WEAPON_ID_ION_SHOTGUN).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_ION_SHOTGUN).pellet_count = 8;
+#endif
+#if CL_BUILD != 10908
+    W(WEAPON_ID_ION_SHOTGUN).ammo_class = 4;
+#endif
     W(WEAPON_ID_ION_SHOTGUN).reload_sfx_id = sfx_shock_reload;
     W(WEAPON_ID_ION_SHOTGUN).hud_icon_id = 31;
 
@@ -319,8 +398,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_GAUSS_SHOTGUN).shot_cooldown = 1.05f;
     W(WEAPON_ID_GAUSS_SHOTGUN).reload_time = 2.1f;
     W(WEAPON_ID_GAUSS_SHOTGUN).spread_heat = 0.27f;
-    W(WEAPON_ID_GAUSS_SHOTGUN).shot_sfx_base_id = sfx_gauss_fire;
+#if CL_BUILD == 10908
     W(WEAPON_ID_GAUSS_SHOTGUN).ammo_class = 0;
+#endif
+    W(WEAPON_ID_GAUSS_SHOTGUN).shot_sfx_base_id = sfx_gauss_fire;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_GAUSS_SHOTGUN).ammo_class = 0;
+#endif
     W(WEAPON_ID_GAUSS_SHOTGUN).reload_sfx_id = sfx_shotgun_reload;
     W(WEAPON_ID_GAUSS_SHOTGUN).hud_icon_id = 30;
 
@@ -338,8 +422,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_EVIL_SCYTHE).shot_cooldown = 1.0f;
     W(WEAPON_ID_EVIL_SCYTHE).reload_time = 3.0f;
     W(WEAPON_ID_EVIL_SCYTHE).spread_heat = 0.68f;
-    W(WEAPON_ID_EVIL_SCYTHE).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD == 10908
     W(WEAPON_ID_EVIL_SCYTHE).ammo_class = 4;
+#endif
+    W(WEAPON_ID_EVIL_SCYTHE).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_EVIL_SCYTHE).ammo_class = 4;
+#endif
     W(WEAPON_ID_EVIL_SCYTHE).reload_sfx_id = sfx_shock_reload;
     W(WEAPON_ID_EVIL_SCYTHE).hud_icon_id = 25;
 
@@ -348,8 +437,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_FLAMEBURST).shot_cooldown = 0.02f;
     W(WEAPON_ID_FLAMEBURST).reload_time = 3.0f;
     W(WEAPON_ID_FLAMEBURST).spread_heat = 0.18f;
-    W(WEAPON_ID_FLAMEBURST).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD == 10908
     W(WEAPON_ID_FLAMEBURST).ammo_class = 4;
+#endif
+    W(WEAPON_ID_FLAMEBURST).shot_sfx_base_id = sfx_flamer_fire_01;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_FLAMEBURST).ammo_class = 4;
+#endif
     W(WEAPON_ID_FLAMEBURST).reload_sfx_id = sfx_shock_reload;
     W(WEAPON_ID_FLAMEBURST).hud_icon_id = 29;
 
@@ -358,8 +452,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_RAYGUN).shot_cooldown = 0.7f;
     W(WEAPON_ID_RAYGUN).reload_time = 2.0f;
     W(WEAPON_ID_RAYGUN).spread_heat = 0.38f;
-    W(WEAPON_ID_RAYGUN).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD == 10908
     W(WEAPON_ID_RAYGUN).ammo_class = 4;
+#endif
+    W(WEAPON_ID_RAYGUN).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_RAYGUN).ammo_class = 4;
+#endif
     W(WEAPON_ID_RAYGUN).reload_sfx_id = sfx_shock_reload;
     W(WEAPON_ID_RAYGUN).hud_icon_id = 30;
 
@@ -368,8 +467,13 @@ extern "C" void weapon_table_init(void)
     W(WEAPON_ID_SPLITTER_GUN).shot_cooldown = 0.7f;
     W(WEAPON_ID_SPLITTER_GUN).reload_time = 2.2f;
     W(WEAPON_ID_SPLITTER_GUN).spread_heat = 0.28f;
-    W(WEAPON_ID_SPLITTER_GUN).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD == 10908
     W(WEAPON_ID_SPLITTER_GUN).ammo_class = 0;
+#endif
+    W(WEAPON_ID_SPLITTER_GUN).shot_sfx_base_id = sfx_shock_fire_alt;
+#if CL_BUILD != 10908
+    W(WEAPON_ID_SPLITTER_GUN).ammo_class = 0;
+#endif
     W(WEAPON_ID_SPLITTER_GUN).reload_sfx_id = sfx_shock_reload;
     W(WEAPON_ID_SPLITTER_GUN).damage_scale = 6.0f;
     W(WEAPON_ID_SPLITTER_GUN).travel_budget = 30.0f;

@@ -2,7 +2,7 @@
 
 extern "C" void projectile_pool_global_init(void)
 {
-    int remaining = 0x60;
+    int remaining = PROJECTILE_POOL_CAPACITY;
     projectile_t *entry = projectile_pool;
 
     do {

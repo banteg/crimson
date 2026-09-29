@@ -224,7 +224,7 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_set_config_var(0x14, 2u);
 
     for (projectile_index = 0;
-         projectile_index < 0x60;
+         projectile_index < PROJECTILE_POOL_CAPACITY;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
         projectile_vel_y_block_t *tail = &projectile->pos.tail.vy;
@@ -358,7 +358,7 @@ extern "C" void projectile_render(float transition_alpha)
 
     grim_interface_ptr->grim_begin_batch();
     for (projectile_index = 0;
-         projectile_index < 0x60;
+         projectile_index < PROJECTILE_POOL_CAPACITY;
          ++projectile_index) {
         const vec2f_t *position = &projectile_pool[projectile_index].position;
         if (!projectile_pool[projectile_index].active) {
@@ -650,7 +650,7 @@ extern "C" void projectile_render(float transition_alpha)
 
     projectile_t *projectile;
     for (projectile_index = 0;
-         projectile_index < 0x60;
+         projectile_index < PROJECTILE_POOL_CAPACITY;
          ++projectile_index) {
         projectile = &projectile_pool[projectile_index];
         projectile_tail_t *primary = &projectile->pos.tail;
@@ -973,7 +973,7 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_set_config_var(0x14, 6u);
     grim_interface_ptr->grim_begin_batch();
     for (projectile_index = 0;
-         projectile_index < 0x60;
+         projectile_index < PROJECTILE_POOL_CAPACITY;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
         if (!projectile->active
@@ -1062,7 +1062,7 @@ extern "C" void projectile_render(float transition_alpha)
         1.0f, 1.0f, 1.0f, transition_alpha);
     grim_interface_ptr->grim_begin_batch();
     for (projectile_index = 0;
-         projectile_index < 0x60;
+         projectile_index < PROJECTILE_POOL_CAPACITY;
          ++projectile_index) {
         if (projectile_pool[projectile_index].active
             && projectile->pos.tail.vy.type_id
@@ -1089,7 +1089,7 @@ extern "C" void projectile_render(float transition_alpha)
     grim_interface_ptr->grim_bind_texture(projectile_bullet_texture, 0);
     grim_interface_ptr->grim_begin_batch();
     for (projectile_index = 0;
-         projectile_index < 0x60;
+         projectile_index < PROJECTILE_POOL_CAPACITY;
          ++projectile_index) {
         projectile_t *projectile = &projectile_pool[projectile_index];
         if (!projectile->active

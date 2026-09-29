@@ -510,7 +510,7 @@ play_game_done:
                 for (reset_index = 0; reset_index < 16; ++reset_index) {
                     bonus_pool[reset_index].bonus_id = BONUS_ID_NONE;
                 }
-                for (reset_index = 0; reset_index < 0x60; ++reset_index) {
+                for (reset_index = 0; reset_index < PROJECTILE_POOL_CAPACITY; ++reset_index) {
                     projectile_pool[reset_index].active = 0;
                 }
                 for (reset_index = 0; reset_index < 0x180; ++reset_index) {

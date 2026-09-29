@@ -572,7 +572,7 @@ extern "C" void projectile_update(void)
             }
         }
         ++projectile_index;
-    } while (projectile_index < 0x60);
+    } while (projectile_index < PROJECTILE_POOL_CAPACITY);
 
     for (int secondary_index = 0; secondary_index < 0x40; ++secondary_index) {
         secondary_projectile_t* secondary = &secondary_projectile_pool[secondary_index];

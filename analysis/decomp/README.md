@@ -191,11 +191,21 @@ verified terminal padding excluded. Different alignment padding does not hide
 a shared body or extend its comparison into the next function. Grim maps are
 generated before EXE maps that consume their interface correspondence.
 
-Weapon layout is a separate remaining difference: 1.9.8's table indexing and
-default-construction loops use `0x78`-byte rows, versus `0x7c` in 1.9.93.
-Its initialization loop also lacks the later pellet-count store. Adapting that
-layout requires recovering the older firing behavior as well; the current
-weapon declarations retain the canonical layout.
+The 1.9.8 weapon and player layouts are now selected by `CL_BUILD=10908`:
+120-byte weapon rows without the later pellet-count member, 0x354-byte player
+records without the three later perk timers, and a 64-entry projectile pool.
+The Fire Bullets add-on recursively spawns a fire projectile before the
+original shot; the canonical build's replacement branch is excluded. The
+complete projectile spawner and weapon initializer match their native encoded
+bodies, as do the weapon accessor/default constructor and several pool/player
+initializers. The large older player/update/render functions remain partial.
+See [the comparison](../../docs/re/static/fire-bullets-1.9.8-vs-1.9.93.md).
+
+Reviewed native identities and full extents live beside a build's generated
+maps in `recovered.json`. `build-map` verifies their image/body hashes and the
+pinned instructions naming data before merging them into the heuristic maps.
+A `recovered` placement supplies identity only; complete instruction, reference
+and encoded-byte checks still determine compiled match credit.
 
 ## Refresh and publish
 

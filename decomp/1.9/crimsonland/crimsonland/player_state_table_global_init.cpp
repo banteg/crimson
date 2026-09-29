@@ -38,9 +38,11 @@ extern "C" void player_state_table_global_init(void)
 
         entry->fire_bullets_timer = 0.0f;
         entry->low_health_timer = 0.0f;
+#if CL_BUILD != 10908
         entry->man_bomb_timer = 0.0f;
         entry->living_fortress_timer = 0.0f;
         entry->fire_cough_timer = 0.0f;
+#endif
         *(player_vec2_t *)&entry->move_target =
             player_vec2_t(-1.0f, -1.0f);
         entry->evil_eyes_target_creature = -1;

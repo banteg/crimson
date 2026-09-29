@@ -121,12 +121,15 @@ typedef struct weapon_stats_t {
     unsigned char _pad2[3];
     float travel_budget;
     float damage_scale;
+#if CL_BUILD != 10908
     int pellet_count;
+#endif
     unsigned char _pad3[4];
 } weapon_stats_t;
 
 // Native construction/storage view beginning four bytes before weapon_table.
-// Each 0x7c-byte row owns its ammo class followed by the public weapon fields;
+// Rows are 0x78 bytes in 1.9.8 and 0x7c bytes in the canonical build. Each
+// owns its ammo class followed by the public weapon fields;
 // the shifted weapon_stats_t consumer view sees the next row's ammo class as
 // its four-byte trailing pad.
 typedef struct weapon_storage_entry_t {
@@ -146,7 +149,9 @@ typedef struct weapon_storage_entry_t {
     int flags;
     float travel_budget;
     float damage_scale;
+#if CL_BUILD != 10908
     int pellet_count;
+#endif
 } weapon_storage_entry_t;
 
 typedef weapon_storage_entry_t weapon_storage_table_t[0x40];
@@ -334,9 +339,11 @@ typedef struct player_state_t {
     float move_phase;
     float player_reserved_98;
     float hot_tempered_timer;
+#if CL_BUILD != 10908
     float man_bomb_timer;
     float living_fortress_timer;
     float fire_cough_timer;
+#endif
     int experience;
     int reset_reserved_b0;
     int level;
@@ -752,7 +759,12 @@ typedef struct projectile_t {
     };
 } projectile_t;
 
-typedef projectile_t projectile_pool_t[0x60];
+#if CL_BUILD == 10908
+enum { PROJECTILE_POOL_CAPACITY = 0x40 };
+#else
+enum { PROJECTILE_POOL_CAPACITY = 0x60 };
+#endif
+typedef projectile_t projectile_pool_t[PROJECTILE_POOL_CAPACITY];
 
 // Binary Ninja presentation view for the same 0x40-byte record. The matching
 // view above preserves native interior-pointer codegen; this flat view lets

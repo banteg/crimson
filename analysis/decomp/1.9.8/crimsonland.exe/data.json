@@ -1656,6 +1656,11 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x00484d1c",
+      "name": "bonus_spawn_guard",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x00484d20",
       "name": "highscore_active_record",
       "program": "1.9.8/crimsonland.exe"
@@ -2203,6 +2208,11 @@
     {
       "address": "0x0048e498",
       "name": "game_base_path",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x0048e5a0",
+      "name": "player_state_table",
       "program": "1.9.8/crimsonland.exe"
     },
     {
@@ -3061,6 +3071,16 @@
       "program": "1.9.8/crimsonland.exe"
     },
     {
+      "address": "0x004d4c70",
+      "name": "weapon_ammo_class",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
+      "address": "0x004d4c74",
+      "name": "weapon_table",
+      "program": "1.9.8/crimsonland.exe"
+    },
+    {
       "address": "0x004d6a80",
       "name": "d3dx_sse_math_bss",
       "program": "1.9.8/crimsonland.exe"
@@ -3762,14 +3782,14 @@
     },
     {
       "address": "0x004d9260",
-      "name": "d3dx_sse_quaternion_vectors",
+      "name": "d3dx_sse2_quaternion_vectors",
       "program": "1.9.8/crimsonland.exe"
     },
     {
       "address": "0x004d9260",
-      "name": "d3dx_sse2_quaternion_vectors",
+      "name": "d3dx_sse_quaternion_vectors",
       "program": "1.9.8/crimsonland.exe"
     }
   ],
-  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees."
+  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees. Reviewed native identities also retain their pinned instruction references in recovered.json."
 }
