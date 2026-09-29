@@ -25,7 +25,7 @@ def end_note(make_game_state, headless_resources, mocker):
     audio = HeadlessAudio(mocker)
     state = make_game_state(resources=headless_resources, audio=audio.state)
     state.status.quest_unlock_index = FINAL_QUEST.global_index
-    navigator, run = start_run(state, StartRun.from_config(state.config, GameMode.QUESTS, quest_level=FINAL_QUEST))
+    navigator, run = start_run(state, StartRun(GameMode.QUESTS, FINAL_QUEST))
     assert isinstance(run, QuestMode)
     run._finish_run(RunOutcome.QUEST_COMPLETED)
     outcome = run.consume_outcome()

@@ -102,7 +102,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.gameplay.mode = GameMode.SURVIVAL
-            self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.SURVIVAL))
+            self._begin_close_transition(StartRun(GameMode.SURVIVAL))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
@@ -115,7 +115,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.gameplay.mode = GameMode.RUSH
-            self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.RUSH))
+            self._begin_close_transition(StartRun(GameMode.RUSH))
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
@@ -128,7 +128,7 @@ class EndNoteView:
             click=click,
         ):
             self.state.config.gameplay.mode = GameMode.TYPO
-            self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.TYPO), fade_to_black=True)
+            self._begin_close_transition(StartRun(GameMode.TYPO), fade_to_black=True)
             return
 
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)

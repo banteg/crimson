@@ -41,7 +41,7 @@ def scores_over_run(make_game_state, headless_resources, mocker):
     """High scores opened from a survival run's game over, the run retained underneath."""
     audio = HeadlessAudio(mocker)
     state = make_game_state(resources=headless_resources, audio=audio.state)
-    navigator, run = start_run(state, StartRun.from_config(state.config, GameMode.SURVIVAL))
+    navigator, run = start_run(state, StartRun(GameMode.SURVIVAL))
     navigator.navigate(ShowScores(ScoreQuery(game_mode_id=GameMode.SURVIVAL)))
     view = state.screens.active
     assert isinstance(view, HighScoresView)

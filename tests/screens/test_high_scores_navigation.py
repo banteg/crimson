@@ -101,9 +101,7 @@ def test_play_starts_selected_mode(scores_view, mode, mocker) -> None:
     view._request.game_mode_id = mode
     view.open()
     click_button(view, "Play a game", mocker)
-    assert view.state.ui.pending == StartRun.from_config(
-        view.state.config, mode, quest_level=view._request.quest_level,
-    )
+    assert view.state.ui.pending == StartRun(mode, view._request.quest_level)
     assert view.state.screen_fade_ramp
 
 

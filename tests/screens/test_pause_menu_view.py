@@ -19,7 +19,7 @@ def paused(make_game_state, headless_resources, mocker):
     """A survival run paused the way the game pauses it, with the pause menu slid in."""
     audio = HeadlessAudio(mocker)
     state = make_game_state(resources=headless_resources, audio=audio.state)
-    navigator, run = start_run(state, StartRun.from_config(state.config, GameMode.SURVIVAL))
+    navigator, run = start_run(state, StartRun(GameMode.SURVIVAL))
     navigator.navigate(Route.PAUSE)
     view = state.screens.active
     assert isinstance(view, PauseMenuView)

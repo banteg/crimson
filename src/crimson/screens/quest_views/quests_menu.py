@@ -343,7 +343,7 @@ class QuestsMenuView:
         self.state.config.gameplay.mode = GameMode.QUESTS
         self.state.config.gameplay.quest_level = level
         self._dirty = True
-        self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=level))
+        self._begin_close_transition(StartRun(GameMode.QUESTS, level))
 
     def _quest_title(self, stage: int, row: int) -> str:
         from ...quests import quest_by_level

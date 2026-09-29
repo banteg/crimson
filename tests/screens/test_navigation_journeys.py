@@ -208,16 +208,14 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
     increment.assert_called_once()
 
 
-def test_launch_payload_survives_later_config_changes(loop, mocker) -> None:
+def test_launch_payload_mode_survives_later_config_changes(loop, mocker) -> None:
     state = loop.state
-    request = StartRun(GameMode.RUSH, player_count=2, hardcore=False)
+    request = StartRun(GameMode.RUSH)
     state.config.gameplay.mode = GameMode.SURVIVAL
-    state.config.gameplay.player_count = 1
     mode = loop.navigation._mode(GameMode.RUSH)
     mocker.patch.object(mode, "open")
     loop.navigation.navigate(request)
     assert state.config.gameplay.mode == GameMode.RUSH
-    assert state.config.gameplay.player_count == 2
     assert state.screens.active is mode
 
 

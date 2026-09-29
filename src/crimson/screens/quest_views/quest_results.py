@@ -162,7 +162,7 @@ class QuestResultsView:
         if action == ResultAction.PLAY_AGAIN:
             assert self._quest_level is not None
             self._save_quest_selection(self._quest_level)
-            self._action = StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=self._quest_level)
+            self._action = StartRun(GameMode.QUESTS, self._quest_level)
             return
         if action == ResultAction.PLAY_NEXT:
             if self._quest_level == QuestLevel(5, 10):
@@ -172,7 +172,7 @@ class QuestResultsView:
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._save_quest_selection(next_level)
-                self._action = StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=next_level)
+                self._action = StartRun(GameMode.QUESTS, next_level)
             else:
                 self._action = Route.MENU
             return

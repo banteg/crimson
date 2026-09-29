@@ -156,12 +156,12 @@ class ScreenNavigator:
     def _start_run(self, request: StartRun) -> None:
         config = self.state.config
         config.gameplay.mode = request.mode
-        config.gameplay.player_count = request.player_count
-        config.gameplay.hardcore = request.hardcore
         if request.mode == GameMode.QUESTS:
             assert request.quest_level is not None
             unlock = (
-                self.state.status.quest_unlock_index_full if request.hardcore else self.state.status.quest_unlock_index
+                self.state.status.quest_unlock_index_full
+                if config.gameplay.hardcore
+                else self.state.status.quest_unlock_index
             )
             assert request.quest_level.global_index <= unlock, "cannot launch a locked quest"
             config.gameplay.quest_level = request.quest_level

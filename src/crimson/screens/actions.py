@@ -34,16 +34,10 @@ class Route(Enum):
 
 
 class StartRun(msgspec.Struct, frozen=True):
-    mode: GameMode
-    player_count: int
-    hardcore: bool
-    quest_level: QuestLevel | None = None
+    """Start a run of `mode` with the configured player count and hardcore flag."""
 
-    @classmethod
-    def from_config(cls, config: CrimsonConfig, mode: GameMode, *, quest_level: QuestLevel | None = None) -> StartRun:
-        if mode == GameMode.QUESTS:
-            assert quest_level is not None, "quest launch requires a selected level"
-        return cls(mode, config.gameplay.player_count, config.gameplay.hardcore, quest_level)
+    mode: GameMode
+    quest_level: QuestLevel | None = None
 
 
 class ScoreQuery(msgspec.Struct):

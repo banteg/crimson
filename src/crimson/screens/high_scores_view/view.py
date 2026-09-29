@@ -279,11 +279,7 @@ class HighScoresView:
             if level.global_index > unlock:
                 return
         self._begin_close_transition(
-            StartRun.from_config(
-                self.state.config,
-                request.game_mode_id,
-                quest_level=request.quest_level,
-            ),
+            StartRun(request.game_mode_id, request.quest_level),
         )
 
     def _dropdown_layout(self, *, pos: Vec2, width: float, item_count: int) -> _ScoresDropdownLayout:

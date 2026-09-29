@@ -41,7 +41,7 @@ def failed(make_game_state, headless_resources, mocker) -> _FailedQuest:
     """A quest run that just failed, retained under its quest-failed screen as the game navigates it."""
     audio = HeadlessAudio(mocker)
     state = make_game_state(resources=headless_resources, audio=audio.state)
-    navigator, run = start_run(state, StartRun.from_config(state.config, GameMode.QUESTS, quest_level=LEVEL))
+    navigator, run = start_run(state, StartRun(GameMode.QUESTS, LEVEL))
     assert isinstance(run, QuestMode)
     run._finish_run(RunOutcome.DEATH)
     outcome = run.consume_outcome()
@@ -106,7 +106,7 @@ def test_quest_failed_enter_retries_current_quest(failed: _FailedQuest, mocker) 
     assert state.config.gameplay.quest_level == LEVEL
     assert failed.sfx() == [SfxId.UI_BUTTONCLICK]
     assert failed.view.take_action() is None
-    assert _finish_close(failed.view, mocker) == StartRun.from_config(state.config, GameMode.QUESTS, quest_level=LEVEL)
+    assert _finish_close(failed.view, mocker) == StartRun(GameMode.QUESTS, LEVEL)
 
 
 def test_quest_failed_q_opens_quest_list(failed: _FailedQuest, mocker) -> None:

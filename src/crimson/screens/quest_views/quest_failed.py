@@ -269,7 +269,7 @@ class QuestFailedView:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._begin_close(StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=level))
+        self._begin_close(StartRun(GameMode.QUESTS, level))
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
