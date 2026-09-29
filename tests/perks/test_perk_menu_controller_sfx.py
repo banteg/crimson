@@ -144,9 +144,7 @@ def test_draw_accepts_prepared_choices_without_selection_helpers(mocker) -> None
     mocker.patch.object(perk_menu_controller_module, "draw_menu_item", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_ui_text", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "button_draw", return_value=None)
-    mocker.patch.object(perk_menu_controller_module, "perk_display_description", return_value="desc")
     mocker.patch.object(perk_menu_controller_module, "perk_display_name", return_value="Sharpshooter")
-    mocker.patch.object(perk_menu_controller_module, "measure_small_text_width", side_effect=lambda *_args: 8.0)
     _patch_perk_menu_raylib(mocker)
 
     menu.draw(

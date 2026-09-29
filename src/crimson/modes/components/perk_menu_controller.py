@@ -9,12 +9,11 @@ from crimson.screens.ui_timeline import UiTimeline
 from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.fonts.small import SmallFontData, measure_small_text_width
 from grim.math import clamp
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
-from ...perks import PerkId, perk_display_description, perk_display_name
+from ...perks import PerkId, perk_display_name
 from ...sim.state_types import PerkCounts, PlayerState
 from ...ui.focus import UiFocus
 from ...ui.menu_panel import draw_classic_menu_panel
@@ -30,6 +29,7 @@ from ...ui.perk_menu import (
     perk_menu_compute_layout,
     ui_menu_item_update,
 )
+from ...ui.text_wrap import perk_description_wrapped
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
@@ -64,7 +64,6 @@ class PerkMenuUiContext(msgspec.Struct, frozen=True):
 
 
 class PerkMenuController:
-    _DESC_WRAP_WIDTH_PX = 256.0
 
     def __init__(
         self,
@@ -116,62 +115,6 @@ class PerkMenuController:
         self._open = False
         self._closing = False
         self._selected_index = 0
-        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
-
-    def _prewrapped_perk_desc(
-        self,
-        perk_id: PerkId,
-        font: SmallFontData,
-        *,
-        violence_disabled: int,
-    ) -> str:
-        key = (int(perk_id), int(violence_disabled))
-        cached = self._wrapped_desc_cache.get(key)
-        if cached is not None:
-            return cached
-        desc = perk_display_description(
-            perk_id,
-            violence_disabled=int(violence_disabled),
-        )
-        wrapped = self._wrap_small_text_native(
-            font,
-            desc,
-            max_width_px=self._DESC_WRAP_WIDTH_PX,
-        )
-        self._wrapped_desc_cache[key] = wrapped
-        return wrapped
-
-    @staticmethod
-    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float) -> str:
-        wrapped = list(str(text))
-        if not wrapped:
-            return ""
-
-        max_width = float(max_width_px)
-        remaining = max_width
-        i = 0
-        while i < len(wrapped):
-            ch = wrapped[i]
-            if ch == "\r":
-                i += 1
-                continue
-            if ch == "\n":
-                remaining = max_width
-                i += 1
-                continue
-
-            remaining -= measure_small_text_width(font, ch)
-            if remaining < 0.0:
-                j = i
-                while j > 0 and wrapped[j] not in {" ", "\n"}:
-                    j -= 1
-                if wrapped[j] == " ":
-                    wrapped[j] = "\n"
-                    i = j
-                remaining = max_width
-            i += 1
-
-        return "".join(wrapped)
 
     def close(self) -> None:
         if not self._open:
@@ -333,11 +276,7 @@ class PerkMenuController:
             draw_menu_item(ctx.resources, label, pos=item_pos, hovered=hovered)
 
         selected = choices[self._selected_index]
-        desc = self._prewrapped_perk_desc(
-            selected,
-            ctx.resources.small_font,
-            violence_disabled=int(ctx.violence_disabled),
-        )
+        desc = perk_description_wrapped(ctx.resources.small_font, selected, violence_disabled=int(ctx.violence_disabled))
         draw_ui_text(
             ctx.resources,
             desc,

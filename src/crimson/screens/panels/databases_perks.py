@@ -11,6 +11,7 @@ from grim.sfx_map import SfxId
 from ...game.types import GameState
 from ...perks import PerkId
 from ...ui.scrollbar import ui_scrollbar_draw_focus, ui_scrollbar_update_keys
+from ...ui.text_wrap import perk_description_wrapped
 from ..high_scores_layout import perks_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -24,7 +25,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     _LIST_ROW_HEIGHT = 16.0
     _LIST_TEXT_X = 218.0
     _LIST_TEXT_Y = 128.0
-    _DESC_WRAP_WIDTH_PX = 256.0
 
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
@@ -34,7 +34,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._nav_focus_index: int = 0
         self._scroll_drag_active: bool = False
         self._scroll_drag_offset: float = 0.0
-        self._wrapped_desc_cache: dict[tuple[int, int], str] = {}
 
     def open(self) -> None:
         super().open()
@@ -42,7 +41,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._hovered_row_index = -1
         self._scroll_drag_active = False
         self._scroll_drag_offset = 0.0
-        self._wrapped_desc_cache.clear()
         self.list_scroll.item_count = len(self._perk_ids)
         self.list_scroll.clamp()
 
@@ -176,7 +174,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             draw_small_text(font, f"Requires: {prereq_name}", desc_pos, rl.Color(255, 204, 204, int(255 * 0.8)))
             desc_pos = desc_pos.offset(dy=18.0)
 
-        wrapped_desc = self._prewrapped_perk_desc(perk_id, font, violence_disabled=violence_disabled)
+        wrapped_desc = perk_description_wrapped(font, perk_id, violence_disabled=violence_disabled)
         if wrapped_desc:
             draw_small_text(font, wrapped_desc, desc_pos, dim_color)
 
@@ -340,48 +338,3 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     def _violence_disabled(self) -> int:
         return self.state.config.display.violence_disabled
 
-    def _prewrapped_perk_desc(self, perk_id: PerkId, font: SmallFontData, *, violence_disabled: int) -> str:
-        key = (int(perk_id), int(violence_disabled))
-        cached = self._wrapped_desc_cache.get(key)
-        if cached is not None:
-            return cached
-        desc = self._perk_desc(perk_id, violence_disabled=violence_disabled)
-        wrapped = self._wrap_small_text_native(
-            font,
-            desc,
-            max_width_px=self._DESC_WRAP_WIDTH_PX,
-        )
-        self._wrapped_desc_cache[key] = wrapped
-        return wrapped
-
-    @staticmethod
-    def _wrap_small_text_native(font: SmallFontData, text: str, max_width_px: float) -> str:
-        wrapped = list(str(text))
-        if not wrapped:
-            return ""
-
-        max_width = float(max_width_px)
-        remaining = max_width
-        i = 0
-        while i < len(wrapped):
-            ch = wrapped[i]
-            if ch == "\r":
-                i += 1
-                continue
-            if ch == "\n":
-                remaining = max_width
-                i += 1
-                continue
-
-            remaining -= measure_small_text_width(font, ch)
-            if remaining < 0.0:
-                j = i
-                while j > 0 and wrapped[j] not in {" ", "\n"}:
-                    j -= 1
-                if wrapped[j] == " ":
-                    wrapped[j] = "\n"
-                    i = j
-                remaining = max_width
-            i += 1
-
-        return "".join(wrapped)

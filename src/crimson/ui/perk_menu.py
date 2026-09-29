@@ -133,45 +133,6 @@ def draw_ui_text(
     draw_small_text(resources.small_font, text, pos, color)
 
 
-def wrap_ui_text(resources: RuntimeResources, text: str, *, max_width: float) -> list[str]:
-    lines: list[str] = []
-    for raw in text.splitlines() or [""]:
-        para = raw.strip()
-        if not para:
-            lines.append("")
-            continue
-        current = ""
-        for word in para.split():
-            candidate = word if not current else f"{current} {word}"
-            if current and _ui_text_width(resources, candidate) > max_width:
-                lines.append(current)
-                current = word
-            else:
-                current = candidate
-        if current:
-            lines.append(current)
-    return lines
-
-
-def draw_wrapped_ui_text_in_rect(
-    resources: RuntimeResources,
-    text: str,
-    *,
-    rect: Rect,
-    color: rl.Color,
-) -> None:
-    font = resources.small_font
-    lines = wrap_ui_text(resources, text, max_width=rect.w)
-    line_h = font.cell_size
-    pos = rect.top_left
-    max_y = rect.bottom
-    for line in lines:
-        if pos.y + line_h > max_y:
-            break
-        draw_ui_text(resources, line, pos, color=color)
-        pos = pos.offset(dy=line_h)
-
-
 MENU_ITEM_RGB = (0x46, 0xB4, 0xF0)  # from ui_menu_item_update: rgb(70, 180, 240)
 MENU_ITEM_ALPHA_IDLE = 0.6
 MENU_ITEM_ALPHA_HOVER = 1.0
