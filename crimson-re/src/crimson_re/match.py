@@ -523,8 +523,10 @@ def load_reference_catalog(
             curated_name = curated_names_by_address.get(address)
             if curated_name is not None and curated_name != name:
                 continue
-            if address > 0 and name not in names.setdefault(address, []):
-                names[address].append(name)
+            if address > 0:
+                for entry_name in (name, *entry.get("aliases", ())):
+                    if entry_name not in names.setdefault(address, []):
+                        names[address].append(entry_name)
     imports_path = raw_functions_path.with_name("imports.json")
     if imports_path.exists():
         for module in json.loads(imports_path.read_text(encoding="utf-8")):

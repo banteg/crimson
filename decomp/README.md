@@ -88,15 +88,20 @@ build-map` derives maps for every other build of a family and writes them to
 strongest first:
 
 - `exact`: the body is identical up to relinking;
+- `interface`: every instruction agrees after pairing Grim virtual slots through
+  the two DLLs' native vtables and mapped method identities;
 - `referenced`: an operand of an exact body points at it;
 - `called`: the same call site of a mapped caller that changed but kept its
   call sequence;
 - `ordered`: it sits between mapped neighbours in layout order, at a similar
   size.
 
-Only `exact` rows have an exact extent; the others run to the next known
-function. A global is named when every reference to it from an exact body
-agrees.
+`exact` and `interface` rows have an exact extent; the others run to the next
+known function. A global is named when every reference to it from these bodies
+agrees. Interface mapping is placement and reference evidence, not compiled
+match credit; a candidate must still pass the build's own instruction, encoding
+and reference checks. Function aliases and colocated object/member names retain
+the same proven addresses.
 
 Game code (679 canonical functions) overlaps 1.9.93 as follows:
 

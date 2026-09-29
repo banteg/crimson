@@ -1,6 +1,7 @@
 #include "grim2d_cpp.h"
 #include "grim_slot_state.h"
 
+#if CL_BUILD != 10908
 float IGrim2D_cpp::grim_get_slot_float(int index)
 {
     return grim_slot_floats[index];
@@ -20,3 +21,4 @@ void IGrim2D_cpp::grim_set_slot_int(int index, int value)
 {
     grim_slot_ints[index] = value;
 }
+#endif

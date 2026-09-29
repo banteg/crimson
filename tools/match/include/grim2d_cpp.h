@@ -1,6 +1,8 @@
 #ifndef GRIM2D_CPP_H
 #define GRIM2D_CPP_H
 
+#include "cl_build.h"
+
 struct grim_config_value_t {
     unsigned int words[4];
 
@@ -19,6 +21,12 @@ struct grim_config_value_t {
 class IGrim2D_cpp {
 public:
     virtual void grim_release(void) = 0;
+#if CL_BUILD == 10908
+    // Two real legacy methods at 0x04/0x08 in the 1.9.8 DLL's vtable.
+    // Their semantics are still under study; no recovered game call uses them.
+    virtual void grim_legacy_slot_04(void) = 0;
+    virtual bool grim_legacy_slot_08(void) = 0;
+#endif
     virtual void grim_set_paused(int paused) = 0;
     virtual float grim_get_version(void) = 0;
     virtual bool grim_save_screenshot(char *path) = 0;
@@ -52,10 +60,12 @@ public:
     virtual float grim_get_mouse_dy_indexed(int index) = 0;
     virtual unsigned char grim_is_key_active(int key) = 0;
     virtual float grim_get_config_float(int id) = 0;
+#if CL_BUILD != 10908
     virtual float grim_get_slot_float(int index) = 0;
     virtual int grim_get_slot_int(int index) = 0;
     virtual void grim_set_slot_float(int index, float value) = 0;
     virtual void grim_set_slot_int(int index, int value) = 0;
+#endif
     virtual int grim_get_joystick_x(void) = 0;
     virtual int grim_get_joystick_y(void) = 0;
     virtual int grim_get_joystick_z(void) = 0;

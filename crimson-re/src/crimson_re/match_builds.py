@@ -15,6 +15,8 @@ import bisect
 import hashlib
 import json
 import math
+import re
+import struct
 from collections import defaultdict
 from dataclasses import dataclass, replace
 from functools import cache
@@ -34,7 +36,7 @@ MAX_SIZE_RATIO = 1.5
 FUNCTION_ALIGNMENT = 16
 IMAGE_SCN_MEM_EXECUTE = 0x20000000
 # How a build's function was placed, strongest first; see _Mapper.
-EVIDENCE = ("exact", "referenced", "called", "ordered")
+EVIDENCE = ("exact", "interface", "referenced", "called", "ordered")
 # Scratch states from worst to best; a scan keeps each scratch's best compiler.
 SCAN_STATES = ("error", "wip", "audit", "match")
 
@@ -173,7 +175,7 @@ def load_registry(path: Path = REGISTRY_PATH) -> Registry:
 @dataclass(frozen=True, slots=True)
 class _Body:
     lines: tuple[matchlib.DisassemblyLine, ...]
-    signature: tuple[object, ...]
+    signature: tuple[tuple[str, tuple[tuple[str, ...], ...]], ...]
 
 
 def _body(image: matchlib.LoadedImage, start: int, size: int) -> _Body:
@@ -257,6 +259,92 @@ def map_build_image(image: BuildImage, canonical: BuildImage) -> dict[str, Any]:
     return _Mapper(image, canonical).run()
 
 
+def _grim_slot_offsets(build: str) -> dict[int, int]:
+    """Pair interface slots by the actual DLL pointers and their mapped functions."""
+    registry = load_registry()
+    engine = registry.image(build, "grim.dll")
+    canonical = registry.canonical(engine)
+
+    def slots(image: BuildImage) -> dict[int, int]:
+        catalog = _reference_catalog(image)
+        addresses = catalog._addresses_for_symbol("grim_interface_vtable")
+        if len(addresses) != 1:
+            return {}
+        loaded = matchlib.load_image(image.path)
+        rows = json.loads(image.target.functions_path.read_text(encoding="utf-8"))
+        identities = {
+            matchlib.parse_int(row["address"]): matchlib.parse_int(row.get("canonical_address", row["address"]))
+            for row in rows
+        }
+        result = {}
+        # Stop at the first pointer outside executable memory; do not assume a slot count.
+        code = _code_ranges(image.path)
+        for offset in range(0, 0x400, 4):
+            pointer = struct.unpack_from("<I", loaded.mapped, addresses[0] - loaded.image_base + offset)[0]
+            if not any(start <= pointer < end for start, end in code):
+                break
+            if pointer in identities:
+                result[offset] = identities[pointer]
+        return result
+
+    target_slots = slots(engine)
+    return {
+        offset: destinations[0]
+        for offset, identity in slots(canonical).items()
+        if len(destinations := [slot for slot, target in target_slots.items() if target == identity]) == 1
+    }
+
+
+def _grim_virtual_calls(body: _Body, interface_address: int) -> dict[int, int]:
+    """Recognize direct thiscall dispatch through the known Grim object.
+
+    Track register copies conservatively, clearing state at branches and after
+    calls. An arbitrary indirect call never qualifies just because its offset fits.
+    """
+    registers: dict[str, str] = {}
+    calls: dict[int, int] = {}
+    branch_targets = {
+        label for line in body.lines for label in matchlib.BRANCH_TARGET_RE.findall(line.text)
+    }
+    for index, line in enumerate(body.lines):
+        if f"{line.offset:x}" in branch_targets:
+            registers.clear()
+        if (
+            (dispatch := re.fullmatch(r"call dword \[(\w+)(?:\+0x([0-9a-f]+))?\]", line.text))
+            and registers.get(dispatch[1]) == "vtable"
+            and registers.get("ecx") == "object"
+        ):
+            calls[index] = int(dispatch[2] or "0", 16)
+        if line.text.startswith(("call ", "jmp ", "j")):
+            registers.clear()
+            continue
+        opcode = line.text.split(" ", 1)[0]
+        if opcode in {"push", "cmp", "test", "nop"} or opcode.startswith("f") and opcode != "fnstsw":
+            continue
+        if not (assignment := re.match(r"\w+ (\w+)(?:, (.*))?$", line.text)):
+            registers.clear()
+            continue
+        destination, operand = assignment.groups()
+        previous = dict(registers)
+        destination = {"al": "eax", "ah": "eax", "ax": "eax", "cl": "ecx", "ch": "ecx", "cx": "ecx",
+                       "dl": "edx", "dh": "edx", "dx": "edx", "bl": "ebx", "bh": "ebx", "bx": "ebx"}.get(
+            destination, destination,
+        )
+        registers.pop(destination, None)
+        if not line.text.startswith("mov "):
+            continue
+        if operand == "dword [ADDR]" and any(ref.value == interface_address for ref in line.masked_references):
+            registers[destination] = "object"
+        elif operand in previous:
+            registers[destination] = previous[operand]
+        elif (
+            operand and (dereference := re.fullmatch(r"dword \[(\w+)\]", operand))
+            and previous.get(dereference[1]) == "object"
+        ):
+            registers[destination] = "vtable"
+    return calls
+
+
 class _Mapper:
     """Pair canonical functions with the functions of another build's image.
 
@@ -285,11 +373,22 @@ class _Mapper:
         self.bodies = {
             function.address: _body(self.source, function.address, function.size) for function in self.functions
         }
-        self.data_rows = sorted(
-            (matchlib.parse_int(row["address"]), str(row["name"]))
-            for row in json.loads(target.data_map_path.read_text(encoding="utf-8"))["entries"]
-            if row.get("program") == target.image_name and row.get("kind", "data") == "data"
+        catalog = matchlib.load_reference_catalog(
+            manifest, data_map_path=target.data_map_path, functions_path=target.functions_path,
         )
+        self.function_aliases = {
+            function.address: tuple(
+                name for name in catalog.names_by_address.get(function.address, ()) if name != function.name
+            )
+            for function in self.functions
+        }
+        data_names: dict[int, set[str]] = defaultdict(set)
+        for row in json.loads(target.data_map_path.read_text(encoding="utf-8"))["entries"]:
+            if row.get("program") == target.image_name and row.get("kind", "data") == "data":
+                data_names[matchlib.parse_int(row["address"])].update((row["name"], *row.get("aliases", ())))
+        # A typed object and its first member can share an address. Keep both;
+        # choosing the last name loses the base symbol used by compiled source.
+        self.data_rows = sorted((address, tuple(sorted(names))) for address, names in data_names.items())
         self.data_addresses = [address for address, _ in self.data_rows]
         self.imports = {
             matchlib.parse_int(entry["address"])
@@ -308,6 +407,10 @@ class _Mapper:
         self.call_votes: dict[int, set[int]] = defaultdict(set)
         self.data_votes: dict[str, set[int]] = defaultdict(set)
         self.paired_calls: set[int] = set()
+        self.grim_slots = _grim_slot_offsets(image.build) if image.name == "crimsonland.exe" else {}
+        self.grim_address = next(
+            (address for address, names in self.data_rows if "grim_interface_ptr" in names), None,
+        )
 
     def in_code(self, address: int) -> bool:
         return any(start <= address < start + len(section) for start, section in self.code)
@@ -360,9 +463,29 @@ class _Mapper:
     def accept(self, address: int, target: int, evidence: str) -> bool:
         """Map a canonical function; report whether its body is exact there."""
         self.mapped[address] = target
-        exact = self.body_at(target, self.by_address[address].size).signature == self.bodies[address].signature
-        self.evidence[address] = "exact" if exact else evidence
-        return exact
+        target_body = self.body_at(target, self.by_address[address].size)
+        exact = target_body.signature == self.bodies[address].signature
+        interface = not exact and self.interface_equivalent(address, target_body)
+        self.evidence[address] = "exact" if exact else "interface" if interface else evidence
+        return exact or interface
+
+    def interface_equivalent(self, address: int, target: _Body) -> bool:
+        """Every instruction agrees except independently paired Grim virtual slots."""
+        if self.grim_address is None or not self.grim_slots:
+            return False
+        source = self.bodies[address]
+        signature = list(source.signature)
+        changed = False
+        for index, offset in _grim_virtual_calls(source, self.grim_address).items():
+            if offset not in self.grim_slots:
+                return False
+            mapped_offset = self.grim_slots[offset]
+            if mapped_offset == offset:
+                continue
+            text, references = signature[index]
+            signature[index] = (re.sub(r"\+0x[0-9a-f]+\]", f"+0x{mapped_offset:x}]", text), references)
+            changed = True
+        return changed and tuple(signature) == target.signature
 
     def run(self) -> dict[str, Any]:
         self.search()
@@ -439,8 +562,9 @@ class _Mapper:
                 symbol = bisect.bisect_right(self.data_addresses, value) - 1
                 if symbol < 0 or (symbol + 1 < len(self.data_rows) and value >= self.data_addresses[symbol + 1]):
                     continue
-                symbol_address, name = self.data_rows[symbol]
-                self.data_votes[name].add(target_value - (value - symbol_address))
+                symbol_address, names = self.data_rows[symbol]
+                for name in names:
+                    self.data_votes[name].add(target_value - (value - symbol_address))
 
     def accept_votes(self) -> list[int]:
         exact = []
@@ -460,7 +584,7 @@ class _Mapper:
     def pair_calls(self) -> None:
         """Pair the call sites of changed bodies that kept their call sequence."""
         for address, target in list(self.mapped.items()):
-            if self.evidence[address] == "exact" or address in self.paired_calls:
+            if self.evidence[address] in {"exact", "interface"} or address in self.paired_calls:
                 continue
             self.paired_calls.add(address)
             source_calls = self.calls(self.bodies[address], self.by_address)
@@ -550,7 +674,7 @@ class _Mapper:
             function = self.by_address[address]
             evidence = self.evidence[address]
             # A changed body runs at most to the next known function.
-            end = target + function.size if evidence == "exact" else self.extent(target)
+            end = target + function.size if evidence in {"exact", "interface"} else self.extent(target)
             rows[target] = {
                 "address": f"0x{target:08X}",
                 "canonical_address": f"0x{address:08X}",
@@ -559,6 +683,8 @@ class _Mapper:
                 "name": function.name,
                 "size": end - target,
             }
+            if aliases := self.function_aliases[address]:
+                rows[target]["aliases"] = list(aliases)
         program = self.image.target.image_name
         data_entries = [
             {"address": f"0x{next(iter(targets)):08x}", "name": name, "program": program}
@@ -573,7 +699,8 @@ class _Mapper:
             "data": {
                 "entries": data_entries,
                 "notes": (
-                    f"Globals named by exact {self.canonical.build} function bodies; "
+                    f"Globals named by exact {self.canonical.build} function bodies or bodies differing only "
+                    "in independently mapped Grim virtual slots; "
                     "every observed reference to an entry agrees."
                 ),
             },

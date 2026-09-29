@@ -74,3 +74,51 @@ def test_layout_alignment_skips_added_and_dropped_functions() -> None:
     assert match_builds._align([100, 64, 300], [104, 500, 290]) == [(0, 0), (2, 2)]
     # One out-of-order anchor leaves the longest increasing run.
     assert match_builds._increasing([(1, 10), (2, 50), (3, 20), (4, 30)]) == [(1, 10), (3, 20), (4, 30)]
+
+
+def test_cross_build_catalog_keeps_cpp_method_aliases() -> None:
+    image = REGISTRY.image("1.9.8", "crimsonland.exe")
+    catalog = match_builds._reference_catalog(image)
+    assert catalog._addresses_for_symbol("??0console_queue_t@@QAE@XZ") == catalog._addresses_for_symbol("console_init")
+    assert catalog.knows_name("??0console_queue_t@@QAE@XZ")
+
+
+def test_cross_build_catalog_keeps_colocated_object_and_member_names() -> None:
+    catalog = match_builds._reference_catalog(REGISTRY.image("1.9.8", "crimsonland.exe"))
+    for base, member in (("effect_template", "effect_template_vel_x"), ("effect_pool", "effect_pool_pos_x")):
+        assert catalog.knows_name(base)
+        assert catalog._addresses_for_symbol(base) == catalog._addresses_for_symbol(member)
+
+
+@pytest.mark.skipif(not REGISTRY.image("1.9.8", "grim.dll").path.is_file(), reason="requires pinned game images")
+def test_198_virtual_slots_are_paired_from_the_actual_dll_vtables() -> None:
+    assert REGISTRY.image("1.9.8", "grim.dll").state() == "ok"
+    slots = match_builds._grim_slot_offsets("1.9.8")
+    assert slots[0x4C] == 0x54  # flush input, after two legacy methods
+    assert slots[0x114] == 0x10C  # set color, after removing four state-slot methods
+    assert not {0x88, 0x8C, 0x90, 0x94} & slots.keys()
+
+
+@pytest.mark.parametrize(
+    ("middle", "expected"),
+    [
+        ([], True),
+        (["push 0x3f800000"], True),
+        (["mov ecx, ebx"], False),
+        (["mov cl, 0x1"], False),
+        (["imul edx, edx, 0x2"], False),
+        (["call ADDR"], False),
+        (["jmp Lf"], False),
+    ],
+)
+def test_virtual_slot_pairing_requires_the_grim_receiver_without_clobbers(middle: list[str], expected: bool) -> None:
+    reference = matchlib.MaskedReference(1, "mem", "image", 0x480000, "grim_interface_ptr", (), True)
+    lines = [
+        matchlib.DisassemblyLine(0, 0, "mov ecx, dword [ADDR]", masked_references=(reference,)),
+        matchlib.DisassemblyLine(5, 5, "mov edx, dword [ecx]"),
+        *(matchlib.DisassemblyLine(10 + index * 5, 10 + index * 5, text) for index, text in enumerate(middle)),
+        matchlib.DisassemblyLine(10 + len(middle) * 5, 10 + len(middle) * 5, "call dword [edx+0x114]"),
+    ]
+    body = match_builds._Body(tuple(lines), ())
+    assert bool(match_builds._grim_virtual_calls(body, 0x480000)) is expected
+    assert not match_builds._grim_virtual_calls(body, 0x490000)
