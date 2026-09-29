@@ -411,6 +411,11 @@
         "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
       },
       {
+        "path": "tools/match/include/cl_build.h",
+        "repository_relative": true,
+        "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+      },
+      {
         "path": "tools/match/include/grim2d_abi.h",
         "repository_relative": true,
         "sha256": "49b43a44c83ba2218233c63d779ba5a32ee6a01a88af92de546f7656353fd53e"
@@ -418,7 +423,7 @@
       {
         "path": "tools/match/include/grim2d_cpp.h",
         "repository_relative": true,
-        "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+        "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
       },
       {
         "path": "tools/match/include/grim_d3d8.h",
@@ -439,7 +444,7 @@
     "source_sha256": "889f56f762ed6dff71ce64c191cba7b5bb7a9eb2288fe7f49aad778fd86e6134",
     "status": "passed"
   },
-  "audit_digest": "df7caaa5a635f244b2cf5e120ca62fbd36abbc042b989bb32b09e35c79f028b5",
+  "audit_digest": "47286abdd33bd9d431ceaff5d66dce1c8c97aaa194c6592a21376cd1f17210f9",
   "data_object_count": 1,
   "data_objects": [
     {
@@ -4665,7 +4670,7 @@
           "canonical_source_sha256": "d712434d9292492a8c48b65d027a98c8d3fffeecb3ed71c251a5cf5d454eaa37",
           "effective_end": 268439557,
           "end": 268439557,
-          "experiment_epoch": "7363ebff1d4cb0cc148c8405d982e3dfc45610dc1380bc1546613a3a705f4765",
+          "experiment_epoch": "1f56d4dd6187badc5c347c803789ca41c17746efadb10ffbb958170a0a1e5913",
           "function": "grim_crt_empty_initializer_slot_01_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4768,7 +4773,7 @@
           "canonical_source_sha256": "f63d4a8f9bcc6ac9d4831b66912a5b27e769fdb953424d975230ed317bbc7295",
           "effective_end": 268439569,
           "end": 268439569,
-          "experiment_epoch": "0fd821649e2805b5cfde4259851bc844d875726e9529eb58f3014d4f5d8a340f",
+          "experiment_epoch": "a99f7e270592b26436fe2d515893ed5f0ba92b99b1dc94c8699269859e8a1dea",
           "function": "grim_crt_empty_initializer_slot_01",
           "match": {
             "body_byte_exact": true,
@@ -4871,7 +4876,7 @@
           "canonical_source_sha256": "a5b53e4235f50642583f7583a3a8ada16278cc6cd6e135b3478bbca7fa8030fa",
           "effective_end": 268439589,
           "end": 268439589,
-          "experiment_epoch": "59a09f403d125088f4da947815c99340bd11465268e6739d987f1ed92e1a1a8e",
+          "experiment_epoch": "7a54f62d592e84678e725723d988113a7ff79ff181ca94f6458be43d30de5d35",
           "function": "grim_crt_empty_initializer_slot_02_thunk",
           "match": {
             "body_byte_exact": true,
@@ -4974,7 +4979,7 @@
           "canonical_source_sha256": "2c41e75513c6901c6d53577c957c64e3aa4a72172a1b47273ffcc5528390fc95",
           "effective_end": 268439601,
           "end": 268439601,
-          "experiment_epoch": "9aa5069887e10275f89c546981de63d309d003dcb69c47a233bb678d2b9c279e",
+          "experiment_epoch": "d0029f9d4c190d960c7f6476e40605cacbf0acbba265f0c8f0176ce853434709",
           "function": "grim_crt_empty_initializer_slot_02",
           "match": {
             "body_byte_exact": true,
@@ -5077,7 +5082,7 @@
           "canonical_source_sha256": "78d9744077a83d2658d362e469ba71f1b192f02d342c3bf72dddc54232773838",
           "effective_end": 268439621,
           "end": 268439621,
-          "experiment_epoch": "40a8f8af20e35d621b72277db6ab400b760e4fe52e294ea666082b4ccff98ccc",
+          "experiment_epoch": "f25114b8df61749473e5eb61c6dcd85ef25d27f1cceb82f6b44ab55c7595c4c2",
           "function": "grim_crt_empty_initializer_slot_03_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5180,7 +5185,7 @@
           "canonical_source_sha256": "46cf07a86e1aabe51b0fb1f6226839ddfb942f15fc83d6d6ceaa6a7fb0df7acd",
           "effective_end": 268439633,
           "end": 268439633,
-          "experiment_epoch": "925d26a75fb25d54c317eda27c8e77ae4446af2ce2181da0e40bc465062d6d17",
+          "experiment_epoch": "ac8d8571fe98f082e8661dd48e47ed9cacd80cabfe871450230e115893d16dba",
           "function": "grim_crt_empty_initializer_slot_03",
           "match": {
             "body_byte_exact": true,
@@ -5283,7 +5288,7 @@
           "canonical_source_sha256": "0bef67d2e9c9778a02975fb1c3a62e42c3006719eab1e060aec8c30bc9ddb166",
           "effective_end": 268439653,
           "end": 268439653,
-          "experiment_epoch": "eb5e31571cb46162be5d11ddc563376fd284e044d6be83544245e05bc8a4bfd3",
+          "experiment_epoch": "799b2b795f4085aebafb91ed5c56704f1f9ad59411434fc4aac8991de633543d",
           "function": "grim_crt_empty_initializer_slot_04_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5386,7 +5391,7 @@
           "canonical_source_sha256": "e6faff595d5a3173079a54593257fdefa9acccd16ef99342ddce2c82f52afd42",
           "effective_end": 268439665,
           "end": 268439665,
-          "experiment_epoch": "103eec306a2a9390d0cd5ad6edab42d634b6f94a256a2a910e1a71a511007e9c",
+          "experiment_epoch": "0c7602451f787a42aab08d842577d3926e92879492d47e236ee6407a727e26d3",
           "function": "grim_crt_empty_initializer_slot_04",
           "match": {
             "body_byte_exact": true,
@@ -5489,7 +5494,7 @@
           "canonical_source_sha256": "f82d0e83c4b12d3d384dc0afdaf02345f11215d48fd476716f8598bf7b4e778a",
           "effective_end": 268439685,
           "end": 268439685,
-          "experiment_epoch": "d08503972fe5bc0969ec5a92dd657fbe7c98fde9b965244f841e9c203e9a682e",
+          "experiment_epoch": "017b1e8263771124f9c2f529ccefadd18d89df1985e904df0086bbb79ef398ed",
           "function": "grim_crt_empty_initializer_slot_05_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5592,7 +5597,7 @@
           "canonical_source_sha256": "3d4e85a26e547cbffc00616f9470a24d75d804e202e3170c3d154e60ea3f2cb4",
           "effective_end": 268439697,
           "end": 268439697,
-          "experiment_epoch": "5fe43106dadf9ba4a109ac9db21be961affdc7d1feec7d12a4bc7b2ba89ef371",
+          "experiment_epoch": "e42f63133074d5c8cd79053b0002aba6a09e665d8714dc8bde44d61d808800eb",
           "function": "grim_crt_empty_initializer_slot_05",
           "match": {
             "body_byte_exact": true,
@@ -5695,7 +5700,7 @@
           "canonical_source_sha256": "c255be3716297bbc5e75eb21f0f5f856cc5826bd11b4a08266142e9b7b2ffaa8",
           "effective_end": 268439717,
           "end": 268439717,
-          "experiment_epoch": "a002dee29c6c9d679ed035a0a32bcf0ca414093f2c5a4cb884ca606a5074552f",
+          "experiment_epoch": "7cba8091bff3b80621314496833c09015119e69539aace179948e70bb5f7d530",
           "function": "grim_crt_empty_initializer_slot_06_thunk",
           "match": {
             "body_byte_exact": true,
@@ -5798,7 +5803,7 @@
           "canonical_source_sha256": "e5597aface5fb6b4b75c1128bf4bcd5fedfb6f310b3d39ff2f3024a8d4b61caf",
           "effective_end": 268439729,
           "end": 268439729,
-          "experiment_epoch": "8bdc2727e94318558ccfd401da1218f02fa325b34a1792be7ff05a80e9816ee1",
+          "experiment_epoch": "d26268b1258650888f8ba8d176a3b37af6a571dbeeee7d8172e79d955d095fa2",
           "function": "grim_crt_empty_initializer_slot_06",
           "match": {
             "body_byte_exact": true,
@@ -5901,7 +5906,7 @@
           "canonical_source_sha256": "0a97162a243b08fac14bfdf2e8083e701f27c027bb9c074e537abe819e281229",
           "effective_end": 268439749,
           "end": 268439749,
-          "experiment_epoch": "da083810bc118b5566c683ee7996040351032cee9345a11eca187df76f399b31",
+          "experiment_epoch": "016108c8aece49deb1d19039b8d572234a706e42b43087d08deeee960d1619d7",
           "function": "grim_crt_empty_initializer_slot_07_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6004,7 +6009,7 @@
           "canonical_source_sha256": "1db9d4c39521443dc35f9afe0c119a95ade31bc6a02cfb637eda11358bc63326",
           "effective_end": 268439761,
           "end": 268439761,
-          "experiment_epoch": "59779da57cb00b73ff37b0ce866943510bc1545bb6b1c9dfca73a6e4553f4742",
+          "experiment_epoch": "663d9ef27406befd4d5a0833950c778302792e5a36c0dafc39f87227340b4da3",
           "function": "grim_crt_empty_initializer_slot_07",
           "match": {
             "body_byte_exact": true,
@@ -6107,7 +6112,7 @@
           "canonical_source_sha256": "79f91dac3d17befeb54f894715563eea90b075046bfd7d631069dc1251461f32",
           "effective_end": 268439781,
           "end": 268439781,
-          "experiment_epoch": "deb4e2f2cacaba2a1def1f6717d59b2727d23d4f1d2dc118a5e34f949b287208",
+          "experiment_epoch": "8484846eddfc96165ab5e71c1b9815fc5334d1c709c5989c03801824199ea4ac",
           "function": "grim_crt_empty_initializer_slot_08_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6210,7 +6215,7 @@
           "canonical_source_sha256": "9e8df137f4fb3f482d601ea350d85a5cc130c21a0a54ccfaa79776d57fcc2a1e",
           "effective_end": 268439793,
           "end": 268439793,
-          "experiment_epoch": "70e5f8867ade6618c1d24bd9a3273bbf7309c24a4e24535e922d02ccece99b8f",
+          "experiment_epoch": "d159c01676e853b9e8e9a17c2e516efa9250c128cd918ff744b51973b1346314",
           "function": "grim_crt_empty_initializer_slot_08",
           "match": {
             "body_byte_exact": true,
@@ -6313,7 +6318,7 @@
           "canonical_source_sha256": "88a2f17418ab64ffbf462b142cf78a558ee94a50627920eeabdec03b3dd81a47",
           "effective_end": 268439813,
           "end": 268439813,
-          "experiment_epoch": "ec923e6a42de89b0adf17c5eaee30367125c612103844fcf67cf1726156bf24e",
+          "experiment_epoch": "0bebb33983076108c8d46cffe3f08ddfe3936706040aa46ade335e0961202973",
           "function": "grim_crt_empty_initializer_slot_09_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6416,7 +6421,7 @@
           "canonical_source_sha256": "554986ac69cdb124d5ebe0ce2f69ae598871591398c5fe72a2898bf9907db6c1",
           "effective_end": 268439825,
           "end": 268439825,
-          "experiment_epoch": "f4907ed14f20efd47bc1bd035cd9d54245011b4f8b487959cc0173bb06b4268d",
+          "experiment_epoch": "71a25826db840027c8c672cd2d36b26ed2b9b258733724192de17ce9e352a27a",
           "function": "grim_crt_empty_initializer_slot_09",
           "match": {
             "body_byte_exact": true,
@@ -6519,7 +6524,7 @@
           "canonical_source_sha256": "f14849e832bdabb138b53b574700d53896de6843177474c1132eafa2faeecfd1",
           "effective_end": 268439845,
           "end": 268439845,
-          "experiment_epoch": "d323246bfdeb5b07a8fa220c3478cc1b0a7bd1deba9d783f6d59b3926852c771",
+          "experiment_epoch": "42c481771435fdc40ac4615c8242dd139d11c0da8de2d646cb27875a1a9946d9",
           "function": "grim_crt_empty_initializer_slot_10_thunk",
           "match": {
             "body_byte_exact": true,
@@ -6622,7 +6627,7 @@
           "canonical_source_sha256": "dc091c0c560e6ea661c2c112c812e37df746177f578bf6b8e3560221fa2c2145",
           "effective_end": 268439857,
           "end": 268439857,
-          "experiment_epoch": "5672007c618578447582c5fca43af8fd233c6c1a14c9fb5e9e3cb1895b812b52",
+          "experiment_epoch": "de891834fb6f922354a082f6910f66836c07ce8cfdb9afc3c6ba501559187905",
           "function": "grim_crt_empty_initializer_slot_10",
           "match": {
             "body_byte_exact": true,
@@ -6725,7 +6730,7 @@
           "canonical_source_sha256": "dcd455c70baa4c4ff1cb87e0e917ed85463771ecca5d7391401efbbb314899bf",
           "effective_end": 268439885,
           "end": 268439885,
-          "experiment_epoch": "859e01cf34343798e7cbe9afc5fd778f283cbdf184eae8704241dfe6f7d7a7cd",
+          "experiment_epoch": "a3dcc231e72a7d20c0b27df96815843163d466fa36ab77e983fa7d83de0eed9a",
           "function": "grim_missing_frame_callback",
           "match": {
             "body_byte_exact": true,
@@ -6828,7 +6833,7 @@
           "canonical_source_sha256": "a76195e462cd201b2bd828c26f597fff24464e77128f34ee49179601056e08e1",
           "effective_end": 268439891,
           "end": 268439891,
-          "experiment_epoch": "dda6240d3f67e3ff2e59117e68e423f841b0bd0b49af8f2f22d8d8006afe1c53",
+          "experiment_epoch": "637dd8571561399c356833a1ac270083f40556e2fdcd61e831a83fd65a05f9b7",
           "function": "grim_default_device_callback",
           "match": {
             "body_byte_exact": true,
@@ -6931,7 +6936,7 @@
           "canonical_source_sha256": "b9ca078e15f084cb81c2fc18a6c522777957db1a635df14efd5c625580865e2b",
           "effective_end": 268439905,
           "end": 268439905,
-          "experiment_epoch": "2b1becb60adea6d095dd4c9638e8832555a7a3aa943a4f9c67288640bb4023a8",
+          "experiment_epoch": "ce0ca5ed69ec5f3a545294afd467a3589dddf6386a1cf2c29c94363d64217d72",
           "function": "grim_noop",
           "match": {
             "body_byte_exact": true,
@@ -7034,7 +7039,7 @@
           "canonical_source_sha256": "0e68a98e072448fc28f96a70a71c0c55536b75695f99b8fd26725ff1c2d109d2",
           "effective_end": 268441349,
           "end": 268441349,
-          "experiment_epoch": "9aaa9070d48ce7da4198db01d51c9ce6c1c1e1aeeecff7c3c5f679cdf2bcb4eb",
+          "experiment_epoch": "5762bea1295bf6d6d27cee25f1c3e638ebd2294326d3dc5c4883f6afc5bb4964",
           "function": "grim_config_defaults_init_thunk",
           "match": {
             "body_byte_exact": true,
@@ -7167,7 +7172,7 @@
           "canonical_source_sha256": "bede0988ea8a6c56908c64cb085fc59e0eaa97d6c1f68f4c995db617b07e1dca",
           "effective_end": 268442094,
           "end": 268442094,
-          "experiment_epoch": "9fa798247aef0d7fbb1e8187c56a245407b3cc09f3ec3920192042034aa24470",
+          "experiment_epoch": "109765e57d6364ce90953963adacca674ed9b3e2c3ea50531b5dbe37d0f847ed",
           "function": "grim_config_defaults_init",
           "match": {
             "body_byte_exact": true,
@@ -7619,9 +7624,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -7650,7 +7660,7 @@
           "canonical_source_sha256": "b69f81f0afe689353fd8df59394e3c861a750886b0e601c037eb80e446525fbe",
           "effective_end": 268453872,
           "end": 268453872,
-          "experiment_epoch": "0dd9295a120141d4106b59934e6ef6e44b59f4bbf0dd602e96ab136023d278df",
+          "experiment_epoch": "a3a721a717d1111cc44452170a09dd2ee7cc3b648d78561eca5eaa9ed0b94377",
           "function": "grim_apply_render_state",
           "match": {
             "body_byte_exact": true,
@@ -8123,7 +8133,7 @@
           "canonical_source_sha256": "72f7f6191100514be03cfc4fd37584baa315797f3c7d39069b062cdb8d6294d5",
           "effective_end": 268453923,
           "end": 268453923,
-          "experiment_epoch": "93977bd1cc85a59243c0df25f89c1f6293c99746f0c1f0eb04117c4829caab3f",
+          "experiment_epoch": "f8a1a182cf662d6f7acd37fd9f93fcdeae7034804a3ebfef1a3262de814aded0",
           "function": "grim_is_texture_format_supported",
           "match": {
             "body_byte_exact": true,
@@ -8601,7 +8611,7 @@
           "canonical_source_sha256": "6b6c6ee6868b0e923b5c7b7845e10f4e0e1b4ea083b8b5deb9177dd3d9e2ed59",
           "effective_end": 268454168,
           "end": 268454168,
-          "experiment_epoch": "208d91cece2259918a341611ccf72f11d4da9a51de3114b1f111777a9c663d78",
+          "experiment_epoch": "62bb044b4577538f7d45a4a8eb7e61ebb6a737031512bf0ed6cc1fd9d9c26bb0",
           "function": "grim_select_texture_format",
           "match": {
             "body_byte_exact": true,
@@ -9059,7 +9069,7 @@
           "canonical_source_sha256": "ac717cd61cd91bd5e296cc3873451d29ae5ca36101ffc2c0a25261cf748259b1",
           "effective_end": 268454250,
           "end": 268454250,
-          "experiment_epoch": "21d73b94e73ae55a63542b9adb7f2b2515c575d5fa9e839bd2302b861a39838a",
+          "experiment_epoch": "4fdd8aa3a19c838a7fab4c488e4d650a7435da1707eae51c4320c7b17118b477",
           "function": "grim_timing_init",
           "match": {
             "body_byte_exact": true,
@@ -9517,7 +9527,7 @@
           "canonical_source_sha256": "2ffc340c1a6dd210f202e57fda48dc790e0578596d0431905876c554bd71d6a3",
           "effective_end": 268454472,
           "end": 268454472,
-          "experiment_epoch": "cbcf54c272b13887748a1df8a7ae666794c5578a217d7a90ff1ddabdedf79298",
+          "experiment_epoch": "e759d9dc5c812dea4b7cf5f0eb681f8349675a0dfbfa49107e064db77139826b",
           "function": "grim_timing_update",
           "match": {
             "body_byte_exact": true,
@@ -9995,7 +10005,7 @@
           "canonical_source_sha256": "71c9ffbafc42ae0673708f5a022e2d5aaf28c8f9f3a2e49fd73f196f3708e142",
           "effective_end": 268454563,
           "end": 268454563,
-          "experiment_epoch": "ad62432398634e2b3dc79e8e0646f4e50baab72efe38d3f18b207d70fed993e9",
+          "experiment_epoch": "5fd01b530e43c5e2929f6dde86e6f554a54c4bc4ce8e73fedcd8cbf1ec8e0cf6",
           "function": "grim_texture_init",
           "match": {
             "body_byte_exact": true,
@@ -10473,7 +10483,7 @@
           "canonical_source_sha256": "0e4b25e1c7de43398c4a447edd855a831dd607cc220d3f9528dbcd16267c9e97",
           "effective_end": 268454642,
           "end": 268454642,
-          "experiment_epoch": "dcc9fd4573ef3d44fef97ef874420f6866f6a7c0a3542b0ceeb7af22bad3eb84",
+          "experiment_epoch": "4db8cdb9e13bb7d417005581e55928a427dd831107396ca8bf65de9591f13cf1",
           "function": "grim_texture_release",
           "match": {
             "body_byte_exact": true,
@@ -10581,7 +10591,7 @@
           "canonical_source_sha256": "553aa627fc4768f567a3633c4a8bcce7afb0bfea2ca9d273630e1dad2f1db7a1",
           "effective_end": 268454755,
           "end": 268454755,
-          "experiment_epoch": "95fbc08361756c79422783eb066e395d5a7f7fabe62a8ccf7486017fe52b5746",
+          "experiment_epoch": "24e80f103d3d72605a14bf802bb27485db05389d3ed65cf8c41d38886d417478",
           "function": "grim_path_has_extension",
           "match": {
             "body_byte_exact": true,
@@ -10693,7 +10703,7 @@
           "canonical_source_sha256": "7406bc83ed98e3bf68a07f4a63f66cacb0d8e0c79328041ee0b50eef51c82e56",
           "effective_end": 268455553,
           "end": 268455553,
-          "experiment_epoch": "09f7596e5fef5b41b7d9f4cd1fc988362bd5ca69b937571f755a80592868b60c",
+          "experiment_epoch": "54872d3de06a5c7feae9a9630669fc2c9223489e361a9f8618fcc4e6bf079271",
           "function": "grim_decode_jaz_texture",
           "match": {
             "body_byte_exact": true,
@@ -10833,7 +10843,7 @@
           "canonical_source_sha256": "aec88706e526b5b61de1cfc2f317fe03ce14f52f41fc50f5b9ca68890216aca2",
           "effective_end": 268455609,
           "end": 268455609,
-          "experiment_epoch": "0be1d654a8206660eb1fd1e5a9171dc0167f75a28f7a92e64b2ca2dcd92894b9",
+          "experiment_epoch": "f3ace015ae42c726e2e5cd16c5266490605e68f4c335652be02b4c0615e301d1",
           "function": "grim_jaz_jpeg_error_exit",
           "match": {
             "body_byte_exact": true,
@@ -11325,7 +11335,7 @@
           "canonical_source_sha256": "4668360ac21bc92b5f8a3eb65c2f123cf40a90989f5b728f9c34c19bd1128212",
           "effective_end": 268456207,
           "end": 268456207,
-          "experiment_epoch": "67d06b45e69b600d1a124c8955e0c3b91c413cf5c0d3d5cefe4d12af0921a6a6",
+          "experiment_epoch": "4b69cda4f7f39245ad6e4f7db133195bff89b36422fd930bde8f7a07de42f076",
           "function": "grim_texture_load_file",
           "match": {
             "body_byte_exact": true,
@@ -11803,7 +11813,7 @@
           "canonical_source_sha256": "e30a93cea369bd4655b928ebf956a9b00ad72d8625818ac27d953f6e95aa8adf",
           "effective_end": 268456301,
           "end": 268456301,
-          "experiment_epoch": "c6a9a4668945eda7dcc8e3e92116cc7fd7020d1cfdeecbb4cf80858e3ba2038a",
+          "experiment_epoch": "1d29e760881cbb9929f3f6fb59d1050471f67360532067e4e87dec7fc314987f",
           "function": "grim_texture_name_equals",
           "match": {
             "body_byte_exact": true,
@@ -12281,7 +12291,7 @@
           "canonical_source_sha256": "0ce6338a65cd202fa31e301b746665d9d109f1c21a4c571250a2c0b51afc6917",
           "effective_end": 268456372,
           "end": 268456372,
-          "experiment_epoch": "d4aa9d05c063592b69989cb19b96c8a9715c93260a649829e90aaa75fef72c31",
+          "experiment_epoch": "f859bedd38f984a73f2cdbffac49c4fd4c879c52632f7d0d33febd571fa513c3",
           "function": "grim_find_texture_by_name",
           "match": {
             "body_byte_exact": true,
@@ -12759,7 +12769,7 @@
           "canonical_source_sha256": "bb7d377772904f6225b01b11e76b98e7a6c3face3add2708f465b0673b1bec4b",
           "effective_end": 268456412,
           "end": 268456412,
-          "experiment_epoch": "97a15dad6baa4de63904b19fa3abc29613072640d539718da52501496f9d62d1",
+          "experiment_epoch": "3da6d742ea396a63fafa6c31975310e9ddfa47cd7b62e7dd9cbca29f34196254",
           "function": "grim_find_free_texture_slot",
           "match": {
             "body_byte_exact": true,
@@ -13239,7 +13249,7 @@
           "canonical_source_sha256": "aca05d88ab2656f6ee004aaef6c19a058feca50f5bbcffe16d761fcd8d9b6edd",
           "effective_end": 268456681,
           "end": 268456681,
-          "experiment_epoch": "57abbd2225e6151c13671f10ebdf22bdfceec09141fdff65af5223d87ed40175",
+          "experiment_epoch": "f9ef1487368d1867a47dc15d0d79b0c06f84a2d721d05b9246aca8f397de6759",
           "function": "grim_load_texture_internal",
           "match": {
             "body_byte_exact": true,
@@ -13333,9 +13343,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_uv.h",
@@ -13359,7 +13374,7 @@
           "canonical_source_sha256": "1f31873cd056a867f300d43e9d64e6c75f6e55048bfa9e36b2dc3b7b721c2746",
           "effective_end": 268458560,
           "end": 268458560,
-          "experiment_epoch": "974357a33e9cbe75840d4da212ab2c3f467d54d949e2782002e2eea61eaca9a2",
+          "experiment_epoch": "107b2af033a4ec0891b7a9a8c6d91f7fc6300b1df029b71293d196d4ddf2fd88",
           "function": "grim_state_init",
           "match": {
             "body_byte_exact": true,
@@ -13462,7 +13477,7 @@
           "canonical_source_sha256": "44f42f149fdded1e2c03a1ca44928b1ef335e67d068a644ab68f8fdd9d63fb9b",
           "effective_end": 268458706,
           "end": 268458706,
-          "experiment_epoch": "eaf3bf7b8ac3c8ba092518041e377a9d80b2198636905e6c3d5ed34aaaff9857",
+          "experiment_epoch": "cb29ed747d26f914f336c9dae391b9a36a3cd51ba81215d5cb6fc39e522e9b30",
           "function": "grim_lookup_blob_load",
           "match": {
             "body_byte_exact": true,
@@ -13570,7 +13585,7 @@
           "canonical_source_sha256": "3e7b88768af62d3be6e63aac897629af3a94a9150af43f931ae5e073515f5a9d",
           "effective_end": 268458866,
           "end": 268458866,
-          "experiment_epoch": "3da78a973776314fd7d2476a5a0a5a7729f2d552cb2e1798ab63a9fcd664100f",
+          "experiment_epoch": "ef4224fb97ab4156695bdc5a8572e99772c255cef7daec7a27ffb0abd0ccff2c",
           "function": "grim_lookup_blob_find",
           "match": {
             "body_byte_exact": true,
@@ -13678,7 +13693,7 @@
           "canonical_source_sha256": "e4bb86934322827e1867ad9c559282b81ef618b45213f690f885530ef1b14fa3",
           "effective_end": 268459026,
           "end": 268459026,
-          "experiment_epoch": "96f8e889103184cefc0adc9efce80177354f25c264a5792fade28c10742e5dc5",
+          "experiment_epoch": "cce667599af4cfc732e330800561430dec6d15cebf7bacb59461219ef8165b8e",
           "function": "grim_lookup_blob_size_for_path",
           "match": {
             "body_byte_exact": true,
@@ -13765,9 +13780,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -13786,7 +13806,7 @@
           "canonical_source_sha256": "4db4dd64419086e9017eca019a8fc8ba1afbd678e15d1a4500e5cd86ed17e070",
           "effective_end": 268459072,
           "end": 268459072,
-          "experiment_epoch": "b0952eed797256c5d633018caf4e3c997b8fd1a9e8cad9bea400d0125cbc4b74",
+          "experiment_epoch": "746bc6b8c3b7ccfaa9b26e86d27f7db085dde79af5266f7583ec4991a5522130",
           "function": "grim_set_key_char_buffer",
           "match": {
             "body_byte_exact": true,
@@ -13873,9 +13893,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -13894,7 +13919,7 @@
           "canonical_source_sha256": "c3ff520c8cd90a748bb55be7982c72a6b3a88929efe8e1251955f2abdf683f35",
           "effective_end": 268459124,
           "end": 268459124,
-          "experiment_epoch": "9d029ed00cf997e6ad56c5afb540c6161bcee544a5473ed97df41f5e45fcd5f1",
+          "experiment_epoch": "0b1ab37a1c91469428c514a3819d3488af781da3ef13d13742364385d3d20020",
           "function": "grim_get_key_char",
           "match": {
             "body_byte_exact": true,
@@ -13981,9 +14006,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -14002,7 +14032,7 @@
           "canonical_source_sha256": "e37cda0f8901f5bbced1225ddcfb73a1f9748d55d0ea850ff5f2e10945cfa5d3",
           "effective_end": 268459144,
           "end": 268459144,
-          "experiment_epoch": "7fb25e15ec8b1727df6eb71c6ce0b3d8e9b2dff6f6499added10a9e5f1a14a1c",
+          "experiment_epoch": "16e33807246411b9b70b4224bc6e6546f04093bccde63dcf69ff5e9ed594d279",
           "function": "grim_release",
           "match": {
             "body_byte_exact": true,
@@ -14089,9 +14119,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -14110,7 +14145,7 @@
           "canonical_source_sha256": "5848ae2a26f2dd7dffc8df189ad5ff309fe0a6eebb49d8b2bc63dab58c636c85",
           "effective_end": 268459164,
           "end": 268459164,
-          "experiment_epoch": "b5abc513b5608dfa57cc955c50be2bde42ddc3b8dfc604f441b234baf8ec3c24",
+          "experiment_epoch": "7ec4e678728fef9ec2fdb89824c242922b2deb0188e51a3d94363d97eb8ed91e",
           "function": "grim_set_paused",
           "match": {
             "body_byte_exact": true,
@@ -14197,9 +14232,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -14218,7 +14258,7 @@
           "canonical_source_sha256": "60cea3ff2f63d267045eeca109095df0388a4ac82b7ea5b4ee1cffd9c3632cf2",
           "effective_end": 268459175,
           "end": 268459175,
-          "experiment_epoch": "1d1ef0ee89f1e15e8fdf720195a6133c801fb27891eecaa8bda543ffa5e9e827",
+          "experiment_epoch": "4475a244530030b4c3b064d5e5af3b68fe8c93df4eac683470d09c98eeead17e",
           "function": "grim_get_version",
           "match": {
             "body_byte_exact": true,
@@ -14670,9 +14710,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -14701,7 +14746,7 @@
           "canonical_source_sha256": "150afee9fa00587bfb4c704dd456af726e11a9d684ba52d52135e1157fc7a8fb",
           "effective_end": 268460014,
           "end": 268460014,
-          "experiment_epoch": "4f046b8f39f15e565b996b10b7c1e60afabc07726c3bb35d094045aff2cc35be",
+          "experiment_epoch": "d1ece2e4ddc82740bca56aba87dbf1ff5ff31a3e19fbdae0a7eaaba6f230d51d",
           "function": "grim_init_system",
           "match": {
             "body_byte_exact": true,
@@ -14788,9 +14833,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -14809,7 +14859,7 @@
           "canonical_source_sha256": "238c1f1d2e0075264a6c559e14715eec0e188e8a3e5dd0ae5683ed088fd389c6",
           "effective_end": 268460054,
           "end": 268460054,
-          "experiment_epoch": "177c344ba05bc3281cc2bf4a8cccdeac5284efe9fdee51596df9dc8f30455ae0",
+          "experiment_epoch": "ccc476bc58eb5016dc9a7f6a1e4a13e38b37b3fdf53fab6c614cce6f63e6ad67",
           "function": "grim_shutdown",
           "match": {
             "body_byte_exact": true,
@@ -14896,9 +14946,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -14917,7 +14972,7 @@
           "canonical_source_sha256": "a2c494263132a3595b0a0bc6cc3047f31c3b5031326518acbee6ea8d94f4909d",
           "effective_end": 268460072,
           "end": 268460072,
-          "experiment_epoch": "249a9dbf94880c15234e5571780bb2d03f16e54ddfab7eda8444d8cbb5c78633",
+          "experiment_epoch": "ed4d3604125b9cc852cf0715e06f99da42a1df58186fd3e3aecb11615c2c5ff9",
           "function": "grim_apply_settings",
           "match": {
             "body_byte_exact": true,
@@ -15390,7 +15445,7 @@
           "canonical_source_sha256": "25bfd80dfb58ce62123ea564a2783fa4f9562a823d14b4f80a85b61b01535dae",
           "effective_end": 268461404,
           "end": 268461404,
-          "experiment_epoch": "df1487b768f4996784cdcfbfc5e71f1880ad626670e2581cce1caaa16645ded1",
+          "experiment_epoch": "cad38c4ca7ec4eea2f642d78289dd7e80dc026735d87ba16fb46cf82e5c083c9",
           "function": "grim_set_texture_stage_ops",
           "match": {
             "body_byte_exact": true,
@@ -15844,9 +15899,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -15870,7 +15930,7 @@
           "canonical_source_sha256": "be004020132c0feefe11de9364da2b8742f281c060aa31e4c75d7932bd4798b7",
           "effective_end": 268462974,
           "end": 268462974,
-          "experiment_epoch": "98d17a2e3df58cbabf08379821b3b2cddd45e1ca4b5edb605ecbf1c1c48c6e60",
+          "experiment_epoch": "9f1d3c405f04967564b2b6b5fb5b2103acb1f443008ddf24b2a23701c46d82a6",
           "function": "grim_set_config_var",
           "match": {
             "body_byte_exact": true,
@@ -15908,7 +15968,7 @@
       },
       "object": "tools/match/scratches/grim_set_config_var/build/msvc6.5/7abbb0c3bd0463b0/set_var.obj",
       "object_function_symbol": "?grim_set_config_var@IGrim2D_cpp@@UAEXIUgrim_config_value_t@@@Z",
-      "object_sha256": "3f707a8fa0c7a770159e57c5c58f14b52df12dbd0278d7d3644dc88842afd505",
+      "object_sha256": "61288cca34dae9d8a1b3c10c7ab3190e21465924d9a35e2c341436b939ea88ac",
       "scratch": "tools/match/scratches/grim_set_config_var",
       "source": "decomp/1.9/grim/config/set_var.cpp",
       "source_sha256": "be004020132c0feefe11de9364da2b8742f281c060aa31e4c75d7932bd4798b7",
@@ -15957,9 +16017,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -15978,7 +16043,7 @@
           "canonical_source_sha256": "6c65cddbe3a072092e1ef1f877b7d347bd8b9c649396c4f54b27deb51ef87dc4",
           "effective_end": 268463254,
           "end": 268463254,
-          "experiment_epoch": "e49f4f95ea039dd155d712b5521e0892d532d7c908e9226585f6faa3652ecf18",
+          "experiment_epoch": "6c1bcc50933a60cc95e94c0bca476c1bd94d865d874e7fc85f9117859be3289b",
           "function": "grim_get_config_var",
           "match": {
             "body_byte_exact": true,
@@ -16065,9 +16130,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -16086,7 +16156,7 @@
           "canonical_source_sha256": "922f27ea64463a1b49a390e8a4721cf4ae6f9ffe42a2f63eff8abb795c63d1c9",
           "effective_end": 268463270,
           "end": 268463270,
-          "experiment_epoch": "af976c1181bc9430682964ed181c173a29d5c89646716a69e414e71a6e1450c5",
+          "experiment_epoch": "83970f721511a17f88d9640b7d6aaeb24d1ef3d7d74133675d00990034163619",
           "function": "grim_get_error_text",
           "match": {
             "body_byte_exact": true,
@@ -16538,9 +16608,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -16569,7 +16644,7 @@
           "canonical_source_sha256": "9d6f9c955f06b4f555233954d29c7465d982009d373f342b6941e9cf9bc585d1",
           "effective_end": 268463430,
           "end": 268463430,
-          "experiment_epoch": "4cece36963816380b23a6101092d3a6eee45d1a7b2abd2f350423f1bc3fd1e06",
+          "experiment_epoch": "79336528b2b513c9fa380fa6dadc199f1825708ea2d71622d872b8e995c6c957",
           "function": "grim_clear_color",
           "match": {
             "body_byte_exact": true,
@@ -17021,9 +17096,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -17052,7 +17132,7 @@
           "canonical_source_sha256": "f48bdea96d9bcbb594df59e855fe399647165abae09427c1c2f0ecef6c3af657",
           "effective_end": 268463680,
           "end": 268463680,
-          "experiment_epoch": "687652299d945a01ce53cc91c13e3c15dc73bf457a1a6f6f976eff3324ddeabf",
+          "experiment_epoch": "86c57b3eaa4e884c2fb2c118dc3707f481251a1ad6d1ff52dbe42761ca41beff",
           "function": "grim_set_render_target",
           "match": {
             "body_byte_exact": true,
@@ -17139,9 +17219,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17160,7 +17245,7 @@
           "canonical_source_sha256": "94024c19034f78f61abe0416ec9676b8db1d233ba81f5c658538c20ae214d6a5",
           "effective_end": 268463686,
           "end": 268463686,
-          "experiment_epoch": "abe3a0d838ae84dfde1d0247f375bd8d0039ec414a58371c0f7014c1f65a1013",
+          "experiment_epoch": "4a016f050df58aa9baf4e2181626078aee0d71c64ebd2840f45433c266de6813",
           "function": "grim_get_time_ms",
           "match": {
             "body_byte_exact": true,
@@ -17247,9 +17332,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17268,7 +17358,7 @@
           "canonical_source_sha256": "1ae3cfb029d2d38192c9dc18cf48f488b49d337ef602c1793d1695eba35a6921",
           "effective_end": 268463708,
           "end": 268463708,
-          "experiment_epoch": "72ced1862fe393c706335adff6a444a6a0cecd9d8dc2acefe023cce292768e66",
+          "experiment_epoch": "81abb283876400ca1e181cb1c48fa04ca1c6cb6fbb15cc0c54b323c555f17981",
           "function": "grim_set_time_ms",
           "match": {
             "body_byte_exact": true,
@@ -17355,9 +17445,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17376,7 +17471,7 @@
           "canonical_source_sha256": "1df5a7cb657d73e8c06eee37b8dc8de5e982b5ce35434cf4672517daf84e7372",
           "effective_end": 268463745,
           "end": 268463745,
-          "experiment_epoch": "90a60efe4702722fd4898e51191a8fc7f6a523a371463eb7198593bc8b62d1fe",
+          "experiment_epoch": "356e8db540ce306c4341afc8768dfb6f3fa1ab5fcc2ef107412af0fe03e579cb",
           "function": "grim_get_frame_dt",
           "match": {
             "body_byte_exact": true,
@@ -17463,9 +17558,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17484,7 +17584,7 @@
           "canonical_source_sha256": "07100535c5929bcae0f0fa1606fd6dabfe2e65a5e41effbd3fdc69a6cccc0f60",
           "effective_end": 268463767,
           "end": 268463767,
-          "experiment_epoch": "f7b46b3d4e91112363f2399797dd8d242fffaa30b4fcaa013c504fe2921f1843",
+          "experiment_epoch": "327e940ee2918f1c35e270608f92efe1ecef472b0ea721a2a0a1391a2f119a03",
           "function": "grim_get_fps",
           "match": {
             "body_byte_exact": true,
@@ -17571,9 +17671,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17592,7 +17697,7 @@
           "canonical_source_sha256": "178c7d8f4a6470a21ba9f7c0238c3711122622b564555b81b5097e6ec068f95a",
           "effective_end": 268463854,
           "end": 268463854,
-          "experiment_epoch": "5601473d09e2fbb3258bcf3d12d402f31b6eaa245b969438b533a57cca81b24b",
+          "experiment_epoch": "469a93041a94a3abd6e6c9041834d966c15b58c681ba8d33896fb16beb7811a6",
           "function": "grim_joystick_up_active",
           "match": {
             "body_byte_exact": true,
@@ -17679,9 +17784,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17700,7 +17810,7 @@
           "canonical_source_sha256": "731fb0c5df3b77463ebfed7abbf6a2d4e2972935c52d06b1022071438f24e2dd",
           "effective_end": 268463930,
           "end": 268463930,
-          "experiment_epoch": "dea9a069c38dfc24595dcbdbde6ce4a4d95d8e3caca7d3853b4f1470e9529583",
+          "experiment_epoch": "d6c74fe85c60612adc4c7645a0e8ff47ae9c8c3882c5227464e1f18df1a0895f",
           "function": "grim_joystick_down_active",
           "match": {
             "body_byte_exact": true,
@@ -17787,9 +17897,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17808,7 +17923,7 @@
           "canonical_source_sha256": "cbe85d78a92e0116928f690487dc74c11b9a832386a0d6762081be6d696dcbfa",
           "effective_end": 268464014,
           "end": 268464014,
-          "experiment_epoch": "013f21631fcde1f0f2c45ebb955752ede3b3c233626f6407afe534364db0f50e",
+          "experiment_epoch": "ab7a21a7b38d69d0a97cdd0c867ac12929792f39ba7db45eea0199c83ecdc1d4",
           "function": "grim_joystick_left_active",
           "match": {
             "body_byte_exact": true,
@@ -17895,9 +18010,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -17916,7 +18036,7 @@
           "canonical_source_sha256": "f9d8fb36aea0f232a158ebfd646901f66d08ecac8d5a7d111c4781bca23b9e05",
           "effective_end": 268464090,
           "end": 268464090,
-          "experiment_epoch": "5eb28619ab6489157a5bdeb61107e4bd18e0fc4cd87b2078799a3794ae8f9987",
+          "experiment_epoch": "81c06bd77a71933d3c52acb379efac0e6aadb1b09784d6aceb7a784505ffca59",
           "function": "grim_joystick_right_active",
           "match": {
             "body_byte_exact": true,
@@ -18008,9 +18128,14 @@
           "sha256": "0b65bf8d09c443d32b33cfb662896fd2d48bdcd6436725a691102637bb9116a7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -18034,7 +18159,7 @@
           "canonical_source_sha256": "c120c4879e3c190bcb66654bd8c7cc16118e377fc5ed0dcee39d0f69e476368b",
           "effective_end": 268464552,
           "end": 268464552,
-          "experiment_epoch": "66dd5384224f56acd2a327f0cb93b8248d88f716d0d2672fd5a61f782d7c007e",
+          "experiment_epoch": "c154fcd7ad2255db2ff299dd8b10a43272b7f85449a4b532b6e5e5c1f5e8a7c9",
           "function": "grim_is_key_active",
           "match": {
             "body_byte_exact": true,
@@ -18121,9 +18246,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -18147,7 +18277,7 @@
           "canonical_source_sha256": "d51b8ebd19391ee83de3b901d4ef49b037d39b3a571de5326b3bb4b9400c270b",
           "effective_end": 268464824,
           "end": 268464824,
-          "experiment_epoch": "149040c12819808ef39eecffe0c8992dcd105243d3736c198987cc4ed642461c",
+          "experiment_epoch": "12845354f32a625cd771382386aabaa4a40d032e78774f0bdd2a10d9d2f67188",
           "function": "grim_get_config_float",
           "match": {
             "body_byte_exact": true,
@@ -18216,7 +18346,7 @@
         {
           "path": "decomp/1.9/grim/state/slot_state.cpp",
           "repository_relative": true,
-          "sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434"
+          "sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b"
         },
         {
           "path": "tools/match/scratches/grim_set_slot_int/scratch.conf",
@@ -18234,9 +18364,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_slot_state.h",
@@ -18257,10 +18392,10 @@
           "canonical_config_sha256": "08bcf111b96715b68566b050f84ab32c00daf3c0ca9676f0b7474dd44452a3b2",
           "canonical_scratch": "tools/match/scratches/grim_get_slot_float",
           "canonical_source": "decomp/1.9/grim/state/slot_state.cpp",
-          "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
+          "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464846,
           "end": 268464846,
-          "experiment_epoch": "2bb6d7bca55e8f22db90cb07e05bea25ecee6d175ae1311836f15a9f3e29a700",
+          "experiment_epoch": "99a10b9247f32ae6972ccde47f655c8403eba111374fddb02d10116da69dffc6",
           "function": "grim_get_slot_float",
           "match": {
             "body_byte_exact": true,
@@ -18286,10 +18421,10 @@
           "canonical_config_sha256": "814ce413e750b7a049abfecb870f28b6d8ef7b511becf00b27384242ab44d552",
           "canonical_scratch": "tools/match/scratches/grim_get_slot_int",
           "canonical_source": "decomp/1.9/grim/state/slot_state.cpp",
-          "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
+          "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464862,
           "end": 268464862,
-          "experiment_epoch": "2f1286fbf39d6e56e6f6dc2909027c80d16d6505eb84ec89d692276b5cb96b27",
+          "experiment_epoch": "13ff9cc477ea85d81cd685baad03a3f5687672cecb802daea8f74284baaff95b",
           "function": "grim_get_slot_int",
           "match": {
             "body_byte_exact": true,
@@ -18315,10 +18450,10 @@
           "canonical_config_sha256": "c21285258be8a6582ff438d9c441fc0585cee43b1b8b356724d57a4905853cbf",
           "canonical_scratch": "tools/match/scratches/grim_set_slot_float",
           "canonical_source": "decomp/1.9/grim/state/slot_state.cpp",
-          "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
+          "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464882,
           "end": 268464882,
-          "experiment_epoch": "59def48bbce10a2525b64d89a30149ba48dcb7ce69f8c76f8f4b89f0dbac399d",
+          "experiment_epoch": "f9ecdbb25bf5707706518fb074aecd6f1e582d1ec63f6c4aedbe4cee6e45f6fd",
           "function": "grim_set_slot_float",
           "match": {
             "body_byte_exact": true,
@@ -18344,10 +18479,10 @@
           "canonical_config_sha256": "244598c58058e923b3c3dec16600daa51f134d1e8032ce246761607d1bedec78",
           "canonical_scratch": "tools/match/scratches/grim_set_slot_int",
           "canonical_source": "decomp/1.9/grim/state/slot_state.cpp",
-          "canonical_source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
+          "canonical_source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
           "effective_end": 268464914,
           "end": 268464914,
-          "experiment_epoch": "234c0c98d04ffd9973b6029d2857e35fed2940a9f8303cc624d145dad8a2a5c4",
+          "experiment_epoch": "81aa2777c61ae72789efb882ae8aeb0eb02d02cb6b346ebd1feebfd2aac4b955",
           "function": "grim_set_slot_int",
           "match": {
             "body_byte_exact": true,
@@ -18388,7 +18523,7 @@
       "object_sha256": "c0d218a64b6a1ea783fb052db71a4e26c922f4babedcf1e5d278670b144133bf",
       "scratch": "tools/match/scratches/grim_set_slot_int",
       "source": "decomp/1.9/grim/state/slot_state.cpp",
-      "source_sha256": "65acc75073c34a6f533a0ce89e8a1e32e93b61f2b0aa31f331d98afeef9d9434",
+      "source_sha256": "af9253cc8d3fea496a58aaa55732dbb6739662bcbe4fb9e99e186878754fd28b",
       "target_size": 14,
       "translation_unit": {
         "config": "tools/native/translation_units/grim.dll.json",
@@ -18436,9 +18571,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -18457,7 +18597,7 @@
           "canonical_source_sha256": "f43f6b3c7a95cfeacf0c91b559342c3841e2e02089ccc59a34227364941448b2",
           "effective_end": 268464944,
           "end": 268464944,
-          "experiment_epoch": "f4f3985c456e60d38b645e236cbe659ec11e9a846b65466464fb7a2bd626037d",
+          "experiment_epoch": "19099998c3d149651d753e0d3e265254baabefd3523819e4a7664bff646b3927",
           "function": "grim_is_key_down",
           "match": {
             "body_byte_exact": true,
@@ -18549,9 +18689,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -18570,7 +18715,7 @@
           "canonical_source_sha256": "cb2752e865827d2ac5c95109d6e1e6d58de3b3cc5bf07879e33ea14c28ab1c4a",
           "effective_end": 268465035,
           "end": 268465035,
-          "experiment_epoch": "9159c7599d8b3251254f5b9d05eaf653f9ffe496b8e50fd72dc308455b5ee783",
+          "experiment_epoch": "d76e40ee4b0dbc243832733af1d37d9ad2c42afdae672b416714407c8267d1c1",
           "function": "grim_flush_input",
           "match": {
             "body_byte_exact": true,
@@ -18657,9 +18802,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -18678,7 +18828,7 @@
           "canonical_source_sha256": "c0854d0d44e3d75c88e29a5c49cb52fe27aa058c6dfb75d3c2babb1aaef0a486",
           "effective_end": 268465159,
           "end": 268465159,
-          "experiment_epoch": "ada0355684092fe1dcdc3a226986039ed33b45adde28e3c5c4344877bcdef2ad",
+          "experiment_epoch": "be572f8b4da3f38cf39017d6dccd5d865872a0252e8fb81a9cf6a0aeb6d6e487",
           "function": "grim_was_key_pressed",
           "match": {
             "body_byte_exact": true,
@@ -18765,9 +18915,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -18786,7 +18941,7 @@
           "canonical_source_sha256": "e28a5ff8b17b7e6959ad3b6c23309de449aa3ffdc623b4ff289cbba9a46f42ac",
           "effective_end": 268465206,
           "end": 268465206,
-          "experiment_epoch": "931d92a0a4e1bddcf6e4291f7620a8e20aea0d5124bb8fa39bc14b2ebe72e2dd",
+          "experiment_epoch": "e24050eb783937be2432e59421cad8ada347bc8eba8e73cbc4ef30a76aa9246b",
           "function": "grim_is_mouse_button_down",
           "match": {
             "body_byte_exact": true,
@@ -18873,9 +19028,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -18894,7 +19054,7 @@
           "canonical_source_sha256": "0951bbe1ac33410298bf494cae489c45777a886a899c0d93dff5580cffc49315",
           "effective_end": 268465347,
           "end": 268465347,
-          "experiment_epoch": "8ec55877e45c3227a8cadf9be64266f58fc9158da999f667b56e610a8a8b5d32",
+          "experiment_epoch": "ede8dca45e9259e90ed6da348554035a5e7359196a2e1315c44e8a9bf271c28d",
           "function": "grim_was_mouse_button_pressed",
           "match": {
             "body_byte_exact": true,
@@ -18981,9 +19141,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19002,7 +19167,7 @@
           "canonical_source_sha256": "6d6c6b83bc6bedf7c908aa8a35a90b4b8daade22fdc15b97e172ee3d9cf25a0a",
           "effective_end": 268465367,
           "end": 268465367,
-          "experiment_epoch": "2b1df94a09b5c65e19b957c0e5d24bac35354afb6621d76f11a64016cc78f621",
+          "experiment_epoch": "76ab303f7b7108906ef45d42a3354f0111ab7d7b00ba90fc074bc1b47d53474a",
           "function": "grim_get_mouse_dx",
           "match": {
             "body_byte_exact": true,
@@ -19089,9 +19254,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19110,7 +19280,7 @@
           "canonical_source_sha256": "86cb83cdd7ff846d264f635b4bbcc6b0d40c5ef5084f07e29cf4accb9b593f97",
           "effective_end": 268465383,
           "end": 268465383,
-          "experiment_epoch": "42c4ad0a12c9d1d7d1c0f558040f6dbe9ddf6fbdaebf259b4ffe1dde685d789b",
+          "experiment_epoch": "92ba43a66cddbc1f6be0dc6c6dcde4a49138d96409618617b4149821d7f8b390",
           "function": "grim_get_mouse_dy",
           "match": {
             "body_byte_exact": true,
@@ -19197,9 +19367,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19218,7 +19393,7 @@
           "canonical_source_sha256": "7308d05d772275153073f7f22c85ac05ac1dde7de96e7ef1625d4c1a6bf03240",
           "effective_end": 268465400,
           "end": 268465400,
-          "experiment_epoch": "7169fc4ed31e57eed01047ccba6225dab38032d4697068e639a9202b76cf86bf",
+          "experiment_epoch": "d9ceac2db97dab863ab3bd3d190e7dcd99827c0d2212fb34b71c146e8bbcbee3",
           "function": "grim_get_mouse_dx_indexed",
           "match": {
             "body_byte_exact": true,
@@ -19305,9 +19480,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19326,7 +19506,7 @@
           "canonical_source_sha256": "1facd1136362c3f4d953b169248bec9559da0e024cd3b8bc53bb0bce30de1d70",
           "effective_end": 268465416,
           "end": 268465416,
-          "experiment_epoch": "0f657c1c50d87c26e954401e18b2e8c511cef2f5f78fd4c84793f20fbcb24d32",
+          "experiment_epoch": "0d7b8677254d40730a20a96e6b5f6d62922934e29cdae4ec07b2b33027e8f984",
           "function": "grim_get_mouse_dy_indexed",
           "match": {
             "body_byte_exact": true,
@@ -19413,9 +19593,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19434,7 +19619,7 @@
           "canonical_source_sha256": "f7bee3d7c065cd84ae6217cfc035598e1c1d56cc460cdca3aec7c987663efd1f",
           "effective_end": 268465431,
           "end": 268465431,
-          "experiment_epoch": "4676f95c9c02ab5831cce06fb231bb375140acaea2bfc8d2bd8ab8507df3ba72",
+          "experiment_epoch": "6c99f6dfb6bee0b285db2eee1d2c7c69a3c46b6bfc230d9c860c4b5adad20729",
           "function": "grim_get_mouse_x",
           "match": {
             "body_byte_exact": true,
@@ -19521,9 +19706,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19542,7 +19732,7 @@
           "canonical_source_sha256": "908f1d65d7c8e521de3f954c0794fdab8c62e4bc48a01508e0213fd459375978",
           "effective_end": 268465447,
           "end": 268465447,
-          "experiment_epoch": "9e55e3142292c1b68f6c81c934c50d912d366d7f56517744d3cac0bd9e13cc58",
+          "experiment_epoch": "09aeb8857a0285055a13a67a01bd6310f069bd9d134a3ed245930bb24a31ab01",
           "function": "grim_get_mouse_y",
           "match": {
             "body_byte_exact": true,
@@ -19629,9 +19819,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19650,7 +19845,7 @@
           "canonical_source_sha256": "389c0b7204d8f793bfc0526bc17aae68905645c5eaca1a62729db9953daddecf",
           "effective_end": 268465493,
           "end": 268465493,
-          "experiment_epoch": "93baadf5195ef2901ef49e00fa76daed19baa6bea4f6c31ea8b3a7a5c36512bd",
+          "experiment_epoch": "e863a7bb5527ca4aa9f765e9014646e942c6b761fe08d44960a4596e9efe6c22",
           "function": "grim_set_mouse_pos",
           "match": {
             "body_byte_exact": true,
@@ -19737,9 +19932,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -19758,7 +19958,7 @@
           "canonical_source_sha256": "d1904584692f22e173ec935259e8449c918ecc4996a467862a8d7b426730c63a",
           "effective_end": 268465527,
           "end": 268465527,
-          "experiment_epoch": "f31d9d83cd21db1c8133498ce2da6d18d94848d38dd3045d34c63471ef6755e5",
+          "experiment_epoch": "1c9a80feeaa36fa5daf900660278de4a0f4c484631a223492b5ab1bb4a5ba5fe",
           "function": "grim_get_mouse_wheel_delta",
           "match": {
             "body_byte_exact": true,
@@ -19845,9 +20045,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -19871,7 +20076,7 @@
           "canonical_source_sha256": "91f9939b328a5627aa405dd3e057dcdd139a3d30da919e535494d82ae4647ffd",
           "effective_end": 268465542,
           "end": 268465542,
-          "experiment_epoch": "cd74739d6a0fe1fddead4c42d48461ecdf55e6dd6451c18723d8d077a7ee1b7a",
+          "experiment_epoch": "bda330dc26cd80f2711eb2f5363aced375d3de3dcde918ce0b6c9db436f9ece6",
           "function": "grim_get_joystick_x",
           "match": {
             "body_byte_exact": true,
@@ -19958,9 +20163,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -19984,7 +20194,7 @@
           "canonical_source_sha256": "4aafd795e1ad867f4e3288217747a958bc181f12df576540cf752aa9b3b2b8a5",
           "effective_end": 268465558,
           "end": 268465558,
-          "experiment_epoch": "d68bf51c5c220c8a01ee0f5ec50fae5ea7534aff821b233ddb132da8a24e78e5",
+          "experiment_epoch": "e5af83a71b3dc25667aab1cb6734614bed9cf8ecabccea24e40246e4db550b7e",
           "function": "grim_get_joystick_y",
           "match": {
             "body_byte_exact": true,
@@ -20071,9 +20281,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -20097,7 +20312,7 @@
           "canonical_source_sha256": "10ab13000942205dc530ae9fc59ec950b2576bfb7b06be40be31c7a224684161",
           "effective_end": 268465574,
           "end": 268465574,
-          "experiment_epoch": "96d013d4aac4fd8b3782406ad427a0afb64a9498544793eef4eb41074c12da9f",
+          "experiment_epoch": "bbc08b5517367760be860bfb117d5b5d0a5eede2dd85c6512b82892ad8e4d2c4",
           "function": "grim_get_joystick_z",
           "match": {
             "body_byte_exact": true,
@@ -20184,9 +20399,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_joystick_state.h",
@@ -20210,7 +20430,7 @@
           "canonical_source_sha256": "54fe97609cbc2e48b54301c40758c7a3ce2a5cb2f6544292626aa69a1c0ca320",
           "effective_end": 268465598,
           "end": 268465598,
-          "experiment_epoch": "38ea9bdfeb62b8ae23034ef1387517677615c5864333f11214f4628c33628163",
+          "experiment_epoch": "2f8cd2a2e7bd66f755e02e63f2fd44848f5f668e9bac6d82b5400164cf2a0fdd",
           "function": "grim_get_joystick_pov",
           "match": {
             "body_byte_exact": true,
@@ -20297,9 +20517,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -20318,7 +20543,7 @@
           "canonical_source_sha256": "f5a6395c3a0d13368a3ead0654072e6be83c44079d56326021b0622949f53fcc",
           "effective_end": 268465616,
           "end": 268465616,
-          "experiment_epoch": "b6f8086db6c73e12aaca3ea71e01e646fa93f82e3afd2539b83cb106e1337a81",
+          "experiment_epoch": "d147eb3af75a0d34b25efb74d714363c2968ff587f3b43384e9e155b5d43ec21",
           "function": "grim_is_joystick_button_down",
           "match": {
             "body_byte_exact": true,
@@ -20772,9 +20997,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -20803,7 +21033,7 @@
           "canonical_source_sha256": "59e06f63f2642cdaa788b9ec8feeafc081698d5521538f140d08e0403b35372d",
           "effective_end": 268465873,
           "end": 268465873,
-          "experiment_epoch": "ad7e2544a0d871d217f44fe01388e18f0e991b8415428f916707a1d4ca5b37a2",
+          "experiment_epoch": "bf7b4bb4bc035569ce64542bacdd4a87bca4b8e43191e85a1e6669379a85804b",
           "function": "grim_create_texture",
           "match": {
             "body_byte_exact": true,
@@ -20841,7 +21071,7 @@
       },
       "object": "tools/match/scratches/grim_create_texture/build/msvc6.5/c105b4e918deb232/create_texture.obj",
       "object_function_symbol": "?grim_create_texture@IGrim2D_cpp@@UAE_NPADHH@Z",
-      "object_sha256": "522df0041281ce8bcbebe683ee497d3ccda4cfbb220a626ff18a50244e2e6c26",
+      "object_sha256": "1bf92050216ec98df3473a685ac84f4e7e0e7858b9e89be63d96448ff75ed511",
       "scratch": "tools/match/scratches/grim_create_texture",
       "source": "decomp/1.9/grim/texture/create_texture.cpp",
       "source_sha256": "59e06f63f2642cdaa788b9ec8feeafc081698d5521538f140d08e0403b35372d",
@@ -21255,9 +21485,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -21286,7 +21521,7 @@
           "canonical_source_sha256": "d30b21fc8d5f1ff5b82b4db1b9b6b1fff9548cf7167eea50962add6074a016bf",
           "effective_end": 268465909,
           "end": 268465909,
-          "experiment_epoch": "528dc94d3173f666cc56c28a69ba1d2ede44da4056fc68ffc05fabae709fcf76",
+          "experiment_epoch": "0f93a553af23d7e340cddd422819a2362c84d595794ecbbbb7564ea07a3b371a",
           "function": "grim_load_texture",
           "match": {
             "body_byte_exact": true,
@@ -21738,9 +21973,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -21769,7 +22009,7 @@
           "canonical_source_sha256": "6a390dfd2e2ee10cbd949dfe0fa9fa27c5b1a0e2016b8e7d22be27c566e41a01",
           "effective_end": 268465984,
           "end": 268465984,
-          "experiment_epoch": "fb8b78cc242d2daaa0993d932a072ded14ee40ab15c44513993cd1e23b619e11",
+          "experiment_epoch": "f2cf37e7df37c98722538918d49e5b4a7dcd2f7f08f88c41300bc015f931bf45",
           "function": "grim_destroy_texture",
           "match": {
             "body_byte_exact": true,
@@ -22221,9 +22461,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -22252,7 +22497,7 @@
           "canonical_source_sha256": "6991a73f98c49c52a037471f5c402ce577821902dc3d338eb6d9d70dd905f31d",
           "effective_end": 268466000,
           "end": 268466000,
-          "experiment_epoch": "ee591eb6996f01e8a9ee37a2297bfa8e7e4786dc257d90582e4ea5e41ae4c5f1",
+          "experiment_epoch": "2ec34453c1c1e8a862020131287f30dbcfba96d7ee21863777d097ba5df22878",
           "function": "grim_get_texture_handle",
           "match": {
             "body_byte_exact": true,
@@ -22704,9 +22949,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -22735,7 +22985,7 @@
           "canonical_source_sha256": "b7932c7169c22892ac2ce396f152a4ead3eaa92c4ea81945ddff97f84729ec78",
           "effective_end": 268466221,
           "end": 268466221,
-          "experiment_epoch": "f978eac610e464c95b82673f85298e8fc92b936db8bc21ae227b4a8ad3e1f8c3",
+          "experiment_epoch": "eb65336a72459829bf93f9e733ce77e1a12335c67a507f9117248a7cd543d312",
           "function": "grim_recreate_texture",
           "match": {
             "body_byte_exact": true,
@@ -23187,9 +23437,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -23218,7 +23473,7 @@
           "canonical_source_sha256": "96e1d3c07b1876c0774b62b08ff66c9955928034f6180b000e3e6fa19e67f6bf",
           "effective_end": 268466282,
           "end": 268466282,
-          "experiment_epoch": "9285ae3c90730f87f177256a8d6b1477f2132dbb9f492994d0f945eeba45446d",
+          "experiment_epoch": "0037978ec1890a8a0be4143e8cda2216d8eb89629091a2be2c2a1c2cc893c3a9",
           "function": "grim_bind_texture",
           "match": {
             "body_byte_exact": true,
@@ -23305,9 +23560,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -23326,7 +23586,7 @@
           "canonical_source_sha256": "c56cdbd0e93e1438bad5141bd40d37b1b03f4085269f08bcdbbc9fc4c83ec454",
           "effective_end": 268466397,
           "end": 268466397,
-          "experiment_epoch": "25bd4b7ba98af9b519fb941bb34d8416b4af2d33320d6f6a01b0269febbd4455",
+          "experiment_epoch": "7800268db0daafe7cb1d0c21471b20ef1a2aa386a543de0f6800f45faf70f2f3",
           "function": "grim_draw_fullscreen_quad",
           "match": {
             "body_byte_exact": true,
@@ -23778,9 +24038,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -23804,7 +24069,7 @@
           "canonical_source_sha256": "81e808619ef735fbb39d0b4a160228411d9c8e90116c3ca380a94fef5d066d92",
           "effective_end": 268466605,
           "end": 268466605,
-          "experiment_epoch": "0274ef4ec7e2bbc6af596cdfc14ee886b49276c3c9facd3b71bce5b111e30708",
+          "experiment_epoch": "368e1a32f8a30439a0cf223423c4a69ced94c7d7807b4054139b073bf69cf1bb",
           "function": "grim_draw_rect_filled",
           "match": {
             "body_byte_exact": true,
@@ -24256,9 +24521,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -24282,7 +24552,7 @@
           "canonical_source_sha256": "f00db954556a79d28505da2789f39657f931d38b54eacb5adcbd5c7de5eeac6c",
           "effective_end": 268466867,
           "end": 268466867,
-          "experiment_epoch": "cdc0697937eb9154344b863f32a91c0167c898adbf31d46aa02773ac9cf6b408",
+          "experiment_epoch": "62f5e4fbcde286a13d5435ca4775ecefaad8ed8b580fe6986add4f032e56cd81",
           "function": "grim_draw_fullscreen_color",
           "match": {
             "body_byte_exact": true,
@@ -24734,9 +25004,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -24760,7 +25035,7 @@
           "canonical_source_sha256": "6fb93ddbb3e6e76347552009d90e3db9193131214fbf846d65e6c691b7ee1a77",
           "effective_end": 268466974,
           "end": 268466974,
-          "experiment_epoch": "032ceb38b85541f0de32f668a8aff0d18be938519b656676ebc2de3138b9a63f",
+          "experiment_epoch": "913835069e9412d300604e01eaa63d54d15e6aa60d7b16995978fee48beda8c4",
           "function": "grim_begin_batch",
           "match": {
             "body_byte_exact": true,
@@ -25212,9 +25487,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -25238,7 +25518,7 @@
           "canonical_source_sha256": "184fefc23c0978ed1186d6fd5bcb522600057dfea270e491e0a6cb3848e36ed5",
           "effective_end": 268467080,
           "end": 268467080,
-          "experiment_epoch": "2154c7346707be55a9b218b05797c47df226afa5c9d9cfaec4985c9d2bcc7d2e",
+          "experiment_epoch": "7a7ef38c3ec80c798f8bc5d7e4a34e6e56f1def1c34331c4a8f961cea97e477c",
           "function": "grim_end_batch",
           "match": {
             "body_byte_exact": true,
@@ -25690,9 +25970,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -25716,7 +26001,7 @@
           "canonical_source_sha256": "ed194d953d858ac8aa975e521e4624a6f4a5d8f03b4974c8b80c6223fb4a85a2",
           "effective_end": 268467520,
           "end": 268467520,
-          "experiment_epoch": "0a81323125efbb9637aab9dd965e3c81c61e12c2de8ca2adf41b7bd0e4384f07",
+          "experiment_epoch": "bb281d4e2c6cddf863075dfee25d559c864c216b18f68a4244050a74aba09fd2",
           "function": "grim_draw_circle_filled",
           "match": {
             "body_byte_exact": true,
@@ -26168,9 +26453,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -26194,7 +26484,7 @@
           "canonical_source_sha256": "62b3140259885dab2a0e7ec5b63ef0ea5d0ddd14b72054519cebeb68067f9365",
           "effective_end": 268467982,
           "end": 268467982,
-          "experiment_epoch": "fb0e83350ba02ee44dd7ad73a5988cafd39ce678800720a75040f6f4c005afe4",
+          "experiment_epoch": "2ead1042e0dc81ecc0f9d4da91ae05a8beb90c12294d892e8ccae59c617ae68c",
           "function": "grim_draw_circle_outline",
           "match": {
             "body_byte_exact": true,
@@ -26297,7 +26587,7 @@
           "canonical_source_sha256": "e79caf77b786ee9b70f7c7726d1a5aa01eb15dc71dbb47e4a984c21457b63131",
           "effective_end": 268467989,
           "end": 268467989,
-          "experiment_epoch": "a7e46342a15726bf64a003ef27ce2580dca3a87044ac33f88bd2969adc9085b0",
+          "experiment_epoch": "faedd54d8333c61d43e22f0be7ddb189110df4ce55cc5c4483d99642aeb76c24",
           "function": "grim_crt_empty_initializer_slot_12_thunk",
           "match": {
             "body_byte_exact": true,
@@ -26400,7 +26690,7 @@
           "canonical_source_sha256": "68a4be1625b94b6c4a5823e3ebcdf64d41386c7eb5c408a7b26fd00f881fa38c",
           "effective_end": 268468001,
           "end": 268468001,
-          "experiment_epoch": "92818f4cffcfbffe533d21258b8dbfeb5cd4e6f1121cdd4910729218659c4608",
+          "experiment_epoch": "32b9d2ad30c29156e5a9e0999698ed7deaec1b8bfecda306654a38e5ac75c302",
           "function": "grim_crt_empty_initializer_slot_12",
           "match": {
             "body_byte_exact": true,
@@ -26492,9 +26782,14 @@
           "sha256": "0b65bf8d09c443d32b33cfb662896fd2d48bdcd6436725a691102637bb9116a7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -26513,7 +26808,7 @@
           "canonical_source_sha256": "0bb1a78e95706c7d290d2d123e4ae206e6883595f48baca1d4c599584866c2cd",
           "effective_end": 268468101,
           "end": 268468101,
-          "experiment_epoch": "d25812a284f97d152f7aa32066f98e44dd40cb81aadb8fae42d7708b3b592229",
+          "experiment_epoch": "b86cae2182b9f0f580a8d1bcd73f679912b5081d7ac3344f1d1cde3c6f7760b3",
           "function": "grim_set_rotation",
           "match": {
             "body_byte_exact": true,
@@ -26600,9 +26895,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -26621,7 +26921,7 @@
           "canonical_source_sha256": "0fb01e6cb3a3f2282957c33d0174debc35b4f51c2134901debca8078ea465dce",
           "effective_end": 268468278,
           "end": 268468278,
-          "experiment_epoch": "2e11fd16b47ac85d15b71d0e29164c98104b52be8764f2043d1f8c45c545ec86",
+          "experiment_epoch": "62e26c9a883f5d1ccc0480567c8133c6720e84d9a67c438d82522139a7cce062",
           "function": "grim_set_color",
           "match": {
             "body_byte_exact": true,
@@ -26708,9 +27008,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -26729,7 +27034,7 @@
           "canonical_source_sha256": "68cb6535d34b227ed4734b7915004145df93d241c0d7b871d6f8aa18e82258d3",
           "effective_end": 268468392,
           "end": 268468392,
-          "experiment_epoch": "378872d6f9b87b39fb2563dac2b74c94e2f66dfa97daf653fbbeff2c69b2479c",
+          "experiment_epoch": "af9ad7a095164a15efabf41031a917f0ea2046459c5c028c7cd788b18f505a59",
           "function": "grim_set_color_ptr",
           "match": {
             "body_byte_exact": true,
@@ -26816,9 +27121,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -26837,7 +27147,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468534,
           "end": 268468534,
-          "experiment_epoch": "b5fef3ee98d762886206f5ff599aabda5b1faa069f94f34af0e5229b9b8ad980",
+          "experiment_epoch": "cd365dfbeea1d7858642b2e7d9defc13df116d7744ab9937188c19c64efd4bc3",
           "function": "grim_draw_line",
           "match": {
             "body_byte_exact": true,
@@ -26866,7 +27176,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468545,
           "end": 268468545,
-          "experiment_epoch": "12b9de43d66ee8a927da51b417e05d26a7e0b76c63e63d75272248891198ee6e",
+          "experiment_epoch": "c0db943de2eca39a9a04652718090adb80721cdd4c1f44f877ce8f623c0ae4c6",
           "function": "grim_line_vector_dtor",
           "match": {
             "body_byte_exact": true,
@@ -26895,7 +27205,7 @@
           "canonical_source_sha256": "a881cadbe56804ca0417fa4eee1742279e04fee888742e0e2895a80bb79af978",
           "effective_end": 268468659,
           "end": 268468659,
-          "experiment_epoch": "193ffa3bee73656e10776fe9080d3b0b12f2da584c32558ecff721939fb1d6d6",
+          "experiment_epoch": "ff4f4c9b89359aae18adef8466f71fc6a6bdc3a22ecfcfec70a76340b4b78458",
           "function": "grim_draw_line_quad",
           "match": {
             "body_byte_exact": true,
@@ -26984,9 +27294,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -27005,7 +27320,7 @@
           "canonical_source_sha256": "a87550532ec5d94dfad44f12c19e5d1c6882c565a72ee27524ae8797d2957db5",
           "effective_end": 268468781,
           "end": 268468781,
-          "experiment_epoch": "1ccbc39aef26dea1d79f92572ff4efa08aacb2f29e9c56f06e05e1c2772305f5",
+          "experiment_epoch": "f21ca0d139fbb4f23c3d68da04b270d61bf03d2613ed2f7a7b145fead4d1e401",
           "function": "grim_set_color_slot",
           "match": {
             "body_byte_exact": true,
@@ -27092,9 +27407,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -27113,7 +27433,7 @@
           "canonical_source_sha256": "c47a7208cfcd734a632f28a0c5d4398767b57b56ca6b5fa4d373790d659e56df",
           "effective_end": 268468923,
           "end": 268468923,
-          "experiment_epoch": "704c2cb37c03cc3a274d9de21057cf6d84e027e6570593ce8a55378584304f30",
+          "experiment_epoch": "e9418d8097a602decc162dc0394193305276b627c7058a47054090b550a46bae",
           "function": "grim_set_atlas_frame",
           "match": {
             "body_byte_exact": true,
@@ -27200,9 +27520,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -27221,7 +27546,7 @@
           "canonical_source_sha256": "6b3ca09170d02d625ac14dd90a9080236a122e21b0b05621952f734b5120df5e",
           "effective_end": 268469071,
           "end": 268469071,
-          "experiment_epoch": "a6712b60dd982c61e2d699bf9f568acd4f750b3f0bee72747214cced185f6f70",
+          "experiment_epoch": "52f0537935efd49d6ff40d8b35494143e6918edc0652d3b60dc518c81b932106",
           "function": "grim_set_sub_rect",
           "match": {
             "body_byte_exact": true,
@@ -27308,9 +27633,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -27329,7 +27659,7 @@
           "canonical_source_sha256": "b6a83fc01e55de3aae97b406d85edbcdefc1077d6d19258c4239769de9573e60",
           "effective_end": 268469146,
           "end": 268469146,
-          "experiment_epoch": "0b55e839ffd9dc9f89fb74da820e5384b4aabafd7f374dcf3f1192334482220f",
+          "experiment_epoch": "9968334b8b5045e9c34668c8ef647ba3bd88d6c131354dc313d1ba81f3349cf4",
           "function": "grim_set_uv",
           "match": {
             "body_byte_exact": true,
@@ -27416,9 +27746,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -27437,7 +27772,7 @@
           "canonical_source_sha256": "a2949ab76656c2624aafd31ec6b944ce372759c1609463b37534857a7cab1830",
           "effective_end": 268469181,
           "end": 268469181,
-          "experiment_epoch": "01ab8d1ae3beb60d7703b563320aaeed683935a79609f03e6cd444fe2e76642f",
+          "experiment_epoch": "2f1b8b2cf4f6c3b0158832cc3c319fd20828a868ae4ede56c5e98db1a2a743e5",
           "function": "grim_set_uv_point",
           "match": {
             "body_byte_exact": true,
@@ -27889,9 +28224,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -27915,7 +28255,7 @@
           "canonical_source_sha256": "de576f5600324bdbf81058ba41620d223cf991cdc447a3524cd3dad7e488b252",
           "effective_end": 268469291,
           "end": 268469291,
-          "experiment_epoch": "ac368aa7d45849bfae50914db6d2cfdbbdc8075cfdd69a6486921407f1998073",
+          "experiment_epoch": "35e6b7390197717de382fc85562f51db52f177e3e10b5e249264d79431b6699b",
           "function": "grim_flush_batch",
           "match": {
             "body_byte_exact": true,
@@ -28007,9 +28347,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28028,7 +28373,7 @@
           "canonical_source_sha256": "8729c6797e3ba031aee4b9176e74d5c023b136ab048ae1be1b7c8ca0d203c81d",
           "effective_end": 268469464,
           "end": 268469464,
-          "experiment_epoch": "ee57d87d48841d98b966993dabfc360a696c17dcdc891bd778196c0c5ee7ad7f",
+          "experiment_epoch": "60726db0820e07045d65f1a8d0ede63f56bf590c0c46198add401cb608e97a88",
           "function": "grim_submit_vertices_offset_color",
           "match": {
             "body_byte_exact": true,
@@ -28120,9 +28465,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28141,7 +28491,7 @@
           "canonical_source_sha256": "2cfa21579963accdb720a98c077e1c8490be603c0c93810026484717449c9ca6",
           "effective_end": 268469690,
           "end": 268469690,
-          "experiment_epoch": "b9cb0c0713f78ffbecc8eb73d76c111f11a51b75e385549c0f89ebb21a73927f",
+          "experiment_epoch": "3ff89f7833e8f3eadde2afdd8836d2ed908cc51f0c5a62122a07d5c45d5fad4c",
           "function": "grim_submit_vertices_transform_color",
           "match": {
             "body_byte_exact": true,
@@ -28233,9 +28583,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28254,7 +28609,7 @@
           "canonical_source_sha256": "aa233d8197313f8fca32fd9be690d9b67e3ef7fb67fb8f4a62e31cd5c54b7f85",
           "effective_end": 268469888,
           "end": 268469888,
-          "experiment_epoch": "5f5a33330b9c51cd85faf17961115e0339e0f8d424cb01c322842e1af4f09ad0",
+          "experiment_epoch": "332b636622e230d0994c964bfe04bccb2c19fabf56e7176347359c061f4cb12c",
           "function": "grim_submit_vertices_transform",
           "match": {
             "body_byte_exact": true,
@@ -28346,9 +28701,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28367,7 +28727,7 @@
           "canonical_source_sha256": "c58644a1f4e363b76be4eae8dd190772ff5cd7362b894d6bd1672d3b750d80fa",
           "effective_end": 268470041,
           "end": 268470041,
-          "experiment_epoch": "b3f8ac73111282d2002e45a3d0835da2489caf91eede870798b9f1263bb78bdb",
+          "experiment_epoch": "17860f1e99803b283b30a3c66da327bcb773206ecf514890fbb026878f036d25",
           "function": "grim_submit_vertices_offset",
           "match": {
             "body_byte_exact": true,
@@ -28454,9 +28814,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28475,7 +28840,7 @@
           "canonical_source_sha256": "d2e187ce9ee1a139f66a54c9b61c21c58ba4092960c3bc29d8ff94b46c8ed35b",
           "effective_end": 268470082,
           "end": 268470082,
-          "experiment_epoch": "09a0b28f59141f7e82b7baa182e620a683dc588ec0e01c8c7fd0bae0c547750a",
+          "experiment_epoch": "9c3b5b57042ac282b89305bfea5087c81ee5890455544ba261c6b150ec8a493e",
           "function": "grim_draw_quad_xy",
           "match": {
             "body_byte_exact": true,
@@ -28562,9 +28927,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28583,7 +28953,7 @@
           "canonical_source_sha256": "90cefd64bafded510c90d3da68f6454f9dc1b340e1c277458c8270850aa6d27c",
           "effective_end": 268471049,
           "end": 268471049,
-          "experiment_epoch": "8ef5274671788d950f1b38d7cb288eac60d0e43ca7f3c8581b24e41f2dfffa18",
+          "experiment_epoch": "1f9fd1bbf8309b91e41b60b1370385efd60188fdd7bd7877f49a79d887684651",
           "function": "grim_draw_quad_rotated_matrix",
           "match": {
             "body_byte_exact": true,
@@ -28670,9 +29040,14 @@
           "sha256": "1bf99f206271ecdbd13da2829192ea2c02e2a44c740b8d72935d5d9cb753b156"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28691,7 +29066,7 @@
           "canonical_source_sha256": "d4dd884bbe7ed74287461d0b262f0d7468212e1d1497bb057fa1d030ccc062d7",
           "effective_end": 268471856,
           "end": 268471856,
-          "experiment_epoch": "7d78431c00ddba6bee3b719006e82601afa782fbef043378229ad298d70291aa",
+          "experiment_epoch": "8b7477f37b8b649c31367ef2cc6ba5fc60ed964130dceed9edc5ca77ef83b919",
           "function": "grim_draw_quad",
           "match": {
             "body_byte_exact": true,
@@ -28783,9 +29158,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28804,7 +29184,7 @@
           "canonical_source_sha256": "8ca2ffdd830911c3676a5cd349a3ed4974498be18a6cda4d5a9c5a40545f7b40",
           "effective_end": 268471972,
           "end": 268471972,
-          "experiment_epoch": "185f87ebfad2136bba2830e03b62bd5173fff1b5111fa1564bed07dec9d4c3c9",
+          "experiment_epoch": "7232236da4765cd0a7489d7503ae3cb23b9a91269213642de9e777933714853b",
           "function": "grim_submit_vertex_raw",
           "match": {
             "body_byte_exact": true,
@@ -28896,9 +29276,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -28917,7 +29302,7 @@
           "canonical_source_sha256": "8dd998c04044a904e0cf34b4cc5a9b20dbb80d9327a3288a48ac544c0b8ffc87",
           "effective_end": 268472075,
           "end": 268472075,
-          "experiment_epoch": "066cb7b6384fbffd8b6db73b3070721b58c56d62c284ba6893e7ae59db2948ec",
+          "experiment_epoch": "65544146339a1ddb0ff9e482cb431ac1666564e56e39dc9c7880011173baf049",
           "function": "grim_submit_quad_raw",
           "match": {
             "body_byte_exact": true,
@@ -29369,9 +29754,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -29395,7 +29785,7 @@
           "canonical_source_sha256": "6df340efc986b6dbd479b0af541cab2f42e0eb120b91c22f80e22851e970b1a2",
           "effective_end": 268472436,
           "end": 268472436,
-          "experiment_epoch": "e9970db0abbacd5121af0ff98b8962a2b902251edfc98356115472309c56f959",
+          "experiment_epoch": "17d4955ad3ebfb56edb11527eafaa624be41243dac184431f8afe6142898c248",
           "function": "grim_draw_rect_outline",
           "match": {
             "body_byte_exact": true,
@@ -29847,9 +30237,14 @@
           "sha256": "2adf3c4d3fae22ff0808d7ba40e54d6f19e1dc50a78af406c77536432f9160e7"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_d3d8.h",
@@ -29873,7 +30268,7 @@
           "canonical_source_sha256": "1dfcf7f402bbfa84831ec600c0789e55ea99a35429f40859de6f766e219e720a",
           "effective_end": 268473002,
           "end": 268473002,
-          "experiment_epoch": "738688b8a20277e2e3df31f72b7c9d38f9b4b0feb68395e36682a6e39e5378a3",
+          "experiment_epoch": "dd8b6e8f8bc2ee8818dd07493d7a8fc147230c51d294b2611bd6cd94d0650f80",
           "function": "grim_draw_quad_points",
           "match": {
             "body_byte_exact": true,
@@ -29902,7 +30297,7 @@
           "canonical_source_sha256": "1dfcf7f402bbfa84831ec600c0789e55ea99a35429f40859de6f766e219e720a",
           "effective_end": 268474042,
           "end": 268474042,
-          "experiment_epoch": "eb43f1e6ced09adf84f57e59e0def7bf45574adba3519f22c54e9bbd8aef18a3",
+          "experiment_epoch": "224842ab4b26a8ac9203380acb5e4e2d962c825b55ea58237e7dee7a793a9702",
           "function": "grim_draw_text_mono",
           "match": {
             "body_byte_exact": true,
@@ -29996,9 +30391,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -30017,7 +30417,7 @@
           "canonical_source_sha256": "928c9213f2b1685d33a138320069adc912cc048fab79196480db0cecdfe9078d",
           "effective_end": 268474146,
           "end": 268474146,
-          "experiment_epoch": "b41cfb5d7482ef9b1e4baa8b55552f8b303f35bc11cdb4c344c3e34248d2fb0a",
+          "experiment_epoch": "fc963685e6f37264b4a18d205215689b5ce50b177c9393241a3526f4e437930b",
           "function": "grim_measure_text_width",
           "match": {
             "body_byte_exact": true,
@@ -30109,9 +30509,14 @@
           "sha256": "b55d01ac097650cb59c478443d0ad71cf065a33db38fd42651ac505b3095022f"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         },
         {
           "path": "tools/match/include/grim_uv.h",
@@ -30135,7 +30540,7 @@
           "canonical_source_sha256": "2f739b62c88481cef81ff3fdbb892da698ef4c0f88a9b9a739bb70fcc1c1385f",
           "effective_end": 268474675,
           "end": 268474675,
-          "experiment_epoch": "dd07f93b189b2b0a07dd90ae85e16cc25e8c92eef08b84c84304f1efc9c9f85a",
+          "experiment_epoch": "91d155926fc3f01eb3e80ec46e8715dea16e03fd5b57f7302c5eb1a1b20a4e99",
           "function": "grim_draw_text_small",
           "match": {
             "body_byte_exact": true,
@@ -30227,9 +30632,14 @@
           "sha256": "4ce271a2606bd1e1e2d5cb647469ca10ff1238d16f67d7057edbb6af23673a56"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -30248,7 +30658,7 @@
           "canonical_source_sha256": "8c78e0a0693ee083d9d731980cdc468ce7a2a926ee9afa628870b6372e74a47c",
           "effective_end": 268474740,
           "end": 268474740,
-          "experiment_epoch": "415509884b36dfc95a655fff222a2189813cd9bf47e3d1627f1223cd61f89d77",
+          "experiment_epoch": "9ce437b005cbb6f81d07a7312fad1cb15cd8a9481e4ae07c13b4aa46f0bb673e",
           "function": "grim_draw_text_mono_fmt",
           "match": {
             "body_byte_exact": true,
@@ -30340,9 +30750,14 @@
           "sha256": "4ce271a2606bd1e1e2d5cb647469ca10ff1238d16f67d7057edbb6af23673a56"
         },
         {
+          "path": "tools/match/include/cl_build.h",
+          "repository_relative": true,
+          "sha256": "b209b714a7dab1d575c2b00707abbb2247eb95405945cc8c34025d4f59cb0527"
+        },
+        {
           "path": "tools/match/include/grim2d_cpp.h",
           "repository_relative": true,
-          "sha256": "64df94956aa084931834e2271007cb45f07510e1ee27b61986e87426e7237283"
+          "sha256": "53206a74674e08e579c4a5b96f1d2a9203bcb2e23c6350929469f9b3e73cafef"
         }
       ],
       "compiler": "msvc6.5",
@@ -30361,7 +30776,7 @@
           "canonical_source_sha256": "91b7d0f885f6da4b614f8198be0694b83c7cfed9070b63b9874aaf67edd25f84",
           "effective_end": 268474804,
           "end": 268474804,
-          "experiment_epoch": "dc3758476c5e80fe2556f2ec59854770f053aec784e5924b3d725fde90cccf5b",
+          "experiment_epoch": "4459509d14fac06446e95ad21dc571318e2c49b1cd70541b43e8bdd3c061f0fc",
           "function": "grim_draw_text_small_fmt",
           "match": {
             "body_byte_exact": true,
@@ -30834,7 +31249,7 @@
           "canonical_source_sha256": "e26f421e03450fb918a9394b1cd2660837e87bd5e8492ae3107821ce10715cfd",
           "effective_end": 268474911,
           "end": 268474911,
-          "experiment_epoch": "66b84a9f5ddc1c9b22b4712f663e28570d132b488bb95d753c05aa97e83575b8",
+          "experiment_epoch": "428668eba6a76281acaf636221a2afecc21b809b2c8829d9c60cf22e9812892c",
           "function": "GRIM__GetInterface",
           "match": {
             "body_byte_exact": true,
@@ -31287,7 +31702,7 @@
           "canonical_source_sha256": "f1e859b11c27637429145771eeaa3de93eb65e0d852235d6137544073f6d91dc",
           "effective_end": 268474950,
           "end": 268474950,
-          "experiment_epoch": "fafb0c6e594196ca4630e9d9db07158be1d4ddf5b34f026e7672f986f369d051",
+          "experiment_epoch": "ab22123d536de77bcb6dcd22263768269eb527f49d8f0ed5753f93cc9330ea34",
           "function": "DllMain",
           "match": {
             "body_byte_exact": true,
@@ -31394,7 +31809,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478483,
           "end": 268478483,
-          "experiment_epoch": "f0631c5f5f93198451b15b4cd47dd6bec971b4e6d9c3c6f8fbf5223e2108a173",
+          "experiment_epoch": "351a0df2e22499b6936b754c226e6b10e3903e9bea94d9dc1460e76e3a04a7c0",
           "function": "grim_jaz_decode_scope_init",
           "match": {
             "body_byte_exact": true,
@@ -31423,7 +31838,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478517,
           "end": 268478517,
-          "experiment_epoch": "b25d0adc4189e63a150dbf598b1509eae0e0608a32cf3083e8fd94aec63d87f9",
+          "experiment_epoch": "bbece38a1a09da4663eea6ed77b7c55d5f8b57830ab400f9bc182d7da64cec3c",
           "function": "grim_zlib_status_is_error",
           "match": {
             "body_byte_exact": true,
@@ -31452,7 +31867,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478588,
           "end": 268478588,
-          "experiment_epoch": "c71bea7ea91b6fc30d378508ee9e3894be90f0f6df1604c83019f121370688c5",
+          "experiment_epoch": "287cd65eaae435c85b7a234ffeae44d2aa0a3e3f5a894d69461d8e7b5fa8ca2f",
           "function": "grim_zlib_decompress_alloc",
           "match": {
             "body_byte_exact": true,
@@ -31481,7 +31896,7 @@
           "canonical_source_sha256": "5d91b8ed2ed0432aaa64a81db4b89d14b80f9d28a76ee83774a58f53b7bd3fcc",
           "effective_end": 268478658,
           "end": 268478658,
-          "experiment_epoch": "a193102910c68d9e79fa5004ebba205c46f17b6954ef07d727b13fe97511b6f5",
+          "experiment_epoch": "04629352f2ccc7b27d1bc087eb0b52ca968a711a0ce92c316e05e850e83a4560",
           "function": "grim_jaz_decompress_payload",
           "match": {
             "body_byte_exact": true,
@@ -31538,7 +31953,7 @@
       {
         "path": "crimson-re/src/crimson_re/match.py",
         "repository_relative": true,
-        "sha256": "ac92d2b198421237ebe2d67ea42fd7ee5bb295b36978126af42eb62bb86d61fc"
+        "sha256": "575642e7bf2d91c711b8a79056c03d9ce4adbb44cbe4289a6820a3305cb00ada"
       },
       {
         "path": "crimson-re/src/crimson_re/match_process.py",
