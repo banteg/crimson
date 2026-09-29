@@ -2,23 +2,13 @@ from __future__ import annotations
 
 from grim.color import grim_color
 from grim.config import CrimsonConfig
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
 from grim.fonts.small import SmallFontData, draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ..input_codes import input_code_name
-
-
-def _rect_outline(xy: Vec2, width: float, height: float, color: rl.Color) -> None:
-    """`grim_draw_rect_outline`: four 1px quads, the bottom one a pixel wider."""
-    for x, y, w, h in (
-        (xy.x, xy.y, width, 1.0),
-        (xy.x, xy.y, 1.0, height),
-        (xy.x, xy.y + height, width + 1.0, 1.0),
-        (xy.x + width, xy.y, 1.0, height),
-    ):
-        rl.draw_rectangle_rec(rl.Rectangle(x, y, w, h), color)
 
 
 def ui_render_keybind_help(
@@ -32,7 +22,7 @@ def ui_render_keybind_help(
     """`ui_render_keybind_help`: the key info panel the F1 pause shows."""
     rl.draw_rectangle_rec(rl.Rectangle(xy.x, xy.y, 512.0, 256.0), grim_color(0.0, 0.0, 0.0, alpha * 0.8))
     color = grim_color(1.0, 1.0, 1.0, alpha)
-    _rect_outline(xy, 512.0, 256.0, color)
+    grim_draw_rect_outline(xy, 512.0, 256.0, color)
     draw_grim_mono_text(mono, "key info", Vec2(xy.x + 16.0, xy.y + 16.0), 0.8, color)
 
     x = xy.x + 32.0

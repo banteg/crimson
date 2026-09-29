@@ -12,6 +12,8 @@ from ...game_states import GameStateId
 from ...ui.checkbox import ui_checkbox_draw
 from ...ui.dropdown import ui_list_widget_draw
 from ...ui.highscore_card import ui_text_input_render
+from ...ui.perk_menu import button_draw
+from ...ui.text_input import ui_text_input_draw, ui_text_input_draw_focus
 from ..high_scores_layout import (
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
@@ -27,6 +29,7 @@ from ..high_scores_layout import (
     HS_RIGHT_SHOW_SCORES_WIDGET,
     HS_RIGHT_SHOW_SCORES_X,
     HS_RIGHT_SHOW_SCORES_Y,
+    PROFILE_NAME_INPUT_W,
     hs_right_local_card_x_shift,
     hs_right_options_x_shift,
 )
@@ -98,6 +101,18 @@ def _draw_right_panel_quest_options(
         options_top_left + Vec2(HS_RIGHT_SCORE_LIST_X, HS_RIGHT_SCORE_LIST_Y),
         text_color,
     )
+
+    # `ui_profile_menu_update` draws the name box and Add, or Delete, before its list opens over them.
+    profile_pos = options_top_left + HS_RIGHT_SCORE_LIST_WIDGET
+    if view._profile_add_mode:
+        input_pos = profile_pos.offset(dy=29.0)
+        ui_text_input_draw_focus(focus, view._profile_name_field, input_pos)
+        ui_text_input_draw(
+            resources, input_pos, width=PROFILE_NAME_INPUT_W, text=view._profile_name, caret=view._profile_caret,
+        )
+        button_draw(resources, view._profile_add_button, focus=focus, pos=profile_pos + Vec2(180.0, 22.0))
+    elif not view._profile_list_open and view.state.config.profile.selected_saved_name_slot != 0:
+        button_draw(resources, view._profile_delete_button, focus=focus, pos=profile_pos.offset(dy=22.0))
 
     # `highscore_screen` draws the lists in update order, so an open list covers the ones below it.
     view.sync_lists()

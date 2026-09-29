@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 from pathlib import Path
 
@@ -43,6 +42,7 @@ from ...ui.text_input import (
     UiTextInput,
     flush_text_input_events,
     gameplay_controls_held,
+    ui_text_input_draw,
     ui_text_input_draw_focus,
     ui_text_input_focus,
     update_name_entry_text,
@@ -532,45 +532,14 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             input_pos = content_pos.offset(dy=150.0)
-            rl.draw_rectangle_lines(
-                int(input_pos.x),
-                int(input_pos.y),
-                int(INPUT_BOX_W),
-                int(INPUT_BOX_H),
-                grim_color(1.0, 1.0, 1.0, alpha),
-            )
-            rl.draw_rectangle(
-                int(input_pos.x + 1.0),
-                int(input_pos.y + 1.0),
-                int(INPUT_BOX_W - 2.0),
-                int(INPUT_BOX_H - 2.0),
-                grim_color(0.0, 0.0, 0.0, alpha),
-            )
-            draw_ui_text(
-                resources,
-                self.input_text,
-                input_pos + Vec2(4.0, 2.0),
-                color=grim_color(1.0, 1.0, 1.0, 0.8 * alpha),
+            ui_text_input_draw(
+                resources, input_pos, width=INPUT_BOX_W, text=self.input_text, caret=self.input_caret,
             )
             if self.save_error is not None:
                 draw_ui_text(
                     resources, self.save_error, input_pos + Vec2(0.0, 22.0),
                     color=COLOR_TEXT_MUTED,
                 )
-            caret_alpha = 1.0
-            if math.sin(float(rl.get_time()) * 4.0) > 0.0:
-                caret_alpha = 0.4
-            caret_color = grim_color(1.0, 1.0, 1.0, caret_alpha * alpha)
-            caret_x = (
-                input_pos.x + 4.0 + self._text_width(font, self.input_text[: self.input_caret])
-            )
-            rl.draw_rectangle(
-                int(caret_x),
-                int(input_pos.y + 2.0),
-                1,
-                14,
-                caret_color,
-            )
 
             ok_pos = input_pos + Vec2(170.0, -8.0)
             ui_text_input_draw_focus(self.focus, self._name_input, input_pos)

@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
 from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.screens.high_scores_view.view import HighScoresView
 from crimson.screens.menu import MenuView
@@ -133,3 +134,41 @@ def test_perk_database_details_follow_the_keyboard(loop, mocker) -> None:
         press(loop, mocker, rl.KeyboardKey.KEY_DOWN)
     assert database._detail_perk_id() == database._perk_ids[12]
     assert database.list_scroll.scroll_offset == 3
+
+
+def test_named_score_list_added_and_deleted_by_keyboard(loop, mocker) -> None:
+    config = loop.state.config
+    config.gameplay.mode = GameMode.SURVIVAL
+    record = HighScoreRecord.blank(rand_value=1)
+    record.game_mode_id = GameMode.SURVIVAL
+    record.set_name("ace")
+    record.score_xp = 500
+    write_highscore_records(scores_path_for_mode(loop.state.base_dir, GameMode.SURVIVAL, named_list="Bob"), [record])
+    loop.navigation.navigate(ShowScores(ScoreQuery(GameMode.SURVIVAL)))
+    finish_transition(loop)
+    scores = loop.state.screens.active
+    assert isinstance(scores, HighScoresView)
+    assert scores._records == []
+    widget = scores.score_list
+
+    # Open the list and take its last entry, "<add new named list>".
+    tab_to(loop, mocker, lambda: widget.focused)
+    press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
+    assert widget.open
+    while widget.active_index < len(widget.items) - 1:
+        press(loop, mocker, rl.KeyboardKey.KEY_DOWN)
+    press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
+    assert scores._profile_add_mode
+
+    typed = [ord(char) for char in "Bob"]
+    mocker.patch.object(rl, "get_char_pressed", side_effect=lambda: typed.pop(0) if typed else 0)
+    press(loop, mocker)
+    press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
+    # The new list is selected and reads its own score file.
+    assert config.profile.named_score_list == "Bob"
+    assert [entry.name() for entry in scores._records] == ["ace"]
+
+    tab_to(loop, mocker, lambda: scores._profile_delete_button.focused)
+    press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
+    assert config.profile.saved_name_labels() == ("default",)
+    assert scores._records == []

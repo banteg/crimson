@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 
 import msgspec
 
+from grim.assets import RuntimeResources
+from grim.color import grim_color
 from grim.config import CrimsonConfig
+from grim.draw import grim_draw_rect_outline
+from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
@@ -34,6 +39,23 @@ def ui_text_input_focus(focus: UiFocus, field: UiTextInput, pos: Vec2, *, width:
 def ui_text_input_draw_focus(focus: UiFocus, field: UiTextInput, pos: Vec2) -> None:
     if field.focused:
         focus.draw(pos.offset(dx=-16.0))
+
+
+def ui_text_input_draw(resources: RuntimeResources, pos: Vec2, *, width: float, text: str, caret: int) -> None:
+    """`ui_text_input_update`'s draw half: an 18px box at full alpha, the text scrolled to fit, a blinking caret.
+
+    Native always types at the end; the port's caret can move, so it is drawn at its own position.
+    """
+    font = resources.small_font
+    grim_draw_rect_outline(pos, width, 18.0, rl.WHITE)
+    rl.draw_rectangle(int(pos.x + 1.0), int(pos.y + 1.0), int(width - 2.0), 16, rl.BLACK)
+    start = 0
+    while start < len(text) and measure_small_text_width(font, text[start:]) > width - 10.0:
+        start += 1
+    draw_small_text(font, text[start:], pos + Vec2(4.0, 2.0), grim_color(1.0, 1.0, 1.0, 0.8))
+    caret_alpha = 0.4 if math.sin(rl.get_time() * 4.0) > 0.0 else 1.0
+    caret_x = pos.x + 4.0 + measure_small_text_width(font, text[start:max(start, caret)])
+    grim_draw_rect_outline(Vec2(caret_x, pos.y + 2.0), 1.0, 14.0, grim_color(1.0, 1.0, 1.0, caret_alpha))
 
 
 def poll_text_input(max_len: int, *, allow_space: bool = True) -> str:

@@ -156,3 +156,6 @@ HS_RIGHT_PLAYER_COUNT_WIDGET = Vec2(46.0, 78.0)  # (676,287)
 HS_RIGHT_GAME_MODE_WIDGET = Vec2(174.0, 78.0)  # (804,287)
 HS_RIGHT_SHOW_SCORES_WIDGET = Vec2(44.0, 120.0)  # (674,329)
 HS_RIGHT_SCORE_LIST_WIDGET = Vec2(44.0, 164.0)  # (674,373)
+# `ui_profile_menu_update`: the last list entry, and its name box width (`width_px = 0xae`).
+PROFILE_ADD_ITEM = "<add new named list>"
+PROFILE_NAME_INPUT_W = 174.0

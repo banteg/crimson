@@ -48,4 +48,12 @@ s += nav("controls_out", BACKS["controls"]) + nav("options_out", OPTIONS["back"]
 s += nav("stats_in", MAIN["stats"]) + nav("hiscores_in", STATS["hiscores"])
 for name, (header, row) in HISCORES_LISTS.items():
     s += list_steps(name, header, row)
+# `ui_profile_menu_update`: pick "<add new named list>" (row 1), name it, add it, then delete it again.
+PROFILE_HEADER, PROFILE_ADD_ROW = (679, 378), (684, 409)
+s += [
+    ("click", *PROFILE_HEADER), ("wait", 10), ("click", *PROFILE_ADD_ROW), ("wait", 10), ("shot", "profile_add_mode"),
+    ("text", "Bob"), ("wait", 10), ("shot", "profile_typed"),
+    ("key", "KEY_ENTER"), ("move", *IDLE), ("wait", 10), ("shot", "profile_added"),
+    ("click", 684, 400), ("wait", 10), ("shot", "profile_deleted"),
+]
 STEPS = s

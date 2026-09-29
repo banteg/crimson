@@ -16,7 +16,7 @@ from crimson.ui.menu_layout import (
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
-from grim.config import HighScoreDateMode
+from grim.config import SAVED_NAME_ENTRY_SIZE, HighScoreDateMode
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -30,6 +30,7 @@ from ...ui.dropdown import UiListWidget, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update
 from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update_keys
+from ...ui.text_input import UiTextInput, ui_text_input_focus, update_name_entry_text
 from ..actions import ShowScores
 from ..assets import require_runtime_resources
 from ..high_scores_layout import (
@@ -51,6 +52,8 @@ from ..high_scores_layout import (
     HS_RIGHT_PLAYER_COUNT_WIDGET,
     HS_RIGHT_SCORE_LIST_WIDGET,
     HS_RIGHT_SHOW_SCORES_WIDGET,
+    PROFILE_ADD_ITEM,
+    PROFILE_NAME_INPUT_W,
     hs_left_panel_pos_x,
     hs_right_options_x_shift,
     hs_right_panel_pos_x,
@@ -83,9 +86,16 @@ class HighScoresView:
         self.score_scroll = UiScrollbar(visible_rows=10)
         self._dirty = False
 
-        # `highscore_screen`'s list widgets. The score list stands in for `ui_profile_menu_update`'s name list
-        # (the port has no add/delete flow).
+        # `highscore_screen`'s list widgets; the score list is `ui_profile_menu_update`'s named lists.
         self.score_list = UiListWidget()
+        # `ui_profile_menu_update`: the list stays open until toggled, and "<add new named list>" opens a name box.
+        self._profile_list_open = False
+        self._profile_add_mode = False
+        self._profile_name_field = UiTextInput()
+        self._profile_name = ""
+        self._profile_caret = 0
+        self._profile_add_button = UiButtonState("Add")
+        self._profile_delete_button = UiButtonState("Delete")
         self.date_filter_list = UiListWidget()
         self.player_count_list = UiListWidget()
         self.game_mode_list = UiListWidget()
@@ -125,6 +135,8 @@ class HighScoresView:
     def _close_lists(self) -> None:
         for widget in self._lists():
             widget.open = False
+        self._profile_list_open = False
+        self._profile_add_mode = False
 
     def _mode_items(self) -> tuple[tuple[str, GameMode], ...]:
         # Typ'o'Shooter is listed from 40 unlocked quests.
@@ -136,9 +148,8 @@ class HighScoresView:
     def sync_lists(self) -> None:
         """`highscore_screen`: refill the lists from the config, and disable the lists an open one covers."""
         config = self.state.config
-        names = config.profile.saved_name_labels()
-        self.score_list.items = names
-        self.score_list.selected_index = min(config.profile.selected_saved_name_slot, len(names) - 1)
+        self.score_list.items = (*config.profile.saved_name_labels(), PROFILE_ADD_ITEM)
+        self.score_list.selected_index = config.profile.selected_saved_name_slot
         self.date_filter_list.items = DATE_FILTER_ITEMS
         self.date_filter_list.selected_index = int(config.profile.score_date_mode)
         self.player_count_list.items = PLAYER_COUNT_ITEMS
@@ -347,17 +358,9 @@ class HighScoresView:
 
         self.sync_lists()
 
-        # Selected score list (profile slots).
-        widget = self.score_list
-        selected = ui_list_widget_update(
-            resources, widget, shifted_right_top_left + HS_RIGHT_SCORE_LIST_WIDGET, focus=focus, mouse=mouse,
+        self._update_profile_menu(
+            shifted_right_top_left + HS_RIGHT_SCORE_LIST_WIDGET, resources=resources, mouse=mouse, click=click,
         )
-        if selected > -2 and pressed:
-            widget.open = not widget.open
-            if selected >= 0:
-                self.state.config.profile.selected_saved_name_slot = selected
-                self._dirty = True
-                self._reload_records()
 
         # Show scores: the date filter (config.highscore_date_mode).
         widget = self.date_filter_list
@@ -406,6 +409,74 @@ class HighScoresView:
                         pass
                 self._dirty = True
                 self._reload_records()
+
+    def _update_profile_menu(self, xy: Vec2, *, resources: RuntimeResources, mouse: Vec2, click: bool) -> None:
+        """`ui_profile_menu_update`: the named score lists, with a name box and Add for a new one, or Delete."""
+        focus = self.state.focus
+        profile = self.state.config.profile
+        dt_ms = self._dt * 1000.0
+        enter = focus.enter
+        if self._profile_add_mode:
+            input_pos = xy.offset(dy=29.0)
+            ui_text_input_focus(focus, self._profile_name_field, input_pos, width=PROFILE_NAME_INPUT_W, mouse=mouse)
+            self._profile_name, self._profile_caret = update_name_entry_text(
+                self._profile_name,
+                self._profile_caret,
+                max_len=SAVED_NAME_ENTRY_SIZE - 1,
+                rng=self.state.rng,
+                play_sfx=self._play_sfx,
+            )
+            # The name box takes Enter wherever the focus is, before the list sees it.
+            submitted = enter
+            enter = False
+            added = button_update(
+                resources,
+                self._profile_add_button,
+                focus=focus,
+                pos=xy + Vec2(180.0, 22.0),
+                dt_ms=dt_ms,
+                mouse=canvas.mouse_position(),
+                click=click,
+            )
+            # Port: an empty name would name the default list's file, so it is not added.
+            if (submitted or added) and self._profile_name.strip():
+                self._play_sfx(SfxId.UI_TYPEENTER)
+                profile.add_saved_name(self._profile_name)
+                self._profile_name, self._profile_caret = "", 0
+                self._profile_add_mode = False
+                self._dirty = True
+                self._reload_records()
+        elif not self._profile_list_open and profile.selected_saved_name_slot != 0:
+            if button_update(
+                resources,
+                self._profile_delete_button,
+                focus=focus,
+                pos=xy.offset(dy=22.0),
+                dt_ms=dt_ms,
+                mouse=canvas.mouse_position(),
+                click=click,
+            ):
+                profile.delete_selected_saved_name()
+                self._dirty = True
+                self._reload_records()
+
+        self.sync_lists()
+        widget = self.score_list
+        selected = ui_list_widget_update(resources, widget, xy, focus=focus, mouse=mouse)
+        if selected > -2 and (click or enter):
+            self._profile_list_open = not self._profile_list_open
+            add_item = len(widget.items) - 1
+            if selected >= 0:
+                profile.selected_saved_name_slot = selected
+                if selected != add_item:
+                    self._dirty = True
+                    self._reload_records()
+            self._profile_add_mode = selected == add_item
+        widget.open = self._profile_list_open
+
+    def _play_sfx(self, sfx: SfxId) -> None:
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, sfx)
 
     def _update_quest_arrows(
         self,
