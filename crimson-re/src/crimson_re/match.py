@@ -157,7 +157,7 @@ PADDING_LINE_TEXT = {
 }
 BRANCH_TARGET_RE = re.compile(r"\bL([0-9a-f]+)\b")
 ADDRESS_REFERENCE_KEY_RE = re.compile(r"^address:0x([0-9a-fA-F]+)$")
-LOCAL_INCLUDE_RE = re.compile(r'^\s*#\s*include\s*"([^"\r\n]+)"', re.MULTILINE)
+INCLUDE_RE = re.compile(r'^\s*#\s*include\s*(?:"([^"\r\n]+)"|<([^>\r\n]+)>)', re.MULTILINE)
 VC6_SINGLE_DELETE_UNWIND_KEY = "compiler:vc6-cxx-frame-handler:single-delete-unwind"
 VC6_UNWIND_ONLY_KEY = "compiler:vc6-cxx-frame-handler:unwind-only"
 VC6_LOCAL_JUMP_TABLE_KEY = "compiler:vc6-local-jump-table"
@@ -856,8 +856,9 @@ class LoadedImage:
     content_exclusions: tuple[tuple[int, int], ...] = ()
 
     def function_bytes(self, start_va: int, end_va: int) -> bytes:
-        data = self.mapped[start_va - self.image_base : end_va - self.image_base]
-        return data.rstrip(PADDING_BYTES)
+        # Padding is excluded only after decoding complete instructions and
+        # checking branch destinations. These byte values can be operands.
+        return self.mapped[start_va - self.image_base : end_va - self.image_base]
 
 
 @dataclass(frozen=True, slots=True)
@@ -2333,7 +2334,7 @@ def extract_object_function(
     relocation_references.sort(key=lambda reference: reference.offset)
     return ObjectFunction(
         name=target.name,
-        data=section.data[target.value : end].rstrip(PADDING_BYTES),
+        data=section.data[target.value : end],
         relocation_offsets=frozenset(reference.offset for reference in relocation_references),
         relocation_references=tuple(relocation_references),
     )
@@ -2624,7 +2625,7 @@ def disassemble_normalized_function(
         *,
         operand_index: int,
         kind: str,
-        byte_count: int,
+        byte_count: int | None,
     ) -> MaskedReference:
         if reference is None:
             return MaskedReference(
@@ -2650,7 +2651,11 @@ def disassemble_normalized_function(
         elif reference.symbol_name.startswith("??_C@") and (string_key := _printable_string_key(referenced_data)):
             keys = (string_key,)
             explained = True
-        elif reference.symbol_name.startswith("__real@") and len(referenced_data) >= byte_count:
+        elif (
+            reference.symbol_name.startswith("__real@")
+            and byte_count is not None
+            and len(referenced_data) >= byte_count
+        ):
             keys = (f"bytes{byte_count}:{referenced_data[:byte_count].hex()}",)
             explained = True
         elif reference.key is not None and reference.key.startswith("compiler:vc6-"):
@@ -2664,7 +2669,7 @@ def disassemble_normalized_function(
             )
             explained = True
         elif reference.read_only_data:
-            if data_offset >= 0 and data_offset + byte_count <= len(symbol_data):
+            if byte_count is not None and data_offset >= 0 and data_offset + byte_count <= len(symbol_data):
                 keys = (
                     f"bytes{byte_count}:{symbol_data[data_offset : data_offset + byte_count].hex()}",
                 )
@@ -2804,7 +2809,7 @@ def disassemble_normalized_function(
                             imm_relocation,
                             operand_index=operand_index,
                             kind="imm",
-                            byte_count=operand.size,
+                            byte_count=None,
                         ),
                     )
                 elif is_branch and 0 <= target_offset < size:
@@ -2819,13 +2824,24 @@ def disassemble_normalized_function(
             elif operand.type == capstone.x86.X86_OP_MEM:
                 masked = disp_masked or is_masked_value(operand.mem.disp)
                 operands.append(_format_memory_operand(insn, operand, masked))
+                # Equal bytes at a displacement prove only a direct scalar
+                # read, never an indexed table, an address, or a write.
+                scalar_size = (
+                    operand.size
+                    if insn.mnemonic != "lea"
+                    and operand.access == capstone.CS_AC_READ
+                    and operand.mem.base == 0
+                    and operand.mem.index == 0
+                    and operand.mem.segment in (0, capstone.x86.X86_REG_DS)
+                    else None
+                )
                 if disp_masked:
                     masked_references.append(
                         object_reference(
                             disp_relocation,
                             operand_index=operand_index,
                             kind="disp",
-                            byte_count=operand.size,
+                            byte_count=scalar_size,
                         ),
                     )
                 elif is_masked_value(operand.mem.disp):
@@ -2834,7 +2850,7 @@ def disassemble_normalized_function(
                             operand.mem.disp,
                             operand_index=operand_index,
                             kind="disp",
-                            byte_count=operand.size,
+                            byte_count=scalar_size,
                         ),
                     )
             else:
@@ -2862,20 +2878,43 @@ def disassemble_normalized_function(
                 size=1,
             ),
         )
-    return _strip_trailing_padding_lines(tuple(lines))
+    nonreturn_call_offsets = frozenset(
+        line.offset
+        for line in lines
+        if line.text == "call dword [ADDR]"
+        and len(line.masked_references) == 1
+        and reference_catalog is not None
+        and (reference := line.masked_references[0]).kind == "disp"
+        and "name:longjmp" in reference.keys
+        and _masked_reference_address(reference) in reference_catalog.import_addresses
+    )
+    return _strip_trailing_padding_lines(tuple(lines), nonreturn_call_offsets=nonreturn_call_offsets)
 
 
-def _strip_trailing_padding_lines(lines: tuple[DisassemblyLine, ...]) -> tuple[DisassemblyLine, ...]:
+def _strip_trailing_padding_lines(
+    lines: tuple[DisassemblyLine, ...],
+    *,
+    nonreturn_call_offsets: frozenset[int] = frozenset(),
+) -> tuple[DisassemblyLine, ...]:
     trim_start = len(lines)
     while trim_start > 0 and lines[trim_start - 1].text in PADDING_LINE_TEXT:
         trim_start -= 1
     if trim_start == len(lines) or trim_start == 0:
         return lines
     terminator = lines[trim_start - 1].text
-    if not terminator.startswith(("ret", "jmp ")):
-        return lines
-
     padding_offsets = {line.offset for line in lines[trim_start:]}
+    if not terminator.startswith(("ret", "jmp ")):
+        nonreturn_indices = [
+            index for index, line in enumerate(lines[:trim_start]) if line.offset in nonreturn_call_offsets
+        ]
+        if not nonreturn_indices:
+            return lines
+        # VC6 retains cleanup after imported longjmp. Keep those instructions,
+        # but exclude alignment only if no branch can enter the unreachable tail.
+        padding_offsets.update(line.offset for line in lines[nonreturn_indices[-1] + 1 : trim_start])
+        if any(line.text.startswith("jmp ") and not BRANCH_TARGET_RE.search(line.text) for line in lines[:trim_start]):
+            return lines
+
     for line in lines[:trim_start]:
         targets = {int(match.group(1), 16) for match in BRANCH_TARGET_RE.finditer(line.text)}
         if targets & padding_offsets:
@@ -2889,12 +2928,17 @@ class _ProvenCopyRange:
     destination: int
     size: int
 
-    def canonical_address(self, address: int) -> int | None:
-        if self.source <= address < self.source + self.size:
+    def canonical_address(self, address: int, access_size: int) -> int | None:
+        if self.source <= address and address + access_size <= self.source + self.size:
             return address
-        if self.destination <= address < self.destination + self.size:
+        if self.destination <= address and address + access_size <= self.destination + self.size:
             return self.source + address - self.destination
         return None
+
+    def overlaps_access(self, address: int, access_size: int) -> bool:
+        return _ranges_overlap(address, access_size, self.source, self.size) or _ranges_overlap(
+            address, access_size, self.destination, self.size,
+        )
 
 
 def _masked_reference_address(reference: MaskedReference) -> int | None:
@@ -2945,7 +2989,10 @@ def _annotate_vc6_proven_copy_loads(
     copy_count: int | None = None
     copy_source: int | None = None
     copy_destination: int | None = None
+    has_direction_changes = any(line.text == "std" for line in lines)
+    forward_copy = True  # The calling convention enters with DF clear.
     annotated: list[DisassemblyLine] = []
+    sizes_by_name = {name: size for size, name in _OPERAND_SIZE_NAMES.items()}
 
     def clear_copy_setup() -> None:
         nonlocal copy_count, copy_source, copy_destination
@@ -2957,40 +3004,71 @@ def _annotate_vc6_proven_copy_loads(
         if line.offset in branch_targets:
             live_copies.clear()
             clear_copy_setup()
+            if has_direction_changes:
+                forward_copy = False
 
+        text = line.text
+        is_copy = text == "rep movsd dword es:[edi], dword [esi]"
+        memory_operands = re.findall(r"\[[^\]]*\]", text)
+        access_match = re.search(r"\b(byte|word|dword|qword|tword|\d+) (?:(\w+):)?\[ADDR\]", text)
+        access_size = (
+            sizes_by_name.get(access_match[1], int(access_match[1]) if access_match[1].isdigit() else 0)
+            if access_match is not None
+            else 0
+        )
+        if (
+            not is_copy
+            and memory_operands
+            and (
+                any(operand != "[ADDR]" for operand in memory_operands)
+                or not access_size
+                or access_match is None
+                or access_match[2] not in (None, "ds")
+            )
+        ):
+            live_copies.clear()
+            clear_copy_setup()
         references = list(line.masked_references)
         touched_copies: set[_ProvenCopyRange] = set()
         for reference_index, reference in enumerate(references):
+            reference_size = access_size if reference.kind == "disp" else 1
+            if not reference_size:
+                continue
             address = _masked_reference_address(reference)
             if address is None:
+                # Scalar content keys describe proven read-only loads. Their
+                # unknown linked address cannot make them an aliasing write.
+                if not any(key.startswith("bytes") for key in reference.keys):
+                    live_copies.clear()
                 continue
             matching_copies = [
                 copy_range
                 for copy_range in live_copies
-                if copy_range.canonical_address(address) is not None
+                if copy_range.canonical_address(address, reference_size) is not None
             ]
             if (
                 line.text == "fld dword [ADDR]"
                 and len(references) == 1
                 and len(matching_copies) == 1
             ):
-                canonical_address = matching_copies[0].canonical_address(address)
+                canonical_address = matching_copies[0].canonical_address(address, reference_size)
                 assert canonical_address is not None
                 key = f"{VC6_PROVEN_COPY_LOAD_KEY}:0x{canonical_address:08x}"
                 references[reference_index] = replace(
                     reference,
                     keys=tuple(dict.fromkeys((*reference.keys, key))),
                 )
-            touched_copies.update(matching_copies)
+            touched_copies.update(
+                copy_range for copy_range in live_copies if copy_range.overlaps_access(address, reference_size)
+            )
         if touched_copies:
             live_copies = [copy_range for copy_range in live_copies if copy_range not in touched_copies]
 
         annotated.append(replace(line, masked_references=tuple(references)))
-        text = line.text
-
-        if text == "rep movsd dword es:[edi], dword [esi]":
+        if is_copy:
             if (
-                copy_count is not None
+                forward_copy
+                and copy_count is not None
                 and 0 < copy_count <= 0x1000
                 and copy_source is not None
                 and copy_destination is not None
@@ -3040,6 +3118,10 @@ def _annotate_vc6_proven_copy_loads(
                         copy_destination = None
 
         mnemonic = text.partition(" ")[0]
+        if mnemonic in {"std", "cld"}:
+            forward_copy = mnemonic == "cld"
+            live_copies.clear()
+            clear_copy_setup()
         if (
             mnemonic.startswith("j")
             or mnemonic in {"call", "loop", "loope", "loopne", "ret", "retf", "iret"}
@@ -3047,6 +3129,8 @@ def _annotate_vc6_proven_copy_loads(
         ):
             live_copies.clear()
             clear_copy_setup()
+            if has_direction_changes:
+                forward_copy = False
 
     return tuple(annotated)
 
@@ -4880,10 +4964,10 @@ class _ScratchIncludeResolver:
             return ()
         dependencies: list[Path] = []
         seen: set[Path] = set()
-        for match in LOCAL_INCLUDE_RE.finditer(text):
-            include_name = Path(match.group(1).replace("\\", "/"))
+        for match in INCLUDE_RE.finditer(text):
+            include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
             candidates = [include_dir / include_name for include_dir in search_dirs]
-            if not source:
+            if not source and match.group(1) is not None:
                 candidates.insert(0, including_path.parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
             if dependency is None:
@@ -5000,6 +5084,8 @@ def source_probe_tree_fingerprint(
     match_root = match_root.resolve()
     resolver = _ScratchIncludeResolver(match_root)
     include_dirs = (_compiler_executable_path(config, match_root).parent.parent / "Include", *resolver.include_dirs)
+    if config.include_overlay is not None:
+        include_dirs = (config.include_overlay, *include_dirs)
 
     def direct_dependencies(
         text: str,
@@ -5009,10 +5095,10 @@ def source_probe_tree_fingerprint(
     ) -> tuple[Path, ...]:
         dependencies: list[Path] = []
         seen: set[Path] = set()
-        for match in LOCAL_INCLUDE_RE.finditer(text):
-            include_name = Path(match.group(1).replace("\\", "/"))
+        for match in INCLUDE_RE.finditer(text):
+            include_name = Path((match.group(1) or match.group(2)).replace("\\", "/"))
             candidates = [include_dir / include_name for include_dir in include_dirs]
-            if not source and including_parent is not None:
+            if not source and including_parent is not None and match.group(1) is not None:
                 candidates.insert(0, including_parent / include_name)
             dependency = next((candidate for candidate in candidates if candidate.is_file()), None)
             if dependency is None:

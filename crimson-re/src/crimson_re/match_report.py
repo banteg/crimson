@@ -145,11 +145,15 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
             for row in json.loads(target.functions_path.read_text(encoding="utf-8"))
         }
         for function in manifest.functions:
+            data = image.function_bytes(function.address, function.end)
+            lines = matchlib.disassemble_normalized_function(data, base_address=function.address)
             row = {
                 "image": build_image.name,
                 "address": function.address,
                 "name": function.name,
-                "size": len(image.function_bytes(function.address, function.end)),
+                # Alignment bytes are outside the report's code denominator,
+                # but instruction operands and undecodable body bytes remain.
+                "size": max((line.offset + line.size for line in lines), default=0),
             }
             if canonical:
                 row["canonical_address"] = canonical[function.address]
