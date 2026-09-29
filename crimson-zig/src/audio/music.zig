@@ -214,6 +214,17 @@ pub const MusicState = struct {
         }
     }
 
+    pub fn suspendAll(self: *MusicState) void {
+        for (self.tracks.items) |*track| {
+            if (rl.isMusicStreamPlaying(track.music)) rl.pauseMusicStream(track.music);
+        }
+    }
+
+    // Resuming only clears the pause flag, so stopped streams stay stopped.
+    pub fn resumeAll(self: *MusicState) void {
+        for (self.tracks.items) |*track| rl.resumeMusicStream(track.music);
+    }
+
     pub fn setVolume(self: *MusicState, volume: f32) void {
         self.volume = clampVolume(volume);
     }

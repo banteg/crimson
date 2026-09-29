@@ -2005,10 +2005,18 @@ pub fn main(init: std.process.Init) !void {
     var app = App.init(allocator, runtime, args);
     defer app.deinit();
 
+    var focused = true;
     while (!rl.windowShouldClose() and !app.quit_requested) {
         const frame_dt = rl.getFrameTime();
-        input_codes.inputBeginFrame();
-        app.update(frame_dt);
+        // Native grim freezes timing while the window is inactive (`audio_suspend_all` /
+        // `audio_resume_all`) and `game_frame_update` skips the first frame back.
+        const was_focused = focused;
+        focused = rl.isWindowFocused();
+        if (focused != was_focused) app.audio.focusChanged(focused);
+        if (focused and was_focused) {
+            input_codes.inputBeginFrame();
+            app.update(frame_dt);
+        }
 
         rl.beginDrawing();
         defer rl.endDrawing();

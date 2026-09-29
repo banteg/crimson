@@ -99,6 +99,18 @@ pub fn updateAudio(state: *AudioState, dt: f32) void {
     state.music.updateMusic(dt);
 }
 
+/// `audio_suspend_all`: pause every playing music stream and sound voice while the window is inactive.
+pub fn suspendAudio(state: *AudioState) void {
+    state.music.suspendAll();
+    state.sfx.suspendAll();
+}
+
+/// `audio_resume_all`: resume what `suspendAudio` paused.
+pub fn resumeAudio(state: *AudioState) void {
+    state.music.resumeAll();
+    state.sfx.resumeAll();
+}
+
 pub fn setMusicVolume(state: *AudioState, volume: f32) void {
     state.music.setVolume(volume);
 }
