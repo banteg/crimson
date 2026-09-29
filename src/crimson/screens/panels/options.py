@@ -11,11 +11,12 @@ from grim import canvas
 from grim.assets import TextureId
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
-from grim.fonts.small import draw_small_text, measure_small_text_width
-from grim.geom import Rect, Vec2
+from grim.fonts.small import draw_small_text
+from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.hit_test import mouse_inside_rect_with_padding
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -51,7 +52,7 @@ class OptionsMenuView(PanelMenuView):
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
         self._slider_detail = SliderState(5, 1, 5)
-        self._ui_info_texts = True
+        self._info_checkbox = UiCheckbox("UI Info texts")
         self._active_slider: str | None = None
         self._dirty = False
 
@@ -104,8 +105,14 @@ class OptionsMenuView(PanelMenuView):
             self._slider_detail.value = preset
             self._dirty = True
 
-        if self._update_checkbox(label_pos.offset(dy=135.0)):
-            config.gameplay.show_info_texts = self._ui_info_texts
+        if ui_checkbox_update(
+            resources,
+            self._info_checkbox,
+            label_pos.offset(dy=135.0),
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
+            config.gameplay.show_info_texts = self._info_checkbox.checked
             self._dirty = True
 
         # `options_menu_update`: controls button is aligned with the panel content base.
@@ -113,7 +120,6 @@ class OptionsMenuView(PanelMenuView):
         dt_ms = min(float(dt), 0.1) * 1000.0
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        resources = require_runtime_resources(self.state)
         if button_update(
             resources,
             self._controls_button,
@@ -136,7 +142,7 @@ class OptionsMenuView(PanelMenuView):
 
     def _sync_from_config(self) -> None:
         config = self.state.config
-        self._ui_info_texts = config.gameplay.show_info_texts
+        self._info_checkbox.checked = config.gameplay.show_info_texts
 
         sfx_volume = config.audio.sfx_volume
         music_volume = config.audio.music_volume
@@ -227,21 +233,6 @@ class OptionsMenuView(PanelMenuView):
 
         return changed
 
-    def _update_checkbox(self, pos: Vec2) -> bool:
-        resources = require_runtime_resources(self.state)
-        check_on = resources.texture(TextureId.UI_CHECK_ON)
-        font = resources.small_font
-        label = "UI Info texts"
-        label_w = measure_small_text_width(font, label)
-        rect_w = float(check_on.width) + 6.0 + label_w
-        rect_h = max(float(check_on.height), font.cell_size)
-        mouse_pos = Vec2.from_xy(canvas.mouse_position())
-        hovered = Rect.from_top_left(pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._ui_info_texts = not self._ui_info_texts
-            return True
-        return False
-
     def _draw_contents(self) -> None:
         resources = require_runtime_resources(self.state)
         labels_tex = resources.texture(TextureId.UI_ITEM_TEXTS)
@@ -311,23 +302,7 @@ class OptionsMenuView(PanelMenuView):
             rect_h,
         )
 
-        check_tex = (
-            resources.texture(TextureId.UI_CHECK_ON)
-            if self._ui_info_texts
-            else resources.texture(TextureId.UI_CHECK_OFF)
-        )
-        check_w = float(check_tex.width)
-        check_h = float(check_tex.height)
-        check_pos = label_pos.offset(dy=135.0)
-        rl.draw_texture_pro(
-            check_tex,
-            rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-            rl.Rectangle(check_pos.x, check_pos.y, check_w, check_h),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
-        draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0, 1.0), text_color)
+        ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0))
 
         button_pos = base_pos.offset(dy=155.0)
         button_draw(

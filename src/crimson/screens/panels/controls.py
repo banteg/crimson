@@ -27,6 +27,7 @@ from ...input_codes import (
     player_gamepad_index,
 )
 from ...movement_controls import MovementControlType
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
@@ -51,6 +52,7 @@ CONTROLS_BACK_POS_X = -155.0
 CONTROLS_BACK_POS_Y = 420.0
 # Port-only "Reset" button, beside the direction-arrow checkbox on the left panel.
 CONTROLS_RESET_BUTTON_OFFSET = Vec2(388.0, 166.0)
+CONTROLS_DIRECTION_ARROW_OFFSET = Vec2(213.0, 174.0)
 # `controls_menu_update`: list origins off the left panel (`left_base + (10, 104)` etc.).
 CONTROLS_MOVE_METHOD_LIST_OFFSET = Vec2(214.0, 144.0)
 CONTROLS_AIM_METHOD_LIST_OFFSET = Vec2(214.0, 102.0)
@@ -201,6 +203,7 @@ class ControlsMenuView(PanelMenuView):
         self._dirty = False
         self._capture: RebindCapture | None = None
         self._reset_button = UiButtonState("Reset")
+        self._direction_arrow_checkbox = UiCheckbox("Show direction arrow")
 
     def open(self) -> None:
         super().open()
@@ -236,12 +239,7 @@ class ControlsMenuView(PanelMenuView):
                 right_top_left=right_top_left,
                 font=font,
             )
-        if (not click_consumed) and self._update_direction_arrow_checkbox(
-            left_top_left=left_top_left,
-            enabled=self._checkbox_enabled(),
-            resources=resources,
-            font=font,
-        ):
+        if (not click_consumed) and self._update_direction_arrow_checkbox(left_top_left, resources):
             self._dirty = True
             click_consumed = True
         if self._update_reset_button(dt, left_top_left=left_top_left, enabled=not click_consumed):
@@ -329,45 +327,20 @@ class ControlsMenuView(PanelMenuView):
         # `controls_menu_update`: an open method list disables the direction-arrow checkbox.
         return self._capture is None and not (self.move_method_list.open or self.aim_method_list.open)
 
-    def _checkbox_hovered(
-        self,
-        *,
-        left_top_left: Vec2,
-        enabled: bool,
-        resources: RuntimeResources,
-        font: SmallFontData,
-    ) -> bool:
-        if not enabled:
+    def _update_direction_arrow_checkbox(self, left_top_left: Vec2, resources: RuntimeResources) -> bool:
+        checkbox = self._direction_arrow_checkbox
+        checkbox.checked = self._direction_arrow_enabled()
+        checkbox.disabled = not self._checkbox_enabled()
+        if not ui_checkbox_update(
+            resources,
+            checkbox,
+            left_top_left + CONTROLS_DIRECTION_ARROW_OFFSET,
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
             return False
-        check_on = resources.texture(TextureId.UI_CHECK_ON)
-        label = "Show direction arrow"
-        check_pos = Vec2(left_top_left.x + 213.0, left_top_left.y + 174.0)
-        label_w = measure_small_text_width(font, label)
-        rect_w = float(check_on.width) + 6.0 + label_w
-        rect_h = max(float(check_on.height), font.cell_size)
-        mouse_pos = Vec2.from_xy(canvas.mouse_position())
-        return Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
-
-    def _update_direction_arrow_checkbox(
-        self,
-        *,
-        left_top_left: Vec2,
-        enabled: bool,
-        resources: RuntimeResources,
-        font: SmallFontData,
-    ) -> bool:
-        if not enabled:
-            return False
-        hovered = self._checkbox_hovered(
-            left_top_left=left_top_left,
-            enabled=enabled,
-            resources=resources,
-            font=font,
-        )
-        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._set_direction_arrow_enabled(not self._direction_arrow_enabled())
-            return True
-        return False
+        self._set_direction_arrow_enabled(checkbox.checked)
+        return True
 
     def _update_reset_button(self, dt: float, *, left_top_left: Vec2, enabled: bool) -> bool:
         button = self._reset_button
@@ -685,37 +658,7 @@ class ControlsMenuView(PanelMenuView):
             text_color_full,
         )
 
-        check_tex = (
-            resources.texture(TextureId.UI_CHECK_ON)
-            if self._direction_arrow_enabled()
-            else resources.texture(TextureId.UI_CHECK_OFF)
-        )
-        draw_ui_quad(
-            texture=check_tex,
-            src=rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-            dst=rl.Rectangle(
-                left_top_left.x + 213.0,
-                left_top_left.y + 174.0,
-                16.0,
-                16.0,
-            ),
-            origin=rl.Vector2(0.0, 0.0),
-            rotation_deg=0.0,
-            tint=rl.WHITE,
-        )
-        checkbox_hovered = self._checkbox_hovered(
-            left_top_left=left_top_left,
-            enabled=self._checkbox_enabled(),
-            resources=resources,
-            font=font,
-        )
-        checkbox_alpha = 255 if checkbox_hovered else 178
-        draw_small_text(
-            font,
-            "Show direction arrow",
-            Vec2(left_top_left.x + 235.0, left_top_left.y + 175.0),
-            rl.Color(255, 255, 255, checkbox_alpha),
-        )
+        ui_checkbox_draw(resources, self._direction_arrow_checkbox, left_top_left + CONTROLS_DIRECTION_ARROW_OFFSET)
 
         button_draw(resources, self._reset_button, pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET)
 

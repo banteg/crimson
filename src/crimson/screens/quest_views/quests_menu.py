@@ -25,6 +25,7 @@ from grim.terrain_render import GroundRenderer
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -74,6 +75,7 @@ class QuestsMenuView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
         self._back_button = UiButtonState("Back")
+        self._hardcore_checkbox = UiCheckbox("Hardcore")
 
         self._menu_screen_width = 0
         self._widescreen_y_shift = 0.0
@@ -261,29 +263,22 @@ class QuestsMenuView:
         return None
 
     def _hardcore_checkbox_clicked(self, layout: _QuestMenuLayout) -> bool:
-        status = self.state.status
-        if int(status.quest_unlock_index) < QUEST_HARDCORE_UNLOCK_INDEX:
+        if self.state.status.quest_unlock_index < QUEST_HARDCORE_UNLOCK_INDEX:
             return False
-        resources = require_runtime_resources(self.state)
-        check_on = resources.texture(TextureId.UI_CHECK_ON)
         config = self.state.config
-        hardcore = config.gameplay.hardcore
-
-        font = resources.small_font
-        label = "Hardcore"
-        label_w = measure_small_text_width(font, label)
-
-        check_pos = layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
-        rect_w = float(check_on.width) + 6.0 + label_w
-        rect_h = max(float(check_on.height), font.cell_size)
-
-        mouse_pos = Vec2.from_xy(canvas.mouse_position())
-        hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            config.gameplay.hardcore = not hardcore
-            self._dirty = True
-            return True
-        return False
+        checkbox = self._hardcore_checkbox
+        checkbox.checked = config.gameplay.hardcore
+        if not ui_checkbox_update(
+            require_runtime_resources(self.state),
+            checkbox,
+            layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
+            return False
+        config.gameplay.hardcore = checkbox.checked
+        self._dirty = True
+        return True
 
     @staticmethod
     def _digit_row_pressed() -> int | None:
@@ -482,20 +477,12 @@ class QuestsMenuView:
 
         y0 = self._rows_y0(layout)
         # Hardcore checkbox (only drawn once tier5 is reachable in normal mode).
-        if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
-            check_tex = (
-                resources.texture(TextureId.UI_CHECK_ON) if hardcore_flag else resources.texture(TextureId.UI_CHECK_OFF)
+        if status.quest_unlock_index >= QUEST_HARDCORE_UNLOCK_INDEX:
+            ui_checkbox_draw(
+                resources,
+                self._hardcore_checkbox,
+                list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
             )
-            check_pos = list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
-            rl.draw_texture_pro(
-                check_tex,
-                rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-                rl.Rectangle(check_pos.x, check_pos.y, float(check_tex.width), float(check_tex.height)),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
-            draw_small_text(font, "Hardcore", check_pos + Vec2(float(check_tex.width) + 6.0, 1.0), base_color)
 
         # Quest list (10 rows).
         for row in range(10):
