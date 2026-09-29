@@ -35,3 +35,28 @@ def stub_sfx_backend(mocker):
     for name in ("set_sound_pitch", "set_sound_pan", "set_sound_volume", "play_sound"):
         backend.attach_mock(mocker.patch.object(rl, name), name)
     return backend
+
+
+
+class HeadlessAudio:
+    """A ready audio state whose sfx voices start on a recorded backend instead of a device."""
+
+    def __init__(self, mocker) -> None:
+        from grim.audio import AudioState
+        from grim.music import init_music_state
+
+        self.backend = stub_sfx_backend(mocker)
+        self.state = AudioState(
+            ready=True,
+            music=init_music_state(ready=False, enabled=False, volume=1.0),
+            sfx=make_sfx_state(*SfxId),
+        )
+
+    def played(self) -> list[SfxId]:
+        """Sfx started so far, in order."""
+        sfx = self.state.sfx
+        by_entry: dict[str, SfxId] = {}
+        for sfx_id, sample in sfx.samples.items():
+            by_entry.setdefault(sample.entry_name, sfx_id)
+        by_sound = {id(voice.sound): by_entry[sample.entry_name] for sample in sfx.owned_samples for voice in sample.voices()}
+        return [by_sound[id(call.args[0])] for call in self.backend.play_sound.call_args_list]

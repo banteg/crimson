@@ -1,10 +1,9 @@
 from __future__ import annotations
 
+from crimson.game.navigation import ScreenNavigator
 from crimson.game.types import GameState
-from crimson.pause_background import PauseBackground
-from crimson.screens.actions import ScreenAction
-from crimson.screens.stack import ScreenEntry
-from tests.support.gameplay_screen import GameplayScreenStub
+from crimson.modes.base_gameplay_mode import BaseGameplayMode
+from crimson.screens.actions import ScreenAction, StartRun
 
 
 class ScreenStub:
@@ -34,19 +33,10 @@ class ScreenStub:
         return action
 
 
-class BackgroundGameplayStub(GameplayScreenStub):
-    def __init__(self, background: PauseBackground) -> None:
-        super().__init__()
-        self.background = background
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self.background.draw_pause_background(entity_alpha=entity_alpha)
-
-
-def install_background(state: GameState, background: PauseBackground) -> None:
-    """Isolate a panel draw test with a real retained-run/background relationship."""
-    gameplay = BackgroundGameplayStub(background)
-    state.screens.close()
-    state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
-    overlay = ScreenStub()
-    state.screens.push(ScreenEntry(overlay, resume=overlay.resume))
+def start_run(state: GameState, request: StartRun) -> tuple[ScreenNavigator, BaseGameplayMode]:
+    """Start `request` as the game does; screens navigated to next retain the run as their background."""
+    navigator = ScreenNavigator(state)
+    navigator.navigate(request)
+    run = state.screens.gameplay
+    assert isinstance(run, BaseGameplayMode)
+    return navigator, run

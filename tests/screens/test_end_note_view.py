@@ -1,62 +1,56 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-from typing import cast
+import pytest
 
-import crimson.screens.quest_views.end_note as end_note_module
-from crimson.screens.actions import Route
-from crimson.screens.quest_views import EndNoteView
+from crimson.game_modes import GameMode
+from crimson.modes.quest_mode import QuestMode
+from crimson.quests.level import QuestLevel
+from crimson.screens.actions import Route, ShowQuestOutcome, StartRun
+from crimson.screens.quest_views import EndNoteView, QuestResultsView
+from crimson.sim.run_result import RunOutcome
 from crimson.ui.animation import ui_element_timeline_window
-from grim.assets import RuntimeResources
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from tests.support.screens import install_background
+from tests.support.audio import HeadlessAudio
+from tests.support.screens import start_run
+
+pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
+
+FINAL_QUEST = QuestLevel(5, 10)
 
 
-def _texture_stub() -> rl.Texture:
-    return cast("rl.Texture", SimpleNamespace(width=1, height=1))
+@pytest.fixture
+def end_note(make_game_state, headless_resources, mocker):
+    """The end note reached from the final quest's results, the finished run retained underneath."""
+    audio = HeadlessAudio(mocker)
+    state = make_game_state(resources=headless_resources, audio=audio.state)
+    state.status.quest_unlock_index = FINAL_QUEST.global_index
+    navigator, run = start_run(state, StartRun.from_config(state.config, GameMode.QUESTS, quest_level=FINAL_QUEST))
+    assert isinstance(run, QuestMode)
+    run._finish_run(RunOutcome.QUEST_COMPLETED)
+    outcome = run.consume_outcome()
+    assert outcome is not None
+    navigator.navigate(ShowQuestOutcome(outcome))
+    assert isinstance(state.screens.active, QuestResultsView)
+    audio.backend.reset_mock()
+    navigator.navigate(Route.END_NOTE)
+    view = state.screens.active
+    assert isinstance(view, EndNoteView)
+    return view, run, audio
 
 
-def _font_stub() -> SimpleNamespace:
-    return SimpleNamespace(cell_size=8, widths=[8] * 256)
-
-
-def _resources_stub() -> RuntimeResources:
-    tex = _texture_stub()
-    return cast(
-        "RuntimeResources",
-        SimpleNamespace(
-            texture=lambda _texture_id: tex,
-            small_font=_font_stub(),
-        ),
-    )
-
-
-def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, mocker) -> None:
-    state = make_game_state(assets_root=tmp_path, audio=object())
-    state.resources = _resources_stub()
-    play_sfx = mocker.patch.object(end_note_module, "play_sfx")
-
-    mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(end_note_module, "ensure_menu_ground", return_value=None)
-    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
-
-    view = EndNoteView(state)
-    view.open()
+def test_end_note_escape_waits_for_close_transition(end_note, mocker) -> None:
+    view, _run, audio = end_note
     for _ in range(4):
         view.update(0.1)
 
-    mocker.patch.object(
-        end_note_module.rl,
-        "is_key_pressed",
-        side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ESCAPE),
-    )
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     view.update(0.1)
 
-    assert [call.args[1] for call in play_sfx.call_args_list] == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
+    assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None
 
-    mocker.patch.object(end_note_module.rl, "is_key_pressed", side_effect=lambda _key: False)
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
     action = None
     for _ in range(30):
         view.update(1.0 / 60.0)
@@ -66,24 +60,13 @@ def test_end_note_escape_waits_for_close_transition(make_game_state, tmp_path, m
     assert action == Route.MENU
 
 
-def test_end_note_draw_fades_pause_background_during_close(make_game_state, tmp_path, mocker) -> None:
-    state = make_game_state(assets_root=tmp_path, audio=None)
-    state.resources = _resources_stub()
-    pause_background = mocker.Mock()
-    install_background(state, pause_background)
-
-    mocker.patch.object(end_note_module, "update_audio", side_effect=lambda _audio, _dt: None)
-    mocker.patch.object(end_note_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(end_note_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(end_note_module, "draw_classic_menu_panel", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(end_note_module, "draw_small_text", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(end_note_module, "button_draw", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(end_note_module, "ui_cursor_render", side_effect=lambda *_args, **_kwargs: None)
-
-    view = EndNoteView(state)
-    view.open()
+def test_end_note_draw_fades_the_retained_run_during_close(end_note, mocker) -> None:
+    view, run, _audio = end_note
+    mocker.patch.object(run, "_draw_world")
+    background = mocker.spy(run, "draw_pause_background")
     view.state.ui.closing = True
-    view.state.ui.timeline_ms = int(ui_element_timeline_window(28)[1] // 2)
+    view.state.ui.timeline_ms = ui_element_timeline_window(28)[1] // 2
+
     view.draw()
 
-    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)
+    background.assert_called_once_with(entity_alpha=0.5)
