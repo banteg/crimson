@@ -14,14 +14,14 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
-from grim.geom import Rect, Vec2
+from grim.fonts.small import SmallFontData, draw_small_text
+from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...input_codes import PadCode, pad_nav_pressed
-from ...ui.hit_test import mouse_inside_rect_with_padding
+from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ...ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -40,18 +40,6 @@ class _PlayGameModeEntry(msgspec.Struct):
 class _PlayGameContentLayout(msgspec.Struct, frozen=True):
     base_pos: Vec2
     drop_pos: Vec2
-
-
-class _PlayerCountWidgetLayout(msgspec.Struct, frozen=True):
-    pos: Vec2
-    width: float
-    header_h: float
-    row_h: float
-    rows_y0: float
-    full_h: float
-    arrow_pos: Vec2
-    arrow_size: Vec2
-    text_pos: Vec2
 
 
 class PlayGameMenuView(PanelMenuView):
@@ -73,7 +61,8 @@ class PlayGameMenuView(PanelMenuView):
             panel_height=278.0,
             back_pos=Vec2(-55.0, 462.0),
         )
-        self._player_list_open = False
+        # Native lists two players; the port plays up to four.
+        self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
         self._dirty = False
 
         # Hover fade timers for tooltips (0..1000ms-ish; original uses ~0.0009 alpha scale).
@@ -84,7 +73,7 @@ class PlayGameMenuView(PanelMenuView):
 
     def open(self) -> None:
         super().open()
-        self._player_list_open = False
+        self.player_count_list.open = False
         self._focus_index = None
         self._dirty = False
         self._tooltip_ms.clear()
@@ -102,16 +91,14 @@ class PlayGameMenuView(PanelMenuView):
         layout = self._content_layout()
         base_pos = layout.base_pos
         resources = require_runtime_resources(self.state)
-        font = resources.small_font
 
-        consumed_click = self._update_player_count(layout.drop_pos, font=font)
-        if consumed_click:
+        if self._update_player_count(layout.drop_pos, resources=resources):
             return
         self._step_player_count()
 
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        button_enabled = not self._player_list_open
+        button_enabled = not self.player_count_list.open
 
         y = base_pos.y
         entries, y_step, y_start, _y_end = self._mode_entries()
@@ -351,76 +338,22 @@ class PlayGameMenuView(PanelMenuView):
             value -= dt_ms * 2
         self._tooltip_ms[key] = max(0, min(1000, value))
 
-    def _player_count_widget_layout(self, pos: Vec2, *, font: SmallFontData) -> _PlayerCountWidgetLayout:
-        """Return Play Game player-count dropdown metrics.
-
-        `ui_list_widget_update` (0x43efc0):
-          - width = max(label_w) + 0x30
-          - header height = 16
-          - open height = (count * 16) + 0x18
-          - arrow icon = 16x16 at (x + width - 16 - 1, y)
-          - selected label at (x + 4, y + 1)
-          - list rows start at y + 17, step 16
-        """
-        max_label_w = 0.0
-        for label in self._PLAYER_COUNT_LABELS:
-            max_label_w = max(max_label_w, measure_small_text_width(font, label))
-        width = max_label_w + 48.0
-        header_h = 16.0
-        row_h = 16.0
-        full_h = float(len(self._PLAYER_COUNT_LABELS)) * 16.0 + 24.0
-        arrow = 16.0
-        return _PlayerCountWidgetLayout(
-            pos=pos,
-            width=width,
-            header_h=header_h,
-            row_h=row_h,
-            rows_y0=pos.y + 17.0,
-            full_h=full_h,
-            arrow_pos=Vec2(pos.x + width - arrow - 1.0, pos.y),
-            arrow_size=Vec2(arrow, arrow),
-            text_pos=pos + Vec2(4.0, 1.0),
+    def _update_player_count(self, pos: Vec2, *, resources: RuntimeResources) -> bool:
+        """`play_game_menu_update`'s player-count list; returns whether it took the press."""
+        widget = self.player_count_list
+        widget.selected_index = self.state.config.gameplay.player_count - 1
+        selected = ui_list_widget_update(resources, widget, pos, mouse=Vec2.from_xy(canvas.mouse_position()))
+        # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
+        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or rl.is_key_pressed(
+            rl.KeyboardKey.KEY_ENTER,
         )
-
-    def _update_player_count(self, pos: Vec2, *, font: SmallFontData) -> bool:
-        config = self.state.config
-        layout = self._player_count_widget_layout(pos, font=font)
-
-        mouse = canvas.mouse_position()
-        hovered_header = mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0,
-        )
-        if hovered_header and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._player_list_open = not self._player_list_open
-            return True
-
-        if not self._player_list_open:
+        if selected <= -2 or not pressed:
             return False
-
-        # Close if we click outside the dropdown + list.
-        list_hovered = Rect.from_top_left(layout.pos, layout.width, layout.full_h).contains(mouse)
-        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) and not list_hovered:
-            self._player_list_open = False
-            return True
-
-        for idx, label in enumerate(self._PLAYER_COUNT_LABELS):
-            del label
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            item_hovered = mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0,
-            )
-            if item_hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                config.gameplay.player_count = idx + 1
-                self._dirty = True
-                self._player_list_open = False
-                return True
-        return False
+        widget.open = not widget.open
+        if selected >= 0:
+            self.state.config.gameplay.player_count = selected + 1
+            self._dirty = True
+        return True
 
     def _draw_contents(self) -> None:
         resources = require_runtime_resources(self.state)
@@ -476,80 +409,13 @@ class PlayGameMenuView(PanelMenuView):
             y += y_step
 
         # `play_game_menu_update`: the list widget is drawn before tooltips, so tooltips can overlay it.
-        self._draw_player_count(layout.drop_pos, resources=resources, font=font)
+        self._draw_player_count(layout.drop_pos, resources=resources)
         self._draw_tooltips(entries, base_pos, y_end, font=font)
 
-    def _draw_player_count(
-        self,
-        pos: Vec2,
-        *,
-        resources: RuntimeResources,
-        font: SmallFontData,
-    ) -> None:
-        drop_on = resources.texture(TextureId.UI_DROP_ON)
-        drop_off = resources.texture(TextureId.UI_DROP_OFF)
-        layout = self._player_count_widget_layout(pos, font=font)
-
-        # `ui_list_widget_update` draws a single bordered black rect for the widget.
-        widget_h = layout.full_h if self._player_list_open else layout.header_h
-        rl.draw_rectangle(int(layout.pos.x), int(layout.pos.y), int(layout.width), int(widget_h), rl.WHITE)
-        inner_w = max(0, int(layout.width) - 2)
-        inner_h = max(0, int(widget_h) - 2)
-        rl.draw_rectangle(int(layout.pos.x) + 1, int(layout.pos.y) + 1, inner_w, inner_h, rl.BLACK)
-
-        # Arrow icon (the ui_drop* assets are 16x16 icons, not the background).
-        mouse = canvas.mouse_position()
-        hovered_header = mouse_inside_rect_with_padding(
-            mouse,
-            pos=layout.pos,
-            width=layout.width,
-            height=14.0,
-        )
-        arrow_tex = drop_on if (self._player_list_open or hovered_header) else drop_off
-        if self._player_list_open or hovered_header:
-            line_h = 1
-            rl.draw_rectangle(
-                int(layout.pos.x),
-                int(layout.pos.y + 15.0),
-                int(layout.width),
-                line_h,
-                rl.Color(255, 255, 255, 128),
-            )
-        rl.draw_texture_pro(
-            arrow_tex,
-            rl.Rectangle(0.0, 0.0, float(arrow_tex.width), float(arrow_tex.height)),
-            rl.Rectangle(layout.arrow_pos.x, layout.arrow_pos.y, layout.arrow_size.x, layout.arrow_size.y),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
-
-        player_count = self.state.config.gameplay.player_count
-        if player_count < 1:
-            player_count = 1
-        if player_count > len(self._PLAYER_COUNT_LABELS):
-            player_count = len(self._PLAYER_COUNT_LABELS)
-        label = self._PLAYER_COUNT_LABELS[player_count - 1]
-        header_alpha = 242 if hovered_header else 191  # 0x3f733333 / 0x3f400000
-        draw_small_text(font, label, layout.text_pos, rl.Color(255, 255, 255, header_alpha))
-
-        if not self._player_list_open:
-            return
-
-        for idx, item in enumerate(self._PLAYER_COUNT_LABELS):
-            item_y = layout.rows_y0 + layout.row_h * float(idx)
-            hovered = mouse_inside_rect_with_padding(
-                mouse,
-                pos=Vec2(layout.pos.x, item_y),
-                width=layout.width,
-                height=14.0,
-            )
-            alpha = 153  # 0x3f19999a
-            if hovered:
-                alpha = 242  # 0x3f733333
-            if idx == (player_count - 1):
-                alpha = max(alpha, 245)  # 0x3f75c28f
-            draw_small_text(font, item, Vec2(layout.text_pos.x, item_y), rl.Color(255, 255, 255, alpha))
+    def _draw_player_count(self, pos: Vec2, *, resources: RuntimeResources) -> None:
+        widget = self.player_count_list
+        widget.selected_index = self.state.config.gameplay.player_count - 1
+        ui_list_widget_draw(resources, widget, pos, mouse=Vec2.from_xy(canvas.mouse_position()))
 
     def _draw_mode_button(
         self,
