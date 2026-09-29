@@ -276,6 +276,8 @@ def run_game(config: GameConfig) -> None:
                 fullscreen_changed=lambda fullscreen: _save_windowed(cfg, windowed=not fullscreen),
                 focus_changed=view.focus_changed,
             ),
+            # Native F12 saves into the game directory.
+            screenshot_dir=base_dir,
         )
         if state is not None:
             state.status.save_if_dirty()

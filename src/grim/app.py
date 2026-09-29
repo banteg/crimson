@@ -36,15 +36,11 @@ def _fullscreen_toggle_pressed() -> bool:
     return rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and any(rl.is_key_down(key) for key in ALT_KEYS)
 
 
-def _next_screenshot_index(directory: Path) -> int:
-    if not directory.exists():
-        return 1
-    max_index = 0
-    for entry in directory.glob("*.png"):
-        stem = entry.stem
-        if stem.isdigit():
-            max_index = max(max_index, int(stem))
-    return max_index + 1
+def _next_screenshot_name(directory: Path, index: int) -> tuple[str, int]:
+    """`game_frame_update`'s F12 probe: the first `shot_%03d.bmp` not yet in `directory`, and the index after it."""
+    while (directory / f"shot_{index:03d}.bmp").exists():
+        index += 1
+    return f"shot_{index:03d}.bmp", index + 1
 
 
 def run_view(
@@ -57,6 +53,7 @@ def run_view(
     window_state: int = 0,
     exit_key: int | None = None,
     hooks: RunViewHooks | None = None,
+    screenshot_dir: Path = SCREENSHOT_DIR,
 ) -> None:
     """Run a Raylib window with a pluggable debug view drawn on a `width` x `height` canvas."""
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
@@ -76,8 +73,8 @@ def run_view(
     )
     try:
         view.open()
-        screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
-        screenshot_index = _next_screenshot_index(screenshot_dir)
+        screenshot_dir = screenshot_dir if screenshot_dir.is_absolute() else Path.cwd() / screenshot_dir
+        screenshot_index = 0
         focused = True
         while not rl.window_should_close():
             dt = rl.get_frame_time()
@@ -106,12 +103,12 @@ def run_view(
                 break
             if take_screenshot:
                 screenshot_dir.mkdir(parents=True, exist_ok=True)
-                filename = f"{screenshot_index:05d}.png"
+                filename, screenshot_index = _next_screenshot_name(screenshot_dir, screenshot_index)
+                # raylib writes screenshots into the working directory.
                 rl.take_screenshot(filename)
                 src = Path.cwd() / filename
-                if src.exists():
+                if src.exists() and src != screenshot_dir / filename:
                     shutil.move(str(src), str(screenshot_dir / filename))
-                screenshot_index += 1
     finally:
         try:
             view.close()

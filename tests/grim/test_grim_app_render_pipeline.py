@@ -175,7 +175,6 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     view = _ViewSpy()
     mocker.patch.object(grim_app, "rl", fake_rl)
     mocker.patch.object(grim_app, "Canvas", _CanvasStub)
-    mocker.patch.object(grim_app, "SCREENSHOT_DIR", tmp_path)
     mocker.patch.object(grim_app, "WindowSink")
     mocker.patch.object(grim_app, "RaylibDrawScope")
     mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
@@ -189,10 +188,11 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
             should_close=quit_requested,
             consume_screenshot_request=screenshot_requested,
         ),
+        screenshot_dir=tmp_path,
     )
     assert view.draw_calls == 2
     assert len(view.update_dts) == 2
-    screenshot.assert_called_once_with("00001.png")
+    screenshot.assert_called_once_with("shot_000.bmp")
     assert quit_requested.call_count == screenshot_requested.call_count == 2
     assert view.close_calls == fake_rl.close_calls == 1
 
@@ -215,3 +215,11 @@ def test_run_view_alt_enter_toggles_fullscreen_without_updating_the_view(mocker)
     # The toggle frame's Enter press never reaches the view; plain Enter on the next frame does.
     assert len(view.update_dts) == 1
     assert view.draw_calls == 2
+
+
+def test_screenshot_names_skip_existing_shots(tmp_path) -> None:
+    (tmp_path / "shot_000.bmp").touch()
+    (tmp_path / "shot_001.bmp").touch()
+
+    assert grim_app._next_screenshot_name(tmp_path, 0) == ("shot_002.bmp", 3)
+    assert grim_app._next_screenshot_name(tmp_path, 1000) == ("shot_1000.bmp", 1001)
