@@ -99,8 +99,8 @@ an independently recorded native extent. The reporter then compares the emitted
 COFF common/BSS/data storage with the reference initializer, byte for byte.
 Overlapping declarations count each original byte only once.
 
-The current set has **197 definitions covering 312,613 unique bytes**. Alongside
-zero-initialized state, it includes the original developer-hint strings, symbolic
+The [generated inventory](DATA.md) gives the current unique matched-byte totals.
+Alongside zero-initialized state, the definitions include the original developer-hint strings, symbolic
 hint pointers, the console empty-string pointer, and the typed effect atlas table.
 Original text and single-byte encodings are preserved. Array extents and types
 come from existing recovery evidence; no padding or byte arrays are introduced
@@ -136,8 +136,8 @@ uv run crimson match data-inventory
 
 `tools/native/data_ownership.json` records explicit whole-object ownership and
 its evidence, independently of whether the object has a compiled match. It
-currently attributes 341,469 bytes to Game & Engine and 27,299 to libraries;
-148,970 bytes remain unknown. No ownership is inferred from adjacency, code
+records attributed and unknown byte totals in the generated inventory.
+No ownership is inferred from adjacency, code
 ranges, or successful matching. All unknown bytes remain in All and EXE/DLL totals.
 
 The existing **Game & Engine** filter stays code-only. **Game & Engine + attributed
@@ -162,7 +162,12 @@ every canonical function placed in 1.9.8, with the exact extent of an identical
 body or, for a changed one, the extent up to the next known function. Code the
 map does not place stays unresolved in the executable reconciliation, as
 uncurated gaps do for 1.9.93. Each function takes its categories from its
-canonical counterpart. Data is not measured for 1.9.8.
+canonical counterpart. Data is not measured for 1.9.8: omitted data measures mean
+unavailable, not a measured 0% or 100%. The CLI and generated summary say
+**not measured**. Its code percentages describe the mapped inventory, not every
+function in the historical image. The executable reconciliation and summary
+retain the unmapped bytes so expanding a sparse map cannot masquerade as source
+progress.
 
 A reference counts only when 1.9.8's own maps name its target, so an exact
 instruction body whose globals the map does not name yet stays at `audit`.
@@ -200,7 +205,13 @@ stay unchanged. The hook verifies evidence; it does not regenerate it.
 
 `report.metrics.json` accompanies the objdiff report in a separate CI artifact.
 It includes encoded-body credit, unmatched bytes, the largest uncredited functions,
-and executable reconciliation. Target hashes, inventory/ownership identity and
+and executable reconciliation. `version` and `data_measured` identify the build
+and distinguish absent data evidence from a zero matched-byte count.
+`executable_coverage` totals retained code and unresolved executable bytes.
+Each scope includes the exact objdiff measures beside its encoded-body totals.
+`report.md` summarizes the five chart series, encoded-body credit and executable
+coverage in the measurement artifact and GitHub Actions job summary.
+Target hashes, inventory/ownership identity and
 scoring implementation/policy identity are recorded independently. To compare
 against a previous saved evidence file:
 
@@ -210,6 +221,12 @@ uv run crimson match report --baseline /path/to/previous-evidence.json
 
 The delta reports newly matched and regressed bytes, but labels target, inventory
 or scoring changes as a measurement baseline change rather than source progress.
+For those changes, newly matched/regressed source-byte counts are unavailable
+(`null`). The inventory identity includes historical-to-canonical ownership
+mapping, data section extents and explicit data ownership, so changes to those
+also establish a new baseline.
+Compiler identity uses each profile's fingerprint; the scratch path used to
+locate that compiler is not part of its identity.
 Older schema snapshots establish a new baseline. Renames alone do not change the
 native key or inventory identity. Fuzzy similarity is neither semantic recovery
 nor an estimate of remaining effort.
@@ -220,7 +237,12 @@ To verify saved evidence and generate `artifacts/decomp/<version>/report.json`:
 uv run crimson match report
 ```
 
-The `Decompilation progress` workflow runs on pushes to `master` and PRs. It
+The `Decompilation progress` workflow runs on pushes to `master` and PRs. Its
+version matrix is generated from `reported` builds in `decomp/builds.json`, so
+new reported versions receive both artifacts and a summary automatically. It
+compares to saved evidence from the pre-push commit or PR base when available,
+showing measurement changes in the summary instead of source-byte gains.
+Manual workflow runs and newly reported versions may have no baseline. It
 downloads each reported build's pinned images from the project asset host,
 verifies each version's evidence against repository inputs,
 its complete live function inventory, and (for 1.9.93) reference data extents,

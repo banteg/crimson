@@ -12,7 +12,7 @@ from . import match_toolchain
 
 VERIFICATION = "source-bound local compilation; CI checks freshness and report consistency"
 SCORING_POLICY = "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1"
-INVENTORY_POLICY = "curated-functions-v1; executable-gaps-unresolved-v1"
+INVENTORY_POLICY = "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1"
 # Synthetic report input: locked versions of the libraries the scoring code imports.
 SCORING_DEPENDENCIES_INPUT = "uv.lock#scoring-dependencies"
 
@@ -28,16 +28,23 @@ def _digest(value: Any) -> str:
 def identities(
     functions: list[dict[str, Any]], inputs: dict[str, str], external: dict[str, str],
     toolchains: dict[str, Any] | None = None,
+    *, data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "target": {path: digest for path, digest in external.items() if path.startswith("game_bins/")},
         "inventory": _digest({
             "policy": INVENTORY_POLICY,
-            "ranges": [(r["image"], r["address"], r["size"]) for r in functions],
+            "ranges": sorted((r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
+                             for r in functions),
+            "data_sections": data["sections"] if data is not None else None,
             "ownership": {p: h for p, h in inputs.items() if p in {
-                "analysis/matching_scope.json", "analysis/library_provenance.json"}},
+                "analysis/matching_scope.json", "analysis/library_provenance.json", "tools/native/data_ownership.json"}},
         }),
-        "scoring": _digest({"policy": SCORING_POLICY, "toolchains": toolchains or {}, "implementation": {
+        # The config path is a locator for verification, not compiler identity.
+        # A newly added scratch can become the first receipt for the same profile.
+        "scoring": _digest({"policy": SCORING_POLICY, "toolchains": {
+            profile: receipt["fingerprint"] for profile, receipt in (toolchains or {}).items()
+        }, "implementation": {
             p: h for p, h in inputs.items() if p.startswith("crimson-re/src/crimson_re/match") or p == SCORING_DEPENDENCIES_INPUT
         }}),
         "inventory_policy": INVENTORY_POLICY,
@@ -190,6 +197,8 @@ def diagnostics(
     total = sum(r["size"] for r in rows)
     result = {
         "schema": 1, "verification": evidence["verification"], "identities": evidence["identities"],
+        "version": evidence.get("version"),
+        "data_measured": evidence.get("data") is not None,
         "total_code": total, "normalized_matched_code": sum(r["size"] for r in source_matches),
         "encoded_body_matched_code": sum(r["size"] for r in encoded),
         "encoded_body_matched_functions": len(encoded),
@@ -198,6 +207,14 @@ def diagnostics(
         "largest_unmatched": [{"id": native_id(r), "name": r["name"], "size": r["size"]}
                               for r in sorted(unmatched, key=lambda r: (-r["size"], native_id(r)))[:20]],
         "code_inventory": evidence["code_inventory"],
+    }
+    # Unresolved executable bytes are outside the curated code denominator. Show
+    # them alongside every version's progress so a sparse build map is visible.
+    inventory = evidence["code_inventory"]
+    result["executable_coverage"] = {
+        "total_bytes": sum(s["size"] for s in inventory),
+        **{kind: sum(s["totals"][kind] for s in inventory)
+           for kind in ("retained_code", "embedded_data", "padding", "unresolved")},
     }
     if report is not None:
         by_id = {native_id(r): r for r in rows}
@@ -210,6 +227,7 @@ def diagnostics(
             encoded_size = sum(r["size"] for r in members if r["candidate"] == "source" and r["matched"]
                                and r["proof"]["body_byte_exact"])
             result["scopes"][category["id"]] = {
+                "measures": category["measures"],
                 "total_code": size, "normalized_matched_code": int(category["measures"]["matched_code"]),
                 "encoded_body_matched_code": encoded_size,
                 "encoded_body_matched_percent": 100 * encoded_size / size if size else 0,
@@ -217,13 +235,59 @@ def diagnostics(
     if previous is not None:
         old_ids = previous.get("identities", {})
         changes = [key for key in ("target", "inventory", "scoring") if old_ids.get(key) != evidence["identities"][key]]
-        old = {native_id(r): r for r in previous["functions"]}
-        newly = sum(r["size"] for r in source_matches
-                    if native_id(r) not in old or not (old[native_id(r)]["matched"] and old[native_id(r)]["candidate"] == "source"))
-        current = {native_id(r): r for r in source_matches}
-        regressed = sum(r["size"] for r in old.values() if r["matched"] and r["candidate"] == "source"
-                        and native_id(r) not in current)
+        newly = regressed = None
+        if not changes:
+            old = {native_id(r): r for r in previous["functions"]}
+            newly = sum(r["size"] for r in source_matches
+                        if native_id(r) not in old or not (old[native_id(r)]["matched"] and old[native_id(r)]["candidate"] == "source"))
+            current = {native_id(r): r for r in source_matches}
+            regressed = sum(r["size"] for r in old.values() if r["matched"] and r["candidate"] == "source"
+                            and native_id(r) not in current)
         result["delta"] = {"measurement_changes": changes, "comparable": not changes,
                            "newly_matched_code": newly, "regressed_code": regressed,
                            "interpretation": "measurement baseline changed" if changes else "reconstruction progress"}
     return result
+
+
+def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: dict[str, Any]) -> str:
+    """A per-version receipt for the five history series and their denominators."""
+    lines = [f"## Crimsonland {evidence['version']}", "",
+             "Percentages apply to the curated function inventory and the selected category.", "",
+             "| Scope | Matched code | Fuzzy code | Encoded body | Matched data | Linked code / data |",
+             "| --- | --- | --- | --- | --- | --- |"]
+    scopes = [("All", report["measures"], metrics)] + [
+        (category["name"], category["measures"], metrics["scopes"][category["id"]])
+        for category in report["categories"] if category["id"] in {"game", "libs", "unknown", "game.data"}
+    ]
+    for label, measures, scope in scopes:
+        total = int(measures["total_code"])
+        code = f"{int(measures['matched_code']):,}"
+        code = f"{code} / {total:,} ({measures['matched_code_percent']:.2f}%)" if total else "n/a"
+        fuzzy = f"{measures['fuzzy_match_percent']:.2f}%" if total else "n/a"
+        encoded = (f"{scope['encoded_body_matched_code']:,} / {total:,} "
+                   f"({scope['encoded_body_matched_percent']:.2f}%)") if total else "n/a"
+        data_total = int(measures.get("total_data", 0))
+        data = (f"{int(measures['matched_data']):,} / {data_total:,} ({measures['matched_data_percent']:.2f}%)"
+                if data_total else "not measured" if evidence["data"] is None else "outside scope")
+        linked = f"{measures['complete_code_percent']:.2f}%" if total else "n/a"
+        linked += " / " + (f"{measures['complete_data_percent']:.2f}%" if data_total else "n/a")
+        lines.append(f"| {label} | {code} | {fuzzy} | {encoded} | {data} | {linked} |")
+    lines.extend(["", ("Fuzzy = sum(original code bytes × source candidate score) / total original code bytes. "
+                      "Prebuilt code gets no public credit; unresolved references or incomplete coverage stay below 100%."),
+                  "Linked credit requires recovery of original organization and placement; structural linker receipts earn none.", "",
+                  "| Image | Executable virtual bytes | Curated code bytes | Unresolved executable bytes |",
+                  "| --- | --- | --- | --- |"])
+    for section in evidence["code_inventory"]:
+        lines.append(f"| {section['image']} {section['name']} | {section['size']:,} | "
+                     f"{section['totals']['retained_code']:,} | {section['totals']['unresolved']:,} |")
+    lines.extend(["", ("Unresolved executable bytes may contain code, padding or embedded data. "
+                      "They are not silently classified or included in a Game & Engine completion claim. "
+                      "100% of curated code does not prove whole-image recovery."), ""])
+    if "delta" in metrics:
+        delta = metrics["delta"]
+        lines.append("Baseline: " + (f"{delta['newly_matched_code']:,} newly matched bytes; "
+                                   f"{delta['regressed_code']:,} regressed bytes." if delta["comparable"] else
+                                   "measurement changed (" + ", ".join(delta["measurement_changes"]) +
+                                   "); source-progress delta unavailable."))
+        lines.append("")
+    return "\n".join(lines)

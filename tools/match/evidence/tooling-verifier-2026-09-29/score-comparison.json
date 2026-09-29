@@ -1,0 +1,1229 @@
+{
+  "schema": 1,
+  "kind": "matching-tooling-fix-comparison",
+  "baseline_commit": "4100e68dff1a2c256f035811f5bc8733842baa5a",
+  "baseline_method": "Independent full-scope compiler rebuild and fresh 1.9.93 public evidence before editing the verifier.",
+  "after_method": "Re-evaluate the same scratch sources and pinned compilers with the corrected verifier; refresh native link receipts and public evidence.",
+  "public_reports": {
+    "1.9.93": {
+      "before": {
+        "total_code": "718801",
+        "matched_code": "460710",
+        "complete_code": "0",
+        "matched_code_percent": 64.09423470473747,
+        "complete_code_percent": 0.0,
+        "fuzzy_match_percent": 64.09423470473747,
+        "total_functions": 2437,
+        "matched_functions": 1282,
+        "matched_functions_percent": 52.60566270004104,
+        "total_units": 3059,
+        "complete_units": 0,
+        "total_data": "517738",
+        "matched_data": "326944",
+        "matched_data_percent": 63.1485423129073,
+        "complete_data": "0",
+        "complete_data_percent": 0.0
+      },
+      "after": {
+        "complete_code": "0",
+        "complete_code_percent": 0.0,
+        "complete_data": "0",
+        "complete_data_percent": 0.0,
+        "complete_units": 0,
+        "fuzzy_match_percent": 64.09423470473747,
+        "matched_code": "460710",
+        "matched_code_percent": 64.09423470473747,
+        "matched_data": "326944",
+        "matched_data_percent": 63.1485423129073,
+        "matched_functions": 1282,
+        "matched_functions_percent": 52.60566270004104,
+        "total_code": "718801",
+        "total_data": "517738",
+        "total_functions": 2437,
+        "total_units": 3059
+      },
+      "categories": {
+        "game": {
+          "before": {
+            "total_code": "360094",
+            "matched_code": "360094",
+            "complete_code": "0",
+            "matched_code_percent": 100.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 100.0,
+            "total_functions": 858,
+            "matched_functions": 858,
+            "matched_functions_percent": 100.0,
+            "total_units": 858,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 100.0,
+            "matched_code": "360094",
+            "matched_code_percent": 100.0,
+            "matched_functions": 858,
+            "matched_functions_percent": 100.0,
+            "total_code": "360094",
+            "total_functions": 858,
+            "total_units": 858
+          }
+        },
+        "exe": {
+          "before": {
+            "total_code": "430410",
+            "matched_code": "324930",
+            "complete_code": "0",
+            "matched_code_percent": 75.4931344531958,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 75.4931344531958,
+            "total_functions": 1283,
+            "matched_functions": 679,
+            "matched_functions_percent": 52.9228371005456,
+            "total_units": 1750,
+            "complete_units": 0,
+            "total_data": "445496",
+            "matched_data": "303567",
+            "matched_data_percent": 68.14135255984341,
+            "complete_data": "0",
+            "complete_data_percent": 0.0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_data": "0",
+            "complete_data_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 75.4931344531958,
+            "matched_code": "324930",
+            "matched_code_percent": 75.4931344531958,
+            "matched_data": "303567",
+            "matched_data_percent": 68.14135255984341,
+            "matched_functions": 679,
+            "matched_functions_percent": 52.9228371005456,
+            "total_code": "430410",
+            "total_data": "445496",
+            "total_functions": 1283,
+            "total_units": 1750
+          }
+        },
+        "dll": {
+          "before": {
+            "total_code": "288391",
+            "matched_code": "135780",
+            "complete_code": "0",
+            "matched_code_percent": 47.081913097149354,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 47.081913097149354,
+            "total_functions": 1154,
+            "matched_functions": 603,
+            "matched_functions_percent": 52.25303292894281,
+            "total_units": 1309,
+            "complete_units": 0,
+            "total_data": "72242",
+            "matched_data": "23377",
+            "matched_data_percent": 32.35929237839484,
+            "complete_data": "0",
+            "complete_data_percent": 0.0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_data": "0",
+            "complete_data_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 47.081913097149354,
+            "matched_code": "135780",
+            "matched_code_percent": 47.081913097149354,
+            "matched_data": "23377",
+            "matched_data_percent": 32.35929237839484,
+            "matched_functions": 603,
+            "matched_functions_percent": 52.25303292894281,
+            "total_code": "288391",
+            "total_data": "72242",
+            "total_functions": 1154,
+            "total_units": 1309
+          }
+        },
+        "libs": {
+          "before": {
+            "total_code": "358056",
+            "matched_code": "100616",
+            "complete_code": "0",
+            "matched_code_percent": 28.100632303326854,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 28.100632303326854,
+            "total_functions": 1546,
+            "matched_functions": 424,
+            "matched_functions_percent": 27.42561448900388,
+            "total_units": 1546,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 28.100632303326854,
+            "matched_code": "100616",
+            "matched_code_percent": 28.100632303326854,
+            "matched_functions": 424,
+            "matched_functions_percent": 27.42561448900388,
+            "total_code": "358056",
+            "total_functions": 1546,
+            "total_units": 1546
+          }
+        },
+        "unknown": {
+          "before": {
+            "total_code": "651",
+            "matched_code": "0",
+            "complete_code": "0",
+            "matched_code_percent": 0.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 0.0,
+            "total_functions": 33,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_units": 33,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 0.0,
+            "matched_code": "0",
+            "matched_code_percent": 0.0,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_code": "651",
+            "total_functions": 33,
+            "total_units": 33
+          }
+        },
+        "libs.d3dx8": {
+          "before": {
+            "total_code": "301906",
+            "matched_code": "98974",
+            "complete_code": "0",
+            "matched_code_percent": 32.78305167833697,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 32.78305167833697,
+            "total_functions": 1154,
+            "matched_functions": 415,
+            "matched_functions_percent": 35.961871750433275,
+            "total_units": 1154,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 32.78305167833697,
+            "matched_code": "98974",
+            "matched_code_percent": 32.78305167833697,
+            "matched_functions": 415,
+            "matched_functions_percent": 35.961871750433275,
+            "total_code": "301906",
+            "total_functions": 1154,
+            "total_units": 1154
+          }
+        },
+        "libs.msvc6-crt": {
+          "before": {
+            "total_code": "54508",
+            "matched_code": "0",
+            "complete_code": "0",
+            "matched_code_percent": 0.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 0.0,
+            "total_functions": 383,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_units": 383,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 0.0,
+            "matched_code": "0",
+            "matched_code_percent": 0.0,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_code": "54508",
+            "total_functions": 383,
+            "total_units": 383
+          }
+        },
+        "game.data": {
+          "before": {
+            "total_code": "360094",
+            "matched_code": "360094",
+            "complete_code": "0",
+            "matched_code_percent": 100.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 100.0,
+            "total_functions": 858,
+            "matched_functions": 858,
+            "matched_functions_percent": 100.0,
+            "total_units": 1125,
+            "complete_units": 0,
+            "total_data": "347421",
+            "matched_data": "312765",
+            "matched_data_percent": 90.02478261245002,
+            "complete_data": "0",
+            "complete_data_percent": 0.0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_data": "0",
+            "complete_data_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 100.0,
+            "matched_code": "360094",
+            "matched_code_percent": 100.0,
+            "matched_data": "312765",
+            "matched_data_percent": 90.02478261245002,
+            "matched_functions": 858,
+            "matched_functions_percent": 100.0,
+            "total_code": "360094",
+            "total_data": "347421",
+            "total_functions": 858,
+            "total_units": 1125
+          }
+        },
+        "libs.data": {
+          "before": {
+            "total_code": "358056",
+            "matched_code": "100616",
+            "complete_code": "0",
+            "matched_code_percent": 28.100632303326854,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 28.100632303326854,
+            "total_functions": 1546,
+            "matched_functions": 424,
+            "matched_functions_percent": 27.42561448900388,
+            "total_units": 1733,
+            "complete_units": 0,
+            "total_data": "41478",
+            "matched_data": "14179",
+            "matched_data_percent": 34.184386903900865,
+            "complete_data": "0",
+            "complete_data_percent": 0.0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_data": "0",
+            "complete_data_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 28.100632303326854,
+            "matched_code": "100616",
+            "matched_code_percent": 28.100632303326854,
+            "matched_data": "14179",
+            "matched_data_percent": 34.184386903900865,
+            "matched_functions": 424,
+            "matched_functions_percent": 27.42561448900388,
+            "total_code": "358056",
+            "total_data": "41478",
+            "total_functions": 1546,
+            "total_units": 1733
+          }
+        },
+        "data_unknown": {
+          "before": {
+            "total_code": "0",
+            "matched_code": "0",
+            "complete_code": "0",
+            "matched_code_percent": 0.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 0.0,
+            "total_functions": 0,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_units": 168,
+            "complete_units": 0,
+            "total_data": "128839",
+            "matched_data": "0",
+            "matched_data_percent": 0.0,
+            "complete_data": "0",
+            "complete_data_percent": 0.0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_data": "0",
+            "complete_data_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 0.0,
+            "matched_code": "0",
+            "matched_code_percent": 0.0,
+            "matched_data": "0",
+            "matched_data_percent": 0.0,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_code": "0",
+            "total_data": "128839",
+            "total_functions": 0,
+            "total_units": 168
+          }
+        },
+        "libs.other": {
+          "before": {
+            "total_code": "1642",
+            "matched_code": "1642",
+            "complete_code": "0",
+            "matched_code_percent": 100.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 100.0,
+            "total_functions": 9,
+            "matched_functions": 9,
+            "matched_functions_percent": 100.0,
+            "total_units": 9,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 100.0,
+            "matched_code": "1642",
+            "matched_code_percent": 100.0,
+            "matched_functions": 9,
+            "matched_functions_percent": 100.0,
+            "total_code": "1642",
+            "total_functions": 9,
+            "total_units": 9
+          }
+        }
+      }
+    },
+    "1.9.8": {
+      "baseline_method": "HEAD verifier evaluated on the same current scratch sources, build-specific compilers and images in a separate process, with status cache reads/writes disabled. Diagnostic baseline only; no old-code evidence or statuses were persisted into repository artifacts.",
+      "before": {
+        "total_code": "667802",
+        "matched_code": "107114",
+        "complete_code": "0",
+        "matched_code_percent": 16.03978424742663,
+        "complete_code_percent": 0.0,
+        "fuzzy_match_percent": 53.086709535066035,
+        "total_functions": 2287,
+        "matched_functions": 716,
+        "matched_functions_percent": 31.30738959335374,
+        "total_units": 2287,
+        "complete_units": 0
+      },
+      "after": {
+        "complete_code": "0",
+        "complete_code_percent": 0.0,
+        "complete_units": 0,
+        "fuzzy_match_percent": 53.083319744419406,
+        "matched_code": "102074",
+        "matched_code_percent": 15.284543106352713,
+        "matched_functions": 710,
+        "matched_functions_percent": 31.04503716659379,
+        "total_code": "667825",
+        "total_functions": 2287,
+        "total_units": 2287
+      },
+      "categories": {
+        "game": {
+          "before": {
+            "total_code": "312764",
+            "matched_code": "34319",
+            "complete_code": "0",
+            "matched_code_percent": 10.97281016996841,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 85.29719792309268,
+            "total_functions": 797,
+            "matched_functions": 428,
+            "matched_functions_percent": 53.70138017565872,
+            "total_units": 797,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 85.27548466460873,
+            "matched_code": "34319",
+            "matched_code_percent": 10.970425020458265,
+            "matched_functions": 428,
+            "matched_functions_percent": 53.70138017565872,
+            "total_code": "312832",
+            "total_functions": 797,
+            "total_units": 797
+          }
+        },
+        "exe": {
+          "before": {
+            "total_code": "384751",
+            "matched_code": "25541",
+            "complete_code": "0",
+            "matched_code_percent": 6.638319328604734,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 62.23376077010256,
+            "total_functions": 1206,
+            "matched_functions": 343,
+            "matched_functions_percent": 28.441127694859038,
+            "total_units": 1206,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 62.22937281571951,
+            "matched_code": "25541",
+            "matched_code_percent": 6.6378017625610415,
+            "matched_functions": 343,
+            "matched_functions_percent": 28.441127694859038,
+            "total_code": "384781",
+            "total_functions": 1206,
+            "total_units": 1206
+          }
+        },
+        "dll": {
+          "before": {
+            "total_code": "283051",
+            "matched_code": "81573",
+            "complete_code": "0",
+            "matched_code_percent": 28.819188061515415,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 40.65313003973995,
+            "total_functions": 1081,
+            "matched_functions": 373,
+            "matched_functions_percent": 34.505087881591116,
+            "total_units": 1081,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 40.649820193720835,
+            "matched_code": "76533",
+            "matched_code_percent": 27.039258913808453,
+            "matched_functions": 367,
+            "matched_functions_percent": 33.95004625346901,
+            "total_code": "283044",
+            "total_functions": 1081,
+            "total_units": 1081
+          }
+        },
+        "libs": {
+          "before": {
+            "total_code": "353628",
+            "matched_code": "72795",
+            "complete_code": "0",
+            "matched_code_percent": 20.585191217889985,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 24.810020670642615,
+            "total_functions": 1457,
+            "matched_functions": 288,
+            "matched_functions_percent": 19.766643788606725,
+            "total_units": 1457,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 24.813035665509954,
+            "matched_code": "67755",
+            "matched_code_percent": 19.162403169835653,
+            "matched_functions": 282,
+            "matched_functions_percent": 19.35483870967742,
+            "total_code": "353583",
+            "total_functions": 1457,
+            "total_units": 1457
+          }
+        },
+        "unknown": {
+          "before": {
+            "total_code": "1410",
+            "matched_code": "0",
+            "complete_code": "0",
+            "matched_code_percent": 0.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 0.0,
+            "total_functions": 33,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_units": 33,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 0.0,
+            "matched_code": "0",
+            "matched_code_percent": 0.0,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_code": "1410",
+            "total_functions": 33,
+            "total_units": 33
+          }
+        },
+        "libs.d3dx8": {
+          "before": {
+            "total_code": "298443",
+            "matched_code": "71899",
+            "complete_code": "0",
+            "matched_code_percent": 24.09136753081828,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 28.856515916667526,
+            "total_functions": 1086,
+            "matched_functions": 284,
+            "matched_functions_percent": 26.151012891344383,
+            "total_units": 1086,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 28.861762676383382,
+            "matched_code": "66859",
+            "matched_code_percent": 22.406807267072626,
+            "matched_functions": 278,
+            "matched_functions_percent": 25.59852670349908,
+            "total_code": "298387",
+            "total_functions": 1086,
+            "total_units": 1086
+          }
+        },
+        "libs.msvc6-crt": {
+          "before": {
+            "total_code": "53570",
+            "matched_code": "0",
+            "complete_code": "0",
+            "matched_code_percent": 0.0,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 0.0,
+            "total_functions": 363,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_units": 363,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 0.0,
+            "matched_code": "0",
+            "matched_code_percent": 0.0,
+            "matched_functions": 0,
+            "matched_functions_percent": 0.0,
+            "total_code": "53581",
+            "total_functions": 363,
+            "total_units": 363
+          }
+        },
+        "libs.other": {
+          "before": {
+            "total_code": "1615",
+            "matched_code": "896",
+            "complete_code": "0",
+            "matched_code_percent": 55.47987616099071,
+            "complete_code_percent": 0.0,
+            "fuzzy_match_percent": 99.99554798761609,
+            "total_functions": 8,
+            "matched_functions": 4,
+            "matched_functions_percent": 50.0,
+            "total_units": 8,
+            "complete_units": 0
+          },
+          "after": {
+            "complete_code": "0",
+            "complete_code_percent": 0.0,
+            "complete_units": 0,
+            "fuzzy_match_percent": 99.99554798761609,
+            "matched_code": "896",
+            "matched_code_percent": 55.47987616099071,
+            "matched_functions": 4,
+            "matched_functions_percent": 50.0,
+            "total_code": "1615",
+            "total_functions": 8,
+            "total_units": 8
+          }
+        }
+      },
+      "extent_accounting_changes": [
+        {
+          "function": "survival_update",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 2140,
+          "after": 2144
+        },
+        {
+          "function": "input_key_name",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 3677,
+          "after": 3680
+        },
+        {
+          "function": "tutorial_timeline_update",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 2920,
+          "after": 2928
+        },
+        {
+          "function": "quest_failed_screen_update",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 1240,
+          "after": 1248
+        },
+        {
+          "function": "creature_spawn_template",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 13996,
+          "after": 14000
+        },
+        {
+          "function": "typo_word_pick_fragment",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 472,
+          "after": 480
+        },
+        {
+          "function": "input_configure_for_label",
+          "categories": [
+            "exe",
+            "game"
+          ],
+          "before": 84,
+          "after": 96
+        },
+        {
+          "function": "renderer_patch_sse",
+          "categories": [
+            "exe",
+            "libs",
+            "libs.d3dx8"
+          ],
+          "before": 272,
+          "after": 262
+        },
+        {
+          "function": "d3dx_sse_quaternion_multiply@crimsonland.exe/00456260",
+          "categories": [
+            "exe",
+            "libs",
+            "libs.d3dx8"
+          ],
+          "before": 144,
+          "after": 130
+        },
+        {
+          "function": "math_sincos_packed",
+          "categories": [
+            "exe",
+            "libs",
+            "libs.d3dx8"
+          ],
+          "before": 256,
+          "after": 252
+        },
+        {
+          "function": "crt_memmove",
+          "categories": [
+            "exe",
+            "libs",
+            "libs.msvc6-crt"
+          ],
+          "before": 351,
+          "after": 352
+        },
+        {
+          "function": "crt_fp_parse",
+          "categories": [
+            "exe",
+            "libs",
+            "libs.msvc6-crt"
+          ],
+          "before": 1233,
+          "after": 1243
+        },
+        {
+          "function": "grim_window_proc",
+          "categories": [
+            "dll",
+            "game"
+          ],
+          "before": 2126,
+          "after": 2128
+        },
+        {
+          "function": "grim_decode_jaz_texture",
+          "categories": [
+            "dll",
+            "game"
+          ],
+          "before": 856,
+          "after": 864
+        },
+        {
+          "function": "grim_set_config_var",
+          "categories": [
+            "dll",
+            "game"
+          ],
+          "before": 1653,
+          "after": 1664
+        },
+        {
+          "function": "d3dx_sse_init_fast_table",
+          "categories": [
+            "dll",
+            "libs",
+            "libs.d3dx8"
+          ],
+          "before": 272,
+          "after": 262
+        },
+        {
+          "function": "d3dx_sse_quaternion_multiply@grim.dll/10030ef0",
+          "categories": [
+            "dll",
+            "libs",
+            "libs.d3dx8"
+          ],
+          "before": 144,
+          "after": 130
+        },
+        {
+          "function": "x3d_sincos",
+          "categories": [
+            "dll",
+            "libs",
+            "libs.d3dx8"
+          ],
+          "before": 256,
+          "after": 252
+        }
+      ],
+      "exact_credit_losses": [
+        {
+          "function": "d3dx_jpeg_alloc_small",
+          "image": "grim.dll",
+          "address": 268619661,
+          "source": "third_party/sources/ijg-libjpeg-6a/jmemmgr.c",
+          "bytes": 252,
+          "ratio": 1.0,
+          "proof": {
+            "body_byte_exact": false,
+            "candidate_instructions": 101,
+            "candidate_object_sha256": "dbb38c2ee505c346ac160a0f991cae68ca742a7538be6764e9a5111018042cb7",
+            "candidate_padding_bytes": 0,
+            "compared_target_ranges": [
+              [
+                268619661,
+                268619913
+              ]
+            ],
+            "excluded_target_ranges": [],
+            "references": {
+              "mismatched": 0,
+              "ok": 3,
+              "positional": true,
+              "unresolved": 2
+            },
+            "state": "audit",
+            "target_instructions": 101,
+            "target_size": 252,
+            "unexplained_target_ranges": []
+          }
+        },
+        {
+          "function": "inflate_blocks",
+          "image": "grim.dll",
+          "address": 268690882,
+          "source": "tools/match/shared/grim_zlib_blocks_source.c",
+          "bytes": 1907,
+          "ratio": 1.0,
+          "proof": {
+            "body_byte_exact": false,
+            "candidate_instructions": 630,
+            "candidate_object_sha256": "1c64b5f7f820dee6d5bb20145d3fe269eaa61c168e21f699cebd52d6620b5d30",
+            "candidate_padding_bytes": 0,
+            "compared_target_ranges": [
+              [
+                268690882,
+                268692789
+              ]
+            ],
+            "excluded_target_ranges": [],
+            "references": {
+              "mismatched": 0,
+              "ok": 18,
+              "positional": true,
+              "unresolved": 2
+            },
+            "state": "audit",
+            "target_instructions": 630,
+            "target_size": 1907,
+            "unexplained_target_ranges": []
+          }
+        },
+        {
+          "function": "grim_jpeg_alloc_small",
+          "image": "grim.dll",
+          "address": 268733040,
+          "source": "tools/match/shared/grim_jaz_jpeg_memory.c",
+          "bytes": 331,
+          "ratio": 1.0,
+          "proof": {
+            "body_byte_exact": false,
+            "candidate_instructions": 116,
+            "candidate_object_sha256": "19fe1d6ac4daea5c3c5ada12f78a56b6bc850d2d4d73ee9970bb8e3071a68522",
+            "candidate_padding_bytes": 5,
+            "compared_target_ranges": [
+              [
+                268733040,
+                268733371
+              ]
+            ],
+            "excluded_target_ranges": [],
+            "references": {
+              "mismatched": 0,
+              "ok": 2,
+              "positional": true,
+              "unresolved": 2
+            },
+            "state": "audit",
+            "target_instructions": 116,
+            "target_size": 331,
+            "unexplained_target_ranges": []
+          }
+        },
+        {
+          "function": "grim_jpeg_decode_mcu_huff",
+          "image": "grim.dll",
+          "address": 268745328,
+          "source": "third_party/sources/ijg-libjpeg-6a/jdhuff.c",
+          "bytes": 1171,
+          "ratio": 1.0,
+          "proof": {
+            "body_byte_exact": false,
+            "candidate_instructions": 382,
+            "candidate_object_sha256": "d7b8ff2549a897b9240ca1bc5877cc681a375602d9faa4b7e1c320ace71f0738",
+            "candidate_padding_bytes": 13,
+            "compared_target_ranges": [
+              [
+                268745328,
+                268746499
+              ]
+            ],
+            "excluded_target_ranges": [],
+            "references": {
+              "mismatched": 0,
+              "ok": 10,
+              "positional": true,
+              "unresolved": 4
+            },
+            "state": "audit",
+            "target_instructions": 382,
+            "target_size": 1171,
+            "unexplained_target_ranges": []
+          }
+        },
+        {
+          "function": "grim_jpeg_decode_mcu_dc_first",
+          "image": "grim.dll",
+          "address": 268747392,
+          "source": "third_party/sources/ijg-libjpeg-6a/jdphuff.c",
+          "bytes": 672,
+          "ratio": 1.0,
+          "proof": {
+            "body_byte_exact": false,
+            "candidate_instructions": 214,
+            "candidate_object_sha256": "86b297af18f65aed1f458fe4c52709839d675ceffb76a6ed21fef847797f8466",
+            "candidate_padding_bytes": 0,
+            "compared_target_ranges": [
+              [
+                268747392,
+                268748064
+              ]
+            ],
+            "excluded_target_ranges": [],
+            "references": {
+              "mismatched": 0,
+              "ok": 3,
+              "positional": true,
+              "unresolved": 2
+            },
+            "state": "audit",
+            "target_instructions": 214,
+            "target_size": 672,
+            "unexplained_target_ranges": []
+          }
+        },
+        {
+          "function": "grim_jpeg_decode_mcu_ac_first",
+          "image": "grim.dll",
+          "address": 268748064,
+          "source": "third_party/sources/ijg-libjpeg-6a/jdphuff.c",
+          "bytes": 707,
+          "ratio": 1.0,
+          "proof": {
+            "body_byte_exact": false,
+            "candidate_instructions": 243,
+            "candidate_object_sha256": "86b297af18f65aed1f458fe4c52709839d675ceffb76a6ed21fef847797f8466",
+            "candidate_padding_bytes": 13,
+            "compared_target_ranges": [
+              [
+                268748064,
+                268748771
+              ]
+            ],
+            "excluded_target_ranges": [],
+            "references": {
+              "mismatched": 0,
+              "ok": 5,
+              "positional": true,
+              "unresolved": 2
+            },
+            "state": "audit",
+            "target_instructions": 243,
+            "target_size": 707,
+            "unexplained_target_ranges": []
+          }
+        }
+      ]
+    }
+  },
+  "scratch_states": {
+    "before": {
+      "match": 2424
+    },
+    "after": {
+      "match": 2420,
+      "audit": 4
+    }
+  },
+  "instruction_score_losses": [],
+  "full_scope_totals": {
+    "before": [
+      {
+        "byte_total": 430410,
+        "candidate_bytes": 429096,
+        "candidate_functions": 1270,
+        "exact_bytes": 429096,
+        "exact_functions": 1270,
+        "exact_scratches": 1270,
+        "function_count": 1283,
+        "fuzzy_weighted_bytes": 429096.0,
+        "image": "crimsonland.exe",
+        "scratch_count": 1270
+      },
+      {
+        "byte_total": 288391,
+        "candidate_bytes": 288391,
+        "candidate_functions": 1154,
+        "exact_bytes": 288391,
+        "exact_functions": 1154,
+        "exact_scratches": 1154,
+        "function_count": 1154,
+        "fuzzy_weighted_bytes": 288391.0,
+        "image": "grim.dll",
+        "scratch_count": 1154
+      }
+    ],
+    "after": [
+      {
+        "byte_total": 430410,
+        "candidate_bytes": 429096,
+        "candidate_functions": 1270,
+        "exact_bytes": 429096,
+        "exact_functions": 1270,
+        "exact_scratches": 1270,
+        "function_count": 1283,
+        "fuzzy_weighted_bytes": 429096.0,
+        "image": "crimsonland.exe",
+        "scratch_count": 1270
+      },
+      {
+        "byte_total": 288406,
+        "candidate_bytes": 288406,
+        "candidate_functions": 1154,
+        "exact_bytes": 286236,
+        "exact_functions": 1150,
+        "exact_scratches": 1150,
+        "function_count": 1154,
+        "fuzzy_weighted_bytes": 288406.0,
+        "image": "grim.dll",
+        "scratch_count": 1154
+      }
+    ]
+  },
+  "changes": [
+    {
+      "image": "grim.dll",
+      "function": "d3dx_png_format_buffer",
+      "address": 268558451,
+      "changes": {
+        "state": {
+          "before": "match",
+          "after": "audit"
+        },
+        "body_byte_exact": {
+          "before": true,
+          "after": false
+        },
+        "references": {
+          "before": {
+            "mismatch": 0,
+            "ok": 2,
+            "unresolved": 0
+          },
+          "after": {
+            "mismatch": 0,
+            "ok": 0,
+            "unresolved": 2
+          }
+        }
+      }
+    },
+    {
+      "image": "grim.dll",
+      "function": "d3dx_jpeg_decode_mcu_huff",
+      "address": 268631261,
+      "changes": {
+        "state": {
+          "before": "match",
+          "after": "audit"
+        },
+        "body_byte_exact": {
+          "before": true,
+          "after": false
+        },
+        "references": {
+          "before": {
+            "mismatch": 0,
+            "ok": 15,
+            "unresolved": 0
+          },
+          "after": {
+            "mismatch": 0,
+            "ok": 11,
+            "unresolved": 4
+          }
+        }
+      }
+    },
+    {
+      "image": "grim.dll",
+      "function": "d3dx_jpeg_decode_mcu_dc_first",
+      "address": 268632686,
+      "changes": {
+        "state": {
+          "before": "match",
+          "after": "audit"
+        },
+        "body_byte_exact": {
+          "before": true,
+          "after": false
+        },
+        "references": {
+          "before": {
+            "mismatch": 0,
+            "ok": 6,
+            "unresolved": 0
+          },
+          "after": {
+            "mismatch": 0,
+            "ok": 4,
+            "unresolved": 2
+          }
+        }
+      }
+    },
+    {
+      "image": "grim.dll",
+      "function": "d3dx_jpeg_decode_mcu_ac_first",
+      "address": 268633195,
+      "changes": {
+        "state": {
+          "before": "match",
+          "after": "audit"
+        },
+        "body_byte_exact": {
+          "before": true,
+          "after": false
+        },
+        "references": {
+          "before": {
+            "mismatch": 0,
+            "ok": 8,
+            "unresolved": 0
+          },
+          "after": {
+            "mismatch": 0,
+            "ok": 6,
+            "unresolved": 2
+          }
+        }
+      }
+    },
+    {
+      "image": "grim.dll",
+      "function": "grim_jpeg_read_restart_marker",
+      "address": 268685312,
+      "changes": {
+        "target_bytes": {
+          "before": 136,
+          "after": 144
+        }
+      }
+    },
+    {
+      "image": "grim.dll",
+      "function": "grim_jpeg_start_pass_dpost",
+      "address": 268703968,
+      "changes": {
+        "target_bytes": {
+          "before": 249,
+          "after": 256
+        }
+      }
+    }
+  ],
+  "notes": [
+    "Four D3DX archive scratches lose unproven indexed-table content equivalence (2170 code bytes, ten unresolved references). Their normalized instruction scores remain 100%; archive candidates do not count as recovered source in the public report.",
+    "Raw native extent totals gain 15 alignment bytes across two Grim JPEG functions. Decoded padding remains excluded from the public code denominator.",
+    "The 41-byte grim_jaz_jpeg_error_exit body remains exact. Its seven candidate alignment NOPs are excluded only after proving the longjmp import and rejecting branches into the unreachable tail."
+  ],
+  "snapshots": {
+    "/private/tmp/crimson-match-before-all.json": "f449f5054802d1ee506529c5d7d0deac4815fb8055c385cfcdfc5a046aee83ae",
+    "/private/tmp/crimson-match-final-all.json": "723a84fc475be862fb7ef6ff424345119c96d2322ced0feaa4b7db2821c924d7",
+    "/private/tmp/crimson-match-before-report.json": "2602ce12e2aa03a1cef863ba608ea49ff7e058460cd26dd71954cfe8213690bf",
+    "artifacts/decomp/1.9.93/report.json": "3989428f0b48ec1cade290c847a7569e8c723ece3c0b67614e5a1f8faf673f8d"
+  }
+}

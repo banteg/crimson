@@ -89,7 +89,12 @@ def test_encoded_tier_and_measurement_delta():
     assert result["delta"]["comparable"]
     assert result["delta"]["newly_matched_code"] == 10
     previous["identities"]["scoring"] = "old"
-    assert not accounting.diagnostics(evidence, previous)["delta"]["comparable"]
+    delta = accounting.diagnostics(evidence, previous)["delta"]
+    assert not delta["comparable"]
+    assert delta["newly_matched_code"] is None
+    assert delta["regressed_code"] is None
+    # Older schemas establish a baseline without needing their old row layout.
+    assert not accounting.diagnostics(evidence, {"schema": 1})["delta"]["comparable"]
 
 
 @pytest.mark.parametrize("instruction,kind", [("mov eax, [ADDR]", "disp"), ("call ADDR", "imm")])
@@ -110,13 +115,16 @@ def test_swapped_reference_identities_cannot_cross_instruction_positions(instruc
 
 def test_measurement_identities_separate_renames_ownership_and_toolchains():
     row = function()
-    before = accounting.identities([row], {}, {}, {"vc6": "original"})
-    renamed = accounting.identities([{**row, "name": "recovered"}], {}, {}, {"vc6": "original"})
+    toolchains = {"vc6": {"config": "scratch/a.conf", "fingerprint": {"compiler_trees": "original"}}}
+    before = accounting.identities([row], {}, {}, toolchains)
+    renamed = accounting.identities([{**row, "name": "recovered"}], {}, {}, toolchains)
     assert before == renamed
-    compiler = accounting.identities([row], {}, {}, {"vc6": "changed"})
+    moved = accounting.identities([row], {}, {}, {"vc6": {**toolchains["vc6"], "config": "scratch/b.conf"}})
+    assert moved == before
+    compiler = accounting.identities([row], {}, {}, {"vc6": {**toolchains["vc6"], "fingerprint": "changed"}})
     assert compiler["scoring"] != before["scoring"]
     assert compiler["inventory"] == before["inventory"]
-    owner = accounting.identities([row], {"analysis/matching_scope.json": "changed"}, {}, {"vc6": "original"})
+    owner = accounting.identities([row], {"analysis/matching_scope.json": "changed"}, {}, toolchains)
     assert owner["inventory"] != before["inventory"]
     assert owner["scoring"] == before["scoring"]
 
@@ -127,6 +135,63 @@ def test_encoded_scope_uses_same_denominator_as_normalized_report():
     evidence = {"functions": [row], "verification": accounting.VERIFICATION, "code_inventory": [], "identities": {}}
     result = accounting.diagnostics(evidence, report=match_report.build_report([row]))
     assert result["scopes"]["exe"] == {
+        "measures": match_report.build_report([row])["measures"],
         "total_code": 10, "normalized_matched_code": 10,
         "encoded_body_matched_code": 0, "encoded_body_matched_percent": 0,
     }
+
+
+def test_historical_remapping_changes_inventory_identity():
+    row = {**function(), "canonical_address": 0x401000}
+    before = accounting.identities([row], {}, {})
+    after = accounting.identities([{**row, "canonical_address": 0x452ef0}], {}, {})
+    assert before["inventory"] != after["inventory"]
+    assert before["scoring"] == after["scoring"]
+    # Reordering and renaming functions do not change their byte inventory.
+    other = {**row, "address": 200}
+    assert accounting.identities([row, other], {}, {}) == accounting.identities([other, row], {}, {})
+
+
+def test_data_baseline_distinguishes_unmeasured_extents_ownership_and_source_progress():
+    section = {"image": "crimsonland.exe", "name": ".data", "address": 1000, "size": 10}
+    data = {"sections": [section], "candidates": []}
+    before = accounting.identities([function()], {}, {}, data=data)
+    assert before["inventory"] != accounting.identities([function()], {}, {})["inventory"]
+    changed = {**data, "sections": [{**section, "size": 20}]}
+    assert before["inventory"] != accounting.identities([function()], {}, {}, data=changed)["inventory"]
+    assert before["inventory"] != accounting.identities(
+        [function()], {"tools/native/data_ownership.json": "changed"}, {}, data=data,
+    )["inventory"]
+    # Matched declarations affect progress, not the denominator.
+    assert before == accounting.identities([function()], {}, {}, data={**data, "candidates": ["new match"]})
+
+
+@pytest.mark.parametrize("version", match_report.match_builds.load_registry().reported)
+def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(version):
+    import json
+
+    evidence = json.loads(match_report.evidence_path(version).read_text())
+    report = match_report.build_report(evidence["functions"], data=evidence["data"])
+    metrics = accounting.diagnostics(evidence, report=report)
+    assert metrics["version"] == version
+    assert metrics["data_measured"] == (evidence["data"] is not None)
+    coverage = metrics["executable_coverage"]
+    assert coverage["total_bytes"] == sum(coverage[k] for k in ("retained_code", "embedded_data", "padding", "unresolved"))
+    assert coverage["retained_code"] == int(report["measures"]["total_code"])
+    scopes = {c["id"]: c["measures"] for c in report["categories"]}
+    for key in ("total_code", "matched_code", "total_functions", "matched_functions"):
+        assert int(report["measures"][key]) == sum(int(scopes[c][key]) for c in ("game", "libs", "unknown"))
+        assert int(report["measures"][key]) == sum(int(scopes[c][key]) for c in ("exe", "dll"))
+    for category, measures in [(None, report["measures"]), *scopes.items()]:
+        units = [u for u in report["units"] if category is None or category in u["metadata"]["progress_categories"]]
+        code = sum(int(u["functions"][0]["size"]) for u in units if u["functions"])
+        weighted = sum(int(f["size"]) * f["fuzzy_match_percent"] for u in units for f in u["functions"])
+        assert int(measures["total_code"]) == code
+        assert measures["fuzzy_match_percent"] == pytest.approx(weighted / code if code else 0)
+        assert int(measures.get("total_data", 0)) == sum(int(s["size"]) for u in units for s in u.get("sections", []))
+        assert measures["complete_code"] == "0"
+        assert int(measures.get("complete_data", 0)) == 0
+    summary = accounting.render_summary(evidence, report, metrics)
+    assert f"## Crimsonland {version}" in summary
+    assert "Game & Engine" in summary and "Unresolved executable bytes" in summary
+    assert "not measured" in summary if evidence["data"] is None else "outside scope" in summary

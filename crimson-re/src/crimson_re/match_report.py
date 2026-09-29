@@ -145,11 +145,15 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
             for row in json.loads(target.functions_path.read_text(encoding="utf-8"))
         }
         for function in manifest.functions:
+            data = image.function_bytes(function.address, function.end)
+            lines = matchlib.disassemble_normalized_function(data, base_address=function.address)
             row = {
                 "image": build_image.name,
                 "address": function.address,
                 "name": function.name,
-                "size": len(image.function_bytes(function.address, function.end)),
+                # Alignment bytes are outside the report's code denominator,
+                # but instruction operands and undecodable body bytes remain.
+                "size": max((line.offset + line.size for line in lines), default=0),
             }
             if canonical:
                 row["canonical_address"] = canonical[function.address]
@@ -263,7 +267,7 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     return {
         "schema": 3,
         "verification": accounting.VERIFICATION,
-        "identities": accounting.identities(inventory, before, external, toolchains),
+        "identities": accounting.identities(inventory, before, external, toolchains, data=data),
         "code_inventory": accounting.code_inventory(inventory, _image_paths(version)),
         "version": version,
         "scope": "all",
@@ -317,7 +321,9 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         accounting.validate_function(row)
     if evidence["verification"] != accounting.VERIFICATION:
         raise ValueError("unsupported evidence verification mode")
-    if evidence["identities"] != accounting.identities(inventory, recorded, evidence["external_inputs"], evidence["toolchains"]):
+    if evidence["identities"] != accounting.identities(
+        inventory, recorded, evidence["external_inputs"], evidence["toolchains"], data=evidence["data"],
+    ):
         raise ValueError("report measurement identities differ")
     if evidence["code_inventory"] != accounting.code_inventory(inventory, _image_paths(version)):
         raise ValueError("executable inventory reconciliation differs")

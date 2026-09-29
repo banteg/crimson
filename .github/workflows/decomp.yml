@@ -13,9 +13,31 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
+  builds:
+    runs-on: ubuntu-latest
+    outputs:
+      versions: ${{ steps.registry.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: registry
+        name: Select reported builds
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          builds = json.load(open("decomp/builds.json"))["builds"]
+          print("versions=" + json.dumps([build["id"] for build in builds if build.get("reported")]))
+          PY
+
   report:
+    needs: builds
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ${{ fromJSON(needs.builds.outputs.versions) }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      REPORT_VERSION: ${{ matrix.version }}
     steps:
       - uses: actions/checkout@v5
 
@@ -30,11 +52,11 @@ jobs:
       - name: Fetch pinned reference images
         run: |
           set -o pipefail
-          # Every reported build's images, mirrored at paq.crimson.banteg.xyz/v<build>/.
+          # Each build's images, mirrored at paq.crimson.banteg.xyz/v<build>/.
           uv run --no-sync python -c '
-          import json
+          import json, os
           for build in json.load(open("decomp/builds.json"))["builds"]:
-              if build.get("reported"):
+              if build["id"] == os.environ["REPORT_VERSION"]:
                   for image in build["images"]:
                       print(build["id"], build["tree"], image["name"], image["sha256"])
           ' | while read -r build tree name sha256; do
@@ -45,7 +67,21 @@ jobs:
           done
 
       - name: Verify matching evidence and export progress
-        run: uv run --no-sync crimson match report
+        env:
+          BASELINE_COMMIT: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          baseline_args=()
+          if [[ -n "$BASELINE_COMMIT" && ! "$BASELINE_COMMIT" =~ ^0+$ ]]; then
+            git fetch --no-tags --depth=1 origin "$BASELINE_COMMIT"
+            baseline="$RUNNER_TEMP/previous-evidence.json"
+            if git show "$BASELINE_COMMIT:analysis/decomp/$REPORT_VERSION.json" > "$baseline"; then
+              baseline_args=(--baseline "$baseline")
+            fi
+          fi
+          uv run --no-sync crimson match report --version "$REPORT_VERSION" "${baseline_args[@]}"
+
+      - name: Summarize scoped progress and inventory coverage
+        run: cat "artifacts/decomp/$REPORT_VERSION/report.md" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Validate with objdiff's report parser
         run: |
@@ -58,30 +94,18 @@ jobs:
             "$RUNNER_TEMP/objdiff-cli" report changes "$report" "$report"
           done
 
-      - name: Upload 1.9.93 measurement diagnostics
+      - name: Upload measurement diagnostics
         uses: actions/upload-artifact@v4
         with:
-          name: 1.9.93_measurement
-          path: artifacts/decomp/1.9.93/report.metrics.json
+          name: ${{ matrix.version }}_measurement
+          path: |
+            artifacts/decomp/${{ matrix.version }}/report.metrics.json
+            artifacts/decomp/${{ matrix.version }}/report.md
           if-no-files-found: error
 
-      - name: Upload 1.9.93 progress report
+      - name: Upload progress report
         uses: actions/upload-artifact@v4
         with:
-          name: 1.9.93_report
-          path: artifacts/decomp/1.9.93/report.json
-          if-no-files-found: error
-
-      - name: Upload 1.9.8 measurement diagnostics
-        uses: actions/upload-artifact@v4
-        with:
-          name: 1.9.8_measurement
-          path: artifacts/decomp/1.9.8/report.metrics.json
-          if-no-files-found: error
-
-      - name: Upload 1.9.8 progress report
-        uses: actions/upload-artifact@v4
-        with:
-          name: 1.9.8_report
-          path: artifacts/decomp/1.9.8/report.json
+          name: ${{ matrix.version }}_report
+          path: artifacts/decomp/${{ matrix.version }}/report.json
           if-no-files-found: error
