@@ -180,4 +180,6 @@ jobs:
             tests/native_oracle/test_creature_xp.py \
             tests/native_oracle/test_creature_anim.py \
             tests/native_oracle/test_camera_shake.py \
-            tests/native_oracle/test_sprite_effects.py
+            tests/native_oracle/test_sprite_effects.py \
+            tests/native_oracle/test_spawn_template.py \
+            tests/native_oracle/test_spawn_full_pool.py
