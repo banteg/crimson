@@ -38,10 +38,7 @@ from .base_gameplay_mode import (
     BaseGameplayMode,
 )
 from .components.highscore_record_builder import shots_from_state
-from .components.perk_menu_controller import PerkMenuController
-from .components.perk_prompt_controller import PerkPromptState
 
-UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
@@ -88,8 +85,6 @@ class QuestMode(BaseGameplayMode):
         self._quest_highscore_random_tag: int = 0
         self._outcome: QuestRunOutcome | None = None
         self._grim_mono: GrimMonoFont | None = None
-        self._perk_prompt = PerkPromptState()
-        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
         self._quest_spawn_state = QuestSpawnState()
         self._replay_recorder: ReplayRecorder | None = None
 
@@ -101,8 +96,6 @@ class QuestMode(BaseGameplayMode):
         self._outcome = None
         self._grim_mono = load_grim_mono_font(self._assets_root)
 
-        self._perk_prompt.reset()
-        self._perk_menu.reset()
         self._reset_gameplay_frame_clock()
         self._replay_recorder = None
         self._replay_checkpoints.clear()
@@ -113,46 +106,6 @@ class QuestMode(BaseGameplayMode):
         self._grim_mono = None
         self._sim_session = None
         super().close()
-
-    def _try_open_perk_menu(self) -> None:
-        self._request_perk_menu(self._perk_menu)
-
-    def _perk_menu_closed(self) -> None:
-        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
-
-    def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
-        perk_ctx = self._perk_menu_ui_context()
-        pending_count = self._ui_pending_perk_count()
-        choices = perk_selection_prepared_choices(self.state)
-        self._perk_prompt.begin_frame()
-        if self._perk_menu.open:
-            choice_index = self._perk_menu.handle_input(
-                perk_ctx,
-                choices,
-                dt_ui_ms=float(dt_ui_ms),
-            )
-            if choice_index is not None:
-                self.record_perk_pick_command(int(choice_index), player_index=0)
-        if self._perk_prompt.poll_open_request(
-            ctx=perk_ctx,
-            config=self.config,
-            pending_count=pending_count,
-            player_count=max(1, len(self.world.players)),
-            any_alive=self._any_player_alive(),
-            paused=self._paused,
-            menu_active=self._perk_menu.active,
-        ):
-            self._try_open_perk_menu()
-        self._perk_prompt.tick_timer(
-            pending_count=pending_count,
-            any_alive=self._any_player_alive(),
-            paused=self._paused,
-            menu_active=self._perk_menu.active,
-            dt_ui_ms=float(dt_ui_ms),
-        )
-        if not self._paused:
-            self._perk_prompt.tick_pulse(float(dt_ui_ms))
-        self._perk_menu.tick_timeline()
 
     def _replay_checkpoint_elapsed_ms(self) -> float:
         return float(self._quest_spawn_state.spawn_timeline_ms)
@@ -320,17 +273,6 @@ class QuestMode(BaseGameplayMode):
             dt_frame=float(sim_dt),
             session=session,
             recorder=self._replay_recorder,
-        )
-
-    def _draw_perk_prompt(self) -> None:
-        self._perk_prompt.draw(
-            ctx=self._perk_menu_ui_context(),
-            pending_count=self._ui_pending_perk_count(),
-            any_alive=self._any_player_alive(),
-            menu_active=self._perk_menu.active,
-            config=self.config,
-            ui_text_width=self._ui_text_width,
-            text_color=UI_TEXT_COLOR,
         )
 
     def draw(self) -> None:

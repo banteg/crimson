@@ -98,7 +98,7 @@ def test_live_run_replays_to_identical_session_state(mocker, make_mode_config, a
 
     while mode._replay_recorder is not None and live_ticks[0] < _TICKS and not mode._game_over_active:
         if mode.state.perk_selection.pending_count > 0 and not mode._perk_menu.active and frame[0] % 3 == 0:
-            mode._try_open_perk_menu()
+            mode._request_perk_menu()
             mode.record_perk_pick_command(frame[0] // 3 % 3)
             mode._perk_menu.close()
         mode._run_deterministic_session_ticks(

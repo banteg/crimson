@@ -4,9 +4,11 @@ import pytest
 
 import crimson.modes.quest_mode as quest_mode_module
 import crimson.modes.survival_mode as survival_mode_module
+import crimson.modes.tutorial_mode as tutorial_mode_module
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.modes.survival_mode import SurvivalMode
+from crimson.modes.tutorial_mode import TutorialMode
 from grim.rand import Crand
 from grim.view import ViewContext
 
@@ -18,6 +20,7 @@ pytestmark = pytest.mark.usefixtures("headless_resources")
     [
         (SurvivalMode, survival_mode_module, GameMode.SURVIVAL),
         (QuestMode, quest_mode_module, GameMode.QUESTS),
+        (TutorialMode, tutorial_mode_module, GameMode.TUTORIAL),
     ],
 )
 def test_hud_draws_over_the_perk_prompt_and_aim_indicators(

@@ -26,8 +26,6 @@ from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
-from .components.perk_menu_controller import PerkMenuController
-from .components.perk_prompt_controller import PerkPromptState
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
@@ -55,8 +53,6 @@ class SurvivalMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._perk_prompt = PerkPromptState()
-        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
@@ -69,58 +65,9 @@ class SurvivalMode(BaseGameplayMode):
         score = int(self.player.experience)
         return f"survival_{stamp}_score{score}"
 
-    def _try_open_perk_menu(self) -> None:
-        self._request_perk_menu(self._perk_menu)
-
-    def _perk_menu_closed(self) -> None:
-        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
-
-    def _update_perk_ui(
-        self,
-        *,
-        dt_ui_ms: float,
-        allow_input: bool = True,
-        allow_pulse: bool = True,
-    ) -> None:
-        perk_ctx = self._perk_menu_ui_context()
-        pending_count = self._ui_pending_perk_count()
-        any_alive = self._any_player_alive()
-        choices = perk_selection_prepared_choices(self.state)
-        self._perk_prompt.begin_frame()
-        if self._perk_menu.open and allow_input:
-            choice_index = self._perk_menu.handle_input(
-                perk_ctx,
-                choices,
-                dt_ui_ms=float(dt_ui_ms),
-            )
-            if choice_index is not None:
-                self.record_perk_pick_command(int(choice_index), player_index=0)
-        if allow_input and self._perk_prompt.poll_open_request(
-            ctx=perk_ctx,
-            config=self.config,
-            pending_count=pending_count,
-            player_count=max(1, len(self.world.players)),
-            any_alive=any_alive,
-            paused=self._paused,
-            menu_active=self._perk_menu.active,
-        ):
-            self._try_open_perk_menu()
-        self._perk_prompt.tick_timer(
-            pending_count=pending_count,
-            any_alive=any_alive,
-            paused=self._paused,
-            menu_active=self._perk_menu.active,
-            dt_ui_ms=float(dt_ui_ms),
-        )
-        if allow_pulse:
-            self._perk_prompt.tick_pulse(float(dt_ui_ms))
-        self._perk_menu.tick_timeline()
-
     def open(self) -> None:
         super().open()
 
-        self._perk_prompt.reset()
-        self._perk_menu.reset()
         self._cursor_time = 0.0
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.SURVIVAL)
@@ -205,10 +152,7 @@ class SurvivalMode(BaseGameplayMode):
             self._update_game_over_ui(float(frame.dt))
             return
 
-        self._update_perk_ui(
-            dt_ui_ms=float(frame.dt_ui_ms),
-            allow_pulse=(not self._paused) and (not self._game_over_active),
-        )
+        self._update_perk_ui(dt_ui_ms=float(frame.dt_ui_ms))
 
         perk_menu_active = self._perk_menu.active
         sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
@@ -226,17 +170,6 @@ class SurvivalMode(BaseGameplayMode):
             recorder=self._replay_recorder,
         )
 
-
-    def _draw_perk_prompt(self) -> None:
-        self._perk_prompt.draw(
-            ctx=self._perk_menu_ui_context(),
-            pending_count=self._ui_pending_perk_count(),
-            any_alive=self._any_player_alive(),
-            menu_active=self._perk_menu.active,
-            config=self.config,
-            ui_text_width=self._ui_text_width,
-            text_color=UI_TEXT_COLOR,
-        )
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active

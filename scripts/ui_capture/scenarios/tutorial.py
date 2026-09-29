@@ -13,7 +13,13 @@ def show_stage(stage):
     return ("hook", run)
 
 
+def pend_perk(gs):
+    world(gs).state.perk_selection.pending_count = 1
+
+
 STEPS = [*start("tutorial"), *burst("tutorial", 600, 60)]
-# Stage 6 only prompts while a perk is pending, and a pending perk opens the perk menu over it.
 for stage in (5, 7, 8):
     STEPS += [show_stage(stage), ("wait", 70), ("shot", f"tutorial_stage_{stage}")]
+# Stage 6 prompts while a perk is pending; the level-up sign opens the perk menu.
+STEPS += [show_stage(6), ("hook", pend_perk), ("wait", 70), ("shot", "tutorial_stage_6")]
+STEPS += [("move", 512, 200), ("rclick",), *burst("tutorial_perk_in", 60, 12)]

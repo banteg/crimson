@@ -23,6 +23,7 @@ from grim.view import ViewContext
 from ..game_modes import GameMode
 from ..game_states import GameStateId
 from ..local_input import LocalInputInterpreter
+from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
@@ -56,7 +57,8 @@ from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from ..ui.hud import HudState, draw_target_health_bar
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record_for_game_over
-from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
+from .components.perk_menu_controller import UI_TEXT_COLOR, PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
+from .components.perk_prompt_controller import PerkPromptState
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -149,7 +151,10 @@ class BaseGameplayMode:
 
         self._game_over_active = False
         self._game_over_record: HighScoreRecord | None = None
-        self._requested_perk_menu: PerkMenuController | None = None
+        # The level-up prompt and perk menu `gameplay_update_and_render` runs outside Rush and Typ-o.
+        self._perk_prompt = PerkPromptState()
+        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
+        self._perk_menu_requested = False
         self._game_over_banner = "reaper"
 
         self._ui_mouse = Vec2()
@@ -335,7 +340,7 @@ class BaseGameplayMode:
         return _ModePerkMenuRuntime(mode=self)
 
     def _perk_menu_closed(self) -> None:
-        return None
+        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
 
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
@@ -347,13 +352,60 @@ class BaseGameplayMode:
             mouse=self._ui_mouse_pos(),
         )
 
-    def _request_perk_menu(self, menu: PerkMenuController) -> None:
+    def _request_perk_menu(self) -> None:
         """Ask the next tick to open the perk menu; it opens mid-tick, as in native."""
 
-        if menu.active or self._requested_perk_menu is not None:
+        if self._perk_menu.active or self._perk_menu_requested:
             return
-        self._requested_perk_menu = menu
+        self._perk_menu_requested = True
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+
+    def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
+        """The level-up prompt and perk menu input of `gameplay_update_and_render`."""
+
+        perk_ctx = self._perk_menu_ui_context()
+        pending_count = self._ui_pending_perk_count()
+        any_alive = self._any_player_alive()
+        self._perk_prompt.begin_frame()
+        if self._perk_menu.open:
+            choice_index = self._perk_menu.handle_input(
+                perk_ctx,
+                perk_selection_prepared_choices(self.state),
+                dt_ui_ms=float(dt_ui_ms),
+            )
+            if choice_index is not None:
+                self.record_perk_pick_command(int(choice_index), player_index=0)
+        if self._perk_prompt.poll_open_request(
+            ctx=perk_ctx,
+            config=self.config,
+            pending_count=pending_count,
+            player_count=max(1, len(self.world.players)),
+            any_alive=any_alive,
+            paused=self._paused,
+            menu_active=self._perk_menu.active,
+        ):
+            self._request_perk_menu()
+        self._perk_prompt.tick_timer(
+            pending_count=pending_count,
+            any_alive=any_alive,
+            paused=self._paused,
+            menu_active=self._perk_menu.active,
+            dt_ui_ms=float(dt_ui_ms),
+        )
+        if not self._paused:
+            self._perk_prompt.tick_pulse(float(dt_ui_ms))
+        self._perk_menu.tick_timeline()
+
+    def _draw_perk_prompt(self) -> None:
+        self._perk_prompt.draw(
+            ctx=self._perk_menu_ui_context(),
+            pending_count=self._ui_pending_perk_count(),
+            any_alive=self._any_player_alive(),
+            menu_active=self._perk_menu.active,
+            config=self.config,
+            ui_text_width=self._ui_text_width,
+            text_color=UI_TEXT_COLOR,
+        )
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return self._ui_mouse.to_rl()
@@ -587,6 +639,9 @@ class BaseGameplayMode:
         self._game_over_record = None
         self._game_over_banner = "reaper"
         self._game_over_ui.close()
+        self._perk_prompt.reset()
+        self._perk_menu.reset()
+        self._perk_menu_requested = False
 
         # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
@@ -804,16 +859,16 @@ class BaseGameplayMode:
         """Return False to stop running ticks this frame."""
 
         # The request rode in this tick; the tick opened the menu only if native would have.
-        menu = self._requested_perk_menu
-        self._requested_perk_menu = None
+        requested = self._perk_menu_requested
+        self._perk_menu_requested = False
         if tick.outcome is not None and self._RUN_DOWN_ON_OUTCOME and not self._run_ending:
             # `gameplay_update_and_render`: the end of the run replaces any pending pause and runs the timeline
             # down while the world keeps simulating.
             self._run_ending = True
             self._pause_pending = False
             self._ui_timeline.begin()
-        if menu is not None and tick.events.perk_menu_opened:
-            menu.open_menu()
+        if requested and tick.events.perk_menu_opened:
+            self._perk_menu.open_menu()
             return False
         return True
 
