@@ -92,15 +92,15 @@ def test_game_over_name_entry_flushes_buffered_text_input(tmp_path: Path, assets
     # An empty score table ranks the run first, so it asks for a name.
     assert ui.phase == 0
     assert ui.rank == 0
-    assert ui.input_text == "player"
-    assert ui.input_caret == len("player")
+    assert ui.name_entry.text == "player"
+    assert ui.name_entry.caret == len("player")
 
 
 def test_game_over_name_entry_waits_for_controls_release(tmp_path: Path, assets_dir: Path, make_mode_config, mocker) -> None:
     ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=0)
-    ui.input_text = "user"
-    ui.input_caret = len(ui.input_text)
-    ui._defer_name_input_until_controls_released = True
+    ui.name_entry.text = "user"
+    ui.name_entry.caret = len(ui.name_entry.text)
+    ui.name_entry.waiting_for_release = True
     pending: list[int] = [ord("x")]
     _type_chars(mocker, pending)
     # Player one still holds fire (mouse left) from the fatal moment.
@@ -108,32 +108,32 @@ def test_game_over_name_entry_waits_for_controls_release(tmp_path: Path, assets_
     record = _survival_record()
 
     ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
-    assert ui.input_text == "user"
-    assert ui._defer_name_input_until_controls_released is True
+    assert ui.name_entry.text == "user"
+    assert ui.name_entry.waiting_for_release is True
 
     fire_held.return_value = False
     ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
-    assert ui.input_text == "user"
-    assert ui._defer_name_input_until_controls_released is False
+    assert ui.name_entry.text == "user"
+    assert ui.name_entry.waiting_for_release is False
 
     pending.extend([ord("w"), ord("w")])
     ui.update(0.0, rng=Crand(0), record=record, player_name_default="user", mouse=rl.Vector2(0.0, 0.0))
-    assert ui.input_text == "userww"
+    assert ui.name_entry.text == "userww"
 
 
 def test_game_over_name_entry_uses_shared_ui_text_input_typeclick_caller(
     tmp_path: Path, assets_dir: Path, make_mode_config, mocker,
 ) -> None:
     ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=0)
-    ui.input_text = "user"
-    ui.input_caret = len(ui.input_text)
+    ui.name_entry.text = "user"
+    ui.name_entry.caret = len(ui.name_entry.text)
     _type_chars(mocker, [ord("w"), ord("w")])
     played: list[SfxId] = []
     rng = ScriptedCrand([0])
 
     ui.update(0.0, record=_survival_record(), player_name_default="user", play_sfx=played.append, rng=rng, mouse=rl.Vector2(0.0, 0.0))
 
-    assert ui.input_text == "userww"
+    assert ui.name_entry.text == "userww"
     assert played == [SfxId.UI_TYPECLICK_01]
     assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]
 

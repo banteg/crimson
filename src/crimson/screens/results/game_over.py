@@ -10,7 +10,7 @@ from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
-from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
+from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
@@ -19,28 +19,21 @@ from grim.sfx_map import SfxId
 from ...game_modes import GameMode
 from ...game_states import GameStateId
 from ...persistence.highscores import (
-    NAME_MAX_EDIT,
     TABLE_MAX,
     HighScoreRecord,
     rank_index,
     read_highscore_table,
     scores_path_for_config,
-    upsert_highscore_record,
 )
 from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from ...ui.focus import UiFocus
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
+from ...ui.name_entry import HighScoreNameEntry
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ...ui.text_input import (
-    UiTextInput,
     flush_text_input_events,
-    gameplay_controls_held,
-    ui_text_input_draw,
-    ui_text_input_draw_focus,
-    ui_text_input_focus,
-    update_name_entry_text,
 )
 from ..ui_timeline import UiTimeline
 
@@ -68,8 +61,8 @@ TEXTURE_TOP_BANNER_H = 64.0
 # so banner/content anchor is +214 from the panel-left edge in steady state.
 GAME_OVER_BANNER_X_OFFSET = 214.0
 
-INPUT_BOX_W = 166.0  # `game_over_name_input_state_width_px = 0xa6` before `ui_text_input_update`
-INPUT_BOX_H = 18.0
+# The name form sits 8 right of and 84 below the banner.
+_GAME_OVER_FORM_OFFSET = Vec2(GAME_OVER_BANNER_X_OFFSET + 8.0, 40.0 + 84.0)
 
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
@@ -94,24 +87,19 @@ class GameOverUi(msgspec.Struct):
     config: CrimsonConfig
     preserve_bugs: bool = False
 
-    save_error: str | None = None
-    input_text: str = ""
-    input_caret: int = 0
     phase: int = -1  # -1 init, 0 name entry (if qualifies), 1 results/buttons
     rank: int = TABLE_MAX
     _candidate_record: HighScoreRecord | None = None
-    _saved: bool = False
     _dt: float = 0.0
+    name_entry: HighScoreNameEntry = msgspec.field(default_factory=HighScoreNameEntry)
 
     # Shares GameState.ui and GameState.focus in the game; the defaults only serve standalone use.
     timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
     focus: UiFocus = msgspec.field(default_factory=UiFocus)
-    _name_input: UiTextInput = msgspec.field(default_factory=UiTextInput)
     _panel_open_sfx_played: bool = False
     _close_action: ResultAction | None = None
 
     # Buttons (rendered via existing ui_button implementation)
-    _ok_button: UiButtonState = msgspec.field(default_factory=lambda: UiButtonState("OK", force_wide=False))
     _play_again_button: UiButtonState = msgspec.field(
         default_factory=lambda: UiButtonState("Play Again", force_wide=True),
     )
@@ -123,23 +111,18 @@ class GameOverUi(msgspec.Struct):
     )
 
     _consume_enter: bool = False
-    _defer_name_input_until_controls_released: bool = False
 
     def open(self) -> None:
         self.close()
         self.phase = -1
         self.rank = TABLE_MAX
         self._candidate_record = None
-        self._saved = False
+        self.name_entry = HighScoreNameEntry()
         self._dt = 0.0
         self.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
         self._panel_open_sfx_played = False
         self._close_action = None
-        self.save_error = None
-        self.input_text = ""
-        self.input_caret = 0
         self._consume_enter = True
-        self._defer_name_input_until_controls_released = False
 
     def close(self) -> None:
         return None
@@ -158,12 +141,6 @@ class GameOverUi(msgspec.Struct):
         if not self.timeline.closing:
             return 1.0
         return world_fade_alpha(self.timeline.timeline_ms)
-
-    def _text_width(self, font: SmallFontData, text: str) -> float:
-        return float(measure_small_text_width(font, text))
-
-    def _draw_small(self, font: SmallFontData, text: str, pos: Vec2, color: rl.Color) -> None:
-        draw_small_text(font, text, pos, color)
 
     def _panel_layout(self, *, screen_w: float) -> _GameOverPanelLayout:
         # Keep consistent with the main menu panel offsets.
@@ -229,69 +206,32 @@ class GameOverUi(msgspec.Struct):
             )
             idx = rank_index(records, candidate)
             self.rank = int(idx)
+            # Native flushes the input, and `grim_was_key_pressed(ENTER)` swallows this frame's Enter.
             flush_text_input_events()
-            # Native `grim_was_key_pressed(ENTER)` after the input flush swallows this frame's Enter.
             self.focus.enter = False
             if idx < TABLE_MAX:
                 self.phase = 0
-                self.input_text = player_name_default[:NAME_MAX_EDIT]
-                self.input_caret = len(self.input_text)
-                self._defer_name_input_until_controls_released = True
+                self.name_entry.start(player_name_default, focus=self.focus)
                 return None
             self.phase = 1
 
-        # Basic text input behavior for the name-entry phase.
         if self.phase == 0:
-            if self._defer_name_input_until_controls_released:
-                flush_text_input_events()
-                self.focus.enter = False
-                if not gameplay_controls_held(self.config):
-                    self._defer_name_input_until_controls_released = False
-                return None
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            self.input_text, self.input_caret = update_name_entry_text(
-                self.input_text,
-                self.input_caret,
-                max_len=NAME_MAX_EDIT,
+            form_pos = self._panel_layout(screen_w=float(canvas.width())).top_left + _GAME_OVER_FORM_OFFSET
+            name = self.name_entry.update(
+                resources,
+                focus=self.focus,
+                config=self.config,
+                input_pos=form_pos.offset(dy=40.0),
+                ok_pos=form_pos + Vec2(170.0, 32.0),
+                dt_ms=dt_ms,
+                mouse=mouse,
                 rng=rng,
                 play_sfx=play_sfx,
             )
-
-            screen_w = float(canvas.width())
-            panel_layout = self._panel_layout(screen_w=screen_w)
-            banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
-            form_pos = banner_pos + Vec2(8.0, 84.0)
-            ok_pos = form_pos + Vec2(170.0, 32.0)
-            ok_clicked = button_update(resources, self._ok_button, focus=self.focus, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
-            ui_text_input_focus(
-                self.focus, self._name_input, form_pos.offset(dy=40.0), width=INPUT_BOX_W, mouse=Vec2.from_xy(mouse),
-            )
-
-            # The text input submits on Enter wherever the focus is; a pad's A stands in for it, so a pad alone
-            # can accept the prefilled name.
-            if ok_clicked or self.focus.enter:
-                if self.input_text.strip():
-                    if play_sfx is not None:
-                        play_sfx(SfxId.UI_TYPEENTER)
-                    candidate = (self._candidate_record or record).copy()
-                    candidate.set_name(self.input_text)
-                    try:
-                        self.config.profile.set_player_name_input(self.input_text)
-                        self.config.save()
-                        if not self._saved:
-                            path = scores_path_for_config(self.base_dir, self.config)
-                            upsert_highscore_record(
-                                path, candidate, date_mode=self.config.profile.score_date_mode,
-                            )
-                            self._saved = True
-                    except OSError:
-                        self.save_error = "Could not save. Press OK to retry."
-                        return None
-                    self.save_error = None
-                    self.phase = 1
-                    return None
-                if play_sfx is not None:
-                    play_sfx(SfxId.SHOCK_HIT_01)
+            if name is not None and self.name_entry.save(
+                self._candidate_record or record, scores_path_for_config(self.base_dir, self.config), config=self.config,
+            ) is not None:
+                self.phase = 1
         else:
             # Buttons phase: let the caller handle navigation; we just report actions.
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -387,31 +327,10 @@ class GameOverUi(msgspec.Struct):
         )
 
         if self.phase == 0:
-            form_pos = banner_pos + Vec2(8.0, 84.0)
-            self._draw_small(
-                font,
-                "State your name, trooper!",
-                form_pos.offset(dx=42.0),
-                COLOR_TEXT,
-            )
-
-            input_pos = form_pos.offset(dy=40.0)
-            ui_text_input_draw_focus(self.focus, self._name_input, input_pos)
-            ui_text_input_draw(
-                resources, input_pos, width=INPUT_BOX_W, text=self.input_text, caret=self.input_caret,
-            )
-            if self.save_error is not None:
-                draw_ui_text(
-                    resources, self.save_error, input_pos + Vec2(0.0, 22.0),
-                    color=COLOR_TEXT_MUTED,
-                )
-
-            ok_pos = form_pos + Vec2(170.0, 32.0)
-            button_draw(
-                resources,
-                self._ok_button,
-                focus=self.focus,
-                pos=ok_pos,
+            form_pos = panel_top_left + _GAME_OVER_FORM_OFFSET
+            draw_small_text(font, "State your name, trooper!", form_pos.offset(dx=42.0), COLOR_TEXT)
+            self.name_entry.draw(
+                resources, focus=self.focus, input_pos=form_pos.offset(dy=40.0), ok_pos=form_pos + Vec2(170.0, 32.0),
             )
 
             score_pos = form_pos + Vec2(16.0, 116.0)
@@ -425,7 +344,7 @@ class GameOverUi(msgspec.Struct):
                 (80.0 if self.rank < TABLE_MAX else 78.0),
             )
             if self.rank >= TABLE_MAX and banner_kind == "reaper":
-                self._draw_small(
+                draw_small_text(
                     font,
                     "Score too low for top100.",
                     banner_pos + Vec2(38.0, 62.0),

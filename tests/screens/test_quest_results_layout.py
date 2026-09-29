@@ -58,6 +58,9 @@ def _open_ui(
         unlock_perk_name="",
         player_name_default="banteg",
     )
+    if phase == 1:
+        ui._enter_rank_phase(qualifies=True)
+        ui.name_entry.waiting_for_release = False
     ui.phase = phase
     ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
     if faded_in:
@@ -135,20 +138,20 @@ def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path, 
 
 def test_quest_results_name_entry_waits_for_controls_release(tmp_path: Path, assets_dir: Path, make_mode_config, mocker) -> None:
     ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=1)
-    ui._defer_name_input_until_controls_released = True
+    ui.name_entry.waiting_for_release = True
     _type_chars(mocker, [ord("w"), ord("w")])
     # Player one still holds fire (mouse left) from the finishing kill.
     fire_held = mocker.patch.object(rl, "is_mouse_button_down", return_value=True)
 
     ui.update(0.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
-    assert ui.input_text == "banteg"
-    assert ui._defer_name_input_until_controls_released is True
+    assert ui.name_entry.text == "banteg"
+    assert ui.name_entry.waiting_for_release is True
 
     fire_held.return_value = False
     ui.update(0.0, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     # Keys typed while fire was held were flushed, not typed.
-    assert ui.input_text == "banteg"
-    assert ui._defer_name_input_until_controls_released is False
+    assert ui.name_entry.text == "banteg"
+    assert ui.name_entry.waiting_for_release is False
 
 
 def test_quest_results_name_entry_uses_shared_ui_text_input_typeclick_caller(
@@ -161,7 +164,7 @@ def test_quest_results_name_entry_uses_shared_ui_text_input_typeclick_caller(
 
     ui.update(0.0, play_sfx=played.append, rng=rng, mouse=rl.Vector2(0.0, 0.0))
 
-    assert ui.input_text == "bantegww"
+    assert ui.name_entry.text == "bantegww"
     assert played == [SfxId.UI_TYPECLICK_01]
     assert [record.caller for record in rng.records_since()] == [RngCallerStatic.UI_TEXT_INPUT_UPDATE_TYPECLICK]
 
@@ -179,14 +182,14 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(tmp_path: Path, a
     ui.focus.begin_frame(0)
     ui.update(0.0, play_sfx=played.append, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.phase == 1
-    assert not ui._saved
-    assert ui.save_error is not None
+    assert not ui.name_entry.saved
+    assert ui.name_entry.save_error is not None
 
     scores_path.rmdir()
     ui.focus.begin_frame(0)
     ui.update(0.0, play_sfx=played.append, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.phase == 2
-    assert ui._saved
-    assert ui.save_error is None
+    assert ui.name_entry.saved
+    assert ui.name_entry.save_error is None
     assert [record.name() for record in read_highscore_records(scores_path)] == ["banteg"]
     assert played == [SfxId.UI_TYPEENTER, SfxId.UI_TYPEENTER]
