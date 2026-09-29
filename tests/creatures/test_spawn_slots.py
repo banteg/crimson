@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.creatures.spawn import SpawnId, SpawnSlotInit, tick_spawn_slot
+from crimson.creatures.spawn import SpawnId, SpawnSlot, tick_spawn_slot
 from crimson.math_parity import f32
 from tests.support.helpers import assert_float_close
 
@@ -24,7 +24,7 @@ def test_tick_spawn_slot_behavior(
     expected_spawn: SpawnId | None,
     expected_count: int,
 ) -> None:
-    slot = SpawnSlotInit(
+    slot = SpawnSlot(
         owner_creature=0,
         timer=timer,
         count=count,
@@ -42,7 +42,7 @@ def test_tick_spawn_slot_behavior(
 
 
 def test_tick_spawn_slot_uses_float32_cadence_at_boundary() -> None:
-    slot = SpawnSlotInit(
+    slot = SpawnSlot(
         owner_creature=0,
         timer=2.4,
         count=0,

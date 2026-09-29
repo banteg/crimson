@@ -11,16 +11,16 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..creatures.runtime import CreaturePool, CreatureState
 from ..creatures.spawn import (
     SPAWN_TEMPLATES,
+    CreatureAiMode,
     CreatureTypeId,
-    SpawnEnv,
-    SpawnSlotInit,
-    UnsupportedSpawnTemplateError,
-    build_spawn_plan,
+    SpawnSlot,
     spawn_id_label,
     tick_spawn_slot,
 )
+from ..sim.gameplay_state import GameplayState
 from ._ui_helpers import draw_ui_text, ui_line_height
 from .registry import ViewInstance, register_view
 
@@ -29,12 +29,18 @@ BASE_POS = Vec2(512.0, 512.0)
 UI_TEXT_SCALE = 1
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
-UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 BG_COLOR = rl.Color(12, 12, 14, 255)
 GRID_COLOR = rl.Color(40, 40, 48, 255)
 LINK_COLOR = rl.Color(80, 160, 255, 120)
 OFFSET_COLOR = rl.Color(255, 200, 80, 140)
+
+_LINK_AI_MODES = (
+    CreatureAiMode.FOLLOW_LINK,
+    CreatureAiMode.LINK_GUARD,
+    CreatureAiMode.FOLLOW_LINK_TETHERED,
+    CreatureAiMode.ORBIT_LINK,
+)
 
 
 def _type_color(type_id: CreatureTypeId | None) -> rl.Color:
@@ -51,11 +57,11 @@ def _type_color(type_id: CreatureTypeId | None) -> rl.Color:
     return rl.Color(200, 200, 200, 255)
 
 
-class _PlanSummary(msgspec.Struct, frozen=True):
+class _SpawnSummary(msgspec.Struct, frozen=True):
     creature_count: int
     spawn_slot_count: int
     effect_count: int
-    primary_idx: int
+    returned_idx: int
 
 
 class SpawnPlanView:
@@ -72,13 +78,13 @@ class SpawnPlanView:
         self._hardcore = False
         self._quest_fail_retry_count = 0
 
-        self._plan = None
-        self._plan_summary = None
-        self._error = None
+        # One `creature_spawn_template` call into an empty pool.
+        self._pool = CreaturePool()
+        self._summary: _SpawnSummary | None = None
 
         self._sim_running = False
         self._sim_time = 0.0
-        self._sim_slots: list[SpawnSlotInit] = []
+        self._sim_slots: list[tuple[int, SpawnSlot]] = []
         self._sim_events: list[str] = []
 
         self._rebuild_plan()
@@ -99,45 +105,32 @@ class SpawnPlanView:
 
     def _rebuild_plan(self) -> None:
         spawn_id = self._template_ids[self._index]
-        rng = Crand(self._seed)
-        env = SpawnEnv(
+        state = GameplayState(
+            rng=Crand(self._seed),
             hardcore=self._hardcore,
             quest_fail_retry_count=self._quest_fail_retry_count,
         )
-        try:
-            self._plan = build_spawn_plan(spawn_id, BASE_POS, 0.0, rng, env)
-            self._plan_summary = _PlanSummary(
-                creature_count=len(self._plan.creatures),
-                spawn_slot_count=len(self._plan.spawn_slots),
-                effect_count=len(self._plan.effects),
-                primary_idx=self._plan.primary,
-            )
-            self._reset_sim()
-            self._error = None
-        except UnsupportedSpawnTemplateError as exc:
-            self._plan = None
-            self._plan_summary = None
-            self._error = str(exc)
-            self._reset_sim()
+        self._pool = CreaturePool()
+        returned_idx = self._pool.spawn_template(spawn_id, BASE_POS, 0.0, state=state, detail_preset=5)
+        self._summary = _SpawnSummary(
+            creature_count=len(self._spawned()),
+            spawn_slot_count=len(self._owned_slots()),
+            effect_count=len(state.effects.iter_active()),
+            returned_idx=returned_idx,
+        )
+        self._reset_sim()
+
+    def _spawned(self) -> list[tuple[int, CreatureState]]:
+        return [(idx, creature) for idx, creature in enumerate(self._pool.entries) if creature.active]
+
+    def _owned_slots(self) -> list[tuple[int, SpawnSlot]]:
+        return [(idx, slot) for idx, slot in enumerate(self._pool.spawn_slots) if slot.owner_creature >= 0]
 
     def _reset_sim(self) -> None:
         self._sim_running = False
         self._sim_time = 0.0
         self._sim_events.clear()
-        self._sim_slots = []
-        if self._plan is None:
-            return
-        for slot in self._plan.spawn_slots:
-            self._sim_slots.append(
-                SpawnSlotInit(
-                    owner_creature=slot.owner_creature,
-                    timer=slot.timer,
-                    count=slot.count,
-                    limit=slot.limit,
-                    interval=slot.interval,
-                    child_template_id=slot.child_template_id,
-                ),
-            )
+        self._sim_slots = [(idx, msgspec.structs.replace(slot)) for idx, slot in self._owned_slots()]
 
     def _advance_template(self, delta: int) -> None:
         if not self._template_ids:
@@ -194,7 +187,7 @@ class SpawnPlanView:
         if self._sim_running and self._sim_slots:
             sim_dt = min(max(0.0, float(dt)), 0.1)
             self._sim_time += sim_dt
-            for idx, slot in enumerate(self._sim_slots):
+            for idx, slot in self._sim_slots:
                 child_template_id = tick_spawn_slot(slot, sim_dt)
                 if child_template_id is None:
                     continue
@@ -237,7 +230,7 @@ class SpawnPlanView:
         spawn_id = self._template_ids[self._index] if self._template_ids else 0
         draw_ui_text(
             self._small,
-            f"spawn-plan view  (template 0x{spawn_id:02x})",
+            f"spawn-template view  (template 0x{spawn_id:02x})",
             Vec2(margin, margin),
             scale=0.8,
             color=UI_TEXT_COLOR,
@@ -255,24 +248,19 @@ class SpawnPlanView:
         self._draw_ui_label("retry_count", str(self._quest_fail_retry_count), Vec2(margin, y))
         y += line_h
 
-        if self._error is not None:
-            draw_ui_text(self._small, self._error, Vec2(margin, y + 6.0), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
+        summary = self._summary
+        if summary is None:
             return
-        if self._plan is None or self._plan_summary is None:
-            draw_ui_text(self._small, "No plan.", Vec2(margin, y + 6.0), scale=UI_TEXT_SCALE, color=UI_ERROR_COLOR)
-            return
-
-        summary = self._plan_summary
         self._draw_ui_label(
-            "plan",
-            f"creatures={summary.creature_count}  slots={summary.spawn_slot_count}  effects={summary.effect_count}  primary={summary.primary_idx}",
+            "pool",
+            f"creatures={summary.creature_count}  slots={summary.spawn_slot_count}  effects={summary.effect_count}  returned={summary.returned_idx}",
             Vec2(margin, y),
         )
         y += line_h
         sim_state = "running" if self._sim_running else "paused"
         self._draw_ui_label("sim", f"{sim_state}  t={self._sim_time:.2f}s", Vec2(margin, y))
         y += line_h
-        for idx, slot in enumerate(self._sim_slots[:3]):
+        for idx, slot in self._sim_slots[:3]:
             self._draw_ui_label(
                 f"slot{idx:02d}",
                 f"timer={slot.timer:5.2f} count={slot.count:3d}/{slot.limit:<3d} interval={slot.interval:5.2f} child=0x{slot.child_template_id:02x}",
@@ -286,13 +274,14 @@ class SpawnPlanView:
                 draw_ui_text(self._small, ev, Vec2(margin, y), scale=UI_TEXT_SCALE, color=UI_TEXT_COLOR)
                 y += line_h
 
-        # Link lines.
-        for c in self._plan.creatures:
-            if c.ai_link_parent is None:
+        spawned = self._spawned()
+        spawned_idx = {idx for idx, _creature in spawned}
+
+        # Link lines: formation members follow the creature in their `link_index`.
+        for _idx, c in spawned:
+            if c.ai_mode not in _LINK_AI_MODES or c.link_index not in spawned_idx:
                 continue
-            if not (0 <= c.ai_link_parent < len(self._plan.creatures)):
-                continue
-            p = self._plan.creatures[c.ai_link_parent]
+            p = self._pool.entries[c.link_index]
             child_screen = self._world_to_screen(c.pos)
             parent_screen = self._world_to_screen(p.pos)
             rl.draw_line_ex(
@@ -303,7 +292,7 @@ class SpawnPlanView:
             )
 
         # Offset hints.
-        for c in self._plan.creatures:
+        for _idx, c in spawned:
             if c.target_offset is None:
                 continue
             origin_screen = self._world_to_screen(c.pos)
@@ -322,20 +311,18 @@ class SpawnPlanView:
             )
 
         # Creature dots.
-        for idx, c in enumerate(self._plan.creatures):
+        for idx, c in spawned:
             screen_pos = self._world_to_screen(c.pos)
-            radius = max(3.0, 6.0 * math.sqrt(max(1.0, (c.size or 50.0) / 50.0)))
+            radius = max(3.0, 6.0 * math.sqrt(max(1.0, c.size / 50.0)))
             radius = min(radius, 24.0)
             color = _type_color(c.type_id)
             rl.draw_circle(int(screen_pos.x), int(screen_pos.y), radius, color)
-            if idx == summary.primary_idx:
+            if idx == summary.returned_idx:
                 rl.draw_circle_lines(int(screen_pos.x), int(screen_pos.y), radius + 2.0, rl.Color(255, 255, 255, 200))
 
         # Spawn-slot owners.
-        for slot in self._plan.spawn_slots:
-            if not (0 <= slot.owner_creature < len(self._plan.creatures)):
-                continue
-            owner = self._plan.creatures[slot.owner_creature]
+        for _idx, slot in self._owned_slots():
+            owner = self._pool.creature(slot.owner_creature)
             owner_screen = self._world_to_screen(owner.pos)
             rl.draw_circle_lines(
                 int(owner_screen.x),

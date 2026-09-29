@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import cast
 
 import pytest
 
@@ -18,10 +17,8 @@ from crimson.creatures.spawn import (
     CreatureFlags,
     CreatureInit,
     CreatureTypeId,
-    SpawnEnv,
     SpawnId,
-    SpawnSlotInit,
-    build_spawn_plan,
+    SpawnSlot,
 )
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
@@ -41,124 +38,59 @@ from tests.support.factories import step_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
-def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
-    rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan = build_spawn_plan(SpawnId.FORMATION_CHAIN_ALIEN_10_13, Vec2(100.0, 200.0), 0.0, rng, env)
-
-    state = GameplayState(rng=rng)
+def test_chain_members_link_to_the_previous_members_pool_slot() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
     pool = CreaturePool()
-    # Occupy a few pool slots so plan-local indices do not equal pool indices.
     for i in range(5):
         pool.entries[i].active = True
         pool.entries[i].hp = 1.0
 
-    mapping, primary = pool.spawn_plan(plan, state=state, detail_preset=5)
-    assert primary == mapping[plan.primary]
+    returned = pool.spawn_template(SpawnId.FORMATION_CHAIN_ALIEN_10_13, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
 
-    # Assert that link indices were remapped from plan-local indices -> pool indices.
-    for plan_idx, pool_idx in enumerate(mapping):
-        init = plan.creatures[plan_idx]
-        if init.ai_link_parent is None:
-            continue
-        assert pool.entries[pool_idx].link_index == mapping[int(init.ai_link_parent)]
+    assert returned == 15
+    assert pool.entries[5].link_index == 15
+    assert [pool.entries[i].link_index for i in range(6, 16)] == list(range(5, 15))
 
 
-def test_spawn_plan_remaps_spawn_slot_indices() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
-
-    state = GameplayState(rng=rng)
+def test_spawner_takes_the_first_ownerless_spawn_slot() -> None:
+    state = GameplayState(rng=Crand(0))
     pool = CreaturePool()
-    # Seed an existing spawn slot so the plan slot id (0) must be remapped.
     pool.entries[0].active = True
     pool.entries[0].hp = 1.0
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=0,
-            interval=1.0,
-            child_template_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
-        ),
+    pool.spawn_slots[0].owner_creature = 0
+
+    returned = pool.spawn_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
+
+    assert returned == 1
+    assert pool.entries[1].link_index == 1
+    assert pool.spawn_slots[1] == SpawnSlot(
+        owner_creature=1,
+        timer=1.0,
+        count=0,
+        limit=0x32C,
+        interval=x87_pc24_add(f32(0.7), f32(0.2)),
+        child_template_id=SpawnId.ZOMBIE_RANDOM_41,
     )
 
-    mapping, primary = pool.spawn_plan(plan, state=state, detail_preset=5)
-    assert primary == mapping[plan.primary]
-    assert len(mapping) == 1
-    assert len(pool.spawn_slots) == 2
 
-    owner_idx = mapping[0]
-    new_slot_idx = 1
-    assert pool.entries[owner_idx].spawn_slot_index == new_slot_idx
-    assert pool.entries[owner_idx].link_index == new_slot_idx
-    assert pool.spawn_slots[new_slot_idx].owner_creature == owner_idx
-
-
-def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaustion() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
-    state = GameplayState(rng=rng)
+def test_spawner_overwrites_the_last_spawn_slot_when_all_are_owned() -> None:
+    state = GameplayState(rng=Crand(0))
     pool = CreaturePool()
-    empty_slot = SpawnSlotInit(
-        owner_creature=-1,
-        timer=9.0,
-        count=9,
-        limit=9,
-        interval=9.0,
-        child_template_id=SpawnId.ALIEN_RANDOM_1D,
-    )
-    pool.spawn_slots.append(empty_slot)
+    for owner_index, slot in enumerate(pool.spawn_slots):
+        slot.owner_creature = 100 + owner_index
 
-    mapping, _ = pool.spawn_plan(plan, state=state, detail_preset=5)
+    returned = pool.spawn_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
 
-    assert len(pool.spawn_slots) == 1
-    assert pool.entries[mapping[0]].spawn_slot_index == 0
-    assert pool.spawn_slots[0].owner_creature == mapping[0]
-
-    pool = CreaturePool()
-    for owner_index in range(NATIVE_SPAWN_SLOT_COUNT):
-        pool.spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=owner_index,
-                timer=0.0,
-                count=0,
-                limit=1,
-                interval=1.0,
-                child_template_id=SpawnId.ALIEN_RANDOM_1D,
-            ),
-        )
-
-    mapping, _ = pool.spawn_plan(plan, state=state, detail_preset=5)
-
-    assert len(pool.spawn_slots) == NATIVE_SPAWN_SLOT_COUNT
-    assert pool.entries[mapping[0]].spawn_slot_index == NATIVE_SPAWN_SLOT_COUNT - 1
-    assert pool.spawn_slots[-1].owner_creature == mapping[0]
+    assert pool.entries[returned].link_index == NATIVE_SPAWN_SLOT_COUNT - 1
+    assert pool.spawn_slots[-1].owner_creature == returned
+    assert [slot.owner_creature for slot in pool.spawn_slots[:-1]] == list(range(100, 100 + NATIVE_SPAWN_SLOT_COUNT - 1))
 
 
-def test_spawn_plan_materialization_spawns_burst_fx() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    state = GameplayState(rng=rng)
+def test_spawn_template_in_the_arena_spawns_burst_fx() -> None:
+    state = GameplayState(rng=Crand(0))
     pool = CreaturePool()
 
-    plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, rng, env)
-    pool.spawn_plan(plan, state=state, detail_preset=5)
+    pool.spawn_template(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
 
     active = state.effects.iter_active()
     assert len(active) == 8
@@ -223,41 +155,29 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner.flags = HAS_SPAWN_SLOT_FLAG
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
-    owner.spawn_slot_index = 0
+    owner.link_index = 0
     player = world.players[0]
     player.pos = Vec2(512.0, 512.0)
     player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=1,
-            interval=1.0,
-            child_template_id=SpawnId.ALIEN_RANDOM_1D,
-        ),
+    pool.spawn_slots[0] = SpawnSlot(
+        owner_creature=0,
+        timer=0.0,
+        count=0,
+        limit=1,
+        interval=1.0,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
     )
 
-    sentinel_plan = object()
-
-    def _fake_spawn_plan(self: CreaturePool, plan: object, **kwargs: object) -> tuple[list[int], int | None]:
-        del self, plan, kwargs
-        return [], None
-
-    build_spawn_plan = mocker.patch.object(creature_runtime, "build_spawn_plan", return_value=sentinel_plan)
-    spawn_plan = mocker.patch.object(CreaturePool, "spawn_plan", autospec=True, side_effect=_fake_spawn_plan)
+    spawn_template = mocker.patch.object(creature_runtime, "creature_spawn_template", return_value=1)
 
     step_creatures(world, 1.0 / 60.0)
 
-    build_spawn_plan.assert_called_once()
-    child_template_id = int(build_spawn_plan.call_args.args[0])
-    heading = float(build_spawn_plan.call_args.args[2])
-    env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
-    assert child_template_id == int(SpawnId.ALIEN_RANDOM_1D)
+    spawn_template.assert_called_once()
+    _pool, child_template_id, _pos, heading = spawn_template.call_args.args
+    assert child_template_id == SpawnId.ALIEN_RANDOM_1D
     assert_float_close(heading, RANDOM_HEADING_SENTINEL)
-    assert env_arg == SpawnEnv(hardcore=False, quest_fail_retry_count=0)
-    spawn_plan.assert_called_once()
+    assert spawn_template.call_args.kwargs["state"] is world.state
 
 
 def test_spawn_slot_update_requires_spawner_flag() -> None:
@@ -276,17 +196,15 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     owner.move_speed = 0.0
     owner.size = 45.0
     owner.pos = Vec2(256.0, 256.0)
-    owner.spawn_slot_index = 0
+    owner.link_index = 0
 
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=1,
-            interval=1.0,
-            child_template_id=SpawnId.ALIEN_RANDOM_1D,
-        ),
+    pool.spawn_slots[0] = SpawnSlot(
+        owner_creature=0,
+        timer=0.0,
+        count=0,
+        limit=1,
+        interval=1.0,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
     )
 
     step_creatures(world, 1.0 / 60.0)
@@ -312,17 +230,15 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     owner.ai_mode = CreatureAiMode.ORBIT_PLAYER
     owner.move_speed = 0.0
     owner.size = 45.0
-    owner.spawn_slot_index = 0
+    owner.link_index = 0
 
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=1,
-            interval=1.0,
-            child_template_id=SpawnId.ALIEN_BIG_GRAY_29,
-        ),
+    pool.spawn_slots[0] = SpawnSlot(
+        owner_creature=0,
+        timer=0.0,
+        count=0,
+        limit=1,
+        interval=1.0,
+        child_template_id=SpawnId.ALIEN_BIG_GRAY_29,
     )
 
     step_creatures(world, 1.0 / 60.0)
@@ -1663,7 +1579,7 @@ def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
     pool.entries[0].orbit_angle = 0.4
     pool.entries[0].orbit_radius = float(ProjectileTemplateId.SPIDER_PLASMA)
 
-    mapping, primary = pool.spawn_template(
+    returned = pool.spawn_template(
         SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
         Vec2(100.0, 200.0),
         0.0,
@@ -1671,8 +1587,7 @@ def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
         detail_preset=5,
     )
 
-    assert mapping == [0]
-    assert primary == 0
+    assert returned == 0
     assert_float_close(pool.entries[0].orbit_angle, 0.4)
     assert pool.entries[0].orbit_radius == float(ProjectileTemplateId.SPIDER_PLASMA)
 
@@ -2031,27 +1946,6 @@ def test_spawn_init_returns_none_when_pool_is_full() -> None:
 
     assert spawned_idx is None
     assert all(entry.active for entry in pool.entries)
-    assert pool.spawned_count == 0
-
-
-def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    state = GameplayState(rng=rng)
-    pool = CreaturePool()
-    plan = build_spawn_plan(SpawnId.ALIEN_RANDOM_1D, Vec2(100.0, 200.0), 0.0, rng, env)
-    # Leave one free slot fewer than the plan needs.
-    for entry in pool.entries[len(plan.creatures) - 1 :]:
-        entry.active = True
-        entry.hp = 1.0
-
-    mapping, primary = pool.spawn_plan(plan, state=state, detail_preset=5)
-
-    assert mapping == []
-    assert primary is None
     assert pool.spawned_count == 0
 
 

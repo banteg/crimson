@@ -7,7 +7,7 @@ from typing import Any, cast
 import pytest
 
 import crimson_re.dbg.record as dbg_record
-from crimson.creatures.spawn import SpawnEnv, build_spawn_plan
+from crimson.cli.root import spawn_template_into_fresh_pool
 from crimson.math_parity import f32
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
@@ -127,22 +127,19 @@ def test_zig_quests_show_plan_matches_python_summary() -> None:
         quest,
         QuestContext(player_count=1, rng=Crand(0)),
         )
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan_cache = {
-        entry.spawn_id: build_spawn_plan(entry.spawn_id, Vec2(512.0, 512.0), 0.0, Crand(0), env)
-        for entry in expected_entries
-    }
-    total_alloc = sum(entry.count * len(plan_cache[entry.spawn_id].creatures) for entry in expected_entries)
-    total_slots = sum(entry.count * len(plan_cache[entry.spawn_id].spawn_slots) for entry in expected_entries)
+    # Creatures and spawn slots each template takes in an empty pool.
+    allocations: dict[int, tuple[int, int]] = {}
+    for entry in expected_entries:
+        pool, _state, _returned = spawn_template_into_fresh_pool(entry.spawn_id, Vec2(512.0, 512.0), 0.0, seed=0)
+        allocations[entry.spawn_id] = (
+            sum(creature.active for creature in pool.entries),
+            sum(slot.owner_creature >= 0 for slot in pool.spawn_slots),
+        )
+    total_alloc = sum(entry.count * allocations[entry.spawn_id][0] for entry in expected_entries)
+    total_slots = sum(entry.count * allocations[entry.spawn_id][1] for entry in expected_entries)
     first_entry = expected_entries[0]
-    first_plan = plan_cache[first_entry.spawn_id]
-    first_plan_text = (
-        f"alloc={first_entry.count * len(first_plan.creatures):3d} "
-        f"(x{len(first_plan.creatures):2d})  slots={len(first_plan.spawn_slots)}"
-    )
+    first_creatures, first_slots = allocations[first_entry.spawn_id]
+    first_plan_text = f"alloc={first_entry.count * first_creatures:3d} (x{first_creatures:2d})  slots={first_slots}"
 
     build_run = dbg_record._run_process(["zig", "build"], cwd=dbg_record._ZIG_ROOT)
     assert build_run.returncode == 0, dbg_record._command_detail(build_run)

@@ -64,8 +64,7 @@ def test_a_dead_carrier_from_an_earlier_repeat_latches_the_next_hint_again() -> 
     tutorial = world.state.tutorial
     carrier_index = world.creatures.spawn_template(
         SpawnId.ALIEN_BONUS_CARRIER_27, Vec2(-32.0, 1056.0), 3.1415927, state=world.state, detail_preset=5,
-    )[1]
-    assert carrier_index is not None
+    )
     carrier = world.creatures.entries[carrier_index]
     carrier.hp, carrier.active = 0.0, False
     tutorial.stage_index, tutorial.stage_transition_timer_ms = 5, -1000

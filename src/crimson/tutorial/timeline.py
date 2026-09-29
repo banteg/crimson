@@ -46,10 +46,10 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
     tutorial = state.tutorial
     players = world.players
 
-    def spawn(template_id: SpawnId, x: float, y: float) -> int | None:
+    def spawn(template_id: SpawnId, x: float, y: float) -> int:
         return world.creatures.spawn_template(
             template_id, Vec2(x, y), _HEADING, state=state, detail_preset=state.detail_preset,
-        )[1]
+        )
 
     def level_up_sfx() -> None:
         state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))
@@ -93,7 +93,7 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
     # repeats 6 and 7, which spawn no carrier, latch on it again.
     if not tutorial.hint_fade_in:
         ref = tutorial.hint_bonus_creature_ref
-        carrier = world.creatures.entries[ref] if ref is not None else None
+        carrier = world.creatures.creature(ref) if ref is not None else None
         if (
             carrier is not None
             and not carrier.active
@@ -181,7 +181,7 @@ def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
             if repeat == 4:
                 spawn(SpawnId.SPIDER_SMALL_BLUE_40, 512.0, 1056.0)
             if repeat < 6 and tutorial.hint_bonus_creature_ref is not None:
-                carrier = world.creatures.entries[tutorial.hint_bonus_creature_ref]
+                carrier = world.creatures.creature(tutorial.hint_bonus_creature_ref)
                 match repeat:
                     case 1:
                         carrier.bonus_id, carrier.bonus_duration_override = BonusId.SPEED, -1

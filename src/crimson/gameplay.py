@@ -69,8 +69,7 @@ from .weapons import WeaponId
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from .creatures.runtime import CreatureState
-    from .creatures.spawn import SpawnSlotInit
+    from .creatures.runtime import CreaturePool
     from .sim.input import PlayerInput
     from .sim.state_types import PerkCounts, PlayerState
     from .sim.world_state import WorldStepRuntime
@@ -273,10 +272,12 @@ def _player_apply_move_with_spawn_avoidance(
     *,
     perks: PerkCounts,
     delta: Vec2,
-    spawn_slots: Sequence[SpawnSlotInit] | None,
-    creatures: Sequence[CreatureState] | None,
+    creatures: CreaturePool | None,
 ) -> None:
-    """Port of native `player_apply_move_with_spawn_avoidance` (0x0041e290)."""
+    """Port of native `player_apply_move_with_spawn_avoidance` (0x0041e290).
+
+    Every owned spawn slot blocks the player around its owner, the phantom slot included.
+    """
 
     dx = float(delta.x)
     dy = float(delta.y)
@@ -287,12 +288,11 @@ def _player_apply_move_with_spawn_avoidance(
     pos_x = f32(float(player.pos.x) + float(dx))
     pos_y = f32(float(player.pos.y) + float(dy))
 
-    if spawn_slots and creatures:
-        for slot in spawn_slots:
-            owner_index = int(slot.owner_creature)
-            if not (0 <= owner_index < len(creatures)):
+    if creatures is not None:
+        for slot in creatures.spawn_slots:
+            if slot.owner_creature < 0:
                 continue
-            owner = creatures[owner_index]
+            owner = creatures.creature(slot.owner_creature)
             owner_pos = owner.pos
 
             radius = x87_pc24_mul(
@@ -665,8 +665,7 @@ def _player_move_toward_heading(
 def _player_move(
     player: PlayerState, input_state: PlayerInput,
     state: GameplayState, movement_dt: float, move_mode: MovementControlType,
-    speed_multiplier: float, spawn_slots: Sequence[SpawnSlotInit] | None,
-    creatures: Sequence[CreatureState] | None,
+    speed_multiplier: float, creatures: CreaturePool | None,
 ) -> None:
     # Movement.
     raw_move = input_state.move
@@ -800,7 +799,6 @@ def _player_move(
         player,
         perks=state.perks,
         delta=move_delta,
-        spawn_slots=spawn_slots,
         creatures=creatures,
     )
 
@@ -923,8 +921,6 @@ def player_update(
     world = step_runtime.world
     state = world.state
     players = world.players
-    creatures = world.creatures.entries
-    spawn_slots = world.creatures.spawn_slots
     dt = f32(dt)
     if dt <= 0.0:
         return dt
@@ -986,7 +982,7 @@ def player_update(
 
     _player_move(
         player, input_state, state, movement_dt, move_mode,
-        speed_multiplier, spawn_slots, creatures,
+        speed_multiplier, world.creatures,
     )
 
     # Spread cooling, reload, aim and firing read the restored frame_dt.

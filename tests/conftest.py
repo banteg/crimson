@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
 from unittest.mock import Mock
 
-import msgspec
 import pytest
 from pytest_mock import MockerFixture
 
@@ -349,24 +348,6 @@ def make_world_state() -> Callable[..., WorldState]:
 @pytest.fixture
 def base_world(make_world_state: Callable[..., WorldState]) -> WorldState:
     return make_world_state()
-
-
-@pytest.fixture
-def default_spawn_env():
-    from crimson.creatures.spawn import SpawnEnv
-
-    return SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-
-
-@pytest.fixture
-def make_spawn_env(default_spawn_env):
-    def _make(**overrides: object):
-        return msgspec.structs.replace(default_spawn_env, **overrides)
-
-    return _make
 
 
 @pytest.fixture

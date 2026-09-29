@@ -16,13 +16,15 @@ from grim import jaz, paq
 from grim.geom import Vec2
 from grim.rand import Crand
 
-from ..creatures.spawn import SpawnEnv, SpawnId, build_spawn_plan, spawn_id_label
+from ..creatures.spawn import SpawnId, spawn_id_label
 from ..paths import default_runtime_dir
 
 app = typer.Typer(add_completion=False)
 
 if TYPE_CHECKING:
+    from ..creatures.runtime import CreaturePool
     from ..quests.types import QuestDefinition, SpawnEntry
+    from ..sim.gameplay_state import GameplayState
 
 
 @cache
@@ -130,7 +132,7 @@ def cmd_quests(
     player_count: int = typer.Option(1, help="player count"),
     seed: int | None = typer.Option(None, help="seed for randomized quests"),
     sort: bool = typer.Option(False, help="sort output by trigger time"),
-    show_plan: bool = typer.Option(False, help="include spawn-plan allocation summary"),
+    show_plan: bool = typer.Option(False, help="include each template's pool allocations (creatures, spawn slots)"),
 ) -> None:
     """Print quest spawn scripts for a given level."""
     from ..quests.types import QuestContext
@@ -151,15 +153,14 @@ def cmd_quests(
 
     plan_cache: dict[SpawnId, tuple[int, int]] = {}
     if show_plan:
-        env = SpawnEnv(
-            hardcore=False,
-            quest_fail_retry_count=0,
-        )
         for entry in entries:
             if entry.spawn_id in plan_cache:
                 continue
-            plan = build_spawn_plan(entry.spawn_id, Vec2(512.0, 512.0), 0.0, Crand(0), env)
-            plan_cache[entry.spawn_id] = (len(plan.creatures), len(plan.spawn_slots))
+            pool, _state, _returned = spawn_template_into_fresh_pool(entry.spawn_id, Vec2(512.0, 512.0), 0.0, seed=0)
+            plan_cache[entry.spawn_id] = (
+                sum(creature.active for creature in pool.entries),
+                sum(slot.owner_creature >= 0 for slot in pool.spawn_slots),
+            )
         total_alloc = sum(entry.count * plan_cache[entry.spawn_id][0] for entry in entries)
         total_slots = sum(entry.count * plan_cache[entry.spawn_id][1] for entry in entries)
         typer.echo(f"Plan: total_alloc={total_alloc} total_spawn_slots={total_slots}")
@@ -358,6 +359,26 @@ def _parse_vec2(text: str) -> Vec2:
         raise typer.BadParameter(f"invalid vec2: {text!r}") from exc
 
 
+def spawn_template_into_fresh_pool(
+    template_id: SpawnId,
+    pos: Vec2,
+    heading: float,
+    *,
+    seed: int,
+    hardcore: bool = False,
+    quest_fail_retry_count: int = 0,
+) -> tuple[CreaturePool, GameplayState, int]:
+    """Run `creature_spawn_template` once into an empty pool; returns the pool, state and returned index."""
+
+    from ..creatures.runtime import CreaturePool
+    from ..sim.gameplay_state import GameplayState
+
+    pool = CreaturePool()
+    state = GameplayState(rng=Crand(seed), hardcore=hardcore, quest_fail_retry_count=quest_fail_retry_count)
+    returned = pool.spawn_template(template_id, pos, heading, state=state, detail_preset=5)
+    return pool, state, returned
+
+
 @app.command("spawn-plan")
 def cmd_spawn_plan(
     template: str = typer.Argument(..., help="spawn id (e.g. 0x12)"),
@@ -368,37 +389,64 @@ def cmd_spawn_plan(
     quest_fail_retry_count: int = typer.Option(0, help="quest fail retry count"),
     as_json: bool = typer.Option(False, "--json", help="print JSON"),
 ) -> None:
-    """Build and print a spawn plan for a single template id."""
+    """Spawn one template into an empty creature pool and print the resulting pool state."""
     template_id_raw = _parse_int_auto(template)
     try:
         template_id = SpawnId(template_id_raw)
     except ValueError as exc:
         raise typer.BadParameter(f"invalid spawn template id: {template!r}") from exc
-    rng = Crand(_parse_int_auto(seed))
+    seed_value = _parse_int_auto(seed)
     spawn_pos = _parse_vec2(pos)
-    env = SpawnEnv(
+    pool, state, returned = spawn_template_into_fresh_pool(
+        template_id,
+        spawn_pos,
+        heading,
+        seed=seed_value,
         hardcore=hardcore,
         quest_fail_retry_count=quest_fail_retry_count,
     )
-    plan = build_spawn_plan(template_id, spawn_pos, heading, rng, env)
+    creatures = [(index, creature) for index, creature in enumerate(pool.entries) if creature.active]
+    spawn_slots = [(index, slot) for index, slot in enumerate(pool.spawn_slots) if slot.owner_creature >= 0]
+    effect_count = len(state.effects.iter_active())
     if as_json:
-        creatures = msgspec.to_builtins(plan.creatures)
-        spawn_slots = msgspec.to_builtins(plan.spawn_slots)
-        effects = msgspec.to_builtins(plan.effects)
         payload: dict[str, object] = {
             "template_id": int(template_id),
             "pos": [spawn_pos.x, spawn_pos.y],
             "heading": heading,
-            "seed": _parse_int_auto(seed),
+            "seed": seed_value,
             "env": {
                 "hardcore": hardcore,
                 "quest_fail_retry_count": quest_fail_retry_count,
             },
-            "primary": plan.primary,
-            "creatures": creatures,
-            "spawn_slots": spawn_slots,
-            "effects": effects,
-            "rng_state": rng.state,
+            "returned": returned,
+            "creatures": [
+                {
+                    "index": index,
+                    "type_id": int(creature.type_id),
+                    "ai_mode": int(creature.ai_mode),
+                    "flags": int(creature.flags),
+                    "pos": [creature.pos.x, creature.pos.y],
+                    "target_offset": None
+                    if creature.target_offset is None
+                    else [creature.target_offset.x, creature.target_offset.y],
+                    "heading": creature.heading,
+                    "phase_seed": creature.phase_seed,
+                    "link_index": creature.link_index,
+                    "orbit_angle": creature.orbit_angle,
+                    "orbit_radius": creature.orbit_radius,
+                    "health": creature.hp,
+                    "max_health": creature.max_hp,
+                    "move_speed": creature.move_speed,
+                    "reward_value": creature.reward_value,
+                    "size": creature.size,
+                    "contact_damage": creature.contact_damage,
+                    "tint": [creature.tint.r, creature.tint.g, creature.tint.b, creature.tint.a],
+                }
+                for index, creature in creatures
+            ],
+            "spawn_slots": [{"index": index, **msgspec.to_builtins(slot)} for index, slot in spawn_slots],
+            "effect_count": effect_count,
+            "rng_state": state.rng.state,
         }
         typer.echo(json.dumps(payload, indent=2, sort_keys=True))
         return
@@ -406,35 +454,23 @@ def cmd_spawn_plan(
     typer.echo(f"template_id=0x{int(template_id):02x} ({int(template_id)}) creature={spawn_id_label(template_id)}")
     typer.echo(
         f"pos=({spawn_pos.x:.1f},{spawn_pos.y:.1f}) "
-        f"heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}",
+        f"heading={heading:.6f} seed=0x{seed_value:08x} rng_state=0x{state.rng.state:08x}",
     )
-    typer.echo(
-        "env="
-        f"hardcore={hardcore} "
-        f"quest_fail_retry_count={quest_fail_retry_count}",
-    )
-    typer.echo(
-        f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}",
-    )
+    typer.echo(f"env=hardcore={hardcore} quest_fail_retry_count={quest_fail_retry_count}")
+    typer.echo(f"returned={returned} active={len(creatures)} slots={len(spawn_slots)} effects={effect_count}")
     typer.echo("")
     typer.echo("creatures:")
-    for idx, c in enumerate(plan.creatures):
-        primary = "*" if idx == plan.primary else " "
+    for index, c in creatures:
+        returned_mark = "*" if index == returned else " "
         typer.echo(
-            f"{primary}{idx:02d} type={c.type_id!s:14s} ai={c.ai_mode:2d} flags=0x{int(c.flags):03x} "
-            f"pos=({c.pos.x:7.1f},{c.pos.y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
-            f"slot={c.spawn_slot!s:>3s}",
+            f"{returned_mark}{index:03d} type={c.type_id.name:10s} ai={int(c.ai_mode):2d} flags=0x{int(c.flags):03x} "
+            f"pos=({c.pos.x:7.1f},{c.pos.y:7.1f}) health={c.hp:7.1f} size={c.size:5.1f} link={c.link_index}",
         )
-    if plan.spawn_slots:
+    if spawn_slots:
         typer.echo("")
         typer.echo("spawn_slots:")
-        for idx, slot in enumerate(plan.spawn_slots):
+        for index, slot in spawn_slots:
             typer.echo(
-                f"{idx:02d} owner={slot.owner_creature:02d} timer={slot.timer:.2f} count={slot.count:3d} "
+                f"{index:02d} owner={slot.owner_creature:03d} timer={slot.timer:.2f} count={slot.count:3d} "
                 f"limit={slot.limit:3d} interval={slot.interval:.3f} child=0x{slot.child_template_id:02x}",
             )
-    if plan.effects:
-        typer.echo("")
-        typer.echo("effects:")
-        for fx in plan.effects:
-            typer.echo(f"burst x={fx.pos.x:.1f} y={fx.pos.y:.1f} count={fx.count}")
