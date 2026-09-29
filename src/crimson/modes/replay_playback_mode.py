@@ -46,6 +46,7 @@ from ..ui.hud import (
     HudRenderContext,
     HudState,
     draw_hud_overlay,
+    ui_transparency,
 )
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
@@ -618,8 +619,9 @@ class ReplayPlaybackMode:
                 resources=runtime.render_resources.resources,
                 state=self._hud_state,
                 font=self._small,
+                alpha=ui_transparency(self._console.cvars["cv_uiTransparency"].value_f),
                 game_mode=mode_id,
-                small_indicators=False,
+                small_indicators=self._console.cvars["cv_uiSmallIndicators"].value_f != 0.0,
             ),
             players=players,
             bonus_hud=world.state.bonus_hud,

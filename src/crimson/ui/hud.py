@@ -63,6 +63,11 @@ HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
 
 
+def ui_transparency(cv_ui_transparency: float) -> float:
+    """`ui_render_hud`: `cv_uiTransparency` scales the HUD's transition alpha when it is within 0..1."""
+    return cv_ui_transparency if 0.0 <= cv_ui_transparency <= 1.0 else 1.0
+
+
 class HudRenderContext(msgspec.Struct, frozen=True):
     resources: RuntimeResources
     state: HudState

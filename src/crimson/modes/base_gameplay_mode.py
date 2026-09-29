@@ -57,7 +57,7 @@ from ..sim.terrain_generate import TerrainSetup, terrain_generate
 from ..sim.timing import ftol_ms_i32
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from ..ui.focus import UiFocus
-from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar
+from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar, ui_transparency
 from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record
@@ -270,11 +270,6 @@ class BaseGameplayMode:
         except ValueError:
             return GameMode.DEMO
 
-    def _ui_transparency(self) -> float:
-        """`ui_render_hud`: `cv_uiTransparency` scales the HUD's transition alpha when it is within 0..1."""
-        value = self._cvar_float("cv_uiTransparency", 1.0)
-        return value if 0.0 <= value <= 1.0 else 1.0
-
     def _draw_hud(self, *, elapsed_ms: float, quest_progress_ratio: float | None = None) -> float:
         """`hud_update_and_render`; returns the HUD's bottom edge."""
         return draw_hud_overlay(
@@ -282,7 +277,7 @@ class BaseGameplayMode:
                 resources=self.render_resources.resources,
                 state=self._hud_state,
                 font=self._small,
-                alpha=self._hud_alpha() * self._ui_transparency(),
+                alpha=self._hud_alpha() * ui_transparency(self._cvar_float("cv_uiTransparency", 1.0)),
                 game_mode=self._config_game_mode_id(),
                 small_indicators=self._hud_small_indicators(),
             ),
