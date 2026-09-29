@@ -13,7 +13,6 @@ from ..debug import debug_enabled
 from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..replay import Replay, ReplayRecorder
-from ..ui.hud import HudRenderContext, draw_hud_overlay
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
@@ -109,21 +108,7 @@ class RushMode(BaseGameplayMode):
         hud_bottom = 0.0
         if not self._game_over_active:
             self._draw_target_health_bar()
-            hud_bottom = draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    alpha=self._hud_alpha(),
-                    game_mode=self._config_game_mode_id(),
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=self._session_elapsed_ms(),
-                frame_dt_ms=self._last_dt_ms,
-            )
+            hud_bottom = self._draw_hud(elapsed_ms=self._session_elapsed_ms())
 
         if debug_enabled() and (not self._game_over_active):
             x = 18.0

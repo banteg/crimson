@@ -17,7 +17,6 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
-from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
     draw_tutorial_overlay_panels,
@@ -236,22 +235,7 @@ class TutorialMode(BaseGameplayMode):
 
         if not perk_menu_active:
             self._draw_target_health_bar()
-            draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    alpha=self._hud_alpha(),
-                    game_mode=self._config_game_mode_id(),
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._session_elapsed_ms() if self._sim_session is not None else 0.0),
-                score=int(self.player.experience),
-                frame_dt_ms=self._last_dt_ms,
-            )
+            self._draw_hud(elapsed_ms=self._session_elapsed_ms() if self._sim_session is not None else 0.0)
 
         self._draw_tutorial_prompts()
 

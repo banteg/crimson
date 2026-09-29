@@ -624,7 +624,6 @@ class ReplayPlaybackMode:
                 game_mode=mode_id,
                 small_indicators=False,
             ),
-            player=players[0],
             players=players,
             bonus_hud=world.state.bonus_hud,
             elapsed_ms=elapsed_ms,

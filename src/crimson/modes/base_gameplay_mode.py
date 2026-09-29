@@ -56,7 +56,7 @@ from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.timing import ftol_ms_i32
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
-from ..ui.hud import HudState, draw_target_health_bar
+from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar
 from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
 from .components.highscore_record_builder import build_highscore_record
@@ -250,6 +250,24 @@ class BaseGameplayMode:
             return GameMode(self.config.gameplay.mode)
         except ValueError:
             return GameMode.DEMO
+
+    def _draw_hud(self, *, elapsed_ms: float, quest_progress_ratio: float | None = None) -> float:
+        """`hud_update_and_render`; returns the HUD's bottom edge."""
+        return draw_hud_overlay(
+            HudRenderContext(
+                resources=self.render_resources.resources,
+                state=self._hud_state,
+                font=self._small,
+                alpha=self._hud_alpha(),
+                game_mode=self._config_game_mode_id(),
+                small_indicators=self._hud_small_indicators(),
+            ),
+            players=self.world.players,
+            bonus_hud=self.state.bonus_hud,
+            elapsed_ms=elapsed_ms,
+            frame_dt_ms=self._last_dt_ms,
+            quest_progress_ratio=quest_progress_ratio,
+        )
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
         creatures = self.creatures.entries

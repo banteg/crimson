@@ -20,7 +20,6 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
-from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
@@ -183,24 +182,8 @@ class SurvivalMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active):
-            hud_alpha = self._hud_alpha()
-            self._draw_target_health_bar(alpha=hud_alpha)
-            hud_bottom = draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    alpha=hud_alpha,
-                    game_mode=self._config_game_mode_id(),
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=self._session_elapsed_ms(),
-                score=self.player.experience,
-                frame_dt_ms=self._last_dt_ms,
-            )
+            self._draw_target_health_bar(alpha=self._hud_alpha())
+            hud_bottom = self._draw_hud(elapsed_ms=self._session_elapsed_ms())
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):
             # Minimal debug text.

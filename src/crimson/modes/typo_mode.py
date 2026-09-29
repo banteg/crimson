@@ -17,7 +17,6 @@ from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
-from ..ui.hud import HudRenderContext, draw_hud_overlay
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
 
@@ -195,21 +194,7 @@ class TypoShooterMode(BaseGameplayMode):
 
         if show_gameplay_ui:
             self._draw_target_health_bar()
-            draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    alpha=self._hud_alpha(),
-                    game_mode=self._config_game_mode_id(),
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._session_elapsed_ms()),
-                frame_dt_ms=self._last_dt_ms,
-            )
+            self._draw_hud(elapsed_ms=self._session_elapsed_ms())
 
         if show_gameplay_ui:
             self._draw_typing_box()
