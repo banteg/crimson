@@ -20,6 +20,7 @@ def load_records(state: GameState, request: ScoreQuery) -> list[HighScoreRecord]
         quest_stage_major=(0 if request.quest_level is None else int(request.quest_level.major)),
         quest_stage_minor=(0 if request.quest_level is None else int(request.quest_level.minor)),
         player_count=state.config.gameplay.player_count,
+        named_list=state.config.profile.named_score_list,
     )
     try:
         return read_highscore_table(

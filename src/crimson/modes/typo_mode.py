@@ -52,7 +52,10 @@ class TypoShooterMode(BaseGameplayMode):
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
             dictionary_words = tuple(load_typo_dictionary(dictionary_path))
-        highscore_names = tuple(load_typo_highscore_names(scores_path_for_mode(self._base_dir, GameMode.TYPO)))
+        scores_path = scores_path_for_mode(
+            self._base_dir, GameMode.TYPO, named_list=self.config.profile.named_score_list,
+        )
+        highscore_names = tuple(load_typo_highscore_names(scores_path))
 
         prepared = self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
         self._sim_session = prepared.session

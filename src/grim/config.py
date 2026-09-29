@@ -182,6 +182,36 @@ class CrimsonProfileConfig(msgspec.Struct):
         self.player_name = bytes(buf).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
         self.player_name_input_len = len(encoded)
 
+    @property
+    def named_score_list(self) -> str:
+        """The selected score list's name; slot 0 is the default list, stored without a name suffix."""
+        return self.saved_names[self.selected_saved_name_slot] if self.selected_saved_name_slot else ""
+
+    def add_saved_name(self, name: str) -> None:
+        """`ui_profile_menu_update`'s Add: append and select the list; a full set (8) overwrites slot 1 instead.
+
+        Native leaves the selection on the dropped eighth slot there; the port selects the overwritten slot 1.
+        Path separators are dropped since the name becomes part of a file name.
+        """
+        name = name.replace("/", "").replace("\\", "")
+        names = list(self.saved_names)
+        names[self.saved_name_count] = name
+        self.selected_saved_name_slot = self.saved_name_count
+        self.saved_name_count += 1
+        if self.saved_name_count >= SAVED_NAME_SLOT_COUNT:
+            names[1] = name
+            self.saved_name_count -= 1
+            self.selected_saved_name_slot = 1
+        self.saved_names = cast("tuple[str, str, str, str, str, str, str, str]", tuple(names))
+
+    def delete_selected_saved_name(self) -> None:
+        """`ui_profile_menu_update`'s Delete: the last list moves into the deleted slot, and the default is selected."""
+        names = list(self.saved_names)
+        self.saved_name_count -= 1
+        names[self.selected_saved_name_slot] = names[self.saved_name_count]
+        self.selected_saved_name_slot = 0
+        self.saved_names = cast("tuple[str, str, str, str, str, str, str, str]", tuple(names))
+
     def saved_name_labels(self) -> tuple[str, ...]:
         count = int(self.saved_name_count)
         if count < 1 or count > SAVED_NAME_SLOT_COUNT:

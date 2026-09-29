@@ -322,7 +322,9 @@ def scores_path_for_mode(
     quest_stage_major: int = 0,
     quest_stage_minor: int = 0,
     player_count: int = 1,
+    named_list: str = "",
 ) -> Path:
+    """`highscore_build_path`; a named score list appends its name to the file name ("survival.hiBob")."""
     root = scores_dir_for_base_dir(base_dir)
     path = _scores_path_for_mode_root(
         root=root,
@@ -331,7 +333,8 @@ def scores_path_for_mode(
         quest_stage_major=int(quest_stage_major),
         quest_stage_minor=int(quest_stage_minor),
     )
-    return _with_player_count_suffix(path, player_count=int(player_count))
+    path = _with_player_count_suffix(path, player_count=int(player_count))
+    return path.with_name(path.name + named_list) if named_list else path
 
 
 def scores_path_for_config(
@@ -341,33 +344,20 @@ def scores_path_for_config(
     quest_stage_major: int = 0,
     quest_stage_minor: int = 0,
 ) -> Path:
+    """The configured mode's table: quest stage from the arguments or the configured level, and the selected list."""
     mode = _known_game_mode(config.gameplay.mode)
-    root = scores_dir_for_base_dir(base_dir)
-    match mode:
-        case GameMode.QUESTS:
-            hardcore = config.gameplay.hardcore
-            if int(quest_stage_major) == 0 and int(quest_stage_minor) == 0:
-                level = config.gameplay.quest_level
-                if level is not None:
-                    quest_stage_major = int(level.major)
-                    quest_stage_minor = int(level.minor)
-            path = _scores_path_for_mode_root(
-                root=root,
-                game_mode_id=mode,
-                hardcore=bool(hardcore),
-                quest_stage_major=int(quest_stage_major),
-                quest_stage_minor=int(quest_stage_minor),
-            )
-        case _:
-            path = _scores_path_for_mode_root(
-                root=root,
-                game_mode_id=mode,
-                hardcore=config.gameplay.hardcore,
-                quest_stage_major=int(quest_stage_major),
-                quest_stage_minor=int(quest_stage_minor),
-            )
-
-    return _with_player_count_suffix(path, player_count=config.gameplay.player_count)
+    level = config.gameplay.quest_level
+    if mode == GameMode.QUESTS and quest_stage_major == 0 and quest_stage_minor == 0 and level is not None:
+        quest_stage_major, quest_stage_minor = level.major, level.minor
+    return scores_path_for_mode(
+        base_dir,
+        mode,
+        hardcore=config.gameplay.hardcore,
+        quest_stage_major=quest_stage_major,
+        quest_stage_minor=quest_stage_minor,
+        player_count=config.gameplay.player_count,
+        named_list=config.profile.named_score_list,
+    )
 
 
 def decode_record_payload(encoded: bytes) -> bytes:

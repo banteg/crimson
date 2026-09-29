@@ -176,6 +176,7 @@ class QuestResultsUi(msgspec.Struct):
             quest_stage_major=int(self.quest_level.major),
             quest_stage_minor=int(self.quest_level.minor),
             player_count=self.config.gameplay.player_count,
+            named_list=self.config.profile.named_score_list,
         )
 
         try:
