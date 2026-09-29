@@ -43,6 +43,8 @@ class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     quest_fail_retry_count: NonNegativeInt = 0
     detail_preset: NonNegativeInt = 5
     violence_disabled: NonNegativeInt = 0
+    # `cv_friendlyFire` at run start: player shots carry their own owner id and can hit other players.
+    friendly_fire: bool = False
     status: RunStatus = msgspec.field(default_factory=RunStatus)
     typo_dictionary_words: tuple[str, ...] = ()
     typo_highscore_names: tuple[str, ...] = ()

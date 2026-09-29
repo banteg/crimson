@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `26` |
+| `format_version` | int | `27` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -66,6 +66,7 @@ from that commit (modified or new unignored files) appends `.dirty`.
 | `quest_fail_retry_count` | int 0..2³¹−1 | Native retry scaling counter |
 | `detail_preset` | int 1..5 | Presentation detail; native presentation code consumes RNG |
 | `violence_disabled` | int 0..255 | Native config byte; likewise |
+| `friendly_fire` | bool | `cv_friendlyFire` at run start: player shots carry `-1 - player_index` and can hit other players (since v27) |
 | `status` | `RunStatus` | Save-status fields that influence the run |
 | `typo_dictionary_words` | array of str | Optional custom Typ-o dictionary: at most 2048 words of 1..15 printable ASCII characters |
 | `typo_highscore_names` | array of str | Typ-o name pool from the local score table: at most 512 names of 1..31 ASCII letters or `.` |

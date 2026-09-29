@@ -7,7 +7,7 @@
 const std = @import("std");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 26;
+pub const replay_format_version: i32 = 27;
 pub const tick_rate: i32 = 60;
 /// Every replay tick advances the simulation by this delta.
 pub const tick_dt: f32 = 1.0 / @as(f32, @floatFromInt(tick_rate));
@@ -92,6 +92,8 @@ pub const RunSpec = struct {
     quest_fail_retry_count: i32 = 0,
     detail_preset: i32 = 5,
     violence_disabled: i32 = 0,
+    /// `cv_friendlyFire` at run start: player shots carry their own owner id and can hit other players.
+    friendly_fire: bool = false,
     status: RunStatus = .{},
     typo_dictionary_words: []const []const u8 = &.{},
     typo_highscore_names: []const []const u8 = &.{},
@@ -551,7 +553,8 @@ const replay_keys = [_][]const u8{ "format_version", "game_version", "run", "res
 const run_keys = [_][]const u8{
     "game_mode_id",      "seed",          "quest_level",            "player_count",
     "hardcore",          "preserve_bugs", "quest_fail_retry_count", "detail_preset",
-    "violence_disabled", "status",        "typo_dictionary_words",  "typo_highscore_names",
+    "violence_disabled", "friendly_fire", "status",                 "typo_dictionary_words",
+    "typo_highscore_names",
 };
 const quest_level_keys = [_][]const u8{ "major", "minor" };
 const status_keys = [_][]const u8{ "quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts" };
@@ -860,6 +863,8 @@ fn readRun(r: *Reader) DecodeError!RunSpec {
     run.detail_preset = try r.intBetween(1, 5);
     try r.key("violence_disabled", base);
     run.violence_disabled = try r.intBetween(0, std.math.maxInt(u8));
+    try r.key("friendly_fire", base);
+    run.friendly_fire = try r.boolean();
 
     try r.key("status", base);
     const status_base = try r.map(&status_keys);
@@ -1140,6 +1145,8 @@ pub fn encodePayload(allocator: std.mem.Allocator, replay: Replay) ![]u8 {
     try w.int(run.detail_preset);
     try w.string("violence_disabled");
     try w.int(run.violence_disabled);
+    try w.string("friendly_fire");
+    try w.boolean(run.friendly_fire);
     try w.string("status");
     try w.map(status_keys.len);
     try w.string("quest_unlock_index");
@@ -1355,7 +1362,7 @@ test "reader rejects non-canonical encodings of an otherwise valid replay" {
     const without_preserve_bugs = try patched(payload, "\xadpreserve_bugs\xc2", "");
     defer testing.allocator.free(without_preserve_bugs);
     without_preserve_bugs[std.mem.indexOf(u8, without_preserve_bugs, "\xacgame_mode_id").? - 1] = 0x8b;
-    try expectRejected(without_preserve_bugs, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, quest_fail_retry_count, detail_preset, violence_disabled, status, typo_dictionary_words, typo_highscore_names");
+    try expectRejected(without_preserve_bugs, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, quest_fail_retry_count, detail_preset, violence_disabled, friendly_fire, status, typo_dictionary_words, typo_highscore_names");
 
     const trailing = try std.mem.concat(testing.allocator, u8, &.{ payload, "\xc0" });
     defer testing.allocator.free(trailing);
@@ -1369,7 +1376,7 @@ test "reader applies the replay validation rules" {
     defer testing.allocator.free(payload);
 
     const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
-        .{ .needle = "\xaeformat_version\x1a", .replacement = "\xaeformat_version\x19", .message = "unsupported replay format version: 25" },
+        .{ .needle = "\xaeformat_version\x1b", .replacement = "\xaeformat_version\x1a", .message = "unsupported replay format version: 26" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x00", .message = "run.game_mode_id 0 is not a replayable mode" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x03", .message = "run.quest_level must be set for quests and only for quests" },
         .{ .needle = "\xaddetail_preset\x05", .replacement = "\xaddetail_preset\x00", .message = "run.detail_preset must be in 1..5" },

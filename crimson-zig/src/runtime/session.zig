@@ -32,6 +32,7 @@ pub const SessionConfig = struct {
     tick_rate: i32,
     detail_preset: i32 = 5,
     violence_disabled: i32 = 0,
+    friendly_fire: bool = false,
     hardcore: bool = false,
     preserve_bugs: bool = false,
     quest_fail_retry_count: i32 = 0,
@@ -50,6 +51,7 @@ pub const SessionConfig = struct {
             .tick_rate = replay_codec.tick_rate,
             .detail_preset = run.detail_preset,
             .violence_disabled = run.violence_disabled,
+            .friendly_fire = run.friendly_fire,
             .hardcore = run.hardcore,
             .preserve_bugs = run.preserve_bugs,
             .quest_fail_retry_count = run.quest_fail_retry_count,
@@ -171,6 +173,7 @@ pub const DeterministicSession = struct {
         };
 
         session.state.gore_disabled = config.violence_disabled;
+        session.state.friendly_fire_enabled = config.friendly_fire;
         session.state.game_mode = config.game_mode;
         session.state.hardcore = config.hardcore;
         session.state.preserve_bugs = config.preserve_bugs;

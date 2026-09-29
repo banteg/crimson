@@ -710,6 +710,7 @@ class BaseGameplayMode:
             quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,
+            friendly_fire=self._cvar_float("cv_friendlyFire") != 0.0,
             status=RunStatus() if status is None else RunStatus.from_status_data(status),
             typo_dictionary_words=dictionary_words,
             typo_highscore_names=highscore_names,

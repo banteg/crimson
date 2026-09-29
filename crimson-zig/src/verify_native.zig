@@ -80,7 +80,7 @@ const VerifyPayload = struct {
 /// RNG makes, so ranked runs are played at full detail with violence on. They
 /// also start from a save with every quest unlock, so weapon and perk offers
 /// match. See docs/rewrite/parity/environment-rng.md.
-fn unrankedReasons(reasons: *[3][]const u8, run: replay_codec.RunSpec) []const []const u8 {
+fn unrankedReasons(reasons: *[4][]const u8, run: replay_codec.RunSpec) []const []const u8 {
     var count: usize = 0;
     if (run.detail_preset != 5) {
         reasons[count] = "detail_preset";
@@ -88,6 +88,10 @@ fn unrankedReasons(reasons: *[3][]const u8, run: replay_codec.RunSpec) []const [
     }
     if (run.violence_disabled != 0) {
         reasons[count] = "violence_disabled";
+        count += 1;
+    }
+    if (run.friendly_fire) {
+        reasons[count] = "friendly_fire";
         count += 1;
     }
     const status = run.status;
@@ -236,7 +240,7 @@ fn runVerifyWithReplayBytes(
 
     var payload_sha256: [64]u8 = undefined;
     hash.sha256HexLower(payload, &payload_sha256);
-    var reason_buf: [3][]const u8 = undefined;
+    var reason_buf: [4][]const u8 = undefined;
     const unranked = unrankedReasons(&reason_buf, replay.run);
     const payload_report: VerifyPayload = .{
         .status = status,
