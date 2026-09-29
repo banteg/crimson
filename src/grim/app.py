@@ -37,10 +37,10 @@ def _fullscreen_toggle_pressed() -> bool:
 
 
 def _next_screenshot_name(directory: Path, index: int) -> tuple[str, int]:
-    """`game_frame_update`'s F12 probe: the first `shot_%03d.bmp` not yet in `directory`, and the index after it."""
-    while (directory / f"shot_{index:03d}.bmp").exists():
+    """`game_frame_update`'s F12 probe: the first `shot_%03d.png` not yet in `directory`, and the index after it."""
+    while (directory / f"shot_{index:03d}.png").exists():
         index += 1
-    return f"shot_{index:03d}.bmp", index + 1
+    return f"shot_{index:03d}.png", index + 1
 
 
 def run_view(
