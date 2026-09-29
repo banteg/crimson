@@ -144,7 +144,6 @@
 # name: test_secondary_projectile_direct_hit_snapshot
   dict({
     'hp': 405.0,
-    'last_hit_owner_id': -100,
     'vel': list([
       5.1e-05,
       1169.999878,

@@ -42,7 +42,6 @@ from ..math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from ..owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from ..perks import PerkId
 from ..player_damage import player_take_damage
 from ..projectiles.types import ProjectileTemplateId
@@ -285,7 +284,6 @@ class CreatureState(msgspec.Struct):
     size: float = 50.0
     anim_phase: float = 0.0
     hit_flash_timer: float = 0.0
-    last_hit_owner_id: int = OWNER_LOCAL_PLAYER
     tint: RGBA = msgspec.field(default_factory=RGBA)
 
     # Rewrite-only helpers (not in native struct, but derived from spawn plans).
@@ -310,7 +308,6 @@ class CreatureDeath(msgspec.Struct, frozen=True):
     type_id: CreatureTypeId
     reward_value: float
     xp_awarded: int
-    owner_id: int
 
 
 class _TargetPlayerResolution(msgspec.Struct, frozen=True):
@@ -682,7 +679,7 @@ class CreaturePool:
             return False
 
         return creature_apply_damage(
-            step_runtime, creature_index, damage_amount, CreatureDamageType.SELF_TICK, Vec2(), creature.last_hit_owner_id,
+            step_runtime, creature_index, damage_amount, CreatureDamageType.SELF_TICK, Vec2(),
         )
 
     def _tick_corpse(
@@ -928,7 +925,7 @@ class CreaturePool:
                 # 1000.0, 1, zero): the full bullet path with heading-jitter
                 # rand, hit flash, and the lethal death-SFX roll.
                 creature_apply_damage(
-                    step_runtime, idx, ai.self_damage, CreatureDamageType.BULLET, Vec2(), creature.last_hit_owner_id,
+                    step_runtime, idx, ai.self_damage, CreatureDamageType.BULLET, Vec2(),
                 )
 
             if (float(state.bonuses.energizer) > 0.0 and float(creature.max_hp) < 500.0) or creature.plague_infected:
@@ -1122,7 +1119,7 @@ class CreaturePool:
                         sfx.append(SfxRequest(contact_sfx[roll & 1], creature.pos))
                     if PerkId.MR_MELEE in state.perks:
                         creature_apply_damage(
-                            step_runtime, idx, 25.0, CreatureDamageType.MELEE, Vec2(), player_owner_id(player.index),
+                            step_runtime, idx, 25.0, CreatureDamageType.MELEE, Vec2(),
                         )
                     if player.shield_timer <= 0.0:
                         if PerkId.TOXIC_AVENGER in state.perks:
@@ -1200,7 +1197,6 @@ class CreaturePool:
                 type_id=creature.type_id,
                 reward_value=float(creature.reward_value),
                 xp_awarded=0,
-                owner_id=creature.last_hit_owner_id,
             )
         death = self._start_death(
             int(idx),
@@ -1321,7 +1317,6 @@ class CreaturePool:
         entry.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
         entry.hit_flash_timer = 0.0
         entry.anim_phase = 0.0
-        entry.last_hit_owner_id = OWNER_LOCAL_PLAYER
 
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
@@ -1513,10 +1508,8 @@ class CreaturePool:
                 detail_preset=int(detail_preset),
             )
 
-        # Native credits every kill to player one; the rewrite credits the player who last hit it.
+        # Native credits every kill to player one; score and level-ups read only that player.
         killer = players[0]
-        if not state.preserve_bugs and 0 <= -1 - creature.last_hit_owner_id < len(players):
-            killer = players[-1 - creature.last_hit_owner_id]
 
         experience_before = killer.experience
         if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
@@ -1543,5 +1536,4 @@ class CreaturePool:
             type_id=creature.type_id,
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
-            owner_id=creature.last_hit_owner_id,
         )

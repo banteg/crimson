@@ -74,7 +74,7 @@ test "dbg verify emits complete ordered format contract" {
         \\trace_format_version=2
         \\trace_schema_version=19
         \\replay_format_version=26
-        \\checkpoint_format_version=5
+        \\checkpoint_format_version=6
         \\frida_capture_format_version=29
         \\frida_evidence_format_version=3
         \\frida_runtime_version=17.15.4

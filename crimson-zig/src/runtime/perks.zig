@@ -7,7 +7,6 @@ const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const owner_id_mod = @import("owner_id.zig");
 const particles_mod = @import("particles.zig");
 const player_runtime = @import("player.zig");
 const rng_callers = @import("../rng_caller_static.zig");
@@ -699,7 +698,6 @@ pub fn applyPyrokineticEffects(
                 creature.pos,
                 angle,
                 intensity,
-                owner_id_mod.owner_local_player,
             );
         }
         _ = terrain_fx.decals.addRandom(state, creature.pos);

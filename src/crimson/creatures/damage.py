@@ -145,7 +145,6 @@ def creature_apply_damage(
     damage: float,
     damage_type: int,
     impulse: Vec2,
-    owner_id: int,
 ) -> bool:
     """Port of `creature_apply_damage` (0x004207c0), returning whether the creature is dead.
 
@@ -157,7 +156,6 @@ def creature_apply_damage(
     perks = state.perks
     rng = state.rng
     creature = step_runtime.world.creatures.entries[creature_index]
-    creature.last_hit_owner_id = owner_id
     creature.hit_flash_timer = f32(0.2)
     damage = f32(damage)
     impulse = Vec2(f32(impulse.x), f32(impulse.y))
@@ -227,7 +225,6 @@ def creatures_apply_radius_damage(
     radius: float,
     damage: float,
     damage_type: int,
-    owner_id: int,
 ) -> None:
     """Port of `creatures_apply_radius_damage`: damage every collidable creature touching the circle."""
 
@@ -235,4 +232,4 @@ def creatures_apply_radius_damage(
         if not creature.active or not creature_lifecycle_is_collidable(creature.lifecycle_stage):
             continue
         if within_native_find_radius(origin=pos, target=creature.pos, radius=radius, target_size=creature.size):
-            creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2(), owner_id)
+            creature_apply_damage(step_runtime, creature_idx, damage, damage_type, Vec2())

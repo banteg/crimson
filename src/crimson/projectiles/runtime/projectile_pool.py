@@ -241,7 +241,7 @@ class ProjectilePool:
                         else:
                             radius, damage = x87_pc24_mul(ion_scale, 60.0), x87_pc24_mul(dt, 40.0)
                         creatures_apply_radius_damage(
-                            step_runtime, proj.pos, radius, damage, CreatureDamageType.ION, proj.owner_id,
+                            step_runtime, proj.pos, radius, damage, CreatureDamageType.ION,
                         )
                     case ProjectileTemplateId.ION_CANNON:
                         proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.7)))
@@ -251,7 +251,6 @@ class ProjectilePool:
                             x87_pc24_mul(ion_scale, 128.0),
                             x87_pc24_mul(dt, 300.0),
                             CreatureDamageType.ION,
-                            proj.owner_id,
                         )
                     case ProjectileTemplateId.GAUSS_GUN:
                         proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.1)))
@@ -457,7 +456,6 @@ class ProjectilePool:
                                 float(damage_amount),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=proj.owner_id,
                                 step_runtime=step_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))
@@ -469,7 +467,6 @@ class ProjectilePool:
                                 float(remaining),
                                 damage_type=damage_type,
                                 impulse=impulse,
-                                owner_id=proj.owner_id,
                                 step_runtime=step_runtime,
                             )
                             creature_spatial.sync_index(int(hit_idx))

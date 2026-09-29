@@ -20,7 +20,7 @@ from ..sim.world_state import WorldEvents, WorldState
 from ..weapons import WeaponId
 from .codec import zstd_pack, zstd_unpack
 
-FORMAT_VERSION = 5
+FORMAT_VERSION = 6
 DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
 MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
 MAX_CHECKPOINTS_FILE_BYTES = 257 * 1024 * 1024
@@ -94,7 +94,6 @@ class ReplayDeathLedgerEntry(msgspec.Struct, frozen=True, forbid_unknown_fields=
     type_id: I32
     reward_value: float
     xp_awarded: I32
-    owner_id: I32
 
 
 class ReplayHitSummaryEntry(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -206,7 +205,6 @@ def build_checkpoint(
                 type_id=int(death.type_id),
                 reward_value=float(death.reward_value),
                 xp_awarded=int(death.xp_awarded),
-                owner_id=int(death.owner_id),
             ),
         )
 

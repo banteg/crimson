@@ -8,7 +8,6 @@ from crimson.creatures.damage_types import CreatureDamageType
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects_atlas import EffectId
-from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PerkCounts, PlayerState
@@ -26,7 +25,7 @@ def test_damage_type1_heading_jitter_uses_rand_without_player_attacker() -> None
     before_state = rng.state
 
     world = world_with_creature(creature, rng=rng, perks=PerkCounts(), players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), 38)
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2())
 
     assert killed is False
     assert_rng_progression(
@@ -55,7 +54,7 @@ def test_damage_type1_heading_jitter_rounds_each_x87_operation() -> None:
     world = world_with_creature(creature, rng=ScriptedCrand(2932, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
     # Kill drops are out of scope; the guard skips their retry loop on the constant rolls.
     world.state.bonus_spawn_guard = True
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.09600000083446503), 0, 109.99357604980469, 1, Vec2(1.0, 1.0), player_owner_id(0))
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.09600000083446503), 0, 109.99357604980469, 1, Vec2(1.0, 1.0))
 
     assert killed
     assert creature.heading == 0.03825003653764725
@@ -75,7 +74,7 @@ def test_damage_type1_heading_jitter_skips_ping_pong_creatures() -> None:
     before_state = rng.state
 
     world = world_with_creature(creature, rng=rng, perks=PerkCounts(), players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), 38)
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2())
 
     assert killed is False
     assert_rng_progression(
@@ -97,7 +96,7 @@ def test_damage_type1_global_perks_apply_with_non_player_owner() -> None:
     perks[PerkId.BARREL_GREASER] = 1
 
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 73.5593, 1, Vec2(), 10)
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 73.5593, 1, Vec2())
 
     assert killed is True
     assert creature.hp == -131.92474365234375
@@ -116,7 +115,7 @@ def test_damage_modifier_chain_rounds_each_native_pc24_operation() -> None:
     perks[PerkId.DOCTOR] = 1
 
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 261.8189392089844, CreatureDamageType.BULLET, Vec2(), player_owner_id(0))
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 261.8189392089844, CreatureDamageType.BULLET, Vec2())
 
     assert killed is True
     assert creature.hp == -3.921539306640625
@@ -126,7 +125,7 @@ def test_damage_float_parameter_rounds_at_the_native_abi_boundary() -> None:
     creature = CreatureState(active=True, hp=554.2709350585938, size=50.0)
 
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 616.6504260335757, CreatureDamageType.EXPLOSION, Vec2(), player_owner_id(0))
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 616.6504260335757, CreatureDamageType.EXPLOSION, Vec2())
 
     assert killed is True
     assert creature.hp == -62.3795166015625
@@ -136,7 +135,7 @@ def test_nonlethal_damage_does_not_reset_non_alive_lifecycle_stage() -> None:
     creature = CreatureState(active=True, hp=100.0, lifecycle_stage=12.0, size=50.0, flags=CreatureFlags(0))
 
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2())])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 3, Vec2(), 0)
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 3, Vec2())
 
     assert killed is False
     assert_float_close(creature.lifecycle_stage, 12.0)
@@ -159,7 +158,7 @@ def test_lethal_shock_damage_spawns_armored_debris_after_death_handling() -> Non
     step_runtime = make_step_runtime(world, dt=0.016)
     before_calls = rng.calls
 
-    killed = creature_apply_damage(step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0), 0)
+    killed = creature_apply_damage(step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0))
 
     assert killed is True
     assert len(step_runtime.deaths) == 1
@@ -191,7 +190,7 @@ def test_split_children_inherit_only_initial_damage_impulse() -> None:
     world.state.bonus_spawn_guard = True
 
     killed = creature_apply_damage(
-        make_step_runtime(world, dt=0.016), 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0), player_owner_id(0),
+        make_step_runtime(world, dt=0.016), 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(1.0, 2.0),
     )
 
     assert killed
@@ -217,7 +216,7 @@ def test_lethal_death_sfx_rand_draws_after_death_handling() -> None:
     step_runtime = make_step_runtime(world, dt=0.016)
     before_calls = rng.calls
 
-    killed = creature_apply_damage(step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(), 0)
+    killed = creature_apply_damage(step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2())
 
     assert killed is True
     assert len(step_runtime.deaths) == 1
@@ -265,7 +264,7 @@ def test_lethal_branch_gates_on_entry_health_not_lifecycle() -> None:
     step_runtime = make_step_runtime(world, dt=0.016)
 
     killed = creature_apply_damage(
-        step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(), OWNER_LOCAL_PLAYER,
+        step_runtime, 0, 10.0, CreatureDamageType.EXPLOSION, Vec2(),
     )
 
     assert killed is True

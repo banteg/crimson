@@ -46,7 +46,6 @@ def _step_rocket_into(creature: CreatureState) -> GameplayState:
             pos=Vec2(),
             angle=0.0,
             type_id=SecondaryProjectileTypeId.ROCKET,
-            owner_id=OWNER_LOCAL_PLAYER,
         ),
     )
     place_creatures(world, [creature])

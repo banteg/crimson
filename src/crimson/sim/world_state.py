@@ -148,12 +148,6 @@ class WorldStepRuntime(msgspec.Struct):
             return
         self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
 
-    def kill_creature_no_corpse(self, creature_index: int, owner_id: int) -> None:
-        creature = self.world.creatures.entries[creature_index]
-        if creature.active:
-            creature.last_hit_owner_id = owner_id
-        self.handle_creature_death(creature_index, keep_corpse=False)
-
     def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
         idx = int(creature_index)
         if not (0 <= idx < len(self.world.creatures.entries)):

@@ -233,7 +233,6 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
             1000.0,
             CreatureDamageType.BULLET,
             Vec2(),
-            player_owner_id(0),
         )
         return []
 
@@ -309,7 +308,6 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
             angle=0.0,
             type_id=SecondaryProjectileTypeId.DETONATION,
             time_to_live=1.0,
-            owner_id=player_owner_id(0),
         ),
     )
 
@@ -359,7 +357,6 @@ def test_bubblegun_expiry_reenters_active_zero_hp_death_and_owns_sfx(mocker) -> 
     particle.intensity = 0.81
     particle.style_id = ParticleStyleId.BUBBLEGUN
     particle.target_id = 0
-    particle.owner_id = player_owner_id(0)
     before_calls = rng.calls
 
     events = world.step(
@@ -410,7 +407,6 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
             1000.0,
             CreatureDamageType.BULLET,
             Vec2(),
-            player_owner_id(0),
         )
         return []
 
@@ -447,7 +443,6 @@ def test_plague_kill_death_event_has_no_resolved_death_sfx(mocker) -> None:
         type_id=CreatureTypeId.ALIEN,
         reward_value=0.0,
         xp_awarded=0,
-        owner_id=player_owner_id(0),
     )
 
     def _fake_update(step_runtime: WorldStepRuntime) -> None:
@@ -505,7 +500,6 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
             1000.0,
             CreatureDamageType.BULLET,
             Vec2(),
-            player_owner_id(0),
         )
         return []
 
@@ -552,7 +546,6 @@ def test_world_step_uses_resolved_death_sfx_without_extra_rng(mocker) -> None:
             type_id=CreatureTypeId.ALIEN,
             reward_value=0.0,
             xp_awarded=0,
-            owner_id=player_owner_id(0),
         )
         for idx in range(7)
     )
@@ -701,7 +694,6 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
             pos=Vec2(100.0, 100.0),
             angle=0.0,
             type_id=SecondaryProjectileTypeId.ROCKET,
-            owner_id=player_owner_id(0),
         ),
     )
 

@@ -28,7 +28,7 @@ def test_dbg_verify_reports_complete_current_format_matrix() -> None:
     assert "trace_format_version=2" in result.output
     assert "trace_schema_version=19" in result.output
     assert "replay_format_version=26" in result.output
-    assert "checkpoint_format_version=5" in result.output
+    assert "checkpoint_format_version=6" in result.output
     assert "frida_capture_format_version=29" in result.output
     assert "frida_evidence_format_version=3" in result.output
     assert "frida_runtime_version=17.15.4" in result.output

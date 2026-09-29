@@ -13,7 +13,6 @@ from crimson.effects import (
 )
 from crimson.effects_atlas import effect_src_rect
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
-from crimson.owner_id import player_owner_id
 from crimson.perks import PerkId
 from crimson.rng_caller_static import RngCallerStatic
 from grim.color import RGBA
@@ -330,7 +329,6 @@ def test_particle_hit_deflects_rescales_spawns_fx_and_pushes_creature() -> None:
         pos=Vec2(),
         angle=0.0,
         intensity=1.0,
-        owner_id=player_owner_id(0),
         rng=rng,
     )
     particle = pool.entries[particle_id]
@@ -409,18 +407,17 @@ def test_particle_pool_tags_style_specific_jitter_callers() -> None:
     ]
 
 
-def test_particle_hit_applies_owner_fire_damage() -> None:
+def test_particle_hit_applies_fire_damage() -> None:
     world = make_world()
     world.state.perks[int(PerkId.PYROMANIAC)] = 1
     creatures = place_creatures(world, [make_creature_state(pos=Vec2())])
     pool = ParticlePool()
-    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, owner_id=player_owner_id(0), rng=world.state.rng)
+    pool.spawn_particle(pos=Vec2(), angle=0.0, intensity=1.0, rng=world.state.rng)
 
     pool.update(0.016, step_runtime=make_step_runtime(world, dt=0.016))
 
     # intensity (1 - 0.016 * 0.9) * 10 fire damage, scaled x1.5 by Pyromaniac.
     assert_float_close(creatures[0].hp, f32(85.216))
-    assert creatures[0].last_hit_owner_id == player_owner_id(0)
 
 
 def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:

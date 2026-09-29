@@ -23,7 +23,7 @@ from ..math_parity import (
     x87_pc24_mul,
     x87_pc24_sub,
 )
-from ..owner_id import player_owner_id, player_projectile_owner_id
+from ..owner_id import player_projectile_owner_id
 from ..perks import PerkId
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
@@ -112,7 +112,6 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
                 pos=self.muzzle,
                 angle=angle,
                 type_id=type_id,
-                owner_id=self.owner_id,
                 target_hint=target_hint,
                 creatures=creatures,
                 preserve_bugs=bool(self.state.preserve_bugs),
@@ -265,8 +264,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     )
 
     rng = state.rng
-    # Flame and bubble particles credit their kills to the shooter (native particles carry no owner).
-    particle_owner_id = player_owner_id(player.index)
     shot = _ShotSpawner(
         state=state,
         players=ctx.step_runtime.world.players,
@@ -335,7 +332,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
-                    owner_id=particle_owner_id,
                     rng=state.rng,
                 )
                 ammo_cost = f32(0.1)
@@ -344,7 +340,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
-                    owner_id=particle_owner_id,
                     rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.HR_FLAMER
@@ -354,7 +349,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
-                    owner_id=particle_owner_id,
                     rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.BLOW_TORCH
@@ -457,7 +451,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 state.particles.spawn_particle_slow(
                     pos=muzzle,
                     angle=x87_pc24_sub(shot_angle, NATIVE_HALF_PI),
-                    owner_id=particle_owner_id,
                     rng=state.rng,
                 )
                 ammo_cost = f32(0.15)

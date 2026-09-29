@@ -532,7 +532,6 @@ pub const ProjectilePool = struct {
                             narrowF32(damage_amount),
                             .bullet,
                             impulse,
-                            proj.owner_id,
                             narrowF32(dt),
                             narrowF32(world_size),
                         );
@@ -549,7 +548,6 @@ pub const ProjectilePool = struct {
                             remaining,
                             .bullet,
                             impulse,
-                            proj.owner_id,
                             narrowF32(dt),
                             narrowF32(world_size),
                         );
@@ -773,7 +771,6 @@ fn applyIonLingerDamage(
                 narrowF32(damage),
                 .ion,
                 .{},
-                proj.owner_id,
                 dt,
                 world_size,
             );

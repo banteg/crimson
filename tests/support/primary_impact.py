@@ -76,9 +76,9 @@ def observe(case):
         splatters.append([[bits(kwargs["pos"].x), bits(kwargs["pos"].y)], bits(kwargs["angle"]), bits(kwargs["age"])])
         return spawn_blood(self, **kwargs)
 
-    def record_damage(step_runtime, creature_index, damage, damage_type, impulse, owner):
+    def record_damage(step_runtime, creature_index, damage, damage_type, impulse):
         damage_calls.append([creature_index, bits(damage), damage_type, [bits(impulse.x), bits(impulse.y)]])
-        return creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner)
+        return creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse)
 
     with (
         patch.object(FxQueue, "add_random", record_random),

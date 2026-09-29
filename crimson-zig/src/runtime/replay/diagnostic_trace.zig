@@ -428,7 +428,8 @@ fn collectSecondaryProjectileSamples(
             .vel = projectile.vel,
             .speed = projectile.speed,
             .trail_timer = projectile.trail_timer,
-            .owner_id = projectile.owner_id,
+            // Native secondaries carry no owner; the capture reports -100 for them too.
+            .owner_id = owner_id_mod.owner_local_player,
             .target_id = projectile.target_id,
         });
     }
@@ -498,7 +499,7 @@ test "entity samples retain allocation generations across unobserved reuse" {
         for (&projectiles.entries) |*entry| entry.active = true;
         for (&secondary.entries) |*entry| entry.active = true;
         const projectile = projectiles.spawn(.{}, 0, 1, owner_id_mod.owner_local_player, 0);
-        const rocket = secondary.spawn(.{}, 0, .rocket, owner_id_mod.owner_local_player, 2, null, null);
+        const rocket = secondary.spawn(.{}, 0, .rocket, 2, null, null);
         _ = bonuses.spawnAt(.{}, .points, -1, &state, 1024);
         const cs = try collectCreatureSamples(allocator, &creatures);
         defer allocator.free(cs);

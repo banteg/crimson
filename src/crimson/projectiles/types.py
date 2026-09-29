@@ -6,8 +6,6 @@ import msgspec
 
 from grim.geom import Vec2
 
-from ..owner_id import OWNER_LOCAL_PLAYER
-
 MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
@@ -86,7 +84,6 @@ class SecondaryProjectile(msgspec.Struct):
     detonation_t: float = 0.0
     detonation_scale: float = 1.0
     type_id: SecondaryProjectileTypeId = SecondaryProjectileTypeId.NONE
-    owner_id: int = OWNER_LOCAL_PLAYER
     trail_timer: float = 0.0
     target_id: int = -1
 

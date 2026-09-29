@@ -1543,19 +1543,6 @@ def test_player_fire_weapon_uses_native_muzzle_arithmetic() -> None:
     assert muzzle == Vec2(152.47727966308594, 941.5100708007812)
 
 
-def test_player_fire_weapon_secondary_owner_uses_native_friendly_fire_encoding() -> None:
-    world = make_world()
-    state = world.state
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0))
-    world.players[:] = [player]
-    weapon_assign_player(player, WeaponId.SEEKER_ROCKETS, state=state)
-
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.0)
-
-    projectile = state.secondary_projectiles.iter_active()[0]
-    assert projectile.owner_id == -100
-
-
 @pytest.mark.parametrize(
     ("weapon_id", "pellet_count", "jitter_caller", "speed_caller"),
     [

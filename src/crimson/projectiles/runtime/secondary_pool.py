@@ -26,7 +26,6 @@ from ...math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from ...owner_id import OWNER_LOCAL_PLAYER
 from ...rng_caller_static import RngCallerStatic
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
@@ -67,7 +66,6 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
     pos: Vec2
     angle: float
     type_id: SecondaryProjectileTypeId
-    owner_id: int = OWNER_LOCAL_PLAYER
     time_to_live: float = 2.0
     target_hint: Vec2 | None = None
     creatures: Sequence[CreatureState] | None = None
@@ -139,7 +137,6 @@ def _step_detonation(
                 damage,
                 damage_type=CreatureDamageType.EXPLOSION,
                 step_runtime=step_runtime,
-                owner_id=entry.owner_id,
                 impulse=impulse,
             )
             creature_spatial.sync_index(int(creature_idx))
@@ -293,7 +290,6 @@ class SecondaryProjectilePool:
         pos = Vec2(f32(spec.pos.x), f32(spec.pos.y))
         angle = f32(spec.angle)
         type_id = SecondaryProjectileTypeId(spec.type_id)
-        owner = spec.owner_id
         time_to_live = float(spec.time_to_live)
         target_hint = spec.target_hint
         creatures = spec.creatures
@@ -313,7 +309,6 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = type_id
         entry.pos = pos
-        entry.owner_id = owner
         entry.trail_timer = 0.0
         entry.vel = Vec2()
         entry.detonation_t = 0.0
@@ -366,7 +361,6 @@ class SecondaryProjectilePool:
             creature_index: int,
             damage: float,
             *,
-            owner_id: int,
             impulse: Vec2 = Vec2(),
         ) -> None:
             _apply_damage_to_creature(
@@ -374,7 +368,6 @@ class SecondaryProjectilePool:
                 float(damage),
                 damage_type=CreatureDamageType.EXPLOSION,
                 impulse=impulse,
-                owner_id=owner_id,
                 step_runtime=step_runtime,
             )
 
@@ -468,7 +461,6 @@ class SecondaryProjectilePool:
                 _apply_secondary_damage(
                     hit_idx,
                     damage,
-                    owner_id=entry.owner_id,
                     impulse=impulse,
                 )
                 creature_spatial.sync_index(int(hit_idx))

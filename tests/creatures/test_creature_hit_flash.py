@@ -6,7 +6,6 @@ from pathlib import Path
 
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags
-from crimson.owner_id import player_owner_id
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -62,5 +61,5 @@ def test_damage_hit_flash_matches_native_witnesses() -> None:
         )
         creature.hit_flash_timer = row["hit_flash"]
         world = world_with_creature(creature, rng=Crand(case["rng_seed"]), perks=PerkCounts(), players=[PlayerState(index=0, pos=Vec2(), health=100)] if case["players"] else [])
-        creature_apply_damage(make_step_runtime(world, dt=case["dt"]), 0, case["damage"], case["damage_type"], Vec2(), player_owner_id(0))
+        creature_apply_damage(make_step_runtime(world, dt=case["dt"]), 0, case["damage"], case["damage_type"], Vec2())
         assert bits(creature.hit_flash_timer) == witness["timer_bits"], case["name"]

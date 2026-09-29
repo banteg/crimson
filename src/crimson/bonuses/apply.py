@@ -18,7 +18,7 @@ from ..math_parity import (
     x87_pc24_sqrt,
     x87_pc24_sub,
 )
-from ..owner_id import OWNER_LOCAL_PLAYER, player_owner_id, player_projectile_owner_id
+from ..owner_id import OWNER_LOCAL_PLAYER, player_projectile_owner_id
 from ..perks import PerkId
 from ..projectiles.runtime.collision import creature_find_nearest_alive
 from ..projectiles.types import ProjectileTemplateId
@@ -242,7 +242,6 @@ def bonus_apply(
                         x87_pc24_mul(damage_base, 5.0),
                         CreatureDamageType.EXPLOSION,
                         Vec2(),
-                        player_owner_id(player.index),
                     )
             state.bonus_spawn_guard = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, origin))

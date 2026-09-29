@@ -479,7 +479,7 @@ test "corrected shock-chain retarget has no fallback target" {
     );
 }
 
-test "creature death xp source follows bug mode" {
+test "creature deaths credit player one in both bug modes" {
     for ([_]bool{ true, false }) |preserve_bugs| {
         var state = cz.state.GameplayState.init(2);
         state.preserve_bugs = preserve_bugs;
@@ -518,20 +518,13 @@ test "creature death xp source follows bug mode" {
             20.0,
             .bullet,
             .{},
-            cz.owner_id.playerOwnerId(1),
             1.0 / 60.0,
             1024.0,
         );
 
-        if (preserve_bugs) {
-            try std.testing.expectEqual(@as(i32, 13), gained);
-            try std.testing.expectEqual(@as(i32, 13), players[0].experience);
-            try std.testing.expectEqual(@as(i32, 0), players[1].experience);
-        } else {
-            try std.testing.expectEqual(@as(i32, 10), gained);
-            try std.testing.expectEqual(@as(i32, 0), players[0].experience);
-            try std.testing.expectEqual(@as(i32, 10), players[1].experience);
-        }
+        try std.testing.expectEqual(@as(i32, 13), gained);
+        try std.testing.expectEqual(@as(i32, 13), players[0].experience);
+        try std.testing.expectEqual(@as(i32, 0), players[1].experience);
     }
 }
 

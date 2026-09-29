@@ -26,7 +26,6 @@ from crimson.creatures.spawn import (
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
-from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
@@ -1238,19 +1237,9 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert stub_rand._idx == 67
 
 
-@pytest.mark.parametrize(
-    ("preserve_bugs", "expected_experience"),
-    [
-        (True, (13, 0)),
-        (False, (0, 13)),
-    ],
-    ids=["native-player-zero", "corrected-last-hit-owner"],
-)
-def test_death_award_player_source_policy(
-    preserve_bugs: bool,
-    expected_experience: tuple[int, int],
-) -> None:
-    state = GameplayState(preserve_bugs=preserve_bugs)
+def test_every_kill_credits_player_one() -> None:
+    # Native `creature_handle_death` adds the XP to player one, whoever landed the hit.
+    state = GameplayState()
     state.bonus_spawn_guard = True
     players = [
         PlayerState(index=0, pos=Vec2()),
@@ -1261,7 +1250,6 @@ def test_death_award_player_source_policy(
     pool.entries[0].active = True
     pool.entries[0].hp = 0.0
     pool.entries[0].reward_value = 10.0
-    pool.entries[0].last_hit_owner_id = player_owner_id(1)
 
     death = pool.handle_death(
         0,
@@ -1271,8 +1259,8 @@ def test_death_award_player_source_policy(
         fx_queue=None,
     )
 
-    assert death.xp_awarded == max(expected_experience)
-    assert (players[0].experience, players[1].experience) == expected_experience
+    assert death.xp_awarded == 13
+    assert (players[0].experience, players[1].experience) == (13, 0)
 
 
 def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(mocker) -> None:
@@ -1619,7 +1607,6 @@ def test_spawn_inits_resets_native_spawn_state_fields() -> None:
     assert_float_close(entry.collision_timer, 0.0)
     assert_float_close(entry.hit_flash_timer, 0.0)
     assert_float_close(entry.anim_phase, 0.0)
-    assert entry.last_hit_owner_id == OWNER_LOCAL_PLAYER
 
 
 def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:

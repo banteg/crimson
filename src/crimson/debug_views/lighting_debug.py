@@ -2140,7 +2140,6 @@ class LightingDebugView:
                     pos=impact,
                     angle=float(heading),
                     type_id=SecondaryProjectileTypeId.DETONATION,
-                    owner_id=OWNER_LOCAL_PLAYER,
                     time_to_live=float(profile.secondary_ttl),
                 ),
             )
@@ -2174,7 +2173,6 @@ class LightingDebugView:
                         pos=muzzle_pos,
                         angle=angle,
                         type_id=profile.secondary_type_id,
-                        owner_id=OWNER_LOCAL_PLAYER,
                         time_to_live=float(profile.secondary_ttl),
                         creatures=self._runtime.world.creatures.entries,
                         target_hint=player.aim,

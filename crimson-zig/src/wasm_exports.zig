@@ -932,7 +932,6 @@ fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![
         type_id: i32,
         reward_value: f64,
         xp_awarded: i32,
-        owner_id: i32,
     };
     const HitSummaryEntry = struct {
         type_id: i32,
@@ -1024,7 +1023,7 @@ fn buildTestCheckpointsPayload(allocator: std.mem.Allocator, tick_index: i32) ![
         },
     }};
     const payload: Payload = .{
-        .version = 5,
+        .version = checkpoint_diff_native.checkpoints_format_version,
         .sample_rate = 1,
         .checkpoints = checkpoints[0..],
     };

@@ -6,7 +6,6 @@ const bonus_runtime = @import("bonuses.zig");
 const creature_lifecycle = @import("lifecycle.zig").CreatureLifecycle;
 const creatures_mod = @import("creatures.zig");
 const effects_mod = @import("effects.zig");
-const owner_id_mod = @import("owner_id.zig");
 const rng_callers = @import("../rng_caller_static.zig");
 const runtime_helpers = @import("helpers.zig");
 const spawn_mod = @import("spawn.zig");
@@ -35,7 +34,6 @@ pub const SecondaryProjectile = struct {
     detonation_t: f32 = 0.0,
     detonation_scale: f32 = 1.0,
     type_id: SecondaryProjectileTypeId = .none,
-    owner_id: i32 = owner_id_mod.owner_local_player,
     trail_timer: f32 = 0.0,
     target_id: i32 = -1,
     target_hint_active: bool = false,
@@ -54,7 +52,6 @@ pub const SecondaryProjectilePool = struct {
         pos: state_mod.Vec2,
         angle: f32,
         type_id: SecondaryProjectileTypeId,
-        owner_id: i32,
         time_to_live: f32,
         target_hint: ?state_mod.Vec2,
         creatures: ?*const creatures_mod.CreaturePool,
@@ -81,7 +78,6 @@ pub const SecondaryProjectilePool = struct {
             .detonation_t = 0.0,
             .detonation_scale = 1.0,
             .type_id = type_id,
-            .owner_id = owner_id,
             .trail_timer = 0.0,
             .target_id = -1,
             .target_hint_active = false,
@@ -220,7 +216,6 @@ pub const SecondaryProjectilePool = struct {
                         damage,
                         .explosion,
                         impulse,
-                        entry.owner_id,
                         dt_f32,
                         world_size,
                     );
@@ -407,7 +402,6 @@ pub const SecondaryProjectilePool = struct {
                         .x = native_math.pc24Mul(inv_dt, entry.vel.x),
                         .y = native_math.pc24Mul(inv_dt, entry.vel.y),
                     },
-                    entry.owner_id,
                     dt_f32,
                     world_size,
                 );
@@ -569,7 +563,6 @@ test "homing rocket spawn preserves native trig store order" {
         .{ .x = 152.47727966308594, .y = 941.5100708007812 },
         -4.161045551300049,
         .homing_rocket,
-        owner_id_mod.owner_local_player,
         2.0,
         null,
         null,
@@ -621,7 +614,6 @@ test "secondary rocket hit picks the tune after the pre-hit decals and before le
         .pos = .{ .x = 100.0, .y = 100.0 },
         .vel = .{},
         .type_id = .rocket,
-        .owner_id = owner_id_mod.owner_local_player,
     };
 
     _ = pool.updatePulseGunWithEffects(
@@ -688,7 +680,6 @@ test "secondary detonation damages positive-health corpses at any lifecycle" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .detonation_scale = 1.0,
         .type_id = .detonation,
-        .owner_id = owner_id_mod.owner_local_player,
     };
 
     _ = pool.updatePulseGunWithEffects(
@@ -736,7 +727,6 @@ test "secondary detonation death keeps native decals during freeze" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .detonation_scale = 1.0,
         .type_id = .detonation,
-        .owner_id = owner_id_mod.owner_local_player,
     };
 
     _ = pool.updatePulseGunWithEffects(
@@ -801,7 +791,6 @@ test "rocket minigun freeze hit preserves subtype callers and target position" {
         .pos = .{ .x = 100.0, .y = 100.0 },
         .vel = .{},
         .type_id = .rocket_minigun,
-        .owner_id = owner_id_mod.owner_local_player,
     };
 
     _ = pool.updatePulseGunWithEffects(

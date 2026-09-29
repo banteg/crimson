@@ -657,8 +657,6 @@ fn tryFireWeaponWithGate(
     // the cvar enabled, primary player shots can hit other players.
     const projectile_owner_id = owner_id_mod.playerProjectileOwnerId(state.friendly_fire_enabled, player.index);
     const uses_player_projectile_path = owner_id_mod.projectileSpawnUsesPlayerPath(projectile_owner_id, state.preserve_bugs);
-    // Flame and bubble particles credit their kills to the shooter (native particles carry no owner).
-    const particle_owner_id = owner_id_mod.playerOwnerId(player.index);
     const projectile_spawn_override = uses_player_projectile_path and
         !state.bonus_spawn_guard and
         !is_fire_bullets and
@@ -783,7 +781,6 @@ fn tryFireWeaponWithGate(
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
-                    particle_owner_id,
                 );
                 counts_accuracy_shots = false;
                 ammo_cost = 0.1;
@@ -794,7 +791,6 @@ fn tryFireWeaponWithGate(
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
-                    particle_owner_id,
                 );
                 particles.entries[particle].style_id = .hr_flamer;
                 counts_accuracy_shots = false;
@@ -806,7 +802,6 @@ fn tryFireWeaponWithGate(
                     muzzle,
                     native_math.pc24Sub(aim_heading, native_math.native_half_pi),
                     1.0,
-                    particle_owner_id,
                 );
                 particles.entries[particle].style_id = .blow_torch;
                 counts_accuracy_shots = false;
@@ -918,7 +913,6 @@ fn tryFireWeaponWithGate(
                     state,
                     muzzle,
                     native_math.pc24Sub(shot_angle, native_math.native_half_pi),
-                    particle_owner_id,
                 );
                 counts_accuracy_shots = false;
                 ammo_cost = 0.15;
@@ -1235,7 +1229,7 @@ const ShotSpawner = struct {
         target_hint: ?state_mod.Vec2,
         creatures: ?*const creatures_mod.CreaturePool,
     ) void {
-        _ = self.secondary_projectiles.spawn(self.muzzle, angle, type_id, self.owner_id, 2.0, target_hint, creatures);
+        _ = self.secondary_projectiles.spawn(self.muzzle, angle, type_id, 2.0, target_hint, creatures);
     }
 
     fn muzzleSprite(self: *ShotSpawner, speed: f32, scale: f32, alpha: f32) void {

@@ -22,7 +22,7 @@ def test_ion_gun_master_increases_ion_damage() -> None:
     perks[PerkId.ION_GUN_MASTER] = 1
 
     world = world_with_creature(creature, rng=Crand(0x1234), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 7, Vec2(), OWNER_LOCAL_PLAYER)
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 7, Vec2())
 
     assert killed is False
     assert_float_close(creature.hp, 88.0)

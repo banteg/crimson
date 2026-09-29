@@ -23,7 +23,7 @@ def test_barrel_greaser_increases_bullet_damage() -> None:
     perks[PerkId.BARREL_GREASER] = 1
 
     world = world_with_creature(creature, rng=Crand(0x1234), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2(), OWNER_LOCAL_PLAYER)
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 1, Vec2())
 
     assert killed is False
     assert_float_close(creature.hp, 86.0)

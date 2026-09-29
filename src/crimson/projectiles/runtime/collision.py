@@ -77,12 +77,11 @@ def _apply_damage_to_creature(
     *,
     damage_type: int,
     impulse: Vec2,
-    owner_id: int,
     step_runtime: WorldStepRuntime,
 ) -> None:
     if damage <= 0.0 or not step_runtime.world.creatures.entries[creature_index].active:
         return
-    creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner_id)
+    creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse)
 
 
 __all__ = [

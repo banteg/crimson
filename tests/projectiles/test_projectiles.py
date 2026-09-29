@@ -503,7 +503,6 @@ def test_secondary_projectile_direct_hit_snapshot(snapshot: SnapshotAssertion) -
         {
             "hp": round(float(creature.hp), 6),
             "vel": _normalize_vec2(creature.vel),
-            "last_hit_owner_id": creature.last_hit_owner_id,
         },
     )
 

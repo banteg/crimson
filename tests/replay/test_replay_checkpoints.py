@@ -11,7 +11,6 @@ from crimson.bonuses.ids import BonusId
 from crimson.creatures.runtime import CreatureDeath
 from crimson.creatures.spawn_ids import CreatureTypeId
 from crimson.game_modes import GameMode
-from crimson.owner_id import player_owner_id
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId
 from crimson.replay.checkpoints import (
@@ -90,7 +89,6 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
                 type_id=CreatureTypeId.ZOMBIE,
                 reward_value=75.0,
                 xp_awarded=10,
-                owner_id=player_owner_id(0),
             ),
         ],
         events=WorldEvents(
@@ -125,7 +123,6 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
     checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[ckpt])
     decoded = load_checkpoints(dump_checkpoints(checkpoints))
     assert decoded == checkpoints
-    assert decoded.checkpoints[0].deaths[0].owner_id == -1
     assert decoded.checkpoints[0].events.hit_count == 3
     assert len(decoded.checkpoints[0].events.hit_head) == 2
     assert decoded.checkpoints[0].events.hit_head[0].type_id == int(ProjectileTemplateId.PISTOL)
@@ -345,7 +342,6 @@ def test_load_checkpoints_rejects_integer_tokens_for_f32_fields(
                 type_id=CreatureTypeId.ZOMBIE,
                 reward_value=1.0,
                 xp_awarded=1,
-                owner_id=player_owner_id(0),
             ),
         ],
         events=WorldEvents(

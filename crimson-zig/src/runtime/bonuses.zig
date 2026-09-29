@@ -570,7 +570,6 @@ fn applyBonus(
             state.camera_shake_timer = 0.2;
 
             state.bonus_spawn_guard = true;
-            const damage_owner_id = owner_id_mod.playerOwnerId(player.index);
             for (step.creatures.entries, 0..) |creature, idx| {
                 // Corpses take the blast too, which shrinks them faster.
                 if (!creature.active) continue;
@@ -592,7 +591,6 @@ fn applyBonus(
                     native_math.pc24Mul(damage_base, @as(f32, 5.0)),
                     .explosion,
                     .{},
-                    damage_owner_id,
                     step.dt,
                     step.world_size,
                 );
