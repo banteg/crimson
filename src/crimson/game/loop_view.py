@@ -123,6 +123,7 @@ class GameLoopView:
         self._apply_gamepad_profiles()
         self._tick_statistics_playtime(dt)
 
+        self.state.focus.begin_frame(int(self.state.frame_dt * 1000.0))
         active = self.state.screens.active
         active.update(dt)
         action = active.take_action()

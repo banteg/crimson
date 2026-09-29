@@ -15,6 +15,7 @@ from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
 from ..screens.stack import ScreenStack
 from ..screens.ui_timeline import UiTimeline
+from ..ui.focus import UiFocus
 
 
 def _default_rtx_render_mode() -> RtxRenderMode:
@@ -114,6 +115,8 @@ class GameState(msgspec.Struct):
     # Native `frame_dt` as the menus see it (clamped to 0.1s), set once per frame by the loop.
     frame_dt: float = 0.0
     ui: UiTimeline = msgspec.field(default_factory=UiTimeline)
+    # The one keyboard focus every menu widget registers with; the loop starts its frame.
+    focus: UiFocus = msgspec.field(default_factory=UiFocus)
 
     @property
     def pause_background(self) -> PauseBackground | None:
