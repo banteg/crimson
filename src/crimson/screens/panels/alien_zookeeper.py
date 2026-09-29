@@ -300,7 +300,7 @@ class AlienZooKeeperView:
         self._fill_empty_cells()
 
         interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
+        if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.STATISTICS)
@@ -320,6 +320,7 @@ class AlienZooKeeperView:
         if button_update(
             resources,
             self._reset_button,
+            focus=self.state.focus,
             pos=layout.reset_pos,
             dt_ms=dt_ms_f,
             mouse=mouse,
@@ -333,6 +334,7 @@ class AlienZooKeeperView:
         if button_update(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=layout.back_pos,
             dt_ms=dt_ms_f,
             mouse=mouse,
@@ -443,12 +445,14 @@ class AlienZooKeeperView:
         button_draw(
             resources,
             self._reset_button,
+            focus=self.state.focus,
             pos=layout.reset_pos,
         )
 
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=layout.back_pos,
         )
 

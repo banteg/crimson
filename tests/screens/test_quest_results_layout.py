@@ -175,12 +175,15 @@ def test_score_write_failure_stays_on_name_entry_and_can_retry(tmp_path: Path, a
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
     played: list[SfxId] = []
 
+    # The game loop starts each frame's focus, sampling Enter.
+    ui.focus.begin_frame(0)
     ui.update(0.0, play_sfx=played.append, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.phase == 1
     assert not ui._saved
     assert ui.save_error is not None
 
     scores_path.rmdir()
+    ui.focus.begin_frame(0)
     ui.update(0.0, play_sfx=played.append, rng=Crand(0), mouse=rl.Vector2(0.0, 0.0))
     assert ui.phase == 2
     assert ui._saved

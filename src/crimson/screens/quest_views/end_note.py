@@ -79,7 +79,7 @@ class EndNoteView:
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
         enabled = self.state.ui.opened
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if self.state.focus.escape and enabled:
             self._begin_close_transition(Route.MENU)
             return
 
@@ -96,6 +96,7 @@ class EndNoteView:
         if button_update(
             resources,
             self._survival_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -109,6 +110,7 @@ class EndNoteView:
         if button_update(
             resources,
             self._rush_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -122,6 +124,7 @@ class EndNoteView:
         if button_update(
             resources,
             self._typo_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -135,6 +138,7 @@ class EndNoteView:
         if button_update(
             resources,
             self._main_menu_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -205,13 +209,13 @@ class EndNoteView:
         draw_small_text(font, "Good luck with your battles, trooper!", body_pos, body_color)
 
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET, END_NOTE_BUTTON_Y_OFFSET)
-        button_draw(resources, self._survival_button, pos=button_pos)
+        button_draw(resources, self._survival_button, focus=self.state.focus, pos=button_pos)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        button_draw(resources, self._rush_button, pos=button_pos)
+        button_draw(resources, self._rush_button, focus=self.state.focus, pos=button_pos)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        button_draw(resources, self._typo_button, pos=button_pos)
+        button_draw(resources, self._typo_button, focus=self.state.focus, pos=button_pos)
         button_pos = button_pos.offset(dy=END_NOTE_BUTTON_STEP_Y)
-        button_draw(resources, self._main_menu_button, pos=button_pos)
+        button_draw(resources, self._main_menu_button, focus=self.state.focus, pos=button_pos)
 
         ui_cursor_render(resources, dt=self.state.frame_dt)
 

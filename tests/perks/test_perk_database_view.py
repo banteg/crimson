@@ -8,7 +8,7 @@ from crimson.screens.panels.databases import UnlockedPerksDatabaseView
 from grim.fonts.small import SmallFontData
 
 
-def test_selected_perk_id_uses_selected_row_index(make_game_state) -> None:
+def test_selected_perk_id_uses_the_list_selection(make_game_state) -> None:
     view = UnlockedPerksDatabaseView(make_game_state(config_updates={"violence_disabled": 0}))
     view._perk_ids = [
         PerkId.BLOODY_MESS_QUICK_LEARNER,
@@ -16,7 +16,7 @@ def test_selected_perk_id_uses_selected_row_index(make_game_state) -> None:
         PerkId.LEAN_MEAN_EXP_MACHINE,
         PerkId.PYROKINETIC,
     ]
-    view._selected_row_index = 2
+    view.list_scroll.selected_index = 2
     assert view._selected_perk_id() == PerkId.LEAN_MEAN_EXP_MACHINE
 
 
@@ -28,7 +28,7 @@ def test_selected_perk_id_returns_none_for_out_of_range_row(make_game_state) -> 
         PerkId.LEAN_MEAN_EXP_MACHINE,
         PerkId.PYROKINETIC,
     ]
-    view._selected_row_index = 9
+    view.list_scroll.selected_index = 9
     assert view._selected_perk_id() is None
 
 

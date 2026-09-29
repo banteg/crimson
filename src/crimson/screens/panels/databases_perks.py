@@ -10,6 +10,7 @@ from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...perks import PerkId
+from ...ui.scrollbar import ui_scrollbar_draw_focus, ui_scrollbar_update_keys
 from ..high_scores_layout import perks_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
 
@@ -28,9 +29,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._perk_ids: list[PerkId] = []
-        self._list_scroll_index: int = 0
-        self._selected_row_index: int = 0
         self._hovered_row_index: int = -1
+        # Native `unlocked_perks_nav_focus_index`: Up/Down set it, and Enter at 0 goes back.
         self._nav_focus_index: int = 0
         self._scroll_drag_active: bool = False
         self._scroll_drag_offset: float = 0.0
@@ -43,15 +43,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         self._scroll_drag_active = False
         self._scroll_drag_offset = 0.0
         self._wrapped_desc_cache.clear()
-        if not self._perk_ids:
-            self._list_scroll_index = 0
-            self._selected_row_index = 0
-            self._nav_focus_index = 0
-            return
-        max_scroll = max(0, len(self._perk_ids) - self._VISIBLE_ROWS)
-        self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
-        self._selected_row_index = max(0, int(self._selected_row_index))
-        self._nav_focus_index = max(0, min(1, int(self._nav_focus_index)))
+        self.list_scroll.item_count = len(self._perk_ids)
+        self.list_scroll.clamp()
 
     def _back_button_pos(self) -> Vec2:
         # state_16: ui_buttonSm bbox [258,509]..[340,541] => relative to left panel (-98,194): (356, 315)
@@ -92,6 +85,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         frame_y = left.y + self._LIST_FRAME_Y
         frame_w = self._LIST_WIDTH
         frame_h = self._VISIBLE_ROWS * self._LIST_ROW_HEIGHT + 4.0
+        ui_scrollbar_draw_focus(self.state.focus, self.list_scroll, Vec2(frame_x, frame_y))
         rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
         rl.draw_rectangle(
             int(round(frame_x + 1.0)),
@@ -102,7 +96,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
         max_scroll = max(0, len(perk_ids) - self._VISIBLE_ROWS)
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        start = max(0, min(max_scroll, int(self.list_scroll.scroll_offset)))
         end = min(len(perk_ids), start + self._VISIBLE_ROWS)
         list_top_left = left + Vec2(self._LIST_TEXT_X, self._LIST_TEXT_Y)
         row_step = self._LIST_ROW_HEIGHT
@@ -110,7 +104,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             list_index = start + row
             if list_index == self._hovered_row_index:
                 row_alpha = 1.0
-            elif list_index == self._selected_row_index:
+            elif list_index == self.list_scroll.selected_index:
                 row_alpha = 0.9
             else:
                 row_alpha = 0.7
@@ -150,10 +144,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                 rl.Color(51, 204, 255, int(255 * 0.2)),
             )
 
-        hovered_perk_id = self._hovered_perk_id()
-        if hovered_perk_id is None:
+        perk_id = self._detail_perk_id()
+        if perk_id is None:
             return
-        perk_id = hovered_perk_id
         perk_name = self._perk_name(perk_id, violence_disabled=violence_disabled)
         detail_anchor = right + Vec2(34.0 + detail_shift_x, 72.0)
         perk_no_label = "perkno"
@@ -190,32 +183,15 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
     def _update_content_interaction(self, *, left_top_left: Vec2, mouse: rl.Vector2) -> None:
         perk_ids = self._perk_ids
         count = len(perk_ids)
+        bar = self.list_scroll
+        bar.item_count = count
         self._hovered_row_index = -1
-        if count <= 0:
-            self._list_scroll_index = 0
-            self._selected_row_index = 0
+        focus = self.state.focus
+
+        if focus.up:
             self._nav_focus_index = 0
-            self._scroll_drag_active = False
-            return
-
-        max_scroll = max(0, count - self._VISIBLE_ROWS)
-        self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
-        self._selected_row_index = max(0, int(self._selected_row_index))
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
-            self._nav_focus_index = max(0, int(self._nav_focus_index) - 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
-            self._nav_focus_index = min(1, int(self._nav_focus_index) + 1)
-
-        if self._nav_focus_index == 1:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-                self._list_scroll_index -= 1
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-                self._list_scroll_index += 1
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
-                self._list_scroll_index -= self._VISIBLE_ROWS - 1
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
-                self._list_scroll_index += self._VISIBLE_ROWS - 1
+        if focus.down:
+            self._nav_focus_index = 1
 
         list_hit_x = left_top_left.x + self._LIST_FRAME_X
         list_hit_y = left_top_left.y + self._LIST_FRAME_Y
@@ -224,15 +200,15 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         mouse_in_list = (
             list_hit_x <= mouse.x < list_hit_x + list_hit_w and list_hit_y <= mouse.y < list_hit_y + list_hit_h
         )
-        if mouse_in_list:
-            self._nav_focus_index = 1
 
         wheel = int(rl.get_mouse_wheel_move())
-        if wheel and (mouse_in_list or self._nav_focus_index == 1):
-            self._list_scroll_index -= wheel
+        if wheel and (mouse_in_list or bar.focused):
+            bar.scroll_offset -= wheel
+        ui_scrollbar_update_keys(focus, bar, cursor=True)
 
         if count > self._VISIBLE_ROWS:
-            start = max(0, min(max_scroll, int(self._list_scroll_index)))
+            max_scroll = bar.max_scroll
+            start = max(0, min(max_scroll, int(bar.scroll_offset)))
             track_x, track_y, track_h, thumb_top, thumb_h, scroll_span = self._scrollbar_geometry(
                 left_top_left=left_top_left,
                 count=count,
@@ -246,7 +222,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             in_thumb = thumb_x <= mouse.x < thumb_x + thumb_w and thumb_top <= mouse.y < thumb_top + thumb_h + 1.0
 
             if click and in_track:
-                self._nav_focus_index = 1
                 if in_thumb:
                     self._scroll_drag_active = True
                     self._scroll_drag_offset = float(mouse.y - thumb_top)
@@ -254,7 +229,7 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                     travel = max(1.0, track_h - 3.0 - thumb_h)
                     target = float(mouse.y - track_y - 1.0 - thumb_h * 0.5)
                     target = max(0.0, min(travel, target))
-                    self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
+                    bar.scroll_offset = int(round((target / travel) * float(scroll_span)))
                     self._scroll_drag_active = True
                     self._scroll_drag_offset = thumb_h * 0.5
 
@@ -263,15 +238,15 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
                     travel = max(1.0, track_h - 3.0 - thumb_h)
                     target = float(mouse.y - track_y - 1.0 - self._scroll_drag_offset)
                     target = max(0.0, min(travel, target))
-                    self._list_scroll_index = int(round((target / travel) * float(scroll_span)))
+                    bar.scroll_offset = int(round((target / travel) * float(scroll_span)))
                 else:
                     self._scroll_drag_active = False
         else:
             self._scroll_drag_active = False
 
-        self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index)))
+        bar.clamp()
 
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        start = bar.scroll_offset
         end = min(count, start + self._VISIBLE_ROWS)
         row_count = end - start
         if row_count > 0 and mouse_in_list:
@@ -281,11 +256,9 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             if 0 <= row < row_count:
                 self._hovered_row_index = start + row
                 if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                    self._selected_row_index = self._hovered_row_index
+                    bar.selected_index = self._hovered_row_index
 
-        if self._nav_focus_index == 0 and (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
-        ):
+        if self._nav_focus_index == 0 and focus.enter:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
@@ -296,9 +269,16 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         return None
 
     def _selected_perk_id(self) -> PerkId | None:
-        if 0 <= int(self._selected_row_index) < len(self._perk_ids):
-            return self._perk_ids[int(self._selected_row_index)]
+        if 0 <= int(self.list_scroll.selected_index) < len(self._perk_ids):
+            return self._perk_ids[int(self.list_scroll.selected_index)]
         return None
+
+    def _detail_perk_id(self) -> PerkId | None:
+        """The perk under the mouse, as native; the port also details the row the keys moved to."""
+        hovered = self._hovered_perk_id()
+        if hovered is not None or not self.list_scroll.keyed:
+            return hovered
+        return self._selected_perk_id()
 
     def _scrollbar_geometry(
         self,

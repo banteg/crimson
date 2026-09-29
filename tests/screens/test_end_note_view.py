@@ -12,7 +12,7 @@ from crimson.ui.animation import ui_element_timeline_window
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.audio import HeadlessAudio
-from tests.support.screens import start_run
+from tests.support.screens import start_run, update_frame
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
@@ -45,7 +45,7 @@ def test_end_note_escape_waits_for_close_transition(end_note, mocker) -> None:
         view.update(0.1)
 
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
-    view.update(0.1)
+    update_frame(view, view.state, 0.1)
 
     assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None

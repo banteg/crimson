@@ -2,16 +2,38 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+import msgspec
+
 from grim.config import CrimsonConfig
+from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
 from ..input_codes import INPUT_CODE_UNBOUND, input_code_is_down
 from ..rng_caller_static import RngCallerStatic
+from .focus import UiFocus
 
 _CONTROL_BIND_SLOTS = 5
 _SINGLE_PLAYER_ALT_MOVE_CODES: tuple[int, ...] = (0xC8, 0xD0, 0xCB, 0xCD)
+
+
+class UiTextInput(msgspec.Struct):
+    """The focus half of native `ui_text_input_state_t`; the caller keeps the text and caret."""
+
+    focused: bool = False
+
+
+def ui_text_input_focus(focus: UiFocus, field: UiTextInput, pos: Vec2, *, width: float, mouse: Vec2) -> None:
+    """`ui_text_input_update`'s focus: the box registers, and hovering its 18px row focuses it."""
+    field.focused = focus.update(field)
+    if pos.x < mouse.x < pos.x + width and pos.y < mouse.y < pos.y + 18.0:
+        focus.set(field)
+
+
+def ui_text_input_draw_focus(focus: UiFocus, field: UiTextInput, pos: Vec2) -> None:
+    if field.focused:
+        focus.draw(pos.offset(dx=-16.0))
 
 
 def poll_text_input(max_len: int, *, allow_space: bool = True) -> str:

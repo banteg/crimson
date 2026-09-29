@@ -16,7 +16,7 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.audio import HeadlessAudio
-from tests.support.screens import start_run
+from tests.support.screens import start_run, update_frame
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
@@ -57,7 +57,7 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(s
     view.update(0.1)
     view.update(0.1)
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
-    view.update(0.1)
+    update_frame(view, view.state, 0.1)
 
     assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
     assert view.take_action() is None

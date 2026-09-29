@@ -170,7 +170,7 @@ class StatisticsMenuView:
 
         interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
+        if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.MENU)
@@ -193,7 +193,7 @@ class StatisticsMenuView:
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
-            return button_update(resources, btn, pos=pos, dt_ms=dt_ms_f, mouse=mouse, click=click)
+            return button_update(resources, btn, focus=self.state.focus, pos=pos, dt_ms=dt_ms_f, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0)):
@@ -294,12 +294,14 @@ class StatisticsMenuView:
             button_draw(
                 resources,
                 btn,
+                focus=self.state.focus,
                 pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i)),
             )
 
         button_draw(
             resources,
             self._btn_back,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
         )
 

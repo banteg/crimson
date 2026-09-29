@@ -36,7 +36,6 @@ from crimson.local_input import LocalInputInterpreter
 from crimson.modes.components.perk_prompt_ui import PerkPromptUi
 from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
-from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from grim.config import (
     DEFAULT_PICK_PERK_CODE,
     DEFAULT_RELOAD_CODE,
@@ -475,16 +474,6 @@ def test_auto_profile_uses_each_players_pad_and_only_active_players() -> None:
 
 
 # --- menus ----------------------------------------------------------------------------
-
-
-def test_menu_navigation_accepts_any_pad(pads: FakePads) -> None:
-    pads.connected = {0, 1}
-    assert menu_focus_step() == 0
-    assert not menu_confirm_pressed()
-    pads.pressed.add((1, DPAD_DOWN_BUTTON))
-    assert menu_focus_step() == 1
-    pads.pressed.add((1, FACE_DOWN_BUTTON))
-    assert menu_confirm_pressed()
 
 
 def test_perk_prompt_names_the_bound_level_up_input() -> None:

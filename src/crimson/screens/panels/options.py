@@ -24,9 +24,12 @@ from .base import PanelMenuView
 
 
 class SliderState(msgspec.Struct):
+    """Native `ui_segmented_slider_t`."""
+
     value: int
     min_value: int
     max_value: int
+    focused: bool = False
 
 
 class _OptionsContentLayout(msgspec.Struct, frozen=True):
@@ -79,6 +82,19 @@ class OptionsMenuView(PanelMenuView):
 
         resources = require_runtime_resources(self.state)
         rect_on = resources.texture(TextureId.UI_RECT_ON)
+        focus = self.state.focus
+
+        # `options_menu_update` updates the checkbox, the sliders, then the Controls button: their focus order.
+        if ui_checkbox_update(
+            resources,
+            self._info_checkbox,
+            label_pos.offset(dy=135.0),
+            focus=focus,
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
+            config.gameplay.show_info_texts = self._info_checkbox.checked
+            self._dirty = True
 
         if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0), rect_on):
             config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
@@ -105,16 +121,6 @@ class OptionsMenuView(PanelMenuView):
             self._slider_detail.value = preset
             self._dirty = True
 
-        if ui_checkbox_update(
-            resources,
-            self._info_checkbox,
-            label_pos.offset(dy=135.0),
-            mouse=Vec2.from_xy(canvas.mouse_position()),
-            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
-        ):
-            config.gameplay.show_info_texts = self._info_checkbox.checked
-            self._dirty = True
-
         # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0)
         dt_ms = min(float(dt), 0.1) * 1000.0
@@ -123,6 +129,7 @@ class OptionsMenuView(PanelMenuView):
         if button_update(
             resources,
             self._controls_button,
+            focus=focus,
             pos=controls_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -207,13 +214,19 @@ class OptionsMenuView(PanelMenuView):
             top_pad=1.0,
         )
 
-        changed = False
+        # `ui_segmented_slider_update`: hovering focuses the slider; Left/Right step it while focused.
+        focus = self.state.focus
+        focused = focus.update(slider)
+        slider.focused = focused
         if hovered:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
-                slider.value = max(slider.min_value, slider.value - 1)
+            focus.set(slider)
+        changed = False
+        if focused:
+            if focus.left and slider.value > slider.min_value:
+                slider.value -= 1
                 changed = True
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
-                slider.value = min(slider.max_value, slider.value + 1)
+            if focus.right and slider.value < slider.max_value:
+                slider.value += 1
                 changed = True
         mouse_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
@@ -302,12 +315,13 @@ class OptionsMenuView(PanelMenuView):
             rect_h,
         )
 
-        ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0))
+        ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0), focus=self.state.focus)
 
         button_pos = base_pos.offset(dy=155.0)
         button_draw(
             resources,
             self._controls_button,
+            focus=self.state.focus,
             pos=button_pos,
         )
 
@@ -320,6 +334,8 @@ class OptionsMenuView(PanelMenuView):
         rect_w: float,
         rect_h: float,
     ) -> None:
+        if slider.focused:
+            self.state.focus.draw(pos.offset(dx=-16.0))
         for idx in range(slider.max_value):
             tex = rect_on if idx < slider.value else rect_off
             dst = rl.Rectangle(pos.x + float(idx) * rect_w, pos.y, rect_w, rect_h)

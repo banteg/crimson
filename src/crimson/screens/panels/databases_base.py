@@ -24,6 +24,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
+from ...ui.scrollbar import UiScrollbar
 from ..assets import require_runtime_resources
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..transitions import _draw_screen_fade
@@ -46,6 +47,8 @@ class _DatabaseBaseView:
         self._widescreen_y_shift = 0.0
 
         self._back_button = UiButtonState("Back", force_wide=False)
+        # The database list's `ui_scrollbar_t`: ten rows.
+        self.list_scroll = UiScrollbar(visible_rows=10)
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
@@ -94,7 +97,7 @@ class _DatabaseBaseView:
 
         enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if self.state.focus.escape and enabled:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
@@ -112,10 +115,12 @@ class _DatabaseBaseView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         self._update_content_interaction(left_top_left=left_top_left, mouse=mouse)
 
+        # The database's list registers for focus before its Back button.
         back_pos = self._back_button_pos()
         if button_update(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=left_top_left + back_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -175,6 +180,7 @@ class _DatabaseBaseView:
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=left_panel_top_left + back_pos,
         )
 

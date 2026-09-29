@@ -102,11 +102,9 @@ class QuestFailedView:
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
         outcome = self._outcome
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        # Port shortcuts: Escape for Main Menu and Q for Play Another. Enter takes the focused button, as native.
+        if self.state.focus.escape:
             self._activate_main_menu()
-            return
-        if outcome is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._activate_retry()
             return
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
             self._activate_play_another()
@@ -124,6 +122,7 @@ class QuestFailedView:
         if button_update(
             resources,
             self._retry_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -136,6 +135,7 @@ class QuestFailedView:
         if button_update(
             resources,
             self._quest_list_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -148,6 +148,7 @@ class QuestFailedView:
         if button_update(
             resources,
             self._main_menu_button,
+            focus=self.state.focus,
             pos=button_pos,
             dt_ms=dt_ms,
             mouse=mouse,
@@ -195,12 +196,13 @@ class QuestFailedView:
 
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
-        button_draw(resources, self._retry_button, pos=button_pos)
+        button_draw(resources, self._retry_button, focus=self.state.focus, pos=button_pos)
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
         button_draw(
             resources,
             self._quest_list_button,
+            focus=self.state.focus,
             pos=button_pos,
         )
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
@@ -208,6 +210,7 @@ class QuestFailedView:
         button_draw(
             resources,
             self._main_menu_button,
+            focus=self.state.focus,
             pos=button_pos,
         )
 

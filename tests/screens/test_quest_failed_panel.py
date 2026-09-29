@@ -20,7 +20,7 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.audio import HeadlessAudio
-from tests.support.screens import start_run
+from tests.support.screens import start_run, update_frame
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
@@ -94,13 +94,15 @@ def test_quest_failed_panel_slides_in_from_left(failed: _FailedQuest) -> None:
     assert view._panel_top_left().x == base.x
 
 
-def test_quest_failed_enter_retries_current_quest(failed: _FailedQuest, mocker) -> None:
+def test_quest_failed_enter_takes_the_focused_play_again(failed: _FailedQuest, mocker) -> None:
     state = failed.state
     state.quest_fail_retry_count = 2
     state.config.gameplay.quest_level = None
+    # The buttons register for focus; the first one, Play Again, holds it.
+    update_frame(failed.view, state)
     _press(mocker, rl.KeyboardKey.KEY_ENTER)
 
-    failed.view.update(0.016)
+    update_frame(failed.view, state)
 
     assert state.quest_fail_retry_count == 3
     assert state.config.gameplay.quest_level == LEVEL
@@ -126,7 +128,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(failed: _FailedQuest, 
     play_music = mocker.spy(quest_failed_module, "play_music")
     _press(mocker, rl.KeyboardKey.KEY_ESCAPE)
 
-    failed.view.update(0.016)
+    update_frame(failed.view, failed.state)
 
     assert failed.state.quest_fail_retry_count == 0
     assert failed.sfx() == [SfxId.UI_BUTTONCLICK]

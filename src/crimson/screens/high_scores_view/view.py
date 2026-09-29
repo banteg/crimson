@@ -29,6 +29,7 @@ from ...ui.checkbox import UiCheckbox, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update
+from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update_keys
 from ..actions import ShowScores
 from ..assets import require_runtime_resources
 from ..high_scores_layout import (
@@ -56,7 +57,7 @@ from ..high_scores_layout import (
 )
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from ..transitions import _draw_screen_fade
-from .main_panel import draw_main_panel
+from .main_panel import draw_main_panel, score_row_under_mouse
 from .records import load_records
 from .right_panel import draw_right_panel
 
@@ -78,7 +79,8 @@ class HighScoresView:
         self._request = request.query
         self._return_context = request.return_context
         self._records: list[HighScoreRecord] = []
-        self._scroll_index = 0
+        # `highscore_screen`'s score list scrollbar: ten rows.
+        self.score_scroll = UiScrollbar(visible_rows=10)
         self._dirty = False
 
         # `highscore_screen`'s list widgets. The score list stands in for `ui_profile_menu_update`'s name list
@@ -95,7 +97,7 @@ class HighScoresView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(GameStateId.HIGHSCORES))
-        self._scroll_index = 0
+        self.score_scroll.scroll_offset = 0
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -113,7 +115,7 @@ class HighScoresView:
         self._return_context = None
         self._is_open = False
         self._records = []
-        self._scroll_index = 0
+        self.score_scroll.scroll_offset = 0
         self._dirty = False
         self._close_lists()
 
@@ -176,12 +178,16 @@ class HighScoresView:
             return
 
         enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
+        focus = self.state.focus
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if focus.escape and enabled:
             if any(widget.open for widget in self._lists()):
                 self._close_lists()
                 return
             self._begin_close_transition(Route.BACK)
+            return
+
+        if not enabled:
             return
 
         screen_width = float(self.state.config.display.width)
@@ -208,79 +214,64 @@ class HighScoresView:
         left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
         right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
 
-        if enabled:
-            dropdown_was_open = any(widget.open for widget in self._lists())
-            if self._update_right_panel_widgets(
-                right_top_left=right_panel_top_left,
-                resources=resources,
-            ):
-                return
-            if dropdown_was_open:
-                return
-            if self._update_quest_arrows(
-                left_panel_top_left=left_panel_top_left,
-                resources=resources,
-            ):
-                return
+        # `highscore_screen` focus order: the Hardcore checkbox, the score list, Update / Play / Back, then the
+        # right panel's checkbox and lists. A press while a list is open belongs to the lists only.
+        dropdown_was_open = any(widget.open for widget in self._lists())
+        mouse = canvas.mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) and not dropdown_was_open
+        self._update_quest_arrows(left_panel_top_left=left_panel_top_left, resources=resources, click=click)
+        self._update_score_scroll()
 
-        if enabled:
-            button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
-            mouse = canvas.mouse_position()
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if button_update(
-                resources,
-                self._update_button,
-                pos=button_base_pos,
-                dt_ms=dt_ms,
-                mouse=mouse,
-                click=click,
-            ):
-                # Reload scores from disk (no view transition).
-                if self.state.audio is not None:
-                    play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-                self._reload_records()
-                return
-            if button_update(
-                resources,
-                self._play_button,
-                pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y),
-                dt_ms=dt_ms,
-                mouse=mouse,
-                click=click,
-            ):
-                self._start_selected_game()
-                return
-            if button_update(
-                resources,
-                self._back_button,
-                pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
-                dt_ms=dt_ms,
-                mouse=mouse,
-                click=click,
-            ):
-                self._begin_close_transition(Route.BACK)
-                return
+        button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
+        if button_update(
+            resources,
+            self._update_button,
+            focus=focus,
+            pos=button_base_pos,
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            # Reload scores from disk (no view transition).
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
+            self._reload_records()
+        if button_update(
+            resources,
+            self._play_button,
+            focus=focus,
+            pos=button_base_pos.offset(dy=HS_BUTTON_STEP_Y),
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._start_selected_game()
+        if button_update(
+            resources,
+            self._back_button,
+            focus=focus,
+            pos=left_panel_top_left + Vec2(HS_BACK_BUTTON_X, HS_BACK_BUTTON_Y),
+            dt_ms=dt_ms,
+            mouse=mouse,
+            click=click,
+        ):
+            self._begin_close_transition(Route.BACK)
 
-        rows = 10
-        max_scroll = max(0, len(self._records) - rows)
+        # Native only runs the right panel's widgets while no score card covers them.
+        if score_row_under_mouse(self, left_panel_top_left) is None and self._request.highlight_rank is None:
+            self._update_right_panel_widgets(right_top_left=right_panel_top_left, resources=resources)
 
-        if enabled:
-            wheel = int(rl.get_mouse_wheel_move())
-            if wheel:
-                self._scroll_index = max(0, min(max_scroll, int(self._scroll_index) - wheel))
-
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-                self._scroll_index = max(0, int(self._scroll_index) - 1)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-                self._scroll_index = min(max_scroll, int(self._scroll_index) + 1)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
-                self._scroll_index = max(0, int(self._scroll_index) - rows)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
-                self._scroll_index = min(max_scroll, int(self._scroll_index) + rows)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
-                self._scroll_index = 0
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
-                self._scroll_index = max_scroll
+    def _update_score_scroll(self) -> None:
+        """`highscore_screen`'s `ui_scrollbar_update` over the scores: the wheel, Up/Down while focused, PgUp/PgDn;
+        the port adds Home/End."""
+        bar = self.score_scroll
+        bar.item_count = len(self._records)
+        bar.scroll_offset -= int(rl.get_mouse_wheel_move())
+        ui_scrollbar_update_keys(self.state.focus, bar)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
+            bar.scroll_offset = 0
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
+            bar.scroll_offset = bar.max_scroll
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
         if self.state.ui.closing:
@@ -320,52 +311,49 @@ class HighScoresView:
     def _reload_records(self) -> None:
         request = self._request
         self._records = load_records(self.state, request)
-        rows = 10
-        self._scroll_index = max(0, min(int(self._scroll_index), max(0, len(self._records) - rows)))
+        self.score_scroll.item_count = len(self._records)
+        self.score_scroll.clamp()
 
     def _update_right_panel_widgets(
         self,
         *,
         right_top_left: Vec2,
         resources: RuntimeResources,
-    ) -> bool:
+    ) -> None:
         request = self._request
-
-        # Widgets are only shown in the "options" right panel (not the local-score detail panel).
-        # We don't explicitly track which right panel is active; hit tests are enough.
-        dropdown_blocked = any(widget.open for widget in self._lists())
+        focus = self.state.focus
         small_width_shift_x = hs_right_options_x_shift(float(self.state.config.display.width))
         shifted_right_top_left = right_top_left + Vec2(small_width_shift_x, 0.0)
         mouse = Vec2.from_xy(canvas.mouse_position())
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
-        pressed = click or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+        pressed = click or focus.enter
 
-        # Checkbox: "Show internet scores" (config.show_online_scores).
-        if not dropdown_blocked:
-            checkbox = self.internet_checkbox
-            checkbox.checked = self.state.config.profile.show_internet_scores
-            if ui_checkbox_update(
-                resources,
-                checkbox,
-                shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y),
-                mouse=mouse,
-                click=click,
-            ):
-                self.state.config.profile.show_internet_scores = checkbox.checked
-                self._dirty = True
-                self._reload_records()
-                return True
+        # Checkbox: "Show internet scores" (config.show_online_scores); an open list covers it.
+        checkbox = self.internet_checkbox
+        checkbox.checked = self.state.config.profile.show_internet_scores
+        checkbox.disabled = any(widget.open for widget in self._lists())
+        if ui_checkbox_update(
+            resources,
+            checkbox,
+            shifted_right_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y),
+            focus=focus,
+            mouse=mouse,
+            click=click,
+        ):
+            self.state.config.profile.show_internet_scores = checkbox.checked
+            self._dirty = True
+            self._reload_records()
 
         self.sync_lists()
-        consumed = False
 
         # Selected score list (profile slots).
         widget = self.score_list
-        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_SCORE_LIST_WIDGET, mouse=mouse)
+        selected = ui_list_widget_update(
+            resources, widget, shifted_right_top_left + HS_RIGHT_SCORE_LIST_WIDGET, focus=focus, mouse=mouse,
+        )
         if selected > -2 and pressed:
             widget.open = not widget.open
-            consumed = True
             if selected >= 0:
                 self.state.config.profile.selected_saved_name_slot = selected
                 self._dirty = True
@@ -373,10 +361,11 @@ class HighScoresView:
 
         # Show scores: the date filter (config.highscore_date_mode).
         widget = self.date_filter_list
-        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_SHOW_SCORES_WIDGET, mouse=mouse)
+        selected = ui_list_widget_update(
+            resources, widget, shifted_right_top_left + HS_RIGHT_SHOW_SCORES_WIDGET, focus=focus, mouse=mouse,
+        )
         if selected > -2 and pressed:
             widget.open = not widget.open
-            consumed = True
             if selected >= 0:
                 self.state.config.profile.score_date_mode = HighScoreDateMode(selected)
                 self._dirty = True
@@ -384,10 +373,11 @@ class HighScoresView:
 
         # Number of players (config.player_count).
         widget = self.player_count_list
-        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_PLAYER_COUNT_WIDGET, mouse=mouse)
+        selected = ui_list_widget_update(
+            resources, widget, shifted_right_top_left + HS_RIGHT_PLAYER_COUNT_WIDGET, focus=focus, mouse=mouse,
+        )
         if selected > -2 and pressed:
             widget.open = not widget.open
-            consumed = True
             if selected >= 0 and self.state.config.gameplay.player_count != selected + 1:
                 self.state.config.gameplay.player_count = selected + 1
                 self._dirty = True
@@ -395,10 +385,11 @@ class HighScoresView:
 
         # Game mode (config.game_mode / request.game_mode_id).
         widget = self.game_mode_list
-        selected = ui_list_widget_update(resources, widget, shifted_right_top_left + HS_RIGHT_GAME_MODE_WIDGET, mouse=mouse)
+        selected = ui_list_widget_update(
+            resources, widget, shifted_right_top_left + HS_RIGHT_GAME_MODE_WIDGET, focus=focus, mouse=mouse,
+        )
         if selected > -2 and pressed:
             widget.open = not widget.open
-            consumed = True
             if selected >= 0:
                 _label, mode_id = self._mode_items()[selected]
                 self.state.config.gameplay.mode = mode_id
@@ -415,25 +406,27 @@ class HighScoresView:
                         pass
                 self._dirty = True
                 self._reload_records()
-        return consumed
 
     def _update_quest_arrows(
         self,
         *,
         left_panel_top_left: Vec2,
         resources: RuntimeResources,
-    ) -> bool:
+        click: bool,
+    ) -> None:
+        """`highscore_screen`'s quest header: the Hardcore checkbox, and paging the quest with the arrows or with
+        Left/Right."""
         request = self._request
         if request.game_mode_id != GameMode.QUESTS:
-            return False
+            return
 
         level = request.quest_level
         if level is None:
-            return False
+            return
 
         global_index = int(level.global_index)
         mouse = Vec2.from_xy(canvas.mouse_position())
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        focus = self.state.focus
 
         # `highscore_screen`: the Hardcore checkbox beside the column headers, from 40 unlocked quests.
         hardcore_toggled = False
@@ -441,7 +434,12 @@ class HighScoresView:
             checkbox = self.hardcore_checkbox
             checkbox.checked = self.state.config.gameplay.hardcore
             if ui_checkbox_update(
-                resources, checkbox, left_panel_top_left + HS_HARDCORE_CHECKBOX_OFFSET, mouse=mouse, click=click,
+                resources,
+                checkbox,
+                left_panel_top_left + HS_HARDCORE_CHECKBOX_OFFSET,
+                focus=focus,
+                mouse=mouse,
+                click=click,
             ):
                 self.state.config.gameplay.hardcore = checkbox.checked
                 hardcore_toggled = True
@@ -471,20 +469,12 @@ class HighScoresView:
             self._reload_records()
 
         # Native pages with the arrow keys too; switching tables reloads and clamps to the unlocked quests.
-        if global_index > 0 and (
-            (prev_rect.contains(mouse) and click) or rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT)
-        ):
+        if global_index > 0 and ((prev_rect.contains(mouse) and click) or focus.left):
             _set_level(global_index - 1)
-            return True
-        if global_index < max_index and (
-            (next_rect.contains(mouse) and click) or rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT)
-        ):
+        elif global_index < max_index and ((next_rect.contains(mouse) and click) or focus.right):
             _set_level(global_index + 1)
-            return True
-        if hardcore_toggled:
+        elif hardcore_toggled:
             _set_level(global_index)
-            return True
-        return False
 
     def draw(self) -> None:
         self._assert_open()

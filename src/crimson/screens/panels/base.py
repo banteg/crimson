@@ -27,7 +27,6 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
-from ...input_codes import PadCode, pad_nav_pressed
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -113,21 +112,27 @@ class PanelMenuView:
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                 self._panel_open_sfx_played = True
 
+        # The back element sits later in the element table than the panel, so native's backwards walk registers
+        # it for focus before the panel's own widgets.
+        entry = self._entry
+        if entry is not None:
+            entry.focused = self.state.focus.update(entry)
         return True
 
-    def _update_back_button(self, dt: float, *, enabled: bool = True, enter: bool = True) -> None:
+    def _update_back_button(self, dt: float, *, enabled: bool = True) -> None:
         dt_ms = int(min(dt, 0.1) * 1000.0)
         entry = self._entry
         if entry is None:
             return
 
+        focus = self.state.focus
         enabled = enabled and self._entry_enabled()
         hovered = enabled and self._hovered_entry(entry)
         self._hovered = hovered
 
-        if (rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)) and enabled:
+        if focus.escape and enabled:
             self._begin_close_transition(self._back_action)
-        if enter and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
+        if entry.focused and focus.enter and enabled:
             self._begin_close_transition(self._back_action)
         if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._begin_close_transition(self._back_action)
@@ -137,6 +142,8 @@ class PanelMenuView:
         else:
             entry.hover_amount -= dt_ms * 2
         entry.hover_amount = max(0, min(1000, entry.hover_amount))
+        if entry.focused and focus.timer_ms > 0:
+            entry.hover_amount = focus.timer_ms
 
         if entry.ready_timer_ms < 0x100:
             entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)

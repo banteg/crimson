@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.ui.checkbox import UiCheckbox, ui_checkbox_update
 from crimson.ui.focus import UiFocus
 from crimson.ui.perk_menu import UiButtonState
 from grim.geom import Vec2
@@ -94,13 +95,20 @@ def test_hover_focuses_silently_and_the_marker_fades(keys: Keys, mocker) -> None
     draw.assert_not_called()
 
 
-def test_input_lock_holds_tab(keys: Keys) -> None:
+def test_input_lock_holds_tab_and_the_checkbox(keys: Keys, headless_resources) -> None:
     focus = UiFocus()
-    a, b = UiButtonState("a"), UiButtonState("b")
+    checkbox, button = UiCheckbox("Hardcore"), UiButtonState("Back")
     keys.frame(focus)
-    register(focus, a, b)
+    register(focus, checkbox, button)
 
     focus.input_locked = True
     keys.frame(focus, rl.KeyboardKey.KEY_TAB)
-    assert register(focus, a, b) == [True, False]
-    assert focus.timer_ms == 0
+    assert register(focus, checkbox, button) == [True, False]
+    keys.frame(focus, rl.KeyboardKey.KEY_ENTER)
+    assert not ui_checkbox_update(headless_resources, checkbox, Vec2(), focus=focus, mouse=Vec2(-1000.0, -1000.0), click=False)
+    assert not checkbox.checked
+
+    focus.input_locked = False
+    keys.frame(focus, rl.KeyboardKey.KEY_ENTER)
+    assert ui_checkbox_update(headless_resources, checkbox, Vec2(), focus=focus, mouse=Vec2(-1000.0, -1000.0), click=False)
+    assert checkbox.checked

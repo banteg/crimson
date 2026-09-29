@@ -27,7 +27,7 @@ from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
+from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -76,6 +76,8 @@ class QuestsMenuView:
         self._ground: GroundRenderer | None = None
         self._back_button = UiButtonState("Back")
         self._hardcore_checkbox = UiCheckbox("Hardcore")
+        # Port focus targets for the ten quest rows: native picks a row only by mouse or the number keys.
+        self._row_items = tuple(UiMenuItem() for _ in range(10))
 
         self._menu_screen_width = 0
         self._widescreen_y_shift = 0.0
@@ -143,16 +145,17 @@ class QuestsMenuView:
 
         enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if self.state.focus.escape and enabled:
             self._begin_close_transition(Route.BACK)
             return
 
         if not enabled:
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
+        focus = self.state.focus
+        if focus.left:
             self._stage = max(1, self._stage - 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+        if focus.right:
             self._stage = min(5, self._stage + 1)
 
         layout = self._layout()
@@ -163,8 +166,15 @@ class QuestsMenuView:
             self._stage = hovered_stage
             return
 
-        if self._hardcore_checkbox_clicked(layout):
-            return
+        # Focus order: the Hardcore checkbox, the port's quest rows, then Back (native has the checkbox and Back).
+        self._update_hardcore_checkbox(layout)
+
+        mouse = canvas.mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        picked_row: int | None = None
+        for row, item in enumerate(self._row_items):
+            if ui_menu_item_update(item, focus=focus, hit=self._row_rect(layout, row), mouse=mouse, click=click):
+                picked_row = row
 
         back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
             QUEST_BACK_BUTTON_X_OFFSET,
@@ -172,11 +182,10 @@ class QuestsMenuView:
         )
         dt_ms = min(float(dt), 0.1) * 1000.0
         resources = require_runtime_resources(self.state)
-        mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
             resources,
             self._back_button,
+            focus=focus,
             pos=back_pos,
             dt_ms=float(dt_ms),
             mouse=mouse,
@@ -191,14 +200,8 @@ class QuestsMenuView:
             self._try_start_quest(self._stage, row_from_key)
             return
 
-        hovered_row = self._hovered_row(layout)
-        if hovered_row is not None and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._try_start_quest(self._stage, hovered_row)
-            return
-
-        if hovered_row is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._try_start_quest(self._stage, hovered_row)
-            return
+        if picked_row is not None:
+            self._try_start_quest(self._stage, picked_row)
 
     def draw(self) -> None:
         self._assert_open()
@@ -262,23 +265,22 @@ class QuestsMenuView:
                 return stage
         return None
 
-    def _hardcore_checkbox_clicked(self, layout: _QuestMenuLayout) -> bool:
+    def _update_hardcore_checkbox(self, layout: _QuestMenuLayout) -> None:
         if self.state.status.quest_unlock_index < QUEST_HARDCORE_UNLOCK_INDEX:
-            return False
+            return
         config = self.state.config
         checkbox = self._hardcore_checkbox
         checkbox.checked = config.gameplay.hardcore
-        if not ui_checkbox_update(
+        if ui_checkbox_update(
             require_runtime_resources(self.state),
             checkbox,
             layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
+            focus=self.state.focus,
             mouse=Vec2.from_xy(canvas.mouse_position()),
             click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
         ):
-            return False
-        config.gameplay.hardcore = checkbox.checked
-        self._dirty = True
-        return True
+            config.gameplay.hardcore = checkbox.checked
+            self._dirty = True
 
     @staticmethod
     def _digit_row_pressed() -> int | None:
@@ -307,18 +309,19 @@ class QuestsMenuView:
             y0 += QUEST_HARDCORE_LIST_Y_SHIFT
         return y0
 
-    def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
+    def _row_rect(self, layout: _QuestMenuLayout, row: int) -> Rect:
         list_x = layout.list_pos.x
-        y0 = self._rows_y0(layout)
+        y = self._rows_y0(layout) + float(row) * QUEST_LIST_ROW_STEP
+        left = list_x - QUEST_LIST_HOVER_LEFT_PAD
+        top = y - QUEST_LIST_HOVER_TOP_PAD
+        right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
+        bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
+        return Rect.from_top_left(Vec2(left, top), right - left, bottom - top)
+
+    def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
         mouse_pos = Vec2.from_xy(canvas.mouse_position())
         for row in range(10):
-            y = y0 + float(row) * QUEST_LIST_ROW_STEP
-            left = list_x - QUEST_LIST_HOVER_LEFT_PAD
-            top = y - QUEST_LIST_HOVER_TOP_PAD
-            right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
-            bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
-            row_rect = Rect.from_top_left(Vec2(left, top), right - left, bottom - top)
-            if row_rect.contains(mouse_pos):
+            if self._row_rect(layout, row).contains(mouse_pos):
                 return row
         return None
 
@@ -482,6 +485,7 @@ class QuestsMenuView:
                 resources,
                 self._hardcore_checkbox,
                 list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
+                focus=self.state.focus,
             )
 
         # Quest list (10 rows).
@@ -489,6 +493,8 @@ class QuestsMenuView:
             y = y0 + float(row) * QUEST_LIST_ROW_STEP
             unlocked = self._quest_unlocked(stage, row)
             color = hover_color if hovered_row == row else base_color
+            if self._row_items[row].focused:
+                self.state.focus.draw(Vec2(list_pos.x - 16.0, y))
 
             draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_pos.x, y), color)
 
@@ -520,6 +526,7 @@ class QuestsMenuView:
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=back_pos,
         )
 

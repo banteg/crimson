@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.game.navigation import ScreenNavigator
-from crimson.game.types import GameState
+from crimson.game.types import GameState, Screen
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.screens.actions import ScreenAction, StartRun
 
@@ -31,6 +31,12 @@ class ScreenStub:
     def take_action(self) -> ScreenAction | None:
         action, self.action = self.action, None
         return action
+
+
+def update_frame(screen: Screen, state: GameState, dt: float = 0.016) -> None:
+    """One game-loop frame of `screen`: the loop starts the focus frame (sampling the keys), then updates it."""
+    state.focus.begin_frame(int(min(dt, 0.1) * 1000.0))
+    screen.update(dt)
 
 
 def start_run(state: GameState, request: StartRun) -> tuple[ScreenNavigator, BaseGameplayMode]:

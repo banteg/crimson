@@ -72,7 +72,8 @@ def _draw_right_panel_quest_options(
 
     checkbox = view.internet_checkbox
     checkbox.checked = view.state.config.profile.show_internet_scores
-    ui_checkbox_draw(resources, checkbox, options_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y))
+    focus = view.state.focus
+    ui_checkbox_draw(resources, checkbox, options_top_left + Vec2(HS_RIGHT_CHECK_X, HS_RIGHT_CHECK_Y), focus=focus)
     draw_small_text(
         font,
         "Number of players",
@@ -101,10 +102,13 @@ def _draw_right_panel_quest_options(
     # `highscore_screen` draws the lists in update order, so an open list covers the ones below it.
     view.sync_lists()
     mouse = Vec2.from_xy(canvas.mouse_position())
-    ui_list_widget_draw(resources, view.score_list, options_top_left + HS_RIGHT_SCORE_LIST_WIDGET, mouse=mouse)
-    ui_list_widget_draw(resources, view.date_filter_list, options_top_left + HS_RIGHT_SHOW_SCORES_WIDGET, mouse=mouse)
-    ui_list_widget_draw(resources, view.player_count_list, options_top_left + HS_RIGHT_PLAYER_COUNT_WIDGET, mouse=mouse)
-    ui_list_widget_draw(resources, view.game_mode_list, options_top_left + HS_RIGHT_GAME_MODE_WIDGET, mouse=mouse)
+    for widget, offset in (
+        (view.score_list, HS_RIGHT_SCORE_LIST_WIDGET),
+        (view.date_filter_list, HS_RIGHT_SHOW_SCORES_WIDGET),
+        (view.player_count_list, HS_RIGHT_PLAYER_COUNT_WIDGET),
+        (view.game_mode_list, HS_RIGHT_GAME_MODE_WIDGET),
+    ):
+        ui_list_widget_draw(resources, widget, options_top_left + offset, focus=focus, mouse=mouse)
 
 
 def _draw_right_panel_local_score(
@@ -116,7 +120,7 @@ def _draw_right_panel_local_score(
 ) -> None:
     if not view._records:
         return
-    idx = int(highlight_rank) if highlight_rank is not None else int(view._scroll_index)
+    idx = int(highlight_rank) if highlight_rank is not None else int(view.score_scroll.scroll_offset)
     idx = max(0, min(idx, len(view._records) - 1))
     local_shift_x = hs_right_local_card_x_shift(float(view.state.config.display.width))
     ui_text_input_render(

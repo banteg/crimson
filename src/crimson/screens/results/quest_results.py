@@ -33,12 +33,20 @@ from ...persistence.highscores import (
 )
 from ...quests.level import QuestLevel
 from ...quests.results import QuestFinalTime, QuestResultsReveal
+from ...ui.focus import UiFocus
 from ...ui.formatting import format_time_mm_ss
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
-from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
+from ...ui.text_input import (
+    UiTextInput,
+    flush_text_input_events,
+    gameplay_controls_held,
+    ui_text_input_draw_focus,
+    ui_text_input_focus,
+    update_name_entry_text,
+)
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
@@ -114,8 +122,10 @@ class QuestResultsUi(msgspec.Struct):
     input_caret: int = 0
     _saved: bool = False
 
-    # Shares GameState.ui in the game; the default only serves standalone use.
+    # Shares GameState.ui and GameState.focus in the game; the defaults only serve standalone use.
     timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
+    focus: UiFocus = msgspec.field(default_factory=UiFocus)
+    _name_input: UiTextInput = msgspec.field(default_factory=UiTextInput)
     _dt: float = 0.0
     _panel_open_sfx_played: bool = False
     _close_action: ResultAction | None = None
@@ -220,8 +230,7 @@ class QuestResultsUi(msgspec.Struct):
     def _arm_name_input_after_control_release(self) -> None:
         self._defer_name_input_until_controls_released = True
         flush_text_input_events()
-        rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-        rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+        self.focus.enter = False
 
     def world_entity_alpha(self) -> float:
         if not self.timeline.closing:
@@ -275,9 +284,9 @@ class QuestResultsUi(msgspec.Struct):
             self._panel_open_sfx_played = True
         if self._consume_enter:
             self._consume_enter = False
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            self.focus.enter = False
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self.focus.escape:
             if play_sfx is not None:
                 play_sfx(SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(ResultAction.MAIN_MENU)
@@ -307,8 +316,7 @@ class QuestResultsUi(msgspec.Struct):
         if self.phase == 1:
             if self._defer_name_input_until_controls_released:
                 flush_text_input_events()
-                rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-                rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+                self.focus.enter = False
                 if not gameplay_controls_held(self.config):
                     self._defer_name_input_until_controls_released = False
                 return None
@@ -328,9 +336,11 @@ class QuestResultsUi(msgspec.Struct):
             ok_pos = input_pos + Vec2(170.0, -8.0)
             resources = runtime_resources_for(self.assets_root)
             self._ok_button.alpha = self._fade_alpha()
-            ok_clicked = button_update(resources, self._ok_button, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
+            ok_clicked = button_update(resources, self._ok_button, focus=self.focus, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
+            ui_text_input_focus(self.focus, self._name_input, input_pos, width=INPUT_BOX_W, mouse=Vec2.from_xy(mouse))
 
-            if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            # The text input submits on Enter wherever the focus is; a pad's A stands in for it.
+            if ok_clicked or self.focus.enter:
                 if self.input_text.strip():
                     if play_sfx is not None:
                         play_sfx(SfxId.UI_TYPEENTER)
@@ -359,11 +369,6 @@ class QuestResultsUi(msgspec.Struct):
 
         if self.phase == 2:
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-                if play_sfx is not None:
-                    play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition(ResultAction.PLAY_AGAIN)
-                return None
             if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
@@ -397,6 +402,7 @@ class QuestResultsUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._play_next_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -411,6 +417,7 @@ class QuestResultsUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -425,6 +432,7 @@ class QuestResultsUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -439,6 +447,7 @@ class QuestResultsUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -564,7 +573,8 @@ class QuestResultsUi(msgspec.Struct):
             )
 
             ok_pos = input_pos + Vec2(170.0, -8.0)
-            button_draw(resources, self._ok_button, pos=ok_pos)
+            ui_text_input_draw_focus(self.focus, self._name_input, input_pos)
+            button_draw(resources, self._ok_button, focus=self.focus, pos=ok_pos)
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0, 46.0)
@@ -627,24 +637,28 @@ class QuestResultsUi(msgspec.Struct):
             button_draw(
                 resources,
                 self._play_next_button,
+                focus=self.focus,
                 pos=button_pos,
             )
             button_pos = button_pos.offset(dy=32.0)
             button_draw(
                 resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
             )
             button_pos = button_pos.offset(dy=32.0)
             button_draw(
                 resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
             )
             button_pos = button_pos.offset(dy=32.0)
             button_draw(
                 resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
             )
 

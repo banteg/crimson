@@ -29,11 +29,19 @@ from ...persistence.highscores import (
     upsert_highscore_record,
 )
 from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from ...ui.focus import UiFocus
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
-from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
+from ...ui.text_input import (
+    UiTextInput,
+    flush_text_input_events,
+    gameplay_controls_held,
+    ui_text_input_draw_focus,
+    ui_text_input_focus,
+    update_name_entry_text,
+)
 from ..ui_timeline import UiTimeline
 
 GAME_OVER_PANEL_X = -45.0
@@ -95,8 +103,10 @@ class GameOverUi(msgspec.Struct):
     _saved: bool = False
     _dt: float = 0.0
 
-    # Shares GameState.ui in the game; the default only serves standalone use.
+    # Shares GameState.ui and GameState.focus in the game; the defaults only serve standalone use.
     timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
+    focus: UiFocus = msgspec.field(default_factory=UiFocus)
+    _name_input: UiTextInput = msgspec.field(default_factory=UiTextInput)
     _panel_open_sfx_played: bool = False
     _close_action: ResultAction | None = None
 
@@ -202,7 +212,7 @@ class GameOverUi(msgspec.Struct):
             self._panel_open_sfx_played = True
         if self._consume_enter:
             self._consume_enter = False
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            self.focus.enter = False
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
             try:
@@ -220,9 +230,8 @@ class GameOverUi(msgspec.Struct):
             idx = rank_index(records, candidate)
             self.rank = int(idx)
             flush_text_input_events()
-            # Match native `grim_was_key_pressed(ENTER)` after the input flush.
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-            rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+            # Native `grim_was_key_pressed(ENTER)` after the input flush swallows this frame's Enter.
+            self.focus.enter = False
             if idx < TABLE_MAX:
                 self.phase = 0
                 self.input_text = player_name_default[:NAME_MAX_EDIT]
@@ -235,8 +244,7 @@ class GameOverUi(msgspec.Struct):
         if self.phase == 0:
             if self._defer_name_input_until_controls_released:
                 flush_text_input_events()
-                rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-                rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+                self.focus.enter = False
                 if not gameplay_controls_held(self.config):
                     self._defer_name_input_until_controls_released = False
                 return None
@@ -254,9 +262,14 @@ class GameOverUi(msgspec.Struct):
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             form_pos = banner_pos + Vec2(8.0, 84.0)
             ok_pos = form_pos + Vec2(170.0, 32.0)
-            ok_clicked = button_update(resources, self._ok_button, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
+            ok_clicked = button_update(resources, self._ok_button, focus=self.focus, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
+            ui_text_input_focus(
+                self.focus, self._name_input, form_pos.offset(dy=40.0), width=INPUT_BOX_W, mouse=Vec2.from_xy(mouse),
+            )
 
-            if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            # The text input submits on Enter wherever the focus is; a pad's A stands in for it, so a pad alone
+            # can accept the prefilled name.
+            if ok_clicked or self.focus.enter:
                 if self.input_text.strip():
                     if play_sfx is not None:
                         play_sfx(SfxId.UI_TYPEENTER)
@@ -289,6 +302,7 @@ class GameOverUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -303,6 +317,7 @@ class GameOverUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -317,6 +332,7 @@ class GameOverUi(msgspec.Struct):
             if button_update(
                 resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -380,6 +396,7 @@ class GameOverUi(msgspec.Struct):
             )
 
             input_pos = form_pos.offset(dy=40.0)
+            ui_text_input_draw_focus(self.focus, self._name_input, input_pos)
             rl.draw_rectangle_lines(
                 int(input_pos.x),
                 int(input_pos.y),
@@ -424,6 +441,7 @@ class GameOverUi(msgspec.Struct):
             button_draw(
                 resources,
                 self._ok_button,
+                focus=self.focus,
                 pos=ok_pos,
             )
 
@@ -456,6 +474,7 @@ class GameOverUi(msgspec.Struct):
             button_draw(
                 resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
             )
             button_pos = button_pos.offset(dy=32.0)
@@ -463,6 +482,7 @@ class GameOverUi(msgspec.Struct):
             button_draw(
                 resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
             )
             button_pos = button_pos.offset(dy=32.0)
@@ -470,6 +490,7 @@ class GameOverUi(msgspec.Struct):
             button_draw(
                 resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
             )
 

@@ -9,7 +9,7 @@ from crimson.ui.animation import ui_element_timeline_window
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from tests.support.audio import HeadlessAudio
-from tests.support.screens import start_run
+from tests.support.screens import start_run, update_frame
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
@@ -30,7 +30,7 @@ def paused(make_game_state, headless_resources, mocker):
 
 def _press(view: PauseMenuView, mocker, key: int) -> None:
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda pressed: pressed == key)
-    view.update(0.016)
+    update_frame(view, view.state)
     mocker.patch.object(rl, "is_key_pressed", return_value=False)
 
 

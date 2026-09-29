@@ -165,6 +165,7 @@ class TutorialMode(BaseGameplayMode):
             if button_update(
                 resources,
                 self._play_button,
+                focus=self._ui_focus,
                 pos=button_base_pos,
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -175,6 +176,7 @@ class TutorialMode(BaseGameplayMode):
             if button_update(
                 resources,
                 self._repeat_button,
+                focus=self._ui_focus,
                 pos=button_base_pos.offset(dx=play_w + gap),
                 dt_ms=dt_ms,
                 mouse=mouse,
@@ -187,7 +189,7 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.enabled:
             resources = self.render_resources.resources
             y = float(canvas.height()) - 50.0
-            if button_update(resources, self._skip_button, pos=Vec2(10.0, y), dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(resources, self._skip_button, focus=self._ui_focus, pos=Vec2(10.0, y), dt_ms=dt_ms, mouse=mouse, click=click):
                 self._finish_tutorial_run(restart=False)
 
     def update(self, dt: float) -> None:
@@ -273,16 +275,18 @@ class TutorialMode(BaseGameplayMode):
             button_draw(
                 resources,
                 self._play_button,
+                focus=self._ui_focus,
                 pos=button_base_pos,
             )
             button_draw(
                 resources,
                 self._repeat_button,
+                focus=self._ui_focus,
                 pos=button_base_pos.offset(dx=play_w + gap),
             )
             return
 
         if self._skip_button.alpha > 1e-3:
             y = float(canvas.height()) - 50.0
-            button_draw(resources, self._skip_button, pos=Vec2(10.0, y))
+            button_draw(resources, self._skip_button, focus=self._ui_focus, pos=Vec2(10.0, y))
 

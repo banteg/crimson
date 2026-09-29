@@ -30,7 +30,7 @@ from ...movement_controls import MovementControlType
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
+from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
 from .controls_labels import (
@@ -57,6 +57,8 @@ CONTROLS_DIRECTION_ARROW_OFFSET = Vec2(213.0, 174.0)
 CONTROLS_MOVE_METHOD_LIST_OFFSET = Vec2(214.0, 144.0)
 CONTROLS_AIM_METHOD_LIST_OFFSET = Vec2(214.0, 102.0)
 CONTROLS_PLAYER_LIST_OFFSET = Vec2(340.0, 56.0)
+# `controls_rebind_items`: one menu item per rebind row.
+CONTROLS_REBIND_ITEM_COUNT = 15
 # Native configures two players; the port configures four.
 CONTROLS_PLAYER_ITEMS = ("Player 1", "Player 2", "Player 3", "Player 4")
 
@@ -204,6 +206,7 @@ class ControlsMenuView(PanelMenuView):
         self._capture: RebindCapture | None = None
         self._reset_button = UiButtonState("Reset")
         self._direction_arrow_checkbox = UiCheckbox("Show direction arrow")
+        self._rebind_items = tuple(UiMenuItem() for _ in range(CONTROLS_REBIND_ITEM_COUNT))
 
     def open(self) -> None:
         super().open()
@@ -212,6 +215,10 @@ class ControlsMenuView(PanelMenuView):
         self._dirty = False
         self._capture = None
         self._reset_button = UiButtonState("Reset")
+
+    def close(self) -> None:
+        self.state.focus.input_locked = False
+        super().close()
 
     def update(self, dt: float) -> None:
         if not self._update_panel(dt):
@@ -223,28 +230,30 @@ class ControlsMenuView(PanelMenuView):
         right_top_left = self._right_panel_top_left()
         resources = require_runtime_resources(self.state)
         font = resources.small_font
-        if self._capture is not None:
-            self._update_back_button(dt, enabled=False)
-            self._update_rebind_capture(right_top_left=right_top_left, font=font)
-            return
+        capturing = self._capture is not None
         dropdown_was_open = self._list_open()
-        if dropdown_was_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        # Escape closes an open list before it goes back.
+        closing_list = dropdown_was_open and self.state.focus.escape
+        if closing_list:
             self._close_lists()
-            self._update_back_button(dt, enabled=False)
-            return
-        click_consumed = self._update_method_lists(left_top_left=left_top_left, resources=resources)
-        click_consumed = click_consumed or dropdown_was_open
-        if not click_consumed:
-            click_consumed = self._update_rebind_capture(
-                right_top_left=right_top_left,
-                font=font,
-            )
-        if (not click_consumed) and self._update_direction_arrow_checkbox(left_top_left, resources):
+
+        # `controls_menu_update` focus order: the direction-arrow checkbox (the port's Reset beside it), the rebind
+        # rows, then the move, aim and player lists. Every widget registers every frame, capture or not.
+        click_consumed = capturing or dropdown_was_open
+        if self._update_direction_arrow_checkbox(left_top_left, resources):
             self._dirty = True
             click_consumed = True
         if self._update_reset_button(dt, left_top_left=left_top_left, enabled=not click_consumed):
             click_consumed = True
-        self._update_back_button(dt, enabled=not click_consumed and self._capture is None)
+        if self._update_rebind_rows(right_top_left=right_top_left, font=font, enabled=not click_consumed):
+            click_consumed = True
+        elif capturing:
+            self._update_rebind_capture()
+        if self._update_method_lists(left_top_left=left_top_left, resources=resources):
+            click_consumed = True
+        self._update_back_button(dt, enabled=not click_consumed and not closing_list and self._capture is None)
+        # Native `ui_focus_input_locked`: Tab and checkbox Enter stay out of the way while a rebind waits.
+        self.state.focus.input_locked = self._capture is not None
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._dirty:
@@ -335,6 +344,7 @@ class ControlsMenuView(PanelMenuView):
             resources,
             checkbox,
             left_top_left + CONTROLS_DIRECTION_ARROW_OFFSET,
+            focus=self.state.focus,
             mouse=Vec2.from_xy(canvas.mouse_position()),
             click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
         ):
@@ -348,6 +358,7 @@ class ControlsMenuView(PanelMenuView):
         if not button_update(
             require_runtime_resources(self.state),
             button,
+            focus=self.state.focus,
             pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET,
             dt_ms=min(dt, 0.1) * 1000.0,
             mouse=canvas.mouse_position(),
@@ -426,75 +437,74 @@ class ControlsMenuView(PanelMenuView):
             y = row_y + 8.0
         return tuple(rows)
 
-    def _update_rebind_capture(self, *, right_top_left: Vec2, font: SmallFontData) -> bool:
+    def _update_rebind_rows(self, *, right_top_left: Vec2, font: SmallFontData, enabled: bool) -> bool:
+        """`controls_menu_update`'s rebind rows: menu items over the binding values; activating one arms a capture."""
         player_idx = self._current_player_index()
         player_controls = self.state.config.controls.player(player_idx)
-        aim_scheme = player_controls.aim_scheme
-        move_mode = player_controls.movement
-        sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
+        sections = self._rebind_sections(
+            player_index=player_idx, aim_scheme=player_controls.aim_scheme, move_mode=player_controls.movement,
+        )
         rows = self._collect_rebind_rows(
             right_top_left=right_top_left,
             player_index=player_idx,
             sections=sections,
             font=font,
         )
-
-        capture = self._capture
-        if capture is not None:
-            active_row = capture.row
-            active_player = capture.player_index
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
-                rl.MouseButton.MOUSE_BUTTON_RIGHT,
-            ):
-                self._capture = None
-                return True
-
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
-                self._set_binding_code(
-                    player_index=active_player,
-                    row=active_row,
-                    code=self._binding_default_code(player_index=active_player, row=active_row),
-                )
-                self._dirty = True
-                self._capture = None
-                return True
-
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_DELETE):
-                self._set_binding_code(player_index=active_player, row=active_row, code=INPUT_CODE_UNBOUND)
-                self._dirty = True
-                self._capture = None
-                return True
-
-            if capture.skip_frames > 0:
-                capture.skip_frames -= 1
-                return True
-
-            axis_only = active_row.axis
-            captured = capture_first_pressed_input_code(
-                player_index=active_player,
-                include_keyboard=not axis_only,
-                include_mouse=not axis_only,
-                include_gamepad=not axis_only,
-                include_axes=axis_only,
-                axis_threshold=0.5,
-            )
-            if captured is not None:
-                self._set_binding_code(player_index=active_player, row=active_row, code=int(captured))
-                self._dirty = True
-                self._capture = None
-            return True
-
-        if self._list_open():
-            return False
-
-        if not rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            return False
         mouse = Vec2.from_xy(canvas.mouse_position())
-        for row in rows:
-            if row.value_rect.contains(mouse):
-                self._start_rebind_capture(row=row.row, player_index=player_idx)
-                return True
-        return False
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        started = False
+        for row, item in zip(rows, self._rebind_items, strict=False):
+            item.enabled = enabled
+            if ui_menu_item_update(item, focus=self.state.focus, hit=row.value_rect, mouse=mouse, click=click):
+                if not started:
+                    self._start_rebind_capture(row=row.row, player_index=player_idx)
+                started = True
+        return started
+
+    def _update_rebind_capture(self) -> None:
+        capture = self._capture
+        assert capture is not None
+        active_row = capture.row
+        active_player = capture.player_index
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or rl.is_mouse_button_pressed(
+            rl.MouseButton.MOUSE_BUTTON_RIGHT,
+        ):
+            self._capture = None
+            return
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
+            self._set_binding_code(
+                player_index=active_player,
+                row=active_row,
+                code=self._binding_default_code(player_index=active_player, row=active_row),
+            )
+            self._dirty = True
+            self._capture = None
+            return
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DELETE):
+            self._set_binding_code(player_index=active_player, row=active_row, code=INPUT_CODE_UNBOUND)
+            self._dirty = True
+            self._capture = None
+            return
+
+        if capture.skip_frames > 0:
+            capture.skip_frames -= 1
+            return
+
+        axis_only = active_row.axis
+        captured = capture_first_pressed_input_code(
+            player_index=active_player,
+            include_keyboard=not axis_only,
+            include_mouse=not axis_only,
+            include_gamepad=not axis_only,
+            include_axes=axis_only,
+            axis_threshold=0.5,
+        )
+        if captured is not None:
+            self._set_binding_code(player_index=active_player, row=active_row, code=int(captured))
+            self._dirty = True
+            self._capture = None
 
     def _set_player_move_mode(self, *, player_index: int, move_mode: MovementControlType) -> None:
         self.state.config.controls.player(player_index).movement = move_mode
@@ -544,7 +554,7 @@ class ControlsMenuView(PanelMenuView):
 
         `None` means the press was not the list's; -1 means the list took it without taking a row.
         """
-        selected = ui_list_widget_update(resources, widget, pos, mouse=mouse)
+        selected = ui_list_widget_update(resources, widget, pos, focus=self.state.focus, mouse=mouse)
         if selected <= -2 or not pressed:
             return None
         widget.open = not widget.open
@@ -555,9 +565,7 @@ class ControlsMenuView(PanelMenuView):
         move_mode_ids, aim_item_ids = self._sync_lists()
         mouse = Vec2.from_xy(canvas.mouse_position())
         # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
-        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or rl.is_key_pressed(
-            rl.KeyboardKey.KEY_ENTER,
-        )
+        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or self.state.focus.enter
 
         move_selected = self._activate_list(
             resources, self.move_method_list, left_top_left + CONTROLS_MOVE_METHOD_LIST_OFFSET, mouse=mouse, pressed=pressed,
@@ -658,16 +666,22 @@ class ControlsMenuView(PanelMenuView):
             text_color_full,
         )
 
-        ui_checkbox_draw(resources, self._direction_arrow_checkbox, left_top_left + CONTROLS_DIRECTION_ARROW_OFFSET)
+        focus = self.state.focus
+        ui_checkbox_draw(
+            resources, self._direction_arrow_checkbox, left_top_left + CONTROLS_DIRECTION_ARROW_OFFSET, focus=focus,
+        )
 
-        button_draw(resources, self._reset_button, pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET)
+        button_draw(resources, self._reset_button, focus=focus, pos=left_top_left + CONTROLS_RESET_BUTTON_OFFSET)
 
         # `controls_menu_update` draws the lists in update order, so an open list covers the ones below it.
         self._sync_lists()
         mouse = Vec2.from_xy(canvas.mouse_position())
-        ui_list_widget_draw(resources, self.move_method_list, left_top_left + CONTROLS_MOVE_METHOD_LIST_OFFSET, mouse=mouse)
-        ui_list_widget_draw(resources, self.aim_method_list, left_top_left + CONTROLS_AIM_METHOD_LIST_OFFSET, mouse=mouse)
-        ui_list_widget_draw(resources, self.player_list, left_top_left + CONTROLS_PLAYER_LIST_OFFSET, mouse=mouse)
+        for widget, offset in (
+            (self.move_method_list, CONTROLS_MOVE_METHOD_LIST_OFFSET),
+            (self.aim_method_list, CONTROLS_AIM_METHOD_LIST_OFFSET),
+            (self.player_list, CONTROLS_PLAYER_LIST_OFFSET),
+        ):
+            ui_list_widget_draw(resources, widget, left_top_left + offset, focus=focus, mouse=mouse)
 
         # --- Right panel: configured bindings list ---
         def _draw_section_heading(title: str, *, y: float) -> None:
@@ -703,7 +717,7 @@ class ControlsMenuView(PanelMenuView):
             sections=sections,
             font=font,
         )
-        row_iter = iter(rows)
+        row_iter = iter(zip(rows, self._rebind_items, strict=False))
         dropdown_blocked = self._list_open()
 
         y = right_top_left.y + 64.0
@@ -711,7 +725,7 @@ class ControlsMenuView(PanelMenuView):
             _draw_section_heading(section_title, y=y)
             row_y = y + 18.0
             for _ in section_rows:
-                row = next(row_iter)
+                row, item = next(row_iter)
                 capture = self._capture
                 active_row = capture is not None and capture.row == row.row and capture.player_index == player_idx
                 hovered_row = (capture is None) and (not dropdown_blocked) and row.value_rect.contains(mouse)
@@ -721,6 +735,8 @@ class ControlsMenuView(PanelMenuView):
                     else input_code_name(self._binding_code(player_index=player_idx, row=row.row))
                 )
                 value_pos = row.value_pos
+                if item.focused:
+                    focus.draw(value_pos.offset(dx=-16.0))
 
                 draw_small_text(
                     font,

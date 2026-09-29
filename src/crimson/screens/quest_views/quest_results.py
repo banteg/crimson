@@ -118,6 +118,7 @@ class QuestResultsView:
             config=self.state.config,
             preserve_bugs=bool(self.state.preserve_bugs),
             timeline=self.state.ui,
+            focus=self.state.focus,
         )
         self._ui.open(
             record=record,

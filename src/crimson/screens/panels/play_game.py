@@ -20,9 +20,7 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...input_codes import PadCode, pad_nav_pressed
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
-from ...ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
@@ -68,13 +66,10 @@ class PlayGameMenuView(PanelMenuView):
         # Hover fade timers for tooltips (0..1000ms-ish; original uses ~0.0009 alpha scale).
         self._tooltip_ms: dict[str, int] = {}
         self._mode_buttons: dict[str, UiButtonState] = {}
-        # Keyboard/pad focus over the mode buttons; None while the mouse drives.
-        self._focus_index: int | None = None
 
     def open(self) -> None:
         super().open()
         self.player_count_list.open = False
-        self._focus_index = None
         self._dirty = False
         self._tooltip_ms.clear()
         self._mode_buttons.clear()
@@ -82,7 +77,7 @@ class PlayGameMenuView(PanelMenuView):
     def update(self, dt: float) -> None:
         if not self._update_panel(dt, play_open_sfx=False):
             return
-        self._update_back_button(dt, enter=False)
+        self._update_back_button(dt)
         entry = self._entry
         if self.state.ui.closing or entry is None or not self._entry_enabled():
             return
@@ -92,22 +87,17 @@ class PlayGameMenuView(PanelMenuView):
         base_pos = layout.base_pos
         resources = require_runtime_resources(self.state)
 
-        if self._update_player_count(layout.drop_pos, resources=resources):
-            return
-        self._step_player_count()
-
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        # An open player-count list disables the mode buttons.
         button_enabled = not self.player_count_list.open
 
+        # `play_game_menu_update` updates the mode buttons top to bottom, then the player-count list.
         y = base_pos.y
         entries, y_step, y_start, _y_end = self._mode_entries()
-        self._update_focus(len(entries))
-        if button_enabled and self._focus_index is not None and menu_confirm_pressed():
-            self._activate_mode(entries[self._focus_index])
-            return
         y += y_start
-        for index, mode in enumerate(entries):
+        activated: _PlayGameModeEntry | None = None
+        for mode in entries:
             clicked, hovered = self._update_mode_button(
                 mode,
                 Vec2(base_pos.x, y),
@@ -116,12 +106,10 @@ class PlayGameMenuView(PanelMenuView):
                 mouse=mouse,
                 click=click,
                 enabled=button_enabled,
-                focused=index == self._focus_index,
             )
             self._update_tooltip_timer(mode.key, hovered, dt_ms)
-            if clicked:
-                self._activate_mode(mode)
-                return
+            if clicked and activated is None:
+                activated = mode
             y += y_step
 
         # Decay timers for modes that aren't visible right now.
@@ -130,6 +118,10 @@ class PlayGameMenuView(PanelMenuView):
             if key in visible:
                 continue
             self._tooltip_ms[key] = max(0, self._tooltip_ms[key] - dt_ms * 2)
+
+        if self._update_player_count(layout.drop_pos, resources=resources) or activated is None:
+            return
+        self._activate_mode(activated)
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
         if self._dirty:
@@ -268,28 +260,6 @@ class PlayGameMenuView(PanelMenuView):
         y_end = y_start + y_step * float(len(entries))
         return entries, y_step, y_start, y_end
 
-    def _update_focus(self, count: int) -> None:
-        mouse_delta = canvas.mouse_delta()
-        if mouse_delta.x or mouse_delta.y:
-            self._focus_index = None
-        step = menu_focus_step()
-        if step:
-            start = -1 if step > 0 else 0
-            self._focus_index = ((start if self._focus_index is None else self._focus_index) + step) % count
-        elif self._focus_index is not None:
-            # Hiding Typ-o/Tutorial for multiplayer shortens the list.
-            self._focus_index = min(self._focus_index, count - 1)
-
-    def _step_player_count(self) -> None:
-        step = int(pad_nav_pressed(PadCode.DPAD_RIGHT)) - int(pad_nav_pressed(PadCode.DPAD_LEFT))
-        if not step:
-            return
-        gameplay = self.state.config.gameplay
-        count = max(1, min(len(self._PLAYER_COUNT_LABELS), gameplay.player_count + step))
-        if count != gameplay.player_count:
-            gameplay.player_count = count
-            self._dirty = True
-
     def _mode_button_state(self, mode: _PlayGameModeEntry) -> UiButtonState:
         state = self._mode_buttons.get(mode.key)
         if state is None:
@@ -309,18 +279,17 @@ class PlayGameMenuView(PanelMenuView):
         mouse: rl.Vector2,
         click: bool,
         enabled: bool,
-        focused: bool,
     ) -> tuple[bool, bool]:
         state = self._mode_button_state(mode)
         state.enabled = bool(enabled)
         clicked = button_update(
             resources,
             state,
+            focus=self.state.focus,
             pos=pos,
             dt_ms=float(dt_ms),
             mouse=mouse,
             click=bool(click),
-            focused=focused,
         )
         return clicked, state.hovered
 
@@ -342,11 +311,10 @@ class PlayGameMenuView(PanelMenuView):
         """`play_game_menu_update`'s player-count list; returns whether it took the press."""
         widget = self.player_count_list
         widget.selected_index = self.state.config.gameplay.player_count - 1
-        selected = ui_list_widget_update(resources, widget, pos, mouse=Vec2.from_xy(canvas.mouse_position()))
+        focus = self.state.focus
+        selected = ui_list_widget_update(resources, widget, pos, focus=focus, mouse=Vec2.from_xy(canvas.mouse_position()))
         # `input_primary_just_pressed() || grim_was_key_pressed(Enter)`.
-        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or rl.is_key_pressed(
-            rl.KeyboardKey.KEY_ENTER,
-        )
+        pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) or focus.enter
         if selected <= -2 or not pressed:
             return False
         widget.open = not widget.open
@@ -415,7 +383,7 @@ class PlayGameMenuView(PanelMenuView):
     def _draw_player_count(self, pos: Vec2, *, resources: RuntimeResources) -> None:
         widget = self.player_count_list
         widget.selected_index = self.state.config.gameplay.player_count - 1
-        ui_list_widget_draw(resources, widget, pos, mouse=Vec2.from_xy(canvas.mouse_position()))
+        ui_list_widget_draw(resources, widget, pos, focus=self.state.focus, mouse=Vec2.from_xy(canvas.mouse_position()))
 
     def _draw_mode_button(
         self,
@@ -425,7 +393,7 @@ class PlayGameMenuView(PanelMenuView):
         resources: RuntimeResources,
     ) -> None:
         state = self._mode_button_state(mode)
-        button_draw(resources, state, pos=pos)
+        button_draw(resources, state, focus=self.state.focus, pos=pos)
 
     def _draw_mode_count(self, key: str, pos: Vec2, color: rl.Color, *, font: SmallFontData) -> None:
         status = self.state.status

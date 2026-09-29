@@ -56,6 +56,7 @@ from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.timing import ftol_ms_i32
 from ..terrain_slots import TerrainSlotTriplet
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
+from ..ui.focus import UiFocus
 from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar
 from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
@@ -78,6 +79,9 @@ class _ModePerkMenuRuntime(PerkMenuRuntime):
 
     def ui_timeline(self) -> UiTimeline:
         return self.mode._ui_timeline
+
+    def ui_focus(self) -> UiFocus:
+        return self.mode._ui_focus
 
     def play_sfx(self, sfx_id: SfxId) -> None:
         self.mode.audio_bridge.play_sfx(sfx_id)
@@ -167,6 +171,8 @@ class BaseGameplayMode:
         self._last_dt_ms = 0.0
         # The menu timeline gameplay runs on (GameState.ui once bound), and native `gameplay_transition_latch`.
         self._ui_timeline = UiTimeline()
+        # The menu keyboard focus (GameState.focus once bound) for the perk menu, tutorial and game over widgets.
+        self._ui_focus = UiFocus()
         self._gameplay_transition_latch = False
         # Native `game_state_pending` while gameplay runs the timeline down: the pause menu, or the run's end.
         self._pause_pending = False
@@ -337,6 +343,8 @@ class BaseGameplayMode:
             # Gameplay, perk selection and game over all run on the one menu timeline.
             self._ui_timeline = fade.ui
             self._game_over_ui.timeline = fade.ui
+            self._ui_focus = fade.focus
+            self._game_over_ui.focus = fade.focus
 
     def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None:
         self.audio = audio

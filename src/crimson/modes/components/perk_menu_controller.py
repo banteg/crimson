@@ -14,19 +14,21 @@ from grim.math import clamp
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
-from ...input_codes import PadCode, pad_nav_pressed
 from ...perks import PerkId, perk_display_description, perk_display_name
 from ...sim.state_types import PerkCounts, PlayerState
+from ...ui.focus import UiFocus
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import (
     PerkMenuLayout,
     UiButtonState,
+    UiMenuItem,
     button_draw,
     button_update,
     draw_menu_item,
     draw_ui_text,
     menu_item_hit_rect,
     perk_menu_compute_layout,
+    ui_menu_item_update,
 )
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
@@ -35,10 +37,15 @@ UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 
 class PerkMenuRuntime(msgspec.Struct, kw_only=True):
     standalone_timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
+    standalone_focus: UiFocus = msgspec.field(default_factory=UiFocus)
 
     def ui_timeline(self) -> UiTimeline:
         """The menu timeline the perk selection state runs on."""
         return self.standalone_timeline
+
+    def ui_focus(self) -> UiFocus:
+        """The menu keyboard focus the choices and Cancel register with."""
+        return self.standalone_focus
 
     def on_close(self) -> None:
         return None
@@ -93,6 +100,10 @@ class PerkMenuController:
         return self._runtime.ui_timeline()
 
     @property
+    def focus(self) -> UiFocus:
+        return self._runtime.ui_focus()
+
+    @property
     def active(self) -> bool:
         """Open, or still sliding out: gameplay resumes once the timeline drops below 0."""
         return self._open or self._closing
@@ -100,6 +111,8 @@ class PerkMenuController:
     def reset(self) -> None:
         self._layout = PerkMenuLayout()
         self._cancel_button = UiButtonState(self._cancel_label)
+        # `perk_selection_screen_update`'s `choice_items`: one menu item per perk choice.
+        self._choice_items = tuple(UiMenuItem() for _ in range(10))
         self._open = False
         self._closing = False
         self._selected_index = 0
@@ -175,6 +188,8 @@ class PerkMenuController:
         self._runtime.play_sfx(SfxId.UI_PANELCLICK)
         self._open = True
         self._selected_index = 0
+        # The choices register first, so this focuses the first one (native keeps whatever index was focused).
+        self.focus.index = 0
         self.timeline.enter(ui_elements_max_timeline(GameStateId.PERK_SELECTION))
 
     def tick_timeline(self) -> None:
@@ -196,11 +211,7 @@ class PerkMenuController:
 
         if self._selected_index >= len(choices):
             self._selected_index = 0
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN) or pad_nav_pressed(PadCode.DPAD_DOWN):
-            self._selected_index = (self._selected_index + 1) % len(choices)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP) or pad_nav_pressed(PadCode.DPAD_UP):
-            self._selected_index = (self._selected_index - 1) % len(choices)
+        focus = self.focus
 
         screen_w = float(canvas.width())
         slide_x = ui_element_anim(self.timeline.timeline_ms, index=27, width=self._layout.panel_size.x)[1]
@@ -218,24 +229,33 @@ class PerkMenuController:
             panel_slide_x=slide_x,
         )
 
+        # `perk_selection_screen_update`: the choices are menu items, then Cancel is a button, in focus order. The
+        # hovered choice is the selected one; the port also selects the focused one, so Tab and the pad walk them.
+        items = self._choice_items[: len(choices)]
+        picked: int | None = None
         for idx, perk_id in enumerate(choices):
-            label = perk_display_name(
+            item = items[idx]
+            item.label = perk_display_name(
                 perk_id,
                 violence_disabled=int(ctx.violence_disabled),
             )
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
-            rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos)
-            if rect.contains(ctx.mouse):
+            rect = menu_item_hit_rect(ctx.resources, item.label, pos=item_pos)
+            if ui_menu_item_update(item, focus=focus, hit=rect, mouse=ctx.mouse, click=click) and picked is None:
+                picked = idx
+            if item.hovered or item.focused:
                 self._selected_index = idx
-                if click:
-                    self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
-                    self.close()
-                    return int(idx)
-                break
+
+        # The port's arrow keys step the selection and move the focus with it; native has no arrow keys here.
+        step = int(focus.down) - int(focus.up)
+        if step:
+            self._selected_index = (self._selected_index + step) % len(choices)
+            focus.set(items[self._selected_index], reset_timer=True)
 
         if button_update(
             ctx.resources,
             self._cancel_button,
+            focus=focus,
             pos=computed.cancel_pos,
             dt_ms=float(dt_ui_ms),
             mouse=ctx.mouse,
@@ -245,14 +265,13 @@ class PerkMenuController:
             self.close()
             return None
 
-        if (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-            or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE)
-            or pad_nav_pressed(PadCode.FACE_DOWN)
-        ):
+        # Native only takes a choice under the mouse; the port also takes the selected one on Enter, Space or A.
+        if picked is None and (focus.enter or rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE)):
+            picked = self._selected_index
+        if picked is not None:
             self._runtime.play_sfx(SfxId.UI_BUTTONCLICK)
             self.close()
-            return int(self._selected_index)
+            return int(picked)
         return None
 
     def draw(self, ctx: PerkMenuUiContext, choices: Sequence[PerkId]) -> None:
@@ -309,6 +328,8 @@ class PerkMenuController:
             item_pos = computed.list_pos.offset(dy=float(idx) * computed.list_step_y)
             rect = menu_item_hit_rect(ctx.resources, label, pos=item_pos)
             hovered = rect.contains(ctx.mouse) or (idx == self._selected_index)
+            if self._choice_items[idx].focused:
+                self.focus.draw(item_pos.offset(dx=-16.0))
             draw_menu_item(ctx.resources, label, pos=item_pos, hovered=hovered)
 
         selected = choices[self._selected_index]
@@ -327,5 +348,6 @@ class PerkMenuController:
         button_draw(
             ctx.resources,
             self._cancel_button,
+            focus=self.focus,
             pos=computed.cancel_pos,
         )

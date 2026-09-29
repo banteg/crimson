@@ -414,7 +414,7 @@ class CreditsView:
         self._update_scroll_window()
 
         interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
+        if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
@@ -442,6 +442,7 @@ class CreditsView:
         if button_update(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
             dt_ms=dt_ms_f,
             mouse=mouse,
@@ -455,6 +456,7 @@ class CreditsView:
         if self._secret_button_visible() and button_update(
             resources,
             self._secret_button,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
             dt_ms=dt_ms_f,
             mouse=mouse,
@@ -517,6 +519,7 @@ class CreditsView:
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
         )
 
@@ -524,6 +527,7 @@ class CreditsView:
             button_draw(
                 resources,
                 self._secret_button,
+                focus=self.state.focus,
                 pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
             )
 

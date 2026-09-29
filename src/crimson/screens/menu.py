@@ -26,7 +26,6 @@ from crimson.ui.menu_layout import (
     menu_slot_pos_x,
     update_menu_item_timers,
 )
-from crimson.ui.menu_nav import menu_confirm_pressed, menu_focus_step
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
@@ -46,8 +45,6 @@ class MenuView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
         self._menu_entries: list[MenuEntry] = []
-        self._selected_index = 0
-        self._focus_timer_ms = 0
         self._hovered_index: int | None = None
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
@@ -61,8 +58,6 @@ class MenuView:
             mods_available=self._mods_available(),
             other_games=self._other_games_enabled(),
         )
-        self._selected_index = 0 if self._menu_entries else -1
-        self._focus_timer_ms = 0
         self._hovered_index = None
         self._enter_timeline()
         self._panel_open_sfx_played = False
@@ -98,32 +93,32 @@ class MenuView:
             self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if not self.state.ui.advance(dt_ms):
-            self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
+            # `ui_element_update` runs on while the items slide out, so the clicked item keeps lighting up.
+            update_menu_item_timers(
+                self._menu_entries, self._hovered_index, dt_ms, focus_timer_ms=self.state.focus.timer_ms,
+            )
             return
 
-        if dt_ms > 0:
-            self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
-            if self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
-                self.state.menu_sign_locked = True
-                if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                    play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-                    self._panel_open_sfx_played = True
+        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
+            self.state.menu_sign_locked = True
+            if (not self._panel_open_sfx_played) and (self.state.audio is not None):
+                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
+                self._panel_open_sfx_played = True
         if not self._menu_entries:
             return
 
         resources = require_runtime_resources(self.state)
         self._hovered_index = self._hovered_entry_index(resources)
 
-        delta = menu_focus_step()
-        if delta:
-            self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
-            self._focus_timer_ms = 1000
-
+        # `ui_element_render`: each item with a click handler registers for focus, and Enter on the focused one
+        # activates it. Native walks the element table backwards, which puts Quit first (Enter on a fresh menu
+        # quits) and walks Tab up the menu; the port registers the items top to bottom.
+        focus = self.state.focus
         activated_index: int | None = None
-        if menu_confirm_pressed() and 0 <= self._selected_index < len(self._menu_entries):
-            entry = self._menu_entries[self._selected_index]
-            if self._menu_entry_enabled(entry):
-                activated_index = self._selected_index
+        for index, entry in enumerate(self._menu_entries):
+            entry.focused = focus.update(entry)
+            if entry.focused and focus.enter and self._menu_entry_enabled(entry):
+                activated_index = index
 
         if (
             activated_index is None
@@ -133,13 +128,11 @@ class MenuView:
             hovered = self._hovered_index
             entry = self._menu_entries[hovered]
             if self._menu_entry_enabled(entry):
-                self._selected_index = hovered
-                self._focus_timer_ms = 1000
                 activated_index = hovered
 
         if activated_index is not None:
             self._activate_menu_entry(activated_index)
-        update_menu_item_timers(self._menu_entries, self._hovered_index, dt_ms)
+        update_menu_item_timers(self._menu_entries, self._hovered_index, dt_ms, focus_timer_ms=focus.timer_ms)
 
     def draw(self) -> None:
         self._assert_open()
@@ -264,10 +257,7 @@ class MenuView:
             )
             _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
             item_scale, local_y_shift = main_menu_item_scale(self._menu_screen_width, entry.slot)
-            counter_value = entry.hover_amount
-            if idx == self._selected_index and self._focus_timer_ms > 0:
-                counter_value = self._focus_timer_ms
-            alpha = label_alpha(counter_value)
+            alpha = label_alpha(entry.hover_amount)
             glow_alpha = None
             if self._menu_entry_enabled(entry):
                 glow_alpha = alpha
