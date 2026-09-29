@@ -251,6 +251,11 @@ class BaseGameplayMode:
         except ValueError:
             return GameMode.DEMO
 
+    def _ui_transparency(self) -> float:
+        """`ui_render_hud`: `cv_uiTransparency` scales the HUD's transition alpha when it is within 0..1."""
+        value = self._cvar_float("cv_uiTransparency", 1.0)
+        return value if 0.0 <= value <= 1.0 else 1.0
+
     def _draw_hud(self, *, elapsed_ms: float, quest_progress_ratio: float | None = None) -> float:
         """`hud_update_and_render`; returns the HUD's bottom edge."""
         return draw_hud_overlay(
@@ -258,7 +263,7 @@ class BaseGameplayMode:
                 resources=self.render_resources.resources,
                 state=self._hud_state,
                 font=self._small,
-                alpha=self._hud_alpha(),
+                alpha=self._hud_alpha() * self._ui_transparency(),
                 game_mode=self._config_game_mode_id(),
                 small_indicators=self._hud_small_indicators(),
             ),
@@ -959,6 +964,8 @@ class BaseGameplayMode:
         if float(dt_frame) <= 0.0:
             return
         self._sync_audio()
+        # Presentation only: the corpse decal alpha, never read back by the sim.
+        session.terrain_fx.corpses.bodies_transparency = self._cvar_float("cv_terrainBodiesTransparency")
         self._live_ticks.poll(self._build_local_inputs(dt=float(dt_frame)))
         plans: list[DeterministicPresentationPlan] = []
         for _ in range(self._tick_clock.advance(float(dt_frame))):

@@ -544,6 +544,8 @@ class FxQueueRotated:
     def __init__(self) -> None:
         self._entries = [FxQueueRotatedEntry() for _ in range(FX_QUEUE_ROTATED_CAPACITY)]
         self._count = 0
+        # Native `cv_terrainBodiesTransparency`: 0 scales corpse alpha by 0.8, otherwise by its reciprocal.
+        self.bodies_transparency = 0.0
 
     @property
     def entries(self) -> list[FxQueueRotatedEntry]:
@@ -567,7 +569,6 @@ class FxQueueRotated:
         rotation: float,
         scale: float,
         creature_type_id: int,
-        terrain_bodies_transparency: float = 0.0,
         terrain_texture_failed: bool = False,
     ) -> bool:
         """Port of `fx_queue_add_rotated` (0x00427840)."""
@@ -578,7 +579,7 @@ class FxQueueRotated:
         if self._count >= FX_QUEUE_ROTATED_MAX_COUNT:
             return False
 
-        transparency = f32(terrain_bodies_transparency)
+        transparency = f32(self.bodies_transparency)
         # Native divides first, then multiplies at gameplay PC=24 precision.
         alpha_scale = x87_pc24_div(1.0, transparency) if transparency != 0.0 else f32(0.8)
         a = x87_pc24_mul(f32(rgba.a), alpha_scale)

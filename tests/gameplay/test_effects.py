@@ -168,25 +168,25 @@ def test_effect_pool_spawn_canonicalizes_native_f32_fields() -> None:
 
 def test_fx_queue_rotated_applies_alpha_adjustment() -> None:
     q = FxQueueRotated()
+    q.bodies_transparency = 2.0
     assert q.add(
         top_left=Vec2(),
         rgba=RGBA(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
         creature_type_id=3,
-        terrain_bodies_transparency=2.0,
     )
     entry = q.entries[0]
     assert_float_close(entry.color.a, 0.5)
 
     q.clear()
+    q.bodies_transparency = 0.0
     assert q.add(
         top_left=Vec2(),
         rgba=RGBA(1.0, 1.0, 1.0, 1.0),
         rotation=0.0,
         scale=64.0,
         creature_type_id=3,
-        terrain_bodies_transparency=0.0,
     )
     entry = q.entries[0]
     assert entry.color.a == f32(0.8)
