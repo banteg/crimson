@@ -5,7 +5,6 @@ import math
 from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
 from crimson.math_parity import f32, f32_from_bits
-from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
@@ -144,7 +143,7 @@ def test_ranged_projectile_can_damage_player() -> None:
     )
 
     world.state.projectiles.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.001), dt=0.001),
+        make_step_runtime(world, dt=0.001),
     )
 
     # Creature projectiles subtract a flat 10 from an unshielded player.
@@ -172,7 +171,7 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     )
 
     world.state.projectiles.step(
-        PrimaryStepCtx(step_runtime=step_runtime, dt=0.1),
+        step_runtime,
     )
 
     assert target.hp <= 0.0

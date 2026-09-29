@@ -14,9 +14,9 @@ from crimson.replay.checkpoints import FORMAT_VERSION, ReplayCheckpoints, dump_c
 from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,
     BenchmarkSample,
+    RenderTelemetryFrame,
     ReplayBenchmarkResult,
     ReplayRenderTelemetryArtifacts,
-    ReplayRenderTelemetryFrame,
     ReplayRenderTelemetryResult,
     ReplayRenderTelemetrySummary,
     ReplayRenderTelemetryTopTick,
@@ -402,7 +402,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
     run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
-    telemetry_frame = ReplayRenderTelemetryFrame(
+    telemetry_frame = RenderTelemetryFrame(
         frame_index=0,
         tick_index_before_update=0,
         tick_index_after_update=1,

@@ -2,43 +2,14 @@ from __future__ import annotations
 
 import html
 import importlib
-import json
 import math
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Protocol, cast
+from typing import Any, cast
 
 import msgspec
 
-
-class _TelemetryFrameLike(Protocol):
-    @property
-    def tick_index_after_update(self) -> int: ...
-
-    @property
-    def frame_ms(self) -> float: ...
-
-    @property
-    def update_ms(self) -> float: ...
-
-    @property
-    def draw_ms(self) -> float: ...
-
-    @property
-    def draw_calls_total(self) -> int: ...
-
-    @property
-    def pass_ms(self) -> dict[str, float]: ...
-
-
-class _TelemetryFrame(msgspec.Struct, frozen=True):
-    tick_index_after_update: int
-    frame_ms: float
-    update_ms: float
-    draw_ms: float
-    draw_calls_total: int
-    pass_ms: dict[str, float]
-
+from .render_telemetry import RenderTelemetryFrame
 
 _TIMING_COLORS = ("#4E79A7", "#F28E2B", "#E15759")
 _DRAW_CALLS_COLOR = "#59A14F"
@@ -77,7 +48,7 @@ class _PassChartMeta(msgspec.Struct, frozen=True):
 
 def write_render_telemetry_charts(
     *,
-    frames: Sequence[_TelemetryFrameLike],
+    frames: Sequence[RenderTelemetryFrame],
     out_dir: Path,
     telemetry_json_path: Path | None = None,
 ) -> dict[str, Path]:
@@ -114,36 +85,7 @@ def write_render_telemetry_charts(
     }
 
 
-def write_render_telemetry_charts_from_json(
-    *,
-    telemetry_json_path: Path,
-    out_dir: Path,
-) -> dict[str, Path]:
-    payload = json.loads(Path(telemetry_json_path).read_text(encoding="utf-8"))
-    frames_payload = payload.get("frames")
-    if not isinstance(frames_payload, list):
-        raise TypeError("telemetry json is missing a frames list")
-    frames: list[_TelemetryFrame] = []
-    for entry in frames_payload:
-        if not isinstance(entry, dict):
-            continue
-        frame = _TelemetryFrame(
-            tick_index_after_update=int(entry.get("tick_index_after_update", 0)),
-            frame_ms=float(entry.get("frame_ms", 0.0)),
-            update_ms=float(entry.get("update_ms", 0.0)),
-            draw_ms=float(entry.get("draw_ms", 0.0)),
-            draw_calls_total=int(entry.get("draw_calls_total", 0)),
-            pass_ms={str(k): float(v) for k, v in cast(dict[str, Any], entry.get("pass_ms", {})).items()},
-        )
-        frames.append(frame)
-    return write_render_telemetry_charts(
-        frames=frames,
-        out_dir=out_dir,
-        telemetry_json_path=Path(telemetry_json_path),
-    )
-
-
-def _frame_row(frame: _TelemetryFrameLike) -> dict[str, Any]:
+def _frame_row(frame: RenderTelemetryFrame) -> dict[str, Any]:
     return {
         "tick_index": int(frame.tick_index_after_update),
         "frame_ms": float(frame.frame_ms),
@@ -413,4 +355,4 @@ def _write_report_md(
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-__all__ = ["write_render_telemetry_charts", "write_render_telemetry_charts_from_json"]
+__all__ = ["write_render_telemetry_charts"]

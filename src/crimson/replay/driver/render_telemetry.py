@@ -9,7 +9,7 @@ import msgspec
 from ...render.world import profile_hooks
 
 
-class RenderTelemetryFrameSnapshot(msgspec.Struct, frozen=True):
+class RenderTelemetryFrame(msgspec.Struct, frozen=True):
     frame_index: int
     tick_index_before_update: int
     tick_index_after_update: int
@@ -20,14 +20,6 @@ class RenderTelemetryFrameSnapshot(msgspec.Struct, frozen=True):
     draw_calls_by_api: dict[str, int]
     draw_calls_by_pass: dict[str, int]
     pass_ms: dict[str, float]
-
-
-class _SessionSink:
-    def __init__(self, session: RenderTelemetrySession) -> None:
-        self._session = session
-
-    def on_pass_duration(self, pass_name: str, duration_ms: float) -> None:
-        self._session.record_pass_duration(pass_name, duration_ms)
 
 
 class RenderTelemetrySession:
@@ -48,18 +40,17 @@ class RenderTelemetrySession:
     def __init__(self) -> None:
         self._active = False
         self._originals: dict[str, Callable[..., Any]] = {}
-        self._frames: list[RenderTelemetryFrameSnapshot] = []
+        self._frames: list[RenderTelemetryFrame] = []
         self._current_frame_index: int | None = None
         self._current_tick_before_update: int | None = None
         self._draw_calls_total = 0
         self._draw_calls_by_api: defaultdict[str, int] = defaultdict(int)
         self._draw_calls_by_pass: defaultdict[str, int] = defaultdict(int)
         self._pass_ms: defaultdict[str, float] = defaultdict(float)
-        self._sink = _SessionSink(self)
         self._prev_sink: profile_hooks.RenderProfileSink | None = None
 
     @property
-    def frames(self) -> tuple[RenderTelemetryFrameSnapshot, ...]:
+    def frames(self) -> tuple[RenderTelemetryFrame, ...]:
         return tuple(self._frames)
 
     def start(self) -> None:
@@ -70,7 +61,7 @@ class RenderTelemetrySession:
 
         self._active = True
         profile_hooks.clear_pass_stack()
-        self._prev_sink = profile_hooks.set_active_sink(self._sink)
+        self._prev_sink = profile_hooks.set_active_sink(self)
         for fn_name, api_name in self._INTERCEPT_APIS:
             original = getattr(rl, fn_name, None)
             if original is None or not callable(original):
@@ -124,7 +115,7 @@ class RenderTelemetrySession:
     ) -> None:
         if self._current_frame_index is None or self._current_tick_before_update is None:
             return
-        snapshot = RenderTelemetryFrameSnapshot(
+        snapshot = RenderTelemetryFrame(
             frame_index=int(self._current_frame_index),
             tick_index_before_update=int(self._current_tick_before_update),
             tick_index_after_update=int(tick_index_after_update),
@@ -149,10 +140,11 @@ class RenderTelemetrySession:
         pass_name = profile_hooks.current_pass_name() or "_unscoped"
         self._draw_calls_by_pass[str(pass_name)] += 1
 
-    def record_pass_duration(self, pass_name: str, duration_ms: float) -> None:
+    def on_pass_duration(self, pass_name: str, duration_ms: float) -> None:
+        """The profile sink: a render pass finished."""
         if self._current_frame_index is None:
             return
         self._pass_ms[str(pass_name)] += float(duration_ms)
 
 
-__all__ = ["RenderTelemetryFrameSnapshot", "RenderTelemetrySession"]
+__all__ = ["RenderTelemetryFrame", "RenderTelemetrySession"]

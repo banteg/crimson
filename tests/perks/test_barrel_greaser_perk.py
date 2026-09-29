@@ -6,7 +6,6 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
@@ -41,7 +40,7 @@ def _step_pistol_projectile(*, barrel_greaser: bool) -> float:
     )
 
     pool.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.016), dt=0.016),
+        make_step_runtime(world, dt=0.016),
     )
 
     return float(pool.entries[proj_idx].pos.x)

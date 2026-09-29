@@ -6,7 +6,7 @@ from unittest.mock import patch
 from crimson.creatures.damage import creature_apply_damage
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
-from crimson.projectiles.runtime import PrimaryStepCtx, projectile_pool
+from crimson.projectiles.runtime import projectile_pool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -86,7 +86,7 @@ def observe(case):
         patch.object(projectile_pool, "creature_apply_damage", record_damage),
     ):
         hits = state.projectiles.step(
-            PrimaryStepCtx(step_runtime=runtime, dt=case["dt"]),
+            runtime,
         )
     assert len(hits) == 1 and not runtime.deaths
     return {

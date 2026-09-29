@@ -33,7 +33,7 @@ from crimson.movement_controls import MovementControlType
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
 from crimson.perks.effects import perks_update_effects
-from crimson.projectiles.runtime import PrimaryStepCtx, ProjectilePool
+from crimson.projectiles.runtime import ProjectilePool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
@@ -1785,7 +1785,7 @@ def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
     assert first_proj >= 0
     assert not state.bonus_spawn_guard
 
-    step_ctx = PrimaryStepCtx(step_runtime=step_runtime, dt=0.1)
+    step_ctx = step_runtime
     pool.step(step_ctx)
 
     assert state.shock_chain_links_left == 0x20

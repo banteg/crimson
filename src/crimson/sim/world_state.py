@@ -26,7 +26,6 @@ from ..perks import PerkId
 from ..perks.effects import perks_update_effects
 from ..perks.selection import perk_selection_open_choices
 from ..player_damage import player_take_projectile_damage
-from ..projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.timeline import tutorial_timeline_update
@@ -235,12 +234,8 @@ class WorldState(msgspec.Struct):
             sfx=[],
         )
         self.creatures.update(step_runtime)
-        hits = self.state.projectiles.step(
-            PrimaryStepCtx(step_runtime=step_runtime, dt=float(dt)),
-        )
-        secondary_hit_count = self.state.secondary_projectiles.step(
-            SecondaryStepCtx(step_runtime=step_runtime, dt=float(dt)),
-        )
+        hits = self.state.projectiles.step(step_runtime)
+        secondary_hit_count = self.state.secondary_projectiles.step(step_runtime)
         # Native updates the sprite pool before the particle loop, so sprites
         # spawned by particles only advance on the next tick.
         self.state.sprite_effects.update(dt)

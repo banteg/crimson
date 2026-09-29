@@ -6,7 +6,6 @@ from crimson.effects import EffectPool
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.effects import _spawn_ion_hit_effects
-from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -44,7 +43,7 @@ def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> World
     )
     step_runtime = make_step_runtime(world, dt=0.016)
     world.state.projectiles.step(
-        PrimaryStepCtx(step_runtime=step_runtime, dt=0.016),
+        step_runtime,
     )
     return step_runtime
 

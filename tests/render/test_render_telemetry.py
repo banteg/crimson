@@ -6,7 +6,7 @@ from crimson.render.world.profile_hooks import profile_pass
 from crimson.replay.driver.render_telemetry import RenderTelemetrySession
 from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,
-    ReplayRenderTelemetryFrame,
+    RenderTelemetryFrame,
     _summarize_render_telemetry,
 )
 
@@ -56,7 +56,7 @@ def test_render_telemetry_session_counts_calls_and_restores(monkeypatch) -> None
 
 
 def test_render_telemetry_summary_orders_top_ticks() -> None:
-    frame_1 = ReplayRenderTelemetryFrame(
+    frame_1 = RenderTelemetryFrame(
         frame_index=0,
         tick_index_before_update=0,
         tick_index_after_update=1,
@@ -68,7 +68,7 @@ def test_render_telemetry_summary_orders_top_ticks() -> None:
         draw_calls_by_pass={},
         pass_ms={},
     )
-    frame_2 = ReplayRenderTelemetryFrame(
+    frame_2 = RenderTelemetryFrame(
         frame_index=1,
         tick_index_before_update=1,
         tick_index_after_update=2,

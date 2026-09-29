@@ -13,7 +13,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
 from crimson.owner_id import player_owner_id
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec
+from crimson.projectiles.runtime import SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileHit, ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
@@ -225,8 +225,7 @@ def test_world_step_trooper_death_sfx_respects_preserve_bugs(
     before_state = rng.state
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
-        ctx = cast("PrimaryStepCtx", _args[0])
-        step_runtime = ctx.step_runtime
+        step_runtime = cast("WorldStepRuntime", _args[0])
         creature_apply_damage(
             step_runtime,
             0,
@@ -399,8 +398,7 @@ def test_projectile_lethal_hit_records_death_before_particles_update(mocker) -> 
     )
 
     def _fake_projectile_step(*_args: object, **_kwargs: object) -> list[ProjectileHit]:
-        ctx = cast("PrimaryStepCtx", _args[0])
-        step_runtime = ctx.step_runtime
+        step_runtime = cast("WorldStepRuntime", _args[0])
         creature_apply_damage(
             step_runtime,
             0,
@@ -493,9 +491,8 @@ def test_ranged_shock_lethal_has_no_resolved_death_sfx(mocker) -> None:
 
     def _fake_projectile_step(*args: object, **kwargs: object) -> list[ProjectileHit]:
         _ = kwargs
-        ctx = cast("PrimaryStepCtx", args[0])
         creature_apply_damage(
-            ctx.step_runtime,
+            cast("WorldStepRuntime", args[0]),
             0,
             1000.0,
             CreatureDamageType.BULLET,
@@ -603,8 +600,7 @@ def test_freeze_hit_path_triggers_tune_and_skips_hit_sfx(mocker) -> None:
     )
 
     def _fake_projectile_step(*args: object, **_kwargs: object) -> list[ProjectileHit]:
-        ctx = cast("PrimaryStepCtx", args[0])
-        step_runtime = ctx.step_runtime
+        step_runtime = cast("WorldStepRuntime", args[0])
         hit = ProjectileHit(
             type_id=ProjectileTemplateId.PISTOL,
             origin=Vec2(0.0, 0.0),

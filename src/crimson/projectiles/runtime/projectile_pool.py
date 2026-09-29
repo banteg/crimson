@@ -53,11 +53,6 @@ if TYPE_CHECKING:
     from ...sim.world_state import WorldStepRuntime
 
 
-class PrimaryStepCtx(msgspec.Struct, frozen=True):
-    step_runtime: WorldStepRuntime
-    dt: float
-
-
 _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
     hit_radius=1.0,
     initial_damage_pool=1.0,
@@ -159,13 +154,12 @@ class ProjectilePool:
     def iter_active(self) -> list[Projectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def step(self, ctx: PrimaryStepCtx) -> list[ProjectileHit]:
+    def step(self, step_runtime: WorldStepRuntime) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
-        dt = f32(ctx.dt)
-        step_runtime = ctx.step_runtime
+        dt = f32(step_runtime.dt)
         world = step_runtime.world
         creatures = world.creatures.entries
         detail_preset = int(step_runtime.world.state.detail_preset)

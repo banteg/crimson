@@ -8,10 +8,8 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, x87_pc24_sub
 from crimson.projectiles.runtime import (
-    PrimaryStepCtx,
     SecondaryProjectilePool,
     SecondarySpawnSpec,
-    SecondaryStepCtx,
 )
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
@@ -133,7 +131,7 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
 
     for _ in range(2):
         pool.step(
-            PrimaryStepCtx(step_runtime=step_runtime, dt=0.1),
+            step_runtime,
         )
 
     assert state.shock_chain_links_left == 0x1F
@@ -193,7 +191,7 @@ def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: 
     pool.entries[idx].target_id = 0
 
     pool.step(
-        SecondaryStepCtx(step_runtime=make_step_runtime(world, dt=0.01), dt=0.01),
+        make_step_runtime(world, dt=0.01),
     )
 
     assert pool.entries[idx].target_id == expected_target_id

@@ -5,7 +5,6 @@ from crimson.creatures.runtime import CreatureState
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
@@ -43,7 +42,7 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         pool.entries[proj_idx].life_timer = 0.39
 
         pool.step(
-            PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.016), dt=0.016),
+            make_step_runtime(world, dt=0.016),
         )
 
         return float(creatures[0].hp)

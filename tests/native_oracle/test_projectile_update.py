@@ -16,7 +16,6 @@ from crimson.creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
-from crimson.projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -186,7 +185,7 @@ def _step_secondary(oracle, world: WorldState, dt: float) -> None:
     oracle.call("projectile_update")
     runtime = _step_runtime(world, dt)
     world.state.secondary_projectiles.step(
-        SecondaryStepCtx(step_runtime=runtime, dt=dt),
+        runtime,
     )
 
 
@@ -372,7 +371,7 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
         oracle.call("projectile_update")
         runtime = _step_runtime(world, dt)
         state.projectiles.step(
-            PrimaryStepCtx(step_runtime=runtime, dt=dt),
+            runtime,
         )
 
         case = f"{type_id.name} seed=0x{seed:08x}"

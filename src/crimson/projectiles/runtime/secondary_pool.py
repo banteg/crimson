@@ -73,11 +73,6 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
     preserve_bugs: bool = False
 
 
-class SecondaryStepCtx(msgspec.Struct, frozen=True):
-    step_runtime: WorldStepRuntime
-    dt: float
-
-
 def _creature_is_collidable(creature: CreatureState) -> bool:
     if not creature.active:
         return False
@@ -86,13 +81,12 @@ def _creature_is_collidable(creature: CreatureState) -> bool:
 
 def _step_detonation(
     entry: SecondaryProjectile,
-    ctx: SecondaryStepCtx,
+    step_runtime: WorldStepRuntime,
     *,
     dt: float,
     creature_spatial: CreatureSpatialHash,
     rng: CrandLike,
 ) -> None:
-    step_runtime = ctx.step_runtime
     runtime_state, creatures = step_runtime.world.state, step_runtime.world.creatures.entries
     fx_queue = step_runtime.fx_queue
     runtime_state.camera_shake_pulses = 4
@@ -340,10 +334,9 @@ class SecondaryProjectilePool:
     def iter_active(self) -> list[SecondaryProjectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def step(self, ctx: SecondaryStepCtx) -> int:
+    def step(self, step_runtime: WorldStepRuntime) -> int:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
-        dt = float(ctx.dt)
-        step_runtime = ctx.step_runtime
+        dt = float(step_runtime.dt)
         runtime_state = step_runtime.world.state
         creatures = step_runtime.world.creatures.entries
         fx_queue = step_runtime.fx_queue
@@ -366,7 +359,7 @@ class SecondaryProjectilePool:
 
             type_id = entry.type_id
             if type_id == SecondaryProjectileTypeId.DETONATION:
-                _step_detonation(entry, ctx, dt=dt, creature_spatial=creature_spatial, rng=rng)
+                _step_detonation(entry, step_runtime, dt=dt, creature_spatial=creature_spatial, rng=rng)
                 continue
 
             _move_rocket(entry, dt=dt, creatures=creatures, runtime_state=runtime_state)

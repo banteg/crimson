@@ -4,7 +4,7 @@ from functools import partial
 
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
-from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec, SecondaryStepCtx
+from crimson.projectiles.runtime import SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -51,7 +51,7 @@ def _step_rocket_into(creature: CreatureState) -> GameplayState:
     place_creatures(world, [creature])
 
     state.secondary_projectiles.step(
-        SecondaryStepCtx(step_runtime=make_step_runtime(world), dt=0.1),
+        make_step_runtime(world, dt=0.1),
     )
     return state
 
@@ -65,7 +65,7 @@ def test_shots_fired_and_hit_increment() -> None:
 
     place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.1), dt=0.1),
+        make_step_runtime(world, dt=0.1),
     )
     assert hits
     assert state.shots_hit == 1
@@ -77,7 +77,7 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
 
     place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, lifecycle_stage=8.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.1), dt=0.1),
+        make_step_runtime(world, dt=0.1),
     )
 
     assert hits

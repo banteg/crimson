@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
-from crimson.projectiles.runtime import SecondaryProjectilePool, SecondarySpawnSpec, SecondaryStepCtx
+from crimson.projectiles.runtime import SecondaryProjectilePool, SecondarySpawnSpec
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
@@ -67,7 +67,7 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
         ],
     )
 
-    pool.step(SecondaryStepCtx(step_runtime=make_step_runtime(world), dt=0.1))
+    pool.step(make_step_runtime(world, dt=0.1))
 
     assert creatures[0].hp < 1000.0
     assert creatures[1].hp == 1000.0
@@ -97,7 +97,7 @@ def test_explosion_hits_split_children_born_during_its_index_scan() -> None:
     step_runtime = make_step_runtime(world)
     spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_is_collidable)
     explosion = SecondaryProjectile(active=True, pos=parent.pos, detonation_scale=1.0)
-    ctx = SecondaryStepCtx(step_runtime=step_runtime, dt=0.1)
+    ctx = step_runtime
     _step_detonation(explosion, ctx, dt=0.1, creature_spatial=spatial, rng=world.state.rng)
     children = [c for c in world.creatures.entries[1:] if c.active]
     assert len(children) >= 2
