@@ -72,9 +72,9 @@ test {
     _ = cz.window_atlas;
     _ = @import("window_assets.zig");
     _ = @import("window_cursor.zig");
-    _ = @import("window_keybind_help.zig");
     _ = @import("window_ground.zig");
     _ = @import("window_highscore_card.zig");
+    _ = @import("window_keybind_help.zig");
     _ = @import("window_main.zig");
     _ = @import("window_menu.zig");
     _ = @import("window_menu_panels.zig");
@@ -83,6 +83,7 @@ test {
     _ = @import("window_perk_menu.zig");
     _ = @import("window_projectiles.zig");
     _ = @import("window_statistics.zig");
+    _ = @import("window_ui.zig");
     _ = @import("asset_extract_main.zig");
     _ = @import("asset_smoke_main.zig");
     _ = @import("wasm_exports.zig");

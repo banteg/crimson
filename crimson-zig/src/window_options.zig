@@ -55,7 +55,6 @@ const OptionSlider = enum {
     sfx,
     music,
     detail,
-    mouse,
     resolution,
     bpp,
     texture_scale,
@@ -69,11 +68,10 @@ const OptionsPage = enum {
 const gameplay_selection_sfx: usize = 0;
 const gameplay_selection_music: usize = 1;
 const gameplay_selection_detail: usize = 2;
-const gameplay_selection_mouse: usize = 3;
-const gameplay_selection_ui_info: usize = 4;
-const gameplay_selection_controls: usize = 5;
-const gameplay_selection_display: usize = 6;
-const gameplay_selection_count: usize = 7;
+const gameplay_selection_ui_info: usize = 3;
+const gameplay_selection_controls: usize = 4;
+const gameplay_selection_display: usize = 5;
+const gameplay_selection_count: usize = 6;
 
 const display_selection_resolution: usize = 0;
 const display_selection_window_mode: usize = 1;
@@ -82,11 +80,12 @@ const display_selection_texture_scale: usize = 3;
 const display_selection_gameplay: usize = 4;
 const display_selection_count: usize = 5;
 
+// Native also has a "Mouse sensitivity:" slider for its software cursor; the port uses the OS cursor,
+// so the row is left empty and crimson.cfg keeps the value.
 const option_slider_labels = [_][]const u8{
     "Sound volume:",
     "Music volume:",
     "Graphics detail:",
-    "Mouse sensitivity:",
 };
 
 const display_slider_labels = [_][]const u8{
@@ -342,11 +341,6 @@ pub fn updateOptions(state: *OptionsState, frame_dt: f32, config: *formats.crims
         result.config_dirty = true;
         result.play_button_click = true;
     }
-    if (updateOptionSlider(state, .mouse, optionSliderRect(panel_rect, 265.0, 184.0, 10), 1, 10, mouse, click, mouse_down)) |value| {
-        config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
-        result.config_dirty = true;
-        result.play_button_click = true;
-    }
     if (click and rectContains(optionCheckboxRect(panel_rect), mouse)) {
         config.ui_info_texts = if (config.ui_info_texts == 0) 1 else 0;
         result.config_dirty = true;
@@ -412,7 +406,6 @@ fn updateOptionsSelectionFromPointer(state: *OptionsState, panel_rect: rl.Rectan
             optionSliderRect(panel_rect, 265.0, 82.0, 10),
             optionSliderRect(panel_rect, 265.0, 116.0, 10),
             optionSliderRect(panel_rect, 265.0, 150.0, 5),
-            optionSliderRect(panel_rect, 265.0, 184.0, 10),
             optionCheckboxRect(panel_rect),
             controlsButton(panel_rect).rect,
             displayButton(panel_rect).rect,
@@ -511,13 +504,6 @@ fn applyGameplayKeyboardOption(config: *formats.crimson_cfg.CrimsonCfg, selectio
             if (delta == 0) return result;
             const value = adjustOptionSliderValue(@intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))), 1, 5, delta);
             _ = formats.crimson_cfg.applyDetailPreset(config, value);
-            result.config_dirty = true;
-            result.play_button_click = true;
-        },
-        gameplay_selection_mouse => {
-            if (delta == 0) return result;
-            const value = adjustOptionSliderValue(sensitivitySliderValue(config.mouse_sensitivity), 1, 10, delta);
-            config.mouse_sensitivity = std.math.clamp(@as(f32, @floatFromInt(value)) * 0.1, @as(f32, 0.1), @as(f32, 1.0));
             result.config_dirty = true;
             result.play_button_click = true;
         },
@@ -745,7 +731,6 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
             0 => rectContains(optionSliderRect(panel_rect, 265.0, 82.0, 10), rl.getMousePosition()),
             1 => rectContains(optionSliderRect(panel_rect, 265.0, 116.0, 10), rl.getMousePosition()),
             2 => rectContains(optionSliderRect(panel_rect, 265.0, 150.0, 5), rl.getMousePosition()),
-            3 => rectContains(optionSliderRect(panel_rect, 265.0, 184.0, 10), rl.getMousePosition()),
             else => false,
         };
         window_ui.drawSmallText(runtime_assets, label, panel_rect.x + 60.0, panel_rect.y + 84.0 + @as(f32, @floatFromInt(idx)) * 34.0, if (hovered or state.panel.selection == idx) text_color else muted_text);
@@ -754,7 +739,6 @@ fn drawOptionsContents(state: *const OptionsState, runtime_assets: *const window
     drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 82.0), 10, if (config.sound_disabled != 0) 0 else audioSliderValue(config.sfx_volume));
     drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 116.0), 10, if (config.music_disabled != 0) 0 else audioSliderValue(config.music_volume));
     drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 150.0), 5, @intCast(std.math.clamp(config.detail_preset, @as(u32, 1), @as(u32, 5))));
-    drawSlider(runtime_assets, rl.Vector2.init(panel_rect.x + 265.0, panel_rect.y + 184.0), 10, sensitivitySliderValue(config.mouse_sensitivity));
 
     const checkbox_tex: window_assets.TextureId = if (config.ui_info_texts != 0) .ui_check_on else .ui_check_off;
     window_ui.drawTextureFit(runtime_assets.texture(checkbox_tex), rl.Rectangle.init(panel_rect.x + 265.0, panel_rect.y + 230.0, 16.0, 16.0), rl.Color.white);
@@ -930,10 +914,6 @@ fn adjustOptionSliderValue(current_value: i32, min_value: i32, max_value: i32, d
 
 fn audioSliderValue(value: f32) i32 {
     return @intFromFloat(std.math.clamp(value, @as(f32, 0.0), @as(f32, 1.0)) * 10.0);
-}
-
-fn sensitivitySliderValue(value: f32) i32 {
-    return @intFromFloat(std.math.clamp(value, @as(f32, 0.1), @as(f32, 1.0)) * 10.0 + 0.5);
 }
 
 fn resolutionPresetIndex(config: *const formats.crimson_cfg.CrimsonCfg) usize {
@@ -1646,13 +1626,6 @@ fn animatedRightPanelRect(rect: rl.Rectangle, timeline_ms: i32) rl.Rectangle {
     return rl.Rectangle.init(rect.x - anim.offset_x, rect.y, rect.width, rect.height);
 }
 
-test "options panel slider labels do not duplicate checkbox label" {
-    try std.testing.expectEqual(@as(usize, 4), option_slider_labels.len);
-    for (option_slider_labels) |label| {
-        try std.testing.expect(!std.mem.eql(u8, label, "UI Info texts"));
-    }
-}
-
 test "option slider keyboard adjustment clamps to slider bounds" {
     try std.testing.expectEqual(@as(i32, 0), adjustOptionSliderValue(0, 0, 10, -1));
     try std.testing.expectEqual(@as(i32, 1), adjustOptionSliderValue(0, 0, 10, 1));
@@ -1769,12 +1742,6 @@ test "audio slider value truncates and clamps normalized volumes" {
     try std.testing.expectEqual(@as(i32, 0), audioSliderValue(-0.5));
     try std.testing.expectEqual(@as(i32, 2), audioSliderValue(0.26));
     try std.testing.expectEqual(@as(i32, 10), audioSliderValue(1.5));
-}
-
-test "sensitivity slider value rounds and clamps normalized values" {
-    try std.testing.expectEqual(@as(i32, 1), sensitivitySliderValue(-0.5));
-    try std.testing.expectEqual(@as(i32, 3), sensitivitySliderValue(0.26));
-    try std.testing.expectEqual(@as(i32, 10), sensitivitySliderValue(1.5));
 }
 
 test "display option helpers update persisted config fields" {

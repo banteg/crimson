@@ -28,6 +28,10 @@ const value_color = rl.Color.init(70, 180, 240, 255);
 const gold_color = rl.Color.init(255, 228, 170, 255);
 
 const panel_timeline_max_ms: i32 = 300;
+const quest_hardcore_unlock_index = window_menu_panels.quest_hardcore_unlock_index;
+// Native `highscore_screen` puts the Hardcore checkbox at the column header origin (Rank - 9) + (162, -2).
+const hardcore_checkbox_offset_x: f32 = 364.0;
+const hardcore_checkbox_offset_y: f32 = 82.0;
 const credits_table_size: usize = 0x100;
 const credits_flag_heading: u8 = 0x1;
 const credits_flag_clicked: u8 = 0x4;
@@ -168,6 +172,8 @@ const HighScoresScreen = struct {
     records: []persistence.highscores.HighScoreRecord = &.{},
     records_owned: bool = false,
     load_error: ?[]const u8 = null,
+    internet_checkbox: window_ui.UiCheckbox = .{ .label = "Show internet scores" },
+    hardcore_checkbox: window_ui.UiCheckbox = .{ .label = "Hardcore" },
 
     fn reset(self: *HighScoresScreen, allocator: std.mem.Allocator) void {
         self.clear(allocator);
@@ -331,7 +337,7 @@ pub fn update(
 ) UpdateResult {
     return switch (state.view) {
         .hub => updateHub(state, allocator, frame_dt, base_dir, config, status),
-        .high_scores => updateHighScores(state, allocator, frame_dt, base_dir, config, status),
+        .high_scores => updateHighScores(state, allocator, frame_dt, base_dir, config, status, runtime_assets),
         .weapons => updateWeapons(state, frame_dt, config.*, status),
         .perks => updatePerks(state, frame_dt, status),
         .credits => updateCredits(state, frame_dt, runtime_assets),
@@ -496,6 +502,7 @@ fn updateHighScores(
     base_dir: []const u8,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
 ) UpdateResult {
     const timeline_update = advanceChildTimeline(state, frame_dt);
     if (timeline_update.closed_action) |action| return finishChildAction(state, action);
@@ -539,12 +546,12 @@ fn updateHighScores(
         }
     }
 
-    if (updateHighScoreQuestArrows(hs, config, status, left_rect)) |quest_level_key| {
+    if (updateHighScoreQuestArrows(hs, runtime_assets, config, status, left_rect)) |quest_level_key| {
         loadHighScores(hs, allocator, base_dir, config.*, status);
         return .{ .quest_level_key = quest_level_key, .config_dirty = true, .play_button_click = true };
     }
 
-    if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, highScoreRightOptionsRect(right_rect, config.screen_width))) |widget_result| {
+    if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, runtime_assets, highScoreRightOptionsRect(right_rect, config.screen_width))) |widget_result| {
         return widget_result;
     }
 
@@ -913,6 +920,11 @@ fn drawHighScoreMainPanel(
         }) catch "Quest";
         window_ui.drawSmallText(assets, quest_label, left_rect.x + 236.0, left_rect.y + 63.0, if (config.hardcore_flag != 0) rl.Color.init(250, 70, 60, 180) else value_color);
         drawQuestArrows(assets, state.quest_level_key, config.hardcore_flag != 0, status, left_rect);
+        if (status.quest_unlock_index >= quest_hardcore_unlock_index) {
+            var hardcore_checkbox = state.hardcore_checkbox;
+            hardcore_checkbox.checked = config.hardcore_flag != 0;
+            window_ui.checkboxDraw(assets, hardcore_checkbox, left_rect.x + hardcore_checkbox_offset_x, left_rect.y + hardcore_checkbox_offset_y);
+        }
     }
 
     window_ui.drawSmallText(assets, "Rank", left_rect.x + 211.0, left_rect.y + 84.0, text_color);
@@ -978,9 +990,9 @@ fn drawHighScoreRightPanel(
     }
 
     const options_rect = highScoreRightOptionsRect(right_rect, config.screen_width);
-    const check_tex = if (config.show_online_scores != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
-    window_ui.drawTextureFit(check_tex, rl.Rectangle.init(options_rect.x + 44.0, options_rect.y + 44.0, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
-    window_ui.drawSmallText(assets, "Show internet scores", options_rect.x + 66.0, options_rect.y + 45.0, text_color);
+    var internet_checkbox = state.internet_checkbox;
+    internet_checkbox.checked = config.show_online_scores != 0;
+    window_ui.checkboxDraw(assets, internet_checkbox, options_rect.x + 44.0, options_rect.y + 44.0);
     window_ui.drawSmallText(assets, "Number of players", options_rect.x + 46.0, options_rect.y + 64.0, text_color);
     window_ui.drawSmallText(assets, "Game mode", options_rect.x + 174.0, options_rect.y + 64.0, text_color);
     window_ui.drawSmallText(assets, "Show scores:", options_rect.x + 44.0, options_rect.y + 106.0, text_color);
@@ -1792,16 +1804,21 @@ fn updateHighScoreWidgets(
     base_dir: []const u8,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
     right_rect: rl.Rectangle,
 ) ?UpdateResult {
     const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
 
-    const internet_rect = rl.Rectangle.init(right_rect.x + 44.0, right_rect.y + 44.0, 180.0, 16.0);
-    if (click and state.dropdown_open == .none and rectContains(internet_rect, mouse)) {
-        config.show_online_scores = if (config.show_online_scores == 0) 1 else 0;
-        loadHighScores(state, allocator, base_dir, config.*, status);
-        return .{ .config_dirty = true, .play_button_click = true };
+    if (state.dropdown_open == .none and runtime_assets != null) {
+        const assets = runtime_assets.?;
+        const checkbox = &state.internet_checkbox;
+        checkbox.checked = config.show_online_scores != 0;
+        if (window_ui.checkboxUpdate(assets, checkbox, right_rect.x + 44.0, right_rect.y + 44.0, mouse, click)) {
+            config.show_online_scores = @intFromBool(checkbox.checked);
+            loadHighScores(state, allocator, base_dir, config.*, status);
+            return .{ .config_dirty = true, .play_button_click = true };
+        }
     }
 
     const player_update = updateDropdownSelection(&state.dropdown_open, .player_count, playerCountWidgetRect(right_rect), playerCountLabels()[0..], click, mouse);
@@ -1884,27 +1901,41 @@ fn updateDropdownSelection(
 
 fn updateHighScoreQuestArrows(
     state: *HighScoresScreen,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
     left_rect: rl.Rectangle,
 ) ?i32 {
     if (state.mode != .quests) return null;
+    const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
-    if (!click) return null;
+
+    // `highscore_screen`: the Hardcore checkbox beside the column headers, from 40 unlocked quests.
+    var hardcore_toggled = false;
+    if (runtime_assets != null and status.quest_unlock_index >= quest_hardcore_unlock_index) {
+        const assets = runtime_assets.?;
+        const checkbox = &state.hardcore_checkbox;
+        checkbox.checked = config.hardcore_flag != 0;
+        if (window_ui.checkboxUpdate(assets, checkbox, left_rect.x + hardcore_checkbox_offset_x, left_rect.y + hardcore_checkbox_offset_y, mouse, click)) {
+            config.hardcore_flag = @intFromBool(checkbox.checked);
+            hardcore_toggled = true;
+        }
+    }
 
     const unlock = if (config.hardcore_flag != 0) status.quest_unlock_index_full else status.quest_unlock_index;
     const max_index = std.math.clamp(unlock, @as(i32, 0), @as(i32, 49));
     const current_index = questLevelKeyToIndex(state.quest_level_key);
-    const mouse = rl.getMousePosition();
-    if (current_index > 0 and rectContains(questPrevArrowRect(left_rect), mouse)) {
-        state.quest_level_key = questIndexToLevelKey(current_index - 1);
-        return state.quest_level_key;
-    }
-    if (current_index < max_index and rectContains(questNextArrowRect(left_rect), mouse)) {
-        state.quest_level_key = questIndexToLevelKey(current_index + 1);
-        return state.quest_level_key;
-    }
-    return null;
+    // Native pages with the arrow keys too; switching tables reloads and clamps to the unlocked quests.
+    const target_index = if (current_index > 0 and ((click and rectContains(questPrevArrowRect(left_rect), mouse)) or rl.isKeyPressed(.left)))
+        current_index - 1
+    else if (current_index < max_index and ((click and rectContains(questNextArrowRect(left_rect), mouse)) or rl.isKeyPressed(.right)))
+        current_index + 1
+    else if (hardcore_toggled)
+        current_index
+    else
+        return null;
+    state.quest_level_key = questIndexToLevelKey(std.math.clamp(target_index, 0, max_index));
+    return state.quest_level_key;
 }
 
 fn drawQuestArrows(

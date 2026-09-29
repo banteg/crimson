@@ -2020,6 +2020,11 @@ pub fn main(init: std.process.Init) !void {
     }
 
     var runtime = try app_runtime.DesktopRuntime.init(allocator);
+    // Native `game_frame_update` clears hardcore every frame while fewer than 40 quests are unlocked. Unlocks
+    // only grow and the quest menu refuses the checkbox below that, so clearing it once at boot is the same.
+    if (runtime.status.quest_unlock_index < window_menu_panels.quest_hardcore_unlock_index) {
+        runtime.config.hardcore_flag = 0;
+    }
 
     const initial_windowed = args.windowed orelse (runtime.config.windowed_flag != 0);
     rl.setConfigFlags(.{
