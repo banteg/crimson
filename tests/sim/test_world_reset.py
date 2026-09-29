@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.perks import PerkId
+from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
@@ -12,17 +13,18 @@ from grim.geom import Vec2
 from grim.rand import Crand
 
 
-def test_runtime_reset_replaces_a_loaded_world_without_touching_it(tmp_path: Path) -> None:
+def test_runtime_reset_drops_a_started_session_without_touching_its_world(tmp_path: Path) -> None:
     runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(1))
     first = runtime.world
     replacement = WorldState.build(hardcore=False, quest_fail_retry_count=0)
     replacement.players.append(PlayerState(index=0, pos=Vec2(10.0, 20.0), health=17.0))
-    runtime.load_world_state(replacement)
+    runtime.start_session(DeterministicSession(world=replacement, perk_progression_enabled=True))
     assert runtime.world is replacement
     runtime.advance_presentation_clock(dt_sim=0.5)
 
     runtime.reset(seed=123, player_count=2)
     assert (runtime.presentation_elapsed_ms, runtime.bonus_anim_phase) == (0.0, 0.0)
+    assert runtime.session is None
     assert runtime.world is not first and runtime.world is not replacement
     assert runtime.world.state.rng.state == 123
     assert len(runtime.world.players) == 2

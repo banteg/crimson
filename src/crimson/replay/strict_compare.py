@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import math
-import struct
 from collections.abc import Mapping, Sequence
 from typing import cast
 
 import msgspec
+
+from grim.math import f32_bits_i32
 
 from .payloads import BuiltinRows, BuiltinValue, to_builtin_rows, to_builtin_value
 
@@ -23,7 +24,7 @@ class FieldMismatch(msgspec.Struct, frozen=True, forbid_unknown_fields=True, omi
 
 
 def _f32_bits(value: float) -> int:
-    return int(struct.unpack("<I", struct.pack("<f", float(value)))[0])
+    return f32_bits_i32(value) & 0xFFFFFFFF
 
 
 def _ordered_f32(bits: int) -> int:

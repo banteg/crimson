@@ -15,7 +15,7 @@ from ..perks.selection import (
     perk_selection_pick,
 )
 from ..rng_caller_static import RngCallerStatic
-from ..tutorial.runtime import tutorial_input_transform, tutorial_post_step
+from ..tutorial.runtime import tutorial_input_transform
 from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_post_step
 from ..weapon_runtime.availability import prepare_weapon_availability
 from .commands import (
@@ -133,9 +133,13 @@ class DeterministicSession(msgspec.Struct):
             case GameMode.SURVIVAL:
                 return RunOutcome.DEATH if death_transition_ready(players) else None
             case GameMode.QUESTS:
+                # `gameplay_update_and_render` checks for death after `quest_mode_update`, so a
+                # death replaces pending quest results.
+                if death_transition_ready(players):
+                    return RunOutcome.DEATH
                 if isinstance(self.mode_state, QuestSpawnState) and self.mode_state.completed:
                     return RunOutcome.QUEST_COMPLETED
-                return RunOutcome.DEATH if death_transition_ready(players) else None
+                return None
             case GameMode.RUSH | GameMode.TYPO:
                 # No death-animation hold: Rush and Typ-o stop simulating on death.
                 return RunOutcome.DEATH if all_players_dead(players) else None
@@ -174,12 +178,9 @@ class DeterministicSession(msgspec.Struct):
             case _:
                 return inputs
 
-    def _mode_after_step(self, dt_ms: float) -> None:
-        match self.world.state.game_mode:
-            case GameMode.TYPO:
-                typo_post_step(self.world)
-            case GameMode.TUTORIAL:
-                tutorial_post_step(self.world, dt_ms=dt_ms)
+    def _mode_after_step(self) -> None:
+        if self.world.state.game_mode == GameMode.TYPO:
+            typo_post_step(self.world)
 
     def _require_perk_command_allowed(self, name: str) -> None:
         # The perk prompt only offers the menu while a perk is pending and a
@@ -308,16 +309,11 @@ class DeterministicSession(msgspec.Struct):
             events=events,
             presentation=presentation,
         )
-        creature_count_world_step = sum(1 for c in self.world.creatures.entries if c.active)
-
-        # Native culls corpses while rendering the world, before
-        # `tutorial_timeline_update` reads its bonus carrier.
-        self.world.creatures.finalize_post_render_lifecycle()
-        self._mode_after_step(dt_sim_ms)
+        self._mode_after_step()
         self.elapsed_ms = elapsed_before_ms + dt_sim_ms
 
         step.elapsed_ms = self.elapsed_ms
-        step.creature_count_world_step = creature_count_world_step
+        step.creature_count_world_step = events.creature_count_before_render
         step.quest_completed = quest_spawn is not None and quest_spawn.completed
         step.outcome = self.terminal_outcome()
         step.presentation = msgspec.structs.replace(

@@ -3,8 +3,8 @@ from __future__ import annotations
 from functools import partial
 
 from crimson.creatures.runtime import CreatureState
-from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import PrimaryStepCtx, SecondarySpawnSpec, SecondaryStepCtx
+from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
+from crimson.projectiles.runtime import SecondarySpawnSpec
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -46,13 +46,12 @@ def _step_rocket_into(creature: CreatureState) -> GameplayState:
             pos=Vec2(),
             angle=0.0,
             type_id=SecondaryProjectileTypeId.ROCKET,
-            owner=OwnerRef.from_local_player(0),
         ),
     )
     place_creatures(world, [creature])
 
     state.secondary_projectiles.step(
-        SecondaryStepCtx(step_runtime=make_step_runtime(world), dt=0.1),
+        make_step_runtime(world, dt=0.1),
     )
     return state
 
@@ -61,15 +60,15 @@ def test_shots_fired_and_hit_increment() -> None:
     world = _fire_pistol_right()
     state = world.state
 
-    assert state.shots_fired[0] == 1
-    assert state.shots_hit[0] == 0
+    assert state.shots_fired == 1
+    assert state.shots_hit == 0
 
     place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.1), dt=0.1),
+        make_step_runtime(world, dt=0.1),
     )
     assert hits
-    assert state.shots_hit[0] == 1
+    assert state.shots_hit == 1
 
 
 def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None:
@@ -78,26 +77,26 @@ def test_primary_projectile_hit_on_corpse_does_not_increment_shots_hit() -> None
 
     place_creatures(world, [_creature(pos=Vec2(22.0, 0.0), hp=1000.0, lifecycle_stage=8.0)])
     hits = state.projectiles.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.1), dt=0.1),
+        make_step_runtime(world, dt=0.1),
     )
 
     assert hits
-    assert state.shots_hit[0] == 0
+    assert state.shots_hit == 0
 
 
 def test_secondary_projectile_direct_hit_increments_shots_hit_for_alive_targets() -> None:
     state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=16.0))
 
-    assert state.shots_hit[0] == 1
+    assert state.shots_hit == 1
 
 
 def test_secondary_projectile_direct_hit_on_corpse_does_not_increment_shots_hit() -> None:
     state = _step_rocket_into(_creature(pos=Vec2(0.0, -9.0), hp=1000.0, lifecycle_stage=12.0))
 
-    assert state.shots_hit[0] == 0
+    assert state.shots_hit == 0
 
 
-def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_index() -> None:
+def test_projectile_spawn_increments_shots_fired_for_owner_minus_100() -> None:
     state = GameplayState()
     player0 = PlayerState(index=0, pos=Vec2())
     player1 = PlayerState(index=1, pos=Vec2())
@@ -108,12 +107,11 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_100_with_owner_
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
         owner_player_index=1,
     )
 
-    assert state.shots_fired[0] == 0
-    assert state.shots_fired[1] == 1
+    assert state.shots_fired == 1
 
 
 def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
@@ -127,12 +125,11 @@ def test_projectile_spawn_increments_shots_fired_for_owner_minus_2() -> None:
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_player(1),
+        owner_id=player_owner_id(1),
         owner_player_index=1,
     )
 
-    assert state.shots_fired[0] == 0
-    assert state.shots_fired[1] == 1
+    assert state.shots_fired == 1
 
 
 def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice() -> None:
@@ -145,12 +142,12 @@ def test_projectile_spawn_fire_bullets_conversion_increments_shots_fired_twice()
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
         owner_player_index=0,
     )
 
     assert proj_id >= 0
-    assert state.shots_fired[0] == 2
+    assert state.shots_fired == 2
     assert int(state.projectiles.entries[proj_id].type_id) == int(ProjectileTemplateId.FIRE_BULLETS)
 
 
@@ -165,8 +162,8 @@ def test_projectile_spawn_does_not_increment_shots_fired_when_bonus_guard_is_on(
         pos=Vec2(),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
         owner_player_index=0,
     )
 
-    assert state.shots_fired[0] == 0
+    assert state.shots_fired == 0

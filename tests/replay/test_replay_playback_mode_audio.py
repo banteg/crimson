@@ -1,50 +1,102 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from types import SimpleNamespace
-from unittest.mock import call
 
 import pytest
 
 from crimson.game_modes import GameMode
 from crimson.modes import replay_playback_mode
+from crimson.modes.replay_playback_mode import ReplayPlaybackMode
+from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
-from crimson.sim.mode_updates import QuestSpawnState
+from crimson.replay import Replay, ReplayRecorder, dump_replay
+from crimson.replay.driver.playback_driver import build_runtime_playback_driver
+from crimson.replay.input_codec import pack_tick
+from crimson.sim.commands import GameCommand, TypoCharCommand
+from crimson.sim.input import PlayerInput
 from crimson.sim.run_spec import RunSpec
-from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
-from crimson.tutorial.state import TutorialOverlayState
-from crimson.world import WorldRuntime
 from crimson.world.render_resources import RenderResources
-from grim.color import RGBA
-from grim.console import ConsoleState
+from crimson.world.runtime import WorldRuntime
+from grim.assets import TextureId
+from grim.audio import AudioState
+from grim.config import CrimsonConfig, ensure_crimson_cfg
+from grim.console import create_console, register_core_cvars
+from grim.fonts.small import measure_small_text_width
 from grim.geom import Vec2
+from grim.music import MusicState, MusicTrack
 from grim.rand import Crand
 from grim.raylib_api import rl
-from tests.support.builders import FakePlaybackDriver
-from tests.support.builders.session import make_world
-from tests.support.replay_runner_helpers import idle_replay
+from grim.sfx import init_sfx_state
+from grim.sfx_map import SfxId
+from grim.view import ViewContext
+from tests.support.audio import HeadlessAudio
+from tests.support.replay_runner_helpers import finish_replay
+
+pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
+
+IDLE = PlayerInput(aim=Vec2(700.0, 512.0))
+# Held fire: the pistol shoots about every 43 ticks from tick 48 on.
+FIRING = PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)
+
+type OpenPlayback = Callable[..., ReplayPlaybackMode]
 
 
-def _set_private(view: replay_playback_mode.ReplayPlaybackMode, name: str, value: object) -> None:
-    setattr(view, name, value)
+def _record(run: RunSpec, ticks: int, *, inputs: PlayerInput = IDLE, commands: Sequence[Sequence[GameCommand]] = ()) -> Replay:
+    """Record `ticks` of `inputs`, with `commands[i]` on tick i, and stamp the simulated result."""
+    recorder = ReplayRecorder(run)
+    for tick in range(ticks):
+        recorder.record(pack_tick([inputs], list(commands[tick]) if tick < len(commands) else []))
+    return finish_replay(recorder)
 
 
-@pytest.mark.usefixtures("headless_resources")
+@pytest.fixture
+def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
+    """Open the replay viewer on `replay` saved to disk, with audio off (no device in tests)."""
+
+    def _open(
+        replay: Replay, *, config: CrimsonConfig | None = None,
+    ) -> ReplayPlaybackMode:
+        replay_path = tmp_path / "playback.crd"
+        replay_path.write_bytes(dump_replay(replay))
+        cfg = config if config is not None else ensure_crimson_cfg(tmp_path)
+        cfg.audio.music_disabled = True
+        cfg.audio.sound_disabled = True
+        console = create_console(tmp_path, assets_dir=assets_dir)
+        register_core_cvars(console, cfg.display.width, cfg.display.height)
+        view = ReplayPlaybackMode(
+            ViewContext(assets_dir=assets_dir, preserve_bugs=False),
+            replay_path=replay_path,
+            config=cfg,
+            console=console,
+        )
+        view.open()
+        return view
+
+    return _open
+
+
+def _runtime(view: ReplayPlaybackMode) -> WorldRuntime:
+    runtime = view._runtime
+    assert runtime is not None
+    return runtime
+
+
+def _draw(view: ReplayPlaybackMode, mocker) -> None:
+    # The world pass renders into GPU render targets; everything drawn over it runs.
+    mocker.patch.object(_runtime(view), "draw")
+    view.draw()
+
+
 @pytest.mark.parametrize("recorded_gore", [0, 1])
-def test_replay_render_uses_recorded_gore_setting(mocker, replay_playback_view, recorded_gore) -> None:
-    view, _console = replay_playback_view
-    viewer_config = view._config
+def test_replay_render_uses_recorded_gore_setting(open_playback: OpenPlayback, tmp_path: Path, recorded_gore) -> None:
+    viewer_config = ensure_crimson_cfg(tmp_path)
     viewer_config.display.violence_disabled = 1 - recorded_gore
-    viewer_config.audio.music_disabled = True
-    viewer_config.audio.sound_disabled = True
-    replay = idle_replay(0, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0, violence_disabled=recorded_gore))
-    mocker.patch.object(replay_playback_mode, "load_replay_file", return_value=replay)
+    replay = _record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0, violence_disabled=recorded_gore), 1)
 
-    view.open()
+    view = open_playback(replay, config=viewer_config)
 
-    assert view._runtime is not None
-    frame = view._runtime.build_render_frame()
+    frame = _runtime(view).build_render_frame()
     assert frame.config is not None
     assert frame.config.display.violence_disabled == recorded_gore
     assert view._driver is not None
@@ -53,272 +105,190 @@ def test_replay_render_uses_recorded_gore_setting(mocker, replay_playback_view, 
     assert frame.config is not viewer_config
 
 
-@dataclass
-class _AudioStub:
-    music: object = field(default_factory=object)
-
-
-def _runtime(assets_dir: Path) -> WorldRuntime:
-    return WorldRuntime(assets_dir=assets_dir, audio_rng=Crand(0))
-
-
-def _terrain_batch() -> TerrainFxBatch:
-    return TerrainFxBatch(
-        decals=(
-            TerrainDecalFx(
-                effect_id=3,
-                rotation=0.0,
-                pos=Vec2(32.0, 48.0),
-                width=24.0,
-                height=24.0,
-                color=RGBA(1.0, 1.0, 1.0, 1.0),
-            ),
-        ),
+def test_game_tune_script_queues_its_tunes_through_snd_add_game_tune(open_playback: OpenPlayback, tmp_path: Path) -> None:
+    script = tmp_path / "music" / "game_tunes.txt"
+    script.parent.mkdir()
+    script.write_text("snd_addGameTune gt1_ingame.ogg\nsnd_addGameTune gt2_harppen.ogg\n")
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 1))
+    # Music ready with both tunes already streamed, so no device or music.paq is needed.
+    music = MusicState(
+        ready=True,
+        enabled=True,
+        volume=1.0,
+        tracks={name: MusicTrack(stream=rl.Music(), track_id=index) for index, name in enumerate(("gt1_ingame", "gt2_harppen"))},
     )
-
-
-def test_replay_playback_registers_snd_add_game_tune_command(mocker, replay_playback_view) -> None:
-    view, console = replay_playback_view
-    music_state = object()
-    _set_private(view, "_audio", _AudioStub(music=music_state))
-    load_music_track = mocker.patch.object(
-        replay_playback_mode.grim_music,
-        "load_music_track",
-        return_value=("gt1_ingame", 7),
-    )
-    queue_track = mocker.patch.object(replay_playback_mode.grim_music, "queue_track")
-
-    view._register_replay_audio_commands()
-    handler = console.commands.get("snd_addGameTune")
-    assert handler is not None
-    handler(["gt1_ingame.ogg"])
-
-    load_music_track.assert_called_once_with(music_state, view._ctx.assets_dir, "music/gt1_ingame.ogg", console=console)
-    queue_track.assert_called_once_with(music_state, "gt1_ingame")
-
-
-def test_replay_playback_load_game_tune_queue_execs_script(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    _set_private(view, "_audio", _AudioStub())
-    exec_line = mocker.patch.object(ConsoleState, "exec_line")
+    view._audio = AudioState(ready=True, music=music, sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)))
 
     view._load_game_tune_queue()
-    assert exec_line.call_args_list == [call("exec music/game_tunes.txt")]
 
-    _set_private(view, "_audio", None)
-    view._load_game_tune_queue()
-    assert exec_line.call_args_list == [call("exec music/game_tunes.txt")]
+    assert music.queue == ["gt1_ingame", "gt2_harppen"]
 
 
-def test_replay_playback_progress_ratio_and_time_formatting(replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    _set_private(view, "_replay", idle_replay(4))
+def test_replay_progress_ratio_follows_playback(open_playback: OpenPlayback) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 4))
 
-    view._tick_index = 2
+    view.update(2.5 / 60.0)
+    assert view.tick_index == 2
     assert view._replay_progress_ratio() == 0.5
 
-    view._tick_index = 10
+    view.update(0.1)
+    assert view.finished
     assert view._replay_progress_ratio() == 1.0
 
-    assert replay_playback_mode.ReplayPlaybackMode._format_time_text(0.0) == "0:00"
-    assert replay_playback_mode.ReplayPlaybackMode._format_time_text(65.9) == "1:05"
+    assert ReplayPlaybackMode._format_time_text(0.0) == "0:00"
+    assert ReplayPlaybackMode._format_time_text(65.9) == "1:05"
 
 
-def test_replay_playback_helpers_delegate_to_runtime_and_small_font(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    draw_text = mocker.patch.object(replay_playback_mode, "draw_small_text")
-    measure_text = mocker.patch.object(replay_playback_mode, "measure_small_text_width", return_value=42.0)
-    color = rl.Color(20, 30, 40, 255)
-    pos = Vec2(12.0, 34.0)
-    font = object()
-    runtime = SimpleNamespace(draw=mocker.Mock())
-    _set_private(view, "_small", font)
-    _set_private(view, "_runtime", runtime)
+def test_replay_widget_right_aligns_the_total_time(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 150))
+    view.update(0.1)
+    draw_text = mocker.spy(replay_playback_mode, "draw_small_text")
 
-    view._draw_world(entity_alpha=0.5)
-    view._draw_ui_text("replay", pos, color)
-    width = view._measure_ui_text_width("replay")
+    _draw(view, mocker)
 
-    runtime.draw.assert_called_once_with(entity_alpha=0.5)
-    draw_text.assert_called_once_with(font, "replay", pos, color)
-    measure_text.assert_called_once_with(font, "replay")
-    assert width == 42.0
+    texts = {call.args[1]: call.args[2] for call in draw_text.call_args_list}
+    assert "REPLAY 1.00x" in texts
+    # The 182px widget sits 10px from the right edge of the 640px screen; text keeps 4px inside it.
+    total_text = ReplayPlaybackMode._format_time_text(150 / 60)
+    font = view._small
+    assert font is not None
+    assert texts[total_text].x + measure_small_text_width(font, total_text) == 640.0 - 10.0 - 4.0
+    assert texts[ReplayPlaybackMode._format_time_text(6 / 60)].x < texts[total_text].x
 
 
-def test_skip_forward_temporarily_disables_sfx(mocker, replay_playback_view, assets_dir: Path) -> None:
-    view, _console = replay_playback_view
-    _set_private(view, "_replay", idle_replay(5))
-    runtime = _runtime(assets_dir)
-    audio_bridge = runtime.audio_bridge
-    _set_private(view, "_runtime", runtime)
-    view._tick_rate = 60
-    view._tick_index = 0
-    view._finished = False
-    view._dt_accum = 1.0
-    view._dt = 1.0 / 60.0
+def test_skip_forward_is_silent_and_playback_after_it_is_not(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF), 400, inputs=FIRING))
+    # The world's sfx go to a ready audio state whose voices never reach a device.
+    audio = HeadlessAudio(mocker)
+    runtime = _runtime(view)
+    runtime.audio = audio.state
+    first_shot_tick = 48
+    while view.tick_index + 6 <= first_shot_tick:
+        view.update(0.1)
+    assert audio.played() == []
 
-    def check_muted(**_kwargs) -> None:
-        assert not audio_bridge.sfx_enabled
+    # Right arrow skips forward over the first pistol shot.
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT)
+    view.update(0.0)
+    assert view.tick_index > first_shot_tick
+    assert audio.played() == []
+    assert runtime.audio_bridge.sfx_enabled
 
-    apply_post_plan = mocker.patch.object(
-        audio_bridge,
-        "apply_post_plan",
-        side_effect=check_muted,
-    )
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=5))
-    view._max_ticks = None
-
-    view._skip_forward_seconds(2.0 / 60.0)
-
-    assert apply_post_plan.call_count == 2
-    assert bool(audio_bridge.sfx_enabled)
-    assert view._dt_accum == 0.0
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
+    while not view.finished:
+        view.update(0.1)
+    assert SfxId.PISTOL_FIRE in audio.played()
 
 
-def test_skip_forward_restores_sfx_flag_when_tick_raises(mocker, replay_playback_view, assets_dir: Path) -> None:
-    view, _console = replay_playback_view
-    _set_private(view, "_replay", idle_replay(3))
-    runtime = _runtime(assets_dir)
-    audio_bridge = runtime.audio_bridge
-    _set_private(view, "_runtime", runtime)
-    view._tick_rate = 60
-    view._tick_index = 0
-    view._finished = False
-    view._dt = 1.0 / 60.0
+def test_right_arrow_skips_five_seconds(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 400))
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT)
 
+    view.update(0.0)
+
+    assert view.tick_index == 5 * 60
+
+
+def test_eight_times_speed_runs_eight_ticks_a_frame(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 400))
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT_BRACKET)
+    for _ in range(3):
+        view.update(0.0)
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
+
+    view.update(1.0 / 60.0)
+
+    assert view.tick_index == 8
+
+
+def test_skip_forward_restores_sfx_flag_when_tick_raises(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0), 3))
+    audio_bridge = _runtime(view).audio_bridge
     observed_sfx_enabled: list[bool] = []
 
-    def _apply_post_plan(**_kwargs) -> None:
+    def _fail(**_kwargs) -> None:
         observed_sfx_enabled.append(bool(audio_bridge.sfx_enabled))
         raise RuntimeError("skip test boom")
 
-    mocker.patch.object(audio_bridge, "apply_post_plan", side_effect=_apply_post_plan)
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=3))
-    view._max_ticks = None
+    # Fault injection: the first skipped tick's audio step fails.
+    mocker.patch.object(audio_bridge, "apply_post_plan", side_effect=_fail)
 
     with pytest.raises(RuntimeError, match="skip test boom"):
         view._skip_forward_seconds(1.0 / 60.0)
 
     assert observed_sfx_enabled == [False]
-    assert bool(audio_bridge.sfx_enabled)
+    assert audio_bridge.sfx_enabled
 
 
-def test_skip_forward_consumes_terrain_fx_each_tick(mocker, replay_playback_view, assets_dir: Path) -> None:
-    view, _console = replay_playback_view
-    replay_inputs = [0, 0, 0, 0]
+def test_skip_forward_applies_every_skipped_ticks_terrain_fx(open_playback: OpenPlayback, mocker) -> None:
+    replay = _record(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF), 400, inputs=FIRING)
+    view = open_playback(replay)
+    # The first shot's decal lands on tick 57.
+    while view.tick_index + 6 <= 57:
+        view.update(0.1)
+    skip_from = view.tick_index
+    consume = mocker.spy(RenderResources, "consume_terrain_fx_batch")
 
-    runtime = _runtime(assets_dir)
-    consume = mocker.patch.object(RenderResources, "consume_terrain_fx_batch")
-    _set_private(view, "_replay", idle_replay(len(replay_inputs)))
-    _set_private(view, "_runtime", runtime)
-    view._tick_rate = 60
-    view._tick_index = 0
-    view._finished = False
-    view._dt = 1.0 / 60.0
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=len(replay_inputs), terrain_fx=_terrain_batch()))
-    view._max_ticks = None
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_RIGHT)
+    view.update(0.0)
 
-    view._skip_forward_seconds(3.0 / 60.0)
-
-    assert consume.call_count == 3
+    # The same fx a tick-by-tick run of the skipped ticks produces, in order.
+    stepped = build_runtime_playback_driver(replay, max_ticks=None, trace_rng=False)
+    fx_by_tick = [stepped.step_tick(tick).payload.presentation.terrain_fx for tick in range(view.tick_index)]
+    expected = [fx for fx in fx_by_tick[skip_from:] if not fx.is_empty()]
+    assert expected
+    assert [call.args[1] for call in consume.call_args_list] == expected
 
 
-def test_draw_quest_title_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    _set_private(
-        view,
-        "_replay",
-        idle_replay(1, run=RunSpec(game_mode_id=GameMode.QUESTS, seed=0, quest_level=QuestLevel(1, 1))),
+def test_quest_replay_draws_the_title_over_its_spawn_timer(open_playback: OpenPlayback, mocker) -> None:
+    level = QuestLevel(1, 1)
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.QUESTS, seed=101, quest_level=level), 60))
+    view.update(0.1)
+    title_overlay = mocker.spy(replay_playback_mode, "draw_quest_title_timer_overlay")
+    banner_overlay = mocker.spy(replay_playback_mode, "draw_quest_complete_banner_overlay")
+
+    _draw(view, mocker)
+
+    quest = quest_by_level(level)
+    assert quest is not None
+    driver = view._driver
+    assert driver is not None
+    assert driver.quest_spawn_state is not None
+    title_overlay.assert_called_once_with(
+        view._grim_mono, quest.title, level.text, timer_ms=driver.quest_spawn_state.spawn_timeline_ms,
     )
-    _set_private(view, "_grim_mono", object())
-    _set_private(view, "_quest_title", "Castle Keep")
-    _set_private(view, "_quest_level", QuestLevel(4, 7))
-    _set_private(
-        view,
-        "_driver",
-        FakePlaybackDriver(
-            tick_limit=1,
-            quest_spawn_state=QuestSpawnState(spawn_timeline_ms=123.0),
-        ),
-    )
-
-    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_quest_title_timer_overlay")
-
-    view._draw_quest_title()
-
-    draw_overlay.assert_called_once_with(view._grim_mono, "Castle Keep", "4.7", timer_ms=123.0)
-
-
-def test_draw_quest_complete_banner_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    _set_private(
-        view,
-        "_replay",
-        idle_replay(1, run=RunSpec(game_mode_id=GameMode.QUESTS, seed=0, quest_level=QuestLevel(1, 1))),
-    )
-    texture = object()
-    _set_private(
-        view,
-        "_runtime",
-        SimpleNamespace(
-            render_resources=SimpleNamespace(
-                resources=SimpleNamespace(texture=lambda _texture_id: texture),
-            ),
-        ),
-    )
-    _set_private(
-        view,
-        "_driver",
-        FakePlaybackDriver(
-            tick_limit=1,
-            quest_spawn_state=QuestSpawnState(completion_transition_ms=777.0),
-        ),
+    banner_overlay.assert_called_once_with(
+        _runtime(view).render_resources.resources.texture(TextureId.UI_TEXT_LEVEL_COMPLETE),
+        timer_ms=driver.quest_spawn_state.completion_transition_ms,
     )
 
-    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_quest_complete_banner_overlay")
 
-    view._draw_quest_complete_banner()
+def test_typo_replay_draws_the_typed_text_in_the_typing_box(open_playback: OpenPlayback, mocker) -> None:
+    typed = [[TypoCharCommand(player_index=0, ch=ch)] for ch in "rel"]
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.TYPO, seed=0xBEEF), 6, commands=typed))
+    view.update(0.1)
+    typing_box = mocker.spy(replay_playback_mode, "draw_typing_box")
 
-    draw_overlay.assert_called_once_with(texture, timer_ms=777.0)
+    _draw(view, mocker)
 
-
-def test_draw_typing_box_uses_shared_overlay_helper_and_driver_elapsed_ms(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    texture = object()
-    world = make_world()
-    world.state.typo.typing.text = "reload"
-    _set_private(
-        view,
-        "_runtime",
-        SimpleNamespace(
-            render_resources=SimpleNamespace(
-                resources=SimpleNamespace(texture=lambda _texture_id: texture),
-            ),
-            world=world,
-        ),
-    )
-    _set_private(view, "_driver", FakePlaybackDriver(tick_limit=1, elapsed_ms=250.0))
-
-    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_typing_box")
-
-    view._draw_typing_box()
-
-    draw_overlay.assert_called_once()
-    assert draw_overlay.call_args.args == (texture,)
-    assert draw_overlay.call_args.kwargs["text"] == "reload"
-    assert draw_overlay.call_args.kwargs["cursor_pulse_time"] == 0.25
+    driver = view._driver
+    assert driver is not None
+    typing_box.assert_called_once()
+    assert typing_box.call_args.args == (_runtime(view).render_resources.resources.texture(TextureId.UI_IND_PANEL),)
+    assert typing_box.call_args.kwargs["text"] == "rel"
+    assert typing_box.call_args.kwargs["game_time_s"] == driver.elapsed_ms * 0.001
 
 
-def test_draw_tutorial_overlays_uses_shared_overlay_helper(mocker, replay_playback_view) -> None:
-    view, _console = replay_playback_view
-    world = make_world()
-    overlay = TutorialOverlayState(prompt_text="move", prompt_alpha=1.0, hint_text="shoot", hint_alpha=0.5)
-    world.state.tutorial_overlay = overlay
-    _set_private(view, "_runtime", SimpleNamespace(world=world))
+def test_tutorial_replay_draws_the_world_tutorial_overlay(open_playback: OpenPlayback, mocker) -> None:
+    view = open_playback(_record(RunSpec(game_mode_id=GameMode.TUTORIAL, seed=0xBEEF), 300))
+    # The first tutorial prompt fades in shortly after the start.
+    while not (_runtime(view).world.state.tutorial_overlay.prompt_text or view.finished):
+        view.update(0.1)
+    overlay_panels = mocker.spy(replay_playback_mode, "draw_tutorial_overlay_panels")
 
-    draw_overlay = mocker.patch.object(replay_playback_mode, "draw_tutorial_overlay_panels")
+    _draw(view, mocker)
 
-    view._draw_tutorial_overlays()
-
-    draw_overlay.assert_called_once()
-    assert draw_overlay.call_args.args == (overlay,)
+    overlay = _runtime(view).world.state.tutorial_overlay
+    assert overlay.prompt_text
+    overlay_panels.assert_called_once()
+    assert overlay_panels.call_args.args == (overlay,)

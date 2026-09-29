@@ -8,7 +8,7 @@ import struct
 import pytest
 
 from crimson.math_parity import f32
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.runtime.projectile_pool import ProjectilePool
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
@@ -34,7 +34,7 @@ from ._support import (
     prepare_gameplay,
 )
 
-_LOCAL_PLAYER_OWNER_ID = -100
+_OWNER_LOCAL_PLAYER = -100
 
 
 def _python_projectile(projectile: Projectile) -> dict[str, float | int | None]:
@@ -73,10 +73,10 @@ def test_projectile_spawn_fields_match_native(oracle) -> None:
             oracle.restore(pristine)
             oracle.write_f32(pos_arg, pos.x)
             oracle.write_f32(pos_arg + 4, pos.y)
-            index = oracle.call("projectile_spawn", pos_arg, angle, int(type_id), _LOCAL_PLAYER_OWNER_ID).eax
+            index = oracle.call("projectile_spawn", pos_arg, angle, int(type_id), _OWNER_LOCAL_PLAYER).eax
 
             pool = ProjectilePool()
-            python_index = pool.spawn(pos=pos, angle=angle, type_id=type_id, owner=OwnerRef.from_local_player(0))
+            python_index = pool.spawn(pos=pos, angle=angle, type_id=type_id, owner_id=OWNER_LOCAL_PLAYER)
             address = pool_base + index * PROJECTILE_STRIDE
             case = f"type 0x{int(type_id):02x} pos=({pos.x!r}, {pos.y!r}) angle={angle!r}"
             if python_index != index:

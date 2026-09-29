@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from grim import canvas
 from grim.assets import TextureId
@@ -17,10 +18,10 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...game_states import GameStateId
-from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 from .shared import (
@@ -57,22 +58,13 @@ class QuestFailedView:
         self._record: HighScoreRecord | None = None
         self._dt = 0.0
         self._quest_title: str = ""
-        self._action: ScreenAction | None = None
-        self._cursor_pulse_time = 0.0
-        self._intro_ms = 0.0
-        self._closing = False
-        self._close_action: ScreenAction | None = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
         self._quest_list_button = UiButtonState("Play Another", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def open(self) -> None:
-        self._action = None
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._intro_ms = 0.0
-        self._closing = False
-        self._close_action = None
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.QUEST_FAILED))
         self._quest_title = ""
         self._record = None
         self._retry_button = UiButtonState("Play Again", force_wide=True)
@@ -94,33 +86,25 @@ class QuestFailedView:
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None:
-            if not self._closing:
+            if not self.state.ui.closing:
                 play_music(self.state.audio, "shortie_monk")
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
         dt_step = min(float(dt), 0.1)
         self._dt = dt_step
-        self._cursor_pulse_time += dt_step * 1.1
         dt_ms = dt_step * 1000.0
-        if self._closing:
-            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
-            if self._intro_ms <= 1e-3 and self._close_action is not None:
-                self._action = self._close_action
-                self._close_action = None
+        panel_was_hidden = not self.state.ui.opened
+        if not self.state.ui.advance(int(dt_ms)):
             return
-        panel_was_hidden = self._intro_ms < RESULTS_PANEL_VISIBLE_MS
-        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
-        if panel_was_hidden and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS and self.state.audio is not None:
+        if panel_was_hidden and self.state.ui.opened and self.state.audio is not None:
             # ui_element_update clicks as the panel element becomes enabled.
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
         outcome = self._outcome
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        # Port shortcuts: Escape for Main Menu and Q for Play Another. Enter takes the focused button, as native.
+        if self.state.focus.escape:
             self._activate_main_menu()
-            return
-        if outcome is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._activate_retry()
             return
         if rl.is_key_pressed(rl.KeyboardKey.KEY_Q):
             self._activate_play_another()
@@ -135,15 +119,11 @@ class QuestFailedView:
         resources = require_runtime_resources(self.state)
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
-        retry_w = button_width(
-            resources,
-            self._retry_button.label,
-            force_wide=self._retry_button.force_wide,
-        )
         if button_update(
+            resources,
             self._retry_button,
+            focus=self.state.focus,
             pos=button_pos,
-            width=retry_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -152,15 +132,11 @@ class QuestFailedView:
             return
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        play_another_w = button_width(
-            resources,
-            self._quest_list_button.label,
-            force_wide=self._quest_list_button.force_wide,
-        )
         if button_update(
+            resources,
             self._quest_list_button,
+            focus=self.state.focus,
             pos=button_pos,
-            width=play_another_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -169,15 +145,11 @@ class QuestFailedView:
             return
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        main_menu_w = button_width(
-            resources,
-            self._main_menu_button.label,
-            force_wide=self._main_menu_button.force_wide,
-        )
         if button_update(
+            resources,
             self._main_menu_button,
+            focus=self.state.focus,
             pos=button_pos,
-            width=main_menu_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -224,45 +196,28 @@ class QuestFailedView:
 
         button_pos = panel_top_left + Vec2(QUEST_FAILED_BUTTON_X_OFFSET, QUEST_FAILED_BUTTON_Y_OFFSET)
 
-        retry_w = button_width(
-            resources,
-            self._retry_button.label,
-            force_wide=self._retry_button.force_wide,
-        )
-        button_draw(resources, self._retry_button, pos=button_pos, width=retry_w)
+        button_draw(resources, self._retry_button, focus=self.state.focus, pos=button_pos)
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        play_another_w = button_width(
-            resources,
-            self._quest_list_button.label,
-            force_wide=self._quest_list_button.force_wide,
-        )
         button_draw(
             resources,
             self._quest_list_button,
+            focus=self.state.focus,
             pos=button_pos,
-            width=play_another_w,
         )
         button_pos = button_pos.offset(dy=QUEST_FAILED_BUTTON_STEP_Y)
 
-        main_menu_w = button_width(
-            resources,
-            self._main_menu_button.label,
-            force_wide=self._main_menu_button.force_wide,
-        )
         button_draw(
             resources,
             self._main_menu_button,
+            focus=self.state.focus,
             pos=button_pos,
-            width=main_menu_w,
         )
 
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
-        action = self._action
-        self._action = None
-        return action
+        return self.state.ui.take_action()
 
     def _panel_origin(self) -> Vec2:
         screen_w = float(canvas.width())
@@ -273,12 +228,12 @@ class QuestFailedView:
         )
 
     def _world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self.state.ui.closing:
             return 1.0
-        return world_fade_alpha(self._intro_ms)
+        return world_fade_alpha(self.state.ui.timeline_ms)
 
     def _panel_top_left(self) -> Vec2:
-        return self._panel_origin().offset(dx=results_panel_slide_x(self._intro_ms, width=QUEST_FAILED_PANEL_W))
+        return self._panel_origin().offset(dx=ui_element_anim(self.state.ui.timeline_ms, index=35, width=QUEST_FAILED_PANEL_W)[1])
 
     def _failure_message(self) -> str:
         retry_count = int(self.state.quest_fail_retry_count)
@@ -295,32 +250,12 @@ class QuestFailedView:
         return "Quest failed, try again."
 
     def _build_score_preview(self, outcome: QuestRunOutcome | None) -> None:
-        from ...persistence.highscores import HighScoreRecord
-
         self._record = None
         if outcome is None:
             return
-
-        level = outcome.level
-        major, minor = level.major, level.minor
-
-        record = HighScoreRecord.blank(
-            rand_value=int(outcome.highscore_random_tag),
-        )
+        record = outcome.record.copy()
         record.set_name(_player_name_default(self.state.config) or "Player")
-        record.game_mode_id = GameMode.QUESTS
-        record.quest_stage_major = major
-        record.quest_stage_minor = minor
-        record.survival_elapsed_ms = max(1, int(outcome.base_time_ms))
-        record.score_xp = int(outcome.experience)
-        record.creature_kill_count = int(outcome.kill_count)
-        record.most_used_weapon_id = outcome.most_used_weapon_id
-        record.hardcore_marker = 0x75 if self.state.config.gameplay.hardcore else 0
-        fired = max(0, int(outcome.shots_fired))
-        hit = max(0, min(int(outcome.shots_hit), fired))
-        record.shots_fired = fired
-        record.shots_hit = hit
-
+        record.survival_elapsed_ms = max(1, outcome.base_time_ms)
         self._record = record
 
     def _activate_retry(self) -> None:
@@ -337,7 +272,7 @@ class QuestFailedView:
             self.state.console.log.log(f"quest failed: failed to save quest selection config: {exc}")
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._begin_close(StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=level))
+        self._begin_close(StartRun(GameMode.QUESTS, level))
 
     def _activate_play_another(self) -> None:
         self.state.quest_fail_retry_count = 0
@@ -352,10 +287,7 @@ class QuestFailedView:
         self._begin_close(Route.MENU)
 
     def _begin_close(self, action: ScreenAction) -> None:
-        if self._closing:
-            return
-        self._closing = True
-        self._close_action = action
+        self.state.ui.begin(action)
 
     def _draw_score_preview(self, *, panel_top_left: Vec2) -> None:
         if self._record is None:

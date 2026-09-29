@@ -1341,6 +1341,22 @@ truncated mapped data cannot supply scalar byte-content evidence. Compiler
 floating constants use this same native-side check. Named mutable references
 continue to require their exact symbol/address owner.
 
+Scalar content evidence applies only to direct, absolute memory reads. Indexed
+tables, address-taking instructions, stores, and references through a different
+segment require a proven symbol/address owner; equal bytes at the displacement
+do not identify everything the instruction can access.
+
+Aggregate-copy load evidence checks the entire access width. Any access that
+overlaps a copied source or destination retires the proof, including writes
+that start before the range. A load must fit wholly within the copied range.
+Unknown memory accesses and direction-flag changes also retire the proof;
+proven read-only scalar constants cannot supply an aliasing write.
+
+Padding is removed after decoding complete instructions and checking local
+branch destinations. For VC6 cleanup after `longjmp`, alignment can be excluded
+only when the call resolves to the native import slot and no branch can enter
+the otherwise unreachable tail. The cleanup instructions remain in the body.
+
 Compiler CString references retain a separate full NUL-terminated-content
 pooling rule; VC6 also emits these literals in writable `.data`. This rule
 describes literal contents, not immutable storage or whole-program pointer

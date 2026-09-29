@@ -25,11 +25,7 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.15,
-      'owner': dict({
-        'index': 0,
-        'kind': 1,
-        'local_host': True,
-      }),
+      'owner_id': -100,
       'pos': list([
         30.0,
         0.0,
@@ -64,11 +60,7 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.25,
-      'owner': dict({
-        'index': 0,
-        'kind': 1,
-        'local_host': True,
-      }),
+      'owner_id': -100,
       'pos': list([
         30.0,
         0.0,
@@ -103,11 +95,7 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.25,
-      'owner': dict({
-        'index': 0,
-        'kind': 1,
-        'local_host': True,
-      }),
+      'owner_id': -100,
       'pos': list([
         68.0,
         0.0,
@@ -144,11 +132,7 @@
       'active': True,
       'damage_pool': 0.0,
       'life_timer': 0.25,
-      'owner': dict({
-        'index': 0,
-        'kind': 1,
-        'local_host': True,
-      }),
+      'owner_id': -100,
       'pos': list([
         66.0,
         0.0,
@@ -160,11 +144,6 @@
 # name: test_secondary_projectile_direct_hit_snapshot
   dict({
     'hp': 405.0,
-    'last_hit_owner': dict({
-      'index': 0,
-      'kind': 1,
-      'local_host': True,
-    }),
     'vel': list([
       5.1e-05,
       1169.999878,

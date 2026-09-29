@@ -1,81 +1,66 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-from typing import cast
+import pytest
 
-import crimson.screens.pause_menu as pause_menu_module
-from crimson.screens.actions import Route
+from crimson.game_modes import GameMode
+from crimson.screens.actions import Route, StartRun
 from crimson.screens.pause_menu import PauseMenuView
-from crimson.ui.animation import WORLD_FADE_SPAN_MS
-from grim.assets import RuntimeResources
+from crimson.ui.animation import ui_element_timeline_window
 from grim.raylib_api import rl
-from tests.support.screens import install_background
+from grim.sfx_map import SfxId
+from tests.support.audio import HeadlessAudio
+from tests.support.screens import start_run, update_frame
+
+pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
 
-def _texture_stub() -> rl.Texture:
-    return cast("rl.Texture", type("_TextureStub", (), {"width": 1, "height": 1})())
+@pytest.fixture
+def paused(make_game_state, headless_resources, mocker):
+    """A survival run paused the way the game pauses it, with the pause menu slid in."""
+    audio = HeadlessAudio(mocker)
+    state = make_game_state(resources=headless_resources, audio=audio.state)
+    navigator, run = start_run(state, StartRun(GameMode.SURVIVAL))
+    navigator.navigate(Route.PAUSE)
+    view = state.screens.active
+    assert isinstance(view, PauseMenuView)
+    while not state.ui.opened:
+        view.update(0.1)
+    return view, run, audio
 
 
-def _resources_stub() -> RuntimeResources:
-    tex = _texture_stub()
-    return cast(
-        "RuntimeResources",
-        SimpleNamespace(
-            texture=lambda _texture_id: tex,
-            small_font=SimpleNamespace(cell_size=8, widths=[8] * 256),
-        ),
-    )
+def _press(view: PauseMenuView, mocker, key: int) -> None:
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda pressed: pressed == key)
+    update_frame(view, view.state)
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
 
 
-def test_pause_menu_draw_fades_pause_background_on_main_menu_close(make_game_state, mocker) -> None:
-    state = make_game_state(
-        config_updates={"screen_width": 640},
-        menu_sign_locked=False,
-        screen_fade_alpha=0.0,
-        screen_fade_ramp=False,
-    )
-    pause_background = mocker.Mock()
-    install_background(state, pause_background)
-    state.resources = _resources_stub()
-    view = PauseMenuView(state)
-    view._is_open = True
-    view._transition.closing = True
-    view._transition.action = Route.MENU
-    view._transition.timeline_ms = WORLD_FADE_SPAN_MS // 2
+def test_pause_menu_quit_fades_the_paused_run_toward_the_main_menu(paused, mocker) -> None:
+    view, run, audio = paused
+    # Tab moves focus from Options to Quit; Enter picks it.
+    _press(view, mocker, rl.KeyboardKey.KEY_TAB)
+    _press(view, mocker, rl.KeyboardKey.KEY_ENTER)
+    assert view.state.ui.closing
+    assert view.state.ui.pending == Route.MENU
+    assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
 
-    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
-    mocker.patch.object(pause_menu_module, "draw_menu_sign", return_value=None)
-    mocker.patch.object(pause_menu_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
-
+    mocker.patch.object(run, "_draw_world")
+    background = mocker.spy(run, "draw_pause_background")
+    view.state.ui.timeline_ms = ui_element_timeline_window(28)[1] // 2
     view.draw()
 
-    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=0.5)
+    background.assert_called_once_with(entity_alpha=0.5)
 
 
-def test_pause_menu_draw_keeps_pause_background_alpha_for_non_menu_close(make_game_state, mocker) -> None:
-    state = make_game_state(
-        config_updates={"screen_width": 640},
-        menu_sign_locked=False,
-        screen_fade_alpha=0.0,
-        screen_fade_ramp=False,
-    )
-    pause_background = mocker.Mock()
-    install_background(state, pause_background)
-    state.resources = _resources_stub()
-    view = PauseMenuView(state)
-    view._is_open = True
-    view._transition.closing = True
-    view._transition.action = Route.BACK
-    view._transition.timeline_ms = 0
+def test_pause_menu_back_keeps_the_paused_run_opaque(paused, mocker) -> None:
+    view, run, audio = paused
+    _press(view, mocker, rl.KeyboardKey.KEY_ESCAPE)
+    assert view.state.ui.closing
+    assert view.state.ui.pending == Route.BACK
+    assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
 
-    mocker.patch.object(pause_menu_module.rl, "clear_background", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(pause_menu_module, "_draw_screen_fade", side_effect=lambda *_args, **_kwargs: None)
-    mocker.patch.object(PauseMenuView, "_draw_menu_items", side_effect=lambda: None)
-    mocker.patch.object(pause_menu_module, "draw_menu_sign", return_value=None)
-    mocker.patch.object(pause_menu_module, "draw_screen_cursor", side_effect=lambda *_args, **_kwargs: None)
-
+    mocker.patch.object(run, "_draw_world")
+    background = mocker.spy(run, "draw_pause_background")
+    view.state.ui.timeline_ms = 0
     view.draw()
 
-    pause_background.draw_pause_background.assert_called_once_with(entity_alpha=1.0)
+    background.assert_called_once_with(entity_alpha=1.0)

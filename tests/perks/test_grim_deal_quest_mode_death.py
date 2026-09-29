@@ -31,7 +31,7 @@ def test_quest_mode_closes_run_when_grim_deal_kills_player_during_perk_menu_tran
     assert mode.player.health > 0.0
     mode.player.death_timer = 0.3
     mode._perk_menu.open = True
-    mode._perk_menu.timeline_ms = 100.0
+    mode._perk_menu.timeline.timeline_ms = 100
 
     def _apply_grim_deal_and_close(_ctx, _choices, *, dt_ui_ms: float) -> None:
         perk_apply(mode.state, mode.world.players, PerkId.GRIM_DEAL)

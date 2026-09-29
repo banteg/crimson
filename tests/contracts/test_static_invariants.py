@@ -5,11 +5,12 @@ from enum import IntEnum
 import pytest
 
 from crimson.bonuses.ids import BonusId
-from crimson.creatures.spawn import SpawnEnv, build_spawn_plan
+from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn_ids import CreatureAiMode, CreatureTypeId, SpawnId
 from crimson.creatures.spawn_templates import SPAWN_TEMPLATES
 from crimson.game_modes import GameMode
 from crimson.perks.ids import PerkId
+from crimson.sim.gameplay_state import GameplayState
 from crimson.weapons import WEAPON_BY_ID, WEAPON_TABLE, WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -32,15 +33,12 @@ def test_weapon_table_invariants() -> None:
 
 def test_spawn_template_child_references_exist() -> None:
     template_ids = {entry.spawn_id for entry in SPAWN_TEMPLATES}
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
 
     child_template_ids: set[SpawnId] = set()
     for template_id in template_ids:
-        plan = build_spawn_plan(template_id, Vec2(512.0, 512.0), 0.0, Crand(0xBEEF), env)
-        child_template_ids.update(slot.child_template_id for slot in plan.spawn_slots)
+        pool = CreaturePool()
+        pool.spawn_template(template_id, Vec2(512.0, 512.0), 0.0, state=GameplayState(rng=Crand(0xBEEF)), detail_preset=5)
+        child_template_ids.update(slot.child_template_id for slot in pool.spawn_slots if slot.owner_creature >= 0)
 
     assert child_template_ids <= template_ids
 

@@ -42,7 +42,7 @@ def init_view_audio(assets_dir: Path, *, seed: int = 0xBEEF) -> ViewAudioBootstr
         console.log.flush()
 
     try:
-        audio = init_audio_state(config, assets_dir, console)
+        audio = init_audio_state(config, assets_dir, console, audio_rng)
     except (ConstructError, OSError, RuntimeError, ValueError):
         return ViewAudioBootstrap(config, console, None, audio_rng)
 

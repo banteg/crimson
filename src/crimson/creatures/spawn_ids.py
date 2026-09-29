@@ -3,7 +3,6 @@ from __future__ import annotations
 from enum import IntEnum, IntFlag
 
 Tint = tuple[float | None, float | None, float | None, float | None]
-TintRGBA = tuple[float, float, float, float]
 
 # Heading sentinel that forces randomized heading in `creature_spawn_template`.
 RANDOM_HEADING_SENTINEL = -100.0

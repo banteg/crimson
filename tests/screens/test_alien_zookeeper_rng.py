@@ -6,6 +6,7 @@ from typing import cast
 from crimson.game.types import GameState
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.screens.panels.alien_zookeeper import AlienZooKeeperView, _credits_secret_match3_find
+from crimson.screens.ui_timeline import UiTimeline
 from grim.rand import Crand
 
 
@@ -42,6 +43,7 @@ def test_open_preserves_native_process_lifetime_puzzle_state() -> None:
     state = SimpleNamespace(
         config=SimpleNamespace(display=SimpleNamespace(width=1024)),
         pause_background=object(),
+        ui=UiTimeline(),
     )
     view = AlienZooKeeperView(cast(GameState, state))
     assert view._board == [0] * 36

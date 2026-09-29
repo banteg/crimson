@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 from crimson.screens.actions import Route
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import (
     CrimsonConfig,
 )
 from grim.console import ConsoleState
 from grim.geom import Vec2
-from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -22,16 +20,11 @@ from ..perks.selection import perk_selection_prepared_choices
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import SurvivalSpawnState
 from ..sim.sessions import DeterministicSessionTick
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
-from ..ui.perk_menu import PERK_MENU_TRANSITION_MS
 from ..weapon_runtime import weapon_assign_player
 from ..weapons import WEAPON_BY_ID, WeaponId
 from .base_gameplay_mode import (
     BaseGameplayMode,
 )
-from .components.perk_menu_controller import PerkMenuController
-from .components.perk_prompt_controller import PerkPromptState
 
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
@@ -59,9 +52,6 @@ class SurvivalMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._perk_prompt = PerkPromptState()
-        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
-        self._hud_fade_ms = PERK_MENU_TRANSITION_MS
         self._cursor_time = 0.0
         self._replay_recorder: ReplayRecorder | None = None
         self._spawn_state = SurvivalSpawnState()
@@ -74,70 +64,18 @@ class SurvivalMode(BaseGameplayMode):
         score = int(self.player.experience)
         return f"survival_{stamp}_score{score}"
 
-    def _try_open_perk_menu(self) -> None:
-        self._request_perk_menu(self._perk_menu)
-
-    def _perk_menu_closed(self) -> None:
-        self._perk_prompt.reset_if_pending(pending_count=self._ui_pending_perk_count())
-
-    def _update_perk_ui(
-        self,
-        *,
-        dt_ui_ms: float,
-        allow_input: bool = True,
-        allow_pulse: bool = True,
-    ) -> None:
-        perk_ctx = self._perk_menu_ui_context()
-        pending_count = self._ui_pending_perk_count()
-        any_alive = self._any_player_alive()
-        choices = perk_selection_prepared_choices(self.state)
-        self._perk_prompt.begin_frame()
-        if self._perk_menu.open and allow_input:
-            choice_index = self._perk_menu.handle_input(
-                perk_ctx,
-                choices,
-                dt_ui_ms=float(dt_ui_ms),
-            )
-            if choice_index is not None:
-                self.record_perk_pick_command(int(choice_index), player_index=0)
-        if allow_input and self._perk_prompt.poll_open_request(
-            ctx=perk_ctx,
-            config=self.config,
-            pending_count=pending_count,
-            player_count=max(1, len(self.world.players)),
-            any_alive=any_alive,
-            paused=self._paused,
-            menu_active=self._perk_menu.active,
-        ):
-            self._try_open_perk_menu()
-        self._perk_prompt.tick_timer(
-            pending_count=pending_count,
-            any_alive=any_alive,
-            paused=self._paused,
-            menu_active=self._perk_menu.active,
-            dt_ui_ms=float(dt_ui_ms),
-        )
-        if allow_pulse:
-            self._perk_prompt.tick_pulse(float(dt_ui_ms))
-        self._perk_menu.tick_timeline(float(dt_ui_ms))
-
     def open(self) -> None:
         super().open()
 
-        self._perk_prompt.reset()
-        self._perk_menu.reset()
         self._cursor_time = 0.0
-        self._cursor_pulse_time = 0.0
         self._reset_gameplay_frame_clock()
         prepared = self._initialize_run(GameMode.SURVIVAL)
-        self._sim_session = prepared.session
         spawn_state = prepared.session.mode_state
         assert isinstance(spawn_state, SurvivalSpawnState)
         self._spawn_state = spawn_state
-        self._hud_fade_ms = PERK_MENU_TRANSITION_MS
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         super().close()
 
     def _handle_input(self) -> None:
@@ -152,9 +90,6 @@ class SurvivalMode(BaseGameplayMode):
             self.audio_bridge.play_sfx(SfxId.UI_BUTTONCLICK)
             self._perk_menu.close()
             return
-
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
 
         if debug_enabled() and (not self._perk_menu.open):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
@@ -178,7 +113,7 @@ class SurvivalMode(BaseGameplayMode):
                 survival_check_level_up(self.player, self.state.perk_selection)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
-            self._action = Route.PAUSE
+            self._request_pause()
             return
 
     def _debug_cycle_weapon(self, delta: int) -> None:
@@ -212,14 +147,7 @@ class SurvivalMode(BaseGameplayMode):
             self._update_game_over_ui(float(frame.dt))
             return
 
-        self._update_perk_ui(
-            dt_ui_ms=float(frame.dt_ui_ms),
-            allow_pulse=(not self._paused) and (not self._game_over_active),
-        )
-        if self._perk_menu.active:
-            self._hud_fade_ms = 0.0
-        else:
-            self._hud_fade_ms = clamp(self._hud_fade_ms + float(frame.dt_ui_ms), 0.0, PERK_MENU_TRANSITION_MS)
+        self._update_perk_ui(dt_ui_ms=float(frame.dt_ui_ms))
 
         perk_menu_active = self._perk_menu.active
         sim_dt = float(frame.dt) if ((not self._paused) and (not perk_menu_active)) else 0.0
@@ -237,26 +165,6 @@ class SurvivalMode(BaseGameplayMode):
             recorder=self._replay_recorder,
         )
 
-    def _draw_game_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )
-
-    def _draw_perk_prompt(self) -> None:
-        self._perk_prompt.draw(
-            ctx=self._perk_menu_ui_context(),
-            pending_count=self._ui_pending_perk_count(),
-            any_alive=self._any_player_alive(),
-            menu_active=self._perk_menu.active,
-            config=self.config,
-            ui_text_width=self._ui_text_width,
-            text_color=UI_TEXT_COLOR,
-        )
 
     def draw(self) -> None:
         perk_menu_active = self._perk_menu.active
@@ -273,29 +181,8 @@ class SurvivalMode(BaseGameplayMode):
 
         hud_bottom = 0.0
         if (not self._game_over_active) and (not perk_menu_active):
-            hud_alpha = clamp(self._hud_fade_ms / PERK_MENU_TRANSITION_MS, 0.0, 1.0)
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
-            self._draw_target_health_bar(alpha=hud_alpha)
-            hud_bottom = draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    alpha=hud_alpha,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=self._session_elapsed_ms(),
-                score=self.player.experience,
-                frame_dt_ms=self._last_dt_ms,
-            )
+            self._draw_target_health_bar(alpha=self._hud_alpha())
+            hud_bottom = self._draw_hud(elapsed_ms=self._session_elapsed_ms())
 
         if debug_enabled() and (not self._game_over_active) and (not perk_menu_active):
             # Minimal debug text.
@@ -320,9 +207,6 @@ class SurvivalMode(BaseGameplayMode):
                 UI_HINT_COLOR,
             )
             y_extra = y + line * 3.0
-            if self._paused:
-                self._draw_ui_text("paused (TAB)", Vec2(x, y_extra), UI_HINT_COLOR)
-                y_extra += line
             if self.player.health <= 0.0:
                 self._draw_ui_text("game over", Vec2(x, y_extra), UI_ERROR_COLOR)
                 y_extra += line
@@ -331,6 +215,8 @@ class SurvivalMode(BaseGameplayMode):
                 self._perk_menu_ui_context(),
                 perk_selection_prepared_choices(self.state),
             )
+        if not self._game_over_active:
+            self._draw_keybind_help()
         if (not self._game_over_active) and perk_menu_active:
             self._draw_game_cursor()
 

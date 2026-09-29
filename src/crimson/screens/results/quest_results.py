@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 from pathlib import Path
 
@@ -8,9 +7,12 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
-from crimson.ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
+from crimson.screens.ui_timeline import UiTimeline
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
+from grim.color import grim_color
 from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
@@ -29,14 +31,22 @@ from ...persistence.highscores import (
     upsert_highscore_record,
 )
 from ...quests.level import QuestLevel
-from ...quests.results import QuestFinalTime, QuestResultsBreakdownAnim, tick_quest_results_breakdown_anim
-from ...ui.cursor import draw_menu_cursor
+from ...quests.results import QuestFinalTime, QuestResultsReveal
+from ...ui.focus import UiFocus
 from ...ui.formatting import format_time_mm_ss
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
-from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
+from ...ui.text_input import (
+    UiTextInput,
+    flush_text_input_events,
+    gameplay_controls_held,
+    ui_text_input_draw,
+    ui_text_input_draw_focus,
+    ui_text_input_focus,
+    update_name_entry_text,
+)
 
 # `quest_results_screen_update` base layout (Crimsonland classic UI panel).
 # Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
@@ -102,7 +112,9 @@ class QuestResultsUi(msgspec.Struct):
 
     record: HighScoreRecord | None = None
     breakdown: QuestFinalTime | None = None
-    _breakdown_anim: QuestResultsBreakdownAnim | None = None
+    _reveal: QuestResultsReveal = msgspec.field(default_factory=QuestResultsReveal)
+    # Native `quest_results_anim_timer`: blink ticks during the breakdown, then ms of the name/results fade-in.
+    _anim_timer: int = 0
     _scores_path: Path | None = None
 
     save_error: str | None = None
@@ -110,11 +122,12 @@ class QuestResultsUi(msgspec.Struct):
     input_caret: int = 0
     _saved: bool = False
 
-    _intro_ms: float = 0.0
+    # Shares GameState.ui and GameState.focus in the game; the defaults only serve standalone use.
+    timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
+    focus: UiFocus = msgspec.field(default_factory=UiFocus)
+    _name_input: UiTextInput = msgspec.field(default_factory=UiTextInput)
     _dt: float = 0.0
-    _cursor_pulse_time: float = 0.0
     _panel_open_sfx_played: bool = False
-    _closing: bool = False
     _close_action: ResultAction | None = None
     _consume_enter: bool = False
     _defer_name_input_until_controls_released: bool = False
@@ -154,7 +167,8 @@ class QuestResultsUi(msgspec.Struct):
         self.unlock_perk_name = str(unlock_perk_name or "")
         self.record = record.copy()
         self.breakdown = breakdown
-        self._breakdown_anim = QuestResultsBreakdownAnim.start()
+        self._reveal = QuestResultsReveal()
+        self._anim_timer = 0
         self._saved = False
 
         # Native behavior: the final quest replaces "Play Next" with "Show End Note".
@@ -172,6 +186,7 @@ class QuestResultsUi(msgspec.Struct):
             quest_stage_major=int(self.quest_level.major),
             quest_stage_minor=int(self.quest_level.minor),
             player_count=self.config.gameplay.player_count,
+            named_list=self.config.profile.named_score_list,
         )
 
         try:
@@ -186,10 +201,8 @@ class QuestResultsUi(msgspec.Struct):
         self.save_error = None
         self.input_caret = len(self.input_text)
 
-        self._intro_ms = 0.0
-        self._cursor_pulse_time = 0.0
+        self.timeline.enter(ui_elements_max_timeline(GameStateId.QUEST_RESULTS))
         self._panel_open_sfx_played = False
-        self._closing = False
         self._close_action = None
         self._consume_enter = True
         self._defer_name_input_until_controls_released = False
@@ -199,21 +212,30 @@ class QuestResultsUi(msgspec.Struct):
         return None
 
     def _begin_close_transition(self, action: ResultAction) -> None:
-        if self._closing:
+        if self.timeline.closing:
             return
-        self._closing = True
         self._close_action = action
+        self.timeline.begin()
+
+    def _enter_rank_phase(self, *, qualifies: bool) -> None:
+        if qualifies:
+            self.phase = 1
+            self._arm_name_input_after_control_release()
+        else:
+            self.phase = 2
+
+    def _fade_alpha(self) -> float:
+        return min(1.0, self._anim_timer * 0.002)
 
     def _arm_name_input_after_control_release(self) -> None:
         self._defer_name_input_until_controls_released = True
         flush_text_input_events()
-        rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-        rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+        self.focus.enter = False
 
     def world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self.timeline.closing:
             return 1.0
-        return world_fade_alpha(self._intro_ms)
+        return world_fade_alpha(self.timeline.timeline_ms)
 
     def _text_width(self, font: SmallFontData, text: str) -> float:
         return float(measure_small_text_width(font, text))
@@ -222,7 +244,7 @@ class QuestResultsUi(msgspec.Struct):
         draw_small_text(font, text, pos, color)
 
     def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
-        panel_slide_x = results_panel_slide_x(self._intro_ms, width=QUEST_RESULTS_PANEL_W)
+        panel_slide_x = ui_element_anim(self.timeline.timeline_ms, index=35, width=QUEST_RESULTS_PANEL_W)[1]
 
         panel_pos = Vec2(QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x, 0.0)
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
@@ -244,31 +266,27 @@ class QuestResultsUi(msgspec.Struct):
         dt_s = float(min(dt, 0.1))
         self._dt = dt_s
         dt_ms = dt_s * 1000.0
-        self._cursor_pulse_time += dt_s * 1.1
         if mouse is None:
             mouse = canvas.mouse_position()
 
         if self.record is None or self.breakdown is None:
             return None
 
-        if self._closing:
-            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
-            if self._intro_ms <= 1e-3 and self._close_action is not None:
+        if not self.timeline.advance(int(dt_ms)):
+            if self.timeline.ready and self._close_action is not None:
                 action = self._close_action
                 self._close_action = None
-                self._closing = False
                 return action
             return None
 
-        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
-        if (not self._panel_open_sfx_played) and play_sfx is not None and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS:
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self.timeline.opened:
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
         if self._consume_enter:
             self._consume_enter = False
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            self.focus.enter = False
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+        if self.focus.escape:
             if play_sfx is not None:
                 play_sfx(SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(ResultAction.MAIN_MENU)
@@ -277,41 +295,28 @@ class QuestResultsUi(msgspec.Struct):
         qualifies = int(self.rank) < TABLE_MAX
 
         if self.phase == 0:
-            anim = self._breakdown_anim
-            if anim is None:
-                self._breakdown_anim = QuestResultsBreakdownAnim.start()
-                anim = self._breakdown_anim
-
-            click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or click:
-                anim.set_final(self.breakdown)
-                if qualifies:
-                    self.phase = 1
-                    self._arm_name_input_after_control_release()
-                else:
-                    self.phase = 2
-                return None
-
-            clinks = tick_quest_results_breakdown_anim(
-                anim,
-                frame_dt_ms=int(dt_s * 1000.0),
-                target=self.breakdown,
-            )
-            if clinks > 0 and play_sfx is not None:
-                play_sfx(SfxId.UI_CLINK_01)
-            if anim.done:
-                if qualifies:
-                    self.phase = 1
-                    self._arm_name_input_after_control_release()
-                else:
-                    self.phase = 2
+            match self._reveal.tick(int(dt_ms), self.breakdown):
+                case "clink":
+                    if play_sfx is not None:
+                        play_sfx(SfxId.UI_CLINK_01)
+                case "blink":
+                    self._anim_timer += 1
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE) or rl.is_mouse_button_pressed(
+                rl.MouseButton.MOUSE_BUTTON_LEFT,
+            ):
+                self._enter_rank_phase(qualifies=qualifies)
+            elif self._anim_timer > 10:
+                self._anim_timer = 0
+                self._enter_rank_phase(qualifies=qualifies)
             return None
+
+        # Name entry and results fade in together: native keeps counting the same timer.
+        self._anim_timer = self._anim_timer + int(dt_ms) if self._anim_timer < 500 else 500
 
         if self.phase == 1:
             if self._defer_name_input_until_controls_released:
                 flush_text_input_events()
-                rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-                rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+                self.focus.enter = False
                 if not gameplay_controls_held(self.config):
                     self._defer_name_input_until_controls_released = False
                 return None
@@ -330,10 +335,12 @@ class QuestResultsUi(msgspec.Struct):
             input_pos = content_pos.offset(dy=150.0)
             ok_pos = input_pos + Vec2(170.0, -8.0)
             resources = runtime_resources_for(self.assets_root)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
-            ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
+            self._ok_button.alpha = self._fade_alpha()
+            ok_clicked = button_update(resources, self._ok_button, focus=self.focus, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
+            ui_text_input_focus(self.focus, self._name_input, input_pos, width=INPUT_BOX_W, mouse=Vec2.from_xy(mouse))
 
-            if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            # The text input submits on Enter wherever the focus is; a pad's A stands in for it.
+            if ok_clicked or self.focus.enter:
                 if self.input_text.strip():
                     if play_sfx is not None:
                         play_sfx(SfxId.UI_TYPEENTER)
@@ -362,11 +369,6 @@ class QuestResultsUi(msgspec.Struct):
 
         if self.phase == 2:
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-                if play_sfx is not None:
-                    play_sfx(SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition(ResultAction.PLAY_AGAIN)
-                return None
             if rl.is_key_pressed(rl.KeyboardKey.KEY_N):
                 if play_sfx is not None:
                     play_sfx(SfxId.UI_BUTTONCLICK)
@@ -393,16 +395,15 @@ class QuestResultsUi(msgspec.Struct):
 
             button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
             resources = runtime_resources_for(self.assets_root)
+            alpha = self._fade_alpha()
+            for button in (self._play_next_button, self._play_again_button, self._high_scores_button, self._main_menu_button):
+                button.alpha = alpha
 
-            play_next_w = button_width(
-                resources,
-                self._play_next_button.label,
-                force_wide=self._play_next_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._play_next_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=play_next_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -413,15 +414,11 @@ class QuestResultsUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=play_again_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -432,15 +429,11 @@ class QuestResultsUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=high_scores_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -451,15 +444,11 @@ class QuestResultsUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=main_menu_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -505,127 +494,66 @@ class QuestResultsUi(msgspec.Struct):
         if self.phase == 0:
             label_x = content_pos.x + 32.0
             value_x = label_x + 132.0
+            reveal = self._reveal
+            alpha = max(0.0, min(1.0, 1.0 - self._anim_timer * 0.1))
+            current = grim_color(0.1, 0.8, 0.1, alpha)
 
-            anim = self._breakdown_anim
-            step = 4
-            highlight_alpha = 1.0
-            base_time_ms = int(self.breakdown.base_time_ms)
-            life_bonus_ms = int(self.breakdown.life_bonus_ms)
-            perk_bonus_ms = int(self.breakdown.unpicked_perk_bonus_ms)
-            final_time_ms = int(self.breakdown.final_time_ms)
-            if anim is not None and not anim.done:
-                step = int(anim.step)
-                highlight_alpha = float(anim.highlight_alpha())
-                base_time_ms = int(anim.base_time_ms)
-                life_bonus_ms = int(anim.life_bonus_ms)
-                perk_bonus_ms = int(anim.unpicked_perk_bonus_s) * 1000
-                final_time_ms = int(anim.final_time_ms)
-
-            def _row_color(idx: int, *, final: bool = False) -> rl.Color:
-                if anim is None or anim.done:
-                    return COLOR_TEXT
-                alpha = 0.2
-                if idx < step:
-                    alpha = 0.4
-                elif idx == step:
-                    alpha = 1.0
-                    if final:
-                        alpha *= highlight_alpha
-                rgb = (255, 255, 255)
-                if idx == step:
-                    rgb = (COLOR_GREEN.r, COLOR_GREEN.g, COLOR_GREEN.b)
-                return rl.Color(rgb[0], rgb[1], rgb[2], int(255 * max(0.0, min(1.0, alpha))))
+            def _row_color(row: int) -> rl.Color:
+                # The revealing row is green, earlier and later rows dimmed (later ones more).
+                if reveal.step == row:
+                    return current
+                return grim_color(1.0, 1.0, 1.0, alpha * (0.2 if reveal.step < row else 0.4))
 
             y = panel_layout.top_left.y + 156.0
-            base_value = format_time_mm_ss(base_time_ms)
-            life_value = format_time_mm_ss(life_bonus_ms)
-            perk_value = format_time_mm_ss(perk_bonus_ms)
-            final_value = format_time_mm_ss(final_time_ms)
+            rows = (
+                ("Base Time:", format_time_mm_ss(reveal.base_time_ms)),
+                ("Life Bonus:", format_time_mm_ss(reveal.health_bonus_ms)),
+                ("Unpicked Perk Bonus:", format_time_mm_ss(reveal.perk_bonus_s * 1000)),
+            )
+            for row, (label, value) in enumerate(rows):
+                self._draw_small(font, label, Vec2(label_x, y), _row_color(row))
+                self._draw_small(font, value, Vec2(value_x, y), _row_color(row))
+                y += 20.0
 
-            self._draw_small(font, "Base Time:", Vec2(label_x, y), _row_color(0))
-            self._draw_small(font, base_value, Vec2(value_x, y), _row_color(0))
-            y += 20.0
-
-            self._draw_small(font, "Life Bonus:", Vec2(label_x, y), _row_color(1))
-            self._draw_small(font, life_value, Vec2(value_x, y), _row_color(1))
-            y += 20.0
-
-            self._draw_small(font, "Unpicked Perk Bonus:", Vec2(label_x, y), _row_color(2))
-            self._draw_small(font, perk_value, Vec2(value_x, y), _row_color(2))
-            y += 20.0
-
-            # Final time underline + row (matches the extra quad draw in native).
-            line_y = y + 1.0
-            line_color = rl.Color(255, 255, 255, _row_color(3, final=True).a)
-            rl.draw_rectangle(int(label_x - 4.0), int(line_y), 168, 1, line_color)
-
+            total_color = grim_color(1.0, 1.0, 1.0, alpha)
+            rl.draw_rectangle(int(label_x - 4.0), int(y + 1.0), 168, 1, total_color)
             y += 8.0
-            self._draw_small(font, "Final Time:", Vec2(label_x, y), _row_color(3, final=True))
-            self._draw_small(font, final_value, Vec2(value_x, y), _row_color(3, final=True))
+            self._draw_small(font, "Final Time:", Vec2(label_x, y), total_color)
+            self._draw_small(font, format_time_mm_ss(reveal.total_time_ms), Vec2(value_x, y), total_color)
 
         elif self.phase == 1:
+            alpha = self._fade_alpha()
             text_y = panel_layout.top_left.y + 118.0
-            name_prompt = "State your name trooper!"
             self._draw_small(
                 font,
-                name_prompt,
+                "State your name trooper!",
                 Vec2(content_pos.x + 42.0, text_y),
-                COLOR_UI_ACCENT,
+                rl.Color(COLOR_UI_ACCENT.r, COLOR_UI_ACCENT.g, COLOR_UI_ACCENT.b, int(255 * alpha)),
             )
 
             input_pos = content_pos.offset(dy=150.0)
-            rl.draw_rectangle_lines(
-                int(input_pos.x),
-                int(input_pos.y),
-                int(INPUT_BOX_W),
-                int(INPUT_BOX_H),
-                rl.WHITE,
-            )
-            rl.draw_rectangle(
-                int(input_pos.x + 1.0),
-                int(input_pos.y + 1.0),
-                int(INPUT_BOX_W - 2.0),
-                int(INPUT_BOX_H - 2.0),
-                rl.Color(0, 0, 0, 255),
-            )
-            draw_ui_text(
-                resources,
-                self.input_text,
-                input_pos + Vec2(4.0, 2.0),
-                color=COLOR_TEXT_MUTED,
+            ui_text_input_draw(
+                resources, input_pos, width=INPUT_BOX_W, text=self.input_text, caret=self.input_caret,
             )
             if self.save_error is not None:
                 draw_ui_text(
                     resources, self.save_error, input_pos + Vec2(0.0, 22.0),
                     color=COLOR_TEXT_MUTED,
                 )
-            caret_alpha = 1.0
-            if math.sin(float(rl.get_time()) * 4.0) > 0.0:
-                caret_alpha = 0.4
-            caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
-            caret_x = (
-                input_pos.x + 4.0 + self._text_width(font, self.input_text[: self.input_caret])
-            )
-            rl.draw_rectangle(
-                int(caret_x),
-                int(input_pos.y + 2.0),
-                1,
-                14,
-                caret_color,
-            )
 
             ok_pos = input_pos + Vec2(170.0, -8.0)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
-            button_draw(resources, self._ok_button, pos=ok_pos, width=ok_w)
+            ui_text_input_draw_focus(self.focus, self._name_input, input_pos)
+            button_draw(resources, self._ok_button, focus=self.focus, pos=ok_pos)
 
             # Native phase 1 still renders the quest score card while entering the name.
             score_card_pos = input_pos + Vec2(26.0, 46.0)
             ui_text_input_render(
-                score_card_pos, self.record, 1.0, self.rank + 1,
+                score_card_pos, self.record, alpha, self.rank + 1,
                 game_state=GameStateId.QUEST_RESULTS, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
         else:
+            alpha = self._fade_alpha()
             score_card_pos = content_pos.offset(dx=QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT)
             var_c_12 = panel_layout.top_left.y + (96.0 if qualifies else 108.0)
             if not qualifies:
@@ -633,12 +561,12 @@ class QuestResultsUi(msgspec.Struct):
                     font,
                     "Score too low for top100.",
                     Vec2(score_card_pos.x + 8.0, panel_layout.top_left.y + 102.0),
-                    rl.Color(200, 200, 200, 255),
+                    grim_color(1.0, 1.0, 1.0, alpha),
                 )
 
             card_y = var_c_12 + 16.0
             ui_text_input_render(
-                Vec2(score_card_pos.x, card_y), self.record, 1.0, self.rank + 1,
+                Vec2(score_card_pos.x, card_y), self.record, alpha, self.rank + 1,
                 game_state=GameStateId.QUEST_RESULTS, ui_phase=self.phase, resources=resources, mouse=mouse, dt=self._dt,
             )
 
@@ -675,57 +603,32 @@ class QuestResultsUi(msgspec.Struct):
 
             # Buttons
             button_pos = Vec2(score_card_pos.x + 20.0, var_c_14 + 6.0)
-            play_next_w = button_width(
-                resources,
-                self._play_next_button.label,
-                force_wide=self._play_next_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._play_next_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=play_next_w,
             )
             button_pos = button_pos.offset(dy=32.0)
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=play_again_w,
             )
             button_pos = button_pos.offset(dy=32.0)
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=high_scores_w,
             )
             button_pos = button_pos.offset(dy=32.0)
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=main_menu_w,
             )
 
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=Vec2.from_xy(mouse),
-            pulse_time=float(self._cursor_pulse_time),
-        )
+        ui_cursor_render(resources, dt=self._dt, pos=Vec2.from_xy(mouse))

@@ -76,17 +76,29 @@ def cmd_match_report(
             )
             matchlib.write_match_json(report_path, report)
             matchlib.write_match_json(report_path.with_name("report.metrics.json"), diagnostics)
+            report_path.with_name("report.md").write_text(
+                match_report_accounting.render_summary(evidence, report, diagnostics), encoding="utf-8",
+            )
         except (ValueError, KeyError, TypeError, OSError, subprocess.CalledProcessError) as exc:
             typer.echo(f"decomp.dev report failed for {version}: {exc}", err=True)
             raise typer.Exit(code=2) from exc
         measures = report["measures"]
+        game = next(c["measures"] for c in report["categories"] if c["id"] == "game")
+        data_progress = (
+            f"{measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes"
+            if evidence["data"] is not None else "not measured"
+        )
         typer.echo(
-            f"{version}: {measures['matched_functions']}/{measures['total_functions']} functions; "
+            f"{version} Game & Engine: {game['matched_functions']}/{game['total_functions']} functions; "
+            f"{game['matched_code']}/{game['total_code']} bytes ({game['matched_code_percent']:.2f}%); "
+            f"fuzzy={game['fuzzy_match_percent']:.2f}%. "
+            f"All: {measures['matched_functions']}/{measures['total_functions']} functions; "
             f"{measures['matched_code']}/{measures['total_code']} bytes matched "
             f"({measures['matched_code_percent']:.2f}%); fuzzy={measures['fuzzy_match_percent']:.2f}%; "
             f"encoded-body={diagnostics['encoded_body_matched_code']}/{diagnostics['total_code']} bytes; "
             f"linked={measures['complete_code_percent']:.2f}%; "
-            f"data={measures.get('matched_data', 0)}/{measures.get('total_data', 0)} bytes; report={report_path}",
+            f"data={data_progress}; unresolved-executable={diagnostics['executable_coverage']['unresolved']} bytes; "
+            f"report={report_path}",
         )
 
 

@@ -6,8 +6,8 @@ import time
 from collections.abc import Callable, Iterator, Mapping
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, cast
+from unittest.mock import Mock
 
-import msgspec
 import pytest
 from pytest_mock import MockerFixture
 
@@ -206,13 +206,37 @@ def headless_resources() -> Iterator[RuntimeResources]:
     """Real runtime textures and font decoded from crimson.paq without a GPU context.
 
     Registered for the tests' assets directory, so gameplay modes open and update
-    headlessly; the textures keep real sizes but can't be drawn.
+    headlessly; the textures keep real sizes but can't be drawn. Nothing reached a
+    GPU, so teardown only unregisters them.
     """
-    from grim.assets import load_runtime_resources, unload_runtime_resources
+    from grim.assets import load_runtime_resources, unregister_runtime_resources
 
     resources = load_runtime_resources(Path(__file__).resolve().parents[1] / "artifacts" / "assets", upload=False)
     yield resources
-    unload_runtime_resources(resources)
+    unregister_runtime_resources(resources.assets_dir)
+
+
+@pytest.fixture
+def headless_window(mocker: MockerFixture) -> Mock:
+    """A 640x480 window without a GPU: raylib draw calls are recorded instead of issued.
+
+    Returns the parent mock; each patched draw function is attached by name
+    (`headless_window.draw_texture_pro.call_args_list`). Shaders "compile" to a
+    placeholder id. Input polling stays real and reports nothing, as raylib does
+    without a window.
+    """
+    from grim.raylib_api import rl
+
+    mocker.patch.object(rl, "get_screen_width", return_value=640)
+    mocker.patch.object(rl, "get_screen_height", return_value=480)
+    shader = rl.Shader()
+    shader.id = 1
+    mocker.patch.object(rl, "load_shader_from_memory", return_value=shader)
+    draws = Mock()
+    for name in dir(rl):
+        if name.startswith(("draw_", "begin_", "end_", "rl_")) or name == "clear_background":
+            draws.attach_mock(mocker.patch.object(rl, name), name)
+    return draws
 
 
 @pytest.fixture
@@ -324,24 +348,6 @@ def make_world_state() -> Callable[..., WorldState]:
 @pytest.fixture
 def base_world(make_world_state: Callable[..., WorldState]) -> WorldState:
     return make_world_state()
-
-
-@pytest.fixture
-def default_spawn_env():
-    from crimson.creatures.spawn import SpawnEnv
-
-    return SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-
-
-@pytest.fixture
-def make_spawn_env(default_spawn_env):
-    def _make(**overrides: object):
-        return msgspec.structs.replace(default_spawn_env, **overrides)
-
-    return _make
 
 
 @pytest.fixture

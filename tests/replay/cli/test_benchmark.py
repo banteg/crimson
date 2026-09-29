@@ -14,9 +14,9 @@ from crimson.replay.checkpoints import FORMAT_VERSION, ReplayCheckpoints, dump_c
 from crimson.replay.driver.replay_benchmark import (
     BenchmarkAggregate,
     BenchmarkSample,
+    RenderTelemetryFrame,
     ReplayBenchmarkResult,
     ReplayRenderTelemetryArtifacts,
-    ReplayRenderTelemetryFrame,
     ReplayRenderTelemetryResult,
     ReplayRenderTelemetrySummary,
     ReplayRenderTelemetryTopTick,
@@ -45,6 +45,8 @@ def _run_result(*, elapsed_ms: int, score_xp: int, kills: int, shots_fired: int,
         outcome=RunOutcome.INCOMPLETE,
         elapsed_ms=elapsed_ms,
         kills=kills,
+        shots_fired=shots_fired,
+        shots_hit=shots_hit,
         rng_state=123,
         pending_perks=0,
         quest_final_ms=None,
@@ -52,8 +54,6 @@ def _run_result(*, elapsed_ms: int, score_xp: int, kills: int, shots_fired: int,
             PlayerRunResult(
                 experience=score_xp,
                 health=100.0,
-                shots_fired=shots_fired,
-                shots_hit=shots_hit,
                 most_used_weapon_id=WeaponId.PISTOL,
             ),
         ),
@@ -402,7 +402,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
     run_result = _run_result(elapsed_ms=50, score_xp=42, kills=1, shots_fired=2, shots_hit=1)
     sample = BenchmarkSample(wall_ms=1.5, ticks_per_second=2000.0, realtime_x=33.3)
     aggregate = BenchmarkAggregate(min=1.5, p50=1.5, mean=1.5, p95=1.5, max=1.5, stdev=0.0)
-    telemetry_frame = ReplayRenderTelemetryFrame(
+    telemetry_frame = RenderTelemetryFrame(
         frame_index=0,
         tick_index_before_update=0,
         tick_index_after_update=1,
@@ -424,12 +424,12 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
         top_draw_calls_ticks=(ReplayRenderTelemetryTopTick(tick_index=1, frame_index=0, value=12.0),),
     )
     telemetry_artifacts = ReplayRenderTelemetryArtifacts(
-        telemetry_json_path=tmp_path / "telemetry.json",
-        charts_dir=tmp_path / "charts",
-        frame_timing_svg=tmp_path / "charts" / "frame_timing.svg",
-        draw_calls_svg=tmp_path / "charts" / "draw_calls.svg",
-        pass_timing_stacked_svg=tmp_path / "charts" / "pass_timing_stacked.svg",
-        report_md=tmp_path / "charts" / "report.md",
+        telemetry_json_path=str(tmp_path / "telemetry.json"),
+        charts_dir=str(tmp_path / "charts"),
+        frame_timing_svg=str(tmp_path / "charts" / "frame_timing.svg"),
+        draw_calls_svg=str(tmp_path / "charts" / "draw_calls.svg"),
+        pass_timing_stacked_svg=str(tmp_path / "charts" / "pass_timing_stacked.svg"),
+        report_md=str(tmp_path / "charts" / "report.md"),
     )
     run_replay_render_benchmark = mocker.patch.object(
         replay_benchmark_mod,
@@ -543,64 +543,6 @@ def test_replay_render_uses_render_video_runner(tmp_path: Path, mocker) -> None:
     assert kwargs["replay_path"] == replay_path
     assert kwargs["base_dir"] == tmp_path
     assert kwargs["output_path"] == replay_path.with_suffix(".render.mp4")
-
-
-def test_replay_render_progress_runtime_uses_separate_video_audio_bars(mocker) -> None:
-    import crimson.cli as cli_mod
-
-    class _FakeBar:
-        def __init__(self, *, total: int, desc: str) -> None:
-            self.total = int(total)
-            self.desc = str(desc)
-            self.updates: list[int] = []
-            self.postfixes: list[dict[str, int]] = []
-            self.closed = False
-
-        def update(self, value: int) -> None:
-            self.updates.append(int(value))
-
-        def set_postfix(self, **kwargs: int) -> None:
-            self.postfixes.append(dict(kwargs))
-
-        def close(self) -> None:
-            self.closed = True
-
-    bars: list[_FakeBar] = []
-
-    def fake_tqdm(*, total: int, unit: str, desc: str, leave: bool):
-        assert unit == "tick"
-        assert leave is True
-        bar = _FakeBar(total=int(total), desc=str(desc))
-        bars.append(bar)
-        return bar
-
-    mocker.patch.object(cli_mod, "tqdm", side_effect=fake_tqdm)
-
-    progress = cli_mod._replay_render_progress_runtime(total_ticks=10, render_audio=True)
-    assert progress is not None
-    assert len(bars) == 1
-    video_bar = bars[0]
-
-    progress.update(phase="video", frame_count=3, tick_index=5, total_ticks=10)
-    progress.update(phase="audio", frame_count=0, tick_index=4, total_ticks=10)
-    progress.update(phase="video", frame_count=4, tick_index=10, total_ticks=10)
-    progress.update(phase="audio", frame_count=0, tick_index=10, total_ticks=10)
-    progress.close()
-
-    assert len(bars) == 2
-    audio_bar = bars[1]
-
-    assert video_bar.desc == "replay video"
-    assert video_bar.total == 10
-    assert video_bar.updates == [5, 5]
-    assert video_bar.postfixes[-1]["frames"] == 4
-    assert video_bar.closed is True
-
-    assert audio_bar.desc == "replay audio"
-    assert audio_bar.total == 10
-    assert audio_bar.updates == [4, 6]
-    assert audio_bar.postfixes == []
-    assert audio_bar.closed is True
 
 
 def test_replay_render_uses_custom_output_and_ffmpeg_bin(tmp_path: Path, mocker) -> None:

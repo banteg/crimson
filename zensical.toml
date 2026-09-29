@@ -181,7 +181,6 @@ nav = [
         { "Creature struct" = "creatures/struct.md" },
         { "Creature runtime" = "creatures/update.md" },
         { "Spawning" = "creatures/spawning.md" },
-        { "Spawn plan" = "creatures/spawn_plan.md" },
         { "Animations" = "creatures/animations.md" },
         { "AI" = "creatures/ai.md" },
       ]},

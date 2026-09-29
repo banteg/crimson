@@ -98,8 +98,6 @@ def draw_menu_sign(
         angle_rad, slide_x = ui_element_anim(
             timeline_ms,
             index=0,
-            start_ms=300,
-            end_ms=0,
             width=sign_w,
         )
         _ = slide_x  # slide is ignored for render_mode==0 (transform) elements

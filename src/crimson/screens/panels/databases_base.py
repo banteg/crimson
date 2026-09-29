@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -22,11 +23,11 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
+from ...ui.scrollbar import UiScrollbar
 from ..assets import require_runtime_resources
 from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
 LEFT_PANEL_POS_Y = 185.0
@@ -36,25 +37,24 @@ RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
+    _game_state: GameStateId
+
     def __init__(self, state: GameState) -> None:
         self.state = state
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
         self._back_button = UiButtonState("Back", force_wide=False)
+        # The database list's `ui_scrollbar_t`: ten rows.
+        self.list_scroll = UiScrollbar(visible_rows=10)
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
 
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -68,7 +68,7 @@ class _DatabaseBaseView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
@@ -80,9 +80,9 @@ class _DatabaseBaseView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -90,15 +90,14 @@ class _DatabaseBaseView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
 
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        enabled = self._transition.timeline_ms >= self._transition.duration_ms
+        enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if self.state.focus.escape and enabled:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
@@ -116,12 +115,13 @@ class _DatabaseBaseView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         self._update_content_interaction(left_top_left=left_top_left, mouse=mouse)
 
+        # The database's list registers for focus before its Back button.
         back_pos = self._back_button_pos()
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
+            resources,
             self._back_button,
+            focus=self.state.focus,
             pos=left_top_left + back_pos,
-            width=back_w,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -139,18 +139,14 @@ class _DatabaseBaseView:
         shadows_enabled = self.state.config.display.shadows_enabled
 
         _angle_rad, left_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
         _angle_rad, right_slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=2,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=33,
             width=MENU_PANEL_WIDTH,
             direction_flag=1,
         )
@@ -181,12 +177,11 @@ class _DatabaseBaseView:
         self._draw_contents(left_panel_top_left, right_panel_top_left, font=font)
 
         back_pos = self._back_button_pos()
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=left_panel_top_left + back_pos,
-            width=back_w,
         )
 
         draw_menu_sign(
@@ -194,9 +189,9 @@ class _DatabaseBaseView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def _back_button_pos(self) -> Vec2:
         raise NotImplementedError

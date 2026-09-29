@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import crimson.world.render_resources as render_resources_mod
-from crimson.sim.terrain_fx import TerrainDecalFx, TerrainFxBatch
+from crimson.effects import FxQueueEntry
+from crimson.sim.terrain_fx import TerrainFxBatch
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from grim.assets import TextureId
 from grim.color import RGBA
@@ -107,7 +108,7 @@ def test_consume_terrain_fx_batch_defers_baking_to_draw_even_when_ground_ready(a
     runtime.render_resources.fx_textures = render_resources_mod.FxQueueTextures(particles=texture, bodyset=texture)
     batch = TerrainFxBatch(
         decals=(
-            TerrainDecalFx(
+            FxQueueEntry(
                 effect_id=3,
                 rotation=0.0,
                 pos=runtime.world.players[0].pos,
@@ -133,7 +134,7 @@ def test_process_ground_pending_flushes_buffered_terrain_fx_batches(assets_dir: 
     runtime.render_resources.fx_textures = render_resources_mod.FxQueueTextures(particles=texture, bodyset=texture)
     batch = TerrainFxBatch(
         decals=(
-            TerrainDecalFx(
+            FxQueueEntry(
                 effect_id=4,
                 rotation=0.1,
                 pos=runtime.world.players[0].pos,

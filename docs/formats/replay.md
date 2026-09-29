@@ -43,7 +43,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `25` |
+| `format_version` | int | `27` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -66,6 +66,7 @@ from that commit (modified or new unignored files) appends `.dirty`.
 | `quest_fail_retry_count` | int 0..2³¹−1 | Native retry scaling counter |
 | `detail_preset` | int 1..5 | Presentation detail; native presentation code consumes RNG |
 | `violence_disabled` | int 0..255 | Native config byte; likewise |
+| `friendly_fire` | bool | `cv_friendlyFire` at run start: player shots carry `-1 - player_index` and can hit other players (since v27) |
 | `status` | `RunStatus` | Save-status fields that influence the run |
 | `typo_dictionary_words` | array of str | Optional custom Typ-o dictionary: at most 2048 words of 1..15 printable ASCII characters |
 | `typo_highscore_names` | array of str | Typ-o name pool from the local score table: at most 512 names of 1..31 ASCII letters or `.` |
@@ -111,16 +112,17 @@ discarded RNG draw, and so does run setup; frames outside gameplay add none.
 | `outcome` | str | `death`, `quest_completed`, `tutorial_completed` or `incomplete` |
 | `elapsed_ms` | int | Quest spawn timeline for quests, session time otherwise (truncated) |
 | `kills` | int | Creature kill count (all players) |
+| `shots_fired` | int | Shots fired by all players, native `highscore_record_shots_fired` (since v26) |
+| `shots_hit` | int | Creature hits by any shot, native `highscore_record_shots_hit` |
 | `rng_state` | u32 | CRT RNG state after the final tick |
 | `pending_perks` | int | Unpicked perks |
 | `quest_final_ms` | int or nil | Set only for `quest_completed`: base time minus life and unpicked-perk bonuses; may be negative, exactly zero becomes 1 |
 | `players` | array of `PlayerResult` | Exactly `player_count` entries |
 
-`PlayerResult` is a map of `experience` (int), `health` (f32),
-`shots_fired` (int), `shots_hit` (int) and `most_used_weapon_id` (int). As in
-the high-score record, hits are clamped to shots fired (a piercing shot can hit
-several creatures). Typ-o reports submitted words as shots fired and matched
-words as hits.
+`PlayerResult` is a map of `experience` (int), `health` (f32) and
+`most_used_weapon_id` (int). As in the high-score record, hits are clamped to
+shots fired (a piercing shot can hit several creatures). Typ-o reports
+submitted words as shots fired and matched words as hits.
 
 ## Run end
 
@@ -130,12 +132,18 @@ The run ends on the first tick after which the mode's end condition holds:
 |---|---|
 | Survival | every player has health ≤ 0 and a negative death timer |
 | Rush | every player has health ≤ 0 |
-| Quests | quest completion transition finished (`quest_completed`), else as Survival (`death`) |
+| Quests | as Survival (`death`), else the quest completion transition finished (`quest_completed`) |
 | Typ-o | the player has health ≤ 0 |
 | Tutorial | none; the player leaves from the UI |
 
-A replay whose run ends before its last tick is invalid. When the last tick
-does not end the run, the outcome is `incomplete`, except:
+After the tick that ends the run the game keeps simulating while the gameplay
+timeline runs down, as native does: from at most 500 ms, by the whole
+milliseconds of each tick's simulated time (`int(dt_sim * 1000)`), before it
+leaves for the game-over or quest screen. A replay may continue through that
+run-down but no further: counting 500 down from the end tick by each tick's
+milliseconds, a replay with ticks left once the count drops below 0 is invalid.
+The outcome is the one standing after the last tick. When no tick ends the run,
+the outcome is `incomplete`, except:
 
 - a quest where every player has health ≤ 0 is `death` (the failed-quest
   countdown keeps running while paused, so the run can close between ticks);
@@ -145,7 +153,7 @@ does not end the run, the outcome is `incomplete`, except:
 
 A verifier decodes the payload (rejecting non-canonical encodings), checks the
 constraints above, simulates every tick from the `RunSpec`, rejects illegal
-commands and early run ends, derives the `RunResult` and compares it with the
+commands and ticks past the run-down, derives the `RunResult` and compares it with the
 recorded one field by field. It reports the payload SHA-256, the derived
 result and any mismatched fields. A verifier may simulate a prefix for
 debugging, but a prefix never verifies a result.

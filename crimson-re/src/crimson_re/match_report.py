@@ -267,7 +267,7 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
     return {
         "schema": 3,
         "verification": accounting.VERIFICATION,
-        "identities": accounting.identities(inventory, before, external, toolchains),
+        "identities": accounting.identities(inventory, before, external, toolchains, data=data),
         "code_inventory": accounting.code_inventory(inventory, _image_paths(version)),
         "version": version,
         "scope": "all",
@@ -321,7 +321,9 @@ def validate_evidence(evidence: dict[str, Any]) -> None:
         accounting.validate_function(row)
     if evidence["verification"] != accounting.VERIFICATION:
         raise ValueError("unsupported evidence verification mode")
-    if evidence["identities"] != accounting.identities(inventory, recorded, evidence["external_inputs"], evidence["toolchains"]):
+    if evidence["identities"] != accounting.identities(
+        inventory, recorded, evidence["external_inputs"], evidence["toolchains"], data=evidence["data"],
+    ):
         raise ValueError("report measurement identities differ")
     if evidence["code_inventory"] != accounting.code_inventory(inventory, _image_paths(version)):
         raise ValueError("executable inventory reconciliation differs")

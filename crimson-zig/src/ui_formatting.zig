@@ -1,17 +1,21 @@
 const std = @import("std");
 
-pub fn formatOrdinal(buf: []u8, value_1_based: i32) []const u8 {
-    const value = value_1_based;
-    const abs_value = @abs(value);
-    const suffix = if (@mod(abs_value, 100) >= 11 and @mod(abs_value, 100) <= 13)
-        "th"
-    else switch (@mod(abs_value, 10)) {
+/// `format_ordinal`: 8..20 take "th"; otherwise the last digit picks st/nd/rd.
+pub fn formatOrdinal(buf: []u8, value: i32) []const u8 {
+    const suffix = if (value >= 8 and value <= 20) "th" else switch (@mod(value, 10)) {
         1 => "st",
         2 => "nd",
         3 => "rd",
         else => "th",
     };
     return std.fmt.bufPrint(buf, "{d}{s}", .{ value, suffix }) catch "";
+}
+
+const month_labels = [_][]const u8{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
+pub fn formatHighscoreDateLabel(buf: []u8, day: u8, month_index: u8, year: i32) []const u8 {
+    const month = if (month_index >= 1 and month_index <= 12) month_labels[month_index - 1] else "???";
+    return std.fmt.bufPrint(buf, "{d}. {s} {d}", .{ day, month, year }) catch "";
 }
 
 pub fn formatTimeMmSs(buf: []u8, ms: i32) []const u8 {
@@ -21,17 +25,21 @@ pub fn formatTimeMmSs(buf: []u8, ms: i32) []const u8 {
     return std.fmt.bufPrint(buf, "{d}:{d:0>2}", .{ minutes, seconds }) catch "";
 }
 
-test "format ordinal matches python result helpers" {
+test "format ordinal follows native: 8..20 take th, the last digit picks the rest" {
     var buf: [16]u8 = undefined;
     try std.testing.expectEqualStrings("1st", formatOrdinal(&buf, 1));
-    try std.testing.expectEqualStrings("2nd", formatOrdinal(&buf, 2));
     try std.testing.expectEqualStrings("3rd", formatOrdinal(&buf, 3));
     try std.testing.expectEqualStrings("4th", formatOrdinal(&buf, 4));
     try std.testing.expectEqualStrings("11th", formatOrdinal(&buf, 11));
-    try std.testing.expectEqualStrings("12th", formatOrdinal(&buf, 12));
-    try std.testing.expectEqualStrings("13th", formatOrdinal(&buf, 13));
     try std.testing.expectEqualStrings("21st", formatOrdinal(&buf, 21));
-    try std.testing.expectEqualStrings("112th", formatOrdinal(&buf, 112));
+    try std.testing.expectEqualStrings("111st", formatOrdinal(&buf, 111));
+    try std.testing.expectEqualStrings("112nd", formatOrdinal(&buf, 112));
+}
+
+test "high-score date label marks an unknown month" {
+    var buf: [32]u8 = undefined;
+    try std.testing.expectEqualStrings("3. Feb 2026", formatHighscoreDateLabel(&buf, 3, 2, 2026));
+    try std.testing.expectEqualStrings("0. ??? 2000", formatHighscoreDateLabel(&buf, 0, 0, 2000));
 }
 
 test "format time clamps to zero and uses m:ss" {

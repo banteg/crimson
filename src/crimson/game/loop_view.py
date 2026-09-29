@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from crimson.screens.chrome import ensure_menu_ground
 from grim import canvas
+from grim.audio import resume_audio, suspend_audio
 from grim.blend import opaque_blend
 from grim.raylib_api import rl
 from grim.texture_mode import texture_mode
 
 from ..debug import debug_enabled
+from ..game_states import GameStateId
 from ..gamepad_profile import PadUpgrade, auto_apply_pad_profiles
 from ..input_codes import input_begin_frame, player_gamepad_index
 from ..modes.quest_mode import QuestMode
@@ -84,7 +86,18 @@ class GameLoopView:
     def should_close(self) -> bool:
         return self.state.quit_requested
 
+    def focus_changed(self, focused: bool) -> None:
+        """grim calls `audio_suspend_all` / `audio_resume_all` as the window loses and regains focus."""
+        audio = self.state.audio
+        if audio is None:
+            return
+        if focused:
+            resume_audio(audio)
+        else:
+            suspend_audio(audio)
+
     def update(self, dt: float) -> None:
+        self.state.frame_dt = min(dt, 0.1)
         input_begin_frame()
         console = self.state.console
         console.handle_hotkey()
@@ -93,6 +106,9 @@ class GameLoopView:
         self._handle_console_requests()
         self._sync_rtx_mode()
         _update_screen_fade(self.state, dt)
+        # Native `game_frame_update` quits whenever Q and left Alt are held, console open or not.
+        if rl.is_key_down(rl.KeyboardKey.KEY_Q) and rl.is_key_down(rl.KeyboardKey.KEY_LEFT_ALT):
+            self.state.quit_requested = True
         gameplay = self.state.screens.active_gameplay
         if debug_enabled() and (not console.open_flag) and rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
             self._set_rtx_mode(cycle_rtx_render_mode(self.state.rtx_mode), source="debug hotkey F4")
@@ -107,6 +123,8 @@ class GameLoopView:
         self._apply_gamepad_profiles()
         self._tick_statistics_playtime(dt)
 
+        # The left stick moves the player while gameplay (its game over and perk menu included) is on top.
+        self.state.focus.begin_frame(int(self.state.frame_dt * 1000.0), stick=gameplay is None)
         active = self.state.screens.active
         active.update(dt)
         action = active.take_action()
@@ -138,14 +156,12 @@ class GameLoopView:
         log.flush()
 
     def _tick_statistics_playtime(self, dt: float) -> None:
-        # Native `_play_time_ms` advances on gameplay frames only (state 9)
-        # and is used by the Statistics "played for ... hours ... minutes" row.
-        if self.state.screens.active_gameplay is None:
+        # `game_frame_update`: `play_time_ms += (int)(frame_dt * 1000.0f)` on `GAME_STATE_GAMEPLAY` frames of a
+        # run with the console closed, so Typ-o (its own state), the perk menu and game over don't count.
+        gameplay = self.state.screens.active_gameplay
+        if gameplay is None or gameplay.game_state_id != GameStateId.GAMEPLAY or self.state.console.open_flag:
             return
-        delta_ms = ftol_ms_i32(dt)
-        if delta_ms <= 0:
-            return
-        self.state.status.play_time_ms = (self.state.status.play_time_ms + delta_ms) & 0xFFFFFFFF
+        self.state.status.play_time_ms = (self.state.status.play_time_ms + ftol_ms_i32(dt)) & 0xFFFFFFFF
 
     def _sync_console_elapsed_ms(self) -> None:
         gameplay = self.state.screens.gameplay

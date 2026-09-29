@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from crimson.game.types import GameState
-from crimson.pause_background import PauseBackground
-from crimson.screens.actions import ScreenAction
-from crimson.screens.stack import ScreenEntry
-from tests.support.gameplay_screen import GameplayScreenStub
+from crimson.game.loop_view import GameLoopView
+from crimson.game.navigation import ScreenNavigator
+from crimson.game.types import GameState, Screen
+from crimson.modes.base_gameplay_mode import BaseGameplayMode
+from crimson.screens.actions import ScreenAction, StartRun
 
 
 class ScreenStub:
@@ -34,19 +34,22 @@ class ScreenStub:
         return action
 
 
-class BackgroundGameplayStub(GameplayScreenStub):
-    def __init__(self, background: PauseBackground) -> None:
-        super().__init__()
-        self.background = background
-
-    def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        self.background.draw_pause_background(entity_alpha=entity_alpha)
+def update_frame(screen: Screen, state: GameState, dt: float = 0.016) -> None:
+    """One game-loop frame of `screen`: the loop starts the focus frame (sampling the keys), then updates it."""
+    state.focus.begin_frame(int(min(dt, 0.1) * 1000.0))
+    screen.update(dt)
 
 
-def install_background(state: GameState, background: PauseBackground) -> None:
-    """Isolate a panel draw test with a real retained-run/background relationship."""
-    gameplay = BackgroundGameplayStub(background)
-    state.screens.close()
-    state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
-    overlay = ScreenStub()
-    state.screens.push(ScreenEntry(overlay, resume=overlay.resume))
+def finish_transition(loop: GameLoopView) -> None:
+    """Run the loop long enough for any menu transition to finish."""
+    for _ in range(12):
+        loop.update(0.1)
+
+
+def start_run(state: GameState, request: StartRun) -> tuple[ScreenNavigator, BaseGameplayMode]:
+    """Start `request` as the game does; screens navigated to next retain the run as their background."""
+    navigator = ScreenNavigator(state)
+    navigator.navigate(request)
+    run = state.screens.gameplay
+    assert isinstance(run, BaseGameplayMode)
+    return navigator, run

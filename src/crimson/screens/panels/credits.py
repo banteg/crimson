@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -24,11 +25,11 @@ from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
 from ...game.types import GameState
+from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
 CREDITS_PANEL_POS_X = -119.0
@@ -218,10 +219,7 @@ class CreditsView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
@@ -233,14 +231,14 @@ class CreditsView:
 
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
+        # The port's keyboard path to the line puzzle: focused, Enter clicks the line crossing the reading row.
+        self._text_focus = UiFocusTarget()
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.CREDITS))
 
         self._lines, self._line_max_index, self._secret_line_base_index = _credits_build_lines()
         self._secret_unlock = False
@@ -261,15 +259,15 @@ class CreditsView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "CreditsView must be opened before use"
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _panel_top_left(self) -> Vec2:
         return Vec2(
@@ -298,10 +296,8 @@ class CreditsView:
 
     def _panel_slide_x(self) -> float:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
@@ -352,6 +348,24 @@ class CreditsView:
             return 1.0
         return alpha
 
+    def _line_y(self, row: int, *, panel_top_left: Vec2) -> float:
+        return panel_top_left.y + _TEXT_BASE_Y + float(row) * _TEXT_LINE_HEIGHT - self._scroll_fraction_px(self._scroll_time_s)
+
+    def _reading_row(self) -> int:
+        """The visible row nearest the middle of the text window: the keyboard's "click" row."""
+        visible_count = self._scroll_line_end_index - self._scroll_line_start_index
+        frac_px = self._scroll_fraction_px(self._scroll_time_s)
+        return visible_count // 2 + (1 if frac_px > _TEXT_LINE_HEIGHT * 0.5 else 0)
+
+    def _click_line(self, index: int) -> None:
+        line = self._lines[index]
+        if "o" in line.text:
+            if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
+                play_sfx(self.state.audio, SfxId.UI_BONUS)
+            line.flags |= _FLAG_CLICKED
+        elif _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.TROOPER_INPAIN_01)
+
     def _update_line_clicks(
         self,
         *,
@@ -364,8 +378,6 @@ class CreditsView:
         if visible_count <= 0 or not click:
             return
 
-        base_y = panel_top_left.y + _TEXT_BASE_Y
-        frac_px = self._scroll_fraction_px(self._scroll_time_s)
         center_x = panel_top_left.x + (_TEXT_ANCHOR_X + _TEXT_CENTER_OFFSET_X)
 
         for row in range(visible_count):
@@ -375,7 +387,7 @@ class CreditsView:
             line = self._lines[index]
             text_w = measure_small_text_width(font, line.text)
             x = center_x - (text_w * 0.5)
-            y = base_y + (float(row) * _TEXT_LINE_HEIGHT) - frac_px
+            y = self._line_y(row, panel_top_left=panel_top_left)
             if not self._mouse_inside_rect(
                 mouse,
                 x=x,
@@ -384,15 +396,17 @@ class CreditsView:
                 h=_TEXT_RECT_H,
             ):
                 continue
-
-            if "o" in line.text:
-                if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
-                    play_sfx(self.state.audio, SfxId.UI_BONUS)
-                line.flags |= _FLAG_CLICKED
-            else:
-                if _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
-                    play_sfx(self.state.audio, SfxId.TROOPER_INPAIN_01)
+            self._click_line(index)
             return
+
+    def _update_text_focus(self) -> None:
+        focus = self.state.focus
+        self._text_focus.focused = focus.update(self._text_focus)
+        if not (self._text_focus.focused and focus.enter):
+            return
+        index = self._scroll_line_start_index + self._reading_row()
+        if 0 <= index < len(self._lines) and index < self._scroll_line_end_index:
+            self._click_line(index)
 
     def _update_secret_unlock(self) -> None:
         if self._secret_unlock:
@@ -413,16 +427,15 @@ class CreditsView:
             self._ground.process_pending()
         dt_clamped = min(float(dt), 0.1)
         dt_ms = int(dt_clamped * 1000.0)
-        self._cursor_pulse_time += dt_clamped * 1.1
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
         self._scroll_time_s += dt_clamped
         self._update_scroll_window()
 
-        interactive = self._transition.timeline_ms >= self._transition.duration_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
+        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
+        if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
@@ -447,11 +460,11 @@ class CreditsView:
 
         dt_ms_f = dt_clamped * 1000.0
 
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
+            resources,
             self._back_button,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
-            width=back_w,
             dt_ms=dt_ms_f,
             mouse=mouse,
             click=click,
@@ -461,24 +474,22 @@ class CreditsView:
             self._begin_close_transition(Route.BACK)
             return
 
-        if self._secret_button_visible():
-            secret_w = button_width(
-                resources,
-                self._secret_button.label,
-                force_wide=self._secret_button.force_wide,
-            )
-            if button_update(
-                self._secret_button,
-                pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
-                width=secret_w,
-                dt_ms=dt_ms_f,
-                mouse=mouse,
-                click=click,
-            ):
-                if self.state.audio is not None:
-                    play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-                self._begin_close_transition(Route.ALIEN_ZOOKEEPER)
-                return
+        if self._secret_button_visible() and button_update(
+            resources,
+            self._secret_button,
+            focus=self.state.focus,
+            pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
+            dt_ms=dt_ms_f,
+            mouse=mouse,
+            click=click,
+        ):
+            if self.state.audio is not None:
+                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
+            self._begin_close_transition(Route.ALIEN_ZOOKEEPER)
+            return
+
+        # Native's line puzzle is mouse-only; the port's text focus stop comes after the buttons.
+        self._update_text_focus()
 
     def draw(self) -> None:
         self._assert_open()
@@ -529,25 +540,27 @@ class CreditsView:
                 text_w = measure_small_text_width(font, line.text)
                 draw_small_text(font, line.text, Vec2(center_x - (text_w * 0.5), y), color)
 
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
+            if self._text_focus.focused:
+                # The reading row keeps its marker while focused: the port-only stop has no hover to show it.
+                reading_y = self._line_y(self._reading_row(), panel_top_left=panel_top_left)
+                rl.draw_rectangle_rec(
+                    rl.Rectangle(panel_top_left.x + _TEXT_ANCHOR_X - 16.0, reading_y + 4.0, 6.0, 6.0),
+                    rl.Color(204, 204, 153, 204),
+                )
+
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
-            width=back_w,
         )
 
         if self._secret_button_visible():
-            secret_w = button_width(
-                resources,
-                self._secret_button.label,
-                force_wide=self._secret_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._secret_button,
+                focus=self.state.focus,
                 pos=panel_top_left + Vec2(_SECRET_BUTTON_X, _SECRET_BUTTON_Y),
-                width=secret_w,
             )
 
         draw_menu_sign(
@@ -555,6 +568,6 @@ class CreditsView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)

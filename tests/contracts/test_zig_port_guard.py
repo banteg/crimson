@@ -6,14 +6,7 @@ from pathlib import Path
 
 from crimson.aim_schemes import AimScheme
 from crimson.bonuses.ids import BonusId
-from crimson.creatures.spawn import (
-    ALIEN_SPAWNER_TEMPLATES,
-    CONSTANT_SPAWN_TEMPLATES,
-    GRID_FORMATIONS,
-    RING_FORMATIONS,
-    TEMPLATE_BUILDERS,
-    SpawnId,
-)
+from crimson.creatures.spawn import SpawnId
 from crimson.game_modes import GameMode
 from crimson.movement_controls import MovementControlType
 from crimson.perks.ids import PerkId
@@ -51,16 +44,6 @@ def _zig_enum_values(enum_name: str) -> dict[str, int]:
     for name, value in re.findall(r"\n\s*([a-z0-9_]+)\s*=\s*(0x[0-9a-fA-F]+|\d+),", match.group(1)):
         values[name] = int(value, 0)
     return values
-
-
-def _python_supported_spawn_ids() -> set[int]:
-    return {
-        *(int(spawn_id) for spawn_id in TEMPLATE_BUILDERS),
-        *(int(spawn_id) for spawn_id in ALIEN_SPAWNER_TEMPLATES),
-        *(int(spawn_id) for spawn_id in GRID_FORMATIONS),
-        *(int(spawn_id) for spawn_id in RING_FORMATIONS),
-        *(int(spawn_id) for spawn_id in CONSTANT_SPAWN_TEMPLATES),
-    }
 
 
 def _zig_supported_spawn_ids() -> set[int]:
@@ -215,8 +198,8 @@ def _zig_rebind_array_name(*, aim_scheme: AimScheme, move_mode: MovementControlT
     return f"{prefix}_default"
 
 
-def test_python_supported_spawn_templates_are_ported_in_zig() -> None:
-    missing = sorted(_python_supported_spawn_ids() - _zig_supported_spawn_ids())
+def test_every_spawn_template_is_ported_in_zig() -> None:
+    missing = sorted({int(spawn_id) for spawn_id in SpawnId} - _zig_supported_spawn_ids())
     assert missing == []
 
 

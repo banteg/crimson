@@ -21,7 +21,9 @@ const window_atlas = cz.window_atlas;
 const window_boot = @import("window_boot.zig");
 const window_cursor = @import("window_cursor.zig");
 const window_effects = @import("window_effects.zig");
+const window_keybind_help = @import("window_keybind_help.zig");
 const window_ground = @import("window_ground.zig");
+const window_highscore_card = @import("window_highscore_card.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
 const window_misc_panels = @import("window_misc_panels.zig");
@@ -122,6 +124,7 @@ const GameplayScreen = struct {
     pending_terrain_fx: [16]terrain_fx_mod.TerrainFxBatch = [_]terrain_fx_mod.TerrainFxBatch{.{}} ** 16,
     pending_terrain_fx_count: usize = 0,
     pause_menu: window_pause_menu.State = .{},
+    key_info: window_keybind_help.State = .{},
 
     fn deinit(self: *GameplayScreen) void {
         if (self.ground) |*ground| {
@@ -317,11 +320,11 @@ const ResultsScreen = struct {
     highscore: ?ResultsHighscoreState = null,
     score_too_low_for_top100: bool = false,
     score_too_low_record: ?persistence.highscores.HighScoreRecord = null,
+    quest_failed_record: ?persistence.highscores.HighScoreRecord = null,
     quest_final_time: ?quest_results.QuestFinalTime = null,
     quest_breakdown_anim: quest_results.QuestResultsBreakdownAnim = .{},
     quest_unlock_weapon_name: ?[]const u8 = null,
     quest_unlock_perk_name: ?[]const u8 = null,
-    score_card_hover: ResultsScoreCardHover = .{},
     timeline_ms: i32 = 0,
     panel_open_sfx_played: bool = false,
     closing: bool = false,
@@ -355,12 +358,6 @@ const ResultsScreen = struct {
         const dt_ms: i32 = @intFromFloat(@min(frame_dt, 0.1) * 1000.0);
         if (dt_ms > 0) self.timeline_ms = @min(resultsTimelineMaxMs(self), self.timeline_ms + dt_ms);
     }
-};
-
-const ResultsScoreCardHover = struct {
-    weapon: f32 = 0.0,
-    time: f32 = 0.0,
-    hit_ratio: f32 = 0.0,
 };
 
 const ResultsHighscoreState = struct {
@@ -443,6 +440,7 @@ const ResultsHighscoreBuild = struct {
     highscore: ?ResultsHighscoreState = null,
     score_too_low_for_top100: bool = false,
     score_too_low_record: ?persistence.highscores.HighScoreRecord = null,
+    quest_failed_record: ?persistence.highscores.HighScoreRecord = null,
 };
 
 const App = struct {
@@ -573,6 +571,8 @@ const App = struct {
     fn update(self: *App, frame_dt: f32) void {
         self.applyGamepadProfiles();
         self.tickCursorPulse(frame_dt);
+        // Native `game_frame_update` quits whenever Q and left Alt are held.
+        if (rl.isKeyDown(.q) and rl.isKeyDown(.left_alt)) self.quit_requested = true;
         switch (self.screen) {
             .boot => self.updateBoot(frame_dt),
             .main_menu => self.updateMainMenu(frame_dt),
@@ -813,6 +813,10 @@ const App = struct {
     fn updateGameplay(self: *App, frame_dt: f32) void {
         if (self.gameplay) |*gameplay| {
             gameplay.render_time_s += @max(frame_dt, 0.0);
+            // `gameplay_update_and_render` pauses on F1 and shows the key info; Typ-o's update has no pause.
+            if (gameplay.runner.session.game_mode != .typo) {
+                gameplay.key_info.update(rl.isKeyPressed(.f1), frameDeltaMs(frame_dt));
+            }
             if (!gameplay.perk_ui.active() and (rl.isKeyPressed(.escape) or input_codes.padNavPressed(.start))) {
                 gameplay.pause_menu.reset();
                 self.setScreen(.pause);
@@ -827,21 +831,18 @@ const App = struct {
             );
             self.runtime.recordGameplayFrame(frame_dt);
             var input = collectGameplayInput(&gameplay.input_interpreter, &gameplay.runner, camera, &self.runtime, frame_dt);
-            if (gameplay.runner.session.game_mode == .tutorial and
-                gameplay.runner.perkPendingCount() > 0 and
-                gameplay.runner.session.state.tutorial.stage_index == 6 and
-                !gameplay.perk_ui.active())
-            {
-                gameplay.runner.requestPerkMenu();
-            }
-            const perk_ui_update = window_perk_menu.update(
-                &gameplay.perk_ui,
-                frame_dt,
-                if (self.runtime_assets) |*assets| assets else null,
-                &self.runtime.config,
-                &gameplay.runner,
-                !gameplay.runner.allPlayersDead(),
-            );
+            // The level-up prompt and perk menu run outside Rush and Typ-o.
+            const perk_ui_update: window_perk_menu.UpdateResult = if (perkPromptMode(gameplay.runner.session.game_mode))
+                window_perk_menu.update(
+                    &gameplay.perk_ui,
+                    frame_dt,
+                    if (self.runtime_assets) |*assets| assets else null,
+                    &self.runtime.config,
+                    &gameplay.runner,
+                    gameplay.key_info.paused,
+                )
+            else
+                .{};
             input.perk_choice_index = perk_ui_update.perk_choice_index;
             input.perk_menu_active = perk_ui_update.menu_active;
             if (perk_ui_update.play_panel_click) {
@@ -850,7 +851,9 @@ const App = struct {
             if (perk_ui_update.play_button_click) {
                 self.audio.playUiButtonClick();
             }
-            gameplay.last_update = gameplay.runner.stepFrame(frame_dt, input) catch |err| {
+            // `game_paused_flag` freezes the world: the frame steps with no time.
+            const sim_dt: f32 = if (gameplay.key_info.paused) 0.0 else frame_dt;
+            gameplay.last_update = gameplay.runner.stepFrame(sim_dt, input) catch |err| {
                 self.finishRun(gameplay, .runtime_error, liveRuntimeErrorDetail(err));
                 return;
             };
@@ -909,7 +912,11 @@ const App = struct {
             }
             if (pause_update.play_button_click) self.audio.playUiButtonClick();
             if (pause_update.action) |action| switch (action) {
-                .back_to_previous => self.setScreen(.gameplay),
+                .back_to_previous => {
+                    // `game_state_set(GAME_STATE_GAMEPLAY)` clears `game_paused_flag`.
+                    gameplay.key_info.paused = false;
+                    self.setScreen(.gameplay);
+                },
                 .open_options => {
                     self.options.reset();
                     self.options_back_to = .pause;
@@ -996,7 +1003,6 @@ const App = struct {
                 }
                 return;
             }
-            updateResultsScoreCardHover(results, frame_dt);
             if (results.highscore) |*highscore| {
                 if (highscore.promptActive()) {
                     self.updateResultsHighscoreEntry(results, highscore);
@@ -1503,6 +1509,7 @@ const App = struct {
             .highscore = highscore_build.highscore,
             .score_too_low_for_top100 = highscore_build.score_too_low_for_top100,
             .score_too_low_record = highscore_build.score_too_low_record,
+            .quest_failed_record = highscore_build.quest_failed_record,
             .quest_final_time = if (runner.session.game_mode == .quests)
                 quest_results.computeQuestFinalTime(
                     @intCast(runner.summary().elapsed_ms_sim),
@@ -1550,17 +1557,18 @@ const App = struct {
             .dead, .completed => {},
             .abandoned, .runtime_error => return .{},
         }
-        if (runner.session.game_mode == .quests and reason == .dead) return .{};
-
         const player = runner.player0Const() orelse return .{};
-        const shot_options: persistence.highscore_record_builder.BuildRecordOptions = switch (runner.session.game_mode) {
-            .typo => .{
-                .shots_fired = runner.session.state.typo.typing.submit_count,
-                .shots_hit = runner.session.state.typo.typing.match_count,
-                .clamp_shots_hit = false,
-            },
-            else => .{},
-        };
+        if (runner.session.game_mode == .quests and reason == .dead) {
+            // The quest-failed card previews the run without ranking it.
+            return .{ .quest_failed_record = persistence.highscore_record_builder.buildHighscoreRecordForGameOver(
+                runner.session.state,
+                player.*,
+                @max(1, @as(i32, @intCast(runner.summary().elapsed_ms_sim))),
+                @intCast(runner.session.creatures.kill_count),
+                runner.session.game_mode,
+                .{ .hardcore = runner.session.state.hardcore },
+            ) };
+        }
 
         const elapsed_ms = if (runner.session.game_mode == .quests)
             quest_results.computeQuestFinalTime(
@@ -1577,12 +1585,7 @@ const App = struct {
             elapsed_ms,
             @intCast(runner.session.creatures.kill_count),
             runner.session.game_mode,
-            .{
-                .shots_fired = shot_options.shots_fired,
-                .shots_hit = shot_options.shots_hit,
-                .clamp_shots_hit = shot_options.clamp_shots_hit,
-                .hardcore = runner.session.state.hardcore,
-            },
+            .{ .hardcore = runner.session.state.hardcore },
         );
 
         const score_path = persistence.highscores.scoresPathForMode(
@@ -1686,8 +1689,8 @@ const App = struct {
             if (runner.session.game_mode == .typo) {
                 drawTypoNameLabels(runner, assets, transform, 1.0);
             }
-            if (!perk_menu_active) {
-                window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config, runner.perkPendingCount());
+            if (perkPromptMode(runner.session.game_mode)) {
+                window_perk_menu.drawPrompt(&gameplay.perk_ui, assets, &self.runtime.config);
             }
             uiRenderAimIndicators(runner, assets, &self.runtime.config, transform, 1.0, !perk_menu_active);
         }
@@ -1705,6 +1708,9 @@ const App = struct {
                     drawTutorialOverlay(gameplay, assets);
                 }
             }
+        }
+        if (runtime_assets) |assets| {
+            window_keybind_help.draw(assets, &self.runtime.config, &gameplay.key_info);
         }
     }
 
@@ -1786,7 +1792,21 @@ const App = struct {
                         layout.top_left.y + quest_failed_message_y_offset,
                         HudTextColor.primary,
                     );
-                    drawQuestFailedPreview(runtime_assets, &results, layout);
+                    if (results.quest_failed_record) |*record| {
+                        // Quest-failed cards never show the rank, so any rank works.
+                        window_highscore_card.uiTextInputRender(
+                            runtime_assets,
+                            rl.Vector2.init(layout.top_left.x + quest_failed_score_x_offset, layout.top_left.y + quest_failed_score_y_offset),
+                            record,
+                            1.0,
+                            0,
+                            .quest_failed,
+                            0,
+                            rl.getMousePosition(),
+                            rl.getFrameTime(),
+                            results.run_config.preserve_bugs,
+                        );
+                    }
                 } else {
                     const slide_x = resultsPanelSlideOffsetX(&results, results.timeline_ms);
                     const center_x = @as(f32, @floatFromInt(rl.getScreenWidth())) * 0.5 + slide_x;
@@ -1847,14 +1867,14 @@ const App = struct {
                 } else if (!breakdown_pending and results.score_too_low_for_top100) {
                     const pos = resultsScoreTooLowMessagePosForTimeline(&results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms);
                     drawSmallText(runtime_assets, "Score too low for top100.", pos.x, pos.y, rl.Color.init(200, 200, 200, 255));
-                    if (results.score_too_low_record) |record| {
-                        drawResultsScoreRecordCardAt(
+                    if (results.score_too_low_record) |*record| {
+                        drawResultsScoreCard(
                             runtime_assets,
                             &results,
-                            &record,
+                            record,
                             persistence.highscores.table_max,
                             resultsSavedScoreCardPosForTimeline(&results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
-                            !isQuestCompletedResult(&results),
+                            false,
                         );
                     }
                 }
@@ -2000,6 +2020,11 @@ pub fn main(init: std.process.Init) !void {
     }
 
     var runtime = try app_runtime.DesktopRuntime.init(allocator);
+    // Native `game_frame_update` clears hardcore every frame while fewer than 40 quests are unlocked. Unlocks
+    // only grow and the quest menu refuses the checkbox below that, so clearing it once at boot is the same.
+    if (runtime.status.quest_unlock_index < window_menu_panels.quest_hardcore_unlock_index) {
+        runtime.config.hardcore_flag = 0;
+    }
 
     const initial_windowed = args.windowed orelse (runtime.config.windowed_flag != 0);
     rl.setConfigFlags(.{
@@ -2017,10 +2042,18 @@ pub fn main(init: std.process.Init) !void {
     var app = App.init(allocator, runtime, args);
     defer app.deinit();
 
+    var focused = true;
     while (!rl.windowShouldClose() and !app.quit_requested) {
         const frame_dt = rl.getFrameTime();
-        input_codes.inputBeginFrame();
-        app.update(frame_dt);
+        // Native grim freezes timing while the window is inactive (`audio_suspend_all` /
+        // `audio_resume_all`) and `game_frame_update` skips the first frame back.
+        const was_focused = focused;
+        focused = rl.isWindowFocused();
+        if (focused != was_focused) app.audio.focusChanged(focused);
+        if (focused and was_focused) {
+            input_codes.inputBeginFrame();
+            app.update(frame_dt);
+        }
 
         rl.beginDrawing();
         defer rl.endDrawing();
@@ -2522,24 +2555,6 @@ const ResultsHighscorePromptLayout = struct {
     saved_y: f32,
 };
 
-const ResultsScoreCardSurface = struct {
-    pos: rl.Vector2,
-    show_weapon_row: bool,
-};
-
-const ResultsScoreCardHoverRects = struct {
-    weapon: rl.Rectangle,
-    time: rl.Rectangle,
-    hit_ratio: rl.Rectangle,
-};
-
-const ResultsNameEntryClockLayout = struct {
-    table_rect: rl.Rectangle,
-    pointer_rect: rl.Rectangle,
-    pointer_origin: rl.Vector2,
-    rotation: f32,
-};
-
 const quest_failed_panel_w: f32 = 510.0;
 const quest_failed_panel_h: f32 = 378.0;
 const quest_failed_banner_w: f32 = 256.0;
@@ -2764,98 +2779,6 @@ fn resultsSavedScoreCardPosForTimeline(results: *const ResultsScreen, screen_wid
         layout.banner_pos.x + 30.0,
         layout.banner_pos.y + if (qualifies) @as(f32, 80.0) else 78.0,
     );
-}
-
-fn resultsVisibleScoreCard(results: *const ResultsScreen, screen_width: f32) ?ResultsScoreCardSurface {
-    if (questResultsBreakdownPending(results)) return null;
-    if (results.highscore) |highscore| {
-        if (highscore.promptActive()) {
-            return .{
-                .pos = resultsNameEntryScoreCardPosForTimeline(results, screen_width, results.timeline_ms),
-                .show_weapon_row = isQuestCompletedResult(results),
-            };
-        }
-        return .{
-            .pos = resultsSavedScoreCardPosForTimeline(results, screen_width, results.timeline_ms),
-            .show_weapon_row = !isQuestCompletedResult(results),
-        };
-    }
-    if (results.score_too_low_for_top100 and results.score_too_low_record != null) {
-        return .{
-            .pos = resultsSavedScoreCardPosForTimeline(results, screen_width, results.timeline_ms),
-            .show_weapon_row = !isQuestCompletedResult(results),
-        };
-    }
-    return null;
-}
-
-fn resultsScoreCardHoverRects(pos: rl.Vector2) ResultsScoreCardHoverRects {
-    return .{
-        .weapon = rl.Rectangle.init(pos.x + 4.0, pos.y + 52.0, 64.0, 32.0),
-        .time = rl.Rectangle.init(pos.x + 108.0, pos.y + 16.0, 64.0, 29.0),
-        .hit_ratio = rl.Rectangle.init(pos.x + 114.0, pos.y + 67.0, 64.0, 17.0),
-    };
-}
-
-fn updateResultsScoreCardHover(results: *ResultsScreen, frame_dt: f32) void {
-    const dt_hover = @max(frame_dt, 0.0) * 2.0;
-    const surface = resultsVisibleScoreCard(results, @floatFromInt(rl.getScreenWidth())) orelse {
-        results.score_card_hover.weapon = resultsHoverStep(results.score_card_hover.weapon, false, dt_hover);
-        results.score_card_hover.time = resultsHoverStep(results.score_card_hover.time, false, dt_hover);
-        results.score_card_hover.hit_ratio = resultsHoverStep(results.score_card_hover.hit_ratio, false, dt_hover);
-        return;
-    };
-
-    if (isQuestCompletedResult(results)) {
-        results.score_card_hover.weapon = resultsHoverStep(results.score_card_hover.weapon, false, dt_hover);
-        results.score_card_hover.time = resultsHoverStep(results.score_card_hover.time, false, dt_hover);
-        results.score_card_hover.hit_ratio = resultsHoverStep(results.score_card_hover.hit_ratio, false, dt_hover);
-        return;
-    }
-
-    const rects = resultsScoreCardHoverRects(surface.pos);
-    const mouse = rl.getMousePosition();
-    results.score_card_hover.time = resultsHoverStep(
-        results.score_card_hover.time,
-        rl.checkCollisionPointRec(mouse, rects.time),
-        dt_hover,
-    );
-
-    if (surface.show_weapon_row) {
-        results.score_card_hover.weapon = resultsHoverStep(
-            results.score_card_hover.weapon,
-            rl.checkCollisionPointRec(mouse, rects.weapon),
-            dt_hover,
-        );
-        results.score_card_hover.hit_ratio = resultsHoverStep(
-            results.score_card_hover.hit_ratio,
-            rl.checkCollisionPointRec(mouse, rects.hit_ratio),
-            dt_hover,
-        );
-    } else {
-        results.score_card_hover.weapon = resultsHoverStep(results.score_card_hover.weapon, false, dt_hover);
-        results.score_card_hover.hit_ratio = 0.0;
-    }
-}
-
-fn resultsHoverStep(value: f32, hovered: bool, delta: f32) f32 {
-    const next = if (hovered) value + delta else value - delta;
-    return std.math.clamp(next, @as(f32, 0.0), @as(f32, 1.0));
-}
-
-fn resultsScoreCardRankText(results: *const ResultsScreen, rank_index: usize, buffer: []u8) []const u8 {
-    if (isQuestCompletedResult(results) and scoreTooLowForTop100(rank_index)) return "--";
-    return ui_formatting.formatOrdinal(buffer, @intCast(rank_index + 1));
-}
-
-fn resultsNameEntryClockLayout(score_card_pos: rl.Vector2, elapsed_ms: u32) ResultsNameEntryClockLayout {
-    const col2_x = score_card_pos.x + 100.0;
-    return .{
-        .table_rect = rl.Rectangle.init(col2_x + 8.0, score_card_pos.y + 14.0, 32.0, 32.0),
-        .pointer_rect = rl.Rectangle.init(col2_x + 24.0, score_card_pos.y + 30.0, 32.0, 32.0),
-        .pointer_origin = rl.Vector2.init(16.0, 16.0),
-        .rotation = @as(f32, @floatFromInt(elapsed_ms)) * 0.006,
-    };
 }
 
 fn resultsScoreTooLowMessagePos(results: *const ResultsScreen, screen_width: f32) rl.Vector2 {
@@ -4036,13 +3959,6 @@ test "results high score prompt uses native ok submit button" {
     try std.testing.expectApproxEqAbs(@as(f32, 214.0), score_card.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 269.0), score_card.y, 1e-6);
 
-    const clock = resultsNameEntryClockLayout(score_card, 90_000);
-    try std.testing.expectApproxEqAbs(@as(f32, 322.0), clock.table_rect.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 283.0), clock.table_rect.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 338.0), clock.pointer_rect.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 299.0), clock.pointer_rect.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 540.0), clock.rotation, 1e-6);
-
     const saved_score_card = resultsSavedScoreCardPos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 220.0), saved_score_card.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 149.0), saved_score_card.y, 1e-6);
@@ -4062,9 +3978,6 @@ test "game over score too low message uses native banner anchor" {
     const score_card = resultsSavedScoreCardPos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 220.0), score_card.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 147.0), score_card.y, 1e-6);
-
-    var rank_buf: [16]u8 = undefined;
-    try std.testing.expectEqualStrings("101st", resultsScoreCardRankText(&results, persistence.highscores.table_max, &rank_buf));
 }
 
 test "quest results high score prompt uses native ok submit button" {
@@ -4119,9 +4032,6 @@ test "quest result score too low message uses native score card anchor" {
     const score_card = resultsSavedScoreCardPos(&results, 640.0);
     try std.testing.expectApproxEqAbs(@as(f32, 142.0), score_card.x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 153.0), score_card.y, 1e-6);
-
-    var rank_buf: [16]u8 = undefined;
-    try std.testing.expectEqualStrings("--", resultsScoreCardRankText(&results, persistence.highscores.table_max, &rank_buf));
 }
 
 test "results high score save errors use user-facing details" {
@@ -4368,64 +4278,6 @@ test "results weapon names use display labels" {
     try std.testing.expectEqualStrings("Assault Rifle", weaponName(@intFromEnum(game_ids.WeaponId.assault_rifle), false));
     try std.testing.expectEqualStrings("Plague Sphreader Gun", weaponName(@intFromEnum(game_ids.WeaponId.plague_spreader_gun), true));
     try std.testing.expectEqualStrings("unknown", weaponName(999, false));
-}
-
-test "results score card hit percent follows high score counters" {
-    var record = persistence.highscores.HighScoreRecord.blank();
-    try std.testing.expectEqual(@as(u32, 0), resultsHitPercent(&record));
-
-    record.setShotsFired(20);
-    record.setShotsHit(15);
-    try std.testing.expectEqual(@as(u32, 75), resultsHitPercent(&record));
-
-    record.setShotsFired(3);
-    record.setShotsHit(2);
-    try std.testing.expectEqual(@as(u32, 66), resultsHitPercent(&record));
-
-    record.setShotsFired(3);
-    record.setShotsHit(5);
-    try std.testing.expectEqual(@as(u32, 166), resultsHitPercent(&record));
-}
-
-test "results score card hover geometry follows native card rows" {
-    const rects = resultsScoreCardHoverRects(rl.Vector2.init(220.0, 149.0));
-    try std.testing.expectApproxEqAbs(@as(f32, 224.0), rects.weapon.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 201.0), rects.weapon.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 328.0), rects.time.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 165.0), rects.time.y, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 334.0), rects.hit_ratio.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 216.0), rects.hit_ratio.y, 1e-6);
-
-    const lower_tooltip = resultsScoreCardTooltipPos(rl.Vector2.init(220.0, 149.0), true);
-    try std.testing.expectApproxEqAbs(@as(f32, 224.0), lower_tooltip.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 249.0), lower_tooltip.y, 1e-6);
-
-    const compact_tooltip = resultsScoreCardTooltipPos(rl.Vector2.init(220.0, 149.0), false);
-    try std.testing.expectApproxEqAbs(@as(f32, 224.0), compact_tooltip.x, 1e-6);
-    try std.testing.expectApproxEqAbs(@as(f32, 201.0), compact_tooltip.y, 1e-6);
-}
-
-test "results score card hover step clamps and decays" {
-    try std.testing.expectEqual(@as(f32, 0.25), resultsHoverStep(0.0, true, 0.25));
-    try std.testing.expectEqual(@as(f32, 1.0), resultsHoverStep(0.9, true, 0.25));
-    try std.testing.expectEqual(@as(f32, 0.5), resultsHoverStep(0.75, false, 0.25));
-    try std.testing.expectEqual(@as(f32, 0.0), resultsHoverStep(0.1, false, 0.25));
-}
-
-test "results score card hit ratio tooltip preserves original wording in all modes" {
-    const fixed: ResultsScreen = .{
-        .reason = .dead,
-        .run_config = .{ .game_mode = .survival, .preserve_bugs = false },
-        .summary = undefined,
-    };
-    try std.testing.expectEqualStrings("The % of shot bullets hit the target", resultsHitRatioTooltip(&fixed));
-
-    const bug_compatible: ResultsScreen = .{
-        .reason = .dead,
-        .run_config = .{ .game_mode = .survival, .preserve_bugs = true },
-        .summary = undefined,
-    };
-    try std.testing.expectEqualStrings("The % of shot bullets hit the target", resultsHitRatioTooltip(&bug_compatible));
 }
 
 test "gameplayControlsHeldWithSampler follows configured controls and alternate arrows" {
@@ -5131,20 +4983,54 @@ fn drawResultsHighscore(
             14,
             colorWithAlpha(rl.Color.white, highscoreCaretAlpha(rl.getTime())),
         );
-        drawResultsNameEntryScoreCard(runtime_assets, results, highscore);
+        drawResultsScoreCard(
+            runtime_assets,
+            results,
+            &highscore.record,
+            highscore.rank_index,
+            resultsNameEntryScoreCardPosForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
+            true,
+        );
 
         if (highscore.save_error) |save_error| {
             drawSmallText(runtime_assets, save_error, layout.input_rect.x, layout.input_rect.y + 30.0, rl.Color.orange);
         }
     } else {
-        drawResultsScoreCardAt(
+        drawResultsScoreCard(
             runtime_assets,
             results,
-            highscore,
+            &highscore.record,
+            highscore.rank_index,
             resultsSavedScoreCardPosForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
-            !isQuestCompletedResult(results),
+            false,
         );
     }
+}
+
+/// The results screens draw the native card with their `ui_phase`: game over enters the name in
+/// phase 0 and shows its buttons in phase 1; quest results enter it in phase 1 and show buttons in phase 2.
+fn drawResultsScoreCard(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    results: *const ResultsScreen,
+    record: *const persistence.highscores.HighScoreRecord,
+    rank_index: usize,
+    pos: rl.Vector2,
+    name_entry: bool,
+) void {
+    const quest = isQuestCompletedResult(results);
+    const ui_phase: i32 = @as(i32, @intFromBool(quest)) + @intFromBool(!name_entry);
+    window_highscore_card.uiTextInputRender(
+        runtime_assets,
+        pos,
+        record,
+        1.0,
+        @intCast(rank_index + 1),
+        if (quest) .quest_results else .game_over,
+        ui_phase,
+        rl.getMousePosition(),
+        rl.getFrameTime(),
+        results.run_config.preserve_bugs,
+    );
 }
 
 fn highscoreCaretPrefix(highscore: *const ResultsHighscoreState) []const u8 {
@@ -5154,190 +5040,6 @@ fn highscoreCaretPrefix(highscore: *const ResultsHighscoreState) []const u8 {
 
 fn highscoreCaretAlpha(time_s: f64) f32 {
     return if (std.math.sin(time_s * 4.0) > 0.0) 0.4 else 1.0;
-}
-
-fn drawResultsNameEntryScoreCard(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    results: *const ResultsScreen,
-    highscore: *const ResultsHighscoreState,
-) void {
-    drawResultsScoreCardAt(
-        runtime_assets,
-        results,
-        highscore,
-        resultsNameEntryScoreCardPosForTimeline(results, @floatFromInt(rl.getScreenWidth()), results.timeline_ms),
-        isQuestCompletedResult(results),
-    );
-}
-
-fn drawResultsScoreCardAt(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    results: *const ResultsScreen,
-    highscore: *const ResultsHighscoreState,
-    pos: rl.Vector2,
-    show_weapon_row: bool,
-) void {
-    drawResultsScoreRecordCardAt(
-        runtime_assets,
-        results,
-        &highscore.record,
-        highscore.rank_index,
-        pos,
-        show_weapon_row,
-    );
-}
-
-fn drawResultsScoreRecordCardAt(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    results: *const ResultsScreen,
-    record: *const persistence.highscores.HighScoreRecord,
-    rank_index: usize,
-    pos: rl.Vector2,
-    show_weapon_row: bool,
-) void {
-    const label_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.8);
-    const value_color = rl.Color.init(230, 230, 255, 255);
-    const row_color = colorWithAlpha(rl.Color.init(230, 230, 230, 255), 0.7);
-    const line_color = if (isQuestCompletedResult(results))
-        colorWithAlpha(rl.Color.init(149, 175, 198, 255), 0.7)
-    else
-        label_color;
-
-    const left_center_x = pos.x + 36.0;
-    const separator_x = pos.x + 84.0;
-    const right_label_x = pos.x + 100.0;
-    const right_center_x = right_label_x + 32.0;
-
-    drawSmallTextCenteredAtX(runtime_assets, "Score", left_center_x, pos.y, label_color);
-    if (record.gameModeId() == .rush or record.gameModeId() == .quests) {
-        drawSmallTextCenteredFmtAtX("{d:.2} secs", runtime_assets, .{@as(f32, @floatFromInt(record.survivalElapsedMs())) * 0.001}, left_center_x, pos.y + 15.0, value_color);
-    } else {
-        drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{record.scoreXp()}, left_center_x, pos.y + 15.0, value_color);
-    }
-
-    var ordinal_buf: [16]u8 = undefined;
-    var rank_buf: [32]u8 = undefined;
-    const rank_text = resultsScoreCardRankText(results, rank_index, &ordinal_buf);
-    const rank_label = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{rank_text}) catch "Rank: --";
-    drawSmallTextCenteredAtX(runtime_assets, rank_label, left_center_x, pos.y + 30.0, label_color);
-
-    rl.drawLine(
-        @intFromFloat(separator_x),
-        @intFromFloat(pos.y),
-        @intFromFloat(separator_x),
-        @intFromFloat(pos.y + 48.0),
-        line_color,
-    );
-
-    if (isQuestCompletedResult(results)) {
-        drawSmallText(runtime_assets, "Experience", right_label_x, pos.y, line_color);
-        drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{record.scoreXp()}, right_center_x, pos.y + 15.0, label_color);
-    } else {
-        drawSmallText(runtime_assets, "Game time", right_label_x + 6.0, pos.y, label_color);
-        var time_buf: [16]u8 = undefined;
-        const elapsed_ms = @max(0, record.survivalElapsedMs());
-        drawResultsNameEntryClock(runtime_assets, pos, @intCast(elapsed_ms));
-        drawSmallText(runtime_assets, ui_formatting.formatTimeMmSs(&time_buf, elapsed_ms), right_label_x + 40.0, pos.y + 19.0, label_color);
-    }
-
-    if (show_weapon_row) {
-        drawResultsNameEntryWeaponRow(runtime_assets, results, record, pos, line_color, row_color);
-    }
-    if (!isQuestCompletedResult(results)) {
-        drawResultsScoreCardTooltips(runtime_assets, results, pos, show_weapon_row, label_color);
-    }
-}
-
-fn drawResultsNameEntryClock(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    score_card_pos: rl.Vector2,
-    elapsed_ms: u32,
-) void {
-    const layout = resultsNameEntryClockLayout(score_card_pos, elapsed_ms);
-    drawTextureFit(runtime_assets.texture(.ui_clock_table), layout.table_rect, rl.Color.white);
-    rl.drawTexturePro(
-        runtime_assets.texture(.ui_clock_pointer),
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(runtime_assets.texture(.ui_clock_pointer).width), @floatFromInt(runtime_assets.texture(.ui_clock_pointer).height)),
-        layout.pointer_rect,
-        layout.pointer_origin,
-        layout.rotation,
-        rl.Color.white,
-    );
-}
-
-fn drawResultsNameEntryWeaponRow(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    results: *const ResultsScreen,
-    record: *const persistence.highscores.HighScoreRecord,
-    pos: rl.Vector2,
-    line_color: rl.Color,
-    row_color: rl.Color,
-) void {
-    const row_y = pos.y + 52.0;
-    rl.drawLine(@intFromFloat(pos.x - 12.0), @intFromFloat(row_y), @intFromFloat(pos.x + 180.0), @intFromFloat(row_y), line_color);
-
-    const weapon_id = record.mostUsedWeaponId();
-    const icon_index = weapon_data.weaponIconIndex(weapon_id);
-    if (icon_index >= 0) {
-        drawTextureRegionCenteredRotated(
-            runtime_assets.texture(.ui_wicons),
-            window_atlas.weaponIconRect(runtime_assets.texture(.ui_wicons).width, runtime_assets.texture(.ui_wicons).height, icon_index),
-            rl.Vector2.init(pos.x + 36.0, row_y + 16.0),
-            64.0,
-            32.0,
-            0.0,
-            rl.Color.white,
-        );
-    }
-
-    const weapon_name = game_ids.weaponDisplayName(weapon_id, results.run_config.preserve_bugs);
-    drawSmallTextCenteredAtX(runtime_assets, weapon_name, pos.x + 36.0, row_y + 32.0, row_color);
-
-    drawSmallTextFmt("Frags: {d}", runtime_assets, .{record.creatureKillCount()}, pos.x + 114.0, row_y + 1.0, row_color);
-    drawSmallTextFmt("Hit %: {d}%", runtime_assets, .{resultsHitPercent(record)}, pos.x + 114.0, row_y + 15.0, row_color);
-
-    rl.drawLine(@intFromFloat(pos.x - 12.0), @intFromFloat(row_y + 48.0), @intFromFloat(pos.x + 180.0), @intFromFloat(row_y + 48.0), line_color);
-}
-
-fn resultsHitPercent(record: *const persistence.highscores.HighScoreRecord) u32 {
-    const shots_fired = record.shotsFired();
-    if (shots_fired == 0) return 0;
-    return @intCast(@divTrunc(@as(u64, record.shotsHit()) * 100, @as(u64, shots_fired)));
-}
-
-fn drawResultsScoreCardTooltips(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    results: *const ResultsScreen,
-    pos: rl.Vector2,
-    show_weapon_row: bool,
-    color: rl.Color,
-) void {
-    const tooltip_pos = resultsScoreCardTooltipPos(pos, show_weapon_row);
-    drawResultsScoreCardTooltip(runtime_assets, "Most used weapon during the game", tooltip_pos.x - 20.0, tooltip_pos.y, color, results.score_card_hover.weapon);
-    drawResultsScoreCardTooltip(runtime_assets, "The time the game lasted", tooltip_pos.x + 12.0, tooltip_pos.y, color, results.score_card_hover.time);
-    drawResultsScoreCardTooltip(runtime_assets, resultsHitRatioTooltip(results), tooltip_pos.x - 22.0, tooltip_pos.y, color, results.score_card_hover.hit_ratio);
-}
-
-fn drawResultsScoreCardTooltip(
-    runtime_assets: *const window_assets.RuntimeAssets,
-    text: []const u8,
-    x: f32,
-    y: f32,
-    color: rl.Color,
-    hover: f32,
-) void {
-    if (hover <= 0.5) return;
-    const alpha = (hover - 0.5) * 2.0;
-    drawSmallText(runtime_assets, text, x, y, rl.Color.init(color.r, color.g, color.b, @intFromFloat(std.math.clamp(alpha, @as(f32, 0.0), @as(f32, 1.0)) * 255.0)));
-}
-
-fn resultsScoreCardTooltipPos(pos: rl.Vector2, show_weapon_row: bool) rl.Vector2 {
-    return rl.Vector2.init(pos.x + 4.0, pos.y + if (show_weapon_row) @as(f32, 100.0) else @as(f32, 52.0));
-}
-
-fn resultsHitRatioTooltip(results: *const ResultsScreen) []const u8 {
-    _ = results;
-    return "The % of shot bullets hit the target";
 }
 
 const HudTextColor = struct {
@@ -5768,51 +5470,6 @@ fn drawSmallTextCenteredAtX(
     drawSmallText(runtime_assets, text, center_x - width * 0.5, y, color);
 }
 
-fn drawSmallTextCenteredFmtAtX(
-    comptime fmt: []const u8,
-    runtime_assets: *const window_assets.RuntimeAssets,
-    args: anytype,
-    center_x: f32,
-    y: f32,
-    color: rl.Color,
-) void {
-    var buf: [64]u8 = undefined;
-    const text = std.fmt.bufPrint(&buf, fmt, args) catch return;
-    drawSmallTextCenteredAtX(runtime_assets, text, center_x, y, color);
-}
-
-fn drawQuestFailedPreview(runtime_assets: *const window_assets.RuntimeAssets, results: *const ResultsScreen, layout: ResultsPanelLayout) void {
-    const score_pos = rl.Vector2.init(
-        layout.top_left.x + quest_failed_score_x_offset,
-        layout.top_left.y + quest_failed_score_y_offset,
-    );
-    const score_center_x = score_pos.x + 32.0;
-    const xp_center_x = score_pos.x + 128.0;
-    const top_y = score_pos.y;
-    const value_y = top_y + 15.0;
-    const separator_color = colorWithAlpha(rl.Color.init(149, 175, 198, 255), 0.7);
-    const elapsed_seconds = @as(f32, @floatFromInt(results.summary.elapsed_ms_sim)) * 0.001;
-
-    drawSmallTextCenteredAtX(runtime_assets, "Score", score_center_x, top_y, HudTextColor.dim);
-    drawSmallTextCenteredFmtAtX("{d:.2} secs", runtime_assets, .{elapsed_seconds}, score_center_x, value_y, HudTextColor.primary);
-    rl.drawLine(
-        @intFromFloat(score_pos.x + 80.0),
-        @intFromFloat(score_pos.y),
-        @intFromFloat(score_pos.x + 80.0),
-        @intFromFloat(score_pos.y + 48.0),
-        separator_color,
-    );
-    drawSmallTextCenteredAtX(runtime_assets, "Experience", xp_center_x, top_y, HudTextColor.primary);
-    drawSmallTextCenteredFmtAtX("{d}", runtime_assets, .{results.summary.player_experience}, xp_center_x, value_y, HudTextColor.dim);
-    rl.drawRectangle(
-        @intFromFloat(score_pos.x - 16.0),
-        @intFromFloat(score_pos.y + 52.0),
-        192,
-        1,
-        separator_color,
-    );
-}
-
 fn drawBootAssetFallback(assets_state: AssetsState, assets_message: ?[]const u8) void {
     rl.clearBackground(rl.Color.black);
     const title = switch (assets_state) {
@@ -6166,6 +5823,13 @@ fn drawTutorialPromptButtons(gameplay: *const GameplayScreen, assets: *const win
     const button = tutorialSkipButton();
     const hovered = rl.checkCollisionPointRec(rl.getMousePosition(), button.rect);
     window_ui.drawButton(button, false, hovered, assets);
+}
+
+fn perkPromptMode(mode: game_ids.GameModeId) bool {
+    return switch (mode) {
+        .survival, .quests, .tutorial => true,
+        .rush, .typo => false,
+    };
 }
 
 fn zeroSessionSummary() runtime_session.SessionSummary {

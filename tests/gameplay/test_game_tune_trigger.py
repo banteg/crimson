@@ -21,7 +21,7 @@ def _audio_state_stub() -> AudioState:
     return AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
     )
 
 

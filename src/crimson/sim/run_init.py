@@ -61,6 +61,7 @@ def initialize_run(
     world.state.rng.srand(spec.seed)
     world.state.detail_preset = spec.detail_preset
     world.state.violence_disabled = spec.violence_disabled
+    world.state.friendly_fire_enabled = spec.friendly_fire
     world.creatures.apply_gameplay_reset_target_players(spec.player_count)
     if creature_pool_residue is not None:
         apply_creature_pool_residue(world.creatures.entries, creature_pool_residue)

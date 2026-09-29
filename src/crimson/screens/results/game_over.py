@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import math
 from collections.abc import Callable
 from pathlib import Path
 
 import msgspec
 
 from crimson.screens.actions import ResultAction
+from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId, runtime_resources_for
 from grim.config import CrimsonConfig
@@ -27,13 +27,22 @@ from ...persistence.highscores import (
     scores_path_for_config,
     upsert_highscore_record,
 )
-from ...ui.animation import RESULTS_PANEL_VISIBLE_MS, results_panel_slide_x, world_fade_alpha
-from ...ui.cursor import draw_menu_cursor
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from ...ui.focus import UiFocus
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width, draw_ui_text
-from ...ui.text_input import flush_text_input_events, gameplay_controls_held, update_name_entry_text
+from ...ui.perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
+from ...ui.text_input import (
+    UiTextInput,
+    flush_text_input_events,
+    gameplay_controls_held,
+    ui_text_input_draw,
+    ui_text_input_draw_focus,
+    ui_text_input_focus,
+    update_name_entry_text,
+)
+from ..ui_timeline import UiTimeline
 
 GAME_OVER_PANEL_X = -45.0
 # `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
@@ -94,10 +103,11 @@ class GameOverUi(msgspec.Struct):
     _saved: bool = False
     _dt: float = 0.0
 
-    _intro_ms: float = 0.0
-    _cursor_pulse_time: float = 0.0
+    # Shares GameState.ui and GameState.focus in the game; the defaults only serve standalone use.
+    timeline: UiTimeline = msgspec.field(default_factory=UiTimeline)
+    focus: UiFocus = msgspec.field(default_factory=UiFocus)
+    _name_input: UiTextInput = msgspec.field(default_factory=UiTextInput)
     _panel_open_sfx_played: bool = False
-    _closing: bool = False
     _close_action: ResultAction | None = None
 
     # Buttons (rendered via existing ui_button implementation)
@@ -122,10 +132,8 @@ class GameOverUi(msgspec.Struct):
         self._candidate_record = None
         self._saved = False
         self._dt = 0.0
-        self._intro_ms = 0.0
-        self._cursor_pulse_time = 0.0
+        self.timeline.enter(ui_elements_max_timeline(GameStateId.GAME_OVER))
         self._panel_open_sfx_played = False
-        self._closing = False
         self._close_action = None
         self.save_error = None
         self.input_text = ""
@@ -144,12 +152,12 @@ class GameOverUi(msgspec.Struct):
 
     @property
     def closing(self) -> bool:
-        return self._closing
+        return self.timeline.closing
 
     def world_entity_alpha(self) -> float:
-        if not self._closing:
+        if not self.timeline.closing:
             return 1.0
-        return world_fade_alpha(self._intro_ms)
+        return world_fade_alpha(self.timeline.timeline_ms)
 
     def _text_width(self, font: SmallFontData, text: str) -> float:
         return float(measure_small_text_width(font, text))
@@ -159,7 +167,7 @@ class GameOverUi(msgspec.Struct):
 
     def _panel_layout(self, *, screen_w: float) -> _GameOverPanelLayout:
         # Keep consistent with the main menu panel offsets.
-        panel_slide_x = results_panel_slide_x(self._intro_ms, width=GAME_OVER_PANEL_W)
+        panel_slide_x = ui_element_anim(self.timeline.timeline_ms, index=30, width=GAME_OVER_PANEL_W)[1]
 
         panel_pos = Vec2(GAME_OVER_PANEL_X + panel_slide_x, 0.0)
         widescreen_shift_y = menu_widescreen_y_shift(screen_w)
@@ -170,10 +178,10 @@ class GameOverUi(msgspec.Struct):
         return _GameOverPanelLayout(panel=panel, top_left=top_left)
 
     def _begin_close_transition(self, action: ResultAction) -> None:
-        if self._closing:
+        if self.timeline.closing:
             return
-        self._closing = True
         self._close_action = action
+        self.timeline.begin()
 
     def update(
         self,
@@ -187,32 +195,24 @@ class GameOverUi(msgspec.Struct):
     ) -> ResultAction | None:
         self._dt = float(min(dt, 0.1))
         dt_ms = self._dt * 1000.0
-        self._cursor_pulse_time += self._dt * 1.1
         if mouse is None:
             mouse = canvas.mouse_position()
 
         resources = runtime_resources_for(self.assets_root)
 
-        if self._closing:
-            self._intro_ms = max(0.0, float(self._intro_ms) - dt_ms)
-            if self._intro_ms <= 1e-3 and self._close_action is not None:
+        if not self.timeline.advance(int(dt_ms)):
+            if self.timeline.ready and self._close_action is not None:
                 action = self._close_action
                 self._close_action = None
-                self._closing = False
                 return action
             return None
 
-        self._intro_ms = min(RESULTS_PANEL_VISIBLE_MS, self._intro_ms + dt_ms)
-        if (
-            (not self._panel_open_sfx_played)
-            and play_sfx is not None
-            and self._intro_ms >= RESULTS_PANEL_VISIBLE_MS
-        ):
+        if (not self._panel_open_sfx_played) and play_sfx is not None and self.timeline.opened:
             play_sfx(SfxId.UI_PANELCLICK)
             self._panel_open_sfx_played = True
         if self._consume_enter:
             self._consume_enter = False
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            self.focus.enter = False
         if self.phase == -1:
             # If in the top 100, prompt for a name. Otherwise show score-too-low message and buttons.
             try:
@@ -230,9 +230,8 @@ class GameOverUi(msgspec.Struct):
             idx = rank_index(records, candidate)
             self.rank = int(idx)
             flush_text_input_events()
-            # Match native `grim_was_key_pressed(ENTER)` after the input flush.
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-            rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+            # Native `grim_was_key_pressed(ENTER)` after the input flush swallows this frame's Enter.
+            self.focus.enter = False
             if idx < TABLE_MAX:
                 self.phase = 0
                 self.input_text = player_name_default[:NAME_MAX_EDIT]
@@ -245,8 +244,7 @@ class GameOverUi(msgspec.Struct):
         if self.phase == 0:
             if self._defer_name_input_until_controls_released:
                 flush_text_input_events()
-                rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-                rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
+                self.focus.enter = False
                 if not gameplay_controls_held(self.config):
                     self._defer_name_input_until_controls_released = False
                 return None
@@ -264,10 +262,14 @@ class GameOverUi(msgspec.Struct):
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             form_pos = banner_pos + Vec2(8.0, 84.0)
             ok_pos = form_pos + Vec2(170.0, 32.0)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
-            ok_clicked = button_update(self._ok_button, pos=ok_pos, width=ok_w, dt_ms=dt_ms, mouse=mouse, click=click)
+            ok_clicked = button_update(resources, self._ok_button, focus=self.focus, pos=ok_pos, dt_ms=dt_ms, mouse=mouse, click=click)
+            ui_text_input_focus(
+                self.focus, self._name_input, form_pos.offset(dy=40.0), width=INPUT_BOX_W, mouse=Vec2.from_xy(mouse),
+            )
 
-            if ok_clicked or rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            # The text input submits on Enter wherever the focus is; a pad's A stands in for it, so a pad alone
+            # can accept the prefilled name.
+            if ok_clicked or self.focus.enter:
                 if self.input_text.strip():
                     if play_sfx is not None:
                         play_sfx(SfxId.UI_TYPEENTER)
@@ -297,15 +299,11 @@ class GameOverUi(msgspec.Struct):
             panel_layout = self._panel_layout(screen_w=screen_w)
             banner_pos = panel_layout.top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)
             button_pos = banner_pos + Vec2(52.0, (210.0 if self.rank < TABLE_MAX else 208.0))
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=play_again_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -316,15 +314,11 @@ class GameOverUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=high_scores_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -335,15 +329,11 @@ class GameOverUi(msgspec.Struct):
                 return None
             button_pos = button_pos.offset(dy=32.0)
 
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             if button_update(
+                resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=main_menu_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -406,53 +396,22 @@ class GameOverUi(msgspec.Struct):
             )
 
             input_pos = form_pos.offset(dy=40.0)
-            rl.draw_rectangle_lines(
-                int(input_pos.x),
-                int(input_pos.y),
-                int(INPUT_BOX_W),
-                int(INPUT_BOX_H),
-                rl.WHITE,
-            )
-            rl.draw_rectangle(
-                int(input_pos.x + 1.0),
-                int(input_pos.y + 1.0),
-                int(INPUT_BOX_W - 2.0),
-                int(INPUT_BOX_H - 2.0),
-                rl.Color(0, 0, 0, 255),
-            )
-            draw_ui_text(
-                resources,
-                self.input_text,
-                input_pos + Vec2(4.0, 2.0),
-                color=COLOR_TEXT_MUTED,
+            ui_text_input_draw_focus(self.focus, self._name_input, input_pos)
+            ui_text_input_draw(
+                resources, input_pos, width=INPUT_BOX_W, text=self.input_text, caret=self.input_caret,
             )
             if self.save_error is not None:
                 draw_ui_text(
                     resources, self.save_error, input_pos + Vec2(0.0, 22.0),
                     color=COLOR_TEXT_MUTED,
                 )
-            caret_alpha = 1.0
-            if math.sin(float(rl.get_time()) * 4.0) > 0.0:
-                caret_alpha = 0.4
-            caret_color = rl.Color(255, 255, 255, int(255 * caret_alpha))
-            caret_x = (
-                input_pos.x + 4.0 + self._text_width(font, self.input_text[: self.input_caret])
-            )
-            rl.draw_rectangle(
-                int(caret_x),
-                int(input_pos.y + 2.0),
-                1,
-                14,
-                caret_color,
-            )
 
             ok_pos = form_pos + Vec2(170.0, 32.0)
-            ok_w = button_width(resources, self._ok_button.label, force_wide=self._ok_button.force_wide)
             button_draw(
                 resources,
                 self._ok_button,
+                focus=self.focus,
                 pos=ok_pos,
-                width=ok_w,
             )
 
             score_pos = form_pos + Vec2(16.0, 116.0)
@@ -481,47 +440,27 @@ class GameOverUi(msgspec.Struct):
         # Buttons phase rendering.
         if self.phase == 1:
             button_pos = banner_pos + Vec2(52.0, (210.0 if self.rank < TABLE_MAX else 208.0))
-            play_again_w = button_width(
-                resources,
-                self._play_again_button.label,
-                force_wide=self._play_again_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._play_again_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=play_again_w,
             )
             button_pos = button_pos.offset(dy=32.0)
 
-            high_scores_w = button_width(
-                resources,
-                self._high_scores_button.label,
-                force_wide=self._high_scores_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._high_scores_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=high_scores_w,
             )
             button_pos = button_pos.offset(dy=32.0)
 
-            main_menu_w = button_width(
-                resources,
-                self._main_menu_button.label,
-                force_wide=self._main_menu_button.force_wide,
-            )
             button_draw(
                 resources,
                 self._main_menu_button,
+                focus=self.focus,
                 pos=button_pos,
-                width=main_menu_w,
             )
 
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=Vec2.from_xy(mouse),
-            pulse_time=float(self._cursor_pulse_time),
-        )
+        ui_cursor_render(resources, dt=self._dt, pos=Vec2.from_xy(mouse))

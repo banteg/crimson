@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from crimson.screens.actions import Route
 from grim import canvas
-from grim.assets import TextureId
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
@@ -17,9 +16,6 @@ from ..input_codes import PadCode, input_code_is_down, input_code_is_pressed, pa
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSession
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
     draw_tutorial_overlay_panels,
@@ -27,7 +23,6 @@ from ..ui.overlays.tutorial_run import (
 )
 from ..ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .base_gameplay_mode import BaseGameplayMode
-from .components.perk_menu_controller import PerkMenuController
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 
@@ -50,39 +45,33 @@ class TutorialMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
-        self._sim_session: DeterministicSession | None = None
         self._replay_recorder: ReplayRecorder | None = None
         self._frame_input_state: PlayerInput | None = None
-        self._perk_pick_pending = False
 
     def _runtime_player_count(self) -> int:
         return 1
 
     def open(self) -> None:
         super().open()
-        self._perk_menu.reset()
 
         self._skip_button = UiButtonState("Skip tutorial", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
 
         self._frame_input_state = None
-        self._perk_pick_pending = False
 
         self.state.perk_selection.pending_count = 0
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
 
-        prepared = self._initialize_run(GameMode.TUTORIAL)
-        self._sim_session = prepared.session
+        self._initialize_run(GameMode.TUTORIAL)
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         self._replay_recorder = None
         self._frame_input_state = None
         super().close()
@@ -91,9 +80,6 @@ class TutorialMode(BaseGameplayMode):
         _ = replay
         return f"tutorial_{stamp}"
 
-    def _open_perk_menu(self) -> None:
-        self._request_perk_menu(self._perk_menu)
-
     def _handle_input(self) -> None:
         if self._perk_menu.open and (
             rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
@@ -101,11 +87,8 @@ class TutorialMode(BaseGameplayMode):
             self._perk_menu.close()
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
-            self._action = Route.PAUSE
+            self._request_pause()
             return
 
     def _build_input(self) -> PlayerInput:
@@ -175,12 +158,12 @@ class TutorialMode(BaseGameplayMode):
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(resources, self._play_button.label, force_wide=True)
-            repeat_w = button_width(resources, self._repeat_button.label, force_wide=True)
+            play_w = button_width(resources, self._play_button)
             if button_update(
+                resources,
                 self._play_button,
+                focus=self._ui_focus,
                 pos=button_base_pos,
-                width=play_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -188,9 +171,10 @@ class TutorialMode(BaseGameplayMode):
                 self._finish_tutorial_run(restart=False)
                 return
             if button_update(
+                resources,
                 self._repeat_button,
+                focus=self._ui_focus,
                 pos=button_base_pos.offset(dx=play_w + gap),
-                width=repeat_w,
                 dt_ms=dt_ms,
                 mouse=mouse,
                 click=click,
@@ -202,13 +186,12 @@ class TutorialMode(BaseGameplayMode):
         if self._skip_button.enabled:
             resources = self.render_resources.resources
             y = float(canvas.height()) - 50.0
-            w = button_width(resources, self._skip_button.label, force_wide=True)
-            if button_update(self._skip_button, pos=Vec2(10.0, y), width=w, dt_ms=dt_ms, mouse=mouse, click=click):
+            if button_update(resources, self._skip_button, focus=self._ui_focus, pos=Vec2(10.0, y), dt_ms=dt_ms, mouse=mouse, click=click):
                 self._finish_tutorial_run(restart=False)
 
     def update(self, dt: float) -> None:
         self._update_audio(dt)
-        dt, dt_ui_ms = self._tick_frame(dt, clamp_cursor_pulse=True)
+        dt, dt_ui_ms = self._tick_frame(dt)
 
         self._handle_input()
         if self._action == Route.PAUSE:
@@ -216,25 +199,7 @@ class TutorialMode(BaseGameplayMode):
         if self.close_requested:
             return
 
-        perk_pending = self._ui_pending_perk_count() > 0 and self.player.health > 0.0
-        choices = perk_selection_prepared_choices(self.state)
-        if (
-            int(self.state.tutorial.stage_index) == 6
-            and perk_pending
-            and (not self._perk_menu.active)
-            and (not self._perk_pick_pending)
-        ):
-            self._open_perk_menu()
-        if self._perk_menu.open:
-            choice_index = self._perk_menu.handle_input(
-                self._perk_menu_ui_context(),
-                choices,
-                dt_ui_ms=dt_ui_ms,
-            )
-            if choice_index is not None:
-                self._perk_pick_pending = True
-                self.record_perk_pick_command(int(choice_index), player_index=0)
-        self._perk_menu.tick_timeline(dt_ui_ms)
+        self._update_perk_ui(dt_ui_ms=dt_ui_ms)
 
         perk_menu_active = self._perk_menu.active
 
@@ -244,7 +209,6 @@ class TutorialMode(BaseGameplayMode):
         if dt_world > 0.0:
             session = self._sim_session
             if session is not None:
-                elapsed_before_ms = float(session.elapsed_ms)
                 self._frame_input_state = input_state
                 try:
                     self._run_deterministic_session_ticks(
@@ -254,8 +218,6 @@ class TutorialMode(BaseGameplayMode):
                     )
                 finally:
                     self._frame_input_state = None
-                if float(session.elapsed_ms) != elapsed_before_ms:
-                    self._perk_pick_pending = False
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -266,43 +228,25 @@ class TutorialMode(BaseGameplayMode):
         entity_alpha = self._world_entity_alpha()
         self._draw_world(entity_alpha=entity_alpha)
         self._draw_screen_fade()
+        # Native order: perk prompt, aim indicators, then the HUD over both.
+        self._draw_perk_prompt()
         self._draw_aim_indicators(show_aim=not perk_menu_active, entity_alpha=entity_alpha)
 
-        hud_bottom = 0.0
         if not perk_menu_active:
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
-            hud_bottom = draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    alpha=1.0,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._session_elapsed_ms() if self._sim_session is not None else 0.0),
-                score=int(self.player.experience),
-                frame_dt_ms=self._last_dt_ms,
-            )
+            self._draw_hud(elapsed_ms=self._session_elapsed_ms() if self._sim_session is not None else 0.0)
 
-        self._draw_tutorial_prompts(hud_bottom=hud_bottom)
+        self._draw_tutorial_prompts()
 
+        self._perk_menu.draw(
+            self._perk_menu_ui_context(),
+            perk_selection_prepared_choices(self.state),
+        )
+        self._draw_keybind_help()
         if perk_menu_active:
-            self._perk_menu.draw(
-                self._perk_menu_ui_context(),
-                perk_selection_prepared_choices(self.state),
-            )
-            self._draw_menu_cursor()
+            self._draw_game_cursor()
 
-    def _draw_tutorial_prompts(self, *, hud_bottom: float) -> None:
+    def _draw_tutorial_prompts(self) -> None:
         overlay = self.state.tutorial_overlay
         draw_tutorial_overlay_panels(
             overlay,
@@ -324,38 +268,22 @@ class TutorialMode(BaseGameplayMode):
             )
             gap = 18.0
             button_base_pos = Vec2(rect.x + 10.0, rect.y + rect.height + 10.0)
-            play_w = button_width(resources, self._play_button.label, force_wide=True)
-            repeat_w = button_width(resources, self._repeat_button.label, force_wide=True)
+            play_w = button_width(resources, self._play_button)
             button_draw(
                 resources,
                 self._play_button,
+                focus=self._ui_focus,
                 pos=button_base_pos,
-                width=play_w,
             )
             button_draw(
                 resources,
                 self._repeat_button,
+                focus=self._ui_focus,
                 pos=button_base_pos.offset(dx=play_w + gap),
-                width=repeat_w,
             )
             return
 
         if self._skip_button.alpha > 1e-3:
             y = float(canvas.height()) - 50.0
-            w = button_width(resources, self._skip_button.label, force_wide=True)
-            button_draw(resources, self._skip_button, pos=Vec2(10.0, y), width=w)
+            button_draw(resources, self._skip_button, focus=self._ui_focus, pos=Vec2(10.0, y))
 
-        if self._paused:
-            x = 18.0
-            y = max(18.0, hud_bottom + 10.0)
-            self._draw_ui_text("paused (TAB)", Vec2(x, y), UI_HINT_COLOR)
-
-    def _draw_menu_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )

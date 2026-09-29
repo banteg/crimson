@@ -8,15 +8,13 @@ from grim.geom import Rect, Vec2
 from grim.math import clamp
 from grim.raylib_api import rl
 
+from .focus import UiFocus
 from .layout import menu_widescreen_y_shift
 
 # Perk selection screen panel uses ui_element-style timeline animation:
 # - fully hidden until end_ms
 # - slides in over (end_ms..start_ms)
 # - fully visible at start_ms
-PERK_MENU_ANIM_START_MS = 400.0
-PERK_MENU_ANIM_END_MS = 100.0
-PERK_MENU_TRANSITION_MS = PERK_MENU_ANIM_START_MS
 
 # Layout offsets from the classic game (perk selection screen), derived from
 # `perk_selection_screen_update` (see analysis/ghidra + BN).
@@ -121,49 +119,6 @@ def perk_menu_compute_layout(
     )
 
 
-def ui_element_slide_x(
-    t_ms: float,
-    *,
-    start_ms: float,
-    end_ms: float,
-    width: float,
-    direction_flag: int = 0,
-) -> float:
-    """
-    Slide offset helper matching ui_element_update semantics (see MenuView._ui_element_anim).
-
-    direction_flag=0: slide from left  (-width -> 0)
-    direction_flag=1: slide from right (+width -> 0)
-    """
-
-    if start_ms <= end_ms or width <= 0.0:
-        return 0.0
-
-    width = abs(width)
-    t = t_ms
-    if t < end_ms:
-        slide = width
-    elif t < start_ms:
-        elapsed = t - end_ms
-        span = start_ms - end_ms
-        p = elapsed / span if span > 1e-6 else 1.0
-        slide = (1.0 - p) * width
-    else:
-        slide = 0.0
-
-    return slide if int(direction_flag) else -slide
-
-
-def perk_menu_panel_slide_x(t_ms: float, *, width: float) -> float:
-    return ui_element_slide_x(
-        t_ms,
-        start_ms=PERK_MENU_ANIM_START_MS,
-        end_ms=PERK_MENU_ANIM_END_MS,
-        width=width,
-        direction_flag=0,
-    )
-
-
 def _ui_text_width(resources: RuntimeResources, text: str) -> float:
     return measure_small_text_width(resources.small_font, text)
 
@@ -243,6 +198,29 @@ def draw_menu_item(
     return width
 
 
+class UiMenuItem(msgspec.Struct):
+    """Native `ui_menu_item_t`: an underlined text row (perk choices, rebind rows)."""
+
+    label: str = ""
+    enabled: bool = True
+    hovered: bool = False
+    activated: bool = False
+    focused: bool = False
+
+
+def ui_menu_item_update(
+    item: UiMenuItem, *, focus: UiFocus, hit: Rect, mouse: rl.Vector2 | Vec2, click: bool,
+) -> bool:
+    """`ui_menu_item_update`'s input half over the row's hit rect: a click, or Enter while focused."""
+    focused = focus.update(item)
+    item.focused = focused
+    item.hovered = hit.contains(mouse)
+    if item.hovered:
+        focus.set(item)
+    item.activated = item.enabled and ((focused and focus.enter) or (item.hovered and click))
+    return item.activated
+
+
 class UiButtonState(msgspec.Struct):
     label: str
     enabled: bool = True
@@ -252,6 +230,8 @@ class UiButtonState(msgspec.Struct):
     press_t: int = 0  # 0..1000
     alpha: float = 1.0
     force_wide: bool = False
+    # Whether it held the keyboard focus this frame (`ui_focus_update`), for the draw half's marker.
+    focused: bool = False
 
 
 def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, rl.Texture]:
@@ -261,10 +241,11 @@ def _resolve_button_textures(resources: RuntimeResources) -> tuple[rl.Texture, r
     )
 
 
-def button_width(resources: RuntimeResources, label: str, *, force_wide: bool) -> float:
-    if force_wide:
+def button_width(resources: RuntimeResources, state: UiButtonState) -> float:
+    """`ui_button_update` picks the plate from the label: 82px under 40px of text, else 145px."""
+    if state.force_wide:
         return 145.0
-    if _ui_text_width(resources, label) < 40.0:
+    if _ui_text_width(resources, state.label) < 40.0:
         return 82.0
     return 145.0
 
@@ -275,27 +256,34 @@ def button_hit_rect(*, pos: Vec2, width: float) -> Rect:
 
 
 def button_update(
+    resources: RuntimeResources,
     state: UiButtonState,
     *,
+    focus: UiFocus,
     pos: Vec2,
-    width: float,
     dt_ms: float,
     mouse: rl.Vector2,
     click: bool,
-    focused: bool = False,
 ) -> bool:
+    """`ui_button_update`'s input half: a click on the plate, or Enter while it holds the focus."""
+    focused = focus.update(state)
+    state.focused = focused
     if not state.enabled:
         state.hovered = False
     else:
-        state.hovered = focused or button_hit_rect(pos=pos, width=width).contains(mouse)
+        state.hovered = button_hit_rect(pos=pos, width=button_width(resources, state)).contains(mouse)
+    if state.hovered:
+        focus.set(state)
 
-    delta = 6 if (state.enabled and state.hovered) else -4
+    # The highlight also comes up for a second after Tab lands on the button.
+    lit = state.enabled and (state.hovered or (focused and focus.timer_ms > 800))
+    delta = 6 if lit else -4
     state.hover_t = int(clamp(state.hover_t + int(dt_ms) * delta, 0.0, 1000.0))
 
     if state.press_t > 0:
         state.press_t = int(clamp(state.press_t - int(dt_ms) * 6, 0.0, 1000.0))
 
-    state.activated = bool(state.enabled and state.hovered and click)
+    state.activated = bool(state.enabled and ((focused and focus.enter) or (state.hovered and click)))
     if state.activated:
         state.press_t = 1000
     return state.activated
@@ -305,9 +293,12 @@ def button_draw(
     resources: RuntimeResources,
     state: UiButtonState,
     *,
+    focus: UiFocus,
     pos: Vec2,
-    width: float,
 ) -> None:
+    if state.focused:
+        focus.draw(pos.offset(dx=-16.0))
+    width = button_width(resources, state)
     button_sm, button_md = _resolve_button_textures(resources)
     texture = button_md if width > 120.0 else button_sm
 

@@ -22,39 +22,24 @@ class StandaloneTickHarness:
     game_mode: GameMode
     # Called once per rendered frame with its delta.
     frame_inputs: Callable[[float], Sequence[PlayerInput]]
-    session: DeterministicSession | None = None
-    world_state: object | None = None
-    player_count: int = 0
     ticks: LiveTickSource = field(default_factory=LiveTickSource)
     clock: FixedStepClock = field(default_factory=FixedStepClock)
 
     def reset(self) -> None:
-        self.session = None
-        self.world_state = None
-        self.player_count = 0
         self.ticks = LiveTickSource()
         self.clock = FixedStepClock()
 
     def _ensure_session(self, runtime: WorldRuntime) -> DeterministicSession:
-        world_state = runtime.world
-        player_count = len(runtime.world.players)
-        session = self.session
-        if session is not None and self.world_state is world_state and int(self.player_count) == int(player_count):
-            return session
-
-        self.reset()
-        world_state.state.game_mode = self.game_mode
-        world_state.state.detail_preset = runtime.detail_preset
-        world_state.state.violence_disabled = runtime.violence_disabled
-        session = DeterministicSession(
-            world=world_state,
-            perk_progression_enabled=False,
-            apply_world_dt_steps=True,
-        )
-        self.session = session
-        self.world_state = world_state
-        self.player_count = int(player_count)
-        return session
+        """The runtime's session, or a fresh one over its world after a reset dropped it."""
+        if runtime.session is None:
+            self.reset()
+            world = runtime.world
+            world.state.game_mode = self.game_mode
+            world.state.detail_preset = runtime.detail_preset
+            world.state.violence_disabled = runtime.violence_disabled
+            runtime.start_session(DeterministicSession(world=world, perk_progression_enabled=False))
+        assert runtime.session is not None
+        return runtime.session
 
     def advance_frame(self, runtime: WorldRuntime, dt: float) -> int:
         """Run the ticks this frame's time covers; returns how many ran."""

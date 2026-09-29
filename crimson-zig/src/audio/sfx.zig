@@ -41,6 +41,19 @@ pub const SfxSample = struct {
         }
     }
 
+    fn suspendVoices(self: *SfxSample) void {
+        if (rl.isSoundPlaying(self.source)) rl.pauseSound(self.source);
+        for (self.aliases) |alias| {
+            if (rl.isSoundPlaying(alias)) rl.pauseSound(alias);
+        }
+    }
+
+    // Resuming only clears the pause flag, so voices that were not suspended stay as they are.
+    fn resumeVoices(self: *SfxSample) void {
+        rl.resumeSound(self.source);
+        for (self.aliases) |alias| rl.resumeSound(alias);
+    }
+
     fn acquireVoice(self: *SfxSample) rl.Sound {
         if (!rl.isSoundPlaying(self.source)) return self.source;
         for (self.aliases) |alias| {
@@ -118,6 +131,14 @@ pub const SfxState = struct {
         const voice = sample.acquireVoice();
         rl.setSoundPitch(voice, pitchScaleFromRateHz(self.rate_scale_hz));
         rl.playSound(voice);
+    }
+
+    pub fn suspendAll(self: *SfxState) void {
+        for (self.samples.items) |*sample| sample.suspendVoices();
+    }
+
+    pub fn resumeAll(self: *SfxState) void {
+        for (self.samples.items) |*sample| sample.resumeVoices();
     }
 
     pub fn playNativeId(self: *SfxState, sfx_id: i32) void {

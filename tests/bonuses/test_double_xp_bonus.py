@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
-from crimson.owner_ref import OwnerRef
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
@@ -20,7 +19,6 @@ def test_creature_handle_death_doubles_xp_when_double_xp_bonus_active() -> None:
     creature.hp = 10.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
     creature.reward_value = 12.7
-    creature.last_hit_owner = OwnerRef.from_player(0)
 
     death = pool.handle_death(
         0,

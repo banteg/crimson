@@ -73,6 +73,11 @@ pub const Bridge = struct {
         }
     }
 
+    pub fn focusChanged(self: *Bridge, focused: bool) void {
+        const state = if (self.state) |*state| state else return;
+        if (focused) audio_mod.resumeAudio(state) else audio_mod.suspendAudio(state);
+    }
+
     pub fn ensureIntroMusic(self: *Bridge) void {
         self.playMusic("intro");
     }

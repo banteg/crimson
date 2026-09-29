@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_cursor, ensure_menu_ground, menu_ground_camera
-from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -24,10 +25,10 @@ from grim.terrain_render import GroundRenderer
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
 from ..assets import require_runtime_resources
-from ..panels.base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 from ..transitions import _draw_screen_fade
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
@@ -74,15 +75,15 @@ class QuestsMenuView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
         self._back_button = UiButtonState("Back")
+        self._hardcore_checkbox = UiCheckbox("Hardcore")
+        # Port focus targets for the ten quest rows: native picks a row only by mouse or the number keys.
+        self._row_items = tuple(UiMenuItem() for _ in range(10))
 
         self._menu_screen_width = 0
         self._widescreen_y_shift = 0.0
 
         self._stage = 1
         self._dirty = False
-        self._cursor_pulse_time = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -93,9 +94,7 @@ class QuestsMenuView:
         self._init_ground()
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
-        self._cursor_pulse_time = 0.0
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.QUEST_SELECT))
         self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
@@ -122,13 +121,12 @@ class QuestsMenuView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        if dt_ms > 0 and self._transition.timeline_ms >= self._transition.duration_ms:
+        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
             self.state.menu_sign_locked = True
             if (not self._panel_open_sfx_played) and (self.state.audio is not None):
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -145,18 +143,19 @@ class QuestsMenuView:
                 status.quest_unlock_index_full = unlock
             self.state.console.log.log("debug: unlocked everything")
 
-        enabled = self._transition.timeline_ms >= self._transition.duration_ms
+        enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+        if self.state.focus.escape and enabled:
             self._begin_close_transition(Route.BACK)
             return
 
         if not enabled:
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
+        focus = self.state.focus
+        if focus.left:
             self._stage = max(1, self._stage - 1)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+        if focus.right:
             self._stage = min(5, self._stage + 1)
 
         layout = self._layout()
@@ -167,8 +166,15 @@ class QuestsMenuView:
             self._stage = hovered_stage
             return
 
-        if self._hardcore_checkbox_clicked(layout):
-            return
+        # Focus order: the Hardcore checkbox, the port's quest rows, then Back (native has the checkbox and Back).
+        self._update_hardcore_checkbox(layout)
+
+        mouse = canvas.mouse_position()
+        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        picked_row: int | None = None
+        for row, item in enumerate(self._row_items):
+            if ui_menu_item_update(item, focus=focus, hit=self._row_rect(layout, row), mouse=mouse, click=click):
+                picked_row = row
 
         back_pos = Vec2(layout.list_pos.x, self._rows_y0(layout)) + Vec2(
             QUEST_BACK_BUTTON_X_OFFSET,
@@ -176,13 +182,11 @@ class QuestsMenuView:
         )
         dt_ms = min(float(dt), 0.1) * 1000.0
         resources = require_runtime_resources(self.state)
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
-        mouse = canvas.mouse_position()
-        click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
+            resources,
             self._back_button,
+            focus=focus,
             pos=back_pos,
-            width=float(back_w),
             dt_ms=float(dt_ms),
             mouse=mouse,
             click=bool(click),
@@ -196,14 +200,8 @@ class QuestsMenuView:
             self._try_start_quest(self._stage, row_from_key)
             return
 
-        hovered_row = self._hovered_row(layout)
-        if hovered_row is not None and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._try_start_quest(self._stage, hovered_row)
-            return
-
-        if hovered_row is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._try_start_quest(self._stage, hovered_row)
-            return
+        if picked_row is not None:
+            self._try_start_quest(self._stage, picked_row)
 
     def draw(self) -> None:
         self._assert_open()
@@ -218,17 +216,14 @@ class QuestsMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=self.state.menu_sign_locked,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         self._draw_contents()
-        draw_screen_cursor(
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
+        ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "QuestsMenuView must be opened before use"
@@ -238,10 +233,8 @@ class QuestsMenuView:
 
     def _layout(self) -> _QuestMenuLayout:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=37,
             width=MENU_PANEL_WIDTH,
         )
         # `quest_select_menu_update` base sums:
@@ -272,30 +265,22 @@ class QuestsMenuView:
                 return stage
         return None
 
-    def _hardcore_checkbox_clicked(self, layout: _QuestMenuLayout) -> bool:
-        status = self.state.status
-        if int(status.quest_unlock_index) < QUEST_HARDCORE_UNLOCK_INDEX:
-            return False
-        resources = require_runtime_resources(self.state)
-        check_on = resources.texture(TextureId.UI_CHECK_ON)
+    def _update_hardcore_checkbox(self, layout: _QuestMenuLayout) -> None:
+        if self.state.status.quest_unlock_index < QUEST_HARDCORE_UNLOCK_INDEX:
+            return
         config = self.state.config
-        hardcore = config.gameplay.hardcore
-
-        font = resources.small_font
-        label = "Hardcore"
-        label_w = measure_small_text_width(font, label)
-
-        check_pos = layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
-        rect_w = float(check_on.width) + 6.0 + label_w
-        rect_h = max(float(check_on.height), font.cell_size)
-
-        mouse_pos = Vec2.from_xy(canvas.mouse_position())
-        hovered = Rect.from_top_left(check_pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            config.gameplay.hardcore = not hardcore
+        checkbox = self._hardcore_checkbox
+        checkbox.checked = config.gameplay.hardcore
+        if ui_checkbox_update(
+            require_runtime_resources(self.state),
+            checkbox,
+            layout.list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
+            focus=self.state.focus,
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
+            config.gameplay.hardcore = checkbox.checked
             self._dirty = True
-            return True
-        return False
 
     @staticmethod
     def _digit_row_pressed() -> int | None:
@@ -324,18 +309,19 @@ class QuestsMenuView:
             y0 += QUEST_HARDCORE_LIST_Y_SHIFT
         return y0
 
-    def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
+    def _row_rect(self, layout: _QuestMenuLayout, row: int) -> Rect:
         list_x = layout.list_pos.x
-        y0 = self._rows_y0(layout)
+        y = self._rows_y0(layout) + float(row) * QUEST_LIST_ROW_STEP
+        left = list_x - QUEST_LIST_HOVER_LEFT_PAD
+        top = y - QUEST_LIST_HOVER_TOP_PAD
+        right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
+        bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
+        return Rect.from_top_left(Vec2(left, top), right - left, bottom - top)
+
+    def _hovered_row(self, layout: _QuestMenuLayout) -> int | None:
         mouse_pos = Vec2.from_xy(canvas.mouse_position())
         for row in range(10):
-            y = y0 + float(row) * QUEST_LIST_ROW_STEP
-            left = list_x - QUEST_LIST_HOVER_LEFT_PAD
-            top = y - QUEST_LIST_HOVER_TOP_PAD
-            right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
-            bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
-            row_rect = Rect.from_top_left(Vec2(left, top), right - left, bottom - top)
-            if row_rect.contains(mouse_pos):
+            if self._row_rect(layout, row).contains(mouse_pos):
                 return row
         return None
 
@@ -355,7 +341,7 @@ class QuestsMenuView:
         self.state.config.gameplay.mode = GameMode.QUESTS
         self.state.config.gameplay.quest_level = level
         self._dirty = True
-        self._begin_close_transition(StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=level))
+        self._begin_close_transition(StartRun(GameMode.QUESTS, level))
 
     def _quest_title(self, stage: int, row: int) -> str:
         from ...quests import quest_by_level
@@ -441,7 +427,8 @@ class QuestsMenuView:
 
         hovered_stage = self._hovered_stage(layout)
         hovered_row = self._hovered_row(layout)
-        show_counts = debug_enabled() and rl.is_key_down(rl.KeyboardKey.KEY_F1)
+        # Native shows the times-played counts while F1 is held.
+        show_counts = rl.is_key_down(rl.KeyboardKey.KEY_F1)
 
         # Title texture is tinted by (0.7, 0.7, 0.7, 0.7).
         title_tex = resources.texture(TextureId.UI_TEXT_QUEST)
@@ -493,26 +480,21 @@ class QuestsMenuView:
 
         y0 = self._rows_y0(layout)
         # Hardcore checkbox (only drawn once tier5 is reachable in normal mode).
-        if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
-            check_tex = (
-                resources.texture(TextureId.UI_CHECK_ON) if hardcore_flag else resources.texture(TextureId.UI_CHECK_OFF)
+        if status.quest_unlock_index >= QUEST_HARDCORE_UNLOCK_INDEX:
+            ui_checkbox_draw(
+                resources,
+                self._hardcore_checkbox,
+                list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET),
+                focus=self.state.focus,
             )
-            check_pos = list_pos + Vec2(QUEST_HARDCORE_CHECKBOX_X_OFFSET, QUEST_HARDCORE_CHECKBOX_Y_OFFSET)
-            rl.draw_texture_pro(
-                check_tex,
-                rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-                rl.Rectangle(check_pos.x, check_pos.y, float(check_tex.width), float(check_tex.height)),
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                rl.WHITE,
-            )
-            draw_small_text(font, "Hardcore", check_pos + Vec2(float(check_tex.width) + 6.0, 1.0), base_color)
 
         # Quest list (10 rows).
         for row in range(10):
             y = y0 + float(row) * QUEST_LIST_ROW_STEP
             unlocked = self._quest_unlocked(stage, row)
             color = hover_color if hovered_row == row else base_color
+            if self._row_items[row].focused:
+                self.state.focus.draw(Vec2(list_pos.x - 16.0, y))
 
             draw_small_text(font, f"{stage}.{row + 1}", Vec2(list_pos.x, y), color)
 
@@ -541,20 +523,17 @@ class QuestsMenuView:
 
         # Back button.
         back_pos = Vec2(list_pos.x, y0) + Vec2(QUEST_BACK_BUTTON_X_OFFSET, QUEST_BACK_BUTTON_Y_OFFSET)
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=back_pos,
-            width=float(back_w),
         )
 
     def _draw_panel(self) -> None:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=37,
             width=MENU_PANEL_WIDTH,
         )
         shadows_enabled = self.state.config.display.shadows_enabled
@@ -570,14 +549,14 @@ class QuestsMenuView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
         if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
 
 __all__ = ["QuestsMenuView"]

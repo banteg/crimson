@@ -298,7 +298,6 @@ def test_zig_replay_diff_checkpoints_reports_first_death_detail(tmp_path: Path) 
             type_id=2,
             reward_value=3.5,
             xp_awarded=4,
-            owner_id=1,
         ),
     ]
     checkpoints[0] = msgspec.structs.replace(checkpoints[0], deaths=deaths)
@@ -310,7 +309,7 @@ def test_zig_replay_diff_checkpoints_reports_first_death_detail(tmp_path: Path) 
     assert "checkpoint mismatch at tick=0" in result.stderr
     assert "first state diff: deaths._len expected=0 actual=1" in result.stderr
     assert "first death expected=[] actual=[ReplayDeathLedgerEntry(" in result.stderr
-    assert "creature_index=7, type_id=2, reward_value=3.5, xp_awarded=4, owner_id=1" in result.stderr
+    assert "creature_index=7, type_id=2, reward_value=3.5, xp_awarded=4" in result.stderr
 
 
 def test_zig_replay_diff_checkpoints_rejects_rng_only_mismatch(tmp_path: Path) -> None:

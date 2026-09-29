@@ -72,3 +72,8 @@ def test_scores_path_for_mode(tmp_path: Path) -> None:
         == root / "quest2_7_4.hi"
     )
     assert scores_path_for_mode(tmp_path, cast(GameMode, 99)) == root / "unknown.hi"
+
+
+def test_named_score_lists_append_their_name_after_the_extension(tmp_path: Path) -> None:
+    root = tmp_path / "scores5"
+    assert scores_path_for_mode(tmp_path, GameMode.SURVIVAL, player_count=2, named_list="Bob") == root / "survival_2.hiBob"

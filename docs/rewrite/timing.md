@@ -161,8 +161,10 @@ the clock caps an incoming render-frame duration at 100 ms, accumulates the
 remainder, and can request multiple simulation ticks per render frame. This
 differs from native's single variable-delta callback and capped game-facing
 delta. Each granted tick is built by `LiveTickSource` in
-`src/crimson/replay/ticks.py`, recorded, then stepped; the frame stops early at
-the run's final tick or when a mode callback ends the batch.
+`src/crimson/replay/ticks.py`, recorded, then stepped. Once the run ends (or Esc
+asks for the pause menu) the world keeps ticking while the gameplay timeline runs
+down by each tick's simulated milliseconds; the frame stops when that run-down is
+over and the mode leaves gameplay, or when a mode callback ends the batch.
 
 Replay execution reaches the same session through
 `src/crimson/replay/driver/playback_driver.py`; playback pacing is separate from
@@ -194,7 +196,7 @@ on to the next player, preserving the shared-global round-trip effect.
 | Survival spawning | `survival_update` in `src/crimson/sim/mode_updates.py`; `tick_survival_wave_spawns` and `advance_survival_spawn_stage` in `src/crimson/creatures/spawn.py` | Simulation milliseconds for cooldown; previous elapsed value for difficulty. |
 | Rush spawning and elapsed time | `rush_mode_update` in `src/crimson/sim/mode_updates.py`; `tick_rush_mode_spawns` in `src/crimson/creatures/spawn.py` | Simulation milliseconds, as native. Rush has no perks or bonus drops, so they equal the input milliseconds. |
 | Quest timeline and completion | `quest_mode_update` in `src/crimson/sim/mode_updates.py`; `src/crimson/quests/timeline.py` | Simulation milliseconds for timeline, stall, and completion; `run_elapsed_ms` exposes the quest timeline rather than general session elapsed time. |
-| Tutorial stages and fades | `tutorial_post_step` in `src/crimson/tutorial/runtime.py`; `tick_tutorial_timeline` in `src/crimson/tutorial/timeline.py` | Simulation milliseconds passed to the stage machine and overlay state. |
+| Tutorial stages and fades | `tutorial_timeline_update` in `src/crimson/tutorial/timeline.py`, called by `WorldState.step` after the corpse cull and Telekinetic pickups | Simulation milliseconds passed to the stage machine and overlay state. |
 | Typo spawn cadence | `typo_mode_update` in `src/crimson/typo/runtime.py` | Simulation milliseconds and the same remaining-cooldown clamp. |
 | Audio cooldowns | `src/crimson/sim/sessions.py` builds the presentation plan; `src/crimson/sim/batch_apply.py` applies it | `sfx_dt=timing.dt_audio`; music streaming is serviced separately from simulation ticks. |
 

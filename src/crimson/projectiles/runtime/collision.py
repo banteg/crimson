@@ -6,14 +6,11 @@ from typing import TYPE_CHECKING
 from grim.geom import Vec2
 
 from ...collision_math import native_find_size_margin
-from ...creatures.damage import creature_apply_damage
 from ...creatures.lifecycle import creature_lifecycle_is_alive
 from ...math_parity import f32, x87_pc24_hypot, x87_pc24_sub
-from ...owner_ref import OwnerRef
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
-    from ...sim.world_state import WorldStepRuntime
 
 def creature_find_nearest_alive(
     *,
@@ -72,22 +69,7 @@ def creature_find_nearest_active(
     return best_idx
 
 
-def _apply_damage_to_creature(
-    creature_index: int,
-    damage: float,
-    *,
-    damage_type: int,
-    impulse: Vec2,
-    owner: OwnerRef,
-    step_runtime: WorldStepRuntime,
-) -> None:
-    if damage <= 0.0 or not step_runtime.world.creatures.entries[creature_index].active:
-        return
-    creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner)
-
-
 __all__ = [
-    "_apply_damage_to_creature",
     "creature_find_nearest_active",
     "creature_find_nearest_alive",
     "native_find_size_margin",

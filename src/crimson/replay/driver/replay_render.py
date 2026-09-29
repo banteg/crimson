@@ -10,14 +10,13 @@ from pathlib import Path
 from typing import Literal
 
 import msgspec
+from tqdm import tqdm
 
 from ...render.pipeline import RaylibDrawScope, RenderPipeline
 from ...render.sink import VideoSink, VideoTransport
 from ...replay import REPLAY_TICK_RATE, Replay
 from ...sim.run_result import RunResult
 from .playback_driver import build_verify_playback_driver
-from .progress import ReplayRenderPhase as ReplayRenderPhase  # noqa: PLC0414 - public re-export
-from .progress import ReplayRenderProgress
 
 X264Preset = Literal[
     "ultrafast",
@@ -141,11 +140,11 @@ def run_replay_render_video(
     pixel_format: str = "yuv420p",
     overwrite: bool = False,
     mute_audio: bool = True,
-    progress: ReplayRenderProgress | None = None,
+    show_progress: bool = False,
 ) -> ReplayRenderResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
     from grim.config import ensure_crimson_cfg
-    from grim.console import create_console
+    from grim.console import create_console, register_core_cvars
     from grim.raylib_api import rl
     from grim.view import ViewContext
 
@@ -185,6 +184,7 @@ def run_replay_render_video(
         )
 
     console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
+    register_core_cvars(console, render_width, render_height)
     download_missing_paqs(runtime_assets_dir, console)
     ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
 
@@ -251,35 +251,23 @@ def run_replay_render_video(
             render_pipeline.open(width=capture_width, height=capture_height)
             assert render_pipeline is not None
             frame_dt = 1.0 / fps
-            while not mode.finished:
-                mode.update(frame_dt)
-                render_pipeline.draw(
-                    draw_frame=mode.draw,
-                    width=capture_width,
-                    height=capture_height,
-                )
-                if mode.close_requested:
-                    raise ReplayRenderError("replay render aborted: replay playback requested close")
-                render_pipeline.present()
-                frame_count += 1
-                if progress is not None:
-                    progress.update(
-                        phase="video",
-                        frame_count=frame_count,
-                        tick_index=mode.tick_index,
-                        total_ticks=total_ticks,
+            with tqdm(total=total_ticks, unit="tick", desc="replay video", disable=not show_progress) as bar:
+                while not mode.finished:
+                    mode.update(frame_dt)
+                    render_pipeline.draw(
+                        draw_frame=mode.draw,
+                        width=capture_width,
+                        height=capture_height,
                     )
+                    if mode.close_requested:
+                        raise ReplayRenderError("replay render aborted: replay playback requested close")
+                    render_pipeline.present()
+                    frame_count += 1
+                    bar.set_postfix(frames=frame_count, refresh=False)
+                    bar.update(mode.tick_index - bar.n)
 
             if frame_count <= 0:
                 raise ReplayRenderError("replay render produced no frames")
-
-            if progress is not None:
-                progress.update(
-                    phase="video",
-                    frame_count=frame_count,
-                    tick_index=total_ticks,
-                    total_ticks=total_ticks,
-                )
             render_pipeline.flush()
             render_pipeline.close()
             render_pipeline = None
@@ -299,7 +287,7 @@ def run_replay_render_video(
                     trace_rng=trace_rng,
                     output_path=audio_raw_path,
                     replay_tick_rate=replay_tick_rate,
-                    progress=progress,
+                    show_progress=show_progress,
                     total_ticks=total_ticks,
                 )
                 _mux_raw_audio_with_video(
@@ -313,13 +301,6 @@ def run_replay_render_video(
                     captured_audio_frames=captured_audio.captured_frames,
                     target_audio_frames=round(frame_count * captured_audio.effective_sample_rate / fps),
                 )
-                if progress is not None:
-                    progress.update(
-                        phase="audio",
-                        frame_count=frame_count,
-                        tick_index=total_ticks,
-                        total_ticks=total_ticks,
-                    )
         except ReplayRenderError:
             if render_pipeline is not None:
                 render_pipeline.close()
@@ -457,8 +438,8 @@ def _capture_replay_audio_track(
     trace_rng: bool,
     output_path: Path,
     replay_tick_rate: int,
-    progress: ReplayRenderProgress | None = None,
-    total_ticks: int = 0,
+    show_progress: bool,
+    total_ticks: int,
 ) -> _CapturedAudioTrack:
     from ...modes.replay_playback_mode import ReplayPlaybackMode
 
@@ -494,22 +475,17 @@ def _capture_replay_audio_track(
 
         tick_dt = 1.0 / replay_tick_rate
         next_tick_deadline = time.perf_counter()
-        while not mode.finished:
-            mode.update(tick_dt)
-            if mode.close_requested:
-                raise ReplayRenderError("audio capture aborted: replay playback requested close")
-            capture.flush_pending()
-            if progress is not None and total_ticks > 0:
-                progress.update(
-                    phase="audio",
-                    frame_count=0,
-                    tick_index=mode.tick_index,
-                    total_ticks=total_ticks,
-                )
-            next_tick_deadline += tick_dt
-            sleep_s = next_tick_deadline - time.perf_counter()
-            if sleep_s > 0.0:
-                time.sleep(sleep_s)
+        with tqdm(total=total_ticks, unit="tick", desc="replay audio", disable=not show_progress) as bar:
+            while not mode.finished:
+                mode.update(tick_dt)
+                if mode.close_requested:
+                    raise ReplayRenderError("audio capture aborted: replay playback requested close")
+                capture.flush_pending()
+                bar.update(mode.tick_index - bar.n)
+                next_tick_deadline += tick_dt
+                sleep_s = next_tick_deadline - time.perf_counter()
+                if sleep_s > 0.0:
+                    time.sleep(sleep_s)
         capture.stop()
         captured_ticks = mode.tick_index
         effective_sample_rate = _infer_effective_capture_sample_rate(

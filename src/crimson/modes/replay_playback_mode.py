@@ -15,6 +15,7 @@ from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
+from grim.math import clamp
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
@@ -45,7 +46,6 @@ from ..ui.hud import (
     HudRenderContext,
     HudState,
     draw_hud_overlay,
-    hud_flags_for_game_mode,
 )
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
@@ -298,8 +298,8 @@ class ReplayPlaybackMode:
         self._speed_index = _DEFAULT_SPEED_INDEX
         self._driver = None
 
-        audio = init_audio_state(self._config, self._ctx.assets_dir, self._console)
         audio_rng = Crand(int(replay.run.seed) & 0xFFFFFFFF)
+        audio = init_audio_state(self._config, self._ctx.assets_dir, self._console, audio_rng)
         self._audio = audio
         self._audio_rng = audio_rng
         self._register_replay_audio_commands()
@@ -337,7 +337,7 @@ class ReplayPlaybackMode:
                 trace_rng=bool(self._trace_rng),
             )
             driver = self._driver
-            runtime.load_world_state(driver.world)
+            runtime.start_session(driver.session)
         except ReplayRunnerError as exc:  # pragma: no cover
             raise ValueError(f"unsupported replay game_mode_id: {int(replay.run.game_mode_id)}") from exc
 
@@ -564,11 +564,10 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before Typ-o replay draw"
         driver = self._driver
-        cursor_pulse_time = 0.0 if driver is None else float(driver.elapsed_ms) * 0.001
         draw_typing_box(
             runtime.render_resources.resources.texture(TextureId.UI_IND_PANEL),
             text=runtime.world.state.typo.typing.text,
-            cursor_pulse_time=float(cursor_pulse_time),
+            game_time_s=0.0 if driver is None else float(driver.elapsed_ms) * 0.001,
             draw_text=self._draw_ui_text,
             measure_text_width=self._measure_ui_text_width,
         )
@@ -594,10 +593,12 @@ class ReplayPlaybackMode:
         players = world.players
         assert players, "Replay runtime must have at least one player before draw"
         self._draw_world()
-        runtime.draw_aim_indicators(show_aim=True)
+        runtime.draw_aim_indicators(
+            show_aim=True,
+            aim_enhancement_fade=clamp(self._console.cvars["cv_aimEnhancementFade"].value_f, 0.0, 1.0),
+        )
         mode_id = replay.run.game_mode_id
         show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
-        hud_flags = hud_flags_for_game_mode(mode_id)
         quest_progress_ratio: float | None = None
         elapsed_ms = float(runtime.presentation_elapsed_ms)
         match mode_id:
@@ -620,14 +621,9 @@ class ReplayPlaybackMode:
                 resources=runtime.render_resources.resources,
                 state=self._hud_state,
                 font=self._small,
-                show_health=bool(hud_flags.show_health),
-                show_weapon=bool(hud_flags.show_weapon),
-                show_xp=bool(hud_flags.show_xp),
-                show_time=bool(hud_flags.show_time),
-                show_quest_hud=bool(hud_flags.show_quest_hud),
+                game_mode=mode_id,
                 small_indicators=False,
             ),
-            player=players[0],
             players=players,
             bonus_hud=world.state.bonus_hud,
             elapsed_ms=elapsed_ms,

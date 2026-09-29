@@ -7,7 +7,6 @@ from crimson.sim.batch_apply import apply_presentation_plans
 from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import SurvivalSpawnState
 from crimson.sim.sessions import DeterministicSession, DeterministicSessionTick
-from crimson.sim.world_state import WorldState
 from crimson.terrain_slots import TerrainSlotTriplet
 from crimson.world import WorldRuntime
 from grim.audio import AudioState
@@ -59,11 +58,6 @@ class WorldRuntimeHost(WorldRuntime):
     # ------------------------------------------------------------------
     # Test-specific methods (not on WorldRuntime)
     # ------------------------------------------------------------------
-
-    def load_world_state(self, world: WorldState) -> None:
-        super().load_world_state(world)
-        self._survival_test_spawn_state = SurvivalSpawnState()
-        self._survival_test_elapsed_ms = 0.0
 
     def sync_ground_settings(self) -> None:
         self.render_resources.config = self.config

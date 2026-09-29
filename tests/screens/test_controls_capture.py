@@ -7,61 +7,69 @@ from crimson.screens.panels import controls
 from crimson.screens.panels.controls import ControlsMenuView, RebindCapture
 from crimson.screens.panels.controls_labels import RebindRowSpec, RebindTarget
 from grim.raylib_api import rl
+from tests.support.screens import update_frame
+
+LISTS = (
+    ("move_method_list", controls.CONTROLS_MOVE_METHOD_LIST_OFFSET),
+    ("aim_method_list", controls.CONTROLS_AIM_METHOD_LIST_OFFSET),
+    ("player_list", controls.CONTROLS_PLAYER_LIST_OFFSET),
+)
 
 
-@pytest.mark.parametrize("dropdown", list(controls.ControlsDropdown))
-def test_dropdown_consumes_escape_before_back(controls_view, dropdown, mocker) -> None:
+@pytest.mark.parametrize(("name", "_offset"), LISTS)
+def test_open_list_consumes_escape_before_back(controls_view, name, _offset, mocker) -> None:
     view = controls_view
     view._capture = None
-    view._dropdown = dropdown
+    getattr(view, name).open = True
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
-    view.update(0.016)
-    assert view._dropdown is None
-    assert not view._transition.closing
-    view.update(0.016)
-    assert view._transition.action is Route.BACK
+    update_frame(view, view.state)
+    assert not getattr(view, name).open
+    assert not view.state.ui.closing
+    update_frame(view, view.state)
+    assert view.state.ui.pending is Route.BACK
 
 
-@pytest.mark.parametrize("dropdown", list(controls.ControlsDropdown))
-def test_open_dropdown_blocks_enter_navigation(controls_view, dropdown, mocker) -> None:
+@pytest.mark.parametrize(("name", "offset"), LISTS)
+def test_enter_on_a_list_header_opens_it_instead_of_leaving(controls_view, name, offset, mocker) -> None:
     view = controls_view
     view._capture = None
-    view._dropdown = dropdown
+    header = view._left_panel_top_left() + offset
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(header.x + 5.0, header.y + 5.0))
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
-    view.update(0.016)
-    assert view._dropdown is dropdown
-    assert not view._transition.closing
+    update_frame(view, view.state)
+    assert getattr(view, name).open
+    assert not view.state.ui.closing
 
 
 @pytest.fixture
 def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuView:
     view = ControlsMenuView(make_game_state(resources=screen_resources))
     view.open()
-    view._transition.timeline_ms = view._transition.duration_ms
+    view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
     view._capture = RebindCapture(RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE), 0, skip_frames=0)
     return view
 
 
 def test_escape_cancels_capture_before_navigation(controls_view, mocker) -> None:
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
-    controls_view.update(0.016)
+    update_frame(controls_view, controls_view.state)
     assert controls_view._capture is None
-    assert not controls_view._transition.closing
+    assert not controls_view.state.ui.closing
     assert controls_view.take_action() is None
 
     # A subsequent Escape can leave the screen after capture releases input.
-    controls_view.update(0.016)
-    assert controls_view._transition.action is Route.BACK
+    update_frame(controls_view, controls_view.state)
+    assert controls_view.state.ui.pending is Route.BACK
 
 
 def test_enter_is_captured_instead_of_leaving(controls_view, mocker) -> None:
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ENTER)
     mocker.patch.object(rl, "get_key_pressed", side_effect=[rl.KeyboardKey.KEY_ENTER, 0])
-    controls_view.update(0.016)
+    update_frame(controls_view, controls_view.state)
     assert controls_view.state.config.controls.player(0).fire_code == 0x1C
     assert controls_view._capture is None
     assert controls_view._dirty
-    assert not controls_view._transition.closing
+    assert not controls_view.state.ui.closing
     assert controls_view.take_action() is None
 
 

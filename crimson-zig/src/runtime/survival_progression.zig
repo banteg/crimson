@@ -16,15 +16,14 @@ const PlayerShots = state_mod.PlayerShots;
 const weaponAssignPlayer = player_runtime.weaponAssignPlayer;
 const weaponAssignPlayerWithState = player_runtime.weaponAssignPlayerWithState;
 
-pub fn player0Shots(state: GameplayState) PlayerShots {
-    const fired: i32 = @max(0, state.shots_fired[0]);
-    var hit: i32 = @max(0, state.shots_hit[0]);
-    if (hit > fired) hit = fired;
-
-    return .{
-        .fired = fired,
-        .hit = hit,
-    };
+/// The high-score record's shots: typed and matched words in Typ-o, otherwise the native counters with hits
+/// clamped to shots, since piercing shots can hit several creatures.
+pub fn runShotCounts(state: GameplayState) PlayerShots {
+    if (state.game_mode == .typo) {
+        return .{ .fired = state.typo.typing.submit_count, .hit = state.typo.typing.match_count };
+    }
+    const fired: i32 = @max(0, state.shots_fired);
+    return .{ .fired = fired, .hit = @max(0, @min(state.shots_hit, fired)) };
 }
 
 pub fn mostUsedWeaponIdForPlayer(

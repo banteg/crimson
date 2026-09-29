@@ -11,6 +11,7 @@ import msgspec
 
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.persistence.save_status import GameStatusData
 from crimson.replay import REPLAY_TICK_DT, REPLAY_TICK_RATE, PackedTickInputs, Replay, load_replay_file
 from crimson.replay.checkpoints import ReplayCheckpoint
@@ -270,7 +271,7 @@ def _entity_samples_for_world(
                 damage_pool=_trace_f32(projectile.damage_pool),
                 hit_radius=_trace_f32(projectile.hit_radius),
                 travel_budget=_trace_f32(projectile.travel_budget),
-                owner_id=int(projectile.owner.to_legacy()),
+                owner_id=int(projectile.owner_id),
             ),
         )
 
@@ -292,7 +293,8 @@ def _entity_samples_for_world(
                 vel=SnapshotVec2(x=_trace_f32(projectile.vel.x), y=_trace_f32(projectile.vel.y)),
                 speed=_trace_f32(projectile.speed),
                 trail_timer=_trace_f32(projectile.trail_timer),
-                owner_id=int(projectile.owner.to_legacy()),
+                # Native secondaries carry no owner; the capture reports -100 for them too.
+                owner_id=OWNER_LOCAL_PLAYER,
                 target_id=int(projectile.target_id),
             ),
         )

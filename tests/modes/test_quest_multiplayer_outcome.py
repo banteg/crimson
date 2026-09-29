@@ -17,7 +17,7 @@ from tests.support.audio import sfx_ids
 pytestmark = pytest.mark.usefixtures("headless_resources")
 
 
-def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, assets_dir: Path) -> None:
+def test_quest_failed_outcome_captures_all_player_health_and_the_start_tag(tmp_path: Path, assets_dir: Path) -> None:
     cfg = ensure_crimson_cfg(tmp_path)
     cfg.gameplay.player_count = 4
     ctx = ViewContext(assets_dir=assets_dir)
@@ -32,8 +32,8 @@ def test_quest_failed_outcome_captures_all_player_health_values(tmp_path: Path, 
     assert outcome is not None
     assert outcome.kind == "failed"
     assert outcome.player_health_values == health_values
-    assert outcome.player_health == health_values[0]
-    assert outcome.player2_health == health_values[1]
+    assert outcome.record.quest_level == QuestLevel(1, 1)
+    assert outcome.record.uni_num == mode._quest_highscore_random_tag
 
 
 def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, assets_dir: Path) -> None:

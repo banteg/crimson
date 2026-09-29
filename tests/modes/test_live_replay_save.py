@@ -62,13 +62,13 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
 ) -> None:
     mode = _open_mode(RushMode, GameMode.RUSH, make_mode_config=make_mode_config, assets_dir=assets_dir)
     rng_before_record: list[int] = []
-    build_record = base_gameplay_mode.build_highscore_record_for_game_over
+    build_record = base_gameplay_mode.build_highscore_record
 
     def _record_rng_then_build(**kwargs):
         rng_before_record.append(int(mode.state.rng.state))
         return build_record(**kwargs)
 
-    mocker.patch.object(base_gameplay_mode, "build_highscore_record_for_game_over", side_effect=_record_rng_then_build)
+    mocker.patch.object(base_gameplay_mode, "build_highscore_record", side_effect=_record_rng_then_build)
     mode.player.health = 1.0
     attacker = mode.creatures.entries[0]
     attacker.active = True

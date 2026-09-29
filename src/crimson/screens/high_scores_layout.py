@@ -6,6 +6,8 @@ Measured from analysis/frida/ui_render_trace_oracle_1024x768.json.
 
 from __future__ import annotations
 
+from grim.geom import Vec2
+
 # Panel positions are expressed in "panel pos" (pre-offset) space, matching other menu panels:
 #   panel_top_left = (panel_pos_x + MENU_PANEL_OFFSET_X, panel_pos_y + y_shift + MENU_PANEL_OFFSET_Y)
 
@@ -130,6 +132,8 @@ HS_SCORE_FRAME_H = 164.0
 # left panel top-left at 1024x768 is (-98,194).
 HS_QUEST_ARROW_X = 449.0
 HS_QUEST_ARROW_Y = 62.0
+# Native `highscore_screen` puts the Hardcore checkbox at the column header origin (Rank - 9) + (162, -2).
+HS_HARDCORE_CHECKBOX_OFFSET = Vec2(364.0, 82.0)
 
 # Right panel (Quests): options + dropdown widgets.
 # right panel top-left at 1024x768 is (630,209).
@@ -147,35 +151,11 @@ HS_RIGHT_SHOW_SCORES_Y = 106.0
 HS_RIGHT_SCORE_LIST_X = 44.0  # "Selected score list:" at (674,359)
 HS_RIGHT_SCORE_LIST_Y = 150.0
 
-# Closed dropdown widgets (borders + value text + arrow icon).
-HS_RIGHT_PLAYER_COUNT_WIDGET_X = 46.0  # x=676
-HS_RIGHT_PLAYER_COUNT_WIDGET_Y = 78.0  # y=287
-HS_RIGHT_PLAYER_COUNT_WIDGET_W = 102.0
-HS_RIGHT_PLAYER_COUNT_VALUE_X = 50.0  # "1 player" at (680,288)
-HS_RIGHT_PLAYER_COUNT_VALUE_Y = 79.0
-HS_RIGHT_PLAYER_COUNT_DROP_X = 131.0  # ui_dropOff bbox [761,287]..[777,303]
-HS_RIGHT_PLAYER_COUNT_DROP_Y = 78.0
-
-HS_RIGHT_GAME_MODE_WIDGET_X = 174.0  # x=804
-HS_RIGHT_GAME_MODE_WIDGET_Y = 78.0  # y=287
-HS_RIGHT_GAME_MODE_WIDGET_W = 95.0
-HS_RIGHT_GAME_MODE_VALUE_X = 178.0  # "Quests" at (808,288)
-HS_RIGHT_GAME_MODE_VALUE_Y = 79.0
-HS_RIGHT_GAME_MODE_DROP_X = 252.0  # ui_dropOff bbox [882,287]..[898,303]
-HS_RIGHT_GAME_MODE_DROP_Y = 78.0
-
-HS_RIGHT_SHOW_SCORES_WIDGET_X = 44.0  # x=674
-HS_RIGHT_SHOW_SCORES_WIDGET_Y = 120.0  # y=329
-HS_RIGHT_SHOW_SCORES_WIDGET_W = 134.0
-HS_RIGHT_SHOW_SCORES_VALUE_X = 48.0  # "Best of all time" at (678,330)
-HS_RIGHT_SHOW_SCORES_VALUE_Y = 121.0
-HS_RIGHT_SHOW_SCORES_DROP_X = 161.0  # ui_dropOff bbox [791,329]..[807,345]
-HS_RIGHT_SHOW_SCORES_DROP_Y = 120.0
-
-HS_RIGHT_SCORE_LIST_WIDGET_X = 44.0  # x=674
-HS_RIGHT_SCORE_LIST_WIDGET_Y = 164.0  # y=373
-HS_RIGHT_SCORE_LIST_WIDGET_W = 174.0
-HS_RIGHT_SCORE_LIST_VALUE_X = 48.0  # "default" at (678,374)
-HS_RIGHT_SCORE_LIST_VALUE_Y = 165.0
-HS_RIGHT_SCORE_LIST_DROP_X = 201.0  # ui_dropOff bbox [831,373]..[847,389]
-HS_RIGHT_SCORE_LIST_DROP_Y = 164.0
+# `ui_list_widget_update` origins; each list sizes itself from its items.
+HS_RIGHT_PLAYER_COUNT_WIDGET = Vec2(46.0, 78.0)  # (676,287)
+HS_RIGHT_GAME_MODE_WIDGET = Vec2(174.0, 78.0)  # (804,287)
+HS_RIGHT_SHOW_SCORES_WIDGET = Vec2(44.0, 120.0)  # (674,329)
+HS_RIGHT_SCORE_LIST_WIDGET = Vec2(44.0, 164.0)  # (674,373)
+# `ui_profile_menu_update`: the last list entry, and its name box width (`width_px = 0xae`).
+PROFILE_ADD_ITEM = "<add new named list>"
+PROFILE_NAME_INPUT_W = 174.0

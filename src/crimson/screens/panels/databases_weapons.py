@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from crimson.game_states import GameStateId
 from grim.assets import TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
+from ...ui.scrollbar import ui_scrollbar_draw_focus, ui_scrollbar_update_keys
 from ..assets import require_runtime_resources
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
@@ -17,17 +19,20 @@ if TYPE_CHECKING:
 
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
+    _game_state = GameStateId.WEAPON_DATABASE
+
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
         self._weapon_ids: list[int] = []
+        # The weapon under the mouse, or the list's keyboard row while it is focused.
         self._selected_weapon_id: int | None = None
-        self._list_scroll_index: int = 0
 
     def open(self) -> None:
         super().open()
         self._weapon_ids = self._build_weapon_database_ids()
         self._selected_weapon_id = None
-        self._list_scroll_index = 0
+        self.list_scroll.item_count = len(self._weapon_ids)
+        self.list_scroll.scroll_offset = 0
 
     def close(self) -> None:
         self._selected_weapon_id = None
@@ -73,6 +78,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         frame_y = left.y + 128.0
         frame_w = 250.0
         frame_h = 164.0
+        ui_scrollbar_draw_focus(self.state.focus, self.list_scroll, Vec2(frame_x, frame_y))
         rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
         rl.draw_rectangle(
             int(round(frame_x + 1.0)),
@@ -87,7 +93,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         row_step = 16.0
         visible_rows = 10
         max_scroll = max(0, len(weapon_ids) - visible_rows)
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        start = max(0, min(max_scroll, int(self.list_scroll.scroll_offset)))
         end = min(len(weapon_ids), start + visible_rows)
         visible_weapon_ids = weapon_ids[start:end]
         for row, weapon_id in enumerate(visible_weapon_ids):
@@ -121,22 +127,18 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
 
     def _update_content_interaction(self, *, left_top_left: Vec2, mouse: rl.Vector2) -> None:
         weapon_ids = self._weapon_ids
+        bar = self.list_scroll
+        bar.item_count = len(weapon_ids)
+        bar.scroll_offset -= int(rl.get_mouse_wheel_move())
+        ui_scrollbar_update_keys(self.state.focus, bar, cursor=True)
         if not weapon_ids:
             self._selected_weapon_id = None
-            self._list_scroll_index = 0
             return
 
-        visible_rows = 10
-        max_scroll = max(0, len(weapon_ids) - visible_rows)
-        mouse_wheel = int(rl.get_mouse_wheel_move())
-        if mouse_wheel:
-            self._list_scroll_index = max(0, min(max_scroll, int(self._list_scroll_index) - mouse_wheel))
-        start = max(0, min(max_scroll, int(self._list_scroll_index)))
+        visible_rows = bar.visible_rows
+        start = bar.scroll_offset
         end = min(len(weapon_ids), start + visible_rows)
         row_count = end - start
-        if row_count <= 0:
-            self._selected_weapon_id = None
-            return
 
         row_step = 16.0
         list_hit_x = left_top_left.x + 214.0
@@ -151,8 +153,12 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
             row = int((mouse.y - list_text_top) // row_step)
             if 0 <= row < row_count:
                 self._selected_weapon_id = int(weapon_ids[start + row])
+                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                    bar.selected_index = start + row
                 return
         self._selected_weapon_id = None
+        if bar.keyed and 0 <= bar.selected_index < len(weapon_ids):
+            self._selected_weapon_id = int(weapon_ids[bar.selected_index])
 
     def _build_weapon_database_ids(self) -> list[int]:
         from ...game_modes import GameMode

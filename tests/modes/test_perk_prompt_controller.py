@@ -3,6 +3,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import cast
 
+import pytest
+
 import crimson.modes.components.perk_prompt_controller as perk_prompt_controller_module
 from crimson.modes.components.perk_menu_controller import PerkMenuUiContext
 from crimson.modes.components.perk_prompt_controller import PerkPromptState
@@ -50,96 +52,50 @@ def _ctx() -> PerkMenuUiContext:
     )
 
 
-def test_prompt_open_request_from_pick_key(mocker) -> None:
-    prompt = PerkPromptState()
-    prompt.begin_frame()
+def _patch_input(mocker, *, pick_down: bool = False, keys: tuple[int, ...] = (), click: bool = False) -> None:
+    mocker.patch.object(perk_prompt_controller_module, "input_code_is_down", return_value=pick_down)
+    mocker.patch.object(perk_prompt_controller_module.rl, "is_key_pressed", side_effect=lambda key: key in keys)
+    mocker.patch.object(perk_prompt_controller_module.rl, "is_mouse_button_down", return_value=False)
+    mocker.patch.object(perk_prompt_controller_module, "input_primary_just_pressed", return_value=click)
 
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_code_is_pressed",
-        return_value=True,
-    )
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_code_is_down",
-        return_value=False,
-    )
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_primary_just_pressed",
-        return_value=False,
-    )
 
-    assert prompt.poll_open_request(
+def _poll(prompt: PerkPromptState, *, menu_active: bool = False) -> bool:
+    return prompt.poll_open_request(
         ctx=_ctx(),
         config=_config(),
         pending_count=1,
-        player_count=1,
-        any_alive=True,
+        alive=True,
         paused=False,
-        menu_active=False,
+        menu_active=menu_active,
+        player_count=1,
     )
 
 
-def test_prompt_open_request_from_hover_click(mocker) -> None:
-    prompt = PerkPromptState()
-    prompt.begin_frame()
+def test_prompt_opens_while_the_pick_key_is_held(mocker) -> None:
+    _patch_input(mocker, pick_down=True)
+    assert _poll(PerkPromptState())
 
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_code_is_pressed",
-        return_value=False,
-    )
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_primary_just_pressed",
-        return_value=True,
-    )
+
+@pytest.mark.parametrize("key", [rl.KeyboardKey.KEY_SPACE, rl.KeyboardKey.KEY_KP_ADD])
+def test_prompt_opens_on_space_and_keypad_plus(mocker, key: int) -> None:
+    # Native `gameplay_update_and_render` also takes DIK 57 (Space) and 78 (keypad +).
+    _patch_input(mocker, keys=(key,))
+    assert _poll(PerkPromptState())
+
+
+def test_prompt_opens_on_a_click_over_the_sign(mocker) -> None:
+    _patch_input(mocker, click=True)
     mocker.patch.object(
         perk_prompt_controller_module.PerkPromptUi,
         "rect",
         return_value=SimpleNamespace(contains=lambda _mouse: True),
     )
-
-    assert prompt.poll_open_request(
-        ctx=_ctx(),
-        config=_config(),
-        pending_count=1,
-        player_count=1,
-        any_alive=True,
-        paused=False,
-        menu_active=False,
-    )
-
-
-def test_begin_prompt_frame_clears_stale_hover_before_pulse_tick() -> None:
     prompt = PerkPromptState()
-    prompt.hover = True
-    prompt.pulse = 100.0
-
-    prompt.begin_frame()
-    prompt.tick_pulse(16.0)
-
-    assert prompt.hover is False
-    assert prompt.pulse == 68.0
+    assert _poll(prompt)
+    assert prompt.hover
 
 
-def test_prompt_open_request_returns_false_while_menu_active(mocker) -> None:
-    prompt = PerkPromptState()
-    prompt.begin_frame()
-
-    mocker.patch.object(
-        perk_prompt_controller_module,
-        "input_code_is_pressed",
-        return_value=True,
-    )
-
-    assert not prompt.poll_open_request(
-        ctx=_ctx(),
-        config=_config(),
-        pending_count=1,
-        player_count=1,
-        any_alive=True,
-        paused=False,
-        menu_active=True,
-    )
+def test_prompt_ignores_input_while_the_mouse_was_held_or_the_menu_is_up(mocker) -> None:
+    _patch_input(mocker, pick_down=True)
+    assert not _poll(PerkPromptState(mouse_down=True))
+    assert not _poll(PerkPromptState(), menu_active=True)

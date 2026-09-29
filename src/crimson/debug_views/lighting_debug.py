@@ -20,7 +20,7 @@ from grim.view import ViewContext
 
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
-from ..owner_ref import OwnerRef
+from ..owner_id import OWNER_LOCAL_PLAYER
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
@@ -1297,7 +1297,7 @@ class LightingDebugView:
 
     def _draw_world(self, *, draw_aim_indicators: bool = True, entity_alpha: float = 1.0) -> None:
         self._runtime.draw(entity_alpha=entity_alpha)
-        self._runtime.draw_aim_indicators(show_aim=draw_aim_indicators, entity_alpha=entity_alpha)
+        self._runtime.draw_aim_indicators(show_aim=draw_aim_indicators, aim_enhancement_fade=1.0, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self._runtime.world_to_screen(pos)
@@ -2140,7 +2140,6 @@ class LightingDebugView:
                     pos=impact,
                     angle=float(heading),
                     type_id=SecondaryProjectileTypeId.DETONATION,
-                    owner=OwnerRef.from_local_player(0),
                     time_to_live=float(profile.secondary_ttl),
                 ),
             )
@@ -2166,7 +2165,7 @@ class LightingDebugView:
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.primary_type_id,
-                    owner=OwnerRef.from_local_player(0),
+                    owner_id=OWNER_LOCAL_PLAYER,
                 )
             if profile.secondary_type_id is not None:
                 self._runtime.world.state.secondary_projectiles.spawn_from_spec(
@@ -2174,7 +2173,6 @@ class LightingDebugView:
                         pos=muzzle_pos,
                         angle=angle,
                         type_id=profile.secondary_type_id,
-                        owner=OwnerRef.from_local_player(0),
                         time_to_live=float(profile.secondary_ttl),
                         creatures=self._runtime.world.creatures.entries,
                         target_hint=player.aim,
@@ -3320,7 +3318,7 @@ class LightingDebugView:
 
         resources = self._runtime.render_resources.resources
         mouse = canvas.mouse_position()
-        draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse))
+        draw_aim_cursor(resources.texture(TextureId.PARTICLES), self._aim_texture, pos=Vec2.from_xy(mouse), alpha=1.0)
 
 
 @register_view("lighting-debug", "Lighting debug")

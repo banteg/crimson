@@ -30,8 +30,8 @@ if TYPE_CHECKING:
 
 _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
-# Native uses `cv_padAimDistMul` (default 96).
-_AIM_RADIUS_PAD_SCALE = 96.0
+# `cv_padAimDistMul`'s registered default.
+PAD_AIM_DIST_MUL_DEFAULT = 96.0
 # Port-only: native aims at the player when the stick centers; a resting stick
 # instead keeps the last direction, and small drift inside this radius is ignored.
 _PAD_AIM_DEADZONE = 0.2
@@ -247,6 +247,7 @@ class LocalInputInterpreter:
         screen_center: Vec2,
         dt: float,
         creatures: Sequence[CreatureState] | None = None,
+        pad_aim_dist_mul: float = PAD_AIM_DIST_MUL_DEFAULT,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
         state = self._state_for_player(idx, player=player)
@@ -409,8 +410,8 @@ class LocalInputInterpreter:
             axis_dir, mag = Vec2(axis_x, axis_y).normalized_with_length()
             if mag > _PAD_AIM_DEADZONE:
                 heading = axis_dir.to_heading()
-                # Native clamps the stick length to 1 before scaling the reach.
-                radius = _AIM_RADIUS_PAD_BASE + min(mag, 1.0) * _AIM_RADIUS_PAD_SCALE
+                # Native clamps the stick length to 1 before scaling the reach by `cv_padAimDistMul`.
+                radius = _AIM_RADIUS_PAD_BASE + min(mag, 1.0) * pad_aim_dist_mul
                 aim = player.pos + axis_dir * radius
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
@@ -484,6 +485,7 @@ class LocalInputInterpreter:
         mouse_screen: Vec2,
         screen_to_world: Callable[[Vec2], Vec2],
         dt: float,
+        pad_aim_dist_mul: float,
         creatures: Sequence[CreatureState] | None = None,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
@@ -500,6 +502,7 @@ class LocalInputInterpreter:
                     screen_center=screen_center,
                     dt=float(dt),
                     creatures=creatures,
+                    pad_aim_dist_mul=pad_aim_dist_mul,
                 ),
             )
         return out

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from grim.audio import stop_music
 from grim.view import ViewContext
 
@@ -90,7 +91,14 @@ class ScreenNavigator:
         if entry is not None:
             return entry
         if route is Route.OTHER_GAMES:
-            view = PanelMenuView(self.state, title="Other games", body="This menu is out of scope for the rewrite.")
+            view = PanelMenuView(
+                self.state,
+                game_state=GameStateId.MENU_LEGACY_VARIANT,
+                panel_element=9,
+                back_element=9,
+                title="Other games",
+                body="This menu is out of scope for the rewrite.",
+            )
         else:
             view_type = {
                 Route.MENU: MenuView,
@@ -148,12 +156,12 @@ class ScreenNavigator:
     def _start_run(self, request: StartRun) -> None:
         config = self.state.config
         config.gameplay.mode = request.mode
-        config.gameplay.player_count = request.player_count
-        config.gameplay.hardcore = request.hardcore
         if request.mode == GameMode.QUESTS:
             assert request.quest_level is not None
             unlock = (
-                self.state.status.quest_unlock_index_full if request.hardcore else self.state.status.quest_unlock_index
+                self.state.status.quest_unlock_index_full
+                if config.gameplay.hardcore
+                else self.state.status.quest_unlock_index
             )
             assert request.quest_level.global_index <= unlock, "cannot launch a locked quest"
             config.gameplay.quest_level = request.quest_level

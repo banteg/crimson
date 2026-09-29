@@ -13,8 +13,7 @@ from collections.abc import Callable
 
 from pytest_mock import MockerFixture
 
-from crimson.creatures.runtime import CreatureState
-from crimson.creatures.spawn import SpawnId, SpawnSlotInit
+from crimson.creatures.runtime import CreaturePool
 from crimson.gameplay import (
     _aim_heading_from_aim_point_native,
     _native_move_target_heading,
@@ -404,7 +403,6 @@ def test_relative_turn_matches_native(oracle) -> None:
             MovementControlType.RELATIVE,
             2.0,
             None,
-            None,
         )
         python = {"heading": player.heading, "aim_heading": player.aim_heading, "turn_speed": player.turn_speed}
         mismatches += compare_fields(f"{fields} dt={dt!r} left={left}", native, python, address=0x004144DC)
@@ -440,17 +438,16 @@ def _spawn_avoidance_case(
     player = _python_player(pos=pos, size=size)
     perks = PerkCounts()
     perks[PerkId.ALTERNATE_WEAPON] = int(alt_weapon)
-    creatures = [CreatureState(pos=owner_pos, size=owner_size) for owner_pos, owner_size in owners]
-    slots = [
-        SpawnSlotInit(owner_creature=index, timer=0.0, count=0, limit=0, interval=0.0, child_template_id=SpawnId(0))
-        for index in range(len(owners))
-    ]
+    pool = CreaturePool()
+    for index, (owner_pos, owner_size) in enumerate(owners):
+        pool.entries[index].pos = owner_pos
+        pool.entries[index].size = owner_size
+        pool.spawn_slots[index].owner_creature = index
     _player_apply_move_with_spawn_avoidance(
         player,
         perks=perks,
         delta=delta,
-        spawn_slots=slots,
-        creatures=creatures,
+        creatures=pool,
     )
     python = {"pos_x": player.pos.x, "pos_y": player.pos.y}
     case = f"pos={pos} delta={delta} size={size!r} alt={alt_weapon} owners={owners}"

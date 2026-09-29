@@ -3,7 +3,7 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
@@ -36,7 +36,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     events = world.step(
@@ -77,7 +77,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     events = world.step(
@@ -149,7 +149,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     world.step(
@@ -188,7 +188,7 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.SPLITTER_GUN,
-        owner=OwnerRef.from_creature(7),
+        owner_id=7,
     )
 
     events = world.step(

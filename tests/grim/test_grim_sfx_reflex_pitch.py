@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import grim.sfx as grim_sfx
+from grim.rand import Crand
 from grim.sfx_map import SfxId
 from tests.support.helpers import assert_float_close
 
 
 def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
-    state = grim_sfx.init_sfx_state(ready=True, enabled=True, volume=1.0)
+    state = grim_sfx.init_sfx_state(ready=True, enabled=True, volume=1.0, rng=Crand(0x1234))
 
     voice = grim_sfx.SfxVoice(grim_sfx.rl.Sound())
     sample = grim_sfx.SfxSample("pistol.ogg", source=voice, aliases=[])
@@ -44,3 +45,16 @@ def test_play_sfx_applies_native_reflex_rate_scaling(mocker) -> None:
     grim_sfx.play_sfx(state, SfxId.PISTOL_FIRE, reflex_boost_timer=-0.1)
     assert state.rate_scale_hz == 44100
     assert_float_close(float(set_sound_pitch.call_args_list[-1].args[1]), 1.0)
+
+
+def test_busy_sample_restarts_a_random_voice(mocker) -> None:
+    voices = [grim_sfx.SfxVoice(grim_sfx.rl.Sound()) for _ in range(16)]
+    sample = grim_sfx.SfxSample("pistol.ogg", source=voices[0], aliases=voices[1:])
+    mocker.patch.object(grim_sfx.rl, "is_sound_playing", return_value=True)
+    rng = Crand(0x1234)
+    expected = Crand(0x1234)
+
+    picks = [sample.acquire_voice(rng) for _ in range(4)]
+
+    # `sfx_entry_start_playback`: every voice busy, so `rand() % 16` picks the one to restart.
+    assert picks == [voices[expected.rand() % 16] for _ in range(4)]

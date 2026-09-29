@@ -14,6 +14,7 @@ const weapon_data = cz.weapon_data;
 const window_atlas = cz.window_atlas;
 
 const window_assets = @import("window_assets.zig");
+const window_highscore_card = @import("window_highscore_card.zig");
 const window_menu = @import("window_menu.zig");
 const window_menu_panels = @import("window_menu_panels.zig");
 const window_ui = @import("window_ui.zig");
@@ -27,6 +28,10 @@ const value_color = rl.Color.init(70, 180, 240, 255);
 const gold_color = rl.Color.init(255, 228, 170, 255);
 
 const panel_timeline_max_ms: i32 = 300;
+const quest_hardcore_unlock_index = window_menu_panels.quest_hardcore_unlock_index;
+// Native `highscore_screen` puts the Hardcore checkbox at the column header origin (Rank - 9) + (162, -2).
+const hardcore_checkbox_offset_x: f32 = 364.0;
+const hardcore_checkbox_offset_y: f32 = 82.0;
 const credits_table_size: usize = 0x100;
 const credits_flag_heading: u8 = 0x1;
 const credits_flag_clicked: u8 = 0x4;
@@ -167,6 +172,8 @@ const HighScoresScreen = struct {
     records: []persistence.highscores.HighScoreRecord = &.{},
     records_owned: bool = false,
     load_error: ?[]const u8 = null,
+    internet_checkbox: window_ui.UiCheckbox = .{ .label = "Show internet scores" },
+    hardcore_checkbox: window_ui.UiCheckbox = .{ .label = "Hardcore" },
 
     fn reset(self: *HighScoresScreen, allocator: std.mem.Allocator) void {
         self.clear(allocator);
@@ -330,7 +337,7 @@ pub fn update(
 ) UpdateResult {
     return switch (state.view) {
         .hub => updateHub(state, allocator, frame_dt, base_dir, config, status),
-        .high_scores => updateHighScores(state, allocator, frame_dt, base_dir, config, status),
+        .high_scores => updateHighScores(state, allocator, frame_dt, base_dir, config, status, runtime_assets),
         .weapons => updateWeapons(state, frame_dt, config.*, status),
         .perks => updatePerks(state, frame_dt, status),
         .credits => updateCredits(state, frame_dt, runtime_assets),
@@ -495,6 +502,7 @@ fn updateHighScores(
     base_dir: []const u8,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
 ) UpdateResult {
     const timeline_update = advanceChildTimeline(state, frame_dt);
     if (timeline_update.closed_action) |action| return finishChildAction(state, action);
@@ -538,12 +546,12 @@ fn updateHighScores(
         }
     }
 
-    if (updateHighScoreQuestArrows(hs, config, status, left_rect)) |quest_level_key| {
+    if (updateHighScoreQuestArrows(hs, runtime_assets, config, status, left_rect)) |quest_level_key| {
         loadHighScores(hs, allocator, base_dir, config.*, status);
         return .{ .quest_level_key = quest_level_key, .config_dirty = true, .play_button_click = true };
     }
 
-    if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, highScoreRightOptionsRect(right_rect, config.screen_width))) |widget_result| {
+    if (updateHighScoreWidgets(hs, allocator, base_dir, config, status, runtime_assets, highScoreRightOptionsRect(right_rect, config.screen_width))) |widget_result| {
         return widget_result;
     }
 
@@ -912,6 +920,11 @@ fn drawHighScoreMainPanel(
         }) catch "Quest";
         window_ui.drawSmallText(assets, quest_label, left_rect.x + 236.0, left_rect.y + 63.0, if (config.hardcore_flag != 0) rl.Color.init(250, 70, 60, 180) else value_color);
         drawQuestArrows(assets, state.quest_level_key, config.hardcore_flag != 0, status, left_rect);
+        if (status.quest_unlock_index >= quest_hardcore_unlock_index) {
+            var hardcore_checkbox = state.hardcore_checkbox;
+            hardcore_checkbox.checked = config.hardcore_flag != 0;
+            window_ui.checkboxDraw(assets, hardcore_checkbox, left_rect.x + hardcore_checkbox_offset_x, left_rect.y + hardcore_checkbox_offset_y);
+        }
     }
 
     window_ui.drawSmallText(assets, "Rank", left_rect.x + 211.0, left_rect.y + 84.0, text_color);
@@ -930,13 +943,13 @@ fn drawHighScoreMainPanel(
         const selected_rank = selectedHighScoreRank(state, left_rect);
         const start = @min(state.scroll, if (state.records.len > 10) state.records.len - 10 else 0);
         const end = @min(start + 10, state.records.len);
-        for (state.records[start..end], 0..) |record, row| {
+        for (state.records[start..end], 0..) |*record, row| {
             const idx = start + row;
             const color = if (selected_rank != null and selected_rank.? == idx) text_color else muted_text;
             var value_buf: [32]u8 = undefined;
             const y = frame.y + 8.0 + @as(f32, @floatFromInt(row)) * 16.0;
             window_ui.drawSmallTextFmt("{d}", assets, .{idx + 1}, left_rect.x + 216.0, y, color);
-            window_ui.drawSmallText(assets, formatHighScoreValue(&value_buf, record), left_rect.x + 246.0, y, color);
+            window_ui.drawSmallText(assets, formatHighScoreValue(&value_buf, record.*), left_rect.x + 246.0, y, color);
             window_ui.drawSmallText(assets, clippedRecordName(record), left_rect.x + 304.0, y, color);
         }
     }
@@ -959,15 +972,27 @@ fn drawHighScoreRightPanel(
 ) void {
     if (selectedHighScoreRank(state, left_rect)) |rank| {
         if (rank < state.records.len) {
-            drawHighScoreLocalDetails(assets, state.records[rank], rank, preserve_bugs, highScoreRightLocalCardRect(right_rect, config.screen_width));
+            const card_rect = highScoreRightLocalCardRect(right_rect, config.screen_width);
+            window_highscore_card.uiTextInputRender(
+                assets,
+                rl.Vector2.init(card_rect.x + 74.0, card_rect.y + 44.0),
+                &state.records[rank],
+                1.0,
+                @intCast(rank + 1),
+                .highscores,
+                0,
+                rl.getMousePosition(),
+                rl.getFrameTime(),
+                preserve_bugs,
+            );
             return;
         }
     }
 
     const options_rect = highScoreRightOptionsRect(right_rect, config.screen_width);
-    const check_tex = if (config.show_online_scores != 0) assets.texture(.ui_check_on) else assets.texture(.ui_check_off);
-    window_ui.drawTextureFit(check_tex, rl.Rectangle.init(options_rect.x + 44.0, options_rect.y + 44.0, @floatFromInt(check_tex.width), @floatFromInt(check_tex.height)), rl.Color.white);
-    window_ui.drawSmallText(assets, "Show internet scores", options_rect.x + 66.0, options_rect.y + 45.0, text_color);
+    var internet_checkbox = state.internet_checkbox;
+    internet_checkbox.checked = config.show_online_scores != 0;
+    window_ui.checkboxDraw(assets, internet_checkbox, options_rect.x + 44.0, options_rect.y + 44.0);
     window_ui.drawSmallText(assets, "Number of players", options_rect.x + 46.0, options_rect.y + 64.0, text_color);
     window_ui.drawSmallText(assets, "Game mode", options_rect.x + 174.0, options_rect.y + 64.0, text_color);
     window_ui.drawSmallText(assets, "Show scores:", options_rect.x + 44.0, options_rect.y + 106.0, text_color);
@@ -1753,97 +1778,6 @@ fn hoveredListRow(rect: rl.Rectangle, total: usize, scroll: usize) ?usize {
     return scroll + row;
 }
 
-fn drawHighScoreLocalDetails(assets: *const window_assets.RuntimeAssets, record: persistence.highscores.HighScoreRecord, rank: usize, preserve_bugs: bool, right_rect: rl.Rectangle) void {
-    const detail_x = right_rect.x + 78.0;
-    const mode = record.gameModeId() orelse .survival;
-    const local_text = rl.Color.init(229, 229, 229, 204);
-    const value_text = rl.Color.init(229, 229, 255, 255);
-    const lower_text = rl.Color.init(229, 229, 229, 178);
-    const separator = rl.Color.init(149, 175, 198, 178);
-
-    window_ui.drawSmallText(assets, clippedRecordName(record), detail_x, right_rect.y + 44.0, local_text);
-    window_ui.drawSmallText(assets, "Local score", detail_x, right_rect.y + 58.0, local_text);
-    rl.drawLine(@intFromFloat(right_rect.x + 78.0), @intFromFloat(right_rect.y + 57.0), @intFromFloat(right_rect.x + 117.0), @intFromFloat(right_rect.y + 57.0), separator);
-    var date_buf: [64]u8 = undefined;
-    if (formatRecordDateBuf(&date_buf, record)) |date| {
-        const date_w = window_ui.measureSmallText(assets, date);
-        window_ui.drawSmallText(assets, date, right_rect.x + 230.0 - date_w * 0.5, right_rect.y + 72.0, local_text);
-    }
-    rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 72.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 72.0), separator);
-    window_ui.drawSmallText(assets, "Score", detail_x + 27.0, right_rect.y + 90.0, local_text);
-    const time_label = if (mode == .quests) "Experience" else "Game time";
-    window_ui.drawSmallText(assets, time_label, detail_x + 114.0, right_rect.y + 90.0, local_text);
-    rl.drawLine(@intFromFloat(right_rect.x + 170.0), @intFromFloat(right_rect.y + 90.0), @intFromFloat(right_rect.x + 170.0), @intFromFloat(right_rect.y + 138.0), separator);
-
-    switch (mode) {
-        .rush, .quests => {
-            var score_buf: [32]u8 = undefined;
-            const score_text = std.fmt.bufPrint(&score_buf, "{d:.2} secs", .{@as(f32, @floatFromInt(record.survivalElapsedMs())) * 0.001}) catch "0.00 secs";
-            const label_center_x = detail_x + 27.0 + window_ui.measureSmallText(assets, "Score") * 0.5;
-            const score_w = window_ui.measureSmallText(assets, score_text);
-            window_ui.drawSmallText(assets, score_text, label_center_x - score_w * 0.5, right_rect.y + 105.0, value_text);
-            window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 148.0, right_rect.y + 109.0, local_text);
-        },
-        .survival, .typo, .tutorial => {
-            window_ui.drawSmallTextFmt("{d}", assets, .{record.scoreXp()}, detail_x + 27.0, right_rect.y + 105.0, value_text);
-            drawClockGauge(assets, @intCast(@max(0, record.survivalElapsedMs())), right_rect.x + 194.0, right_rect.y + 103.0);
-            var time_buf: [32]u8 = undefined;
-            window_ui.drawSmallText(assets, formatElapsedMmSsBuf(&time_buf, @intCast(@max(0, record.survivalElapsedMs()))), detail_x + 148.0, right_rect.y + 109.0, local_text);
-        },
-    }
-    var rank_buf: [32]u8 = undefined;
-    var ordinal_buf: [16]u8 = undefined;
-    const rank_text = std.fmt.bufPrint(&rank_buf, "Rank: {s}", .{ordinalBuf(&ordinal_buf, rank + 1)}) catch "Rank: ?";
-    window_ui.drawSmallText(assets, rank_text, detail_x + 16.0, right_rect.y + 120.0, local_text);
-    const icon_index = weapon_data.weaponIconIndex(record.mostUsedWeaponId());
-    rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 142.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 142.0), separator);
-    if (icon_index >= 0) {
-        const src_rect = window_atlas.weaponIconRect(assets.texture(.ui_wicons).width, assets.texture(.ui_wicons).height, icon_index);
-        rl.drawTexturePro(
-            assets.texture(.ui_wicons),
-            rl.Rectangle.init(src_rect.x, src_rect.y, src_rect.width, src_rect.height),
-            rl.Rectangle.init(detail_x + 12.0, right_rect.y + 146.0, 64.0, 32.0),
-            rl.Vector2.zero(),
-            0.0,
-            rl.Color.white,
-        );
-    }
-    window_ui.drawSmallTextFmt("Frags: {d}", assets, .{record.creatureKillCount()}, detail_x + 122.0, right_rect.y + 147.0, lower_text);
-    window_ui.drawSmallTextFmt("Hit %: {d}%", assets, .{highScoreHitPercent(record)}, detail_x + 122.0, right_rect.y + 161.0, lower_text);
-    const weapon_name = game_ids.weaponDisplayName(record.mostUsedWeaponId(), preserve_bugs);
-    const weapon_name_x = right_rect.x + 90.0 + @max(@as(f32, 0.0), 32.0 - window_ui.measureSmallText(assets, weapon_name) * 0.5);
-    window_ui.drawSmallText(assets, weapon_name, weapon_name_x, right_rect.y + 178.0, lower_text);
-    rl.drawLine(@intFromFloat(right_rect.x + 74.0), @intFromFloat(right_rect.y + 194.0), @intFromFloat(right_rect.x + 266.0), @intFromFloat(right_rect.y + 194.0), separator);
-}
-
-fn highScoreHitPercent(record: persistence.highscores.HighScoreRecord) u64 {
-    const shots_fired = record.shotsFired();
-    if (shots_fired == 0) return 0;
-    return @divTrunc(@as(u64, record.shotsHit()) * 100, @as(u64, shots_fired));
-}
-
-fn drawClockGauge(assets: *const window_assets.RuntimeAssets, elapsed_ms: u32, x: f32, y: f32) void {
-    const table = assets.texture(.ui_clock_table);
-    const pointer = assets.texture(.ui_clock_pointer);
-    rl.drawTexturePro(
-        table,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(table.width), @floatFromInt(table.height)),
-        rl.Rectangle.init(x, y, 32.0, 32.0),
-        rl.Vector2.zero(),
-        0.0,
-        rl.Color.white,
-    );
-    const seconds = @divTrunc(elapsed_ms, 1000);
-    rl.drawTexturePro(
-        pointer,
-        rl.Rectangle.init(0.0, 0.0, @floatFromInt(pointer.width), @floatFromInt(pointer.height)),
-        rl.Rectangle.init(x + 16.0, y + 16.0, 32.0, 32.0),
-        rl.Vector2.init(16.0, 16.0),
-        @as(f32, @floatFromInt(seconds)) * 6.0,
-        rl.Color.white,
-    );
-}
-
 const HighScoreScrollAction = enum {
     line_up,
     line_down,
@@ -1870,16 +1804,21 @@ fn updateHighScoreWidgets(
     base_dir: []const u8,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
     right_rect: rl.Rectangle,
 ) ?UpdateResult {
     const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
 
-    const internet_rect = rl.Rectangle.init(right_rect.x + 44.0, right_rect.y + 44.0, 180.0, 16.0);
-    if (click and state.dropdown_open == .none and rectContains(internet_rect, mouse)) {
-        config.show_online_scores = if (config.show_online_scores == 0) 1 else 0;
-        loadHighScores(state, allocator, base_dir, config.*, status);
-        return .{ .config_dirty = true, .play_button_click = true };
+    if (state.dropdown_open == .none and runtime_assets != null) {
+        const assets = runtime_assets.?;
+        const checkbox = &state.internet_checkbox;
+        checkbox.checked = config.show_online_scores != 0;
+        if (window_ui.checkboxUpdate(assets, checkbox, right_rect.x + 44.0, right_rect.y + 44.0, mouse, click)) {
+            config.show_online_scores = @intFromBool(checkbox.checked);
+            loadHighScores(state, allocator, base_dir, config.*, status);
+            return .{ .config_dirty = true, .play_button_click = true };
+        }
     }
 
     const player_update = updateDropdownSelection(&state.dropdown_open, .player_count, playerCountWidgetRect(right_rect), playerCountLabels()[0..], click, mouse);
@@ -1962,27 +1901,41 @@ fn updateDropdownSelection(
 
 fn updateHighScoreQuestArrows(
     state: *HighScoresScreen,
+    runtime_assets: ?*const window_assets.RuntimeAssets,
     config: *formats.crimson_cfg.CrimsonCfg,
     status: formats.game_cfg.Status,
     left_rect: rl.Rectangle,
 ) ?i32 {
     if (state.mode != .quests) return null;
+    const mouse = rl.getMousePosition();
     const click = rl.isMouseButtonPressed(.left);
-    if (!click) return null;
+
+    // `highscore_screen`: the Hardcore checkbox beside the column headers, from 40 unlocked quests.
+    var hardcore_toggled = false;
+    if (runtime_assets != null and status.quest_unlock_index >= quest_hardcore_unlock_index) {
+        const assets = runtime_assets.?;
+        const checkbox = &state.hardcore_checkbox;
+        checkbox.checked = config.hardcore_flag != 0;
+        if (window_ui.checkboxUpdate(assets, checkbox, left_rect.x + hardcore_checkbox_offset_x, left_rect.y + hardcore_checkbox_offset_y, mouse, click)) {
+            config.hardcore_flag = @intFromBool(checkbox.checked);
+            hardcore_toggled = true;
+        }
+    }
 
     const unlock = if (config.hardcore_flag != 0) status.quest_unlock_index_full else status.quest_unlock_index;
     const max_index = std.math.clamp(unlock, @as(i32, 0), @as(i32, 49));
     const current_index = questLevelKeyToIndex(state.quest_level_key);
-    const mouse = rl.getMousePosition();
-    if (current_index > 0 and rectContains(questPrevArrowRect(left_rect), mouse)) {
-        state.quest_level_key = questIndexToLevelKey(current_index - 1);
-        return state.quest_level_key;
-    }
-    if (current_index < max_index and rectContains(questNextArrowRect(left_rect), mouse)) {
-        state.quest_level_key = questIndexToLevelKey(current_index + 1);
-        return state.quest_level_key;
-    }
-    return null;
+    // Native pages with the arrow keys too; switching tables reloads and clamps to the unlocked quests.
+    const target_index = if (current_index > 0 and ((click and rectContains(questPrevArrowRect(left_rect), mouse)) or rl.isKeyPressed(.left)))
+        current_index - 1
+    else if (current_index < max_index and ((click and rectContains(questNextArrowRect(left_rect), mouse)) or rl.isKeyPressed(.right)))
+        current_index + 1
+    else if (hardcore_toggled)
+        current_index
+    else
+        return null;
+    state.quest_level_key = questIndexToLevelKey(std.math.clamp(target_index, 0, max_index));
+    return state.quest_level_key;
 }
 
 fn drawQuestArrows(
@@ -2201,7 +2154,8 @@ fn buildPerkList(dest: *[state_mod.perk_count_size]game_ids.PerkId, status: form
     return count;
 }
 
-fn clippedRecordName(record: persistence.highscores.HighScoreRecord) []const u8 {
+// Takes the record by pointer: the name slice points into its data.
+fn clippedRecordName(record: *const persistence.highscores.HighScoreRecord) []const u8 {
     const name = record.name();
     return if (name.len > 16) name[0..16] else name;
 }
@@ -2234,35 +2188,6 @@ fn formatPlaytimeText(buf: []u8, game_sequence_ms: u32, preserve_bugs: bool) []c
     const hours = @divTrunc(total_minutes, 60);
     const minutes = @mod(total_minutes, 60);
     return std.fmt.bufPrint(buf, "played for {d} hours {d} minutes", .{ hours, minutes }) catch "played for 0 hours 0 minutes";
-}
-
-fn formatElapsedMmSsBuf(buf: []u8, elapsed_ms: u32) []const u8 {
-    const total_seconds = @divTrunc(elapsed_ms, 1000);
-    const minutes = @divTrunc(total_seconds, 60);
-    const seconds = @mod(total_seconds, 60);
-    return std.fmt.bufPrint(buf, "{d}:{d:0>2}", .{ minutes, seconds }) catch "0:00";
-}
-
-fn formatRecordDateBuf(buf: []u8, record: persistence.highscores.HighScoreRecord) ?[]const u8 {
-    const day = record.data[0x40];
-    const month = record.data[0x42];
-    if (day == 0 or month == 0 or month > 12) return null;
-    const year = 2000 + @as(i32, record.data[0x43]);
-    return std.fmt.bufPrint(buf, "{d}. {s} {d}", .{ day, monthNames()[month - 1], year }) catch null;
-}
-
-fn monthNames() [12][]const u8 {
-    return .{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-}
-
-fn ordinalBuf(buf: []u8, rank: usize) []const u8 {
-    const suffix = switch (rank % 10) {
-        1 => if (rank % 100 == 11) "th" else "st",
-        2 => if (rank % 100 == 12) "th" else "nd",
-        3 => if (rank % 100 == 13) "th" else "rd",
-        else => "th",
-    };
-    return std.fmt.bufPrint(buf, "{d}{s}", .{ rank, suffix }) catch "?";
 }
 
 fn questLevelKeyFromConfig(config: formats.crimson_cfg.CrimsonCfg) i32 {
@@ -2494,23 +2419,6 @@ test "statistics right panel shifts match narrow native layouts" {
     const right_rect = rl.Rectangle.init(630.0, 209.0, 424.0, 276.0);
     try std.testing.expectApproxEqAbs(@as(f32, 640.0), highScoreRightOptionsRect(right_rect, 640).x, 1e-6);
     try std.testing.expectApproxEqAbs(@as(f32, 642.0), highScoreRightLocalCardRect(right_rect, 640).x, 1e-6);
-}
-
-test "high score local details hit percent uses wide math" {
-    var record = persistence.highscores.HighScoreRecord.blank();
-    try std.testing.expectEqual(@as(u64, 0), highScoreHitPercent(record));
-
-    record.setShotsFired(20);
-    record.setShotsHit(15);
-    try std.testing.expectEqual(@as(u64, 75), highScoreHitPercent(record));
-
-    record.setShotsFired(3);
-    record.setShotsHit(2);
-    try std.testing.expectEqual(@as(u64, 66), highScoreHitPercent(record));
-
-    record.setShotsFired(1);
-    record.setShotsHit(std.math.maxInt(u32));
-    try std.testing.expectEqual(@as(u64, 429496729500), highScoreHitPercent(record));
 }
 
 test "statistics database detail labels preserve original wording in all modes" {

@@ -15,7 +15,6 @@ from grim.sfx_types import SfxRequest
 from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
 from .math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
-from .owner_ref import OwnerRef
 from .perks import PerkId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import PlayerState
@@ -60,7 +59,6 @@ def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
             x87_pc24_mul(blast, 5.0),
             CreatureDamageType.EXPLOSION,
             Vec2(),
-            OwnerRef.from_player(player.index),
         )
     state.bonus_spawn_guard = False
     state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, player.pos))

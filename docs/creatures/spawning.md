@@ -13,7 +13,9 @@ It is not a static struct/table: it always performs base creature initialization
 template switch, may allocate additional creatures and/or spawn-slot entries, and then applies
 shared tail modifiers (difficulty/hardcore, demo gating, etc).
 
-For the pure, unit-testable model we use while porting templates, see: [`spawn_plan.md`](spawn_plan.md).
+The port (`creature_spawn_template` in `src/crimson/creatures/spawn.py`) mirrors that shape: it writes
+each creature straight into the slot the allocator hands out, in native order, so fields a template
+leaves alone keep the recycled slot's values.
 
 ## Spawn id name provenance
 
@@ -96,6 +98,23 @@ difficulty modifiers. See the [native replay evidence](https://github.com/banteg
 - If `heading == -100.0`, randomizes the final heading: `crt_rand() % 0x274 * 0.01`.
 - `creature_alloc_slot()` itself consumes RNG to seed per-creature defaults (notably `phase_seed`).
 
+### Full pool: the phantom slot
+
+`creature_alloc_slot()` has no failure path. When all `0x180` slots are active it logs "No free
+creatures to spawn!" (with `cv_verbose`) and returns `0x180`, one past the pool, without clearing flags
+or drawing a phase seed. Callers write that creature anyway, into `creature_pool[0x180]`: the entry
+`creature_pool_global_init` still covers (it initializes `0x181` entries) but nothing iterates.
+
+- A formation spawned with `k` free slots puts its root and first `k - 1` members in the pool; every
+  later member overwrites the phantom slot, and the tail applies to it when it is the last member.
+- The phantom slot's fields persist between writes, flags included: a spawner that landed there keeps
+  flag `0x4` for later spawns, whose tail then adjusts its spawn slot's interval again.
+- Links and spawn-slot owners can name the phantom slot (`0x180`). `creature_update_all` never visits
+  it, so its spawn slot never ticks and is never freed until `gameplay_reset_state`, but
+  `player_apply_move_with_spawn_avoidance` still blocks the player around its position.
+- A phantom slot that carries flag `0x4` with a formation link in `link_index` makes the tail index
+  the spawn-slot table out of bounds; the port skips that write.
+
 ### 2) Template switch (template-specific)
 
 Large switch/if-chain on `template_id` assigns template-specific constants and behavior:
@@ -138,8 +157,9 @@ Applied after the template switch to the returned creature:
 
 This tracks our `creature_spawn_template` rewrite coverage.
 
-- Ported: implemented in `build_spawn_plan` (pure plan builder).
-- Verified: covered by unit tests in `tests/creatures/test_spawn_plan.py`.
+- Ported: implemented in `creature_spawn_template`.
+- Verified: bit-exact against the executable in `tests/native_oracle/test_spawn_template.py` and
+  `tests/native_oracle/test_spawn_full_pool.py`.
 - Legend: ✅ complete · 🚧 in progress · ⬜ not started
 - Note: spawn id `0x02` does not appear in the decompile extracts and is omitted.
 
@@ -378,11 +398,9 @@ Notes:
 - Rush mode (pure models): `src/crimson/creatures/spawn.py`
   - `tick_rush_mode_spawns`, `build_rush_mode_spawn_creature`
   - Tests: `tests/modes/test_rush_mode_spawn.py`
-- Tutorial timeline (pure models): `src/crimson/creatures/spawn.py`
-  - `build_tutorial_stage3_fire_spawns`, `build_tutorial_stage4_clear_spawns`,
-    `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
-
-  - Tests: `tests/modes/test_tutorial_timeline_spawns.py`
+- Tutorial timeline: `src/crimson/tutorial/timeline.py`
+  - `tutorial_timeline_update` (spawns into the world after the world render, before the level-up check)
+  - Tests: `tests/modes/test_tutorial_timeline_update.py`, `tests/native_oracle/test_tutorial_timeline.py`
 - Quest timeline: `src/crimson/quests/timeline.py`
   - `quest_spawn_timeline_update` (spawns into the world), `quest_spawn_table_empty`
   - Tests: `tests/modes/test_quest_spawn_timeline.py`

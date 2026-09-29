@@ -19,7 +19,7 @@ from ...math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from ...owner_ref import OwnerRef
+from ...owner_id import OWNER_LOCAL_PLAYER
 from ..effects import (
     _spawn_ion_hit_effects,
     _spawn_plasma_cannon_hit_effects,
@@ -70,23 +70,19 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
         rng=ctx.rng,
         detail_preset=ctx.detail_preset,
     )
-    # Native player-hit checks key off non-player ownership; creature-owned splitters
-    # always satisfy this, so they can hit players even when the parent was local-owned.
-    split_hits_players = True
+    # The children belong to the creature hit, so they can hit players even when the parent was the local player's.
     split_angle = f32(1.0471976)  # 0x0046f4e4
     ctx.pool.spawn(
         pos=proj.pos,
         angle=x87_pc24_sub(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
-        owner=OwnerRef.from_creature(int(hit_idx)),
-        hits_players=split_hits_players,
+        owner_id=int(hit_idx),
     )
     ctx.pool.spawn(
         pos=proj.pos,
         angle=x87_pc24_add(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
-        owner=OwnerRef.from_creature(int(hit_idx)),
-        hits_players=split_hits_players,
+        owner_id=int(hit_idx),
     )
 
 
@@ -136,7 +132,7 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
                     pos=origin_pos,
                     angle=angle,
                     type_id=ProjectileTemplateId(hit.proj.type_id),
-                    owner=OwnerRef.from_creature(hit_creature),
+                    owner_id=hit_creature,
                 )
             finally:
                 runtime_state.bonus_spawn_guard = False
@@ -163,7 +159,7 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 pos=ring_pos,
                 angle=ring_angle,
                 type_id=ProjectileTemplateId.PLASMA_RIFLE,
-                owner=OwnerRef.from_local_player(0),
+                owner_id=OWNER_LOCAL_PLAYER,
             )
     finally:
         runtime_state.bonus_spawn_guard = False

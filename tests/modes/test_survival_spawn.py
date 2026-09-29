@@ -2,17 +2,24 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, build_survival_spawn_creature
+from crimson.creatures.runtime import CreaturePool, CreatureState
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, survival_spawn_creature
 from crimson.math_parity import f32, f32_from_bits
 from crimson.rng_caller_static import RngCallerStatic
+from grim.color import RGBA
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.rand import Crand, CrandLike
 from tests.support.helpers import ScriptedCrand, assert_float_close
+
+
+def _spawn_survival(pos: Vec2, rng: CrandLike, *, player_experience: int) -> CreatureState:
+    pool = CreaturePool()
+    return pool.entries[survival_spawn_creature(pool, pos, rng, player_experience=player_experience)]
 
 
 def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     rng = Crand(1)
-    c = build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=0)
+    c = _spawn_survival(Vec2(1.0, 2.0), rng, player_experience=0)
 
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags(0)
@@ -21,13 +28,12 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     assert_float_close(c.size, 44.0)
     assert_float_close(c.heading, float(f32(f32(15.0) * f32(0.01))))
     assert_float_close(c.move_speed, float(f32(0.9)))
-    assert_float_close(c.health, 64.0)
-    assert_float_close(c.max_health, 64.0)
+    assert_float_close(c.hp, 64.0)
+    assert_float_close(c.max_hp, 64.0)
     assert c.contact_damage == f32_from_bits(0x40861862)
     assert c.reward_value == f32_from_bits(0x42117297)
 
-    assert c.tint is not None
-    assert c.tint == (
+    assert c.tint == RGBA(
         f32_from_bits(0x3F666666),
         f32_from_bits(0x3F6147AD),
         f32_from_bits(0x3F47AE14),
@@ -39,14 +45,14 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
 
 def test_survival_spawn_creature_xp_threshold_25000_consumes_extra_rand() -> None:
     rng_24999 = Crand(1)
-    c_24999 = build_survival_spawn_creature(Vec2(1.0, 2.0), rng_24999, player_experience=24_999)
+    c_24999 = _spawn_survival(Vec2(1.0, 2.0), rng_24999, player_experience=24_999)
 
     assert c_24999.type_id == CreatureTypeId.SPIDER_SP1
     assert (c_24999.flags & CreatureFlags.AI7_LINK_TIMER) != 0
     assert rng_24999.state == 0xC1BBB05F
 
     rng_25000 = Crand(1)
-    c_25000 = build_survival_spawn_creature(Vec2(1.0, 2.0), rng_25000, player_experience=25_000)
+    c_25000 = _spawn_survival(Vec2(1.0, 2.0), rng_25000, player_experience=25_000)
 
     assert c_25000.type_id == CreatureTypeId.SPIDER_SP1
     assert (c_25000.flags & CreatureFlags.AI7_LINK_TIMER) != 0
@@ -55,13 +61,13 @@ def test_survival_spawn_creature_xp_threshold_25000_consumes_extra_rand() -> Non
 
 def test_survival_spawn_creature_applies_zombie_speed_floor_and_health_scale() -> None:
     rng = Crand(1)
-    c = build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=90_000)
+    c = _spawn_survival(Vec2(1.0, 2.0), rng, player_experience=90_000)
 
     assert c.type_id == CreatureTypeId.ZOMBIE
     assert c.flags == CreatureFlags(0)
     assert_float_close(c.move_speed, float(f32(1.3)))
-    assert_float_close(c.health, 264.75)
-    assert_float_close(c.max_health, 264.75)
+    assert_float_close(c.hp, 264.75)
+    assert_float_close(c.max_hp, 264.75)
     assert rng.state == 0xC1BBB05F
 
 
@@ -122,7 +128,7 @@ def _expected_survival_spawn_callers(
 def test_survival_spawn_creature_rounds_native_stat_chain_at_each_pc24_operation() -> None:
     values = _survival_spawn_exact_values(type_roll=0, include_parity=False)
     values[8] = 1  # reward bonus becomes 11; this exposes the association difference.
-    c = build_survival_spawn_creature(
+    c = _spawn_survival(
         Vec2(1.0, 2.0),
         ScriptedCrand(values),
         player_experience=0,
@@ -130,7 +136,7 @@ def test_survival_spawn_creature_rounds_native_stat_chain_at_each_pc24_operation
 
     assert c.contact_damage == f32_from_bits(0x40861862)
     assert c.reward_value == f32_from_bits(0x41FDC677)
-    assert c.tint == (
+    assert c.tint == RGBA(
         f32_from_bits(0x3F666666),
         f32_from_bits(0x3F4CCCCC),
         f32_from_bits(0x3F333333),
@@ -186,7 +192,7 @@ def test_survival_spawn_creature_uses_exact_native_callers(
 ) -> None:
     rng = ScriptedCrand(values)
 
-    build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=xp)
+    _spawn_survival(Vec2(1.0, 2.0), rng, player_experience=xp)
 
     assert [record.caller for record in rng.records_since()] == expected_callers
 
@@ -225,7 +231,7 @@ def test_survival_spawn_creature_rare_variants(
     expected_rng_state: int,
 ) -> None:
     rng = Crand(seed)
-    c = build_survival_spawn_creature(Vec2(1.0, 2.0), rng, player_experience=0)
+    c = _spawn_survival(Vec2(1.0, 2.0), rng, player_experience=0)
 
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags(0)
@@ -233,14 +239,10 @@ def test_survival_spawn_creature_rare_variants(
 
     assert_float_close(c.size, expected_size)
     assert c.contact_damage == f32(expected_contact_damage)
-    assert_float_close(c.health, expected_health)
-    assert_float_close(c.max_health, expected_health)
+    assert_float_close(c.hp, expected_health)
+    assert_float_close(c.max_hp, expected_health)
     assert_float_close(c.reward_value, expected_reward_value)
 
-    assert c.tint is not None
-    assert c.tint[0] == f32(expected_tint_r)
-    assert c.tint[1] == f32(expected_tint_g)
-    assert c.tint[2] == f32(expected_tint_b)
-    assert c.tint[3] == f32(1.0)
+    assert c.tint == RGBA(f32(expected_tint_r), f32(expected_tint_g), f32(expected_tint_b), 1.0)
 
     assert rng.state == expected_rng_state

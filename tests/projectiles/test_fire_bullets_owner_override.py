@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
@@ -19,7 +19,7 @@ def _spawn_type(
     state: GameplayState,
     *,
     players: list[PlayerState],
-    owner: OwnerRef,
+    owner_id: int,
     owner_player_index: int,
 ) -> int:
     proj_id = projectile_spawn(
@@ -28,7 +28,7 @@ def _spawn_type(
         pos=Vec2(100.0, 100.0),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=owner,
+        owner_id=owner_id,
         owner_player_index=owner_player_index,
     )
     assert proj_id >= 0
@@ -89,8 +89,8 @@ def test_projectile_spawn_fire_bullets_default_uses_owner_timer() -> None:
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1), owner_player_index=1)
-    player0_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(0), owner_player_index=0)
+    player1_type = _spawn_type(state, players=players, owner_id=player_owner_id(1), owner_player_index=1)
+    player0_type = _spawn_type(state, players=players, owner_id=player_owner_id(0), owner_player_index=0)
 
     assert player1_type == int(ProjectileTemplateId.PISTOL)
     assert player0_type == int(ProjectileTemplateId.FIRE_BULLETS)
@@ -102,8 +102,8 @@ def test_projectile_spawn_fire_bullets_default_uses_owner_player_index_with_owne
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_local_player(0), owner_player_index=1)
-    player0_type = _spawn_type(state, players=players, owner=OwnerRef.from_local_player(0), owner_player_index=0)
+    player1_type = _spawn_type(state, players=players, owner_id=OWNER_LOCAL_PLAYER, owner_player_index=1)
+    player0_type = _spawn_type(state, players=players, owner_id=OWNER_LOCAL_PLAYER, owner_player_index=0)
 
     assert player1_type == int(ProjectileTemplateId.PISTOL)
     assert player0_type == int(ProjectileTemplateId.FIRE_BULLETS)
@@ -115,7 +115,7 @@ def test_projectile_spawn_fire_bullets_preserve_bugs_keeps_global_gate() -> None
     player1 = PlayerState(index=1, pos=Vec2(), fire_bullets_timer=0.0)
     players = [player0, player1]
 
-    player1_type = _spawn_type(state, players=players, owner=OwnerRef.from_player(1), owner_player_index=1)
+    player1_type = _spawn_type(state, players=players, owner_id=player_owner_id(1), owner_player_index=1)
 
     assert player1_type == int(ProjectileTemplateId.FIRE_BULLETS)
 
@@ -132,21 +132,21 @@ def test_projectile_spawn_preserve_bugs_keeps_native_owner_window() -> None:
     preserved_type = _spawn_type(
         preserved_state,
         players=players,
-        owner=OwnerRef.from_player(3),
+        owner_id=player_owner_id(3),
         owner_player_index=3,
     )
     assert preserved_type == int(ProjectileTemplateId.PISTOL)
-    assert preserved_state.shots_fired[3] == 0
+    assert preserved_state.shots_fired == 0
 
     corrected_state = GameplayState(preserve_bugs=False)
     corrected_type = _spawn_type(
         corrected_state,
         players=players,
-        owner=OwnerRef.from_player(3),
+        owner_id=player_owner_id(3),
         owner_player_index=3,
     )
     assert corrected_type == int(ProjectileTemplateId.PISTOL)
-    assert corrected_state.shots_fired[3] == 1
+    assert corrected_state.shots_fired == 1
 
 
 def test_nuke_fire_bullets_default_is_owner_scoped_but_still_converts_for_owner() -> None:
@@ -213,4 +213,4 @@ def test_preserve_bugs_weapon_shot_converts_while_the_other_player_has_fire_bull
 
     assert _active_type_ids(world.state) == [int(ProjectileTemplateId.FIRE_BULLETS)]
     # The converting pass counts the shot a second time.
-    assert world.state.shots_fired[0] == 2
+    assert world.state.shots_fired == 2

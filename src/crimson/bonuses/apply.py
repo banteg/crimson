@@ -18,14 +18,14 @@ from ..math_parity import (
     x87_pc24_sqrt,
     x87_pc24_sub,
 )
-from ..owner_ref import OwnerRef
+from ..owner_id import OWNER_LOCAL_PLAYER, player_projectile_owner_id
 from ..perks import PerkId
 from ..projectiles.runtime.collision import creature_find_nearest_alive
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from ..weapon_runtime.assign import weapon_assign_player
-from ..weapon_runtime.spawn import owner_ref_for_player, projectile_spawn, spawn_projectile_ring
+from ..weapon_runtime.spawn import projectile_spawn, spawn_projectile_ring
 from ..weapons import WeaponId
 from .hud import bonus_timer_values
 from .ids import BONUS_BY_ID, BonusId
@@ -67,7 +67,7 @@ def bonus_apply(
     if meta is None:
         return
     multiplier = 1.5 if PerkId.BONUS_ECONOMIST in state.perks else 1.0
-    player_owner = owner_ref_for_player(player.index) if state.friendly_fire_enabled else OwnerRef.from_local_player(0)
+    player_owner = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
 
     match bonus_id:
         case BonusId.WEAPON:
@@ -111,11 +111,15 @@ def bonus_apply(
                 if not creature.active or creature.hp > 0.0:
                     continue
                 for _ in range(8):
-                    angle = float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612) * 0.01
+                    angle = x87_pc24_mul(
+                        float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHARD_ANGLE) % 612), f32(0.01),
+                    )
                     state.effects.spawn_freeze_shard(
                         pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
                     )
-                angle = float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612) * 0.01
+                angle = x87_pc24_mul(
+                    float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_FREEZE_SHATTER_ANGLE) % 612), f32(0.01),
+                )
                 state.effects.spawn_freeze_shatter(
                     pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
                 )
@@ -145,7 +149,7 @@ def bonus_apply(
                     pos=origin,
                     angle=angle,
                     type_id=ProjectileTemplateId.ION_RIFLE,
-                    owner=player_owner,
+                    owner_id=player_owner,
                     owner_player_index=player.index,
                 )
                 state.bonus_spawn_guard = False
@@ -159,7 +163,7 @@ def bonus_apply(
                 count=16,
                 angle_offset=0.0,
                 type_id=ProjectileTemplateId.PLASMA_RIFLE,
-                owner=player_owner,
+                owner_id=player_owner,
                 owner_player_index=player.index,
                 players=players,
             )
@@ -199,7 +203,7 @@ def bonus_apply(
                     pos=origin,
                     angle=float(angle),
                     type_id=ProjectileTemplateId.PISTOL,
-                    owner=OwnerRef.from_local_player(0),
+                    owner_id=OWNER_LOCAL_PLAYER,
                     owner_player_index=player.index,
                 )
                 if proj_id != -1:
@@ -220,7 +224,7 @@ def bonus_apply(
                     pos=origin,
                     angle=float(gauss_angle),
                     type_id=ProjectileTemplateId.GAUSS_GUN,
-                    owner=OwnerRef.from_local_player(0),
+                    owner_id=OWNER_LOCAL_PLAYER,
                     owner_player_index=player.index,
                 )
             state.effects.spawn_explosion_burst(pos=origin, scale=1.0, rng=rng, detail_preset=int(detail_preset))
@@ -242,7 +246,6 @@ def bonus_apply(
                         x87_pc24_mul(damage_base, 5.0),
                         CreatureDamageType.EXPLOSION,
                         Vec2(),
-                        owner_ref_for_player(player.index),
                     )
             state.bonus_spawn_guard = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_LARGE, origin))

@@ -7,7 +7,7 @@
 const std = @import("std");
 const game_ids = @import("game_ids.zig");
 
-pub const replay_format_version: i32 = 25;
+pub const replay_format_version: i32 = 27;
 pub const tick_rate: i32 = 60;
 /// Every replay tick advances the simulation by this delta.
 pub const tick_dt: f32 = 1.0 / @as(f32, @floatFromInt(tick_rate));
@@ -92,6 +92,8 @@ pub const RunSpec = struct {
     quest_fail_retry_count: i32 = 0,
     detail_preset: i32 = 5,
     violence_disabled: i32 = 0,
+    /// `cv_friendlyFire` at run start: player shots carry their own owner id and can hit other players.
+    friendly_fire: bool = false,
     status: RunStatus = .{},
     typo_dictionary_words: []const []const u8 = &.{},
     typo_highscore_names: []const []const u8 = &.{},
@@ -107,8 +109,6 @@ pub const RunOutcome = enum {
 pub const PlayerResult = struct {
     experience: Int,
     health: f32,
-    shots_fired: Int,
-    shots_hit: Int,
     most_used_weapon_id: game_ids.WeaponId,
 };
 
@@ -116,6 +116,9 @@ pub const RunResult = struct {
     outcome: RunOutcome,
     elapsed_ms: Int,
     kills: Int,
+    /// One count for every player, like native `highscore_record_shots_fired` / `_hit`.
+    shots_fired: Int,
+    shots_hit: Int,
     rng_state: u32,
     pending_perks: Int,
     quest_final_ms: ?Int,
@@ -135,6 +138,10 @@ pub const RunResult = struct {
         try jws.write(self.elapsed_ms);
         try jws.objectField("kills");
         try jws.write(self.kills);
+        try jws.objectField("shots_fired");
+        try jws.write(self.shots_fired);
+        try jws.objectField("shots_hit");
+        try jws.write(self.shots_hit);
         try jws.objectField("rng_state");
         try jws.write(self.rng_state);
         try jws.objectField("pending_perks");
@@ -155,10 +162,6 @@ pub const RunResult = struct {
             } else {
                 try jws.print("{d}", .{health});
             }
-            try jws.objectField("shots_fired");
-            try jws.write(player.shots_fired);
-            try jws.objectField("shots_hit");
-            try jws.write(player.shots_hit);
             try jws.objectField("most_used_weapon_id");
             try jws.write(@intFromEnum(player.most_used_weapon_id));
             try jws.endObject();
@@ -168,7 +171,7 @@ pub const RunResult = struct {
     }
 
     pub fn eql(self: *const RunResult, other: *const RunResult) bool {
-        inline for (.{ "outcome", "elapsed_ms", "kills", "rng_state", "pending_perks", "quest_final_ms", "player_count" }) |field| {
+        inline for (.{ "outcome", "elapsed_ms", "kills", "shots_fired", "shots_hit", "rng_state", "pending_perks", "quest_final_ms", "player_count" }) |field| {
             if (!std.meta.eql(@field(self, field), @field(other, field))) return false;
         }
         for (self.players(), other.players()) |expected, actual| {
@@ -181,7 +184,7 @@ pub const RunResult = struct {
     /// alone when the counts differ). Paths are allocated from `arena`.
     pub fn mismatches(self: *const RunResult, arena: std.mem.Allocator, other: *const RunResult) ![]const []const u8 {
         var paths: std.ArrayList([]const u8) = .empty;
-        inline for (.{ "outcome", "elapsed_ms", "kills", "rng_state", "pending_perks", "quest_final_ms" }) |field| {
+        inline for (.{ "outcome", "elapsed_ms", "kills", "shots_fired", "shots_hit", "rng_state", "pending_perks", "quest_final_ms" }) |field| {
             if (!std.meta.eql(@field(self, field), @field(other, field))) try paths.append(arena, field);
         }
         if (self.player_count != other.player_count) {
@@ -550,12 +553,13 @@ const replay_keys = [_][]const u8{ "format_version", "game_version", "run", "res
 const run_keys = [_][]const u8{
     "game_mode_id",      "seed",          "quest_level",            "player_count",
     "hardcore",          "preserve_bugs", "quest_fail_retry_count", "detail_preset",
-    "violence_disabled", "status",        "typo_dictionary_words",  "typo_highscore_names",
+    "violence_disabled", "friendly_fire", "status",                 "typo_dictionary_words",
+    "typo_highscore_names",
 };
 const quest_level_keys = [_][]const u8{ "major", "minor" };
 const status_keys = [_][]const u8{ "quest_unlock_index", "quest_unlock_index_full", "weapon_usage_counts" };
-const result_keys = [_][]const u8{ "outcome", "elapsed_ms", "kills", "rng_state", "pending_perks", "quest_final_ms", "players" };
-const player_result_keys = [_][]const u8{ "experience", "health", "shots_fired", "shots_hit", "most_used_weapon_id" };
+const result_keys = [_][]const u8{ "outcome", "elapsed_ms", "kills", "shots_fired", "shots_hit", "rng_state", "pending_perks", "quest_final_ms", "players" };
+const player_result_keys = [_][]const u8{ "experience", "health", "most_used_weapon_id" };
 const axis_names = [_][]const u8{ "move_x", "move_y", "aim_x", "aim_y" };
 
 // Smallest possible encodings, used to bound declared lengths by the bytes left.
@@ -859,6 +863,8 @@ fn readRun(r: *Reader) DecodeError!RunSpec {
     run.detail_preset = try r.intBetween(1, 5);
     try r.key("violence_disabled", base);
     run.violence_disabled = try r.intBetween(0, std.math.maxInt(u8));
+    try r.key("friendly_fire", base);
+    run.friendly_fire = try r.boolean();
 
     try r.key("status", base);
     const status_base = try r.map(&status_keys);
@@ -914,6 +920,10 @@ fn readResult(r: *Reader, run: RunSpec) DecodeError!RunResult {
     result.elapsed_ms = try r.int();
     try r.key("kills", base);
     result.kills = try r.int();
+    try r.key("shots_fired", base);
+    result.shots_fired = try r.int();
+    try r.key("shots_hit", base);
+    result.shots_hit = try r.int();
     try r.key("rng_state", base);
     result.rng_state = try r.intIn(u32);
     try r.key("pending_perks", base);
@@ -936,10 +946,6 @@ fn readResult(r: *Reader, run: RunSpec) DecodeError!RunResult {
         player.experience = try r.int();
         try r.key("health", player_base);
         player.health = try r.float32();
-        try r.key("shots_fired", player_base);
-        player.shots_fired = try r.int();
-        try r.key("shots_hit", player_base);
-        player.shots_hit = try r.int();
         try r.key("most_used_weapon_id", player_base);
         const weapon_id = try r.int();
         player.most_used_weapon_id = std.enums.fromInt(game_ids.WeaponId, weapon_id) orelse
@@ -1139,6 +1145,8 @@ pub fn encodePayload(allocator: std.mem.Allocator, replay: Replay) ![]u8 {
     try w.int(run.detail_preset);
     try w.string("violence_disabled");
     try w.int(run.violence_disabled);
+    try w.string("friendly_fire");
+    try w.boolean(run.friendly_fire);
     try w.string("status");
     try w.map(status_keys.len);
     try w.string("quest_unlock_index");
@@ -1162,6 +1170,10 @@ pub fn encodePayload(allocator: std.mem.Allocator, replay: Replay) ![]u8 {
     try w.int(result.elapsed_ms);
     try w.string("kills");
     try w.int(result.kills);
+    try w.string("shots_fired");
+    try w.int(result.shots_fired);
+    try w.string("shots_hit");
+    try w.int(result.shots_hit);
     try w.string("rng_state");
     try w.int(result.rng_state);
     try w.string("pending_perks");
@@ -1176,10 +1188,6 @@ pub fn encodePayload(allocator: std.mem.Allocator, replay: Replay) ![]u8 {
         try w.int(player.experience);
         try w.string("health");
         try w.float(player.health);
-        try w.string("shots_fired");
-        try w.int(player.shots_fired);
-        try w.string("shots_hit");
-        try w.int(player.shots_hit);
         try w.string("most_used_weapon_id");
         try w.int(@intFromEnum(player.most_used_weapon_id));
     }
@@ -1241,6 +1249,8 @@ fn testReplay(game_mode: game_ids.GameModeId, inputs: []const PlayerInput, comma
         .outcome = .incomplete,
         .elapsed_ms = 16,
         .kills = 0,
+        .shots_fired = 0,
+        .shots_hit = 0,
         .rng_state = 0x1234,
         .pending_perks = 0,
         .quest_final_ms = null,
@@ -1249,8 +1259,6 @@ fn testReplay(game_mode: game_ids.GameModeId, inputs: []const PlayerInput, comma
     result.players_buffer[0] = .{
         .experience = 0,
         .health = 100.0,
-        .shots_fired = 0,
-        .shots_hit = 0,
         .most_used_weapon_id = .pistol,
     };
     return .{
@@ -1354,7 +1362,7 @@ test "reader rejects non-canonical encodings of an otherwise valid replay" {
     const without_preserve_bugs = try patched(payload, "\xadpreserve_bugs\xc2", "");
     defer testing.allocator.free(without_preserve_bugs);
     without_preserve_bugs[std.mem.indexOf(u8, without_preserve_bugs, "\xacgame_mode_id").? - 1] = 0x8b;
-    try expectRejected(without_preserve_bugs, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, quest_fail_retry_count, detail_preset, violence_disabled, status, typo_dictionary_words, typo_highscore_names");
+    try expectRejected(without_preserve_bugs, "run must have exactly the keys game_mode_id, seed, quest_level, player_count, hardcore, preserve_bugs, quest_fail_retry_count, detail_preset, violence_disabled, friendly_fire, status, typo_dictionary_words, typo_highscore_names");
 
     const trailing = try std.mem.concat(testing.allocator, u8, &.{ payload, "\xc0" });
     defer testing.allocator.free(trailing);
@@ -1368,7 +1376,7 @@ test "reader applies the replay validation rules" {
     defer testing.allocator.free(payload);
 
     const cases = [_]struct { needle: []const u8, replacement: []const u8, message: []const u8 }{
-        .{ .needle = "\xaeformat_version\x19", .replacement = "\xaeformat_version\x18", .message = "unsupported replay format version: 24" },
+        .{ .needle = "\xaeformat_version\x1b", .replacement = "\xaeformat_version\x1a", .message = "unsupported replay format version: 26" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x00", .message = "run.game_mode_id 0 is not a replayable mode" },
         .{ .needle = "\xacgame_mode_id\x01", .replacement = "\xacgame_mode_id\x03", .message = "run.quest_level must be set for quests and only for quests" },
         .{ .needle = "\xaddetail_preset\x05", .replacement = "\xaddetail_preset\x00", .message = "run.detail_preset must be in 1..5" },
@@ -1550,19 +1558,19 @@ test "result mismatches list differing fields in declared order" {
     var simulated = recorded;
     try testing.expectEqual(@as(usize, 0), (try recorded.mismatches(arena.allocator(), &simulated)).len);
     simulated.kills = 3;
+    simulated.shots_hit = 1;
     simulated.players_buffer[0].health = 97.5;
-    simulated.players_buffer[0].shots_hit = 1;
     const paths = try recorded.mismatches(arena.allocator(), &simulated);
     try testing.expectEqual(@as(usize, 3), paths.len);
     try testing.expectEqualStrings("kills", paths[0]);
-    try testing.expectEqualStrings("players[0].health", paths[1]);
-    try testing.expectEqualStrings("players[0].shots_hit", paths[2]);
+    try testing.expectEqualStrings("shots_hit", paths[1]);
+    try testing.expectEqualStrings("players[0].health", paths[2]);
     simulated.player_count = 2;
-    try testing.expectEqualStrings("players", (try recorded.mismatches(arena.allocator(), &simulated))[1]);
+    try testing.expectEqualStrings("players", (try recorded.mismatches(arena.allocator(), &simulated))[2]);
 
     const json = try std.json.Stringify.valueAlloc(testing.allocator, simulated, .{});
     defer testing.allocator.free(json);
-    try testing.expect(std.mem.startsWith(u8, json, "{\"outcome\":\"incomplete\",\"elapsed_ms\":16,\"kills\":3,"));
+    try testing.expect(std.mem.startsWith(u8, json, "{\"outcome\":\"incomplete\",\"elapsed_ms\":16,\"kills\":3,\"shots_fired\":0,\"shots_hit\":1,"));
     try testing.expect(std.mem.indexOf(u8, json, "\"quest_final_ms\":null,\"players\":[{\"experience\":0,\"health\":97.5,") != null);
     simulated.players_buffer[0].health = 100.0;
     const integral = try std.json.Stringify.valueAlloc(testing.allocator, simulated, .{});

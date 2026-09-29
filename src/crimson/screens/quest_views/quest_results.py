@@ -38,7 +38,6 @@ class QuestResultsView:
         self._action: ScreenAction | None = None
 
     def open(self) -> None:
-        from ...persistence.highscores import HighScoreRecord
         from ...quests.results import advance_quest_unlocks, compute_quest_final_time
         from ..results.quest_results import QuestResultsUi
 
@@ -53,7 +52,6 @@ class QuestResultsView:
         self._ui = None
         level = outcome.level
         self._quest_level = level
-        major, minor = level.major, level.minor
 
         quest = quest_by_level(level)
 
@@ -82,32 +80,11 @@ class QuestResultsView:
                 else:
                     self._unlock_perk_name = f"perk_{perk_id_native}"
 
-        record = HighScoreRecord.blank(
-            rand_value=int(outcome.highscore_random_tag),
-        )
-        record.game_mode_id = GameMode.QUESTS
-        record.quest_stage_major = major
-        record.quest_stage_minor = minor
-        record.score_xp = int(outcome.experience)
-        record.creature_kill_count = int(outcome.kill_count)
-        record.most_used_weapon_id = outcome.most_used_weapon_id
-        record.hardcore_marker = 0x75 if self.state.config.gameplay.hardcore else 0
-        fired = max(0, int(outcome.shots_fired))
-        hit = max(0, min(int(outcome.shots_hit), fired))
-        record.shots_fired = fired
-        record.shots_hit = hit
-
-        player_health_values = tuple(float(v) for v in outcome.player_health_values)
-        if len(player_health_values) == 0:
-            player_health_values = (float(outcome.player_health),)
-            if outcome.player2_health is not None:
-                player_health_values = player_health_values + (float(outcome.player2_health),)
+        record = outcome.record.copy()
         breakdown = compute_quest_final_time(
-            base_time_ms=int(outcome.base_time_ms),
-            player_health=float(outcome.player_health),
-            player2_health=(float(outcome.player2_health) if outcome.player2_health is not None else None),
-            player_health_values=player_health_values,
-            pending_perk_count=int(outcome.pending_perk_count),
+            base_time_ms=outcome.base_time_ms,
+            player_health_values=outcome.player_health_values,
+            pending_perk_count=outcome.pending_perk_count,
         )
         record.survival_elapsed_ms = int(breakdown.final_time_ms)
         player_name_default = _player_name_default(self.state.config) or "Player"
@@ -140,6 +117,8 @@ class QuestResultsView:
             base_dir=self.state.base_dir,
             config=self.state.config,
             preserve_bugs=bool(self.state.preserve_bugs),
+            timeline=self.state.ui,
+            focus=self.state.focus,
         )
         self._ui.open(
             record=record,
@@ -184,7 +163,7 @@ class QuestResultsView:
         if action == ResultAction.PLAY_AGAIN:
             assert self._quest_level is not None
             self._save_quest_selection(self._quest_level)
-            self._action = StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=self._quest_level)
+            self._action = StartRun(GameMode.QUESTS, self._quest_level)
             return
         if action == ResultAction.PLAY_NEXT:
             if self._quest_level == QuestLevel(5, 10):
@@ -194,7 +173,7 @@ class QuestResultsView:
             next_level = _next_quest_level(self._quest_level)
             if next_level is not None:
                 self._save_quest_selection(next_level)
-                self._action = StartRun.from_config(self.state.config, GameMode.QUESTS, quest_level=next_level)
+                self._action = StartRun(GameMode.QUESTS, next_level)
             else:
                 self._action = Route.MENU
             return

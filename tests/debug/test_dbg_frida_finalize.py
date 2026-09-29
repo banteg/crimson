@@ -9,7 +9,6 @@ import pytest
 import zstandard as zstd
 
 from crimson.persistence.save_status import QUEST_PLAY_COUNT, RESERVED_SEED_WORDS_BYTE_SIZE, WEAPON_USAGE_COUNT
-from crimson.replay.types import quantize_f32
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.state_types import TERRAIN_SIZE
 from crimson_re.dbg.canonical_channels import GameFrameRngAdvanceOperation, entity_uid
@@ -22,6 +21,7 @@ from crimson_re.dbg.frida_finalize import (
     load_frida_evidence_file,
 )
 from crimson_re.dbg.trace import load_trace
+from grim.math import f32
 
 CAPTURE_FORMAT_VERSION = FRIDA_CAPTURE_FORMAT_VERSION
 
@@ -195,7 +195,7 @@ def _timing_sample_stub(
     dt_ms_i32: int = 16,
     dt: float | None = None,
 ) -> dict[str, object]:
-    frame_dt = quantize_f32(float(dt_ms_i32) / 1000.0 if dt is None else float(dt))
+    frame_dt = f32(float(dt_ms_i32) / 1000.0 if dt is None else float(dt))
     return {
         "tick_index": int(tick_index),
         "gameplay_frame": None if gameplay_frame is None else int(gameplay_frame),
@@ -382,7 +382,7 @@ def _channels_stub(
         checkpoint.update(dict(checkpoint_overrides))
     return {
         "replay_step": {
-            "dt": quantize_f32(float(dt_ms_i32) / 1000.0 if dt is None else float(dt)),
+            "dt": f32(float(dt_ms_i32) / 1000.0 if dt is None else float(dt)),
             "inputs": _replay_inputs_stub(player_count=player_count),
             "prelude": list(prelude or []),
             "postlude": list(postlude or []),
@@ -794,7 +794,7 @@ def test_finalize_frida_jsonl_to_traces_writes_trace_and_capture_replay_and_dele
     assert meta.source.replay_sha256 == hashlib.sha256(out_trace.capture_path.read_bytes()).hexdigest()
     assert ticks[0].channels.checkpoint.tick_index == 0
     assert ticks[1].channels.checkpoint.tick_index == 1
-    assert ticks[0].channels.replay_step.dt == quantize_f32(0.016)
+    assert ticks[0].channels.replay_step.dt == f32(0.016)
     assert ticks[0].channels.replay_step.prelude == [
         GameFrameRngAdvanceOperation(frames=2),
     ]
@@ -1683,7 +1683,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_empty_checkpoint_players(tmp_pat
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"channels\.checkpoint\.players must be non-empty"):
+    with pytest.raises(FridaFinalizeError, match=r"length >= 1 - at `\$\.channels\.checkpoint\.players`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -1717,7 +1717,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_invalid_checkpoint_rng_state(tmp
         ],
     )
 
-    with pytest.raises(FridaFinalizeError, match=r"channels\.checkpoint\.rng_state must be a uint32"):
+    with pytest.raises(FridaFinalizeError, match=r">= 0 - at `\$\.channels\.checkpoint\.rng_state`"):
         finalize_frida_jsonl_to_traces(raw_path, output_dir=tmp_path / "out", delete_raw=False)
 
 
@@ -1799,7 +1799,7 @@ def test_finalize_frida_jsonl_to_traces_rejects_dt_mismatch_with_gpur_enter(tmp_
         quest_stage_minor=1,
     )
     replay_step = cast(dict[str, object], channels["replay_step"])
-    replay_step["dt"] = quantize_f32(0.017)
+    replay_step["dt"] = f32(0.017)
     raw_path = _write_jsonl(
         tmp_path / "capture.jsonl",
         [

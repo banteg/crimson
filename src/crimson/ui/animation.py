@@ -1,59 +1,89 @@
 from __future__ import annotations
 
+from ..game_states import GameStateId
 
-def ui_element_anim(
-    timeline_ms: float,
-    *,
-    index: int,
-    start_ms: float,
-    end_ms: float,
-    width: float,
-    direction_flag: int = 0,
-) -> tuple[float, float]:
-    # Matches ui_element_update: angle lerps pi/2 -> 0 over [end_ms, start_ms].
-    # direction_flag=0 slides from left  (-width -> 0)
-    # direction_flag=1 slides from right (+width -> 0)
-    if start_ms <= end_ms or width <= 0.0:
-        return 0.0, 0.0
-    dir_sign = 1.0 if int(direction_flag) else -1.0
-    t = timeline_ms
-    if t < end_ms:
-        angle = 1.5707964
-        offset_x = dir_sign * abs(width)
-    elif t < start_ms:
-        elapsed = t - end_ms
-        span = float(start_ms - end_ms)
-        p = float(elapsed) / span
-        angle = 1.5707964 * (1.0 - p)
-        offset_x = dir_sign * ((1.0 - p) * abs(width))
-    else:
+_HALF_PI = 1.5707964  # native 1.57079637f
+
+
+def ui_element_timeline_window(index: int) -> tuple[int, int]:
+    """`ui_menu_layout_init`: `ui_element_table[index]` is hidden until `timeline_start_ms`
+    and fully in at `timeline_end_ms` (`ui_element_init_defaults` sets 0..300)."""
+    match index:
+        case 1 | 2 | 3 | 4 | 5 | 6 | 7:
+            return index * 100, index * 100 + 300
+        case 23 | 24 | 25:
+            return (index - 22) * 100, (index - 22) * 100 + 300
+        case 27 | 30 | 35:
+            return 100, 400
+        case 28:
+            return 0, 500
+        case _:
+            return 0, 300
+
+
+def ui_element_anim(timeline_ms: float, *, index: int, width: float, direction_flag: int = 0) -> tuple[float, float]:
+    """`ui_element_update`: rotation angle and slide-in offset of `ui_element_table[index]`.
+
+    direction_flag 0 slides in from the left, 1 from the right; the sign (index 0) turns the other way.
+    """
+    start_ms, end_ms = ui_element_timeline_window(index)
+    side = 1.0 if direction_flag else -1.0
+    if timeline_ms >= end_ms:
         angle = 0.0
         offset_x = 0.0
+    elif timeline_ms >= start_ms:
+        duration = float(end_ms - start_ms)
+        angle = _HALF_PI - (timeline_ms - start_ms) * _HALF_PI / duration
+        offset_x = side * (1.0 - (timeline_ms - start_ms) / duration) * abs(width)
+    else:
+        angle = _HALF_PI
+        offset_x = side * abs(width)
     if index == 0:
         angle = -abs(angle)
     return angle, offset_x
 
 
-# Result panels (`ui_element_slot_30` game over, `ui_element_slot_35` quest results,
-# quest failed and end note) are hidden until 100 ms of the UI timeline and fully
-# visible at 400 ms: the element default 0..300 window shifted by 100 in
-# `ui_menu_layout_init`. The timeline stops at 400, the latest active element end.
-RESULTS_PANEL_HIDDEN_MS = 100
-RESULTS_PANEL_VISIBLE_MS = 400
-# `gameplay_render_world` fades world entities by timeline / `ui_element_slot_28` span.
-WORLD_FADE_SPAN_MS = 500
+def game_state_elements(
+    state: GameStateId, *, mods_available: bool = False, other_games: bool = False,
+) -> tuple[int, ...]:
+    """`game_state_set`: the `ui_element_table` entries each screen turns on."""
+    match state:
+        case GameStateId.MAIN_MENU:
+            return (0, *((2,) if mods_available else ()), 3, 4, 5, 6, *((7,) if other_games else ()))
+        case GameStateId.GAMEPLAY | GameStateId.TYPO_GAMEPLAY:
+            return (28,)
+        case GameStateId.PLAY_GAME_MENU:
+            return (0, 11, 12)
+        case GameStateId.OPTIONS_MENU:
+            return (0, 31, 32)
+        case GameStateId.STATISTICS_MENU:
+            return (0, 39)
+        case GameStateId.CONTROLS_MENU:
+            return (0, 14, 18, 40)
+        case GameStateId.HIGHSCORES | GameStateId.WEAPON_DATABASE | GameStateId.PERK_DATABASE:
+            return (0, 9, 33)
+        case GameStateId.HIGHSCORE_LEGACY | GameStateId.CREDITS_SECRET | GameStateId.MODS_MENU | GameStateId.CREDITS:
+            return (0, 9)
+        case GameStateId.QUEST_SELECT:
+            return (0, 37)
+        case GameStateId.PAUSE_MENU:
+            return (0, 23, 24, 25)
+        case GameStateId.PERK_SELECTION:
+            return (27,)
+        case GameStateId.QUEST_RESULTS | GameStateId.FINAL_QUEST_END_NOTE | GameStateId.QUEST_FAILED:
+            return (35,)
+        case GameStateId.GAME_OVER:
+            return (30,)
+        case _:
+            return ()
 
 
-def results_panel_slide_x(timeline_ms: float, *, width: float) -> float:
-    _angle, slide_x = ui_element_anim(
-        timeline_ms,
-        index=1,
-        start_ms=RESULTS_PANEL_VISIBLE_MS,
-        end_ms=RESULTS_PANEL_HIDDEN_MS,
-        width=width,
-    )
-    return slide_x
+def ui_elements_max_timeline(state: GameStateId, *, mods_available: bool = False, other_games: bool = False) -> int:
+    """`ui_elements_max_timeline`: the latest `timeline_end_ms` among the screen's active elements."""
+    elements = game_state_elements(state, mods_available=mods_available, other_games=other_games)
+    return max((ui_element_timeline_window(index)[1] for index in elements), default=0)
 
 
 def world_fade_alpha(timeline_ms: float) -> float:
-    return min(1.0, max(0.0, float(timeline_ms) / WORLD_FADE_SPAN_MS))
+    """`gameplay_render_world` fades world entities by the timeline over `ui_element_table[28]`'s span."""
+    return min(1.0, max(0.0, float(timeline_ms) / ui_element_timeline_window(28)[1]))

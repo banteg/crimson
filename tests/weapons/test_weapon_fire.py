@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import WeaponSlot
 from crimson.sim.world_state import WorldState
@@ -28,8 +28,7 @@ def test_friendly_fire_enabled_primary_shots_can_hit_players() -> None:
 
     shots = [proj for proj in world.state.projectiles.entries if proj.active]
     assert shots
-    assert all(proj.hits_players for proj in shots)
-    assert all(proj.owner == OwnerRef.from_player(1) for proj in shots)
+    assert all(proj.owner_id == player_owner_id(1) for proj in shots)
 
 
 def test_friendly_fire_disabled_primary_shots_never_hit_players() -> None:
@@ -37,5 +36,4 @@ def test_friendly_fire_disabled_primary_shots_never_hit_players() -> None:
 
     shots = [proj for proj in world.state.projectiles.entries if proj.active]
     assert shots
-    assert not any(proj.hits_players for proj in shots)
-    assert all(proj.owner == OwnerRef.from_local_player(0) for proj in shots)
+    assert all(proj.owner_id == OWNER_LOCAL_PLAYER for proj in shots)

@@ -25,6 +25,8 @@ def unranked_reasons(run: RunSpec) -> list[str]:
         reasons.append("detail_preset")
     if run.violence_disabled:
         reasons.append("violence_disabled")
+    if run.friendly_fire:
+        reasons.append("friendly_fire")
     quest_count = QUEST_COUNT
     full = msgspec.structs.replace(
         run.status,

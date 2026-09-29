@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from crimson.game_modes import GameMode
+from crimson.game_states import GameStateId
 from crimson.screens.actions import ScreenAction
 from grim.geom import Vec2
 from grim.terrain_render import GroundRenderer
@@ -18,6 +19,7 @@ class GameplayScreenStub:
     ) -> None:
         self.close_requested = False
         self.default_game_mode_id = game_mode_id
+        self.game_state_id = GameStateId.GAMEPLAY
         self._ground = ground
         self._camera = camera if camera is not None else Vec2(-1.0, -1.0)
         self._console_elapsed_ms = float(console_elapsed_ms)

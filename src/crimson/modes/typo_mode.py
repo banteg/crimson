@@ -14,16 +14,16 @@ from ..persistence.highscores import scores_path_for_mode
 from ..replay import Replay
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
-from ..sim.sessions import DeterministicSession
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
 from ..typo.player import build_typo_player_input
-from ..ui.cursor import draw_menu_cursor
-from ..ui.hud import HudRenderContext, draw_hud_overlay, hud_flags_for_game_mode
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
 
 
 class TypoShooterMode(BaseGameplayMode):
+    _RUN_DOWN_ON_OUTCOME = False
+    _KEY_INFO_PAUSE = False
+
     def __init__(
         self,
         ctx: ViewContext,
@@ -41,7 +41,8 @@ class TypoShooterMode(BaseGameplayMode):
             audio=audio,
             audio_rng=audio_rng,
         )
-        self._sim_session: DeterministicSession | None = None
+        # Native `game_time_s`, which blinks the typing caret.
+        self._game_time_s = 0.0
 
     def open(self) -> None:
         super().open()
@@ -49,13 +50,15 @@ class TypoShooterMode(BaseGameplayMode):
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
             dictionary_words = tuple(load_typo_dictionary(dictionary_path))
-        highscore_names = tuple(load_typo_highscore_names(scores_path_for_mode(self._base_dir, GameMode.TYPO)))
+        scores_path = scores_path_for_mode(
+            self._base_dir, GameMode.TYPO, named_list=self.config.profile.named_score_list,
+        )
+        highscore_names = tuple(load_typo_highscore_names(scores_path))
 
-        prepared = self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
-        self._sim_session = prepared.session
+        self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
 
     def close(self) -> None:
-        self._sim_session = None
+        self._world_runtime.end_session()
         super().close()
 
     def _runtime_player_count(self) -> int:
@@ -78,11 +81,8 @@ class TypoShooterMode(BaseGameplayMode):
                 self.close_requested = True
             return
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            self._paused = not self._paused
-
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
-            self._action = Route.PAUSE
+            self._request_pause()
             return
 
     def _enqueue_typing_commands(self) -> None:
@@ -115,6 +115,7 @@ class TypoShooterMode(BaseGameplayMode):
         self._update_audio(dt)
 
         dt = self._tick_frame(dt)[0]
+        self._game_time_s += dt
         self._handle_input()
         if self._action == Route.PAUSE:
             return
@@ -123,23 +124,30 @@ class TypoShooterMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
-        dt_world = 0.0 if self._paused else dt
-
-        # Native: delay game-over transition until the trooper death animation finishes
-        # (checks `death_timer < 0.0` in the main gameplay loop).
+        # `typo_gameplay_update_and_render`: game over is pending once the trooper death animation
+        # finishes, then the HUD fades out before it opens. Typ-o plays both outside ticks.
         if self.player.health <= 0.0:
-            if dt_world > 0.0:
-                self.player.death_timer -= float(dt_world) * 20.0
-            if self.player.death_timer < 0.0:
-                self._enter_game_over()
-                self._update_game_over_ui(dt)
-                return
+            if dt > 0.0:
+                self.player.death_timer -= float(dt) * 20.0
+            if self.player.death_timer < 0.0 and not self._run_ending:
+                self._run_ending = True
+                self._pause_pending = False
+                self._ui_timeline.begin()
+            if (self._run_ending or self._pause_pending) and dt > 0.0:
+                self._ui_timeline.advance(int(self._last_dt_ms))
+                if self._ui_timeline.ready and self._run_ending:
+                    self._run_ending = False
+                    self._enter_game_over()
+                    self._update_game_over_ui(dt)
+                elif self._ui_timeline.ready:
+                    self._pause_pending = False
+                    self._action = Route.PAUSE
             return
 
-        if dt_world > 0.0:
+        if dt > 0.0:
             self._enqueue_typing_commands()
 
-        if dt_world <= 0.0:
+        if dt <= 0.0:
             return
 
         session = self._sim_session
@@ -147,22 +155,13 @@ class TypoShooterMode(BaseGameplayMode):
             return
 
         self._run_deterministic_session_ticks(
-            dt_frame=float(dt_world),
+            dt_frame=float(dt),
             session=session,
             recorder=self._replay_recorder,
         )
         # Death/game-over flow is handled at the start of the next frame so the
         # trooper death animation can play before the UI slides in.
 
-    def _draw_game_cursor(self) -> None:
-        resources = self.render_resources.resources
-        mouse_pos = self._ui_mouse
-        draw_menu_cursor(
-            resources.texture(TextureId.PARTICLES),
-            resources.texture(TextureId.UI_CURSOR),
-            pos=mouse_pos,
-            pulse_time=float(self._cursor_pulse_time),
-        )
 
     def _draw_name_labels(self) -> None:
         draw_typo_name_labels(
@@ -177,7 +176,7 @@ class TypoShooterMode(BaseGameplayMode):
         draw_typing_box(
             self.render_resources.resources.texture(TextureId.UI_IND_PANEL),
             text=self.state.typo.typing.text,
-            cursor_pulse_time=float(self._cursor_pulse_time),
+            game_time_s=self._game_time_s,
             draw_text=self._draw_ui_text,
             measure_text_width=self._ui_text_width,
         )
@@ -194,26 +193,8 @@ class TypoShooterMode(BaseGameplayMode):
             self._draw_name_labels()
 
         if show_gameplay_ui:
-            hud_flags = hud_flags_for_game_mode(self._config_game_mode_id())
             self._draw_target_health_bar()
-            draw_hud_overlay(
-                HudRenderContext(
-                    resources=self.render_resources.resources,
-                    state=self._hud_state,
-                    font=self._small,
-                    show_health=hud_flags.show_health,
-                    show_weapon=hud_flags.show_weapon,
-                    show_xp=hud_flags.show_xp,
-                    show_time=hud_flags.show_time,
-                    show_quest_hud=hud_flags.show_quest_hud,
-                    small_indicators=self._hud_small_indicators(),
-                ),
-                player=self.player,
-                players=self.world.players,
-                bonus_hud=self.state.bonus_hud,
-                elapsed_ms=float(self._session_elapsed_ms()),
-                frame_dt_ms=self._last_dt_ms,
-            )
+            self._draw_hud(elapsed_ms=self._session_elapsed_ms())
 
         if show_gameplay_ui:
             self._draw_typing_box()

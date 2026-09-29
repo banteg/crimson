@@ -543,7 +543,11 @@ pub const EffectPool = struct {
         const lifetime: f32 = 1.1;
         for (0..4) |idx| {
             const rotation = @as(f32, @floatFromInt(idx)) * (std.math.pi / 2.0) + angle;
-            const velocity = state_mod.Vec2.fromAngle(rotation).mul(42.0);
+            // Native `cos(rotation) * 42.0f` at PC24: the cosine is not rounded before the multiply.
+            const velocity: state_mod.Vec2 = .{
+                .x = native_math.pc24Mul(@cos(@as(f64, rotation)), @as(f32, 42.0)),
+                .y = native_math.pc24Mul(@sin(@as(f64, rotation)), @as(f32, 42.0)),
+            };
             const half = @as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_half) % 10 + 18));
             const rotation_step = (@as(f32, @floatFromInt(state.rng.randTagged(rng_callers.effect_spawn_freeze_shatter_rotation_step) % 20)) * 0.1 - 1.0) * 1.9;
             _ = self.spawn(

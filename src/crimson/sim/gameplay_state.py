@@ -84,8 +84,9 @@ class GameplayState(msgspec.Struct):
     camera_shake_offset: Vec2 = Vec2()
     camera_shake_timer: float = 0.0
     camera_shake_pulses: int = 0
-    shots_fired: list[int] = msgspec.field(default_factory=lambda: [0] * 4)
-    shots_hit: list[int] = msgspec.field(default_factory=lambda: [0] * 4)
+    # Native `highscore_record_shots_fired` / `_hit`: one count for every player.
+    shots_fired: int = 0
+    shots_hit: int = 0
     player_spread_damping_scalar: float = 1.0
     player_spread_damping_gate: float = 0.0
     weapon_shots_fired: list[list[int]] = msgspec.field(

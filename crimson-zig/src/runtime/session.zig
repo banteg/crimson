@@ -32,6 +32,7 @@ pub const SessionConfig = struct {
     tick_rate: i32,
     detail_preset: i32 = 5,
     violence_disabled: i32 = 0,
+    friendly_fire: bool = false,
     hardcore: bool = false,
     preserve_bugs: bool = false,
     quest_fail_retry_count: i32 = 0,
@@ -50,6 +51,7 @@ pub const SessionConfig = struct {
             .tick_rate = replay_codec.tick_rate,
             .detail_preset = run.detail_preset,
             .violence_disabled = run.violence_disabled,
+            .friendly_fire = run.friendly_fire,
             .hardcore = run.hardcore,
             .preserve_bugs = run.preserve_bugs,
             .quest_fail_retry_count = run.quest_fail_retry_count,
@@ -171,6 +173,7 @@ pub const DeterministicSession = struct {
         };
 
         session.state.gore_disabled = config.violence_disabled;
+        session.state.friendly_fire_enabled = config.friendly_fire;
         session.state.game_mode = config.game_mode;
         session.state.hardcore = config.hardcore;
         session.state.preserve_bugs = config.preserve_bugs;
@@ -238,9 +241,11 @@ pub const DeterministicSession = struct {
             // Rush and Typ-o end as soon as nobody is alive; there is no
             // death animation hold (Typ-o plays it outside ticks).
             .rush, .typo => if (allPlayersDead(players_list)) .death else null,
-            .quests => if (self.quest_completed)
-                .quest_completed
-            else if (deathTransitionReady(players_list)) .death else null,
+            // `gameplay_update_and_render` checks for death after `quest_mode_update`,
+            // so a death replaces pending quest results.
+            .quests => if (deathTransitionReady(players_list))
+                .death
+            else if (self.quest_completed) .quest_completed else null,
             .tutorial => null,
         };
     }
@@ -396,6 +401,9 @@ test "terminal and end outcomes follow each mode's end condition" {
     try std.testing.expectEqual(replay_codec.RunOutcome.death, quest.endOutcome());
     quest.quest_completed = true;
     try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .quest_completed), quest.terminalOutcome());
+    quest.players()[0].health = 0.0;
+    quest.players()[0].death_timer = -1.0;
+    try std.testing.expectEqual(@as(?replay_codec.RunOutcome, .death), quest.terminalOutcome());
 
     var tutorial = try DeterministicSession.init(testConfig(.tutorial), .{});
     tutorial.players()[0].health = 0.0;

@@ -2,37 +2,35 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import cast
 
 import pytest
 
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses import BonusId
 from crimson.bonuses.pool import BonusEntry
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, PHANTOM_CREATURE_INDEX, CreaturePool
 from crimson.creatures.spawn import (
     HAS_SPAWN_SLOT_FLAG,
     NATIVE_SPAWN_SLOT_COUNT,
     RANDOM_HEADING_SENTINEL,
     CreatureAiMode,
     CreatureFlags,
-    CreatureInit,
     CreatureTypeId,
-    SpawnEnv,
     SpawnId,
-    SpawnSlotInit,
-    build_spawn_plan,
+    SpawnSlot,
+    creature_spawn,
+    survival_spawn_creature,
 )
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
@@ -42,124 +40,59 @@ from tests.support.factories import step_creatures
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
-def test_spawn_plan_remaps_ai_links_with_pool_offset() -> None:
-    rng = Crand(0xBEEF)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan = build_spawn_plan(SpawnId.FORMATION_CHAIN_ALIEN_10_13, Vec2(100.0, 200.0), 0.0, rng, env)
-
-    state = GameplayState(rng=rng)
+def test_chain_members_link_to_the_previous_members_pool_slot() -> None:
+    state = GameplayState(rng=Crand(0xBEEF))
     pool = CreaturePool()
-    # Occupy a few pool slots so plan-local indices do not equal pool indices.
     for i in range(5):
         pool.entries[i].active = True
         pool.entries[i].hp = 1.0
 
-    mapping, primary = pool.spawn_plan(plan, state=state, detail_preset=5)
-    assert primary == mapping[plan.primary]
+    returned = pool.spawn_template(SpawnId.FORMATION_CHAIN_ALIEN_10_13, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
 
-    # Assert that link indices were remapped from plan-local indices -> pool indices.
-    for plan_idx, pool_idx in enumerate(mapping):
-        init = plan.creatures[plan_idx]
-        if init.ai_link_parent is None:
-            continue
-        assert pool.entries[pool_idx].link_index == mapping[int(init.ai_link_parent)]
+    assert returned == 15
+    assert pool.entries[5].link_index == 15
+    assert [pool.entries[i].link_index for i in range(6, 16)] == list(range(5, 15))
 
 
-def test_spawn_plan_remaps_spawn_slot_indices() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
-
-    state = GameplayState(rng=rng)
+def test_spawner_takes_the_first_ownerless_spawn_slot() -> None:
+    state = GameplayState(rng=Crand(0))
     pool = CreaturePool()
-    # Seed an existing spawn slot so the plan slot id (0) must be remapped.
     pool.entries[0].active = True
     pool.entries[0].hp = 1.0
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=0,
-            interval=1.0,
-            child_template_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
-        ),
+    pool.spawn_slots[0].owner_creature = 0
+
+    returned = pool.spawn_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
+
+    assert returned == 1
+    assert pool.entries[1].link_index == 1
+    assert pool.spawn_slots[1] == SpawnSlot(
+        owner_creature=1,
+        timer=1.0,
+        count=0,
+        limit=0x32C,
+        interval=x87_pc24_add(f32(0.7), f32(0.2)),
+        child_template_id=SpawnId.ZOMBIE_RANDOM_41,
     )
 
-    mapping, primary = pool.spawn_plan(plan, state=state, detail_preset=5)
-    assert primary == mapping[plan.primary]
-    assert len(mapping) == 1
-    assert len(pool.spawn_slots) == 2
 
-    owner_idx = mapping[0]
-    new_slot_idx = 1
-    assert pool.entries[owner_idx].spawn_slot_index == new_slot_idx
-    assert pool.entries[owner_idx].link_index == new_slot_idx
-    assert pool.spawn_slots[new_slot_idx].owner_creature == owner_idx
-
-
-def test_spawn_plan_reuses_native_spawn_slot_pool_and_overwrites_last_on_exhaustion() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    plan = build_spawn_plan(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, rng, env)
-    state = GameplayState(rng=rng)
+def test_spawner_overwrites_the_last_spawn_slot_when_all_are_owned() -> None:
+    state = GameplayState(rng=Crand(0))
     pool = CreaturePool()
-    empty_slot = SpawnSlotInit(
-        owner_creature=-1,
-        timer=9.0,
-        count=9,
-        limit=9,
-        interval=9.0,
-        child_template_id=SpawnId.ALIEN_RANDOM_1D,
-    )
-    pool.spawn_slots.append(empty_slot)
+    for owner_index, slot in enumerate(pool.spawn_slots):
+        slot.owner_creature = 100 + owner_index
 
-    mapping, _ = pool.spawn_plan(plan, state=state, detail_preset=5)
+    returned = pool.spawn_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
 
-    assert len(pool.spawn_slots) == 1
-    assert pool.entries[mapping[0]].spawn_slot_index == 0
-    assert pool.spawn_slots[0].owner_creature == mapping[0]
-
-    pool = CreaturePool()
-    for owner_index in range(NATIVE_SPAWN_SLOT_COUNT):
-        pool.spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=owner_index,
-                timer=0.0,
-                count=0,
-                limit=1,
-                interval=1.0,
-                child_template_id=SpawnId.ALIEN_RANDOM_1D,
-            ),
-        )
-
-    mapping, _ = pool.spawn_plan(plan, state=state, detail_preset=5)
-
-    assert len(pool.spawn_slots) == NATIVE_SPAWN_SLOT_COUNT
-    assert pool.entries[mapping[0]].spawn_slot_index == NATIVE_SPAWN_SLOT_COUNT - 1
-    assert pool.spawn_slots[-1].owner_creature == mapping[0]
+    assert pool.entries[returned].link_index == NATIVE_SPAWN_SLOT_COUNT - 1
+    assert pool.spawn_slots[-1].owner_creature == returned
+    assert [slot.owner_creature for slot in pool.spawn_slots[:-1]] == list(range(100, 100 + NATIVE_SPAWN_SLOT_COUNT - 1))
 
 
-def test_spawn_plan_materialization_spawns_burst_fx() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    state = GameplayState(rng=rng)
+def test_spawn_template_in_the_arena_spawns_burst_fx() -> None:
+    state = GameplayState(rng=Crand(0))
     pool = CreaturePool()
 
-    plan = build_spawn_plan(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, rng, env)
-    pool.spawn_plan(plan, state=state, detail_preset=5)
+    pool.spawn_template(SpawnId.SPIDER_SP2_SPLITTER_01, Vec2(100.0, 200.0), 0.0, state=state, detail_preset=5)
 
     active = state.effects.iter_active()
     assert len(active) == 8
@@ -224,41 +157,29 @@ def test_spawn_slot_update_uses_random_heading_sentinel(mocker) -> None:
     owner.flags = HAS_SPAWN_SLOT_FLAG
     owner.heading = 1.234
     owner.pos = Vec2(200.0, 300.0)
-    owner.spawn_slot_index = 0
+    owner.link_index = 0
     player = world.players[0]
     player.pos = Vec2(512.0, 512.0)
     player.weapon = WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE)
 
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=1,
-            interval=1.0,
-            child_template_id=SpawnId.ALIEN_RANDOM_1D,
-        ),
+    pool.spawn_slots[0] = SpawnSlot(
+        owner_creature=0,
+        timer=0.0,
+        count=0,
+        limit=1,
+        interval=1.0,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
     )
 
-    sentinel_plan = object()
-
-    def _fake_spawn_plan(self: CreaturePool, plan: object, **kwargs: object) -> tuple[list[int], int | None]:
-        del self, plan, kwargs
-        return [], None
-
-    build_spawn_plan = mocker.patch.object(creature_runtime, "build_spawn_plan", return_value=sentinel_plan)
-    spawn_plan = mocker.patch.object(CreaturePool, "spawn_plan", autospec=True, side_effect=_fake_spawn_plan)
+    spawn_template = mocker.patch.object(creature_runtime, "creature_spawn_template", return_value=1)
 
     step_creatures(world, 1.0 / 60.0)
 
-    build_spawn_plan.assert_called_once()
-    child_template_id = int(build_spawn_plan.call_args.args[0])
-    heading = float(build_spawn_plan.call_args.args[2])
-    env_arg = cast("SpawnEnv", build_spawn_plan.call_args.args[4])
-    assert child_template_id == int(SpawnId.ALIEN_RANDOM_1D)
+    spawn_template.assert_called_once()
+    _pool, child_template_id, _pos, heading = spawn_template.call_args.args
+    assert child_template_id == SpawnId.ALIEN_RANDOM_1D
     assert_float_close(heading, RANDOM_HEADING_SENTINEL)
-    assert env_arg == SpawnEnv(hardcore=False, quest_fail_retry_count=0)
-    spawn_plan.assert_called_once()
+    assert spawn_template.call_args.kwargs["state"] is world.state
 
 
 def test_spawn_slot_update_requires_spawner_flag() -> None:
@@ -277,17 +198,15 @@ def test_spawn_slot_update_requires_spawner_flag() -> None:
     owner.move_speed = 0.0
     owner.size = 45.0
     owner.pos = Vec2(256.0, 256.0)
-    owner.spawn_slot_index = 0
+    owner.link_index = 0
 
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=1,
-            interval=1.0,
-            child_template_id=SpawnId.ALIEN_RANDOM_1D,
-        ),
+    pool.spawn_slots[0] = SpawnSlot(
+        owner_creature=0,
+        timer=0.0,
+        count=0,
+        limit=1,
+        interval=1.0,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
     )
 
     step_creatures(world, 1.0 / 60.0)
@@ -313,17 +232,15 @@ def test_spawn_slot_child_can_update_in_same_tick() -> None:
     owner.ai_mode = CreatureAiMode.ORBIT_PLAYER
     owner.move_speed = 0.0
     owner.size = 45.0
-    owner.spawn_slot_index = 0
+    owner.link_index = 0
 
-    pool.spawn_slots.append(
-        SpawnSlotInit(
-            owner_creature=0,
-            timer=0.0,
-            count=0,
-            limit=1,
-            interval=1.0,
-            child_template_id=SpawnId.ALIEN_BIG_GRAY_29,
-        ),
+    pool.spawn_slots[0] = SpawnSlot(
+        owner_creature=0,
+        timer=0.0,
+        count=0,
+        limit=1,
+        interval=1.0,
+        child_template_id=SpawnId.ALIEN_BIG_GRAY_29,
     )
 
     step_creatures(world, 1.0 / 60.0)
@@ -1238,19 +1155,9 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert stub_rand._idx == 67
 
 
-@pytest.mark.parametrize(
-    ("preserve_bugs", "expected_experience"),
-    [
-        (True, (13, 0)),
-        (False, (0, 13)),
-    ],
-    ids=["native-player-zero", "corrected-last-hit-owner"],
-)
-def test_death_award_player_source_policy(
-    preserve_bugs: bool,
-    expected_experience: tuple[int, int],
-) -> None:
-    state = GameplayState(preserve_bugs=preserve_bugs)
+def test_every_kill_credits_player_one() -> None:
+    # Native `creature_handle_death` adds the XP to player one, whoever landed the hit.
+    state = GameplayState()
     state.bonus_spawn_guard = True
     players = [
         PlayerState(index=0, pos=Vec2()),
@@ -1261,7 +1168,6 @@ def test_death_award_player_source_policy(
     pool.entries[0].active = True
     pool.entries[0].hp = 0.0
     pool.entries[0].reward_value = 10.0
-    pool.entries[0].last_hit_owner = OwnerRef.from_local_player(1)
 
     death = pool.handle_death(
         0,
@@ -1271,8 +1177,8 @@ def test_death_award_player_source_policy(
         fx_queue=None,
     )
 
-    assert death.xp_awarded == max(expected_experience)
-    assert (players[0].experience, players[1].experience) == expected_experience
+    assert death.xp_awarded == 13
+    assert (players[0].experience, players[1].experience) == (13, 0)
 
 
 def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(mocker) -> None:
@@ -1591,83 +1497,35 @@ def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve
     assert spawn_at.call_count == 2
 
 
-def test_spawn_inits_resets_native_spawn_state_fields() -> None:
+def test_survival_spawn_resets_the_fields_native_writes_and_keeps_the_rest() -> None:
     pool = CreaturePool()
-    (idx,) = pool.spawn_inits(
-        [
-            CreatureInit(
-                origin_template_id=0x99,
-                pos=Vec2(100.0, 200.0),
-                heading=0.75,
-                phase_seed=10,
-                type_id=CreatureTypeId.ALIEN,
-                health=40.0,
-                max_health=40.0,
-                move_speed=2.0,
-                reward_value=12.0,
-                size=45.0,
-                contact_damage=6.0,
-            ),
-        ],
-    )
-    entry = pool.entries[idx]
+    stale = pool.entries[0]
+    stale.vel = Vec2(3.0, 4.0)
+    stale.force_target = 1
+    stale.attack_cooldown = 0.7
+    stale.collision_timer = 0.3
+    stale.anim_phase = 5.0
+    stale.hit_flash_timer = 0.1
+    stale.link_index = -7
+    stale.target_heading = 2.5632283687591553
+    stale.target = Vec2(7.0, 8.0)
+    stale.target_offset = Vec2(-70.71066284179688, -70.710693359375)
 
+    idx = survival_spawn_creature(pool, Vec2(100.0, 200.0), Crand(1), player_experience=0)
+
+    assert idx == 0
+    entry = pool.entries[0]
     assert entry.active is True
     assert entry.vel == Vec2()
     assert entry.force_target == 0
-    assert_float_close(entry.attack_cooldown, 0.0)
-    assert_float_close(entry.collision_timer, 0.0)
-    assert_float_close(entry.hit_flash_timer, 0.0)
-    assert_float_close(entry.anim_phase, 0.0)
-    assert entry.last_hit_owner == OwnerRef.from_local_player(0)
-
-
-def test_spawn_init_preserves_stale_link_index_for_implicit_ai7_timer() -> None:
-    pool = CreaturePool()
-    pool.entries[0].link_index = -1
-
-    idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=0x75,
-            pos=Vec2(1064.0, 392.0),
-            heading=0.0,
-            phase_seed=0,
-            type_id=CreatureTypeId.SPIDER_SP1,
-            flags=CreatureFlags.AI7_LINK_TIMER,
-            ai_mode=0,
-            health=54.0,
-            max_health=54.0,
-            move_speed=1.17,
-            reward_value=0.0,
-            size=56.0,
-            contact_damage=5.0,
-        ),
-    )
-
-    assert idx is not None
-    assert idx == 0
-    assert pool.entries[idx].link_index == -1
-
-
-def test_spawn_init_preserves_stale_force_target_from_recycled_slot() -> None:
-    pool = CreaturePool()
-    pool.entries[0].force_target = 1
-
-    idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=0x12,
-            pos=Vec2(100.0, 200.0),
-            heading=0.0,
-            phase_seed=0,
-            preserve_force_target=True,
-            type_id=CreatureTypeId.ALIEN,
-            health=40.0,
-            max_health=40.0,
-        ),
-    )
-
-    assert idx == 0
-    assert pool.entries[idx].force_target == 1
+    assert entry.attack_cooldown == 0.0
+    assert entry.collision_timer == 0.0
+    assert entry.anim_phase == 0.0
+    assert entry.hit_flash_timer == 0.1
+    assert entry.link_index == -7
+    assert entry.target_heading == 2.5632283687591553
+    assert entry.target == Vec2(7.0, 8.0)
+    assert entry.target_offset == Vec2(-70.71066284179688, -70.710693359375)
 
 
 def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
@@ -1676,7 +1534,7 @@ def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
     pool.entries[0].orbit_angle = 0.4
     pool.entries[0].orbit_radius = float(ProjectileTemplateId.SPIDER_PLASMA)
 
-    mapping, primary = pool.spawn_template(
+    returned = pool.spawn_template(
         SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
         Vec2(100.0, 200.0),
         0.0,
@@ -1684,112 +1542,9 @@ def test_spawn_template_preserves_stale_ranged_orbit_fields() -> None:
         detail_preset=5,
     )
 
-    assert mapping == [0]
-    assert primary == 0
+    assert returned == 0
     assert_float_close(pool.entries[0].orbit_angle, 0.4)
     assert pool.entries[0].orbit_radius == float(ProjectileTemplateId.SPIDER_PLASMA)
-
-
-def test_spawn_init_preserves_stale_target_heading_from_recycled_slot() -> None:
-    pool = CreaturePool()
-    pool.entries[0].target_heading = 2.5632283687591553
-
-    idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=0x75,
-            pos=Vec2(-40.0, 812.0),
-            heading=0.53,
-            phase_seed=323,
-            type_id=CreatureTypeId.SPIDER_SP1,
-            flags=CreatureFlags.AI7_LINK_TIMER,
-            ai_mode=0,
-            health=63.86125183105469,
-            max_health=63.86125183105469,
-            move_speed=1.3,
-            reward_value=43.0,
-            size=44.0,
-            contact_damage=4.0,
-        ),
-    )
-
-    assert idx is not None
-    assert idx == 0
-    assert_float_close(pool.entries[idx].heading, float(f32(0.53)))
-    assert_float_close(pool.entries[idx].target_heading, 2.5632283687591553)
-
-
-def test_spawn_init_preserves_stale_target_from_recycled_slot() -> None:
-    pool = CreaturePool()
-    pool.entries[0].target = Vec2(7.0, 8.0)
-
-    idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=0x75,
-            pos=Vec2(-40.0, 272.0),
-            heading=3.07,
-            phase_seed=0,
-            type_id=CreatureTypeId.SPIDER_SP1,
-            flags=CreatureFlags.AI7_LINK_TIMER,
-            ai_mode=0,
-            health=61.0,
-            max_health=61.0,
-            move_speed=1.17,
-            reward_value=0.0,
-            size=56.0,
-            contact_damage=5.0,
-        ),
-    )
-
-    assert idx == 0
-    assert pool.entries[idx].target == Vec2(7.0, 8.0)
-
-
-def test_spawn_init_preserves_stale_target_offset_from_recycled_slot() -> None:
-    pool = CreaturePool()
-    pool.entries[0].target_offset = Vec2(-70.71066284179688, -70.710693359375)
-
-    idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=-1,
-            pos=Vec2(100.0, 200.0),
-            heading=0.0,
-            phase_seed=0,
-            type_id=CreatureTypeId.ALIEN,
-            health=40.0,
-            max_health=40.0,
-        ),
-    )
-
-    assert idx == 0
-    assert pool.entries[idx].target_offset == Vec2(-70.71066284179688, -70.710693359375)
-
-
-def test_spawn_init_ai_timer_still_overrides_link_index() -> None:
-    pool = CreaturePool()
-    pool.entries[0].link_index = -1
-
-    idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=0x38,
-            pos=Vec2(1064.0, 392.0),
-            heading=0.0,
-            phase_seed=0,
-            type_id=CreatureTypeId.SPIDER_SP1,
-            flags=CreatureFlags.AI7_LINK_TIMER,
-            ai_mode=0,
-            ai_timer=0,
-            health=50.0,
-            max_health=50.0,
-            move_speed=4.8,
-            reward_value=433.0,
-            size=43.0,
-            contact_damage=10.0,
-        ),
-    )
-
-    assert idx is not None
-    assert idx == 0
-    assert pool.entries[idx].link_index == 0
 
 
 def test_tick_dead_defers_corpse_deactivation_until_post_render_cleanup() -> None:
@@ -2001,70 +1756,27 @@ def test_spawn_allocation_uses_slot_still_active_until_post_render_cleanup() -> 
     )
     assert pool.entries[6].active is True
 
-    spawned_idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=-1,
-            pos=Vec2(-40.0, 463.0),
-            heading=0.0,
-            phase_seed=17,
-            type_id=CreatureTypeId.LIZARD,
-            health=60.6925,
-            max_health=60.6925,
-            move_speed=1.0,
-            reward_value=0.0,
-            size=50.0,
-            contact_damage=4.0,
-        ),
-    )
-    assert spawned_idx is not None
+    spawned_idx = survival_spawn_creature(pool, Vec2(-40.0, 463.0), Crand(0), player_experience=0)
     assert spawned_idx == 22
 
 
-def test_spawn_init_returns_none_when_pool_is_full() -> None:
+def test_full_pool_spawns_write_the_phantom_slot_without_a_phase_seed() -> None:
     pool = CreaturePool()
     for entry in pool.entries:
         entry.active = True
         entry.hp = 1.0
+    rng = RecordingCrand(Crand(0))
 
-    spawned_idx = pool.spawn_init(
-        CreatureInit(
-            origin_template_id=0,
-            pos=Vec2(12.0, 34.0),
-            heading=0.0,
-            phase_seed=0,
-            type_id=CreatureTypeId.ZOMBIE,
-            health=10.0,
-            max_health=10.0,
-            move_speed=1.0,
-            reward_value=1.0,
-            size=10.0,
-            contact_damage=1.0,
-        ),
-    )
+    idx = creature_spawn(pool, Vec2(12.0, 34.0), RGBA(), CreatureTypeId.SPIDER_SP1, rng, survival_elapsed_ms=0)
 
-    assert spawned_idx is None
-    assert all(entry.active for entry in pool.entries)
-    assert pool.spawned_count == 0
-
-
-def test_spawn_plan_returns_empty_when_pool_cannot_fit_plan() -> None:
-    rng = Crand(0)
-    env = SpawnEnv(
-        hardcore=False,
-        quest_fail_retry_count=0,
-    )
-    state = GameplayState(rng=rng)
-    pool = CreaturePool()
-    plan = build_spawn_plan(SpawnId.ALIEN_RANDOM_1D, Vec2(100.0, 200.0), 0.0, rng, env)
-    # Leave one free slot fewer than the plan needs.
-    for entry in pool.entries[len(plan.creatures) - 1 :]:
-        entry.active = True
-        entry.hp = 1.0
-
-    mapping, primary = pool.spawn_plan(plan, state=state, detail_preset=5)
-
-    assert mapping == []
-    assert primary is None
+    assert idx == PHANTOM_CREATURE_INDEX
+    assert pool.phantom.pos == Vec2(12.0, 34.0)
+    assert pool.phantom.type_id is CreatureTypeId.SPIDER_SP1
+    assert pool.phantom.phase_seed == 0
+    assert [record.caller for record in rng.records] == [
+        RngCallerStatic.CREATURE_SPAWN_HEADING,
+        RngCallerStatic.CREATURE_SPAWN_REWARD,
+    ]
     assert pool.spawned_count == 0
 
 

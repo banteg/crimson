@@ -63,24 +63,12 @@ HUD_QUEST_LEFT_Y_SHIFT = 80.0
 
 
 
-class HudRenderFlags(msgspec.Struct, frozen=True):
-    show_health: bool
-    show_weapon: bool
-    show_xp: bool
-    show_time: bool
-    show_quest_hud: bool
-
-
 class HudRenderContext(msgspec.Struct, frozen=True):
     resources: RuntimeResources
     state: HudState
+    game_mode: GameMode
     font: SmallFontData | None = None
     alpha: float = 1.0
-    show_health: bool = True
-    show_weapon: bool = True
-    show_xp: bool = True
-    show_time: bool = False
-    show_quest_hud: bool = False
     small_indicators: bool = False
 
 
@@ -119,52 +107,6 @@ class HudState(msgspec.Struct):
 class HudLayout(msgspec.Struct, frozen=True):
     line_h: float
     hud_y_shift: float
-
-
-def hud_flags_for_game_mode(game_mode_id: GameMode) -> HudRenderFlags:
-    """Match `hud_update_and_render` (0x0041ca90) flag mapping."""
-
-    match game_mode_id:
-        case GameMode.QUESTS:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=True,
-                show_xp=True,
-                show_time=False,
-                show_quest_hud=True,
-            )
-        case GameMode.SURVIVAL:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=True,
-                show_xp=True,
-                show_time=False,
-                show_quest_hud=False,
-            )
-        case GameMode.RUSH:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=False,
-                show_xp=False,
-                show_time=True,
-                show_quest_hud=False,
-            )
-        case GameMode.TYPO:
-            return HudRenderFlags(
-                show_health=True,
-                show_weapon=False,
-                show_xp=True,
-                show_time=True,
-                show_quest_hud=False,
-            )
-        case _:
-            return HudRenderFlags(
-                show_health=False,
-                show_weapon=False,
-                show_xp=False,
-                show_time=False,
-                show_quest_hud=False,
-            )
 
 
 def hud_layout(*, font: SmallFontData | None, show_quest_hud: bool) -> HudLayout:
@@ -270,23 +212,28 @@ def _bonus_icon_src(texture: rl.Texture, icon_id: int) -> rl.Rectangle:
 def draw_hud_overlay(
     context: HudRenderContext,
     *,
-    player: PlayerState,
-    players: list[PlayerState] | None = None,
-    bonus_hud: BonusHudState | None = None,
-    elapsed_ms: float = 0.0,
-    score: int | None = None,
-    frame_dt_ms: float | None = None,
+    players: list[PlayerState],
+    bonus_hud: BonusHudState,
+    elapsed_ms: float,
+    frame_dt_ms: float,
     quest_progress_ratio: float | None = None,
 ) -> float:
     resources = context.resources
     state = context.state
     font = context.font
     alpha = float(context.alpha)
-    show_health = bool(context.show_health)
-    show_weapon = bool(context.show_weapon)
-    show_xp = bool(context.show_xp)
-    show_time = bool(context.show_time)
-    show_quest_hud = bool(context.show_quest_hud)
+    # `hud_update_and_render` picks the panels from the game mode before `ui_render_hud`.
+    match context.game_mode:
+        case GameMode.QUESTS:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, True, True, True, False
+        case GameMode.SURVIVAL:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, True, True, False, False
+        case GameMode.RUSH:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, False, False, False, True
+        case GameMode.TYPO:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = True, False, True, False, True
+        case _:
+            show_health, show_weapon, show_xp, show_quest_hud, show_time = False, False, False, False, False
     small_indicators = bool(context.small_indicators)
     game_top = resources.texture(TextureId.UI_GAME_TOP)
     life_heart = resources.texture(TextureId.UI_LIFE_HEART)
@@ -301,11 +248,8 @@ def draw_hud_overlay(
     clock_pointer = resources.texture(TextureId.UI_CLOCK_POINTER)
     bonuses_texture = resources.texture(TextureId.BONUSES)
 
-    if frame_dt_ms is None:
-        frame_dt_ms = max(0.0, float(rl.get_frame_time()) * 1000.0)
-    hud_players = list(players) if players is not None else [player]
-    if not hud_players:
-        hud_players = [player]
+    hud_players = players
+    player = players[0]
     player_count = len(hud_players)
 
     layout = hud_layout(font=font, show_quest_hud=show_quest_hud)
@@ -607,7 +551,7 @@ def draw_hud_overlay(
             )
 
     # Survival XP panel.
-    xp_target = int(player.experience if score is None else score)
+    xp_target = int(player.experience)
     xp_display = state.smooth_xp(xp_target, frame_dt_ms) if show_xp else xp_target
     if show_xp:
         panel_pos = Vec2(*HUD_SURV_PANEL_POS).offset(dy=hud_y_shift)
@@ -707,83 +651,82 @@ def draw_hud_overlay(
     # Bonus HUD slots (icon + timers), slide in/out from the left.
     bonus_base_y = HUD_BONUS_BASE_Y if show_xp else HUD_BONUS_BASE_Y_NO_XP
     bonus_bottom_y = float(bonus_base_y + hud_y_shift)
-    if bonus_hud is not None:
-        bonus_y = float(bonus_base_y + hud_y_shift)
-        bonus_panel_alpha = alpha * 0.7
-        bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
-        bar_rgba = HUD_XP_BAR_RGBA.with_alpha(bonus_panel_alpha)
+    bonus_y = float(bonus_base_y + hud_y_shift)
+    bonus_panel_alpha = alpha * 0.7
+    bonus_text_color = _with_alpha(HUD_TEXT_COLOR, bonus_panel_alpha)
+    bar_rgba = HUD_XP_BAR_RGBA.with_alpha(bonus_panel_alpha)
 
-        slots = bonus_hud.slots[:16]
-        for slot in slots:
-            if not slot.active:
-                continue
+    slots = bonus_hud.slots[:16]
+    for slot in slots:
+        if not slot.active:
+            continue
 
-            if slot.slide_x < -184.0:
-                bonus_y += HUD_BONUS_SPACING
-                continue
-            slot_pos = Vec2(slot.slide_x, bonus_y)
+        if slot.slide_x < -184.0:
+            bonus_y += HUD_BONUS_SPACING
+            continue
+        slot_pos = Vec2(slot.slide_x, bonus_y)
 
-            timers = slot.timer_values
+        timers = slot.timer_values
 
-            # Slot panel.
-            if not small_indicators:
-                panel_pos = slot_pos.offset(dy=HUD_BONUS_PANEL_OFFSET_Y)
-                panel_size = Vec2(182.0, 53.0)
-            else:
-                panel_pos = slot_pos + Vec2(-96.0, 5.0)
-                panel_size = Vec2(182.0, 26.5 + max(0, len(timers) - 3) * 6.0)
+        # Slot panel.
+        if not small_indicators:
+            panel_pos = slot_pos.offset(dy=HUD_BONUS_PANEL_OFFSET_Y)
+            panel_size = Vec2(182.0, 53.0)
+        else:
+            panel_pos = slot_pos + Vec2(-96.0, 5.0)
+            panel_size = Vec2(182.0, 26.5 + max(0, len(timers) - 3) * 6.0)
 
-            src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
-            dst = rl.Rectangle(panel_pos.x, panel_pos.y, panel_size.x, panel_size.y)
+        src = rl.Rectangle(0.0, 0.0, float(ind_panel.width), float(ind_panel.height))
+        dst = rl.Rectangle(panel_pos.x, panel_pos.y, panel_size.x, panel_size.y)
+        rl.draw_texture_pro(
+            ind_panel,
+            src,
+            dst,
+            rl.Vector2(0.0, 0.0),
+            0.0,
+            rl.Color(255, 255, 255, int(255 * bonus_panel_alpha)),
+        )
+        max_y = max(max_y, dst.y + dst.height)
+
+        # Slot icon.
+        if slot.icon_id >= 0:
+            src = _bonus_icon_src(bonuses_texture, slot.icon_id)
+            icon_pos = slot_pos.offset(dx=-1.0)
+            dst = rl.Rectangle(
+                icon_pos.x,
+                icon_pos.y,
+                HUD_BONUS_ICON_SIZE,
+                HUD_BONUS_ICON_SIZE,
+            )
             rl.draw_texture_pro(
-                ind_panel,
+                bonuses_texture,
                 src,
                 dst,
                 rl.Vector2(0.0, 0.0),
                 0.0,
-                rl.Color(255, 255, 255, int(255 * bonus_panel_alpha)),
+                rl.Color(255, 255, 255, int(255 * alpha)),
             )
             max_y = max(max_y, dst.y + dst.height)
 
-            # Slot icon.
-            if slot.icon_id >= 0:
-                src = _bonus_icon_src(bonuses_texture, slot.icon_id)
-                icon_pos = slot_pos.offset(dx=-1.0)
-                dst = rl.Rectangle(
-                    icon_pos.x,
-                    icon_pos.y,
-                    HUD_BONUS_ICON_SIZE,
-                    HUD_BONUS_ICON_SIZE,
-                )
-                rl.draw_texture_pro(
-                    bonuses_texture,
-                    src,
-                    dst,
-                    rl.Vector2(0.0, 0.0),
-                    0.0,
-                    rl.Color(255, 255, 255, int(255 * alpha)),
-                )
-                max_y = max(max_y, dst.y + dst.height)
+        # Preserve native 1P/2P positions and continue the stack for 3P/4P.
+        first_timer_y = 17.0 if len(timers) > 1 else 21.0
+        if small_indicators:
+            first_timer_y -= 4.0
+        for index, timer in enumerate(timers):
+            timer_pos = slot_pos + Vec2(36.0, first_timer_y + index * 6.0)
+            _draw_progress_bar(
+                timer_pos,
+                (32.0 if small_indicators else 100.0),
+                timer * 0.05,
+                bar_rgba,
+            )
+        if not small_indicators:
+            label_pos = slot_pos + Vec2(36.0, 2.0 if len(timers) > 1 else 6.0)
+            _draw_text(font, slot.label, label_pos, bonus_text_color)
 
-            # Preserve native 1P/2P positions and continue the stack for 3P/4P.
-            first_timer_y = 17.0 if len(timers) > 1 else 21.0
-            if small_indicators:
-                first_timer_y -= 4.0
-            for index, timer in enumerate(timers):
-                timer_pos = slot_pos + Vec2(36.0, first_timer_y + index * 6.0)
-                _draw_progress_bar(
-                    timer_pos,
-                    (32.0 if small_indicators else 100.0),
-                    timer * 0.05,
-                    bar_rgba,
-                )
-            if not small_indicators:
-                label_pos = slot_pos + Vec2(36.0, 2.0 if len(timers) > 1 else 6.0)
-                _draw_text(font, slot.label, label_pos, bonus_text_color)
-
-            bonus_y += HUD_BONUS_SPACING
-            max_y = max(max_y, bonus_y)
-        bonus_bottom_y = bonus_y
+        bonus_y += HUD_BONUS_SPACING
+        max_y = max(max_y, bonus_y)
+    bonus_bottom_y = bonus_y
 
     # Weapon aux timer overlay (weapon name popup).
     aux_panel_base_pos = Vec2(-12.0, float(bonus_bottom_y) - 17.0)

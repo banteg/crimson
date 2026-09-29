@@ -22,14 +22,13 @@ from ..gameplay import (
     survival_progression_update,
 )
 from ..math_parity import f32, x87_pc24_mul
-from ..owner_ref import OwnerRef
 from ..perks import PerkId
 from ..perks.effects import perks_update_effects
 from ..perks.selection import perk_selection_open_choices
 from ..player_damage import player_take_projectile_damage
-from ..projectiles.runtime import PrimaryStepCtx, SecondaryStepCtx
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
+from ..tutorial.timeline import tutorial_timeline_update
 from ..typo.runtime import typo_mode_update
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
@@ -61,6 +60,8 @@ class WorldEvents(msgspec.Struct):
     trigger_game_tune: bool = False
     hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
     perk_menu_opened: bool = False
+    # Active creatures after the simulation, before the world render culls finished corpses.
+    creature_count_before_render: int = 0
 
 
 class WorldStepRuntime(msgspec.Struct):
@@ -145,12 +146,6 @@ class WorldStepRuntime(msgspec.Struct):
             _ = self.world.state.rng.rand_tagged(RngCallerStatic.SFX_PLAY_EXCLUSIVE_PLAYLIST_PICK)
             return
         self.hit_sfx.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, position))
-
-    def kill_creature_no_corpse(self, creature_index: int, owner: OwnerRef) -> None:
-        creature = self.world.creatures.entries[creature_index]
-        if creature.active:
-            creature.last_hit_owner = owner
-        self.handle_creature_death(creature_index, keep_corpse=False)
 
     def on_bubblegun_expiry_sfx(self, creature_index: int, sound_slot: int) -> None:
         idx = int(creature_index)
@@ -239,12 +234,8 @@ class WorldState(msgspec.Struct):
             sfx=[],
         )
         self.creatures.update(step_runtime)
-        hits = self.state.projectiles.step(
-            PrimaryStepCtx(step_runtime=step_runtime, dt=float(dt)),
-        )
-        secondary_hit_count = self.state.secondary_projectiles.step(
-            SecondaryStepCtx(step_runtime=step_runtime, dt=float(dt)),
-        )
+        hits = self.state.projectiles.step(step_runtime)
+        secondary_hit_count = self.state.secondary_projectiles.step(step_runtime)
         # Native updates the sprite pool before the particle loop, so sprites
         # spawned by particles only advance on the next tick.
         self.state.sprite_effects.update(dt)
@@ -281,6 +272,10 @@ class WorldState(msgspec.Struct):
         gameplay_accumulate_weapon_usage_time(self.state, self.players, frame_dt_ms)
         gameplay_enforce_weapon_guards(self.state, self.players)
         camera_shake_update(self.state, dt)
+        # `gameplay_render_world`: `creature_render_all` culls finished corpses, then `bonus_render`
+        # makes the Telekinetic pickups.
+        creature_count_before_render = len(self.creatures.iter_active())
+        self.creatures.finalize_post_render_lifecycle()
         pickups = bonus_telekinetic_update(
             self.state,
             self.players,
@@ -289,7 +284,10 @@ class WorldState(msgspec.Struct):
             detail_preset=self.state.detail_preset,
             step_runtime=step_runtime,
         )
-        # XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
+        if self.state.game_mode == GameMode.TUTORIAL:
+            tutorial_timeline_update(self, dt_ms=frame_dt_ms)
+        # The death check, then the level-up check. XP awarded by `bonus_update` kills
+        # (e.g. freeze cleanup) levels next tick.
         if perk_progression_enabled:
             survival_progression_update(self.state, self.players)
         # A perk-menu request opens here, mid-frame: native generates the choices
@@ -320,4 +318,5 @@ class WorldState(msgspec.Struct):
             pickups=pickups,
         )
         events.perk_menu_opened = perk_menu_opened
+        events.creature_count_before_render = creature_count_before_render
         return events

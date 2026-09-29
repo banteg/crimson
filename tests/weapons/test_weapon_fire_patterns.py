@@ -170,6 +170,6 @@ def test_weapons_without_a_fire_branch_spend_the_shot_but_spawn_nothing(weapon_i
     assert _active_projectiles(state) == []
     assert not any(entry.active for entry in state.secondary_projectiles.entries)
     assert not any(entry.active for entry in state.particles.entries)
-    assert state.shots_fired[0] == 0
+    assert state.shots_fired == 0
     assert player.weapon.ammo == ammo - 1.0
     assert player.weapon.shot_cooldown > 0.0

@@ -16,6 +16,7 @@ from .creatures.damage import creature_apply_damage
 from .creatures.damage_types import CreatureDamageType
 from .effects_atlas import EffectId
 from .math_parity import (
+    NATIVE_HALF_PI,
     NATIVE_PI,
     NATIVE_TAU,
     f32,
@@ -28,7 +29,6 @@ from .math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from .owner_ref import OwnerRef
 from .rng_caller_static import RngCallerStatic
 
 if TYPE_CHECKING:
@@ -111,7 +111,6 @@ class Particle(msgspec.Struct):
     spin: float = 0.0
     style_id: ParticleStyleId = ParticleStyleId.FLAMETHROWER
     target_id: int = -1
-    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
 
 
 class ParticlePool:
@@ -139,7 +138,6 @@ class ParticlePool:
         pos: Vec2,
         angle: float,
         intensity: float = 1.0,
-        owner: OwnerRef = OwnerRef.from_local_player(0),
         rng: CrandLike,
     ) -> int:
         """Port of `fx_spawn_particle` (0x00420130)."""
@@ -160,7 +158,6 @@ class ParticlePool:
         entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SPIN))
         entry.style_id = ParticleStyleId.FLAMETHROWER
         entry.target_id = -1
-        entry.owner = owner
         return idx
 
     def spawn_particle_slow(
@@ -168,7 +165,6 @@ class ParticlePool:
         *,
         pos: Vec2,
         angle: float,
-        owner: OwnerRef = OwnerRef.from_local_player(0),
         rng: CrandLike,
     ) -> int:
         """Port of `fx_spawn_particle_slow` (0x00420240)."""
@@ -189,7 +185,6 @@ class ParticlePool:
         entry.spin = _native_particle_spin(rng.rand_tagged(RngCallerStatic.FX_SPAWN_PARTICLE_SLOW_SPIN))
         entry.style_id = ParticleStyleId.BUBBLEGUN
         entry.target_id = -1
-        entry.owner = owner
         return idx
 
     def iter_active(self) -> list[Particle]:
@@ -252,7 +247,7 @@ class ParticlePool:
                             )
                             step_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
                         # Death history and forced bonuses precede the native active check.
-                        step_runtime.kill_creature_no_corpse(target_id, entry.owner)
+                        step_runtime.handle_creature_death(target_id, keep_corpse=False)
                 continue
 
             if entry.render_flag:
@@ -329,7 +324,7 @@ class ParticlePool:
                         damage = max(0.0, x87_pc24_mul(entry.intensity, 10.0))
                         if damage > 0.0:
                             creature_apply_damage(
-                                step_runtime, hit_idx, damage, CreatureDamageType.FIRE, Vec2(), entry.owner,
+                                step_runtime, hit_idx, damage, CreatureDamageType.FIRE, Vec2(),
                             )
 
                         tint = creature.tint
@@ -549,6 +544,8 @@ class FxQueueRotated:
     def __init__(self) -> None:
         self._entries = [FxQueueRotatedEntry() for _ in range(FX_QUEUE_ROTATED_CAPACITY)]
         self._count = 0
+        # Native `cv_terrainBodiesTransparency`: 0 scales corpse alpha by 0.8, otherwise by its reciprocal.
+        self.bodies_transparency = 0.0
 
     @property
     def entries(self) -> list[FxQueueRotatedEntry]:
@@ -572,7 +569,6 @@ class FxQueueRotated:
         rotation: float,
         scale: float,
         creature_type_id: int,
-        terrain_bodies_transparency: float = 0.0,
         terrain_texture_failed: bool = False,
     ) -> bool:
         """Port of `fx_queue_add_rotated` (0x00427840)."""
@@ -583,7 +579,7 @@ class FxQueueRotated:
         if self._count >= FX_QUEUE_ROTATED_MAX_COUNT:
             return False
 
-        transparency = f32(terrain_bodies_transparency)
+        transparency = f32(self.bodies_transparency)
         # Native divides first, then multiplies at gameplay PC=24 precision.
         alpha_scale = x87_pc24_div(1.0, transparency) if transparency != 0.0 else f32(0.8)
         a = x87_pc24_mul(f32(rgba.a), alpha_scale)
@@ -1011,14 +1007,21 @@ class EffectPool:
     ) -> None:
         """Port of `effect_spawn_freeze_shatter` (0x0042ee00)."""
 
-        lifetime = 1.1
+        lifetime = f32(1.1)
         for idx in range(4):
-            rotation = float(idx) * (math.pi / 2.0) + float(angle)
-            velocity = Vec2.from_angle(rotation) * 42.0
+            # Native `angle + (float)index * 1.57079637f`, and the rest, in single precision.
+            rotation = x87_pc24_add(angle, x87_pc24_mul(float(idx), NATIVE_HALF_PI))
+            velocity = Vec2(x87_pc24_cos_mul(rotation, 42.0), x87_pc24_sin_mul(rotation, 42.0))
             half = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_HALF) % 10 + 18)
-            rotation_step = (
-                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP) % 20) * 0.1 - 1.0
-            ) * 1.9
+            rotation_step = x87_pc24_mul(
+                x87_pc24_sub(
+                    x87_pc24_mul(
+                        float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP) % 20), f32(0.1),
+                    ),
+                    1.0,
+                ),
+                f32(1.9),
+            )
 
             self.spawn(
                 effect_id=int(EffectId.FREEZE_SHATTER),
@@ -1038,11 +1041,8 @@ class EffectPool:
             )
 
         for _ in range(4):
-            shard_angle = (
-                float(
-                    rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612,
-                )
-                * 0.01
+            shard_angle = x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612), f32(0.01),
             )
             self.spawn_freeze_shard(
                 pos=pos,

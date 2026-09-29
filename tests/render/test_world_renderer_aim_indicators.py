@@ -55,7 +55,7 @@ def test_aim_indicators_draw_all_local_players(mocker) -> None:
     draw_circle_sector = mocker.patch.object(rl, "draw_circle_sector")
 
     draw_aim_indicators(render_ctx, ctx=ctx)
-    draw_aim_enhancements(render_ctx, ctx=ctx)
+    draw_aim_enhancements(render_ctx, ctx=ctx, fade=0.7)
 
     expected = [render_ctx.view.world_to_screen(player.aim) for player in world.world.players]
     assert [Vec2(call.args[0].x, call.args[0].y) for call in draw_circle_sector.call_args_list] == expected

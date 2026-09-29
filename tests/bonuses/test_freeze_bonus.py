@@ -4,6 +4,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.creatures.spawn import CreatureAiMode
 from crimson.effects import FxQueue, FxQueueRotated
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -81,7 +82,6 @@ def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
 
 
 def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
-    from crimson.owner_ref import OwnerRef
     from crimson.projectiles.types import ProjectileTemplateId
     from crimson.sim.input import PlayerInput
     from crimson.sim.sessions import DeterministicSession
@@ -97,7 +97,7 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
         pos=creature.pos,
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_local_player(0),
+        owner_id=OWNER_LOCAL_PLAYER,
     )
     world.state.bonus_pool.spawn_at(world.players[0].pos, BonusId.FREEZE, state=world.state)
     # `bonus_spawn_at` drew its 16-particle burst (64 draws) before the tick.

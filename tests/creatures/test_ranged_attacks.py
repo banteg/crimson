@@ -2,11 +2,8 @@ from __future__ import annotations
 
 import math
 
-from crimson.creatures.runtime import CreaturePool
-from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, CreatureInit
+from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, SpawnId
 from crimson.math_parity import f32, f32_from_bits
-from crimson.owner_ref import OwnerRef
-from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
@@ -47,7 +44,8 @@ def test_ranged_creature_fires_along_heading_not_direct_aim() -> None:
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
     proj = spawned[0]
-    assert proj.hits_players is True
+    # A creature owns it, so it can hit players.
+    assert proj.owner_id >= 0
     assert int(proj.type_id) == 9
     assert_float_close(proj.angle, creature.heading)
 
@@ -103,7 +101,8 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     spawned = [proj for proj in state.projectiles.entries if proj.active]
     assert len(spawned) == 1
     proj = spawned[0]
-    assert proj.hits_players is True
+    # A creature owns it, so it can hit players.
+    assert proj.owner_id >= 0
     assert int(proj.type_id) == 26
     assert creature.attack_cooldown == f32(0.4)
     assert step_runtime.sfx == [SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8)]
@@ -112,22 +111,14 @@ def test_ranged_variant_uses_orbit_radius_as_projectile_type() -> None:
     ]
 
 
-def test_spawn_init_packs_ranged_projectile_type_into_orbit_radius() -> None:
-    pool = CreaturePool()
-    init = CreatureInit(
-        origin_template_id=0,
-        pos=Vec2(),
-        heading=0.0,
-        phase_seed=0,
-        flags=CreatureFlags.RANGED_ATTACK_VARIANT,
-        ai_mode=2,
-        ranged_projectile_type=26,
+def test_plasma_shooter_packs_its_projectile_type_into_orbit_radius() -> None:
+    world = make_world()
+    idx = world.creatures.spawn_template(
+        SpawnId.SPIDER_PLASMA_SHOOTER_3C, Vec2(), 0.0, state=world.state, detail_preset=5,
     )
-    idx = pool.spawn_init(init)
-    assert idx is not None
     # Native writes the int arm of the orbit_radius union: the radius reads as 26's bits.
-    assert pool.entries[idx].ranged_projectile_type == 26
-    assert pool.entries[idx].orbit_radius == f32_from_bits(26)
+    assert world.creatures.entries[idx].ranged_projectile_type == 26
+    assert world.creatures.entries[idx].orbit_radius == f32_from_bits(26)
 
 
 def test_ranged_projectile_can_damage_player() -> None:
@@ -139,12 +130,11 @@ def test_ranged_projectile_can_damage_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
-        owner=OwnerRef.from_creature(0),
-        hits_players=True,
+        owner_id=0,
     )
 
     world.state.projectiles.step(
-        PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.001), dt=0.001),
+        make_step_runtime(world, dt=0.001),
     )
 
     # Creature projectiles subtract a flat 10 from an unshielded player.
@@ -168,12 +158,11 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
-        owner=OwnerRef.from_creature(0),
-        hits_players=True,
+        owner_id=0,
     )
 
     world.state.projectiles.step(
-        PrimaryStepCtx(step_runtime=step_runtime, dt=0.1),
+        step_runtime,
     )
 
     assert target.hp <= 0.0

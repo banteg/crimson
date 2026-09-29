@@ -6,7 +6,6 @@ from crimson.bonuses import BonusId
 from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE
 from crimson.creatures.spawn import CreatureFlags
 from crimson.math_parity import f32, x87_pc24_sub
-from crimson.owner_ref import OwnerRef
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
@@ -61,7 +60,6 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     creature.move_speed = 0.0
     creature.reward_value = 10.0
     creature.contact_damage = 999.0
-    creature.last_hit_owner = OwnerRef.from_creature(77)
 
     step_runtime = step_creatures(world, 0.016)
 
@@ -74,7 +72,6 @@ def test_energizer_eat_kills_award_xp_without_contact_damage() -> None:
     assert SfxId.UI_BONUS in sfx_ids(step_runtime.sfx)
     assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
     assert creature.pos == Vec2(-10.0, 0.0)
-    assert step_runtime.deaths[0].owner == OwnerRef.from_creature(77)
     assert not state.bonus_spawn_guard
     # Native returns from no-corpse death into the unconditional size-30 tail.
     assert creature.hp == 0.0

@@ -11,6 +11,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ...collision_math import within_native_find_radius
+from ...creatures.damage import creature_apply_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...effects import SpriteEffectPool
@@ -26,14 +27,13 @@ from ...math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from ...owner_ref import OwnerRef
 from ...rng_caller_static import RngCallerStatic
 from ..types import (
     SECONDARY_PROJECTILE_POOL_SIZE,
     SecondaryProjectile,
     SecondaryProjectileTypeId,
 )
-from .collision import _apply_damage_to_creature, creature_find_nearest_alive
+from .collision import creature_find_nearest_alive
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -67,16 +67,10 @@ class SecondarySpawnSpec(msgspec.Struct, frozen=True):
     pos: Vec2
     angle: float
     type_id: SecondaryProjectileTypeId
-    owner: OwnerRef = msgspec.field(default_factory=lambda: OwnerRef.from_local_player(0))
     time_to_live: float = 2.0
     target_hint: Vec2 | None = None
     creatures: Sequence[CreatureState] | None = None
     preserve_bugs: bool = False
-
-
-class SecondaryStepCtx(msgspec.Struct, frozen=True):
-    step_runtime: WorldStepRuntime
-    dt: float
 
 
 def _creature_is_collidable(creature: CreatureState) -> bool:
@@ -87,13 +81,12 @@ def _creature_is_collidable(creature: CreatureState) -> bool:
 
 def _step_detonation(
     entry: SecondaryProjectile,
-    ctx: SecondaryStepCtx,
+    step_runtime: WorldStepRuntime,
     *,
     dt: float,
     creature_spatial: CreatureSpatialHash,
     rng: CrandLike,
 ) -> None:
-    step_runtime = ctx.step_runtime
     runtime_state, creatures = step_runtime.world.state, step_runtime.world.creatures.entries
     fx_queue = step_runtime.fx_queue
     runtime_state.camera_shake_pulses = 4
@@ -134,14 +127,7 @@ def _step_detonation(
                 x87_pc24_mul(impulse_dir.x, _DETONATION_IMPULSE_SCALE),
                 x87_pc24_mul(impulse_dir.y, _DETONATION_IMPULSE_SCALE),
             )
-            _apply_damage_to_creature(
-                creature_idx,
-                damage,
-                damage_type=CreatureDamageType.EXPLOSION,
-                step_runtime=step_runtime,
-                owner=entry.owner,
-                impulse=impulse,
-            )
+            creature_apply_damage(step_runtime, creature_idx, damage, CreatureDamageType.EXPLOSION, impulse)
             creature_spatial.sync_index(int(creature_idx))
             if hp_before > 0.0 and float(creature.hp) <= 0.0:
                 # Native detonation AoE does an extra two random decals and a
@@ -293,7 +279,6 @@ class SecondaryProjectilePool:
         pos = Vec2(f32(spec.pos.x), f32(spec.pos.y))
         angle = f32(spec.angle)
         type_id = SecondaryProjectileTypeId(spec.type_id)
-        owner = spec.owner
         time_to_live = float(spec.time_to_live)
         target_hint = spec.target_hint
         creatures = spec.creatures
@@ -313,7 +298,6 @@ class SecondaryProjectilePool:
         entry.angle = float(angle)
         entry.type_id = type_id
         entry.pos = pos
-        entry.owner = owner
         entry.trail_timer = 0.0
         entry.vel = Vec2()
         entry.detonation_t = 0.0
@@ -350,10 +334,9 @@ class SecondaryProjectilePool:
     def iter_active(self) -> list[SecondaryProjectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def step(self, ctx: SecondaryStepCtx) -> int:
+    def step(self, step_runtime: WorldStepRuntime) -> int:
         """Update the secondary projectile pool subset (types 1/2/4 + detonation type 3)."""
-        dt = float(ctx.dt)
-        step_runtime = ctx.step_runtime
+        dt = float(step_runtime.dt)
         runtime_state = step_runtime.world.state
         creatures = step_runtime.world.creatures.entries
         fx_queue = step_runtime.fx_queue
@@ -361,22 +344,6 @@ class SecondaryProjectilePool:
 
         if dt <= 0.0:
             return 0
-
-        def _apply_secondary_damage(
-            creature_index: int,
-            damage: float,
-            *,
-            owner: OwnerRef,
-            impulse: Vec2 = Vec2(),
-        ) -> None:
-            _apply_damage_to_creature(
-                int(creature_index),
-                float(damage),
-                damage_type=CreatureDamageType.EXPLOSION,
-                impulse=impulse,
-                owner=owner,
-                step_runtime=step_runtime,
-            )
 
         rng = runtime_state.rng
         freeze_active = float(runtime_state.bonuses.freeze) > 0.0
@@ -392,7 +359,7 @@ class SecondaryProjectilePool:
 
             type_id = entry.type_id
             if type_id == SecondaryProjectileTypeId.DETONATION:
-                _step_detonation(entry, ctx, dt=dt, creature_spatial=creature_spatial, rng=rng)
+                _step_detonation(entry, step_runtime, dt=dt, creature_spatial=creature_spatial, rng=rng)
                 continue
 
             _move_rocket(entry, dt=dt, creatures=creatures, runtime_state=runtime_state)
@@ -415,23 +382,14 @@ class SecondaryProjectilePool:
                     break
             if hit_idx is not None:
                 hit_count += 1
-                owner_player_index = entry.owner.player_index_in_bounds(len(runtime_state.shots_hit))
-                if owner_player_index is not None and creature_lifecycle_is_alive(
-                    creatures[int(hit_idx)].lifecycle_stage,
-                ):
-                    shots_hit = runtime_state.shots_hit
-                    shots_hit[owner_player_index] += 1
+                if creature_lifecycle_is_alive(creatures[int(hit_idx)].lifecycle_stage):
+                    runtime_state.shots_hit += 1
 
                 if freeze_active:
                     for _ in range(4):
-                        shard_angle = (
-                            float(
-                                rng.rand_tagged(
-                                    RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE,
-                                )
-                                % 612,
-                            )
-                            * 0.01
+                        shard_angle = x87_pc24_mul(
+                            float(rng.rand_tagged(RngCallerStatic.SECONDARY_PROJECTILE_UPDATE_PRE_HIT_FREEZE_SHARD_ANGLE) % 612),
+                            f32(0.01),
                         )
                         effects.spawn_freeze_shard(
                             pos=entry.pos,
@@ -469,12 +427,7 @@ class SecondaryProjectilePool:
                     x87_pc24_mul(inv_dt, entry.vel.x),
                     x87_pc24_mul(inv_dt, entry.vel.y),
                 )
-                _apply_secondary_damage(
-                    hit_idx,
-                    damage,
-                    owner=entry.owner,
-                    impulse=impulse,
-                )
+                creature_apply_damage(step_runtime, hit_idx, damage, CreatureDamageType.EXPLOSION, impulse)
                 creature_spatial.sync_index(int(hit_idx))
 
                 # Each rocket type detonates at its own scale, with freeze shards or scorch decals.
@@ -510,13 +463,18 @@ class SecondaryProjectilePool:
                 entry.detonation_scale = f32(det_scale)
                 if freeze_active:
                     for _ in range(8):
-                        shard_angle = float(rng.rand_tagged(shard_caller) % 612) * 0.01
+                        shard_angle = x87_pc24_mul(float(rng.rand_tagged(shard_caller) % 612), f32(0.01))
                         effects.spawn_freeze_shard(pos=shard_pos, angle=shard_angle, rng=rng, detail_preset=detail_preset)
                 else:
                     for _ in range(decal_count):
-                        angle = float(rng.rand_tagged(angle_caller) % 628) * 0.01
+                        # Native: `(float)(crt_rand() % 628) * 0.01f`, then `cos(angle) * radius` added at PC24.
+                        angle = x87_pc24_mul(float(rng.rand_tagged(angle_caller) % 628), f32(0.01))
                         radius = float(rng.rand_tagged(radius_caller) % radius_mod)
-                        fx_queue.add_random(pos=center + Vec2.from_angle(angle) * radius, rng=rng)
+                        decal_pos = Vec2(
+                            x87_pc24_add(x87_pc24_cos_mul(angle, radius), center.x),
+                            x87_pc24_add(x87_pc24_sin_mul(angle, radius), center.y),
+                        )
+                        fx_queue.add_random(pos=decal_pos, rng=rng)
 
                 step = math.tau / 10.0
                 for idx in range(10):

@@ -9,6 +9,7 @@ from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
 from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import QuestSpawnState
+from crimson.sim.run_result import RunOutcome
 from crimson.sim.sessions import DeterministicSession
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -132,3 +133,15 @@ def _effects_after_first_spawn(*, detail_preset: int) -> int:
 def test_quest_spawn_bursts_follow_the_session_detail_preset() -> None:
     # Native effect_spawn skips every other effect below detail preset 3.
     assert _effects_after_first_spawn(detail_preset=1) * 2 == _effects_after_first_spawn(detail_preset=5)
+
+
+def test_death_replaces_pending_quest_results() -> None:
+    session, spawn_state = _build_session(seed=101)
+    spawn_state.completed = True
+    assert session.terminal_outcome() is RunOutcome.QUEST_COMPLETED
+
+    player = session.world.players[0]
+    player.health = 0.0
+    player.death_timer = -1.0
+
+    assert session.terminal_outcome() is RunOutcome.DEATH

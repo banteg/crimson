@@ -4,10 +4,11 @@ import math
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -26,11 +27,11 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
+from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 _BOARD_SIDE = 6
 _BOARD_CELLS = _BOARD_SIDE * _BOARD_SIDE
@@ -125,10 +126,7 @@ class AlienZooKeeperView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
@@ -138,14 +136,15 @@ class AlienZooKeeperView:
 
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
+        # The port's keyboard path to the mouse-only board: focused, the arrows move a cell cursor and Enter clicks it.
+        self._board_focus = UiFocusTarget()
+        self._cursor_index = 0
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.CREDITS_SECRET))
 
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
@@ -161,22 +160,20 @@ class AlienZooKeeperView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "AlienZooKeeperView must be opened before use"
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _panel_slide_x(self) -> float:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=9,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
@@ -234,51 +231,66 @@ class AlienZooKeeperView:
         self._timer_ms = _TIMER_RESET_MS
 
     def _resolve_tile_click(self, *, layout: _AzkLayout, mouse: rl.Vector2) -> None:
-        if self._timer_ms <= 0:
-            return
-
-        for index, cell_value in enumerate(self._board):
-            if cell_value == -3:
-                continue
+        for index in range(_BOARD_CELLS):
             row = index // _BOARD_SIDE
             col = index % _BOARD_SIDE
             x = layout.board_x + col * layout.tile_size
             y = layout.board_y + row * layout.tile_size
-            if not _mouse_inside_rect(mouse, x=x, y=y, w=layout.tile_size, h=layout.tile_size):
-                continue
-
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_CLINK_01)
-
-            if self._selected_index == -1:
-                self._selected_index = index
+            if _mouse_inside_rect(mouse, x=x, y=y, w=layout.tile_size, h=layout.tile_size):
+                self._click_tile(index)
                 return
 
-            selected = self._selected_index
-            self._board[index], self._board[selected] = self._board[selected], self._board[index]
-            self._selected_index = -1
-
-            has_match, out_idx, out_dir = _credits_secret_match3_find(self._board)
-            if not has_match:
-                return
-
-            self._board[out_idx] = -3
-            if out_dir == 0:
-                if (out_idx + _BOARD_SIDE) < _BOARD_CELLS:
-                    self._board[out_idx + _BOARD_SIDE] = -3
-                if (out_idx + (_BOARD_SIDE * 2)) < _BOARD_CELLS:
-                    self._board[out_idx + (_BOARD_SIDE * 2)] = -3
-            else:
-                if (out_idx + 1) < _BOARD_CELLS:
-                    self._board[out_idx + 1] = -3
-                if (out_idx + 2) < _BOARD_CELLS:
-                    self._board[out_idx + 2] = -3
-
-            self._score += 1
-            self._timer_ms += _MATCH_TIMER_BONUS_MS
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BONUS)
+    def _update_board_focus(self) -> None:
+        focus = self.state.focus
+        self._board_focus.focused = focus.update(self._board_focus)
+        if not self._board_focus.focused:
             return
+        row, col = divmod(self._cursor_index, _BOARD_SIDE)
+        col = max(0, min(_BOARD_SIDE - 1, col + int(focus.right) - int(focus.left)))
+        row = max(0, min(_BOARD_SIDE - 1, row + int(focus.down) - int(focus.up)))
+        self._cursor_index = row * _BOARD_SIDE + col
+        # The pad's up/down walk the rows until the board's edge, then move the focus on.
+        focus.hold(up=row > 0, down=row < _BOARD_SIDE - 1)
+        if focus.enter:
+            self._click_tile(self._cursor_index)
+
+    def _click_tile(self, index: int) -> None:
+        if self._timer_ms <= 0:
+            return
+        if self._board[index] == -3:
+            return
+
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.UI_CLINK_01)
+
+        if self._selected_index == -1:
+            self._selected_index = index
+            return
+
+        selected = self._selected_index
+        self._board[index], self._board[selected] = self._board[selected], self._board[index]
+        self._selected_index = -1
+
+        has_match, out_idx, out_dir = _credits_secret_match3_find(self._board)
+        if not has_match:
+            return
+
+        self._board[out_idx] = -3
+        if out_dir == 0:
+            if (out_idx + _BOARD_SIDE) < _BOARD_CELLS:
+                self._board[out_idx + _BOARD_SIDE] = -3
+            if (out_idx + (_BOARD_SIDE * 2)) < _BOARD_CELLS:
+                self._board[out_idx + (_BOARD_SIDE * 2)] = -3
+        else:
+            if (out_idx + 1) < _BOARD_CELLS:
+                self._board[out_idx + 1] = -3
+            if (out_idx + 2) < _BOARD_CELLS:
+                self._board[out_idx + 2] = -3
+
+        self._score += 1
+        self._timer_ms += _MATCH_TIMER_BONUS_MS
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.UI_BONUS)
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -289,9 +301,8 @@ class AlienZooKeeperView:
 
         dt_clamped = min(float(dt), 0.1)
         dt_ms = int(dt_clamped * 1000.0)
-        self._cursor_pulse_time += dt_clamped * 1.1
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
         if dt_ms > 0:
@@ -307,8 +318,8 @@ class AlienZooKeeperView:
 
         self._fill_empty_cells()
 
-        interactive = self._transition.timeline_ms >= self._transition.duration_ms
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
+        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
+        if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.STATISTICS)
@@ -321,19 +332,17 @@ class AlienZooKeeperView:
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if click:
             self._resolve_tile_click(layout=layout, mouse=mouse)
+        # Focus order: the port's board stop, then Reset and Back.
+        self._update_board_focus()
 
         resources = require_runtime_resources(self.state)
         dt_ms_f = dt_clamped * 1000.0
 
-        reset_w = button_width(
-            resources,
-            self._reset_button.label,
-            force_wide=self._reset_button.force_wide,
-        )
         if button_update(
+            resources,
             self._reset_button,
+            focus=self.state.focus,
             pos=layout.reset_pos,
-            width=reset_w,
             dt_ms=dt_ms_f,
             mouse=mouse,
             click=click,
@@ -343,11 +352,11 @@ class AlienZooKeeperView:
             self._reset_state()
             return
 
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         if button_update(
+            resources,
             self._back_button,
+            focus=self.state.focus,
             pos=layout.back_pos,
-            width=back_w,
             dt_ms=dt_ms_f,
             mouse=mouse,
             click=click,
@@ -419,6 +428,14 @@ class AlienZooKeeperView:
             rl.draw_rectangle_rec(sel_rect, _to_color(0.2, 0.4, 0.7, 0.4))
             rl.draw_rectangle_lines_ex(sel_rect, 1.0, rl.WHITE)
 
+        if self._board_focus.focused:
+            row, col = divmod(self._cursor_index, _BOARD_SIDE)
+            cursor = rl.Rectangle(
+                layout.board_x + col * layout.tile_size, layout.board_y + row * layout.tile_size, layout.tile_size, layout.tile_size,
+            )
+            rl.draw_rectangle_lines_ex(cursor, 1.0, _to_color(0.8, 0.8, 0.6, 0.8))
+            self.state.focus.draw(Vec2(layout.board_x - 16.0, cursor.y))
+
         alien = resources.texture(TextureId.ALIEN)
         frame_w = float(alien.width) / 8.0
         frame_h = float(alien.height) / 8.0
@@ -454,24 +471,18 @@ class AlienZooKeeperView:
         if self._timer_ms == 0 and math.cos(float(self._anim_time_ms) * 0.005) > 0.0:
             draw_small_text(font, _LABEL_GAME_OVER, Vec2(layout.game_over_x, layout.game_over_y), rl.WHITE)
 
-        reset_w = button_width(
-            resources,
-            self._reset_button.label,
-            force_wide=self._reset_button.force_wide,
-        )
         button_draw(
             resources,
             self._reset_button,
+            focus=self.state.focus,
             pos=layout.reset_pos,
-            width=reset_w,
         )
 
-        back_w = button_width(resources, self._back_button.label, force_wide=self._back_button.force_wide)
         button_draw(
             resources,
             self._back_button,
+            focus=self.state.focus,
             pos=layout.back_pos,
-            width=back_w,
         )
 
         draw_menu_sign(
@@ -479,6 +490,6 @@ class AlienZooKeeperView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)

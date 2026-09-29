@@ -65,7 +65,8 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
         )
 
     player_xp = world.players[0].experience
-    cooldown, wave_spawns = tick_survival_wave_spawns(
+    spawn.spawn_cooldown_ms = tick_survival_wave_spawns(
+        world.creatures,
         spawn.spawn_cooldown_ms,
         dt_ms,
         state.rng,
@@ -73,8 +74,6 @@ def survival_update(world: WorldState, spawn: SurvivalSpawnState, *, elapsed_ms:
         survival_elapsed_ms=elapsed_ms,
         player_experience=int(player_xp),
     )
-    spawn.spawn_cooldown_ms = cooldown
-    world.creatures.spawn_inits(wave_spawns)
 
 
 def rush_mode_update(world: WorldState, spawn: RushSpawnState, *, elapsed_ms: float, dt_ms: float) -> None:
@@ -85,15 +84,14 @@ def rush_mode_update(world: WorldState, spawn: RushSpawnState, *, elapsed_ms: fl
     for player in world.players:
         player.weapon.weapon_id = RUSH_WEAPON_ID
         player.weapon.ammo = RUSH_FORCED_AMMO
-    cooldown, spawns = tick_rush_mode_spawns(
+    spawn.spawn_cooldown_ms = tick_rush_mode_spawns(
+        world.creatures,
         spawn.spawn_cooldown_ms,
         dt_ms,
         state.rng,
         player_count=len(world.players),
         survival_elapsed_ms=int(elapsed_ms),
     )
-    spawn.spawn_cooldown_ms = cooldown
-    world.creatures.spawn_inits(spawns)
 
 
 def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float) -> None:

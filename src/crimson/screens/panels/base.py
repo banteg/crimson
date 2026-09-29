@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -26,7 +27,6 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
-from ...input_codes import PadCode, pad_nav_pressed
 from ...ui.menu_panel import draw_classic_menu_panel
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -35,15 +35,15 @@ PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
 PANEL_BACK_POS_X = -55.0
 PANEL_BACK_POS_Y = 430.0
-PANEL_TIMELINE_START_MS = 300
-PANEL_TIMELINE_END_MS = 0
-
 
 class PanelMenuView:
     def __init__(
         self,
         state: GameState,
         *,
+        game_state: GameStateId,
+        panel_element: int,
+        back_element: int,
         title: str,
         body: str | None = None,
         panel_pos: Vec2 = Vec2(PANEL_POS_X, PANEL_POS_Y),
@@ -53,6 +53,9 @@ class PanelMenuView:
         back_action: ScreenAction = Route.MENU,
     ) -> None:
         self.state = state
+        self._game_state = game_state
+        self._panel_element = panel_element
+        self._back_element = back_element
         self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
@@ -66,9 +69,6 @@ class PanelMenuView:
         self._hovered = False
         self._menu_screen_width = 0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = 0
-        self._cursor_pulse_time = 0.0
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
@@ -77,15 +77,13 @@ class PanelMenuView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
         self._hovered = False
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
-        self._cursor_pulse_time = 0.0
+        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
         self._panel_open_sfx_played = False
         self._init_ground()
         self._is_open = True
 
     def resume(self) -> None:
-        self._transition.reset()
+        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
         self._hovered = False
         self._panel_open_sfx_played = False
 
@@ -104,32 +102,37 @@ class PanelMenuView:
             update_audio(self.state.audio, dt)
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(dt, 0.1) * 1.1
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return False
 
-        if dt_ms > 0 and self._transition.timeline_ms >= self._transition.duration_ms:
+        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
             self.state.menu_sign_locked = True
             if play_open_sfx and (not self._panel_open_sfx_played) and (self.state.audio is not None):
                 play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
                 self._panel_open_sfx_played = True
 
+        # The back element sits later in the element table than the panel, so native's backwards walk registers
+        # it for focus before the panel's own widgets.
+        entry = self._entry
+        if entry is not None:
+            entry.focused = self.state.focus.update(entry)
         return True
 
-    def _update_back_button(self, dt: float, *, enabled: bool = True, enter: bool = True) -> None:
+    def _update_back_button(self, dt: float, *, enabled: bool = True) -> None:
         dt_ms = int(min(dt, 0.1) * 1000.0)
         entry = self._entry
         if entry is None:
             return
 
+        focus = self.state.focus
         enabled = enabled and self._entry_enabled()
         hovered = enabled and self._hovered_entry(entry)
         self._hovered = hovered
 
-        if (rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)) and enabled:
+        if focus.escape and enabled:
             self._begin_close_transition(self._back_action)
-        if enter and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
+        if entry.focused and focus.enter and enabled:
             self._begin_close_transition(self._back_action)
         if enabled and hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._begin_close_transition(self._back_action)
@@ -139,6 +142,8 @@ class PanelMenuView:
         else:
             entry.hover_amount -= dt_ms * 2
         entry.hover_amount = max(0, min(1000, entry.hover_amount))
+        if entry.focused and focus.timer_ms > 0:
+            entry.hover_amount = focus.timer_ms
 
         if entry.ready_timer_ms < 0x100:
             entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
@@ -156,17 +161,14 @@ class PanelMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
             locked=True,
-            timeline_ms=self._transition.timeline_ms,
+            timeline_ms=self.state.ui.timeline_ms,
         )
         self._draw_contents()
-        draw_screen_cursor(
-            resources=require_runtime_resources(self.state),
-            pulse_time=self._cursor_pulse_time,
-        )
+        ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
@@ -184,14 +186,14 @@ class PanelMenuView:
             y += 22
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
         if isinstance(action, StartRun):
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def _init_ground(self) -> None:
         if self.state.pause_background is not None:
@@ -202,10 +204,8 @@ class PanelMenuView:
     def _draw_panel(self) -> None:
         panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (
@@ -238,16 +238,14 @@ class PanelMenuView:
     def _back_button_pos(self, entry: MenuEntry, resources: RuntimeResources) -> Vec2:
         item_w = float(resources.texture(TextureId.UI_MENU_ITEM).width)
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=2,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=self._back_element,
             width=item_w * back_button_scale(self._menu_screen_width)[0],
         )
         return Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
 
     def _entry_enabled(self) -> bool:
-        return self._transition.timeline_ms >= PANEL_TIMELINE_START_MS
+        return self.state.ui.timeline_ms >= ui_element_timeline_window(self._back_element)[1]
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         mouse = canvas.mouse_position()

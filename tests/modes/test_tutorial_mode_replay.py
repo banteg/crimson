@@ -3,12 +3,12 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.modes.components import perk_prompt_controller
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.perk_menu import PERK_MENU_TRANSITION_MS
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -61,56 +61,45 @@ def test_tutorial_recorded_first_shot_replays_the_live_startup(make_mode_config,
     assert live_tick.presentation == replay_tick.presentation
 
 
-def test_tutorial_stage6_pick_waits_for_sim_progress_before_reopen(mocker, make_mode_config, assets_dir) -> None:
-    cfg = make_mode_config(game_mode=GameMode.TUTORIAL)
-    mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
+def test_tutorial_perk_menu_opens_from_the_level_up_prompt(mocker, make_mode_config, assets_dir) -> None:
+    # Native has no tutorial auto-open: stage 6 asks the player to click the level-up sign.
+    mode = TutorialMode(
+        ViewContext(assets_dir=assets_dir),
+        config=make_mode_config(game_mode=GameMode.TUTORIAL),
+        audio_rng=Crand(0xBEEF),
+    )
     mode.open()
-    session = mode._sim_session
-    assert session is not None
-
     mode.state.tutorial.stage_index = 6
-    mode.state.perk_selection.pending_count = 2
+    mode.state.perk_selection.pending_count = 1
+    held: set[int] = set()
+    mocker.patch.object(
+        perk_prompt_controller,
+        "input_code_is_down",
+        side_effect=lambda code, player_index=0: code in held,
+    )
+    mocker.patch.object(perk_prompt_controller.rl, "is_key_pressed", return_value=False)
+    mocker.patch.object(perk_prompt_controller.rl, "is_mouse_button_down", return_value=False)
+    mocker.patch.object(perk_prompt_controller, "input_primary_just_pressed", return_value=False)
 
-    def _pick_once(_ctx, _choices, *, dt_ui_ms: float) -> int | None:
-        _ = dt_ui_ms
-        mode._perk_menu.close()
-        return 0
+    for _ in range(30):
+        mode.update(1.0 / 60.0)
+    assert not mode._perk_menu.active
+    assert mode._perk_prompt.timer_ms > 0.0
 
-    mocker.patch.object(mode._perk_menu, "handle_input", side_effect=_pick_once)
-
-    # The request rides the next tick, which opens the menu mid-tick.
-    mode.update(1.0 / 60.0)
-    assert mode._perk_menu.open
-    assert session.elapsed_ms > 0.0
-    elapsed_after_open = session.elapsed_ms
-
-    # The pick waits for the next simulated tick; the closing menu pauses the world.
-    mode._perk_menu.timeline_ms = PERK_MENU_TRANSITION_MS
-    mode.update(1.0 / 60.0)
-    assert mode._perk_pick_pending is True
-    assert session.elapsed_ms == elapsed_after_open
-
-    mode._perk_menu.timeline_ms = 0.0
-    mode.update(1.0 / 60.0)
-    assert mode._perk_pick_pending is False
-    assert mode.state.perk_selection.pending_count == 1
-    assert not mode._perk_menu.open
-
+    held.add(mode.config.controls.pick_perk_code)
     mode.update(1.0 / 60.0)
     assert mode._perk_menu.open
 
 
-def test_open_perk_menu_ignores_reopen_while_menu_active(mocker, make_mode_config, assets_dir) -> None:
+def test_request_perk_menu_ignores_reopen_while_menu_active(mocker, make_mode_config, assets_dir) -> None:
     cfg = make_mode_config(game_mode=GameMode.TUTORIAL)
     mode = TutorialMode(ViewContext(assets_dir=assets_dir), config=cfg, audio_rng=Crand(0xBEEF))
     mode.open()
 
     mode._perk_menu.open = True
 
-    record_checkpoint = mocker.patch.object(mode, "_record_replay_checkpoint")
     enqueue_command = mocker.patch.object(mode, "enqueue_input_command")
 
-    mode._open_perk_menu()
+    mode._request_perk_menu()
 
-    record_checkpoint.assert_not_called()
     enqueue_command.assert_not_called()

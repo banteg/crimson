@@ -4,6 +4,7 @@ from collections.abc import Callable
 
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
+from grim.color import grim_color
 from grim.config import CrimsonConfig
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -37,15 +38,11 @@ PERK_PROMPT_TEXT_OFFSET_Y = 8.0
 
 class PerkPromptUi:
     @staticmethod
-    def label(config: CrimsonConfig, *, pending_count: int) -> str:
+    def label(config: CrimsonConfig) -> str:
+        """`perk_prompt_update_and_render` draws the hint only with the info texts on."""
         if not config.gameplay.show_info_texts:
             return ""
-        pending = int(pending_count)
-        if pending <= 0:
-            return ""
-        suffix = f" ({pending})" if pending > 1 else ""
-        # Native `perk_prompt_update_and_render` formats `input_key_name(config_key_pick_perk)`.
-        return f"Press {input_code_name(config.controls.pick_perk_code)} to pick a perk{suffix}"
+        return f"Press {input_code_name(config.controls.pick_perk_code)} to pick a perk"
 
     @staticmethod
     def hinge(*, screen_w: float | None = None) -> Vec2:
@@ -82,7 +79,6 @@ class PerkPromptUi:
         timer_ms: float,
         pulse: float,
         ui_text_width: Callable[[str], int],
-        text_color: rl.Color,
     ) -> None:
         alpha = float(timer_ms) / PERK_PROMPT_MAX_TIMER_MS
         if alpha <= 1e-3:
@@ -93,11 +89,11 @@ class PerkPromptUi:
         rot_deg = -(1.0 - alpha) * 90.0
         tint = rl.Color(255, 255, 255, int(255 * alpha))
 
-        text_w = float(ui_text_width(label))
-        x = float(canvas.width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
-        y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
-        color = rl.Color(int(text_color.r), int(text_color.g), int(text_color.b), int(255 * alpha))
-        draw_ui_text(resources, label, Vec2(x, y), color=color)
+        if label:
+            text_w = float(ui_text_width(label))
+            x = float(canvas.width()) - PERK_PROMPT_TEXT_MARGIN_X - text_w
+            y = hinge.y + PERK_PROMPT_TEXT_OFFSET_Y
+            draw_ui_text(resources, label, Vec2(x, y), color=grim_color(1.0, 1.0, 1.0, alpha))
 
         tex = resources.texture(TextureId.UI_MENU_ITEM)
         bar_w = float(tex.width) * PERK_PROMPT_BAR_SCALE

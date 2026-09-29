@@ -10,7 +10,7 @@ const runtime_paths = @import("runtime_paths.zig");
 const state_mod = @import("runtime/state.zig");
 const verify_native = @import("verify_native.zig");
 
-pub const checkpoints_format_version: i32 = 5;
+pub const checkpoints_format_version: i32 = 6;
 const checkpoint_report_schema_version: i32 = 1;
 pub const max_checkpoints_payload_bytes: usize = 256 * 1024 * 1024;
 pub const max_checkpoints_file_bytes: usize = 257 * 1024 * 1024;
@@ -42,7 +42,6 @@ pub const ReplayDeathLedgerEntryWire = struct {
     type_id: i32,
     reward_value: f64,
     xp_awarded: i32,
-    owner_id: i32,
 
     pub fn msgpackRead(unpacker: anytype) !ReplayDeathLedgerEntryWire {
         const field_count = try unpacker.readMapHeader(u32);
@@ -52,13 +51,11 @@ pub const ReplayDeathLedgerEntryWire = struct {
             .type_id = 0,
             .reward_value = 0.0,
             .xp_awarded = 0,
-            .owner_id = 0,
         };
         var seen_creature_index = false;
         var seen_type_id = false;
         var seen_reward_value = false;
         var seen_xp_awarded = false;
-        var seen_owner_id = false;
 
         for (0..field_count) |_| {
             const field_name = try unpacker.readStringInto(&field_name_buf);
@@ -74,15 +71,12 @@ pub const ReplayDeathLedgerEntryWire = struct {
             } else if (std.mem.eql(u8, field_name, "xp_awarded")) {
                 entry.xp_awarded = try unpacker.readInt(i32);
                 seen_xp_awarded = true;
-            } else if (std.mem.eql(u8, field_name, "owner_id")) {
-                entry.owner_id = try unpacker.readInt(i32);
-                seen_owner_id = true;
             } else {
                 return error.UnknownStructField;
             }
         }
 
-        if (!seen_creature_index or !seen_type_id or !seen_reward_value or !seen_xp_awarded or !seen_owner_id) {
+        if (!seen_creature_index or !seen_type_id or !seen_reward_value or !seen_xp_awarded) {
             return error.MissingCheckpointDeathField;
         }
 
@@ -1129,7 +1123,6 @@ fn buildDeaths(
             .type_id = death.type_id,
             .reward_value = death.reward_value,
             .xp_awarded = death.xp_awarded,
-            .owner_id = death.owner.toLegacy(),
         };
     }
     return deaths;
@@ -1306,7 +1299,6 @@ fn deathsEqual(a: []const ReplayDeathLedgerEntryWire, b: []const ReplayDeathLedg
         if (left.type_id != right.type_id) return false;
         if (left.reward_value != right.reward_value) return false;
         if (left.xp_awarded != right.xp_awarded) return false;
-        if (left.owner_id != right.owner_id) return false;
     }
     return true;
 }
@@ -1598,10 +1590,6 @@ fn writeFirstDeathMismatch(
             try writer.print("  first state diff: deaths[{d}].xp_awarded expected={d} actual={d}\n", .{ idx, exp.xp_awarded, act.xp_awarded });
             return true;
         }
-        if (exp.owner_id != act.owner_id) {
-            try writer.print("  first state diff: deaths[{d}].owner_id expected={d} actual={d}\n", .{ idx, exp.owner_id, act.owner_id });
-            return true;
-        }
     }
     return false;
 }
@@ -1617,8 +1605,8 @@ fn writeFirstDeathSummary(
 
     const death = deaths[0];
     try writer.print(
-        "[ReplayDeathLedgerEntry(creature_index={d}, type_id={d}, reward_value={d}, xp_awarded={d}, owner_id={d})]",
-        .{ death.creature_index, death.type_id, death.reward_value, death.xp_awarded, death.owner_id },
+        "[ReplayDeathLedgerEntry(creature_index={d}, type_id={d}, reward_value={d}, xp_awarded={d})]",
+        .{ death.creature_index, death.type_id, death.reward_value, death.xp_awarded },
     );
 }
 
@@ -2473,19 +2461,21 @@ test "checkpoint diff maps checkpoint load errors to user details" {
     );
 }
 
-test "checkpoint death entries require owner id" {
+test "checkpoint death entries reject the v5 owner id" {
     const allocator = std.testing.allocator;
     const LegacyDeathEntry = struct {
         creature_index: i32,
         type_id: i32,
         reward_value: f64,
         xp_awarded: i32,
+        owner_id: i32,
     };
     const wire: LegacyDeathEntry = .{
         .creature_index = 5,
         .type_id = 2,
         .reward_value = 75.0,
         .xp_awarded = 10,
+        .owner_id = -100,
     };
 
     var writer: std.Io.Writer.Allocating = .init(allocator);
@@ -2493,7 +2483,7 @@ test "checkpoint death entries require owner id" {
     try msgpack.encode(wire, &writer.writer);
 
     try std.testing.expectError(
-        error.MissingCheckpointDeathField,
+        error.UnknownStructField,
         msgpack.decodeFromSlice(ReplayDeathLedgerEntryWire, allocator, writer.written()),
     );
 }

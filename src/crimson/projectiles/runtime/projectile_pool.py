@@ -8,7 +8,7 @@ import msgspec
 from grim.geom import Vec2
 
 from ...collision_math import within_native_find_radius
-from ...creatures.damage import creatures_apply_radius_damage
+from ...creatures.damage import creature_apply_damage, creatures_apply_radius_damage
 from ...creatures.damage_types import CreatureDamageType
 from ...creatures.lifecycle import creature_lifecycle_is_alive, creature_lifecycle_is_collidable
 from ...creatures.spawn_ids import CreatureFlags
@@ -23,7 +23,7 @@ from ...math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
-from ...owner_ref import OwnerRef
+from ...owner_id import OWNER_LOCAL_PLAYER
 from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import TERRAIN_SIZE
@@ -46,17 +46,11 @@ from .behaviors import (
     _ProjectileHitInfo,
     _ProjectileUpdateCtx,
 )
-from .collision import _apply_damage_to_creature
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
     from ...creatures.runtime import CreatureState
     from ...sim.world_state import WorldStepRuntime
-
-
-class PrimaryStepCtx(msgspec.Struct, frozen=True):
-    step_runtime: WorldStepRuntime
-    dt: float
 
 
 _DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
@@ -119,8 +113,7 @@ class ProjectilePool:
         pos: Vec2,
         angle: float,
         type_id: ProjectileTemplateId,
-        owner: OwnerRef,
-        hits_players: bool = False,
+        owner_id: int,
     ) -> int:
         index = None
         for i, entry in enumerate(self._entries):
@@ -151,8 +144,7 @@ class ProjectilePool:
         entry.speed_scale = 1.0
         weapon_entry = weapon_entry_for_projectile_type_id(type_id)
         entry.travel_budget = float(weapon_entry.travel_budget)
-        entry.owner = owner
-        entry.hits_players = bool(hits_players)
+        entry.owner_id = owner_id
 
         collision_profile = projectile_collision_profile(type_id)
         entry.hit_radius = float(collision_profile.hit_radius)
@@ -162,13 +154,12 @@ class ProjectilePool:
     def iter_active(self) -> list[Projectile]:
         return [entry for entry in self._entries if entry.active]
 
-    def step(self, ctx: PrimaryStepCtx) -> list[ProjectileHit]:
+    def step(self, step_runtime: WorldStepRuntime) -> list[ProjectileHit]:
         """Update the main projectile pool.
 
         Modeled after `projectile_update` (0x00420b90) for the subset used by demo/state-9 work.
         """
-        dt = f32(ctx.dt)
-        step_runtime = ctx.step_runtime
+        dt = f32(step_runtime.dt)
         world = step_runtime.world
         creatures = world.creatures.entries
         detail_preset = int(step_runtime.world.state.detail_preset)
@@ -243,7 +234,7 @@ class ProjectilePool:
                         else:
                             radius, damage = x87_pc24_mul(ion_scale, 60.0), x87_pc24_mul(dt, 40.0)
                         creatures_apply_radius_damage(
-                            step_runtime, proj.pos, radius, damage, CreatureDamageType.ION, proj.owner,
+                            step_runtime, proj.pos, radius, damage, CreatureDamageType.ION,
                         )
                     case ProjectileTemplateId.ION_CANNON:
                         proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.7)))
@@ -253,7 +244,6 @@ class ProjectilePool:
                             x87_pc24_mul(ion_scale, 128.0),
                             x87_pc24_mul(dt, 300.0),
                             CreatureDamageType.ION,
-                            proj.owner,
                         )
                     case ProjectileTemplateId.GAUSS_GUN:
                         proj.life_timer = x87_pc24_sub(proj.life_timer, x87_pc24_mul(dt, f32(0.1)))
@@ -271,7 +261,7 @@ class ProjectilePool:
                 continue
 
             steps = int(proj.travel_budget)
-            if barrel_greaser_active and proj.owner.is_player():
+            if barrel_greaser_active and proj.owner_id < 0:
                 steps *= 2
 
             # Decompile parity (`projectile_update`, 0x00420b90):
@@ -315,7 +305,6 @@ class ProjectilePool:
                     acc = Vec2()
 
                     hit_idx = None
-                    owner_creature_idx = proj.owner.creature_index_in_bounds(len(creatures))
                     for idx in creature_spatial.candidate_indices(pos=proj.pos, radius=float(proj.hit_radius)):
                         creature = creatures[idx]
                         if not _creature_is_collidable(creature):
@@ -329,10 +318,7 @@ class ProjectilePool:
                             hit_idx = idx
                             break
 
-                    owner_collision = (
-                        hit_idx is not None and owner_creature_idx is not None and int(hit_idx) == owner_creature_idx
-                    )
-                    if owner_collision:
+                    if hit_idx == proj.owner_id:
                         # Native `creature_find_in_radius` does not skip owner id during
                         # search; owner hits are discarded after the first match instead of
                         # continuing to a later candidate in the same tick.
@@ -347,11 +333,13 @@ class ProjectilePool:
                             # shock-chain projectile slot in this branch.
                             can_hit_players = False
 
-                        if proj.hits_players and can_hit_players:
+                        # Only -100, the local player's shots with friendly fire off, never hit players;
+                        # `player_find_in_radius` skips the shooter at `-1 - owner_id`.
+                        if proj.owner_id != OWNER_LOCAL_PLAYER and can_hit_players:
                             hit_player_idx = None
-                            owner_player_index = proj.owner.player_index_in_bounds(len(players))
+                            skip_index = -1 - proj.owner_id
                             for idx, player in enumerate(players):
-                                if owner_player_index is not None and idx == owner_player_index:
+                                if idx == skip_index:
                                     continue
                                 if float(player.health) <= 0.0:
                                     continue
@@ -391,14 +379,10 @@ class ProjectilePool:
                     if type_id == ProjectileTemplateId.SPLITTER_GUN:
                         _pre_hit_splitter(update_ctx, proj, int(hit_idx))
 
-                    # Native increments the global shots-hit counter for any
-                    # owner (creature-owned splitter children included) when the
-                    # target is still at the alive sentinel; non-player owners
-                    # map to the player-1 global slot.
-                    owner_player_index = proj.owner.player_index_in_bounds(len(runtime_state.shots_hit))
-                    if creature_lifecycle_is_alive(creature.lifecycle_stage) and runtime_state.shots_hit:
-                        shots_hit = runtime_state.shots_hit
-                        shots_hit[owner_player_index if owner_player_index is not None else 0] += 1
+                    # Native counts a hit for any owner (creature-owned splitter children included)
+                    # while the target is still at the alive sentinel.
+                    if creature_lifecycle_is_alive(creature.lifecycle_stage):
+                        runtime_state.shots_hit += 1
 
                     target = creature.pos
                     hit = ProjectileHit(
@@ -460,26 +444,12 @@ class ProjectilePool:
                         impulse = Vec2(float(impulse_axis), float(impulse_axis))
                         damage_type = _damage_type_for()
                         if remaining <= 0.0:
-                            _apply_damage_to_creature(
-                                int(hit_idx),
-                                float(damage_amount),
-                                damage_type=damage_type,
-                                impulse=impulse,
-                                owner=proj.owner,
-                                step_runtime=step_runtime,
-                            )
+                            creature_apply_damage(step_runtime, int(hit_idx), float(damage_amount), damage_type, impulse)
                             creature_spatial.sync_index(int(hit_idx))
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
-                            _apply_damage_to_creature(
-                                int(hit_idx),
-                                float(remaining),
-                                damage_type=damage_type,
-                                impulse=impulse,
-                                owner=proj.owner,
-                                step_runtime=step_runtime,
-                            )
+                            creature_apply_damage(step_runtime, int(hit_idx), float(remaining), damage_type, impulse)
                             creature_spatial.sync_index(int(hit_idx))
                             proj.damage_pool = x87_pc24_sub(proj.damage_pool, creature.hp)
 

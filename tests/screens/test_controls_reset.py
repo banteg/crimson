@@ -12,7 +12,9 @@ from crimson.gamepad_profile import (
 )
 from crimson.input_codes import PadCode
 from crimson.movement_controls import MovementControlType
-from crimson.screens.panels.controls import ControlsMenuView
+from crimson.screens.assets import require_runtime_resources
+from crimson.screens.panels.controls import CONTROLS_RESET_BUTTON_OFFSET, ControlsMenuView
+from crimson.ui.perk_menu import button_width
 from grim.config import (
     DEFAULT_PICK_PERK_CODE,
     DEFAULT_RELOAD_CODE,
@@ -81,12 +83,13 @@ def test_reset_of_other_players_keeps_player_one_globals(pad_connected: bool) ->
 def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuView:
     view = ControlsMenuView(make_game_state(resources=screen_resources))
     view.open()
-    view._transition.timeline_ms = view._transition.duration_ms
+    view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
     return view
 
 
 def _click_reset(view: ControlsMenuView, mocker: MockerFixture) -> None:
-    pos, width = view._reset_button_layout(left_top_left=view._left_panel_top_left())
+    pos = view._left_panel_top_left() + CONTROLS_RESET_BUTTON_OFFSET
+    width = button_width(require_runtime_resources(view.state), view._reset_button)
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(pos.x + width * 0.5, pos.y + 16.0))
     mocker.patch.object(
         rl,
@@ -121,4 +124,4 @@ def test_reset_button_resets_saves_and_logs(
     assert state.console.log.lines[-1] == log
     saved = load_crimson_cfg(state.config.path)
     assert saved.controls == state.config.controls
-    assert not controls_view._transition.closing
+    assert not controls_view.state.ui.closing

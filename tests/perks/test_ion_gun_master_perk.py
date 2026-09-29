@@ -3,9 +3,8 @@ from __future__ import annotations
 from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.math_parity import f32
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import PrimaryStepCtx
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
@@ -22,7 +21,7 @@ def test_ion_gun_master_increases_ion_damage() -> None:
     perks[PerkId.ION_GUN_MASTER] = 1
 
     world = world_with_creature(creature, rng=Crand(0x1234), perks=perks, players=[player])
-    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 7, Vec2(), OwnerRef.from_local_player(0))
+    killed = creature_apply_damage(make_step_runtime(world, dt=0.016), 0, 10.0, 7, Vec2())
 
     assert killed is False
     assert_float_close(creature.hp, 88.0)
@@ -38,12 +37,12 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
             pos=Vec2(),
             angle=0.0,
             type_id=ProjectileTemplateId.ION_RIFLE,
-            owner=OwnerRef.from_local_player(0),
+            owner_id=OWNER_LOCAL_PLAYER,
         )
         pool.entries[proj_idx].life_timer = 0.39
 
         pool.step(
-            PrimaryStepCtx(step_runtime=make_step_runtime(world, dt=0.016), dt=0.016),
+            make_step_runtime(world, dt=0.016),
         )
 
         return float(creatures[0].hp)

@@ -98,10 +98,11 @@ def test_perk_menu_pick_returns_selected_index_and_plays_button_click(mocker) ->
     menu.open = True
 
     mocker.patch.object(perk_menu_controller_module, "button_update", side_effect=lambda *args, **kwargs: False)
-    _patch_perk_menu_raylib(
-        mocker,
-        is_key_pressed=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER),
-    )
+    _patch_perk_menu_raylib(mocker)
+    # The frame's Enter reaches the menu through the focus frame the game loop starts.
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: int(key) == int(rl.KeyboardKey.KEY_ENTER))
+    mocker.patch.object(rl, "is_key_down", return_value=False)
+    menu.focus.begin_frame(0)
 
     choice_index = menu.handle_input(
         _ctx(),
@@ -138,7 +139,7 @@ def test_perk_menu_cancel_plays_button_click_and_returns_none(mocker) -> None:
 def test_draw_accepts_prepared_choices_without_selection_helpers(mocker) -> None:
     menu = PerkMenuController()
     menu.open = True
-    menu.timeline_ms = 1_000.0
+    menu.timeline.timeline_ms = int(1_000.0)
     mocker.patch.object(perk_menu_controller_module, "draw_classic_menu_panel", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_menu_item", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_ui_text", return_value=None)

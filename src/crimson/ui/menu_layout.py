@@ -51,6 +51,7 @@ class MenuEntry(msgspec.Struct):
     y: float
     hover_amount: int = 0
     ready_timer_ms: int = 0x100
+    focused: bool = False
 
 
 def menu_item_bounds(pos: Vec2, item_size: Vec2, item_scale: float, local_y_shift: float) -> Rect:
@@ -67,8 +68,11 @@ def menu_item_bounds(pos: Vec2, item_size: Vec2, item_scale: float, local_y_shif
     return Rect.from_pos_size(top_left, bottom_right - top_left)
 
 
-def update_menu_item_timers(entries: list[MenuEntry], hovered_index: int | None, dt_ms: int) -> None:
-    """`ui_element_update`: the ready glow ramp and the hover fade of each item."""
+def update_menu_item_timers(
+    entries: list[MenuEntry], hovered_index: int | None, dt_ms: int, *, focus_timer_ms: int,
+) -> None:
+    """`ui_element_update`: the ready glow ramp and the hover fade of each item; `ui_element_render` then pins a
+    focused item's hover to the focus timer while it runs."""
 
     for idx, entry in enumerate(entries):
         if entry.ready_timer_ms < 0x100:
@@ -78,6 +82,8 @@ def update_menu_item_timers(entries: list[MenuEntry], hovered_index: int | None,
         else:
             entry.hover_amount -= dt_ms * 2
         entry.hover_amount = max(0, min(1000, entry.hover_amount))
+        if entry.focused and focus_timer_ms > 0:
+            entry.hover_amount = focus_timer_ms
 
 
 def label_alpha(counter_value: int) -> int:
@@ -88,16 +94,6 @@ def label_alpha(counter_value: int) -> int:
 def menu_slot_pos_x(slot: int) -> float:
     # ui_menu_layout_init: subtract 20, 40, ... from later menu items
     return MENU_LABEL_BASE_X - float(slot * 20)
-
-
-def menu_slot_start_ms(slot: int) -> int:
-    # ui_menu_layout_init: start_time_ms is the fully-visible time.
-    return (slot + 2) * 100 + 300
-
-
-def menu_slot_end_ms(slot: int) -> int:
-    # ui_menu_layout_init: end_time_ms is the fully-hidden time.
-    return (slot + 2) * 100
 
 
 def main_menu_item_scale(width: int, slot: int) -> tuple[float, float]:

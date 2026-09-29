@@ -7,20 +7,25 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ScreenAction, ShowScores
+from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.audio import AudioState, play_music, stop_music, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
-from grim.rand import Crand
+from grim.math import clamp
+from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
-from ..local_input import LocalInputInterpreter
+from ..game_states import GameStateId
+from ..local_input import PAD_AIM_DIST_MUL_DEFAULT, LocalInputInterpreter
+from ..perks.selection import perk_selection_prepared_choices
 from ..persistence.highscores import HighScoreRecord
 from ..quests.level import QuestLevel
 from ..render.rtx.mode import RtxRenderMode
@@ -38,6 +43,7 @@ from ..replay.checkpoints import (
 )
 from ..replay.ticks import LiveTickSource, step_replay_tick
 from ..screens.results.game_over import GameOverUi
+from ..screens.ui_timeline import UiTimeline
 from ..sim.batch_apply import apply_presentation_plans
 from ..sim.clock import FixedStepClock
 from ..sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand
@@ -47,11 +53,16 @@ from ..sim.run_init import PreparedRun, initialize_run
 from ..sim.run_result import RunOutcome, RunResult, build_run_result
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
+from ..sim.timing import ftol_ms_i32
 from ..terrain_slots import TerrainSlotTriplet
-from ..ui.hud import HudState, draw_target_health_bar
+from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
+from ..ui.focus import UiFocus
+from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar
+from ..ui.keybind_help import ui_render_keybind_help
 from ..world.runtime import WorldRuntime
-from .components.highscore_record_builder import build_highscore_record_for_game_over
+from .components.highscore_record_builder import build_highscore_record
 from .components.perk_menu_controller import PerkMenuController, PerkMenuRuntime, PerkMenuUiContext
+from .components.perk_prompt_controller import PerkPromptState
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -66,8 +77,11 @@ if TYPE_CHECKING:
 class _ModePerkMenuRuntime(PerkMenuRuntime):
     mode: BaseGameplayMode
 
-    def on_close(self) -> None:
-        self.mode._perk_menu_closed()
+    def ui_timeline(self) -> UiTimeline:
+        return self.mode._ui_timeline
+
+    def ui_focus(self) -> UiFocus:
+        return self.mode._ui_focus
 
     def play_sfx(self, sfx_id: SfxId) -> None:
         self.mode.audio_bridge.play_sfx(sfx_id)
@@ -79,6 +93,11 @@ class _ModeFrameState(msgspec.Struct, frozen=True):
 
 
 class BaseGameplayMode:
+    # Whether the tick that ends the run starts the run-down; Typ-o starts it after its death animation.
+    _RUN_DOWN_ON_OUTCOME = True
+    # `gameplay_update_and_render` pauses on F1 and shows the key info; Typ-o's update has no pause.
+    _KEY_INFO_PAUSE = True
+
     def __init__(
         self,
         ctx: ViewContext,
@@ -91,6 +110,7 @@ class BaseGameplayMode:
     ) -> None:
         self._assets_root = ctx.assets_dir
         self._small: SmallFontData | None = None
+        self._grim_mono: GrimMonoFont | None = None
         self._hud_state = HudState()
         self.default_game_mode_id = default_game_mode_id
 
@@ -100,9 +120,10 @@ class BaseGameplayMode:
 
         self.close_requested = False
         self._action: ScreenAction | None = None
+        # Native `game_paused_flag` and `pause_keybind_help_alpha_ms`.
         self._paused = False
+        self._keybind_help_alpha_ms = 0
         self._status_base: GameStatus | None = None
-        self._status_sim: GameStatus | None = None
         self._local_input: LocalInputInterpreter = LocalInputInterpreter()
         self._game_over_ui: GameOverUi = GameOverUi(
             assets_root=self._assets_root,
@@ -115,35 +136,45 @@ class BaseGameplayMode:
         # The next run's flags; the run spec carries them into the gameplay state.
         self.hardcore = False
         self.quest_fail_retry_count = 0
-        self.audio = audio
-        self.audio_rng = audio_rng
-        self.rtx_mode = RtxRenderMode.CLASSIC
+        # The runtime owns the run (session, world), audio and render mode; the mode reads them from it.
         self._world_runtime = WorldRuntime(
             assets_dir=self.assets_dir,
             preserve_bugs=bool(ctx.preserve_bugs),
             config=self.config,
-            audio=self.audio,
-            audio_rng=self.audio_rng,
-            rtx_mode=self.rtx_mode,
+            audio=audio,
+            audio_rng=audio_rng,
+            rtx_mode=RtxRenderMode.CLASSIC,
         )
         self.render_resources = self._world_runtime.render_resources
         self.audio_bridge = self._world_runtime.audio_bridge
         self.terrain_runtime = self._world_runtime.terrain_runtime
 
         self.camera = Vec2(-1.0, -1.0)
-        self._sync_world_runtime_config()
         player_count = self._runtime_player_count()
         self._world_runtime.reset(player_count=max(1, min(4, int(player_count))))
-        self._bind_world()
+        preserve_bugs = self._world_runtime.preserve_bugs
+        self._local_input.set_preserve_bugs(preserve_bugs)
+        self._hud_state.preserve_bugs = preserve_bugs
 
         self._game_over_active = False
         self._game_over_record: HighScoreRecord | None = None
-        self._requested_perk_menu: PerkMenuController | None = None
+        # The level-up prompt and perk menu `gameplay_update_and_render` runs outside Rush and Typ-o.
+        self._perk_prompt = PerkPromptState()
+        self._perk_menu = PerkMenuController(runtime=self._perk_menu_runtime())
+        self._perk_menu_requested = False
+        self._counted_level = 1
         self._game_over_banner = "reaper"
 
         self._ui_mouse = Vec2()
-        self._cursor_pulse_time = 0.0
         self._last_dt_ms = 0.0
+        # The menu timeline gameplay runs on (GameState.ui once bound), and native `gameplay_transition_latch`.
+        self._ui_timeline = UiTimeline()
+        # The menu keyboard focus (GameState.focus once bound) for the perk menu, tutorial and game over widgets.
+        self._ui_focus = UiFocus()
+        self._gameplay_transition_latch = False
+        # Native `game_state_pending` while gameplay runs the timeline down: the pause menu, or the run's end.
+        self._pause_pending = False
+        self._run_ending = False
         self._screen_fade: GameState | None = None
         self._terrain_regen_counter = 0
         self._run_reset_seed = 0
@@ -153,7 +184,6 @@ class BaseGameplayMode:
         self._replay_checkpoints_enabled = bool(ctx.replay_checkpoints)
         self._replay_checkpoints_last_tick: int | None = None
         self._replay_result: RunResult | None = None
-        self._sim_session: DeterministicSession | None = None
         self._live_ticks = LiveTickSource()
         self._tick_clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
 
@@ -164,6 +194,34 @@ class BaseGameplayMode:
     @property
     def world(self) -> WorldState:
         return self._world_runtime.world
+
+    @property
+    def state(self) -> GameplayState:
+        return self._world_runtime.world.state
+
+    @property
+    def creatures(self) -> CreaturePool:
+        return self._world_runtime.world.creatures
+
+    @property
+    def player(self) -> PlayerState:
+        return self._world_runtime.world.players[0]
+
+    @property
+    def _sim_session(self) -> DeterministicSession | None:
+        return self._world_runtime.session
+
+    @property
+    def audio(self) -> AudioState | None:
+        return self._world_runtime.audio
+
+    @property
+    def audio_rng(self) -> CrandLike:
+        return self._world_runtime.audio_rng
+
+    @property
+    def rtx_mode(self) -> RtxRenderMode:
+        return self._world_runtime.rtx_mode
 
     @property
     def camera(self) -> Vec2:
@@ -177,13 +235,6 @@ class BaseGameplayMode:
     def preserve_bugs(self) -> bool:
         return self._world_runtime.preserve_bugs
 
-    def _sync_world_runtime_config(self) -> None:
-        runtime = self._world_runtime
-        runtime.config = self.config
-        runtime.audio = self.audio
-        runtime.audio_rng = self.audio_rng
-        runtime.rtx_mode = self.rtx_mode
-
     def apply_terrain_setup(
         self,
         *,
@@ -196,7 +247,9 @@ class BaseGameplayMode:
         self._world_runtime.draw(entity_alpha=entity_alpha)
 
     def _draw_aim_indicators(self, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
-        self._world_runtime.draw_aim_indicators(show_aim=show_aim, entity_alpha=entity_alpha)
+        # Native clamps `cv_aimEnhancementFade` into 0..1 each time it draws the reticle.
+        fade = clamp(self._cvar_float("cv_aimEnhancementFade", 0.7), 0.0, 1.0)
+        self._world_runtime.draw_aim_indicators(show_aim=show_aim, aim_enhancement_fade=fade, entity_alpha=entity_alpha)
 
     def world_to_screen(self, pos: Vec2) -> Vec2:
         return self._world_runtime.world_to_screen(pos)
@@ -221,6 +274,29 @@ class BaseGameplayMode:
             return GameMode(self.config.gameplay.mode)
         except ValueError:
             return GameMode.DEMO
+
+    def _ui_transparency(self) -> float:
+        """`ui_render_hud`: `cv_uiTransparency` scales the HUD's transition alpha when it is within 0..1."""
+        value = self._cvar_float("cv_uiTransparency", 1.0)
+        return value if 0.0 <= value <= 1.0 else 1.0
+
+    def _draw_hud(self, *, elapsed_ms: float, quest_progress_ratio: float | None = None) -> float:
+        """`hud_update_and_render`; returns the HUD's bottom edge."""
+        return draw_hud_overlay(
+            HudRenderContext(
+                resources=self.render_resources.resources,
+                state=self._hud_state,
+                font=self._small,
+                alpha=self._hud_alpha() * self._ui_transparency(),
+                game_mode=self._config_game_mode_id(),
+                small_indicators=self._hud_small_indicators(),
+            ),
+            players=self.world.players,
+            bonus_hud=self.state.bonus_hud,
+            elapsed_ms=elapsed_ms,
+            frame_dt_ms=self._last_dt_ms,
+            quest_progress_ratio=quest_progress_ratio,
+        )
 
     def _draw_target_health_bar(self, *, alpha: float = 1.0) -> None:
         creatures = self.creatures.entries
@@ -253,16 +329,6 @@ class BaseGameplayMode:
                 continue
             draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha)
 
-    def _bind_world(self) -> None:
-        self.state: GameplayState = self.world.state
-        self.creatures: CreaturePool = self.world.creatures
-        self.player: PlayerState = self.world.players[0]
-        preserve_bugs = self.state.preserve_bugs
-        self._local_input.set_preserve_bugs(preserve_bugs)
-        self._hud_state.preserve_bugs = preserve_bugs
-        self._game_over_ui.preserve_bugs = preserve_bugs
-        self.state.status = self._status_sim
-
     def _any_player_alive(self) -> bool:
         return any(player.health > 0.0 for player in self.world.players)
 
@@ -270,26 +336,24 @@ class BaseGameplayMode:
     def save_status(self) -> GameStatus | None:
         return self._status_base
 
-    @property
-    def sim_status(self) -> GameStatus | None:
-        return self._status_sim
-
     def bind_status(self, status: GameStatus | None) -> None:
         self._status_base = status
-        self._status_sim = status
         self.state.status = status
 
     def bind_screen_fade(self, fade: GameState | None) -> None:
         self._screen_fade = fade
+        if fade is not None:
+            # Gameplay, perk selection and game over all run on the one menu timeline.
+            self._ui_timeline = fade.ui
+            self._game_over_ui.timeline = fade.ui
+            self._ui_focus = fade.focus
+            self._game_over_ui.focus = fade.focus
 
-    def bind_audio(self, audio: AudioState | None, audio_rng: Crand) -> None:
-        self.audio = audio
-        self.audio_rng = audio_rng
+    def bind_audio(self, audio: AudioState | None, audio_rng: CrandLike) -> None:
         self._world_runtime.audio = audio
         self._world_runtime.audio_rng = audio_rng
 
     def set_rtx_mode(self, mode: RtxRenderMode) -> None:
-        self.rtx_mode = mode
         self._world_runtime.rtx_mode = mode
 
     def _update_audio(self, dt: float) -> None:
@@ -314,9 +378,6 @@ class BaseGameplayMode:
     def _perk_menu_runtime(self) -> PerkMenuRuntime:
         return _ModePerkMenuRuntime(mode=self)
 
-    def _perk_menu_closed(self) -> None:
-        return None
-
     def _perk_menu_ui_context(self) -> PerkMenuUiContext:
         return PerkMenuUiContext(
             player=self.player,
@@ -327,13 +388,51 @@ class BaseGameplayMode:
             mouse=self._ui_mouse_pos(),
         )
 
-    def _request_perk_menu(self, menu: PerkMenuController) -> None:
+    def _request_perk_menu(self) -> None:
         """Ask the next tick to open the perk menu; it opens mid-tick, as in native."""
 
-        if menu.active or self._requested_perk_menu is not None:
+        if self._perk_menu.active or self._perk_menu_requested:
             return
-        self._requested_perk_menu = menu
+        self._perk_menu_requested = True
         self.enqueue_input_command(PerkMenuOpenCommand(player_index=0))
+
+    def _update_perk_ui(self, *, dt_ui_ms: float) -> None:
+        """The level-up prompt and perk menu input of `gameplay_update_and_render`."""
+
+        perk_ctx = self._perk_menu_ui_context()
+        pending_count = self._ui_pending_perk_count()
+        if self._perk_menu.open:
+            choice_index = self._perk_menu.handle_input(
+                perk_ctx,
+                perk_selection_prepared_choices(self.state),
+                dt_ui_ms=float(dt_ui_ms),
+            )
+            if choice_index is not None:
+                self.record_perk_pick_command(int(choice_index), player_index=0)
+        if not self._paused:
+            self._perk_prompt.tick_pulse(float(dt_ui_ms))
+        players = self.world.players
+        # Native checks player one, and player two only in a two-player game.
+        alive = players[0].health > 0.0 or (len(players) == 2 and players[1].health > 0.0)
+        if self._perk_prompt.poll_open_request(
+            ctx=perk_ctx,
+            config=self.config,
+            pending_count=pending_count,
+            alive=alive,
+            paused=self._paused,
+            menu_active=self._perk_menu.active,
+            player_count=len(players),
+        ):
+            self._request_perk_menu()
+        self._perk_prompt.tick_timer(
+            pending_count=pending_count,
+            menu_active=self._perk_menu.active,
+            dt_ui_ms=float(dt_ui_ms),
+        )
+        self._perk_menu.tick_timeline()
+
+    def _draw_perk_prompt(self) -> None:
+        self._perk_prompt.draw(ctx=self._perk_menu_ui_context(), config=self.config, ui_text_width=self._ui_text_width)
 
     def _ui_mouse_pos(self) -> rl.Vector2:
         return self._ui_mouse.to_rl()
@@ -349,17 +448,94 @@ class BaseGameplayMode:
             max(0.0, screen_h - 1.0),
         )
 
-    def _tick_frame(self, dt: float, *, clamp_cursor_pulse: bool = False) -> tuple[float, float]:
+    def _tick_frame(self, dt: float) -> tuple[float, float]:
         dt = float(dt)
         dt_ui_ms = float(min(dt, 0.1) * 1000.0)
         self._last_dt_ms = dt_ui_ms
-
         self._update_ui_mouse()
-
-        pulse_dt = float(min(dt, 0.1)) if clamp_cursor_pulse else dt
-        self._cursor_pulse_time += pulse_dt * 1.1
-
+        if not (self._game_over_active or self._pause_pending or self._run_ending):
+            # The game-over panel advances the timeline itself while it is up, and a gameplay
+            # run-down advances it with the simulated ticks.
+            self._ui_timeline.advance(int(dt_ui_ms))
+            if self._hud_alpha() >= 1.0:
+                self._gameplay_transition_latch = False
+        if self._KEY_INFO_PAUSE and not self._game_over_active:
+            self._update_key_info_pause(int(dt_ui_ms))
         return dt, dt_ui_ms
+
+    def _update_key_info_pause(self, dt_ms: int) -> None:
+        """`gameplay_update_and_render`: F1 toggles `game_paused_flag`, and the key info fades with it."""
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F1):
+            self._paused = not self._paused
+        step = dt_ms * 2 if self._paused else -dt_ms * 4
+        self._keybind_help_alpha_ms = min(1000, max(0, self._keybind_help_alpha_ms + step))
+        # The world is frozen, but native keeps moving the timeline by the frame, so a pending exit still happens.
+        session = self._sim_session
+        if self._paused and (self._pause_pending or self._run_ending) and session is not None:
+            self._run_down_gameplay(dt_ms, session)
+
+    def _draw_keybind_help(self) -> None:
+        if self._keybind_help_alpha_ms <= 0:
+            return
+        small = self._small
+        mono = self._grim_mono
+        assert small is not None and mono is not None, "key info needs the loaded fonts"
+        ui_render_keybind_help(
+            Vec2(float(canvas.width()) * 0.5 - 256.0, float(canvas.height()) * 0.5 - 128.0),
+            self._keybind_help_alpha_ms * 0.001,
+            config=self.config,
+            small=small,
+            mono=mono,
+        )
+
+    @property
+    def game_state_id(self) -> GameStateId:
+        """Native `game_state_id` while this run is on screen: its gameplay state, or the perk menu or game over over it."""
+        if self._game_over_active:
+            return GameStateId.GAME_OVER
+        if self._perk_menu.active:
+            return GameStateId.PERK_SELECTION
+        return GameStateId.TYPO_GAMEPLAY if self.default_game_mode_id == GameMode.TYPO else GameStateId.GAMEPLAY
+
+    def _hud_alpha(self) -> float:
+        """`hud_update_and_render`: the HUD fades in with the timeline over `ui_element_table[28]`'s span."""
+        return min(1.0, max(0.0, self._ui_timeline.timeline_ms / ui_element_timeline_window(28)[1]))
+
+    def _enter_gameplay_timeline(self) -> None:
+        """`game_state_set(GAME_STATE_GAMEPLAY)`."""
+        self._paused = False
+        self._pause_pending = False
+        self._run_ending = False
+        self._ui_timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))
+
+    def _request_pause(self) -> None:
+        """`game_frame_update`: Esc makes the pause menu pending; gameplay runs on while the HUD fades out."""
+        # Only gameplay takes Esc: not while the perk panel is still sliding out.
+        if self._pause_pending or self._run_ending or self._ui_timeline.closing:
+            return
+        self._pause_pending = True
+        self._ui_timeline.begin()
+
+    def _run_down_gameplay(self, dt_ms: int, session: DeterministicSession) -> bool:
+        """Advance a pending exit by `dt_ms`; True once the timeline is out and the exit happened.
+
+        Native simulates and moves the timeline by the same `frame_dt_ms`, so the run-down lasts its timeline
+        span of simulated time, at most 500ms after the run ends (the verifiers bound recordings by this).
+        """
+        self._ui_timeline.advance(dt_ms)
+        if not self._ui_timeline.ready:
+            return False
+        if self._run_ending:
+            self._run_ending = False
+            # The pending state is set again every frame, so the outcome is the one standing now.
+            self._finish_run(session.end_outcome())
+        else:
+            self._pause_pending = False
+            self._action = Route.PAUSE
+        return True
+
+    def _draw_game_cursor(self) -> None:
+        ui_cursor_render(self.render_resources.resources, dt=self._last_dt_ms * 0.001, pos=self._ui_mouse)
 
     def _begin_mode_update(self, dt: float) -> _ModeFrameState | None:
         self._update_audio(dt)
@@ -520,13 +696,19 @@ class BaseGameplayMode:
         self.close_requested = False
         self._action = None
         self._paused = False
+        self._keybind_help_alpha_ms = 0
         self._small = load_small_font(self._assets_root)
+        self._grim_mono = load_grim_mono_font(self._assets_root)
         self._hud_state = HudState()
 
         self._game_over_active = False
         self._game_over_record = None
         self._game_over_banner = "reaper"
         self._game_over_ui.close()
+        self._perk_prompt.reset()
+        self._perk_menu.reset()
+        self._perk_menu_requested = False
+        self._counted_level = 1
 
         # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
@@ -536,16 +718,16 @@ class BaseGameplayMode:
         seed = int(self.state.rng.state)
         self._run_reset_seed = int(seed) & 0xFFFFFFFF
 
-        self._sync_world_runtime_config()
         self._world_runtime.reset(seed=seed, player_count=max(1, min(4, int(player_count))))
         self._world_runtime.open_runtime()
-        self._bind_world()
         self._local_input.reset(players=self.world.players)
         self._reset_live_ticks()
         self._reset_replay_capture_state(clear_recorder=False)
 
         self._ui_mouse = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
-        self._cursor_pulse_time = 0.0
+        # A new run: world entities fade in with the timeline until the HUD is fully in.
+        self._enter_gameplay_timeline()
+        self._gameplay_transition_latch = True
 
     def _initialize_run(
         self,
@@ -555,7 +737,7 @@ class BaseGameplayMode:
         dictionary_words: tuple[str, ...] = (),
         highscore_names: tuple[str, ...] = (),
     ) -> PreparedRun:
-        status = self.state.status
+        status = self._status_base
         spec = RunSpec(
             game_mode_id=game_mode,
             seed=self._run_reset_seed,
@@ -566,14 +748,13 @@ class BaseGameplayMode:
             quest_fail_retry_count=self.quest_fail_retry_count,
             detail_preset=self.config.display.detail_preset,
             violence_disabled=self.config.display.violence_disabled,
-            status=RunStatus() if status is None else RunStatus.from_status_data(status.as_data()),
+            friendly_fire=self._cvar_float("cv_friendlyFire") != 0.0,
+            status=RunStatus() if status is None else RunStatus.from_status_data(status),
             typo_dictionary_words=dictionary_words,
             typo_highscore_names=highscore_names,
         )
         prepared = initialize_run(spec, status=status)
-        self._world_runtime.load_world_state(prepared.session.world)
-        self._status_sim = prepared.session.world.state.status
-        self._bind_world()
+        self._world_runtime.start_session(prepared.session)
         self._local_input.reset(players=self.world.players)
         self.apply_terrain_setup(terrain_slots=prepared.terrain.terrain_slots, seed=prepared.terrain.terrain_seed)
         self._reset_live_ticks()
@@ -586,6 +767,7 @@ class BaseGameplayMode:
     def resume(self) -> None:
         self._action = None
         self._reset_gameplay_frame_clock()
+        self._enter_gameplay_timeline()
 
     def close(self) -> None:
         self._game_over_ui.close()
@@ -603,7 +785,7 @@ class BaseGameplayMode:
     def _enter_game_over(self) -> None:
         if self._game_over_active:
             return
-        self._game_over_record = build_highscore_record_for_game_over(
+        self._game_over_record = build_highscore_record(
             state=self.state,
             player=self.player,
             survival_elapsed_ms=int(self._session_elapsed_ms()),
@@ -622,6 +804,8 @@ class BaseGameplayMode:
     def _finish_run_if_over(self) -> bool:
         """Between ticks: finish the run if the session's rules say it is over."""
 
+        if self._run_ending:
+            return False
         session = self._sim_session
         outcome = session.terminal_outcome() if session is not None else None
         if outcome is None:
@@ -658,9 +842,11 @@ class BaseGameplayMode:
             self.close_requested = True
 
     def _world_entity_alpha(self) -> float:
-        if not self._game_over_active:
-            return 1.0
-        return float(self._game_over_ui.world_entity_alpha())
+        if self._game_over_active:
+            return float(self._game_over_ui.world_entity_alpha())
+        if self._gameplay_transition_latch:
+            return self._hud_alpha()
+        return 1.0
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
         alpha = float(entity_alpha)
@@ -713,6 +899,7 @@ class BaseGameplayMode:
             mouse_screen=self._ui_mouse,
             screen_to_world=self.screen_to_world,
             dt=float(dt),
+            pad_aim_dist_mul=self._cvar_float("cv_padAimDistMul", PAD_AIM_DIST_MUL_DEFAULT),
             creatures=self.creatures.entries,
         )
 
@@ -733,17 +920,32 @@ class BaseGameplayMode:
         self._replay_checkpoints_last_tick = None
         self._replay_result = None
 
+    def _count_level_ups(self) -> None:
+        """`gameplay_update_and_render` counts each level-up in the config and turns the info texts off after 50."""
+        level = self.world.players[0].level
+        gameplay = self.config.gameplay
+        for _ in range(level - self._counted_level):
+            gameplay.level_up_count += 1
+            if gameplay.level_up_count > 50:
+                gameplay.level_up_count = 0
+                gameplay.show_info_texts = False
+        self._counted_level = level
+
     def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
         """Return False to stop running ticks this frame."""
 
+        self._count_level_ups()
         # The request rode in this tick; the tick opened the menu only if native would have.
-        menu = self._requested_perk_menu
-        self._requested_perk_menu = None
-        if tick.outcome is not None:
-            self._finish_run(tick.outcome)
-            return False
-        if menu is not None and tick.events.perk_menu_opened:
-            menu.open_menu()
+        requested = self._perk_menu_requested
+        self._perk_menu_requested = False
+        if tick.outcome is not None and self._RUN_DOWN_ON_OUTCOME and not self._run_ending:
+            # `gameplay_update_and_render`: the end of the run replaces any pending pause and runs the timeline
+            # down while the world keeps simulating.
+            self._run_ending = True
+            self._pause_pending = False
+            self._ui_timeline.begin()
+        if requested and tick.events.perk_menu_opened:
+            self._perk_menu.open_menu()
             return False
         return True
 
@@ -766,6 +968,8 @@ class BaseGameplayMode:
         if float(dt_frame) <= 0.0:
             return
         self._sync_audio()
+        # Presentation only: the corpse decal alpha, never read back by the sim.
+        session.terrain_fx.corpses.bodies_transparency = self._cvar_float("cv_terrainBodiesTransparency")
         self._live_ticks.poll(self._build_local_inputs(dt=float(dt_frame)))
         plans: list[DeterministicPresentationPlan] = []
         for _ in range(self._tick_clock.advance(float(dt_frame))):
@@ -786,8 +990,9 @@ class BaseGameplayMode:
                 # UI work between ticks (perk menu previews, the high-score tag
                 # draw at game over) must not leak into it.
                 self._replay_result = build_run_result(session, outcome=step.outcome or session.end_outcome())
-            # Mode callbacks can save the finished replay, so record the tick
-            # first. The run's final tick ends the frame.
-            if not self._on_tick_applied(step) or step.outcome is not None:
+            # Mode callbacks can save the finished replay, so record the tick first.
+            if not self._on_tick_applied(step) or (step.outcome is not None and not self._RUN_DOWN_ON_OUTCOME):
+                break
+            if (self._pause_pending or self._run_ending) and self._run_down_gameplay(ftol_ms_i32(step.dt_sim), session):
                 break
         apply_presentation_plans(plans=plans, runtime=self._world_runtime)

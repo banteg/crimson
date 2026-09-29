@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
@@ -10,21 +11,25 @@ from grim import canvas
 from grim.assets import TextureId
 from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
-from grim.fonts.small import draw_small_text, measure_small_text_width
-from grim.geom import Rect, Vec2
+from grim.fonts.small import draw_small_text
+from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
+from ...ui.hit_test import mouse_inside_rect_with_padding
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS, PanelMenuView
-from .hit_test import mouse_inside_rect_with_padding
+from .base import PanelMenuView
 
 
 class SliderState(msgspec.Struct):
+    """Native `ui_segmented_slider_t`."""
+
     value: int
     min_value: int
     max_value: int
+    focused: bool = False
 
 
 class _OptionsContentLayout(msgspec.Struct, frozen=True):
@@ -34,21 +39,23 @@ class _OptionsContentLayout(msgspec.Struct, frozen=True):
 
 
 class OptionsMenuView(PanelMenuView):
+    # Native also has a "Mouse sensitivity:" slider at +107 for its software cursor; the port uses the OS cursor,
+    # so the row is left empty and crimson.cfg keeps the value.
     _LABELS = (
         "Sound volume:",
         "Music volume:",
         "Graphics detail:",
-        "Mouse sensitivity:",
     )
 
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, title="Options", back_action=Route.BACK)
+        super().__init__(
+            state, game_state=GameStateId.OPTIONS_MENU, panel_element=31, back_element=32, title="Options", back_action=Route.BACK,
+        )
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
         self._slider_sfx = SliderState(10, 0, 10)
         self._slider_music = SliderState(10, 0, 10)
         self._slider_detail = SliderState(5, 1, 5)
-        self._slider_mouse = SliderState(10, 1, 10)
-        self._ui_info_texts = True
+        self._info_checkbox = UiCheckbox("UI Info texts")
         self._active_slider: str | None = None
         self._dirty = False
 
@@ -61,7 +68,7 @@ class OptionsMenuView(PanelMenuView):
 
     def update(self, dt: float) -> None:
         super().update(dt)
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
         entry = self._entry
         if entry is None or not self._entry_enabled():
@@ -75,6 +82,19 @@ class OptionsMenuView(PanelMenuView):
 
         resources = require_runtime_resources(self.state)
         rect_on = resources.texture(TextureId.UI_RECT_ON)
+        focus = self.state.focus
+
+        # `options_menu_update` updates the checkbox, the sliders, then the Controls button: their focus order.
+        if ui_checkbox_update(
+            resources,
+            self._info_checkbox,
+            label_pos.offset(dy=135.0),
+            focus=focus,
+            mouse=Vec2.from_xy(canvas.mouse_position()),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+        ):
+            config.gameplay.show_info_texts = self._info_checkbox.checked
+            self._dirty = True
 
         if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0), rect_on):
             config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
@@ -101,39 +121,16 @@ class OptionsMenuView(PanelMenuView):
             self._slider_detail.value = preset
             self._dirty = True
 
-        if self._update_slider(
-            "mouse",
-            self._slider_mouse,
-            slider_pos.offset(dy=107.0),
-            rect_on,
-        ):
-            sensitivity = float(self._slider_mouse.value) * 0.1
-            if sensitivity < 0.1:
-                sensitivity = 0.1
-            if sensitivity > 1.0:
-                sensitivity = 1.0
-            config.display.mouse_sensitivity = sensitivity
-            self._dirty = True
-
-        if self._update_checkbox(label_pos.offset(dy=135.0)):
-            config.gameplay.show_info_texts = self._ui_info_texts
-            self._dirty = True
-
         # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0)
         dt_ms = min(float(dt), 0.1) * 1000.0
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        resources = require_runtime_resources(self.state)
-        width = button_width(
-            resources,
-            self._controls_button.label,
-            force_wide=self._controls_button.force_wide,
-        )
         if button_update(
+            resources,
             self._controls_button,
+            focus=focus,
             pos=controls_pos,
-            width=width,
             dt_ms=dt_ms,
             mouse=mouse,
             click=click,
@@ -152,12 +149,11 @@ class OptionsMenuView(PanelMenuView):
 
     def _sync_from_config(self) -> None:
         config = self.state.config
-        self._ui_info_texts = config.gameplay.show_info_texts
+        self._info_checkbox.checked = config.gameplay.show_info_texts
 
         sfx_volume = config.audio.sfx_volume
         music_volume = config.audio.music_volume
         detail_preset = config.display.detail_preset
-        mouse_sensitivity = config.display.mouse_sensitivity
 
         self._slider_sfx.value = max(
             self._slider_sfx.min_value,
@@ -172,17 +168,11 @@ class OptionsMenuView(PanelMenuView):
         if detail_preset > self._slider_detail.max_value:
             detail_preset = self._slider_detail.max_value
         self._slider_detail.value = detail_preset
-        self._slider_mouse.value = max(
-            self._slider_mouse.min_value,
-            min(self._slider_mouse.max_value, int(mouse_sensitivity * 10.0 + 0.5)),
-        )
 
     def _content_layout(self) -> _OptionsContentLayout:
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=self._panel_element,
             width=MENU_PANEL_WIDTH,
         )
         panel_top_left = (
@@ -224,13 +214,19 @@ class OptionsMenuView(PanelMenuView):
             top_pad=1.0,
         )
 
-        changed = False
+        # `ui_segmented_slider_update`: hovering focuses the slider; Left/Right step it while focused.
+        focus = self.state.focus
+        focused = focus.update(slider)
+        slider.focused = focused
         if hovered:
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
-                slider.value = max(slider.min_value, slider.value - 1)
+            focus.set(slider)
+        changed = False
+        if focused:
+            if focus.left and slider.value > slider.min_value:
+                slider.value -= 1
                 changed = True
-            if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
-                slider.value = min(slider.max_value, slider.value + 1)
+            if focus.right and slider.value < slider.max_value:
+                slider.value += 1
                 changed = True
         mouse_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
@@ -249,21 +245,6 @@ class OptionsMenuView(PanelMenuView):
             self._active_slider = None
 
         return changed
-
-    def _update_checkbox(self, pos: Vec2) -> bool:
-        resources = require_runtime_resources(self.state)
-        check_on = resources.texture(TextureId.UI_CHECK_ON)
-        font = resources.small_font
-        label = "UI Info texts"
-        label_w = measure_small_text_width(font, label)
-        rect_w = float(check_on.width) + 6.0 + label_w
-        rect_h = max(float(check_on.height), font.cell_size)
-        mouse_pos = Vec2.from_xy(canvas.mouse_position())
-        hovered = Rect.from_top_left(pos, rect_w, rect_h).contains(mouse_pos)
-        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._ui_info_texts = not self._ui_info_texts
-            return True
-        return False
 
     def _draw_contents(self) -> None:
         resources = require_runtime_resources(self.state)
@@ -300,7 +281,7 @@ class OptionsMenuView(PanelMenuView):
 
         draw_small_text(font, "Effect density applies next game.", base_pos.offset(dy=195.0), text_color)
 
-        y_offsets = (47.0, 67.0, 87.0, 107.0)
+        y_offsets = (47.0, 67.0, 87.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
             draw_small_text(font, label, label_pos.offset(dy=offset), text_color)
 
@@ -333,44 +314,15 @@ class OptionsMenuView(PanelMenuView):
             rect_w,
             rect_h,
         )
-        self._draw_slider(
-            self._slider_mouse,
-            slider_pos.offset(dy=107.0),
-            rect_on,
-            rect_off,
-            rect_w,
-            rect_h,
-        )
 
-        check_tex = (
-            resources.texture(TextureId.UI_CHECK_ON)
-            if self._ui_info_texts
-            else resources.texture(TextureId.UI_CHECK_OFF)
-        )
-        check_w = float(check_tex.width)
-        check_h = float(check_tex.height)
-        check_pos = label_pos.offset(dy=135.0)
-        rl.draw_texture_pro(
-            check_tex,
-            rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
-            rl.Rectangle(check_pos.x, check_pos.y, check_w, check_h),
-            rl.Vector2(0.0, 0.0),
-            0.0,
-            rl.WHITE,
-        )
-        draw_small_text(font, "UI Info texts", check_pos + Vec2(check_w + 6.0, 1.0), text_color)
+        ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0), focus=self.state.focus)
 
         button_pos = base_pos.offset(dy=155.0)
-        button_w = button_width(
-            resources,
-            self._controls_button.label,
-            force_wide=self._controls_button.force_wide,
-        )
         button_draw(
             resources,
             self._controls_button,
+            focus=self.state.focus,
             pos=button_pos,
-            width=button_w,
         )
 
     def _draw_slider(
@@ -382,6 +334,8 @@ class OptionsMenuView(PanelMenuView):
         rect_w: float,
         rect_h: float,
     ) -> None:
+        if slider.focused:
+            self.state.focus.draw(pos.offset(dx=-16.0))
         for idx in range(slider.max_value):
             tex = rect_on if idx < slider.value else rect_off
             dst = rl.Rectangle(pos.x + float(idx) * rect_w, pos.y, rect_w, rect_h)

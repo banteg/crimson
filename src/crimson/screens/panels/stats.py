@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import datetime as dt
 
+from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
-from crimson.screens.chrome import draw_screen_background, draw_screen_cursor, ensure_menu_ground
-from crimson.screens.transitions import ScreenTransition
-from crimson.ui.animation import ui_element_anim
+from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
 from crimson.ui.menu_layout import (
@@ -28,10 +29,9 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
 from ...ui.menu_panel import draw_classic_menu_panel
-from ...ui.perk_menu import UiButtonState, button_draw, button_update, button_width
+from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
-from .base import PANEL_TIMELINE_END_MS, PANEL_TIMELINE_START_MS
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
 STATISTICS_PANEL_POS_X = -89.0
@@ -92,10 +92,7 @@ class StatisticsMenuView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._cursor_pulse_time = 0.0
         self._widescreen_y_shift = 0.0
-        self._transition = ScreenTransition()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -107,9 +104,7 @@ class StatisticsMenuView:
         layout_w = float(self.state.config.display.width)
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self._cursor_pulse_time = 0.0
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
 
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
@@ -129,8 +124,7 @@ class StatisticsMenuView:
         self._ground = None
 
     def resume(self) -> None:
-        self._transition.reset()
-        self._transition.duration_ms = PANEL_TIMELINE_START_MS
+        self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
@@ -141,7 +135,7 @@ class StatisticsMenuView:
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()
-        return self._transition.take_action()
+        return self.state.ui.take_action()
 
     def _assert_open(self) -> None:
         assert self._is_open, "StatisticsMenuView must be opened before use"
@@ -153,14 +147,14 @@ class StatisticsMenuView:
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._transition.closing:
+        if self.state.ui.closing:
             return
-        self._transition.begin(action)
+        self.state.ui.begin(action)
 
     def update(self, dt: float) -> None:
         self._assert_open()
         if self.state.audio is not None:
-            if not self._transition.closing:
+            if not self.state.ui.closing:
                 play_music(self.state.audio, "shortie_monk")
             update_audio(self.state.audio, dt)
         self.state.stats_menu_easter_egg_roll = _stats_menu_easter_roll(
@@ -169,15 +163,14 @@ class StatisticsMenuView:
         )
         if self._ground is not None:
             self._ground.process_pending()
-        self._cursor_pulse_time += min(float(dt), 0.1) * 1.1
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        if not self._transition.advance(dt_ms):
+        if not self.state.ui.advance(dt_ms):
             return
 
-        interactive = self._transition.timeline_ms >= self._transition.duration_ms
+        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and interactive:
+        if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.MENU)
@@ -187,10 +180,8 @@ class StatisticsMenuView:
             return
 
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=39,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
@@ -202,8 +193,7 @@ class StatisticsMenuView:
         dt_ms_f = min(float(dt), 0.1) * 1000.0
 
         def _update_button(btn: UiButtonState, *, pos: Vec2) -> bool:
-            w = button_width(resources, btn.label, force_wide=btn.force_wide)
-            return button_update(btn, pos=pos, width=w, dt_ms=dt_ms_f, mouse=mouse, click=click)
+            return button_update(resources, btn, focus=self.state.focus, pos=pos, dt_ms=dt_ms_f, mouse=mouse, click=click)
 
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0)):
@@ -241,10 +231,8 @@ class StatisticsMenuView:
         resources = require_runtime_resources(self.state)
 
         _angle_rad, slide_x = ui_element_anim(
-            self._transition.timeline_ms,
-            index=1,
-            start_ms=PANEL_TIMELINE_START_MS,
-            end_ms=PANEL_TIMELINE_END_MS,
+            self.state.ui.timeline_ms,
+            index=39,
             width=MENU_PANEL_WIDTH,
             direction_flag=0,
         )
@@ -303,20 +291,18 @@ class StatisticsMenuView:
         # Buttons.
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         for i, btn in enumerate((self._btn_high_scores, self._btn_weapons, self._btn_perks, self._btn_credits)):
-            w = button_width(resources, btn.label, force_wide=btn.force_wide)
             button_draw(
                 resources,
                 btn,
+                focus=self.state.focus,
                 pos=button_base.offset(dy=_BUTTON_STEP_Y * float(i)),
-                width=w,
             )
 
-        back_w = button_width(resources, self._btn_back.label, force_wide=self._btn_back.force_wide)
         button_draw(
             resources,
             self._btn_back,
+            focus=self.state.focus,
             pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y),
-            width=back_w,
         )
 
         draw_menu_sign(
@@ -324,4 +310,4 @@ class StatisticsMenuView:
             width=self.state.config.display.width,
             shadows=self.state.config.display.shadows_enabled,
         )
-        draw_screen_cursor(resources=resources, pulse_time=self._cursor_pulse_time)
+        ui_cursor_render(resources, dt=self.state.frame_dt)

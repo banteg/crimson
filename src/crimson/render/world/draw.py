@@ -15,7 +15,6 @@ from ...creatures.spawn import CreatureFlags, CreatureTypeId
 from ...effects_atlas import EFFECT_ID_ATLAS_TABLE_BY_ID, SIZE_CODE_GRID, EffectId
 from ...math_parity import NATIVE_HALF_PI, f32, x87_pc24_mul, x87_pc24_sub
 from ...perks import PerkId
-from ...sim.world_defs import CREATURE_ASSET
 from ...ui.cursor import draw_aim_cursor
 from . import viewport
 from .bonuses import draw_bonus_hover_labels, draw_bonus_pickups
@@ -39,13 +38,13 @@ if TYPE_CHECKING:
     from ...sim.state_types import PlayerState
 
 
-_CREATURE_TEXTURE_IDS: dict[str, TextureId] = {
-    "alien": TextureId.ALIEN,
-    "lizard": TextureId.LIZARD,
-    "spider_sp1": TextureId.SPIDER_SP1,
-    "spider_sp2": TextureId.SPIDER_SP2,
-    "trooper": TextureId.TROOPER,
-    "zombie": TextureId.ZOMBIE,
+_CREATURE_TEXTURE_IDS: dict[CreatureTypeId, TextureId] = {
+    CreatureTypeId.ZOMBIE: TextureId.ZOMBIE,
+    CreatureTypeId.LIZARD: TextureId.LIZARD,
+    CreatureTypeId.ALIEN: TextureId.ALIEN,
+    CreatureTypeId.SPIDER_SP1: TextureId.SPIDER_SP1,
+    CreatureTypeId.SPIDER_SP2: TextureId.SPIDER_SP2,
+    CreatureTypeId.TROOPER: TextureId.TROOPER,
 }
 
 _NATIVE_CREATURE_SPRITE_DRAW_ORDER: tuple[CreatureTypeId, ...] = (
@@ -146,8 +145,7 @@ def build_draw_context(
 ) -> WorldDrawContext:
     frame = render_ctx.frame
     resources = frame.resources
-    trooper_asset = CREATURE_ASSET.get(CreatureTypeId.TROOPER)
-    trooper_texture = _creature_texture(resources, trooper_asset)
+    trooper_texture = _creature_texture(resources, CreatureTypeId.TROOPER)
     particles_texture = resources.texture(TextureId.PARTICLES)
 
     monster_vision = PerkId.MONSTER_VISION in frame.state.perks
@@ -286,20 +284,7 @@ def draw_creatures(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None
                 )
                 lifecycle_stage = float(creature.lifecycle_stage)
 
-                asset = CREATURE_ASSET[type_id]
-                texture = _creature_texture(resources, asset)
-
-                if texture is None:
-                    if shadow:
-                        continue
-                    tint = rl.Color(220, 90, 90, int(255 * ctx.entity_alpha + 0.5))
-                    rl.draw_circle(
-                        int(screen.x),
-                        int(screen.y),
-                        max(1.0, creature.size * 0.5 * render_ctx.view.scale),
-                        tint,
-                    )
-                    continue
+                texture = _creature_texture(resources, type_id)
 
                 # Native quad dimensions use the creature's actual size.
                 if texture.width <= 0:
@@ -355,8 +340,8 @@ def draw_creature_hit_flashes(
     type_id: CreatureTypeId,
     ctx: WorldDrawContext,
 ) -> None:
-    texture = _creature_texture(render_ctx.frame.resources, CREATURE_ASSET[type_id])
-    if texture is None or texture.width <= 0:
+    texture = _creature_texture(render_ctx.frame.resources, type_id)
+    if texture.width <= 0:
         return
     rl.begin_blend_mode(rl.BlendMode.BLEND_ADDITIVE)
     try:
@@ -457,22 +442,22 @@ def draw_aim_indicators(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) ->
                 )
 
 
-def draw_aim_enhancements(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
+def draw_aim_enhancements(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, fade: float) -> None:
     view = render_ctx.view
     for player in iter_visible_aim_players(render_ctx):
         if player.health <= 0.0:
             continue
         aim_screen = viewport.world_to_screen_with(player.aim, camera=view.camera, view_scale=view.view_scale)
-        draw_aim_cursor(ctx.particles_texture, render_ctx.frame.resources.texture(TextureId.UI_AIM), pos=aim_screen)
+        draw_aim_cursor(
+            ctx.particles_texture,
+            render_ctx.frame.resources.texture(TextureId.UI_AIM),
+            pos=aim_screen,
+            alpha=fade,
+        )
 
 
-def _creature_texture(resources: RuntimeResources, asset_name: str | None) -> rl.Texture | None:
-    if asset_name is None:
-        return None
-    texture_id = _CREATURE_TEXTURE_IDS.get(asset_name)
-    if texture_id is None:
-        return None
-    return resources.texture(texture_id)
+def _creature_texture(resources: RuntimeResources, type_id: CreatureTypeId) -> rl.Texture:
+    return resources.texture(_CREATURE_TEXTURE_IDS[type_id])
 
 
 def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
@@ -500,7 +485,9 @@ def bonus_render(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext) -> None:
         draw_effect_pool(render_ctx, camera=camera, view_scale=view_scale)
 
 
-def ui_render_aim_indicators(render_ctx: WorldRenderCtx, *, show_aim: bool, entity_alpha: float = 1.0) -> None:
+def ui_render_aim_indicators(
+    render_ctx: WorldRenderCtx, *, show_aim: bool, aim_enhancement_fade: float, entity_alpha: float = 1.0,
+) -> None:
     """Port of `ui_render_aim_indicators`: after the perk prompt, before the HUD."""
 
     with render_ctx.frame.resources.alpha_test.scope():
@@ -508,10 +495,11 @@ def ui_render_aim_indicators(render_ctx: WorldRenderCtx, *, show_aim: bool, enti
             render_ctx,
             ctx=build_draw_context(render_ctx, entity_alpha=clamp(float(entity_alpha), 0.0, 1.0)),
             show_aim=show_aim,
+            aim_enhancement_fade=aim_enhancement_fade,
         )
 
 
-def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim: bool) -> None:
+def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim: bool, aim_enhancement_fade: float) -> None:
     if show_aim:
         with profile_pass("aim_indicators"):
             draw_aim_indicators(render_ctx, ctx=ctx)
@@ -527,7 +515,7 @@ def _draw_aim_ui(render_ctx: WorldRenderCtx, *, ctx: WorldDrawContext, show_aim:
 
     if show_aim:
         with profile_pass("aim_enhancements"):
-            draw_aim_enhancements(render_ctx, ctx=ctx)
+            draw_aim_enhancements(render_ctx, ctx=ctx, fade=aim_enhancement_fade)
 
 
 __all__ = [

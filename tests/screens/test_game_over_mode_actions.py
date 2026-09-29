@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
@@ -10,7 +12,7 @@ from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ShowScores
 from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.animation import WORLD_FADE_SPAN_MS
+from crimson.ui.animation import ui_element_timeline_window
 from grim.audio import AudioState
 from grim.music import init_music_state
 from grim.rand import Crand
@@ -46,10 +48,13 @@ def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> Non
 
 def test_game_over_requests_result_music_until_the_exit_transition(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode.audio = AudioState(
-        ready=False,
-        music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+    mode.bind_audio(
+        AudioState(
+            ready=False,
+            music=init_music_state(ready=False, enabled=True, volume=1.0),
+            sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+        ),
+        mode.audio_rng,
     )
     play_music = mocker.patch.object(base_gameplay_mode, "play_music")
     mocker.patch.object(GameOverUi, "update", return_value=None)
@@ -93,13 +98,17 @@ def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config) 
 
 def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode.audio = AudioState(
-        ready=False,
-        music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+    mode.bind_audio(
+        AudioState(
+            ready=False,
+            music=init_music_state(ready=False, enabled=True, volume=1.0),
+            sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+        ),
+        mode.audio_rng,
     )
     stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
     mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))
+    mocker.patch.object(base_gameplay_mode, "load_grim_mono_font", return_value=SimpleNamespace(texture=None))
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)
     mocker.patch.object(base_gameplay_mode.rl, "get_render_width", return_value=1024)
@@ -115,8 +124,8 @@ def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
 
 def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config) -> None:
     mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode._game_over_ui._closing = True
-    mode._game_over_ui._intro_ms = WORLD_FADE_SPAN_MS * 0.5
+    mode._game_over_ui.timeline.closing = True
+    mode._game_over_ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
 
     world_draw = mocker.patch.object(mode, "_draw_world")
 
@@ -126,14 +135,13 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker, mak
     assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
 
 
-def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config) -> None:
-    repo_root = Path(__file__).resolve().parents[1]
-    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
+@pytest.mark.usefixtures("headless_resources")
+def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config, assets_dir) -> None:
+    ctx = ViewContext(assets_dir=assets_dir)
     config = make_mode_config(game_mode=GameMode.RUSH)
     mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
     mocker.patch.object(mode, "apply_terrain_setup")
     mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=None)
     mocker.patch.object(mode, "_save_replay")
     mode.open()
     session = mode._sim_session

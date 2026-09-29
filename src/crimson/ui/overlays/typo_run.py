@@ -68,7 +68,7 @@ def draw_typing_box(
     panel_texture: rl.Texture,
     *,
     text: str,
-    cursor_pulse_time: float,
+    game_time_s: float,
     draw_text: DrawUiText,
     measure_text_width: MeasureUiTextWidth,
 ) -> None:
@@ -89,7 +89,7 @@ def draw_typing_box(
 
     draw_text(TYPING_PROMPT + text, Vec2(TYPING_TEXT_X, text_y), rl.Color(255, 255, 255, 255))
 
-    cursor_dim = math.sin(float(cursor_pulse_time) * 4.0) > 0.0
+    cursor_dim = math.sin(game_time_s * 4.0) > 0.0
     cursor_alpha = 0.4 if cursor_dim else 1.0
     cursor_color = rl.Color(255, 255, 255, int(255 * cursor_alpha))
     text_w = float(measure_text_width(text))

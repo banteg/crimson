@@ -19,7 +19,7 @@ class GameResources:
             state.console.log.log(f"runtime resources loaded: {len(state.resources.textures)} textures")
             state.console.log.flush()
         if state.audio is None:
-            state.audio = init_audio_state(state.config, state.assets_dir, state.console)
+            state.audio = init_audio_state(state.config, state.assets_dir, state.console, state.rng)
             state.console.exec_line("exec music/game_tunes.txt")
 
     def close(self) -> None:

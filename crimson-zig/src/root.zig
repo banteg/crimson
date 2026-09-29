@@ -41,6 +41,7 @@ pub const state = @import("runtime/state.zig");
 pub const movement = @import("runtime/movement.zig");
 pub const weapons = @import("runtime/weapons.zig");
 pub const projectiles = @import("runtime/projectiles.zig");
+pub const owner_id = @import("runtime/owner_id.zig");
 pub const bonuses = @import("runtime/bonuses.zig");
 pub const bootstrap = @import("runtime/bootstrap.zig");
 pub const session = @import("runtime/session.zig");

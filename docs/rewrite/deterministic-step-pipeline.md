@@ -44,8 +44,10 @@ flowchart LR
 
 For each live tick, the mode builds the tick, records it, steps it, advances
 the presentation clock, records the checkpoint, and evaluates the mode callback before
-advancing another tick. A terminal callback ends the frame immediately. The
-final tick is recorded before a callback can save the finished replay.
+advancing another tick. The tick that ends the run starts the run-down: ticks
+keep coming until the gameplay timeline is out (at most 500 ms of simulated
+time), then the mode leaves gameplay and the frame stops. Every tick is recorded
+before a callback can save the finished replay.
 
 Audio, camera, and terrain application can be batched after simulation because
 all presentation requests belong to their producing tick. The shared consumer in

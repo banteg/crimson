@@ -44,10 +44,10 @@ def test_corpse_queue_matches_native_fields_capacity_and_failure() -> None:
         case, expected = witness["input"], witness["expected"]
         queue = fill_queue(FxQueueRotated(), case["count"])
         previous = copy.deepcopy(queue.entries)
+        queue.bodies_transparency = case["transparency"]
         accepted = queue.add(
             top_left=Vec2(*case["pos"]), rgba=RGBA(*case["color"]), rotation=case["rotation"],
-            scale=case["scale"], creature_type_id=case["type_id"],
-            terrain_bodies_transparency=case["transparency"], terrain_texture_failed=bool(case["failed"]),
+            scale=case["scale"], creature_type_id=case["type_id"], terrain_texture_failed=bool(case["failed"]),
         )
         assert accepted == bool(expected["return"]), case
         assert queue.count == expected["count"], case

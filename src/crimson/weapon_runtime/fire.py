@@ -8,6 +8,7 @@ import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
+from grim.math import i32
 from grim.rand import CrandLike
 
 from ..effects import ParticleStyleId
@@ -22,7 +23,7 @@ from ..math_parity import (
     x87_pc24_mul,
     x87_pc24_sub,
 )
-from ..owner_ref import OwnerRef
+from ..owner_id import player_projectile_owner_id
 from ..perks import PerkId
 from ..projectiles.runtime import SecondarySpawnSpec
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
@@ -31,7 +32,7 @@ from ..sim.input import PlayerInput
 from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
-from .spawn import owner_ref_for_player, owner_ref_for_player_projectiles, projectile_spawn
+from .spawn import projectile_spawn
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
@@ -81,10 +82,9 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
     player_index: int
     muzzle: Vec2
     aim_heading: float
-    owner: OwnerRef
     # Native encodes friendly fire in the owner id (-1 - player_index): with the
     # cvar enabled, primary player shots can hit other players for 10 damage.
-    hits_players: bool
+    owner_id: int
 
     def projectile(self, type_id: ProjectileTemplateId, angle: float) -> int:
         return projectile_spawn(
@@ -93,9 +93,8 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
             pos=self.muzzle,
             angle=angle,
             type_id=type_id,
-            owner=self.owner,
+            owner_id=self.owner_id,
             owner_player_index=self.player_index,
-            hits_players=self.hits_players,
         )
 
     def secondary(
@@ -107,13 +106,12 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
         creatures: Sequence[CreatureState] | None = None,
     ) -> None:
         # Native `fx_spawn_secondary_projectile` counts every rocket as a shot fired.
-        self.state.shots_fired[self.player_index] += 1
+        self.state.shots_fired += 1
         self.state.secondary_projectiles.spawn_from_spec(
             SecondarySpawnSpec(
                 pos=self.muzzle,
                 angle=angle,
                 type_id=type_id,
-                owner=self.owner,
                 target_hint=target_hint,
                 creatures=creatures,
                 preserve_bugs=bool(self.state.preserve_bugs),
@@ -199,9 +197,8 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             factor = 4.0 if ammo_class == 1 else 200.0
             # Native rounds FMUL and FSUBP at PC=24 before the truncating _ftol.
             cost = x87_pc24_mul(reload_time, factor)
-            remaining = int(x87_pc24_sub(float(player.experience), cost)) & 0xFFFFFFFF
             # _ftol returns the low signed 32 bits in EAX before the negative clamp.
-            player.experience = remaining - 0x100000000 if remaining & 0x80000000 else remaining
+            player.experience = i32(int(x87_pc24_sub(float(player.experience), cost)))
             if player.experience < 0:
                 player.experience = 0
         elif use_ammunition_within:
@@ -267,15 +264,13 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     )
 
     rng = state.rng
-    owner = owner_ref_for_player(player.index)
     shot = _ShotSpawner(
         state=state,
         players=ctx.step_runtime.world.players,
         player_index=player.index,
         muzzle=muzzle,
         aim_heading=aim_heading,
-        owner=owner_ref_for_player_projectiles(state, player.index),
-        hits_players=bool(state.friendly_fire_enabled),
+        owner_id=player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index),
     )
     ammo_cost = 1.0
     # Shots fired are counted where native counts them, in `projectile_spawn` and
@@ -337,7 +332,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
-                    owner=owner,
                     rng=state.rng,
                 )
                 ammo_cost = f32(0.1)
@@ -346,7 +340,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
-                    owner=owner,
                     rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.HR_FLAMER
@@ -356,7 +349,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     pos=muzzle,
                     angle=x87_pc24_sub(aim_heading, NATIVE_HALF_PI),
                     intensity=1.0,
-                    owner=owner,
                     rng=state.rng,
                 )
                 state.particles.entries[particle].style_id = ParticleStyleId.BLOW_TORCH
@@ -459,7 +451,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                 state.particles.spawn_particle_slow(
                     pos=muzzle,
                     angle=x87_pc24_sub(shot_angle, NATIVE_HALF_PI),
-                    owner=owner,
                     rng=state.rng,
                 )
                 ammo_cost = f32(0.15)

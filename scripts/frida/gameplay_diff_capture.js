@@ -48,7 +48,7 @@ const CAPTURE_FIELD_SETS = {
   "tick.channels.replay_step.inputs[]": ["move_x", "move_y", "aim_x", "aim_y", "flags"],
   "tick.channels.checkpoint": ["tick_index", "rng_state", "elapsed_ms", "score_xp", "kills", "creature_count", "perk_pending", "players", "bonus_timers", "deaths", "perk", "events", "tutorial", "typo"],
   "tick.channels.checkpoint.players[]": ["pos", "health", "weapon_id", "ammo", "experience", "level"],
-  "tick.channels.checkpoint.deaths[]": ["creature_index", "type_id", "reward_value", "xp_awarded", "owner_id"],
+  "tick.channels.checkpoint.deaths[]": ["creature_index", "type_id", "reward_value", "xp_awarded"],
   "tick.channels.checkpoint.perk": ["pending_count", "choices_dirty", "choices", "player_nonzero_counts"],
   "tick.channels.checkpoint.events": ["hit_count", "pickup_count", "sfx_count", "sfx_head", "hit_head"],
   "tick.channels.sim_state": ["gameplay", "players"],

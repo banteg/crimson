@@ -256,6 +256,115 @@ pub fn drawSmallText(
     }
 }
 
+/// Native `ui_checkbox_t`.
+pub const UiCheckbox = struct {
+    label: []const u8,
+    checked: bool = false,
+    disabled: bool = false,
+    hovered: bool = false,
+};
+
+/// `ui_checkbox_update`'s input half: the 16px box and its label are hot; a click toggles it.
+/// Returns whether it toggled.
+pub fn checkboxUpdate(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    checkbox: *UiCheckbox,
+    x: f32,
+    y: f32,
+    mouse: rl.Vector2,
+    click: bool,
+) bool {
+    checkbox.hovered = !checkbox.disabled and checkboxHot(measureSmallText(runtime_assets, checkbox.label) + 22.0, x, y, mouse);
+    if (checkbox.hovered and click) {
+        checkbox.checked = !checkbox.checked;
+        return true;
+    }
+    return false;
+}
+
+/// `ui_mouse_inside_rect`: strictly inside a 16px tall rect.
+fn checkboxHot(width: f32, x: f32, y: f32, mouse: rl.Vector2) bool {
+    return x < mouse.x and mouse.x < x + width and y < mouse.y and mouse.y < y + 16.0;
+}
+
+/// `ui_checkbox_update`'s draw half: the box at 16x16, the label 22px right, dimmed unless hovered.
+pub fn checkboxDraw(runtime_assets: *const window_assets.RuntimeAssets, checkbox: UiCheckbox, x: f32, y: f32) void {
+    const texture = runtime_assets.texture(if (checkbox.checked) .ui_check_on else .ui_check_off);
+    drawTextureFit(texture, rl.Rectangle.init(x, y, 16.0, 16.0), rl.Color.white);
+    drawSmallText(runtime_assets, checkbox.label, x + 22.0, y + 1.0, colorWithAlpha(rl.Color.white, if (checkbox.hovered) 1.0 else 0.7));
+}
+
+test "checkbox is hot strictly inside the box and its label" {
+    try std.testing.expect(checkboxHot(80.0, 10.0, 20.0, rl.Vector2.init(11.0, 21.0)));
+    try std.testing.expect(checkboxHot(80.0, 10.0, 20.0, rl.Vector2.init(89.0, 35.0)));
+    try std.testing.expect(!checkboxHot(80.0, 10.0, 20.0, rl.Vector2.init(10.0, 21.0)));
+    try std.testing.expect(!checkboxHot(80.0, 10.0, 20.0, rl.Vector2.init(50.0, 36.0)));
+}
+
+const grim_mono_advance: f32 = 16.0;
+const grim_mono_draw_size: f32 = 32.0;
+const grim_mono_line_height: f32 = 28.0;
+
+fn drawGrimMonoGlyph(texture: rl.Texture2D, value: u8, x: f32, y: f32, draw_size: f32, color: rl.Color) void {
+    const cell_w = @as(f32, @floatFromInt(texture.width)) / 16.0;
+    const cell_h = @as(f32, @floatFromInt(texture.height)) / 16.0;
+    const col: f32 = @floatFromInt(value % 16);
+    const row: f32 = @floatFromInt(value / 16);
+    rl.drawTexturePro(
+        texture,
+        rl.Rectangle.init(col * cell_w, row * cell_h, cell_w, cell_h),
+        rl.Rectangle.init(x, y, draw_size, draw_size),
+        rl.Vector2.zero(),
+        0.0,
+        color,
+    );
+}
+
+/// `grim_draw_text_mono`: the courier grid font; each glyph advances before it is drawn, and the
+/// Finnish vowels are composed from a base letter and a mark.
+pub fn drawGrimMonoText(
+    runtime_assets: *const window_assets.RuntimeAssets,
+    text: []const u8,
+    x: f32,
+    y: f32,
+    scale: f32,
+    color: rl.Color,
+) void {
+    const texture = runtime_assets.texture(.default_font_courier);
+    const advance = grim_mono_advance * scale;
+    const draw_size = grim_mono_draw_size * scale;
+    var x_pos = x;
+    var y_pos = y;
+    var skip_advance = false;
+    for (text) |value| {
+        switch (value) {
+            '\n' => {
+                x_pos = x;
+                y_pos += grim_mono_line_height * scale;
+            },
+            '\r' => {},
+            0xA7 => skip_advance = true,
+            0xE5, 0xE4, 0xF6 => {
+                x_pos += advance;
+                drawGrimMonoGlyph(texture, if (value == 0xF6) 'o' else 'a', x_pos, y_pos + 1.0, draw_size, color);
+                if (value == 0xE5) {
+                    drawGrimMonoGlyph(texture, '.', x_pos, y_pos - 6.0, draw_size, color);
+                } else {
+                    drawGrimMonoGlyph(texture, '"', x_pos, y_pos, draw_size, color);
+                }
+            },
+            else => {
+                if (skip_advance) {
+                    skip_advance = false;
+                } else {
+                    x_pos += advance;
+                }
+                drawGrimMonoGlyph(texture, value, x_pos, y_pos + 1.0, draw_size, color);
+            },
+        }
+    }
+}
+
 pub fn measureSmallText(runtime_assets: *const window_assets.RuntimeAssets, text: []const u8) f32 {
     var width: f32 = 0.0;
     var best: f32 = 0.0;

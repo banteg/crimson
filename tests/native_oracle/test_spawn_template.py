@@ -11,7 +11,7 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import SpawnId, UnsupportedSpawnTemplateError
+from crimson.creatures.spawn import SpawnId
 from crimson.math_parity import f32
 from crimson.sim.gameplay_state import GameplayState
 from grim.geom import Vec2
@@ -62,6 +62,29 @@ def _python_creature(creature: CreatureState) -> dict[str, float | int | None]:
     }
 
 
+def compare_spawn_slots(oracle, case: str, pool: CreaturePool) -> list[Mismatch]:
+    """The whole `creature_spawn_slot_table`; a null owner is the port's -1."""
+
+    pool_base = oracle.resolve("creature_pool")
+    slot_base = oracle.resolve("creature_spawn_slot_table")
+    mismatches: list[Mismatch] = []
+    for index, slot in enumerate(pool.spawn_slots):
+        address = slot_base + index * SPAWN_SLOT_STRIDE
+        native = oracle.read_fields(address, SPAWN_SLOT_LAYOUT)
+        owner = int(native["owner"])
+        native["owner"] = -1 if owner == 0 else (owner - pool_base) // CREATURE_STRIDE
+        python_slot = {
+            "owner": slot.owner_creature,
+            "count": slot.count,
+            "limit": slot.limit,
+            "interval": slot.interval,
+            "timer": slot.timer,
+            "template_id": int(slot.child_template_id),
+        }
+        mismatches += compare_fields(f"{case} spawn_slot[{index}]", native, python_slot, address=address)
+    return mismatches
+
+
 def _cases() -> list[tuple[SpawnId, bool, int, int, Vec2, float]]:
     rng = random.Random(0x430AF0)
     cases = []
@@ -86,11 +109,9 @@ def test_spawn_template_stats_match_native(oracle) -> None:
     oracle.write_u32("terrain_texture_height", _TERRAIN_SIZE)
     pristine = oracle.snapshot()
     pool_base = oracle.resolve("creature_pool")
-    slot_base = oracle.resolve("creature_spawn_slot_table")
     pos_arg = oracle.alloc(8)
 
     mismatches: list[Mismatch] = []
-    unsupported: set[int] = set()
     cases = _cases()
     for template_id, hardcore, retries, seed, pos, heading in cases:
         case = f"template 0x{int(template_id):02x} hardcore={int(hardcore)} retry={retries} seed=0x{seed:08x}"
@@ -105,11 +126,7 @@ def test_spawn_template_stats_match_native(oracle) -> None:
         rng = CrtRand(seed)
         state = GameplayState(rng=rng, hardcore=hardcore, quest_fail_retry_count=retries)
         pool = CreaturePool()
-        try:
-            pool.spawn_template(template_id, pos, heading, state=state, detail_preset=5)
-        except UnsupportedSpawnTemplateError:
-            unsupported.add(int(template_id))
-            continue
+        pool.spawn_template(template_id, pos, heading, state=state, detail_preset=5)
 
         for index in range(CREATURE_POOL_SLOTS):
             address = pool_base + index * CREATURE_STRIDE
@@ -118,19 +135,7 @@ def test_spawn_template_stats_match_native(oracle) -> None:
             if not native["active"] and not python.active:
                 continue
             mismatches += compare_fields(f"{case} creature[{index}]", native, _python_creature(python), address=address)
-        for index, slot in enumerate(pool.spawn_slots):
-            address = slot_base + index * SPAWN_SLOT_STRIDE
-            native = oracle.read_fields(address, SPAWN_SLOT_LAYOUT)
-            native["owner"] = (int(native["owner"]) - pool_base) // CREATURE_STRIDE
-            python_slot = {
-                "owner": slot.owner_creature,
-                "count": slot.count,
-                "limit": slot.limit,
-                "interval": slot.interval,
-                "timer": slot.timer,
-                "template_id": int(slot.child_template_id),
-            }
-            mismatches += compare_fields(f"{case} spawn_slot[{index}]", native, python_slot, address=address)
+        mismatches += compare_spawn_slots(oracle, case, pool)
         if oracle.rand_state != rng.state:
             mismatches.append(Mismatch(case, "rand_state", oracle.rand_state, rng.state, 0))
         if hardcore and oracle.read_i32("quest_fail_retry_count") != state.quest_fail_retry_count:
@@ -138,7 +143,4 @@ def test_spawn_template_stats_match_native(oracle) -> None:
                 Mismatch(case, "quest_fail_retry_count", oracle.read_i32("quest_fail_retry_count"), state.quest_fail_retry_count, 0),
             )
 
-    report = mismatch_report(mismatches, total_cases=len(cases))
-    if unsupported:
-        report += "\npython raises UnsupportedSpawnTemplateError for: " + ", ".join(f"0x{i:02x}" for i in sorted(unsupported))
-    assert not mismatches and not unsupported, report
+    assert not mismatches, mismatch_report(mismatches, total_cases=len(cases))

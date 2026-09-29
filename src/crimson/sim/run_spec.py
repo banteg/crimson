@@ -24,18 +24,10 @@ class RunStatus(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
 
     @classmethod
     def from_status_data(cls, data: GameStatusData) -> RunStatus:
-        return cls(
-            quest_unlock_index=data.quest_unlock_index,
-            quest_unlock_index_full=data.quest_unlock_index_full,
-            weapon_usage_counts=tuple(data.weapon_usage_counts),
-        )
+        return cls(**{name: getattr(data, name) for name in cls.__struct_fields__})
 
     def as_status_data(self) -> GameStatusData:
-        return GameStatusData(
-            quest_unlock_index=self.quest_unlock_index,
-            quest_unlock_index_full=self.quest_unlock_index_full,
-            weapon_usage_counts=self.weapon_usage_counts,
-        )
+        return GameStatusData(**msgspec.structs.asdict(self))
 
 
 class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
@@ -51,6 +43,8 @@ class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     quest_fail_retry_count: NonNegativeInt = 0
     detail_preset: NonNegativeInt = 5
     violence_disabled: NonNegativeInt = 0
+    # `cv_friendlyFire` at run start: player shots carry their own owner id and can hit other players.
+    friendly_fire: bool = False
     status: RunStatus = msgspec.field(default_factory=RunStatus)
     typo_dictionary_words: tuple[str, ...] = ()
     typo_highscore_names: tuple[str, ...] = ()

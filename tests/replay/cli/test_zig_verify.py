@@ -161,7 +161,7 @@ def test_zig_replay_verify_result_equals_python_simulation(tmp_path: Path, zig_b
 
     python_result = build_verify_playback_driver(perk_replay).run()
     assert payload["result"] == _json_result(python_result)
-    assert payload["result"]["players"][0]["shots_fired"] > 0
+    assert payload["result"]["shots_fired"] > 0
 
 
 @pytest.mark.parametrize(
@@ -272,8 +272,7 @@ def test_zig_replay_verify_matches_python_typo_submit_semantics(tmp_path: Path, 
     }
 
     for case, (replay, (shots_fired, shots_hit)) in cases.items():
-        player = replay.result.players[0]
-        assert (player.shots_fired, player.shots_hit) == (shots_fired, shots_hit), case
+        assert (replay.result.shots_fired, replay.result.shots_hit) == (shots_fired, shots_hit), case
         replay_path = write_replay(tmp_path, replay=replay, name=f"{case}.crd")
 
         payload = _assert_verify_matches_python(zig_bin, [str(replay_path), "--format", "json"], exit_code=0)
@@ -367,10 +366,12 @@ def test_zig_replay_verify_reports_result_mismatches_like_python(
     quest_completed_replay: Replay,
 ) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
-    player = msgspec.structs.replace(replay.result.players[0], health=50.0, shots_fired=4)
+    player = msgspec.structs.replace(replay.result.players[0], health=50.0)
     tampered = msgspec.structs.replace(
         replay,
-        result=msgspec.structs.replace(replay.result, outcome=RunOutcome.DEATH, kills=4, players=(player,)),
+        result=msgspec.structs.replace(
+            replay.result, outcome=RunOutcome.DEATH, kills=4, shots_fired=4, players=(player,),
+        ),
     )
     survival_path = write_replay(tmp_path, replay=tampered, name="survival-bad.crd")
     quest = msgspec.structs.replace(
@@ -389,8 +390,8 @@ def test_zig_replay_verify_reports_result_mismatches_like_python(
     assert survival_payload["mismatched_fields"] == [
         "outcome",
         "kills",
+        "shots_fired",
         "players[0].health",
-        "players[0].shots_fired",
     ]
     assert survival_payload["recorded"]["players"][0]["health"] == 50.0
     assert quest_payload["mismatched_fields"] == ["quest_final_ms"]
@@ -399,7 +400,7 @@ def test_zig_replay_verify_reports_result_mismatches_like_python(
     zig_human = _run_zig(zig_bin, [str(survival_path)])
     assert zig_human.returncode == 3
     assert zig_human.stdout == python_human.output
-    assert "; mismatches=outcome,kills,players[0].health,players[0].shots_fired" in zig_human.stdout
+    assert "; mismatches=outcome,kills,shots_fired,players[0].health" in zig_human.stdout
 
 
 def test_zig_replay_verify_reports_payload_hash_and_game_version(tmp_path: Path, zig_bin: Path) -> None:
@@ -427,9 +428,9 @@ _NON_CANONICAL = {
     "non-minimal-str": (b"\xa4seed", b"\xd9\x04seed"),
     "reordered-keys": (b"\xa8hardcore\xc2\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa8hardcore\xc2"),
     "duplicate-key": (b"\xadpreserve_bugs\xc2", b"\xa8hardcore\xc2"),
-    "missing-key": (b"\x8c\xacgame_mode_id\x01", b"\x8b\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b""),
+    "missing-key": (b"\x8d\xacgame_mode_id\x01", b"\x8c\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b""),
     "extra-key": (
-        b"\x8c\xacgame_mode_id\x01", b"\x8d\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa5extra\x00",
+        b"\x8d\xacgame_mode_id\x01", b"\x8e\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa5extra\x00",
     ),
     "reordered-command-keys": (
         b"\xa4type\xa9typo_char\xacplayer_index\x00",
@@ -469,7 +470,7 @@ def test_zig_replay_verify_rejects_trailing_payload_bytes(tmp_path: Path, zig_bi
 
 def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path, zig_bin: Path) -> None:
     survival = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x19", b"\xaeformat_version\x18", 1)
+    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x1b", b"\xaeformat_version\x1a", 1)
     cases = {
         "typo-event": (
             write_current_typo_event_replay(tmp_path, replay=survival, name="typo-event.crd"),
@@ -499,7 +500,7 @@ def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path,
         ),
         "old-format": (
             write_payload_bytes(tmp_path, payload=old_format, name="old-format.crd"),
-            "unsupported replay format version: 24",
+            "unsupported replay format version: 26",
         ),
     }
 
@@ -582,7 +583,8 @@ def test_zig_replay_verify_rejects_ticks_after_the_run_ended(
     zig_bin: Path,
     survival_death_replay: Replay,
 ) -> None:
-    replay_path = write_replay(tmp_path, replay=with_idle_ticks(survival_death_replay, 2), name="after-end.crd")
+    # The end tick may be followed by the 500ms run-down (31 more ticks of 16ms), not one tick more.
+    replay_path = write_replay(tmp_path, replay=with_idle_ticks(survival_death_replay, 32), name="after-end.crd")
     last_tick = len(survival_death_replay.ticks) - 1
 
     python_result = _run_python_verify([str(replay_path), "--format", "json"])
@@ -592,7 +594,7 @@ def test_zig_replay_verify_rejects_ticks_after_the_run_ended(
     assert zig_result.returncode == 1
     assert zig_result.stderr == (
         f"replay verification failed: run ended (death) at tick {last_tick} "
-        f"but the replay has {last_tick + 3} ticks\n"
+        f"and wound down by tick {last_tick + 31} but the replay has {last_tick + 33} ticks\n"
     )
     assert zig_result.stderr == python_result.output
 

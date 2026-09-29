@@ -6,14 +6,13 @@ from unittest.mock import patch
 from crimson.creatures.damage import creature_apply_damage
 from crimson.effects import EffectPool, FxQueue, FxQueueRotated
 from crimson.math_parity import x87_pc24_mul, x87_pc24_sub
-from crimson.projectiles.runtime import PrimaryStepCtx, collision
+from crimson.projectiles.runtime import projectile_pool
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
-from tests.support.helpers import owner_ref_from_native
 
 
 def bits(x):
@@ -41,7 +40,7 @@ def observe(case):
     projectile.damage_pool = item["damage"]
     projectile.hit_radius = item["radius"]
     projectile.travel_budget = item["travel"]
-    projectile.owner = owner_ref_from_native(item["owner"])
+    projectile.owner_id = item["owner"]
     target = case["creatures"][0]
     creature = world.creatures.entries[target["index"]]
     creature.active = True
@@ -77,17 +76,17 @@ def observe(case):
         splatters.append([[bits(kwargs["pos"].x), bits(kwargs["pos"].y)], bits(kwargs["angle"]), bits(kwargs["age"])])
         return spawn_blood(self, **kwargs)
 
-    def record_damage(step_runtime, creature_index, damage, damage_type, impulse, owner):
+    def record_damage(step_runtime, creature_index, damage, damage_type, impulse):
         damage_calls.append([creature_index, bits(damage), damage_type, [bits(impulse.x), bits(impulse.y)]])
-        return creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse, owner)
+        return creature_apply_damage(step_runtime, creature_index, damage, damage_type, impulse)
 
     with (
         patch.object(FxQueue, "add_random", record_random),
         patch.object(EffectPool, "spawn_blood_splatter", record_blood),
-        patch.object(collision, "creature_apply_damage", record_damage),
+        patch.object(projectile_pool, "creature_apply_damage", record_damage),
     ):
         hits = state.projectiles.step(
-            PrimaryStepCtx(step_runtime=runtime, dt=case["dt"]),
+            runtime,
         )
     assert len(hits) == 1 and not runtime.deaths
     return {
@@ -106,7 +105,7 @@ def observe(case):
             "damage": projectile.damage_pool,
             "radius": projectile.hit_radius,
             "travel": projectile.travel_budget,
-            "owner": projectile.owner.to_legacy(),
+            "owner": projectile.owner_id,
         },
         "creature": {
             "active": int(creature.active),
@@ -166,7 +165,7 @@ def observe(case):
             for d in state.effects.iter_active()
         ],
         "damage_calls": damage_calls,
-        "shots_hit": state.shots_hit[0],
+        "shots_hit": state.shots_hit,
         "splatters": splatters,
         "random_positions": random_positions,
         "rng_state": rng.state,

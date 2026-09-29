@@ -683,3 +683,27 @@ Rewrite behavior:
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_render.cpp` (Fire Bullets
 glow and late bullet pass), `effect_select_texture`, and captures of the
 original with Plasma Shooter spiders.
+
+## 29) A stray click picks a row from an open list
+
+Native behavior:
+
+- `ui_list_widget_update` closes an open list only when it is neither hovered nor
+  focused, and hovering the open list gives it the keyboard focus. Focus moves only
+  on Tab or when another focusable widget is hovered, so a list stays open after
+  the mouse leaves it onto empty space.
+- While open, the widget returns its `active_index`, the row last hovered. Callers
+  toggle the list on any press when the result is `> -2` and take a row when it is
+  `>= 0`, so the next click anywhere closes the list and selects that row.
+- On the high-score screen this can silently switch the game mode, player count,
+  date filter or score list with a click meant for empty space.
+
+Rewrite behavior:
+
+- Default: a click outside an open list closes it without taking a row. Clicking a
+  row, the header, or pressing Enter on the focused list work as before.
+- `--preserve-bugs`: the stray click takes the last hovered row, as native.
+
+Evidence: `decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp` and its
+callers in `highscore_screen.cpp`, `controls_menu_update.cpp` and
+`play_game_menu_update.cpp`.

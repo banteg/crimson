@@ -167,7 +167,33 @@ _DIK_TO_RL_KEY: dict[int, int] = {
     0x44: int(rl.KeyboardKey.KEY_F10),
     0x57: int(rl.KeyboardKey.KEY_F11),
     0x58: int(rl.KeyboardKey.KEY_F12),
+    0x37: int(rl.KeyboardKey.KEY_KP_MULTIPLY),
+    0x3A: int(rl.KeyboardKey.KEY_CAPS_LOCK),
+    0x45: int(rl.KeyboardKey.KEY_NUM_LOCK),
+    0x46: int(rl.KeyboardKey.KEY_SCROLL_LOCK),
+    0x47: int(rl.KeyboardKey.KEY_KP_7),
+    0x48: int(rl.KeyboardKey.KEY_KP_8),
+    0x49: int(rl.KeyboardKey.KEY_KP_9),
+    0x4A: int(rl.KeyboardKey.KEY_KP_SUBTRACT),
+    0x4B: int(rl.KeyboardKey.KEY_KP_4),
+    0x4C: int(rl.KeyboardKey.KEY_KP_5),
+    0x4D: int(rl.KeyboardKey.KEY_KP_6),
+    0x4E: int(rl.KeyboardKey.KEY_KP_ADD),
+    0x4F: int(rl.KeyboardKey.KEY_KP_1),
+    0x50: int(rl.KeyboardKey.KEY_KP_2),
+    0x51: int(rl.KeyboardKey.KEY_KP_3),
+    0x52: int(rl.KeyboardKey.KEY_KP_0),
+    0x53: int(rl.KeyboardKey.KEY_KP_DECIMAL),
+    0x8D: int(rl.KeyboardKey.KEY_KP_EQUAL),
+    0x9C: int(rl.KeyboardKey.KEY_KP_ENTER),
     0x9D: int(rl.KeyboardKey.KEY_RIGHT_CONTROL),
+    0xB5: int(rl.KeyboardKey.KEY_KP_DIVIDE),
+    0xB7: int(rl.KeyboardKey.KEY_PRINT_SCREEN),
+    0xB8: int(rl.KeyboardKey.KEY_RIGHT_ALT),
+    0xC5: int(rl.KeyboardKey.KEY_PAUSE),
+    0xDB: int(rl.KeyboardKey.KEY_LEFT_SUPER),
+    0xDC: int(rl.KeyboardKey.KEY_RIGHT_SUPER),
+    0xDD: int(rl.KeyboardKey.KEY_KB_MENU),
     0xC8: int(rl.KeyboardKey.KEY_UP),
     0xC9: int(rl.KeyboardKey.KEY_PAGE_UP),
     0xCB: int(rl.KeyboardKey.KEY_LEFT),
@@ -361,6 +387,79 @@ def input_begin_frame() -> None:
     _PRESSED_STATE.begin_frame()
 
 
+# Native `input_key_name` asks `GetKeyNameTextA(scan << 16)`; these are its US-layout answers for the plain
+# (non-extended) scancodes.
+_WINDOWS_KEY_NAMES: dict[int, str] = {
+    0x01: "Esc",
+    **{0x02 + i: str((i + 1) % 10) for i in range(10)},
+    0x0C: "-",
+    0x0D: "=",
+    0x0E: "Backspace",
+    0x0F: "Tab",
+    **dict(zip(range(0x10, 0x1A), "QWERTYUIOP", strict=True)),
+    0x1A: "[",
+    0x1B: "]",
+    0x1C: "Enter",
+    0x1D: "Ctrl",
+    **dict(zip(range(0x1E, 0x27), "ASDFGHJKL", strict=True)),
+    0x27: ";",
+    0x28: "'",
+    0x29: "`",
+    0x2A: "Shift",
+    0x2B: "\\",
+    **dict(zip(range(0x2C, 0x33), "ZXCVBNM", strict=True)),
+    0x33: ",",
+    0x34: ".",
+    0x35: "/",
+    0x36: "Right Shift",
+    0x37: "Num *",
+    0x38: "Alt",
+    0x39: "Space",
+    0x3A: "Caps Lock",
+    **{0x3B + i: f"F{i + 1}" for i in range(10)},
+    0x45: "Pause",
+    0x46: "Scroll Lock",
+    0x47: "Num 7",
+    0x48: "Num 8",
+    0x49: "Num 9",
+    0x4A: "Num -",
+    0x4B: "Num 4",
+    0x4C: "Num 5",
+    0x4D: "Num 6",
+    0x4E: "Num +",
+    0x4F: "Num 1",
+    0x50: "Num 2",
+    0x51: "Num 3",
+    0x52: "Num 0",
+    0x53: "Num Del",
+    0x57: "F11",
+    0x58: "F12",
+}
+# Extended keys (DIK codes with the high bit) have no plain scancode name; the port keeps readable names.
+_EXTENDED_KEY_NAMES: dict[int, str] = {
+    0x8D: "Num =",
+    0x9C: "Num Enter",
+    0x9D: "RControl",
+    0xB5: "Num /",
+    0xB7: "PrintScreen",
+    0xB8: "RAlt",
+    0xC5: "Pause",
+    0xC7: "Home",
+    0xC8: "Up",
+    0xC9: "PageUp",
+    0xCB: "Left",
+    0xCD: "Right",
+    0xCF: "End",
+    0xD0: "Down",
+    0xD1: "PageDown",
+    0xD2: "Insert",
+    0xD3: "Delete",
+    0xDB: "LWin",
+    0xDC: "RWin",
+    0xDD: "Menu",
+}
+
+
 def input_code_name(key_code: int) -> str:
     key_code = int(key_code)
     pad_name = _PAD_CODE_NAMES.get(key_code)
@@ -434,31 +533,7 @@ def input_code_name(key_code: int) -> str:
         return "RawInput ?"
 
     if key_code < 0x100:
-        name = {
-            0x01: "Escape",
-            0x0F: "Tab",
-            0x10: "Q",
-            0x11: "W",
-            0x12: "E",
-            0x13: "R",
-            0x1C: "Enter",
-            0x1D: "LControl",
-            0x1E: "A",
-            0x1F: "S",
-            0x20: "D",
-            0x2A: "LShift",
-            0x36: "RShift",
-            0x38: "LAlt",
-            0x39: "Space",
-            0x9D: "RControl",
-            0xC8: "Up",
-            0xC9: "PageUp",
-            0xCB: "Left",
-            0xCD: "Right",
-            0xD0: "Down",
-            0xD1: "PageDown",
-            0xD3: "Delete",
-        }.get(key_code)
+        name = _WINDOWS_KEY_NAMES.get(key_code) or _EXTENDED_KEY_NAMES.get(key_code)
         if name is not None:
             return name
         return f"DIK_{key_code:02X}"
@@ -508,6 +583,22 @@ def pad_nav_pressed(code: PadCode) -> bool:
         rl.is_gamepad_available(gamepad) and rl.is_gamepad_button_pressed(gamepad, button)
         for gamepad in range(GAMEPAD_SLOT_COUNT)
     )
+
+
+def pad_nav_stick() -> tuple[float, float]:
+    """The left stick of whichever connected pad pushes it furthest, per axis (menu navigation)."""
+
+    x = y = 0.0
+    for gamepad in range(GAMEPAD_SLOT_COUNT):
+        if not rl.is_gamepad_available(gamepad):
+            continue
+        pad_x = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[PadCode.LEFT_STICK_X]))
+        pad_y = float(rl.get_gamepad_axis_movement(gamepad, _PAD_AXIS_CODES[PadCode.LEFT_STICK_Y]))
+        if abs(pad_x) > abs(x):
+            x = pad_x
+        if abs(pad_y) > abs(y):
+            y = pad_y
+    return x, y
 
 
 class GamepadSnapshot(msgspec.Struct, frozen=True):

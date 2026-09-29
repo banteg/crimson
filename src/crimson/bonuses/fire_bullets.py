@@ -6,6 +6,7 @@ from grim.geom import Vec2
 from grim.rand import CrandLike
 
 from ..effects import EffectPool, FxQueue
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 
@@ -31,9 +32,12 @@ def queue_large_hit_decal_streak(
         # before the freeze branch (`crt_rand` @ 0x0042184c).
         rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_BURN)
         if freeze_effects is not None:
-            freeze_angle = (
-                float(base_angle)
-                + float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE) % 100) * 0.01
+            # Native `angle - 1.5707964f + (float)(crt_rand() % 100) * 0.01f`, single precision.
+            freeze_angle = x87_pc24_add(
+                base_angle,
+                x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.PROJECTILE_UPDATE_LARGE_STREAK_FREEZE_ANGLE) % 100), f32(0.01),
+                ),
             )
             freeze_effects.spawn_freeze_shard(
                 pos=hit.hit + direction * (dist * 20.0),

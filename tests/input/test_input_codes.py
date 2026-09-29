@@ -141,4 +141,22 @@ def test_wheel_fire_binding_reaches_exactly_one_simulation_tick(mocker, wheel: f
         tick = ticks.next_tick()
         assert unpack_player_input(tick.inputs[0]).fire_down is (index == 0)
         step_replay_tick(session, tick)
-    assert session.world.state.shots_fired[0] == 1
+    assert session.world.state.shots_fired == 1
+
+
+@pytest.mark.parametrize(
+    ("key", "code"),
+    [
+        (input_codes.rl.KeyboardKey.KEY_KP_7, 0x47),
+        (input_codes.rl.KeyboardKey.KEY_KP_ADD, 0x4E),
+        (input_codes.rl.KeyboardKey.KEY_KP_ENTER, 0x9C),
+        (input_codes.rl.KeyboardKey.KEY_RIGHT_ALT, 0xB8),
+    ],
+)
+def test_numpad_and_right_alt_can_be_bound(mocker, key: int, code: int) -> None:
+    # Native binds any DIK code; the capture used to drop keys the port had no mapping for.
+    keys = iter((int(key), 0))
+    mocker.patch.object(input_codes.rl, "get_key_pressed", side_effect=lambda: next(keys))
+    assert input_codes.capture_first_pressed_input_code(player_index=0, include_mouse=False, include_gamepad=False) == code
+    mocker.patch.object(input_codes.rl, "is_key_down", side_effect=lambda k: k == int(key))
+    assert input_codes.input_code_is_down(code)

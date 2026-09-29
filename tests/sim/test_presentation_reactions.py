@@ -94,7 +94,7 @@ def test_shared_audio_sink_applies_post_tick_sfx_and_quest_music(mocker) -> None
     audio = AudioState(
         ready=False,
         music=init_music_state(ready=False, enabled=True, volume=1.0),
-        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
     )
     bridge = AudioBridge(audio_rng=Crand(1), audio=audio)
     play_sfx = mocker.patch.object(type(bridge), "play_sfx")

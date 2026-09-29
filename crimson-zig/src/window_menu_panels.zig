@@ -123,7 +123,7 @@ const quest_list_hover_left_pad: f32 = 10.0;
 const quest_list_hover_right_pad: f32 = 210.0;
 const quest_list_hover_top_pad: f32 = 2.0;
 const quest_list_hover_bottom_pad: f32 = 18.0;
-const quest_hardcore_unlock_index: u32 = 40;
+pub const quest_hardcore_unlock_index: u32 = 40;
 
 pub fn updatePlayGame(state: *PlayGameState, frame_dt: f32, config: *formats.crimson_cfg.CrimsonCfg, status: formats.game_cfg.Status, runtime_assets: ?*const window_assets.RuntimeAssets) PlayGameResult {
     const dt_ms = frameDeltaMs(frame_dt);

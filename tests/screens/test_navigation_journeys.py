@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.game import loop_view as loop_module
 from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestRunOutcome
+from crimson.persistence.highscores import HighScoreRecord
 from crimson.quests.level import QuestLevel
 from crimson.screens import menu
 from crimson.screens.actions import (
@@ -18,38 +18,18 @@ from crimson.screens.actions import (
     ShowScores,
     StartRun,
 )
+from crimson.screens.high_scores_layout import HS_RIGHT_GAME_MODE_WIDGET, hs_right_options_x_shift
 from crimson.screens.high_scores_view import view as scores_module
-from crimson.screens.panels import alien_zookeeper, credits, stats
+from crimson.screens.panels import alien_zookeeper, stats
 from crimson.screens.panels.controls import ControlsMenuView
 from crimson.screens.panels.options import OptionsMenuView
-from crimson.screens.panels.play_game import PlayGameMenuView
 from crimson.screens.pause_menu import PauseMenuView
 from crimson.screens.quest_views.quest_results import QuestResultsView
 from crimson.screens.stack import ScreenEntry, ScreenStack
-from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.support.gameplay_screen import GameplayScreenStub
-from tests.support.screens import ScreenStub
-
-
-@pytest.fixture
-def loop(make_game_state, screen_resources, screen_io, mocker) -> GameLoopView:
-    state = make_game_state(resources=screen_resources)
-    for module in (menu, scores_module, stats, credits, alien_zookeeper):
-        mocker.patch.object(module, "ensure_menu_ground", return_value=None)
-    mocker.patch.object(type(state.console), "handle_hotkey")
-    mocker.patch.object(type(state.console), "update")
-    mocker.patch.object(loop_module, "debug_enabled", return_value=False)
-    view = GameLoopView(state)
-    view.navigation.open()
-    view.navigation.navigate(Route.MENU)
-    return view
-
-
-def finish_transition(loop: GameLoopView) -> None:
-    for _ in range(12):
-        loop.update(0.1)
+from tests.support.screens import ScreenStub, finish_transition
 
 
 def test_menu_options_controls_back_preserves_parent_and_config(loop, mocker) -> None:
@@ -69,7 +49,7 @@ def test_menu_options_controls_back_preserves_parent_and_config(loop, mocker) ->
     finish_transition(loop)
     assert loop.state.screens.active is options
     assert options._slider_sfx.value == 3
-    assert not options._transition.closing
+    assert not options.state.ui.closing
     controls_close.assert_called_once()
     options._begin_close_transition(Route.BACK)
     finish_transition(loop)
@@ -112,21 +92,18 @@ def test_scores_back_restores_original_run_context_through_loop(loop, screen_res
     loop.update(0.016)
     scores = state.screens.active
     assert isinstance(scores, scores_module.HighScoresView)
-    mocker.patch.object(
-        scores,
-        "_update_dropdown",
-        side_effect=[
-            (False, None, False),
-            (False, None, False),
-            (False, 1, True),
-        ],
-    )
+    # Take "Rush", the second row of the open game mode list.
+    scores.game_mode_list.open = True
+    row = Vec2(hs_right_options_x_shift(float(state.config.display.width)), 0.0) + HS_RIGHT_GAME_MODE_WIDGET
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(row.x + 5.0, row.y + 16.0 * 2 + 5.0))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     scores._update_right_panel_widgets(
         right_top_left=Vec2(),
         resources=screen_resources,
-        font=screen_resources.small_font,
     )
     assert state.config.gameplay.mode == GameMode.RUSH
+    assert not scores.game_mode_list.open
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
     scores._begin_close_transition(Route.BACK)
     # The closing branch does not poll any dropdowns.
     for _ in range(4):
@@ -180,16 +157,9 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
         kind="completed",
         level=QuestLevel(1, 1),
         base_time_ms=60000,
-        player_health=100,
-        player2_health=None,
+        player_health_values=(100.0,),
         pending_perk_count=0,
-        experience=1234,
-        kill_count=42,
-        weapon_id=WeaponId.PISTOL,
-        shots_fired=50,
-        shots_hit=40,
-        most_used_weapon_id=WeaponId.PISTOL,
-        highscore_random_tag=123,
+        record=HighScoreRecord.blank(rand_value=123),
     )
     gameplay = GameplayScreenStub(action=ShowQuestOutcome(outcome))
     state.screens.reset(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
@@ -216,16 +186,14 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
     increment.assert_called_once()
 
 
-def test_launch_payload_survives_later_config_changes(loop, mocker) -> None:
+def test_launch_payload_mode_survives_later_config_changes(loop, mocker) -> None:
     state = loop.state
-    request = StartRun(GameMode.RUSH, player_count=2, hardcore=False)
+    request = StartRun(GameMode.RUSH)
     state.config.gameplay.mode = GameMode.SURVIVAL
-    state.config.gameplay.player_count = 1
     mode = loop.navigation._mode(GameMode.RUSH)
     mocker.patch.object(mode, "open")
     loop.navigation.navigate(request)
     assert state.config.gameplay.mode == GameMode.RUSH
-    assert state.config.gameplay.player_count == 2
     assert state.screens.active is mode
 
 
@@ -263,47 +231,10 @@ def test_failed_screen_entry_is_disposed_at_shutdown(mocker) -> None:
     assert view.close_calls == 1
 
 
-def _press_pad_buttons(mocker, *buttons: int) -> None:
-    pressed = {int(button) for button in buttons}
-    mocker.patch.object(rl, "is_gamepad_available", side_effect=lambda pad: int(pad) == 0)
-    mocker.patch.object(
-        rl,
-        "is_gamepad_button_pressed",
-        side_effect=lambda pad, button: int(pad) == 0 and int(button) in pressed,
-    )
 
 
-def test_play_game_panel_navigates_with_a_pad(loop, mocker) -> None:
-    state = loop.state
-    state.config.gameplay.player_count = 1
-    loop.navigation.navigate(Route.PLAY_GAME)
-    finish_transition(loop)
-    panel = state.screens.active
-    assert isinstance(panel, PlayGameMenuView)
-    mocker.patch.object(rl, "get_mouse_delta", return_value=rl.Vector2(0.0, 0.0))
-
-    _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_RIGHT)
+def test_alt_q_quits_from_any_screen(loop, mocker) -> None:
+    held = {int(rl.KeyboardKey.KEY_Q), int(rl.KeyboardKey.KEY_LEFT_ALT)}
+    mocker.patch.object(rl, "is_key_down", side_effect=lambda key: int(key) in held)
     loop.update(0.016)
-    assert state.config.gameplay.player_count == 2
-
-    for _ in range(2):
-        _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_LEFT_FACE_DOWN)
-        loop.update(0.016)
-    entries, *_ = panel._mode_entries()
-    assert panel._focus_index == 1
-    assert panel._mode_buttons[entries[1].key].hovered
-
-    _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_DOWN)
-    loop.update(0.016)
-    assert panel._transition.closing
-    assert state.config.gameplay.mode == GameMode(int(entries[1].game_mode))
-
-
-def test_panel_back_accepts_the_pad_back_button(loop, mocker) -> None:
-    loop.navigation.navigate(Route.PLAY_GAME)
-    finish_transition(loop)
-    _press_pad_buttons(mocker, rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)
-    loop.update(0.016)
-    _press_pad_buttons(mocker)
-    finish_transition(loop)
-    assert isinstance(loop.state.screens.active, menu.MenuView)
+    assert loop.should_close()

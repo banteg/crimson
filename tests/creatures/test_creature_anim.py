@@ -9,7 +9,7 @@ from crimson.creatures.anim import (
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32, x87_pc24_div, x87_pc24_mul_chain
-from crimson.owner_ref import OwnerRef
+from crimson.owner_id import player_owner_id
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -112,7 +112,7 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
         pos=creature.pos,
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
-        owner=OwnerRef.from_player(0),
+        owner_id=player_owner_id(0),
     )
     dt = 1.0 / 60.0
 

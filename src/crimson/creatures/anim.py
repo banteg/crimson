@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-import struct
-
 import msgspec
+
+from grim.math import f32, i32
 
 from ..math_parity import x87_pc24_div, x87_pc24_mul_chain
 from .spawn import CreatureAiMode, CreatureFlags, CreatureTypeId
 
-_F32_STRUCT = struct.Struct("<f")
-_F32_PACK = _F32_STRUCT.pack
-_F32_UNPACK = _F32_STRUCT.unpack
 _FLAG_ANIM_PING_PONG = int(CreatureFlags.ANIM_PING_PONG)
 _FLAG_ANIM_LONG_STRIP = int(CreatureFlags.ANIM_LONG_STRIP)
 _FLAG_RANGED_ATTACK_SHOCK = int(CreatureFlags.RANGED_ATTACK_SHOCK)
@@ -29,22 +26,6 @@ CREATURE_ANIM: dict[CreatureTypeId, CreatureAnimInfo] = {
     CreatureTypeId.SPIDER_SP2: CreatureAnimInfo(base=0x10, anim_rate=1.5, mirror=True),
     CreatureTypeId.TROOPER: CreatureAnimInfo(base=0x00, anim_rate=1.0, mirror=False),
 }
-
-
-def _f32(value: float) -> float:
-    """Round-trip through float32 to match the game's stored float behavior."""
-    return _F32_UNPACK(_F32_PACK(float(value)))[0]
-
-
-def _u32(value: int) -> int:
-    return value & 0xFFFFFFFF
-
-
-def _i32(value: int) -> int:
-    value &= 0xFFFFFFFF
-    if value & 0x80000000:
-        return value - 0x100000000
-    return value
 
 
 _CREATURE_CORPSE_FRAMES: dict[int, int] = {
@@ -80,18 +61,16 @@ def creature_anim_phase_step(
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
     ai_mode: int = CreatureAiMode.ORBIT_PLAYER,
-    quantize_f32: bool = True,
 ) -> float:
     """Compute the per-frame animation phase increment (creature_update_all)."""
     if size == 0.0:
         return 0.0
 
-    if quantize_f32:
-        anim_rate = _f32(anim_rate)
-        move_speed = _f32(move_speed)
-        dt = _f32(dt)
-        size = _f32(size)
-        local_scale = _f32(local_scale)
+    anim_rate = f32(anim_rate)
+    move_speed = f32(move_speed)
+    dt = f32(dt)
+    size = f32(size)
+    local_scale = f32(local_scale)
 
     flags_bits = int(flags)
     is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
@@ -102,13 +81,11 @@ def creature_anim_phase_step(
         # Long-strip creatures stop advancing animation phase in ai_mode == 7.
         return 0.0
 
-    if quantize_f32:
-        # creature_update_all 0x00426e57/0x00426ed5: `30.0f / size` stays on the
-        # x87 stack, then rate * speed * dt * scale * move_scale * strip, each
-        # multiply rounding at PC24.
-        speed_scale = x87_pc24_div(30.0, size)
-        return x87_pc24_mul_chain(anim_rate, move_speed, dt, speed_scale, local_scale, strip_mul)
-    return anim_rate * move_speed * dt * (30.0 / size) * local_scale * strip_mul
+    # creature_update_all 0x00426e57/0x00426ed5: `30.0f / size` stays on the
+    # x87 stack, then rate * speed * dt * scale * move_scale * strip, each
+    # multiply rounding at PC24.
+    speed_scale = x87_pc24_div(30.0, size)
+    return x87_pc24_mul_chain(anim_rate, move_speed, dt, speed_scale, local_scale, strip_mul)
 
 
 def creature_anim_advance_phase(
@@ -121,14 +98,12 @@ def creature_anim_advance_phase(
     local_scale: float = 1.0,
     flags: CreatureFlags = CreatureFlags(0),
     ai_mode: int = CreatureAiMode.ORBIT_PLAYER,
-    quantize_f32: bool = True,
 ) -> tuple[float, float]:
     """Advance anim_phase and wrap it the same way as creature_update_all.
 
     Returns (new_phase, applied_step).
     """
-    if quantize_f32:
-        phase = _f32(phase)
+    phase = f32(phase)
 
     step = creature_anim_phase_step(
         anim_rate=anim_rate,
@@ -138,30 +113,20 @@ def creature_anim_advance_phase(
         local_scale=local_scale,
         flags=flags,
         ai_mode=ai_mode,
-        quantize_f32=quantize_f32,
     )
     if step == 0.0:
         return phase, 0.0
 
-    phase = phase + step
-    if quantize_f32:
-        phase = _f32(phase)
+    phase = f32(phase + step)
 
     flags_bits = int(flags)
     is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
     if is_long_strip:
-        limit = _f32(31.0) if quantize_f32 else 31.0
-        while phase > limit:
-            phase = phase - limit
-            if quantize_f32:
-                phase = _f32(phase)
+        while phase > 31.0:
+            phase = f32(phase - 31.0)
     else:
-        limit = _f32(15.0) if quantize_f32 else 15.0
-        if phase > limit:
-            while phase > limit:
-                phase = phase - limit
-                if quantize_f32:
-                    phase = _f32(phase)
+        while phase > 15.0:
+            phase = f32(phase - 15.0)
 
     return phase, step
 
@@ -183,8 +148,8 @@ def creature_anim_select_frame(
     Note: mirror_applied refers to the long-strip ping-pong index mirroring
     (frame = 0x1f - frame) when the per-type mirror flag is set, not a texture flip.
     """
-    phase = _f32(phase)
-    lifecycle_stage = _f32(lifecycle_stage)
+    phase = f32(phase)
+    lifecycle_stage = f32(lifecycle_stage)
     flags_bits = int(flags)
     is_long_strip = (flags_bits & _FLAG_ANIM_PING_PONG) == 0 or (flags_bits & _FLAG_ANIM_LONG_STRIP) != 0
     if is_long_strip:
@@ -192,11 +157,11 @@ def creature_anim_select_frame(
             # Native branches on lifecycle, not on a synthetic animation phase.
             # Subtraction rounds at PC24 before __ftol truncates toward zero.
             frame = (
-                base_frame + 0x0F if lifecycle_stage < 0.0 else int(_f32(float(base_frame + 0x0F) - lifecycle_stage))
+                base_frame + 0x0F if lifecycle_stage < 0.0 else int(f32(float(base_frame + 0x0F) - lifecycle_stage))
             )
             mirrored = False
         else:
-            frame = int(_f32(phase + 0.5))
+            frame = int(f32(phase + 0.5))
             mirrored = False
             if mirror_long and frame > 0x0F:
                 frame = 0x1F - frame
@@ -207,10 +172,10 @@ def creature_anim_select_frame(
 
     # Ping-pong strip:
     #   idx = (__ftol(phase + 0.5f) & 0x8000000f); then normalize negatives; then mirror >7.
-    raw = int(_f32(phase + 0.5))
-    idx = _i32(_u32(raw) & 0x8000000F)
+    raw = int(f32(phase + 0.5))
+    idx = i32(raw & 0x8000000F)
     if idx < 0:
-        idx = _i32(_u32(((idx - 1) | 0xFFFFFFF0) + 1))
+        idx = i32(((idx - 1) | 0xFFFFFFF0) + 1)
     if idx > 7:
         idx = 0x0F - idx
     frame = base_frame + 0x10 + idx
@@ -226,7 +191,7 @@ def creature_anim_select_flash_frame(
     lifecycle_stage: float = 16.0,
 ) -> tuple[int, bool, str]:
     """Select the hit-flash frame; dying long strips omit the shock offset."""
-    if _f32(lifecycle_stage) < 16.0:
+    if f32(lifecycle_stage) < 16.0:
         flags &= ~CreatureFlags.RANGED_ATTACK_SHOCK
     return creature_anim_select_frame(
         phase,

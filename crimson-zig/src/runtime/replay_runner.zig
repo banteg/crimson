@@ -51,6 +51,7 @@ pub const RunFailure = struct {
     tick_count: usize = 0,
     command: ?replay_codec.Command = null,
     outcome: replay_codec.RunOutcome = .incomplete,
+    end_tick: usize = 0,
 
     pub fn write(self: RunFailure, writer: *std.Io.Writer, err: ReplayRunnerError) std.Io.Writer.Error!void {
         switch (err) {
@@ -59,8 +60,8 @@ pub const RunFailure = struct {
                 try replay_commands.writeError(writer, @errorCast(err), self.command.?);
             },
             error.RunEndedEarly => try writer.print(
-                "run ended ({s}) at tick {d} but the replay has {d} ticks",
-                .{ @tagName(self.outcome), self.tick_index, self.tick_count },
+                "run ended ({s}) at tick {d} and wound down by tick {d} but the replay has {d} ticks",
+                .{ @tagName(self.outcome), self.end_tick, self.tick_index, self.tick_count },
             ),
             error.InvalidQuestSpawnTable => try writer.writeAll("quest replay resolves to an invalid quest spawn table"),
             error.InvalidSpawnTemplate => try writer.print("tick {d}: native replay run hit an invalid creature spawn template", .{self.tick_index}),
@@ -98,6 +99,10 @@ pub const ReplayRunOptions = struct {
     failure: ?*RunFailure = null,
 };
 
+/// Native keeps simulating after the run ends while the gameplay timeline (`ui_element_table[28]`,
+/// 0..500ms) runs down by the same whole milliseconds per frame; a recording may go on that long.
+pub const run_down_ms: i32 = 500;
+
 /// A session stepping through a replay's recorded ticks.
 pub const Playback = struct {
     replay: replay_codec.Replay,
@@ -105,6 +110,8 @@ pub const Playback = struct {
     tick_limit: usize,
     next_tick: usize = 0,
     failure: RunFailure,
+    /// Milliseconds of run-down left once the run has ended.
+    run_down_remaining: ?i32 = null,
 
     pub fn init(replay: replay_codec.Replay, options: ReplayRunOptions) ReplayRunnerError!Playback {
         const tick_count = replay.tickCount();
@@ -128,8 +135,7 @@ pub const Playback = struct {
         return self.tick_limit == self.replay.tickCount();
     }
 
-    /// Simulate the next tick. A run that ends before the replay's last tick
-    /// is an error.
+    /// Simulate the next tick. A replay that goes on past the run's end and its run-down is an error.
     pub fn step(self: *Playback, options: replay_step.StepOptions) ReplayRunnerError!replay_step.StepResult {
         const tick_index = self.next_tick;
         self.failure.tick_index = tick_index;
@@ -156,11 +162,16 @@ pub const Playback = struct {
         };
         self.next_tick += 1;
 
-        if (self.session.terminalOutcome()) |outcome| {
-            if (self.next_tick < self.replay.tickCount()) {
+        if (self.run_down_remaining == null) {
+            if (self.session.terminalOutcome()) |outcome| {
                 self.failure.outcome = outcome;
-                return error.RunEndedEarly;
+                self.failure.end_tick = tick_index;
+                self.run_down_remaining = run_down_ms;
             }
+        }
+        if (self.run_down_remaining) |*remaining| {
+            remaining.* -= @as(i32, @intFromFloat(step_result.dt_sim * 1000.0));
+            if (remaining.* < 0 and self.next_tick < self.replay.tickCount()) return error.RunEndedEarly;
         }
         return step_result;
     }
@@ -183,11 +194,14 @@ pub fn buildRunResult(
     const state = &session.state;
     const players = session.playersConst();
     const elapsed_ms: replay_codec.Int = @intFromFloat(session.runElapsedMs());
+    const shots = survival_progression.runShotCounts(state.*);
 
     var result: RunResult = .{
         .outcome = outcome,
         .elapsed_ms = elapsed_ms,
         .kills = session.creatures.kill_count,
+        .shots_fired = shots.fired,
+        .shots_hit = shots.hit,
         .rng_state = state.rng.state,
         .pending_perks = state.perk_selection.pending_count,
         .quest_final_ms = null,
@@ -195,22 +209,9 @@ pub fn buildRunResult(
     };
     var health_values: [state_mod.max_players]f32 = undefined;
     for (players, result.players_buffer[0..players.len], 0..) |player, *player_result, index| {
-        var shots_fired: i32 = undefined;
-        var shots_hit: i32 = undefined;
-        if (session.game_mode == .typo) {
-            shots_fired = state.typo.typing.submit_count;
-            shots_hit = state.typo.typing.match_count;
-        } else {
-            // Piercing shots can hit several creatures; the high-score record
-            // clamps hits to shots fired.
-            shots_fired = @max(0, state.shots_fired[index]);
-            shots_hit = @max(0, @min(state.shots_hit[index], shots_fired));
-        }
         player_result.* = .{
             .experience = player.experience,
             .health = player.health,
-            .shots_fired = shots_fired,
-            .shots_hit = shots_hit,
             .most_used_weapon_id = survival_progression.mostUsedWeaponIdForPlayer(state.*, index, player.weapon.weapon_id),
         };
         health_values[index] = player.health;
@@ -404,6 +405,8 @@ fn testReplay(
             .outcome = .incomplete,
             .elapsed_ms = 0,
             .kills = 0,
+            .shots_fired = 0,
+            .shots_hit = 0,
             .rng_state = 0,
             .pending_perks = 0,
             .quest_final_ms = null,
@@ -520,18 +523,19 @@ test "survival run derives a deterministic incomplete result" {
     try testing.expectEqual(game_ids.WeaponId.pistol, result.players()[0].most_used_weapon_id);
 }
 
-test "shots are reported per player and hits clamp to shots fired" {
+test "shots are one count for every player and hits clamp to shots fired" {
     const run: replay_codec.RunSpec = .{ .game_mode = .survival, .seed = 1, .player_count = 2 };
     var playback = try playThrough(testReplay(run, &aimed_inputs, &.{}, zero_command_ends[0..1]), .{});
-    playback.session.state.shots_fired[0] = 2;
-    playback.session.state.shots_hit[0] = 5;
-    playback.session.state.shots_fired[1] = -3;
-    playback.session.state.shots_hit[1] = -1;
-    const result = playback.result();
-    try testing.expectEqual(@as(replay_codec.Int, 2), result.players()[0].shots_fired);
-    try testing.expectEqual(@as(replay_codec.Int, 2), result.players()[0].shots_hit);
-    try testing.expectEqual(@as(replay_codec.Int, 0), result.players()[1].shots_fired);
-    try testing.expectEqual(@as(replay_codec.Int, 0), result.players()[1].shots_hit);
+    playback.session.state.shots_fired = 2;
+    playback.session.state.shots_hit = 5;
+    var result = playback.result();
+    try testing.expectEqual(@as(replay_codec.Int, 2), result.shots_fired);
+    try testing.expectEqual(@as(replay_codec.Int, 2), result.shots_hit);
+    playback.session.state.shots_fired = -3;
+    playback.session.state.shots_hit = -1;
+    result = playback.result();
+    try testing.expectEqual(@as(replay_codec.Int, 0), result.shots_fired);
+    try testing.expectEqual(@as(replay_codec.Int, 0), result.shots_hit);
 }
 
 test "a prefix reports incomplete unless it reached a terminal outcome" {
@@ -544,20 +548,24 @@ test "a prefix reports incomplete unless it reached a terminal outcome" {
     try testing.expect(beyond.complete);
 }
 
-test "a run that ends before the last tick is rejected" {
-    const replay = testReplay(.{ .game_mode = .rush, .seed = 1 }, &aimed_inputs, &.{}, zero_command_ends[0..2]);
+test "a replay may run on through the run-down but no further" {
+    // The world runs on while the HUD fades out: the end tick and 31 more ticks of 16ms (500ms).
+    var run_down = try Playback.init(testReplay(.{ .game_mode = .rush, .seed = 1 }, &aimed_inputs, &.{}, zero_command_ends[0..32]), .{});
+    run_down.session.players()[0].health = 0.0;
+    while (!run_down.done()) _ = try run_down.step(.{});
+    try testing.expectEqual(replay_codec.RunOutcome.death, run_down.result().outcome);
+
+    const replay = testReplay(.{ .game_mode = .rush, .seed = 1 }, &aimed_inputs, &.{}, zero_command_ends[0..33]);
     var playback = try Playback.init(replay, .{});
     playback.session.players()[0].health = 0.0;
-    try testing.expectError(error.RunEndedEarly, playback.step(.{}));
+    const failure = while (true) {
+        _ = playback.step(.{}) catch |err| break err;
+    };
+    try testing.expectEqual(error.RunEndedEarly, failure);
     var buffer: [160]u8 = undefined;
     var writer: std.Io.Writer = .fixed(&buffer);
     try playback.failure.write(&writer, error.RunEndedEarly);
-    try testing.expectEqualStrings("run ended (death) at tick 0 but the replay has 2 ticks", writer.buffered());
-
-    var last_tick = try Playback.init(testReplay(replay.run, &aimed_inputs, &.{}, zero_command_ends[0..1]), .{});
-    last_tick.session.players()[0].health = 0.0;
-    _ = try last_tick.step(.{});
-    try testing.expectEqual(replay_codec.RunOutcome.death, last_tick.result().outcome);
+    try testing.expectEqualStrings("run ended (death) at tick 0 and wound down by tick 31 but the replay has 33 ticks", writer.buffered());
 }
 
 test "quest completion ends the run and scores the final time" {
@@ -568,7 +576,8 @@ test "quest completion ends the run and scores the final time" {
         error.RunEndedEarly => break,
         else => return err,
     };
-    const ticks = probe.next_tick;
+    const ticks = probe.failure.end_tick + 1;
+    const wound_down_tick = probe.next_tick - 1;
 
     const completed = try runReplayWithOptions(testReplay(run, &aimed_inputs, &.{}, zero_command_ends[0..ticks]), options);
     const result = completed.result;
@@ -576,12 +585,16 @@ test "quest completion ends the run and scores the final time" {
     const expected = quest_results.computeQuestFinalTime(@intCast(result.elapsed_ms), &.{100.0}, 0).final_time_ms;
     try testing.expectEqual(@as(?replay_codec.Int, expected), result.quest_final_ms);
 
-    var message: [96]u8 = undefined;
+    var message: [128]u8 = undefined;
     try expectFailure(
-        testReplay(run, &aimed_inputs, &.{}, zero_command_ends[0 .. ticks + 1]),
+        testReplay(run, &aimed_inputs, &.{}, zero_command_ends[0 .. wound_down_tick + 2]),
         options,
         error.RunEndedEarly,
-        try std.fmt.bufPrint(&message, "run ended (quest_completed) at tick {d} but the replay has {d} ticks", .{ ticks - 1, ticks + 1 }),
+        try std.fmt.bufPrint(
+            &message,
+            "run ended (quest_completed) at tick {d} and wound down by tick {d} but the replay has {d} ticks",
+            .{ ticks - 1, wound_down_tick, wound_down_tick + 2 },
+        ),
     );
 }
 
@@ -613,10 +626,9 @@ test "typo run reports submitted words as shots fired" {
         .{ .typo_submit = .{ .player_index = 0 } },
     };
     const run = try runReplay(testReplay(.{ .game_mode = .typo, .seed = 1 }, &aimed_inputs, &commands, &.{ 1, 2, 3, 4, 5, 6, 7 }));
-    const player = run.result.players()[0];
-    try testing.expectEqual(@as(replay_codec.Int, 1), player.shots_fired);
-    try testing.expectEqual(@as(replay_codec.Int, 0), player.shots_hit);
-    try testing.expectEqual(game_ids.WeaponId.shotgun, player.most_used_weapon_id);
+    try testing.expectEqual(@as(replay_codec.Int, 1), run.result.shots_fired);
+    try testing.expectEqual(@as(replay_codec.Int, 0), run.result.shots_hit);
+    try testing.expectEqual(game_ids.WeaponId.shotgun, run.result.players()[0].most_used_weapon_id);
 }
 
 test "typo run spawns creatures after creature update phase" {

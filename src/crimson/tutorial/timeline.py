@@ -1,299 +1,208 @@
 from __future__ import annotations
 
-import msgspec
+from typing import TYPE_CHECKING
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..bonuses import BonusId
-from ..creatures.spawn import (
-    SpawnId,
-    SpawnTemplateCall,
-    build_tutorial_stage3_fire_spawns,
-    build_tutorial_stage4_clear_spawns,
-    build_tutorial_stage5_repeat_spawns,
-    build_tutorial_stage6_perks_done_spawns,
-)
-from .state import TutorialState
+from ..creatures.spawn_ids import CreatureFlags, SpawnId
+from .state import TutorialOverlayState
 
-_TUTORIAL_STAGE_TEXT: tuple[str, ...] = (
-    "In this tutorial you'll learn how to play Crimsonland",
-    "First learn to move by pushing the arrow keys.",
-    "Now pick up the bonuses by walking over them",
-    "Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot.",
-    "Now, move the mouse to aim at the monsters",
-    "It will help you to move and shoot at the same time. Just keep moving!",
-    "Now let's learn about Perks. You'll receive a perk when you gain enough experience points.",
-    "Perks can give you extra abilities, or boost your skills. Choose wisely!",
-    "Great! Now you are ready to start playing Crimsonland",
-)
+if TYPE_CHECKING:
+    from ..sim.world_state import WorldState
 
-_TUTORIAL_HINT_TEXT: tuple[str, ...] = (
-    "This is the speed powerup, it makes you move faster!",
-    "This is a weapon powerup. Picking it you gets a new weapon.",
-    "This powerup doubles all experience points you gain while it's active.",
+_HINT_TEXT = (
+    "This is the speed powerup, it makes you move faster for\na limited amount of time.",
+    "This is a weapon powerup. Picking it you gets\nyou another weapon. This one is a submachine gun.",
+    "This powerup doubles all experience points gained when\nx2 powerup is active.",
     "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!",
     "Reflex Boost powerup slows down time giving you a chance to react better",
     "",
     "",
 )
-
-class BonusSpawnCall(msgspec.Struct, frozen=True):
-    bonus_id: BonusId
-    amount: int
-    pos: Vec2
-
-
-class TutorialFrameActions(msgspec.Struct, frozen=True):
-    prompt_text: str = ""
-    prompt_alpha: float = 0.0
-    hint_text: str = ""
-    hint_alpha: float = 0.0
-    spawn_templates: tuple[SpawnTemplateCall, ...] = ()
-    spawn_bonuses: tuple[BonusSpawnCall, ...] = ()
-    stage5_bonus_carrier_drop: tuple[BonusId, int] | None = None
-    play_levelup_sfx: bool = False
-    force_player_health: float = 100.0
-    force_player_experience: int | None = None
+_STAGE_TEXT = (
+    "In this tutorial you'll learn how to play Crimsonland",
+    "First learn to move by pushing the arrow keys.",
+    "Now pick up the bonuses by walking over them",
+    "Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot.",
+    "Now, move the mouse to aim at the monsters",
+    "It will help you to move and shoot and aim at the same time, so practice!",
+    "Now let's learn about Perks. You can pick a Perk by clicking\nthe 'level up' sign at the upper right corner of the screen.",
+    "Perks can give you extra abilities that help\nyou survive in Crimsonland.",
+    "Great! Now you are ready to start playing Crimsonland!",
+    "",
+)
+_HEADING = 3.1415927  # native 3.14159274f
 
 
-def tutorial_stage5_bonus_carrier_config(repeat_spawn_count: int) -> tuple[BonusId, int] | None:
-    """Return the (bonus_id, amount_override) applied to the stage-5 bonus carrier for this repeat count.
+def tutorial_timeline_update(world: WorldState, *, dt_ms: int) -> None:
+    """`tutorial_timeline_update`: stage prompts, the bonus hints, and the scripted spawns of each stage.
 
-    This reproduces the packed bonus-arg writes to `tutorial_hint_bonus_ptr` in `tutorial_timeline_update`.
-
-    - amount_override == -1 means "use the bonus meta default".
-    - For weapon bonuses, amount_override is the weapon id.
+    It runs after the world render and before the death and level-up checks, like native.
     """
-    n = int(repeat_spawn_count)
-    if n == 1:
-        return BonusId.SPEED, -1
-    if n == 2:
-        return BonusId.WEAPON, 5
-    if n == 3:
-        return BonusId.DOUBLE_EXPERIENCE, -1
-    if n == 4:
-        return BonusId.NUKE, -1
-    if n == 5:
-        return BonusId.REFLEX_BOOST, -1
-    return None
+    state = world.state
+    tutorial = state.tutorial
+    players = world.players
 
-
-def _clamp01(value: float) -> float:
-    if value <= 0.0:
-        return 0.0
-    if value >= 1.0:
-        return 1.0
-    return float(value)
-
-
-def _tick_stage_transition(stage_index: int, transition_timer_ms: int, *, frame_dt_ms: int) -> tuple[int, int]:
-    stage_index = int(stage_index)
-    transition_timer_ms = int(transition_timer_ms)
-    dt_ms = int(frame_dt_ms)
-
-    if transition_timer_ms < -1:
-        transition_timer_ms += dt_ms
-        if transition_timer_ms < -1:
-            return stage_index, transition_timer_ms
-        stage_index += 1
-        if stage_index == 9:
-            stage_index = 0
-        transition_timer_ms = 0
-        return stage_index, transition_timer_ms
-
-    if transition_timer_ms > -1:
-        transition_timer_ms += dt_ms
-    if transition_timer_ms > 1000:
-        transition_timer_ms = -1
-    return stage_index, transition_timer_ms
-
-
-def _prompt_alpha(*, stage_index: int, stage_timer_ms: int, transition_timer_ms: int) -> float:
-    stage_index = int(stage_index)
-    stage_timer_ms = int(stage_timer_ms)
-    transition_timer_ms = int(transition_timer_ms)
-
-    if stage_index < 0:
-        return 0.0
-
-    if transition_timer_ms < -1:
-        alpha = float(-transition_timer_ms) * 0.001
-    elif transition_timer_ms < 0:
-        alpha = 1.0
-    else:
-        alpha = float(transition_timer_ms) * 0.001
-
-    if stage_index == 5:
-        if stage_timer_ms > 5000 and transition_timer_ms > -2:
-            alpha = 1.0 - float(stage_timer_ms - 5000) * 0.001
-        if stage_timer_ms >= 0x1771:
-            alpha = 0.0
-
-    return _clamp01(alpha)
-
-
-def _tick_hint(
-    state: TutorialState,
-    *,
-    frame_dt_ms: int,
-    hint_bonus_died: bool,
-) -> tuple[tuple[SpawnTemplateCall, ...], str, float]:
-    hint_spawns: list[SpawnTemplateCall] = []
-    fade_in_this_frame = bool(state.hint_fade_in)
-
-    if (not state.hint_fade_in) and bool(hint_bonus_died):
-        state.hint_fade_in = True
-        state.hint_index = int(state.hint_index) + 1
-        hint_spawns.extend(
-            (
-                SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=Vec2(128.0, 128.0), heading=3.1415927),
-                SpawnTemplateCall(
-                    template_id=SpawnId.ALIEN_SMALL_GRAY_26,
-                    pos=Vec2(152.0, 160.0),
-                    heading=3.1415927,
-                ),
-            ),
+    def spawn(template_id: SpawnId, x: float, y: float) -> int:
+        return world.creatures.spawn_template(
+            template_id, Vec2(x, y), _HEADING, state=state, detail_preset=state.detail_preset,
         )
 
-    delta = int(frame_dt_ms) * 3
-    state.hint_alpha = int(state.hint_alpha) + (delta if fade_in_this_frame else -delta)
-    if state.hint_alpha < 0:
-        state.hint_alpha = 0
-    elif state.hint_alpha > 1000:
-        state.hint_alpha = 1000
+    def level_up_sfx() -> None:
+        state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))
 
-    hint_text_table = _TUTORIAL_HINT_TEXT
-    idx = int(state.hint_index)
-    text = hint_text_table[idx] if 0 <= idx < len(hint_text_table) else ""
-    alpha = float(state.hint_alpha) * 0.001 if text else 0.0
-    return tuple(hint_spawns), text, _clamp01(alpha)
+    tutorial.stage_timer_ms += dt_ms
+    players[0].health = 100.0
+    if tutorial.stage_index != 6:
+        players[0].experience = 0
 
+    transition = tutorial.stage_transition_timer_ms
+    if transition < -1:
+        transition += dt_ms
+        tutorial.stage_transition_timer_ms = transition
+        if transition >= -1:
+            tutorial.stage_index += 1
+            if tutorial.stage_index == 9:
+                tutorial.stage_index = 0
+            tutorial.stage_transition_timer_ms = 0
+    elif transition >= 0:
+        tutorial.stage_transition_timer_ms = transition + dt_ms
+    if tutorial.stage_transition_timer_ms > 1000:
+        tutorial.stage_transition_timer_ms = -1
 
-def tick_tutorial_timeline(
-    state: TutorialState,
-    *,
-    frame_dt_ms: float,
-    any_move_active: bool,
-    any_fire_active: bool,
-    creatures_none_active: bool,
-    bonus_pool_empty: bool,
-    perk_pending_count: int,
-    hint_bonus_died: bool = False,
-) -> tuple[TutorialState, TutorialFrameActions]:
-    """Pure model of the tutorial director (`tutorial_timeline_update` / 0x00408990).
-
-    Notes:
-    - The returned UI model (prompt/hint text+alpha) reflects the state *before* any stage triggers
-      applied by this tick. The returned state reflects the post-trigger values for the next frame.
-    """
-    dt_ms = int(float(frame_dt_ms))
-    state = msgspec.structs.replace(state)
-    state.stage_timer_ms = int(state.stage_timer_ms) + dt_ms
-
-    stage_index, transition_timer_ms = _tick_stage_transition(state.stage_index, state.stage_transition_timer_ms, frame_dt_ms=dt_ms)
-    state.stage_index = int(stage_index)
-    state.stage_transition_timer_ms = int(transition_timer_ms)
-
-    prompt_text = _TUTORIAL_STAGE_TEXT[stage_index] if 0 <= stage_index < len(_TUTORIAL_STAGE_TEXT) else ""
-    prompt_alpha = _prompt_alpha(stage_index=stage_index, stage_timer_ms=state.stage_timer_ms, transition_timer_ms=transition_timer_ms)
-    if stage_index == 6 and int(perk_pending_count) < 1:
-        prompt_text = ""
+    transition = tutorial.stage_transition_timer_ms
+    if transition >= 0:
+        prompt_alpha = transition * 0.001
+    elif transition < -1:
+        prompt_alpha = -transition * 0.001
+    else:
+        prompt_alpha = 1.0
+    if prompt_alpha >= 1.0 and tutorial.stage_index == 5 and tutorial.stage_timer_ms > 5000 and transition >= -1:
+        prompt_alpha = 1.0 - (tutorial.stage_timer_ms - 5000) * 0.001
+    if tutorial.stage_index == 5 and tutorial.stage_timer_ms > 6000:
         prompt_alpha = 0.0
+    overlay = TutorialOverlayState()
+    if tutorial.stage_index >= 0 and (tutorial.stage_index != 6 or state.perk_selection.pending_count > 0):
+        overlay.prompt_text = _STAGE_TEXT[tutorial.stage_index]
+        overlay.prompt_alpha = min(1.0, max(0.0, prompt_alpha))
 
-    hint_spawns, hint_text, hint_alpha = _tick_hint(
-        state,
-        frame_dt_ms=dt_ms,
-        hint_bonus_died=bool(hint_bonus_died),
-    )
+    # The carrier's slot is inactive once its corpse is culled. Native keeps the last carrier referenced, so
+    # repeats 6 and 7, which spawn no carrier, latch on it again.
+    if not tutorial.hint_fade_in:
+        ref = tutorial.hint_bonus_creature_ref
+        carrier = world.creatures.creature(ref) if ref is not None else None
+        if (
+            carrier is not None
+            and not carrier.active
+            and carrier.hp <= 0.0
+            and carrier.flags & CreatureFlags.BONUS_ON_DEATH
+        ):
+            tutorial.hint_fade_in = True
+            spawn(SpawnId.ALIEN_CONST_GREEN_24, 128.0, 128.0)
+            spawn(SpawnId.ALIEN_SMALL_GRAY_26, 152.0, 160.0)
+            tutorial.hint_index += 1
+        tutorial.hint_alpha -= dt_ms * 3
+    else:
+        tutorial.hint_alpha += dt_ms * 3
+    tutorial.hint_alpha = min(1000, max(0, tutorial.hint_alpha))
+    if tutorial.hint_index >= 0 and _HINT_TEXT[tutorial.hint_index]:
+        overlay.hint_text = _HINT_TEXT[tutorial.hint_index]
+        overlay.hint_alpha = tutorial.hint_alpha * 0.001
+    state.tutorial_overlay = overlay
 
-    actions = TutorialFrameActions(
-        prompt_text=prompt_text,
-        prompt_alpha=prompt_alpha,
-        hint_text=hint_text,
-        hint_alpha=hint_alpha,
-        spawn_templates=hint_spawns,
-        spawn_bonuses=(),
-        stage5_bonus_carrier_drop=None,
-        play_levelup_sfx=False,
-        force_player_health=100.0,
-        force_player_experience=0 if stage_index != 6 else None,
-    )
-
-    spawn_templates: list[SpawnTemplateCall] = list(actions.spawn_templates)
-    spawn_bonuses: list[BonusSpawnCall] = []
-    play_levelup_sfx = False
-    stage5_bonus_carrier_drop: tuple[BonusId, int] | None = None
-    force_experience = actions.force_player_experience
-
-    if stage_index == 0:
-        if state.stage_timer_ms > 6000 and state.stage_transition_timer_ms == -1:
-            state.repeat_spawn_count = 0
-            state.hint_index = int(state.stage_transition_timer_ms)
-            state.hint_fade_in = False
-            state.stage_transition_timer_ms = -1000
-    elif stage_index == 1:
-        if bool(any_move_active) and state.stage_transition_timer_ms == -1:
-            state.stage_transition_timer_ms = -1000
-            play_levelup_sfx = True
-            spawn_bonuses.extend(
-                (
-                    BonusSpawnCall(bonus_id=BonusId.POINTS, amount=500, pos=Vec2(260.0, 260.0)),
-                    BonusSpawnCall(bonus_id=BonusId.POINTS, amount=1000, pos=Vec2(600.0, 400.0)),
-                    BonusSpawnCall(bonus_id=BonusId.POINTS, amount=500, pos=Vec2(300.0, 400.0)),
-                ),
-            )
-    elif stage_index == 2:
-        if bool(bonus_pool_empty) and state.stage_transition_timer_ms == -1:
-            state.stage_transition_timer_ms = -1000
-            play_levelup_sfx = True
-    elif stage_index == 3:
-        if bool(any_fire_active) and state.stage_transition_timer_ms == -1:
-            state.stage_transition_timer_ms = -1000
-            play_levelup_sfx = True
-            spawn_templates.extend(build_tutorial_stage3_fire_spawns())
-    elif stage_index == 4:
-        if bool(creatures_none_active) and state.stage_transition_timer_ms == -1:
-            state.stage_timer_ms = 1000
-            state.stage_transition_timer_ms = -1000
-            play_levelup_sfx = True
-            state.repeat_spawn_count = 0
-            spawn_templates.extend(build_tutorial_stage4_clear_spawns())
-    elif stage_index == 5:
-        if bool(bonus_pool_empty) and bool(creatures_none_active):
-            state.repeat_spawn_count = int(state.repeat_spawn_count) + 1
-            if int(state.repeat_spawn_count) < 8:
-                state.hint_fade_in = False
-                state.hint_bonus_creature_ref = None
-                spawn_templates.extend(build_tutorial_stage5_repeat_spawns(int(state.repeat_spawn_count)))
-                stage5_bonus_carrier_drop = tutorial_stage5_bonus_carrier_config(int(state.repeat_spawn_count))
-            elif state.stage_transition_timer_ms == -1:
-                state.stage_transition_timer_ms = -1000
-                play_levelup_sfx = True
-                force_experience = 3000
-    elif stage_index == 6:
-        if int(perk_pending_count) < 1 and state.stage_transition_timer_ms == -1:
-            state.stage_transition_timer_ms = -1000
-            spawn_templates.extend(build_tutorial_stage6_perks_done_spawns())
-    elif (
-        stage_index == 7
-        and bool(bonus_pool_empty)
-        and bool(creatures_none_active)
-        and state.stage_transition_timer_ms == -1
-    ):
-        state.stage_transition_timer_ms = -1000
-
-    return (
-        state,
-        TutorialFrameActions(
-            prompt_text=actions.prompt_text,
-            prompt_alpha=actions.prompt_alpha,
-            hint_text=actions.hint_text,
-            hint_alpha=actions.hint_alpha,
-            spawn_templates=tuple(spawn_templates),
-            spawn_bonuses=tuple(spawn_bonuses),
-            stage5_bonus_carrier_drop=stage5_bonus_carrier_drop,
-            play_levelup_sfx=bool(play_levelup_sfx),
-            force_player_health=actions.force_player_health,
-            force_player_experience=force_experience,
-        ),
-    )
+    bonuses_gone = not state.bonus_pool.iter_active()
+    creatures_gone = not world.creatures.iter_active()
+    ready = tutorial.stage_transition_timer_ms == -1
+    match tutorial.stage_index:
+        case 0:
+            if tutorial.stage_timer_ms > 6000 and ready:
+                tutorial.repeat_spawn_count = 0
+                tutorial.hint_index = -1
+                tutorial.hint_fade_in = False
+                tutorial.stage_transition_timer_ms = -1000
+        case 1:
+            if tutorial.move_active_this_tick and ready:
+                tutorial.stage_transition_timer_ms = -1000
+                level_up_sfx()
+                # Native writes bonus slots 0..2 directly with 100-second timers, then bursts each.
+                for index, (x, y, amount) in enumerate(((260.0, 260.0, 500), (600.0, 400.0, 1000), (300.0, 400.0, 500))):
+                    entry = state.bonus_pool.seed_tutorial_entry(
+                        index, pos=Vec2(x, y), bonus_id=BonusId.POINTS, amount=amount,
+                    )
+                    state.effects.spawn_burst(pos=entry.pos, count=12, rng=state.rng, detail_preset=state.detail_preset)
+        case 2:
+            if bonuses_gone and ready:
+                tutorial.stage_transition_timer_ms = -1000
+                level_up_sfx()
+        case 3:
+            if tutorial.fire_active_this_tick and ready:
+                tutorial.stage_transition_timer_ms = -1000
+                level_up_sfx()
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, -164.0, 412.0)
+                spawn(SpawnId.ALIEN_SMALL_GRAY_26, -184.0, 512.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, -154.0, 612.0)
+        case 4:
+            if creatures_gone and ready:
+                tutorial.stage_timer_ms = 1000
+                tutorial.stage_transition_timer_ms = -1000
+                level_up_sfx()
+                tutorial.repeat_spawn_count = 0
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, 1188.0, 412.0)
+                spawn(SpawnId.ALIEN_SMALL_GRAY_26, 1208.0, 512.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, 1178.0, 612.0)
+        case 5:
+            if not (bonuses_gone and creatures_gone):
+                return
+            tutorial.repeat_spawn_count += 1
+            repeat = tutorial.repeat_spawn_count
+            if repeat > 7:
+                if ready:
+                    tutorial.stage_transition_timer_ms = -1000
+                    level_up_sfx()
+                    # The level-up check after this update turns it into a perk.
+                    players[0].experience = 3000
+                return
+            tutorial.hint_fade_in = False
+            if repeat & 1:
+                if repeat < 6:
+                    tutorial.hint_bonus_creature_ref = spawn(SpawnId.ALIEN_BONUS_CARRIER_27, -32.0, 1056.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, -164.0, 412.0)
+                spawn(SpawnId.ALIEN_SMALL_GRAY_26, -184.0, 512.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, -154.0, 612.0)
+            else:
+                if repeat < 6:
+                    tutorial.hint_bonus_creature_ref = spawn(SpawnId.ALIEN_BONUS_CARRIER_27, 1056.0, 1056.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, 1188.0, 1136.0)
+                spawn(SpawnId.ALIEN_SMALL_GRAY_26, 1208.0, 512.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, 1178.0, 612.0)
+            if repeat == 4:
+                spawn(SpawnId.SPIDER_SMALL_BLUE_40, 512.0, 1056.0)
+            if repeat < 6 and tutorial.hint_bonus_creature_ref is not None:
+                carrier = world.creatures.creature(tutorial.hint_bonus_creature_ref)
+                match repeat:
+                    case 1:
+                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.SPEED, -1
+                    case 2:
+                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.WEAPON, 5
+                    case 3:
+                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.DOUBLE_EXPERIENCE, -1
+                    case 4:
+                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.NUKE, -1
+                    case 5:
+                        carrier.bonus_id, carrier.bonus_duration_override = BonusId.REFLEX_BOOST, -1
+        case 6:
+            if state.perk_selection.pending_count <= 0 and ready:
+                tutorial.stage_transition_timer_ms = -1000
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, -164.0, 412.0)
+                spawn(SpawnId.ALIEN_SMALL_GRAY_26, -184.0, 512.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, -154.0, 612.0)
+                spawn(SpawnId.ALIEN_CONST_PURPLE_28, -32.0, -32.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, 1188.0, 412.0)
+                spawn(SpawnId.ALIEN_SMALL_GRAY_26, 1208.0, 512.0)
+                spawn(SpawnId.ALIEN_CONST_GREEN_24, 1178.0, 612.0)
+        case 7:
+            if bonuses_gone and creatures_gone and ready:
+                tutorial.stage_transition_timer_ms = -1000
