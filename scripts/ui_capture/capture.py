@@ -7,8 +7,8 @@ A scenario module defines STEPS, a list of ops:
   ("key", "KEY_ENTER")        press and release a key over one frame
   ("pad", "GAMEPAD_BUTTON_RIGHT_FACE_DOWN")  press a button on pad 0 over one frame (connects the pad)
   ("hold", "KEY_W", frames)   hold a key down
-  ("move", x, y)              put the mouse at canvas coords (sticky)
-  ("click", x, y)             move and click the left button for one frame
+  ("move", x, y)              put the mouse at canvas coords (sticky); ("move", fn) takes fn(GameState) -> (x, y)
+  ("click", x, y)             move and click the left button for one frame; also ("click", fn)
   ("rclick",)                 right-click at the current mouse position for one frame
   ("fire", frames)            hold the left button (non-blocking; combine with move/wait)
   ("text", "abc")             one char per frame
@@ -53,6 +53,11 @@ class Driver:
 
     def _key(self, name: str) -> int:
         return int(getattr(rl.KeyboardKey, name))
+
+    def _point(self, args: list) -> rl.Vector2:
+        """Canvas coords, or a function of the live game for targets that move with a layout."""
+        x, y = args[0](self.game_state) if callable(args[0]) else args
+        return rl.Vector2(float(x), float(y))
 
     def advance(self) -> bool:
         """Called at the top of each loop iteration; returns True when the script is done."""
@@ -104,9 +109,9 @@ class Driver:
                     self.pad_pressed.add(int(getattr(rl.GamepadButton, args[0])))
                     return False
                 case "move":
-                    self.mouse = rl.Vector2(float(args[0]), float(args[1]))
+                    self.mouse = self._point(args)
                 case "click":
-                    self.mouse = rl.Vector2(float(args[0]), float(args[1]))
+                    self.mouse = self._point(args)
                     self.mouse_pressed.add(int(rl.MouseButton.MOUSE_BUTTON_LEFT))
                     return False
                 case "hook":

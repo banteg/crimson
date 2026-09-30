@@ -108,3 +108,64 @@ def doom_player():
         attacker.contact_damage = 100.0
 
     return ("hook", run)
+
+
+def go(action):
+    """Leave the active screen toward `action` through its own close transition, as its buttons do."""
+    return ("hook", lambda gs: gs.screens.active._begin_close_transition(action))
+
+
+def go_nav(name, action, frames=48, every=6):
+    """`go`, film the transition, then settle."""
+    return [go(action), *burst(name, frames, every), ("wait", 60), ("shot", f"{name}_settled")]
+
+
+def key_nav(name, key="KEY_ESCAPE", frames=48, every=6):
+    return [("key", key), *burst(name, frames, every), ("wait", 60), ("shot", f"{name}_settled")]
+
+
+def game_over_ui(gs):
+    return gs.screens.active_gameplay._game_over_ui
+
+
+def game_over_at(dx, dy):
+    """A point on the game-over panel, which moves with its layout."""
+
+    def at(gs):
+        top_left = game_over_ui(gs)._panel_layout(screen_w=1024.0).top_left
+        return top_left.x + dx, top_left.y + dy
+
+    return at
+
+
+def game_over_go(action):
+    return ("hook", lambda gs: game_over_ui(gs)._begin_close_transition(action))
+
+
+def results_go(action):
+    return ("hook", lambda gs: gs.screens.active._ui._begin_close_transition(action))
+
+
+def die_to_game_over():
+    return [*start("survival"), ("wait", 240), kill_player(), ("wait", 300), ("text", "tester"), ("key", "KEY_ENTER"),
+            ("wait", 120), ("shot", "over_buttons")]
+
+
+def small_panels():
+    """Every panel screen at a smaller window, walked with the screens' own transitions and Escape."""
+    from crimson.screens.actions import Route, ScoreQuery, ShowScores
+
+    def scores(gs):
+        gs.screens.active._begin_close_transition(ShowScores(ScoreQuery.from_config(gs.config)))
+
+    s = [("move", *IDLE), ("wait", 150), *go_nav("stats_in", Route.STATISTICS)]
+    s += [("hook", scores), *burst("hiscores_in", 48, 6), ("wait", 60), ("shot", "hiscores_in_settled")]
+    s += key_nav("hiscores_out")
+    for name, route in (("weapons", Route.WEAPONS), ("perks", Route.PERKS), ("credits", Route.CREDITS)):
+        s += go_nav(f"{name}_in", route) + key_nav(f"{name}_out")
+    s += key_nav("stats_out")
+    s += go_nav("options_in", Route.OPTIONS) + go_nav("controls_in", Route.CONTROLS) + key_nav("controls_out")
+    s += key_nav("options_out")
+    s += go_nav("play_in", Route.PLAY_GAME) + go_nav("quests_in", Route.QUESTS) + key_nav("quests_out")
+    s += key_nav("play_out")
+    return s
