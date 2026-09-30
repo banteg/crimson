@@ -228,9 +228,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     spread_inc = x87_pc24_mul(spread_heat_base, f32(1.3))
 
     if PerkId.FASTSHOT in state.perks:
-        shot_cooldown = f32(float(shot_cooldown) * 0.88)
+        shot_cooldown = x87_pc24_mul(shot_cooldown, f32(0.88))
     if PerkId.SHARPSHOOTER in state.perks:
-        shot_cooldown = f32(float(shot_cooldown) * 1.05)
+        shot_cooldown = x87_pc24_mul(shot_cooldown, f32(1.05))
     player.weapon.shot_cooldown = max(0.0, f32(shot_cooldown))
 
     aim = input_state.aim

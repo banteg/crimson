@@ -31,7 +31,7 @@ _PLAYER_PAIN_SFX: tuple[SfxId, ...] = (
     SfxId.TROOPER_INPAIN_03,
 )
 _PLAYER_DEATH_SFX: tuple[SfxId, ...] = (SfxId.TROOPER_DIE_01, SfxId.TROOPER_DIE_02)
-_THICK_SKINNED_DAMAGE_SCALE_F32 = 0.6660000085830688
+
 
 
 def _final_revenge(step_runtime: WorldStepRuntime, player: PlayerState) -> None:
@@ -93,7 +93,7 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
 
     if PerkId.THICK_SKINNED in state.perks:
         # Native uses an f32 constant (`~0.666`) here, not exact 2/3.
-        damage_scaled = f32(float(damage_scaled) * float(_THICK_SKINNED_DAMAGE_SCALE_F32))
+        damage_scaled = x87_pc24_mul(damage_scaled, f32(0.666))
 
     dodged = False
     if PerkId.NINJA in state.perks:
@@ -170,23 +170,18 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
     return max(0.0, health_before - float(player.health))
 
 
-def player_take_projectile_damage(state: GameplayState, player: PlayerState, damage: float) -> float:
+def player_take_projectile_damage(state: GameplayState, player: PlayerState, damage: float) -> None:
     """Apply projectile damage to a player (modeled after `projectile_update` player-hit logic).
 
     Native `projectile_update` does not call `player_take_damage` for projectile hits: it sets
-    `projectile.life_timer = 0.25` and subtracts a fixed amount (usually 10.0) if shield is down.
+    `projectile.life_timer = 0.25` and subtracts a fixed 10.0f if the shield is down.
     """
 
-    dmg = float(damage)
-    if dmg <= 0.0:
-        return 0.0
     if state.debug_god_mode:
-        return 0.0
+        return
     # Original bug #27: native skips the Death Clock immunity here.
     if PerkId.DEATH_CLOCK in state.perks and not state.preserve_bugs:
-        return 0.0
-    if float(player.shield_timer) > 0.0:
-        return 0.0
-
-    player.health -= dmg
-    return dmg
+        return
+    if player.shield_timer > 0.0:
+        return
+    player.health = x87_pc24_sub(player.health, damage)

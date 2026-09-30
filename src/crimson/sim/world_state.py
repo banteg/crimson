@@ -75,10 +75,7 @@ class WorldStepRuntime(msgspec.Struct):
     hit_sfx: list[SfxRequest] = msgspec.field(default_factory=list)
 
     def apply_player_damage(self, player_index: int, damage: float) -> None:
-        idx = int(player_index)
-        if not (0 <= idx < len(self.world.players)):
-            return
-        player_take_projectile_damage(self.world.state, self.world.players[idx], float(damage))
+        player_take_projectile_damage(self.world.state, self.world.players[player_index], damage)
 
     def handle_creature_death(self, creature_index: int, *, keep_corpse: bool = True) -> None:
         """`creature_handle_death` for this frame, recording the death event."""
