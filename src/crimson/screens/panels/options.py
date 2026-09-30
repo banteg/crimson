@@ -17,19 +17,10 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
-from ...ui.hit_test import mouse_inside_rect_with_padding
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
+from ...ui.slider import UiSegmentedSlider, ui_segmented_slider_draw, ui_segmented_slider_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
-
-
-class SliderState(msgspec.Struct):
-    """Native `ui_segmented_slider_t`."""
-
-    value: int
-    min_value: int
-    max_value: int
-    focused: bool = False
 
 
 class _OptionsContentLayout(msgspec.Struct, frozen=True):
@@ -52,17 +43,15 @@ class OptionsMenuView(PanelMenuView):
             state, game_state=GameStateId.OPTIONS_MENU, panel_element=31, back_element=32, title="Options", back_action=Route.BACK,
         )
         self._controls_button: UiButtonState = UiButtonState("Controls", force_wide=True)
-        self._slider_sfx = SliderState(10, 0, 10)
-        self._slider_music = SliderState(10, 0, 10)
-        self._slider_detail = SliderState(5, 1, 5)
+        self._slider_sfx = UiSegmentedSlider(value=10)
+        self._slider_music = UiSegmentedSlider(value=10)
+        self._slider_detail = UiSegmentedSlider(value=5, max=5, min=1)
         self._info_checkbox = UiCheckbox("UI Info texts")
-        self._active_slider: str | None = None
         self._dirty = False
 
     def open(self) -> None:
         super().open()
         self._controls_button = UiButtonState("Controls", force_wide=True)
-        self._active_slider = None
         self._dirty = False
         self._sync_from_config()
 
@@ -81,8 +70,8 @@ class OptionsMenuView(PanelMenuView):
         slider_pos = layout.slider_pos
 
         resources = require_runtime_resources(self.state)
-        rect_on = resources.texture(TextureId.UI_RECT_ON)
         focus = self.state.focus
+        mouse = Vec2.from_xy(canvas.mouse_position())
 
         # `options_menu_update` updates the checkbox, the sliders, then the Controls button: their focus order.
         if ui_checkbox_update(
@@ -90,41 +79,37 @@ class OptionsMenuView(PanelMenuView):
             self._info_checkbox,
             label_pos.offset(dy=135.0),
             focus=focus,
-            mouse=Vec2.from_xy(canvas.mouse_position()),
+            mouse=mouse,
             click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
         ):
             config.gameplay.show_info_texts = self._info_checkbox.checked
             self._dirty = True
 
-        if self._update_slider("sfx", self._slider_sfx, slider_pos.offset(dy=47.0), rect_on):
+        down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        sfx_value = self._slider_sfx.value
+        ui_segmented_slider_update(focus, self._slider_sfx, slider_pos.offset(dy=47.0), mouse=mouse, down=down)
+        if self._slider_sfx.value != sfx_value:
             config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
             set_sfx_volume(self.state.audio, config.audio.sfx_volume)
             self._dirty = True
 
-        if self._update_slider(
-            "music",
-            self._slider_music,
-            slider_pos.offset(dy=67.0),
-            rect_on,
-        ):
+        music_value = self._slider_music.value
+        ui_segmented_slider_update(focus, self._slider_music, slider_pos.offset(dy=67.0), mouse=mouse, down=down)
+        if self._slider_music.value != music_value:
             config.audio.music_volume = float(self._slider_music.value) * 0.1
             set_music_volume(self.state.audio, config.audio.music_volume)
             self._dirty = True
 
-        if self._update_slider(
-            "detail",
-            self._slider_detail,
-            slider_pos.offset(dy=87.0),
-            rect_on,
-        ):
-            preset = apply_detail_preset(config, self._slider_detail.value)
-            self._slider_detail.value = preset
+        detail_value = self._slider_detail.value
+        ui_segmented_slider_update(focus, self._slider_detail, slider_pos.offset(dy=87.0), mouse=mouse, down=down)
+        if self._slider_detail.value != detail_value:
+            # The keys step the slider down to 0; the preset stays within 1..5.
+            self._slider_detail.value = apply_detail_preset(config, max(1, self._slider_detail.value))
             self._dirty = True
 
         # `options_menu_update`: controls button is aligned with the panel content base.
         controls_pos = base_pos.offset(dy=155.0)
         dt_ms = min(float(dt), 0.1) * 1000.0
-        mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         if button_update(
             resources,
@@ -132,7 +117,7 @@ class OptionsMenuView(PanelMenuView):
             focus=focus,
             pos=controls_pos,
             dt_ms=dt_ms,
-            mouse=mouse,
+            mouse=canvas.mouse_position(),
             click=click,
         ):
             self._begin_close_transition(Route.CONTROLS)
@@ -155,19 +140,9 @@ class OptionsMenuView(PanelMenuView):
         music_volume = config.audio.music_volume
         detail_preset = config.display.detail_preset
 
-        self._slider_sfx.value = max(
-            self._slider_sfx.min_value,
-            min(self._slider_sfx.max_value, int(sfx_volume * 10.0)),
-        )
-        self._slider_music.value = max(
-            self._slider_music.min_value,
-            min(self._slider_music.max_value, int(music_volume * 10.0)),
-        )
-        if detail_preset < self._slider_detail.min_value:
-            detail_preset = self._slider_detail.min_value
-        if detail_preset > self._slider_detail.max_value:
-            detail_preset = self._slider_detail.max_value
-        self._slider_detail.value = detail_preset
+        self._slider_sfx.value = max(self._slider_sfx.min, min(self._slider_sfx.max, int(sfx_volume * 10.0)))
+        self._slider_music.value = max(self._slider_music.min, min(self._slider_music.max, int(music_volume * 10.0)))
+        self._slider_detail.value = max(self._slider_detail.min, min(self._slider_detail.max, detail_preset))
 
     def _content_layout(self) -> _OptionsContentLayout:
         _angle_rad, slide_x = ui_element_anim(
@@ -191,60 +166,6 @@ class OptionsMenuView(PanelMenuView):
             label_pos=label_pos,
             slider_pos=slider_pos,
         )
-
-    def _update_slider(
-        self,
-        slider_id: str,
-        slider: SliderState,
-        pos: Vec2,
-        rect_on: rl.Texture,
-    ) -> bool:
-        rect_w = float(rect_on.width)
-        rect_h = float(rect_on.height)
-        if rect_w <= 0.0 or rect_h <= 0.0:
-            return False
-        bar_w = rect_w * float(slider.max_value)
-        mouse_pos = Vec2.from_xy(canvas.mouse_position())
-        hovered = mouse_inside_rect_with_padding(
-            mouse_pos,
-            pos=pos,
-            width=bar_w,
-            height=18.0,
-            left_pad=3.0,
-            top_pad=1.0,
-        )
-
-        # `ui_segmented_slider_update`: hovering focuses the slider; Left/Right step it while focused.
-        focus = self.state.focus
-        focused = focus.update(slider)
-        slider.focused = focused
-        if hovered:
-            focus.set(slider)
-        changed = False
-        if focused:
-            if focus.left and slider.value > slider.min_value:
-                slider.value -= 1
-                changed = True
-            if focus.right and slider.value < slider.max_value:
-                slider.value += 1
-                changed = True
-        mouse_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        if hovered and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._active_slider = slider_id
-        if self._active_slider == slider_id and mouse_down:
-            relative = mouse_pos.x - pos.x
-            idx = int(relative // rect_w) + 1
-            if idx < slider.min_value:
-                idx = slider.min_value
-            if idx > slider.max_value:
-                idx = slider.max_value
-            if slider.value != idx:
-                slider.value = idx
-                changed = True
-        if self._active_slider == slider_id and not mouse_down:
-            self._active_slider = None
-
-        return changed
 
     def _draw_contents(self) -> None:
         resources = require_runtime_resources(self.state)
@@ -283,35 +204,10 @@ class OptionsMenuView(PanelMenuView):
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
             draw_small_text(font, label, label_pos.offset(dy=offset), text_color)
 
-        rect_on = resources.texture(TextureId.UI_RECT_ON)
-        rect_off = resources.texture(TextureId.UI_RECT_OFF)
-        rect_w = float(rect_on.width)
-        rect_h = float(rect_on.height)
-
-        self._draw_slider(
-            self._slider_sfx,
-            slider_pos.offset(dy=47.0),
-            rect_on,
-            rect_off,
-            rect_w,
-            rect_h,
-        )
-        self._draw_slider(
-            self._slider_music,
-            slider_pos.offset(dy=67.0),
-            rect_on,
-            rect_off,
-            rect_w,
-            rect_h,
-        )
-        self._draw_slider(
-            self._slider_detail,
-            slider_pos.offset(dy=87.0),
-            rect_on,
-            rect_off,
-            rect_w,
-            rect_h,
-        )
+        focus = self.state.focus
+        ui_segmented_slider_draw(resources, focus, self._slider_sfx, slider_pos.offset(dy=47.0))
+        ui_segmented_slider_draw(resources, focus, self._slider_music, slider_pos.offset(dy=67.0))
+        ui_segmented_slider_draw(resources, focus, self._slider_detail, slider_pos.offset(dy=87.0))
 
         ui_checkbox_draw(resources, self._info_checkbox, label_pos.offset(dy=135.0), focus=self.state.focus)
 
@@ -322,27 +218,3 @@ class OptionsMenuView(PanelMenuView):
             focus=self.state.focus,
             pos=button_pos,
         )
-
-    def _draw_slider(
-        self,
-        slider: SliderState,
-        pos: Vec2,
-        rect_on: rl.Texture,
-        rect_off: rl.Texture,
-        rect_w: float,
-        rect_h: float,
-    ) -> None:
-        if slider.focused:
-            self.state.focus.draw(pos.offset(dx=-16.0))
-        for idx in range(slider.max_value):
-            tex = rect_on if idx < slider.value else rect_off
-            dst = rl.Rectangle(pos.x + float(idx) * rect_w, pos.y, rect_w, rect_h)
-            tint = rl.WHITE if idx < slider.value else rl.Color(255, 255, 255, int(255 * 0.5))
-            rl.draw_texture_pro(
-                tex,
-                rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
-                dst,
-                rl.Vector2(0.0, 0.0),
-                0.0,
-                tint,
-            )
