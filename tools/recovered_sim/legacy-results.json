@@ -1,0 +1,45 @@
+{
+  "python_preserve_bugs": false,
+  "recovered_preserve_bugs": true,
+  "snapshots": 1201,
+  "native_exit": 0,
+  "native_stderr": "",
+  "first_differences": {
+    "players[0].pos_y": {
+      "snapshot": 257,
+      "python": 520.49609375,
+      "recovered": 520.4961547851562
+    },
+    "players[0].aim_heading": {
+      "snapshot": 257,
+      "python": -1.6328481435775757,
+      "recovered": -1.6328476667404175
+    },
+    "players[0].heading": {
+      "snapshot": 565,
+      "python": 5.250790119171143,
+      "recovered": 5.250789642333984
+    },
+    "globals.rng": {
+      "snapshot": 1018,
+      "python": 920975152,
+      "recovered": 3812542961
+    },
+    "players[0].experience": {
+      "snapshot": 1055,
+      "python": 3750,
+      "recovered": 3900
+    },
+    "globals.highscore_record_shots_hit": {
+      "snapshot": 1055,
+      "python": 18,
+      "recovered": 19
+    },
+    "players[0].ammo": {
+      "snapshot": 1085,
+      "python": 7.0,
+      "recovered": 3.0
+    }
+  },
+  "drop_in_compatible": false
+}
