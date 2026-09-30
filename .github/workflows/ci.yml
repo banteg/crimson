@@ -55,7 +55,8 @@ jobs:
             use_uv: true
             do_sync: true
             use_zig: true
-            command: uv run --no-sync pytest
+            # A virtual display with software GL runs the render and terrain tests that need a raylib window.
+            command: xvfb-run -a uv run --no-sync pytest --run-terrain
             sync_args: --group dev
           - task: native-oracle
             use_uv: true
@@ -125,6 +126,10 @@ jobs:
             libxinerama-dev \
             libxrandr-dev \
             libxrender-dev
+
+      - name: Install virtual display
+        if: ${{ matrix.task == 'pytest' }}
+        run: sudo apt-get install -y xvfb libgl1-mesa-dri
 
       - name: Setup Node
         if: ${{ matrix.task == 'ast-grep' }}
