@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-from typing import cast
-
 import pytest
 
 from grim import terrain_render
@@ -14,7 +11,7 @@ pytestmark = pytest.mark.terrain
 
 
 def _renderer() -> GroundRenderer:
-    texture = cast("rl.Texture", SimpleNamespace(id=1, width=16, height=16))
+    texture = rl.Texture()
     return GroundRenderer(
         texture=texture,
         overlay=texture,

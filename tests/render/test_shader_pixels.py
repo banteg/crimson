@@ -38,6 +38,42 @@ def test_alpha_test_cutoff_and_default_shader_restoration(raylib_context) -> Non
         rl.unload_render_texture(target)
 
 
+def test_alpha_test_scope_ends_after_an_error_and_keeps_its_handle_until_close(raylib_context) -> None:
+    alpha_test = AlphaTestShader()
+    target = rl.load_render_texture(16, 16)
+    try:
+        with pytest.raises(RuntimeError, match="draw failed"), alpha_test.scope():
+            raise RuntimeError("draw failed")
+        shader = alpha_test.shader
+        assert shader is not None
+        rl.begin_texture_mode(target)
+        try:
+            rl.clear_background(rl.BLACK)
+            # Still bound, the shader would discard this alpha-4 draw.
+            rl.draw_rectangle(0, 0, 16, 16, rl.Color(255, 0, 0, 4))
+            with alpha_test.scope():
+                pass
+        finally:
+            rl.end_texture_mode()
+        assert alpha_test.shader is shader
+        image = rl.load_image_from_texture(target.texture)
+        try:
+            assert _rgb(image, 8, 8)[0] == 4
+        finally:
+            rl.unload_image(image)
+
+        alpha_test.close()
+        assert alpha_test.shader is None
+        alpha_test.close()
+        with alpha_test.scope():
+            pass
+        assert alpha_test.shader is not None
+        assert alpha_test.shader is not shader
+    finally:
+        alpha_test.close()
+        rl.unload_render_texture(target)
+
+
 @pytest.mark.parametrize("gain", [1.0, 1.5])
 def test_gamma_covers_inner_shader_and_later_drawing_at_display_resolution(
     raylib_context,
