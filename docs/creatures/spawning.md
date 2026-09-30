@@ -335,12 +335,12 @@ Notes:
 - `survival_update` (`0x00407cd0`): milestone spawns using `0x12`, `0x2b`,
   `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`. Regular enemy waves are spawned via
   `survival_spawn_creature` (`0x00407510`), which selects type/stats based on
-  `player_experience` (not a spawn id). Python models: `advance_survival_spawn_stage`,
-  `tick_survival_wave_spawns`, `build_survival_spawn_creature`.
+  `player_experience` (not a spawn id). Python: `survival_update` in
+  `src/crimson/sim/mode_updates.py`, `survival_spawn_creature`.
 
 - Rush mode (`rush_mode_update`, `0x004072b0`): spawns edge waves via `creature_spawn`
-  (type ids `2`/`3`), not `creature_spawn_template`. Python models: `tick_rush_mode_spawns`,
-  `build_rush_mode_spawn_creature`.
+  (type ids `2`/`3`), not `creature_spawn_template`. Python: `rush_mode_update` in
+  `src/crimson/sim/mode_updates.py`, `creature_spawn`.
 
 - Tutorial timeline (`tutorial_timeline_update`, `0x00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`. Python models: `build_tutorial_stage3_fire_spawns`,
@@ -392,11 +392,9 @@ Notes:
   - `artifacts/creature_spawn_template/binja-hlil.txt`
 - Creature pool + spawn-slot fields: `docs/creatures/struct.md`
 - Rewrite model (pure plan builder): `src/crimson/creatures/spawn.py`
-- Survival mode (pure models): `src/crimson/creatures/spawn.py`
-  - `advance_survival_spawn_stage`, `tick_survival_wave_spawns`, `build_survival_spawn_creature`
+- Survival mode: `survival_update` in `src/crimson/sim/mode_updates.py`, `survival_spawn_creature` in `src/crimson/creatures/spawn.py`
   - Tests: `tests/modes/test_survival_milestones.py`, `tests/modes/test_survival_wave.py`, `tests/modes/test_survival_spawn.py`
-- Rush mode (pure models): `src/crimson/creatures/spawn.py`
-  - `tick_rush_mode_spawns`, `build_rush_mode_spawn_creature`
+- Rush mode: `rush_mode_update` in `src/crimson/sim/mode_updates.py`, `creature_spawn` in `src/crimson/creatures/spawn.py`
   - Tests: `tests/modes/test_rush_mode_spawn.py`
 - Tutorial timeline: `src/crimson/tutorial/timeline.py`
   - `tutorial_timeline_update` (spawns into the world after the world render, before the level-up check)

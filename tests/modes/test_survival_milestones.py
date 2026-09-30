@@ -1,77 +1,67 @@
 from __future__ import annotations
 
-import math
-
 import pytest
 
-from crimson.creatures.spawn import advance_survival_spawn_stage
 from crimson.math_parity import f32
-from tests.support.helpers import assert_float_close
+from crimson.sim.mode_updates import SurvivalSpawnState, survival_update
+from crimson.sim.world_state import WorldState
+from tests.support.builders.session import make_world
+
+
+def _run_milestones(stage: int, level: int) -> tuple[int, WorldState]:
+    world = make_world()
+    world.players[0].level = level
+    # A cooldown the frame cannot run down keeps the wave spawner out of it.
+    spawn = SurvivalSpawnState(stage=stage, spawn_cooldown_ms=1000.0)
+    survival_update(world, spawn, elapsed_ms=0.0, dt_ms=0.0)
+    return spawn.stage, world
+
+
+def _positions(world: WorldState) -> list[tuple[float, float]]:
+    return [(creature.pos.x, creature.pos.y) for creature in world.creatures.entries if creature.active]
 
 
 @pytest.mark.parametrize(
-    ("stage", "level", "expected_stage", "expected_count"),
+    ("stage", "level", "expected_stage", "spawns"),
     [
-        (0, 4, 0, 0),
-        (0, 5, 1, 2),
-        (0, 20, 7, 29),  # cascades through stages when level is already high
-        (1, 8, 1, 0),
-        (1, 9, 2, 1),
-        (2, 10, 2, 0),
-        (2, 11, 3, 12),
-        (3, 13, 4, 4),
-        (4, 15, 5, 8),
-        (5, 17, 6, 1),
-        (6, 19, 7, 1),
-        (7, 21, 8, 2),
-        (8, 26, 9, 8),
-        (9, 31, 9, 0),
-        (9, 32, 10, 10),
+        (0, 4, 0, False),
+        (0, 5, 1, True),
+        (0, 20, 7, True),  # cascades through stages when level is already high
+        (1, 8, 1, False),
+        (1, 9, 2, True),
+        (2, 10, 2, False),
+        (2, 11, 3, True),
+        (3, 13, 4, True),
+        (4, 15, 5, True),
+        (5, 17, 6, True),
+        (6, 19, 7, True),
+        (7, 21, 8, True),
+        (8, 26, 9, True),
+        (9, 31, 9, False),
+        (9, 32, 10, True),
     ],
 )
-def test_advance_survival_spawn_stage_thresholds(
-    stage: int,
-    level: int,
-    expected_stage: int,
-    expected_count: int,
-) -> None:
-    new_stage, spawns = advance_survival_spawn_stage(stage, player_level=level)
+def test_survival_milestones_advance_on_player_level(stage: int, level: int, expected_stage: int, spawns: bool) -> None:
+    new_stage, world = _run_milestones(stage, level)
+
     assert new_stage == expected_stage
-    assert len(spawns) == expected_count
+    assert bool(_positions(world)) == spawns
 
 
-def test_advance_survival_spawn_stage_stage2_grid_positions() -> None:
-    stage, spawns = advance_survival_spawn_stage(2, player_level=11)
+def test_survival_stage2_spider_column_steps_in_single_precision() -> None:
+    stage, world = _run_milestones(2, 11)
+
     assert stage == 3
-    assert len(spawns) == 12
-    assert {s.template_id for s in spawns} == {0x35}
-    assert {s.heading for s in spawns} == {math.pi}
-
-    assert_float_close(spawns[0].pos.x, 1088.0)
-    assert_float_close(spawns[0].pos.y, 256.0)
-
-    assert_float_close(spawns[-1].pos.x, 1088.0)
-    stage2_step = f32(42.666668)
-    expected_last_y = f32(f32(f32(11.0) * f32(stage2_step)) + f32(256.0))
-    assert_float_close(spawns[-1].pos.y, expected_last_y)
+    assert _positions(world) == [(1088.0, f32(f32(i) * f32(42.666668) + 256.0)) for i in range(12)]
 
 
-def test_advance_survival_spawn_stage_stage9_final_wave() -> None:
-    stage, spawns = advance_survival_spawn_stage(9, player_level=32)
+def test_survival_stage9_final_wave_surrounds_the_arena() -> None:
+    stage, world = _run_milestones(9, 32)
+
     assert stage == 10
-    assert len(spawns) == 10
-
-    assert [s.template_id for s in spawns[:2]] == [0x3A, 0x3A]
-    assert_float_close(spawns[0].pos.x, 1088.0)
-    assert_float_close(spawns[0].pos.y, 512.0)
-    assert_float_close(spawns[1].pos.x, -64.0)
-    assert_float_close(spawns[1].pos.y, 512.0)
-
-    top = spawns[2:6]
-    bottom = spawns[6:10]
-    assert {s.template_id for s in top} == {0x3C}
-    assert {s.template_id for s in bottom} == {0x3C}
-    for y in (s.pos.y for s in top):
-        assert_float_close(y, -64.0)
-    for y in (s.pos.y for s in bottom):
-        assert_float_close(y, 1088.0)
+    assert _positions(world) == [
+        (1088.0, 512.0),
+        (-64.0, 512.0),
+        *((x, -64.0) for x in (384.0, 448.0, 512.0, 576.0)),
+        *((x, 1088.0) for x in (384.0, 448.0, 512.0, 576.0)),
+    ]

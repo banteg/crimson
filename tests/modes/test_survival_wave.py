@@ -2,17 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import (
-    SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
-    SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
-    CreatureTypeId,
-    SurvivalSpawnPosCallers,
-    rand_survival_spawn_pos,
-    tick_survival_wave_spawns,
-)
+from crimson.creatures.runtime import CreatureState
+from crimson.creatures.spawn import CreatureTypeId
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.mode_updates import SurvivalSpawnState, survival_update
 from grim.rand import Crand, CrandLike
+from tests.support.builders.session import make_world
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -24,121 +19,69 @@ def _tick(
     player_count: int = 1,
     survival_elapsed_ms: float = 0.0,
 ) -> tuple[float, list[CreatureState]]:
-    pool = CreaturePool()
-    cooldown = tick_survival_wave_spawns(
-        pool,
-        cooldown,
-        dt_ms,
-        rng,
-        player_count=player_count,
-        survival_elapsed_ms=survival_elapsed_ms,
-        player_experience=0,
-    )
-    return cooldown, [creature for creature in pool.entries if creature.active]
+    world = make_world(player_count=player_count)
+    world.state.rng = rng
+    spawn = SurvivalSpawnState(spawn_cooldown_ms=cooldown)
+    survival_update(world, spawn, elapsed_ms=survival_elapsed_ms, dt_ms=dt_ms)
+    return spawn.spawn_cooldown_ms, [creature for creature in world.creatures.entries if creature.active]
+
+
+# Past 15 minutes (500 - 905400 / 1800 == -3) each pass spawns two extras before the main creature.
+_EXTRA_SPAWNS_ELAPSED_MS = 905400.0
 
 
 @pytest.mark.parametrize(
-    ("callers", "edge_draw", "coord_draw", "expected_pos", "expected_callers"),
+    ("elapsed_ms", "edge_caller", "coord_callers"),
     [
         (
-            SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
-            0,
-            12,
-            (12.0, -40.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
-            ],
-        ),
-        (
-            SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
-            1,
-            13,
-            (13.0, 1064.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_BOTTOM_X,
-            ],
-        ),
-        (
-            SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
-            2,
-            14,
-            (-40.0, 14.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_LEFT_Y,
-            ],
-        ),
-        (
-            SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS,
-            3,
-            15,
-            (1064.0, 15.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_RIGHT_Y,
-            ],
-        ),
-        (
-            SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
-            0,
-            12,
-            (12.0, -40.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
+            0.0,
+            RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
+            (
                 RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
-            ],
-        ),
-        (
-            SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
-            1,
-            13,
-            (13.0, 1064.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
                 RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
-            ],
-        ),
-        (
-            SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
-            2,
-            14,
-            (-40.0, 14.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
                 RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_LEFT_Y,
-            ],
+                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y,
+            ),
         ),
         (
-            SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS,
-            3,
-            15,
-            (1064.0, 15.0),
-            [
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-                RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y,
-            ],
+            _EXTRA_SPAWNS_ELAPSED_MS,
+            RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
+            (
+                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
+                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_BOTTOM_X,
+                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_LEFT_Y,
+                RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_RIGHT_Y,
+            ),
         ),
     ],
 )
-def test_rand_survival_spawn_pos_uses_exact_native_callers(
-    callers: SurvivalSpawnPosCallers,
+@pytest.mark.parametrize(
+    ("edge_draw", "coord_draw", "expected_pos"),
+    [
+        (0, 12, (12.0, -40.0)),
+        (1, 13, (13.0, 1064.0)),
+        (2, 14, (-40.0, 14.0)),
+        (3, 15, (1064.0, 15.0)),
+    ],
+)
+def test_wave_spawn_edges_use_exact_native_callers(
+    elapsed_ms: float,
+    edge_caller: RngCallerStatic,
+    coord_callers: tuple[RngCallerStatic, ...],
     edge_draw: int,
     coord_draw: int,
     expected_pos: tuple[float, float],
-    expected_callers: list[RngCallerStatic],
 ) -> None:
-    rng = ScriptedCrand([edge_draw, coord_draw])
+    rng = ScriptedCrand([edge_draw, coord_draw], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    pos = rand_survival_spawn_pos(rng, callers=callers)
+    _, spawns = _tick(rng, -1.0, 0.0, survival_elapsed_ms=elapsed_ms)
 
-    assert_float_close(pos.x, expected_pos[0])
-    assert_float_close(pos.y, expected_pos[1])
-    assert [record.caller for record in rng.records_since()] == expected_callers
+    assert_float_close(spawns[0].pos.x, expected_pos[0])
+    assert_float_close(spawns[0].pos.y, expected_pos[1])
+    assert [record.caller for record in rng.records[:2]] == [edge_caller, coord_callers[edge_draw]]
 
 
-def test_tick_survival_wave_spawns_no_trigger() -> None:
+def test_survival_wave_spawns_no_trigger() -> None:
     rng = Crand(123)
     cooldown, spawns = _tick(rng, 100.0, 16.0, player_count=2)
 
@@ -147,7 +90,7 @@ def test_tick_survival_wave_spawns_no_trigger() -> None:
     assert rng.state == 123
 
 
-def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
+def test_survival_wave_spawns_triggers_single_spawn() -> None:
     rng = Crand(1)
     cooldown, spawns = _tick(rng, -1.0, 0.0)
 
@@ -163,9 +106,9 @@ def test_tick_survival_wave_spawns_triggers_single_spawn() -> None:
     assert rng.state == 0xA6E9C9A6
 
 
-def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
+def test_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> None:
     rng = Crand(1)
-    cooldown, spawns = _tick(rng, -1.0, 0.0, survival_elapsed_ms=905400.0)  # 500 - (elapsed/0x708) == -3
+    cooldown, spawns = _tick(rng, -1.0, 0.0, survival_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
 
     assert_float_close(cooldown, 0.0)
     assert len(spawns) == 3
@@ -180,10 +123,10 @@ def test_tick_survival_wave_spawns_extra_spawns_when_interval_is_negative() -> N
     assert rng.state == 0xBB25E9C6
 
 
-def test_tick_survival_wave_spawns_uses_distinct_extra_and_main_position_callers() -> None:
+def test_survival_wave_spawns_uses_distinct_extra_and_main_position_callers() -> None:
     rng = ScriptedCrand([0], fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    _tick(rng, -1.0, 0.0, survival_elapsed_ms=905400.0)
+    _tick(rng, -1.0, 0.0, survival_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)
 
     position_callers = [
         record.caller
@@ -206,9 +149,9 @@ def test_tick_survival_wave_spawns_uses_distinct_extra_and_main_position_callers
     ]
 
 
-def test_tick_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> None:
+def test_survival_wave_spawns_loops_until_cooldown_is_non_negative() -> None:
     rng = Crand(1)
-    cooldown, spawns = _tick(rng, -2.0, 0.0, survival_elapsed_ms=905400.0)  # interval branch resolves to 1ms after extras
+    cooldown, spawns = _tick(rng, -2.0, 0.0, survival_elapsed_ms=_EXTRA_SPAWNS_ELAPSED_MS)  # interval branch resolves to 1ms after extras
 
     # Native loops while cooldown < 0, so -2 with +1 interval runs two iterations.
     assert_float_close(cooldown, 0.0)

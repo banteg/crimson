@@ -1,71 +1,60 @@
 from __future__ import annotations
 
-from crimson.quests.runtime import QUEST_COMPLETION_TRANSITION_MS, tick_quest_completion_transition
+from crimson.creatures.spawn import SpawnId
+from crimson.sim.mode_updates import QuestSpawnState, quest_mode_update
 from crimson.ui.overlays.quest_run import quest_complete_banner_alpha
+from grim.geom import Vec2
+from tests.support.builders.session import make_world
 
 
-def test_tick_quest_completion_transition_resets_when_not_idle_complete() -> None:
-    timer, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-        500.0,
-        frame_dt_ms=16.0,
-        creatures_none_active=False,
-        spawn_table_empty=True,
-    )
-    assert timer == -1.0
-    assert completed is False
-    assert play_hit_sfx is False
-    assert play_completion_music is False
+def _idle_complete_frame(timer_ms: float, dt_ms: float) -> QuestSpawnState:
+    # No creatures and an empty spawn table: the quest is idle-complete.
+    quest = QuestSpawnState(completion_transition_ms=timer_ms)
+    quest_mode_update(make_world(), quest, dt_ms=dt_ms)
+    return quest
 
 
-def test_tick_quest_completion_transition_completes_after_delay() -> None:
-    timer = -1.0
-    for _ in range(26):
-        timer, completed, _play_hit_sfx, _play_completion_music = tick_quest_completion_transition(
-            timer,
-            frame_dt_ms=100.0,
-            creatures_none_active=True,
-            spawn_table_empty=True,
-        )
-        assert completed is False
+def test_quest_completion_transition_resets_while_creatures_remain() -> None:
+    world = make_world()
+    world.creatures.spawn_template(SpawnId.ALIEN_SMALL_GRAY_26, Vec2(), 0.0, state=world.state, detail_preset=5)
+    world.state.bonuses.reflex_boost = 3.0
+    quest = QuestSpawnState(completion_transition_ms=500.0)
 
-    # One frame before completion: timer has crossed the threshold, but completion still
-    # checks the pre-increment value for this frame.
-    assert timer == QUEST_COMPLETION_TRANSITION_MS + 100.0
+    quest_mode_update(world, quest, dt_ms=16.0)
 
-    timer, completed, _play_hit_sfx, _play_completion_music = tick_quest_completion_transition(
-        timer,
-        frame_dt_ms=100.0,
-        creatures_none_active=True,
-        spawn_table_empty=True,
-    )
-    assert timer == QUEST_COMPLETION_TRANSITION_MS + 200.0
-    assert completed is True
+    assert quest.completion_transition_ms == -1.0
+    assert (quest.completed, quest.play_hit_sfx, quest.play_completion_music) == (False, False, False)
+    assert world.state.bonuses.reflex_boost == 3.0
 
 
-def test_tick_quest_completion_transition_triggers_hit_sfx_in_native_window() -> None:
-    timer, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-        801.0,
-        frame_dt_ms=16.0,
-        creatures_none_active=True,
-        spawn_table_empty=True,
-    )
-    assert timer == 851.0 + 16.0
-    assert completed is False
-    assert play_hit_sfx is True
-    assert play_completion_music is False
+def test_quest_completion_transition_clears_reflex_boost_and_completes_after_2500_ms() -> None:
+    world = make_world()
+    world.state.bonuses.reflex_boost = 3.0
+    quest = QuestSpawnState()
+    completed_at = []
+    for frame in range(28):
+        quest_mode_update(world, quest, dt_ms=100.0)
+        if quest.completed:
+            completed_at.append(frame)
+
+    assert world.state.bonuses.reflex_boost == 0.0
+    # Completion checks the timer before this frame's increment.
+    assert completed_at == [26, 27]
+    assert quest.completion_transition_ms == 2800.0
 
 
-def test_tick_quest_completion_transition_triggers_completion_music_in_native_window() -> None:
-    timer, completed, play_hit_sfx, play_completion_music = tick_quest_completion_transition(
-        2001.0,
-        frame_dt_ms=16.0,
-        creatures_none_active=True,
-        spawn_table_empty=True,
-    )
-    assert timer == 2051.0 + 16.0
-    assert completed is False
-    assert play_hit_sfx is False
-    assert play_completion_music is True
+def test_quest_completion_transition_triggers_hit_sfx_in_native_window() -> None:
+    quest = _idle_complete_frame(801.0, 16.0)
+
+    assert quest.completion_transition_ms == 851.0 + 16.0
+    assert (quest.completed, quest.play_hit_sfx, quest.play_completion_music) == (False, True, False)
+
+
+def test_quest_completion_transition_triggers_completion_music_in_native_window() -> None:
+    quest = _idle_complete_frame(2001.0, 16.0)
+
+    assert quest.completion_transition_ms == 2051.0 + 16.0
+    assert (quest.completed, quest.play_hit_sfx, quest.play_completion_music) == (False, False, True)
 
 
 def test_quest_complete_banner_alpha_matches_native_envelope() -> None:

@@ -3,29 +3,30 @@ from __future__ import annotations
 from pathlib import Path
 
 from crimson.creatures.runtime import CreaturePool
-from crimson.gameplay import (
-    gameplay_enforce_weapon_guards,
-    survival_enforce_reward_weapon_guard,
-    survival_update_weapon_handouts,
-)
+from crimson.gameplay import gameplay_enforce_weapon_guards, survival_enforce_reward_weapon_guard
 from crimson.persistence.save_status import GameStatus
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.mode_updates import SurvivalSpawnState, survival_update
 from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime import prepare_weapon_availability, weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.support.builders.session import make_world
+
+
+def _survival_frame(world: WorldState, *, elapsed_ms: float) -> None:
+    # A cooldown the frame cannot run down keeps the wave spawner out of it.
+    survival_update(world, SurvivalSpawnState(spawn_cooldown_ms=1000.0), elapsed_ms=elapsed_ms, dt_ms=0.0)
 
 
 def test_survival_handout_time_gate_assigns_shrinkifier() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
 
-    survival_update_weapon_handouts(
-        state,
-        [player],
-        survival_elapsed_ms=64001.0,
-    )
+    _survival_frame(world, elapsed_ms=64001.0)
 
     assert player.weapon.weapon_id == WeaponId.SHRINKIFIER_5K
     assert state.survival_reward_weapon_guard_id == WeaponId.SHRINKIFIER_5K
@@ -35,15 +36,12 @@ def test_survival_handout_time_gate_assigns_shrinkifier() -> None:
 
 
 def test_survival_handout_time_gate_consumes_gate_even_without_pistol() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
+    world = make_world()
+    state = world.state
+    player = world.players[0]
     weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=state)
 
-    survival_update_weapon_handouts(
-        state,
-        [player],
-        survival_elapsed_ms=64001.0,
-    )
+    _survival_frame(world, elapsed_ms=64001.0)
 
     assert player.weapon.weapon_id == WeaponId.ASSAULT_RIFLE
     assert state.survival_reward_weapon_guard_id == WeaponId.PISTOL
@@ -53,28 +51,25 @@ def test_survival_handout_time_gate_consumes_gate_even_without_pistol() -> None:
 
 
 def test_survival_handouts_are_single_player_only() -> None:
-    state = GameplayState()
-    player0 = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-    player1 = PlayerState(index=1, pos=Vec2(512.0, 512.0))
-    weapon_assign_player(player0, WeaponId.PISTOL, state=state)
-    weapon_assign_player(player1, WeaponId.PISTOL, state=state)
+    world = make_world(player_count=2)
+    state = world.state
+    for player in world.players:
+        weapon_assign_player(player, WeaponId.PISTOL, state=state)
 
-    survival_update_weapon_handouts(
-        state,
-        [player0, player1],
-        survival_elapsed_ms=64001.0,
-    )
+    _survival_frame(world, elapsed_ms=64001.0)
 
-    assert player0.weapon.weapon_id == WeaponId.PISTOL
-    assert player1.weapon.weapon_id == WeaponId.PISTOL
+    assert [player.weapon.weapon_id for player in world.players] == [WeaponId.PISTOL, WeaponId.PISTOL]
     assert state.survival_reward_handout_enabled is True
     assert state.survival_reward_damage_seen is False
     assert state.survival_reward_fire_seen is False
 
 
 def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), health=14.0)
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(100.0, 100.0)
+    player.health = 14.0
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     state.survival_reward_handout_enabled = False
     state.survival_reward_damage_seen = True
@@ -86,11 +81,7 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
         Vec2(110.0, 110.0),
     ]
 
-    survival_update_weapon_handouts(
-        state,
-        [player],
-        survival_elapsed_ms=0.0,
-    )
+    _survival_frame(world, elapsed_ms=0.0)
 
     assert player.weapon.weapon_id == WeaponId.BLADE_GUN
     assert state.survival_reward_weapon_guard_id == WeaponId.BLADE_GUN
@@ -99,12 +90,11 @@ def test_survival_handout_centroid_gate_assigns_blade_gun() -> None:
 
 
 def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
-    state = GameplayState()
-    player = PlayerState(
-        index=0,
-        pos=Vec2(-97.64498138427734, 544.9747924804688),
-        health=14.0,
-    )
+    world = make_world()
+    state = world.state
+    player = world.players[0]
+    player.pos = Vec2(-97.64498138427734, 544.9747924804688)
+    player.health = 14.0
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
     state.survival_reward_handout_enabled = False
     state.survival_reward_damage_seen = True
@@ -116,11 +106,7 @@ def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
         Vec2(-1691.9703369140625, -574.5670776367188),
     ]
 
-    survival_update_weapon_handouts(
-        state,
-        [player],
-        survival_elapsed_ms=0.0,
-    )
+    _survival_frame(world, elapsed_ms=0.0)
 
     assert player.weapon.weapon_id == WeaponId.PISTOL
     assert state.survival_reward_fire_seen is False

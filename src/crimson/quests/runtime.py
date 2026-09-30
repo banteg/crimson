@@ -5,12 +5,6 @@ import msgspec
 from ..creatures.spawn import SpawnId
 from .types import QuestContext, QuestDefinition, SpawnEntry
 
-QUEST_COMPLETION_HIT_SFX_START_MS = 800.0
-QUEST_COMPLETION_HIT_SFX_END_MS = float(0x353)
-QUEST_COMPLETION_MUSIC_START_MS = 2000.0
-QUEST_COMPLETION_MUSIC_END_MS = float(0x803)
-QUEST_COMPLETION_TRANSITION_MS = float(0x9C4)
-
 
 def apply_hardcore_spawn_table_adjustment(entries: list[SpawnEntry]) -> list[SpawnEntry]:
     """Apply quest hardcore spawn-table count adjustment.
@@ -39,39 +33,3 @@ def build_quest_spawn_table(quest: QuestDefinition, ctx: QuestContext) -> tuple[
     if ctx.hardcore:
         entries = apply_hardcore_spawn_table_adjustment(list(entries))
     return tuple(entries)
-
-
-def tick_quest_completion_transition(
-    completion_transition_ms: float,
-    frame_dt_ms: float,
-    *,
-    creatures_none_active: bool,
-    spawn_table_empty: bool,
-) -> tuple[float, bool, bool, bool]:
-    """Advance quest completion transition timer.
-
-    The quest-mode update loop waits for a short delay after the quest is "idle complete"
-    (no active creatures + no remaining spawn table entries) before transitioning to the
-    results screen.
-
-    Returns:
-      (completion_transition_ms, completed, play_hit_sfx, play_completion_music)
-    """
-
-    dt_ms = float(frame_dt_ms)
-    timer_ms = float(completion_transition_ms)
-
-    if creatures_none_active and spawn_table_empty:
-        if timer_ms < 0.0:
-            # Native quest_mode_update seeds the timer with the frame delta.
-            return dt_ms, False, False, False
-        if QUEST_COMPLETION_HIT_SFX_START_MS < timer_ms < QUEST_COMPLETION_HIT_SFX_END_MS:
-            # Match the native snap-forward after the quest-hit stinger.
-            return QUEST_COMPLETION_HIT_SFX_END_MS + dt_ms, False, True, False
-        if QUEST_COMPLETION_MUSIC_START_MS < timer_ms < QUEST_COMPLETION_MUSIC_END_MS:
-            # Match the native snap-forward before the completion music fade-in.
-            return QUEST_COMPLETION_MUSIC_END_MS + dt_ms, False, False, True
-        completed = bool(timer_ms > QUEST_COMPLETION_TRANSITION_MS)
-        return timer_ms + dt_ms, completed, False, False
-
-    return -1.0, False, False, False

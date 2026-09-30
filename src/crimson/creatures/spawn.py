@@ -9,7 +9,6 @@ See also: `docs/creatures/spawning.md`.
 
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -49,7 +48,6 @@ if TYPE_CHECKING:
 
 _NATIVE_CREATURE_SPAWN_ELAPSED_SCALE = f32_from_bits(0x3727C5AD)
 _NATIVE_CREATURE_SPAWN_HEALTH_SCALE = f32_from_bits(0x38D1B718)  # 0x0046f310
-_NATIVE_RUSH_TINT_SIN_SCALE = f32_from_bits(0x38D1B718)
 NATIVE_SPAWN_SLOT_COUNT = 0x20
 
 __all__ = [
@@ -65,16 +63,12 @@ __all__ = [
     "SpawnId",
     "SpawnSlot",
     "SpawnTemplate",
-    "SpawnTemplateCall",
-    "advance_survival_spawn_stage",
     "creature_spawn",
     "creature_spawn_template",
     "pack_bonus_on_death_args",
     "spawn_id_label",
     "survival_spawn_creature",
-    "tick_rush_mode_spawns",
     "tick_spawn_slot",
-    "tick_survival_wave_spawns",
 ]
 
 
@@ -938,31 +932,6 @@ def creature_spawn_template(
     return creature_idx
 
 
-class SurvivalSpawnPosCallers(msgspec.Struct, frozen=True):
-    edge: RngCallerStatic
-    top_x: RngCallerStatic
-    bottom_x: RngCallerStatic
-    left_y: RngCallerStatic
-    right_y: RngCallerStatic
-
-
-SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS = SurvivalSpawnPosCallers(
-    edge=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_EDGE,
-    top_x=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_TOP_X,
-    bottom_x=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_BOTTOM_X,
-    left_y=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_LEFT_Y,
-    right_y=RngCallerStatic.SURVIVAL_UPDATE_EXTRA_SPAWN_RIGHT_Y,
-)
-
-SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS = SurvivalSpawnPosCallers(
-    edge=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_EDGE,
-    top_x=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_TOP_X,
-    bottom_x=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_BOTTOM_X,
-    left_y=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_LEFT_Y,
-    right_y=RngCallerStatic.SURVIVAL_UPDATE_MAIN_SPAWN_RIGHT_Y,
-)
-
-
 def _survival_tint_roll(rng: CrandLike, caller: RngCallerStatic) -> float:
     return x87_pc24_mul(float(rng.rand_tagged(caller) % 10), f32(0.01))
 
@@ -1142,251 +1111,6 @@ def survival_spawn_creature(pool: CreaturePool, pos: Vec2, rng: CrandLike, *, pl
     return creature_idx
 
 
-def rand_survival_spawn_pos(
-    rng: CrandLike,
-    *,
-    callers: SurvivalSpawnPosCallers,
-) -> Vec2:
-    match rng.rand_tagged(callers.edge) & 3:
-        case 0:
-            return Vec2(float(rng.rand_tagged(callers.top_x) % TERRAIN_SIZE), -40.0)
-        case 1:
-            return Vec2(float(rng.rand_tagged(callers.bottom_x) % TERRAIN_SIZE), TERRAIN_SIZE + 40.0)
-        case 2:
-            return Vec2(-40.0, float(rng.rand_tagged(callers.left_y) % TERRAIN_SIZE))
-        case _:
-            return Vec2(TERRAIN_SIZE + 40.0, float(rng.rand_tagged(callers.right_y) % TERRAIN_SIZE))
-
-
-def tick_survival_wave_spawns(
-    pool: CreaturePool,
-    spawn_cooldown: float,
-    frame_dt_ms: float,
-    rng: CrandLike,
-    *,
-    player_count: int,
-    survival_elapsed_ms: float,
-    player_experience: int,
-) -> float:
-    """Advance survival enemy wave spawning into `pool`, returning the updated cooldown.
-
-    Modeled after `survival_update` (crimsonland.exe 0x00407cd0) wave spawns:
-      spawn_cooldown -= player_count * frame_dt_ms
-      while spawn_cooldown < 0:
-        interval_ms = 500 - int(survival_elapsed_ms) / 1800
-        if interval_ms < 0:
-          extra = (1 - interval_ms) >> 1
-          interval_ms += extra * 2
-          spawn `extra` creatures at random edges
-        interval_ms = max(1, interval_ms)
-        spawn_cooldown += interval_ms
-        spawn 1 creature at a random edge
-    """
-    cooldown = f32(f32(spawn_cooldown) - f32(f32(player_count) * f32(frame_dt_ms)))
-    while cooldown < 0.0:
-        interval_ms = 500 - int(survival_elapsed_ms) // 1800
-        if interval_ms < 0:
-            extra = (1 - interval_ms) >> 1
-            interval_ms += int(extra) * 2
-            for _ in range(int(extra)):
-                pos = rand_survival_spawn_pos(rng, callers=SURVIVAL_UPDATE_EXTRA_SPAWN_POS_CALLERS)
-                survival_spawn_creature(pool, pos, rng, player_experience=player_experience)
-
-        if interval_ms < 1:
-            interval_ms = 1
-        cooldown = f32(cooldown + f32(interval_ms))
-
-        pos = rand_survival_spawn_pos(rng, callers=SURVIVAL_UPDATE_MAIN_SPAWN_POS_CALLERS)
-        survival_spawn_creature(pool, pos, rng, player_experience=player_experience)
-
-    return float(cooldown)
-
-
-class SpawnTemplateCall(msgspec.Struct, frozen=True):
-    template_id: SpawnId
-    pos: Vec2
-    heading: float
-
-
-def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int, tuple[SpawnTemplateCall, ...]]:
-    """Return scripted survival spawns for the current stage (aka `survival_update` milestones).
-
-    Modeled after `survival_update` (crimsonland.exe 0x00407cd0) stage 0..10 gate checks.
-    """
-    stage = int(stage)
-    level = int(player_level)
-
-    spawns: list[SpawnTemplateCall] = []
-    heading = float(math.pi)
-
-    while True:
-        if stage == 0:
-            if level < 5:
-                break
-            stage = 1
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(-164.0, 512.0), heading=heading,
-                ),
-            )
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=Vec2(1188.0, 512.0), heading=heading,
-                ),
-            )
-            continue
-
-        if stage == 1:
-            if level < 9:
-                break
-            stage = 2
-            spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_BOSS_2C, pos=Vec2(1088.0, 512.0), heading=heading),
-            )
-            continue
-
-        if stage == 2:
-            if level < 11:
-                break
-            stage = 3
-            step = f32(42.666668)
-            for i in range(12):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP2_RANDOM_35,
-                        pos=Vec2(1088.0, f32(f32(i) * f32(step) + f32(256.0))),
-                        heading=heading,
-                    ),
-                )
-            continue
-
-        if stage == 3:
-            if level < 13:
-                break
-            stage = 4
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.ALIEN_DEADLY_FAST_2B,
-                        pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
-                        heading=heading,
-                    ),
-                )
-            continue
-
-        if stage == 4:
-            if level < 15:
-                break
-            stage = 5
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
-                        pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
-                        heading=heading,
-                    ),
-                )
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
-                        pos=Vec2(-64.0, float(i) * 64.0 + 384.0),
-                        heading=heading,
-                    ),
-                )
-            continue
-
-        if stage == 5:
-            if level < 17:
-                break
-            stage = 6
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
-                ),
-            )
-            continue
-
-        if stage == 6:
-            if level < 19:
-                break
-            stage = 7
-            spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 512.0), heading=heading),
-            )
-            continue
-
-        if stage == 7:
-            if level < 21:
-                break
-            stage = 8
-            spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(384.0, 256.0), heading=heading),
-            )
-            spawns.append(
-                SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=Vec2(640.0, 768.0), heading=heading),
-            )
-            continue
-
-        if stage == 8:
-            if level < 26:
-                break
-            stage = 9
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-                        pos=Vec2(1088.0, float(i) * 64.0 + 384.0),
-                        heading=heading,
-                    ),
-                )
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-                        pos=Vec2(-64.0, float(i) * 64.0 + 384.0),
-                        heading=heading,
-                    ),
-                )
-            continue
-
-        if stage == 9:
-            if level <= 31:
-                break
-            stage = 10
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_BOSS_3A, pos=Vec2(1088.0, 512.0), heading=heading,
-                ),
-            )
-            spawns.append(
-                SpawnTemplateCall(
-                    template_id=SpawnId.SPIDER_BOSS_3A, pos=Vec2(-64.0, 512.0), heading=heading,
-                ),
-            )
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-                        pos=Vec2(float(i) * 64.0 + 384.0, -64.0),
-                        heading=heading,
-                    ),
-                )
-            for i in range(4):
-                spawns.append(
-                    SpawnTemplateCall(
-                        template_id=SpawnId.SPIDER_PLASMA_SHOOTER_3C,
-                        pos=Vec2(float(i) * 64.0 + 384.0, 1088.0),
-                        heading=heading,
-                    ),
-                )
-            continue
-
-        break
-
-    return stage, tuple(spawns)
-
-
 def creature_spawn(
     pool: CreaturePool,
     pos: Vec2,
@@ -1421,52 +1145,3 @@ def creature_spawn(
     creature.contact_damage = 4.0
     creature.max_hp = creature.hp
     return creature_idx
-
-
-def tick_rush_mode_spawns(
-    pool: CreaturePool,
-    spawn_cooldown: float,
-    frame_dt_ms: float,
-    rng: CrandLike,
-    *,
-    player_count: int,
-    survival_elapsed_ms: int,
-) -> float:
-    """Advance Rush edge wave spawning into `pool` (`rush_mode_update` / 0x004072b0); returns the cooldown."""
-    cooldown = f32(f32(spawn_cooldown) - f32(f32(player_count) * f32(frame_dt_ms)))
-
-    while cooldown < 0.0:
-        cooldown = f32(cooldown + 250.0)
-
-        # 0x00407328: `fild (elapsed + 1)` stays exact on the x87 stack.
-        t = float(int(survival_elapsed_ms) + 1)
-        # 0x407336..0x407366: separate x87 PC=24 multiplies/adds,
-        # with the f32 0.3 constant at 0x46f258 (0x3e99999a).
-        tint = RGBA(
-            clamp01(x87_pc24_add(x87_pc24_mul(t, f32(1.0 / 120000.0)), f32(0.3))),
-            clamp01(x87_pc24_add(x87_pc24_mul(t, 10000.0), f32(0.3))),
-            clamp01(x87_pc24_add(math.sin(float(x87_pc24_mul(t, _NATIVE_RUSH_TINT_SIN_SCALE))), f32(0.3))),
-            1.0,
-        )
-
-        elapsed_ms = int(survival_elapsed_ms)
-        theta = x87_pc24_mul(float(elapsed_ms), f32(0.001))
-        # 0x00407422..0x00407490: fcos/fsin stay wide into the PC24 `* 256.0f`,
-        # then add the PC24 `height * 0.5f`.
-        half_height = x87_pc24_mul(TERRAIN_SIZE, 0.5)
-        right = Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), x87_pc24_add(x87_pc24_cos_mul(theta, 256.0), half_height))
-        creature = pool.creature(
-            creature_spawn(pool, right, tint, CreatureTypeId.ALIEN, rng, survival_elapsed_ms=elapsed_ms),
-        )
-        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
-
-        left = Vec2(-64.0, x87_pc24_add(x87_pc24_sin_mul(theta, 256.0), half_height))
-        creature = pool.creature(
-            creature_spawn(pool, left, tint, CreatureTypeId.SPIDER_SP1, rng, survival_elapsed_ms=elapsed_ms),
-        )
-        creature.ai_mode = CreatureAiMode.ORBIT_PLAYER_WIDE
-        creature.flags |= CreatureFlags.AI7_LINK_TIMER
-        # 0x004074ba: `move_speed *= 1.4f` at PC24.
-        creature.move_speed = x87_pc24_mul(creature.move_speed, f32(1.4))
-
-    return float(cooldown)

@@ -74,12 +74,12 @@ stores a wider double where native stores a float32.
 | --- | --- | --- |
 | `test_float_helpers` | `angle_approach` `0x0041f430`, `__ftol` `0x00461054`, PC24 `fadd`/`fsub`/`fmul`/`fdiv`/`fsqrt`, `fcos`/`fsin` + `fmul` | `_angle_approach`, `ftol_ms_i32`, `math_parity.x87_pc24_*` |
 | `test_spawn_template` | `creature_spawn_template` `0x00430af0`, every template × hardcore × retry count | `CreaturePool.spawn_template` |
-| `test_spawn_full_pool` | `creature_spawn_template`, `survival_spawn_creature` and `rush_mode_update` into a pool with at most five free slots: overflow into the phantom slot `creature_pool[0x180]`, the spawn-slot table | `CreaturePool.spawn_template`, `survival_spawn_creature`, `tick_rush_mode_spawns` |
+| `test_spawn_full_pool` | `creature_spawn_template`, `survival_spawn_creature` and `rush_mode_update` into a pool with at most five free slots: overflow into the phantom slot `creature_pool[0x180]`, the spawn-slot table | `CreaturePool.spawn_template`, `survival_spawn_creature`, `rush_mode_update` |
 | `test_projectiles` | `projectile_spawn` `0x00420440`; shotgun pellets in `player_fire_weapon` `0x00444980`; flamer and Bubblegun fire block of `player_update` `0x00415a1f..0x004174c4` | `ProjectilePool.spawn`, `fire_weapon` |
 | `test_projectile_update` | `projectile_update` `0x00420b90`: rocket flight, detonation blast, Shrinkifier/Splitter/Plasma Cannon/Ion Rifle hits; Shock Chain in `bonus_apply` `0x00409890` | `SecondaryProjectilePool.step`, `ProjectilePool.step`, `bonus_apply` |
 | `test_typo_spawn` | Typ-o spawn block `0x00445a62..0x00445c85` with `creature_spawn_tinted` | `typo_mode_update` |
 | `test_quest_builders` | All 50 `quest_build_*` functions (`0x00434480..0x004390d0`) across seeds, terrain sizes, player counts and hardcore | `QuestDefinition.builder` spawn tables |
-| `test_mode_spawns` | `rush_mode_update` `0x004072b0` with `creature_spawn`; `survival_spawn_creature` `0x00407510`, including elapsed times and experience past 2^24 | `tick_rush_mode_spawns`, `survival_spawn_creature` |
+| `test_mode_spawns` | `rush_mode_update` `0x004072b0` with `creature_spawn`; `survival_spawn_creature` `0x00407510`, including elapsed times and experience past 2^24 | `rush_mode_update`, `survival_spawn_creature` |
 | `test_creature_xp` | Quick Learner and plain kill XP in `creature_handle_death` `0x0041eb34..0x0041eb6e`; Radioactive kill XP `0x0042704b..0x00427062`; Jinxed kill XP `0x004070a6..0x004070cf` | `quick_learner_kill_xp`, `experience_plus_reward` |
 | `test_creature_anim` | Animation phase step in `creature_update_all` `0x00426e22..0x00426f35` | `creature_anim_advance_phase` |
 | `test_camera_shake` | `camera_update` `0x00409500` over whole Nuke shakes | `camera_shake_update` |

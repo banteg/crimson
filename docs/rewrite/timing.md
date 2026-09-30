@@ -193,8 +193,8 @@ on to the next player, preserving the shared-global round-trip effect.
 
 | Native subsystem | Python counterpart | Current timing choice |
 | --- | --- | --- |
-| Survival spawning | `survival_update` in `src/crimson/sim/mode_updates.py`; `tick_survival_wave_spawns` and `advance_survival_spawn_stage` in `src/crimson/creatures/spawn.py` | Simulation milliseconds for cooldown; previous elapsed value for difficulty. |
-| Rush spawning and elapsed time | `rush_mode_update` in `src/crimson/sim/mode_updates.py`; `tick_rush_mode_spawns` in `src/crimson/creatures/spawn.py` | Simulation milliseconds, as native. Rush has no perks or bonus drops, so they equal the input milliseconds. |
+| Survival spawning | `survival_update` in `src/crimson/sim/mode_updates.py` | Simulation milliseconds for cooldown; previous elapsed value for difficulty. |
+| Rush spawning and elapsed time | `rush_mode_update` in `src/crimson/sim/mode_updates.py` | Simulation milliseconds, as native. Rush has no perks or bonus drops, so they equal the input milliseconds. |
 | Quest timeline and completion | `quest_mode_update` in `src/crimson/sim/mode_updates.py`; `src/crimson/quests/timeline.py` | Simulation milliseconds for timeline, stall, and completion; `run_elapsed_ms` exposes the quest timeline rather than general session elapsed time. |
 | Tutorial stages and fades | `tutorial_timeline_update` in `src/crimson/tutorial/timeline.py`, called by `WorldState.step` after the corpse cull and Telekinetic pickups | Simulation milliseconds passed to the stage machine and overlay state. |
 | Typo spawn cadence | `typo_mode_update` in `src/crimson/typo/runtime.py` | Simulation milliseconds and the same remaining-cooldown clamp. |

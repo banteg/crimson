@@ -3,34 +3,40 @@ from __future__ import annotations
 import math
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import (
-    CreatureFlags,
-    CreatureTypeId,
-    creature_spawn,
-    tick_rush_mode_spawns,
-)
+from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, creature_spawn
 from crimson.math_parity import f32
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.sim.mode_updates import RushSpawnState, rush_mode_update
+from crimson.weapons import WeaponId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import Crand, CrandLike, RecordingCrand
+from tests.support.builders.session import make_world
 from tests.support.helpers import assert_float_close
 
 
 def _tick(rng: CrandLike, cooldown: float, *, survival_elapsed_ms: int = 0) -> tuple[float, list[CreatureState]]:
-    pool = CreaturePool()
-    cooldown = tick_rush_mode_spawns(pool, cooldown, 0.0, rng, player_count=1, survival_elapsed_ms=survival_elapsed_ms)
-    return cooldown, [creature for creature in pool.entries if creature.active]
+    world = make_world()
+    world.state.rng = rng
+    spawn = RushSpawnState(spawn_cooldown_ms=cooldown)
+    rush_mode_update(world, spawn, elapsed_ms=float(survival_elapsed_ms), dt_ms=0.0)
+    return spawn.spawn_cooldown_ms, [creature for creature in world.creatures.entries if creature.active]
 
 
-def test_tick_rush_mode_spawns_no_trigger() -> None:
-    rng = Crand(1)
-    pool = CreaturePool()
-    cooldown = tick_rush_mode_spawns(pool, 100.0, 16.0, rng, player_count=1, survival_elapsed_ms=0)
+def test_rush_mode_update_forces_assault_rifles_without_spawning_before_the_cooldown() -> None:
+    world = make_world(player_count=2)
+    world.state.rng = Crand(1)
+    spawn = RushSpawnState(spawn_cooldown_ms=100.0)
 
-    assert_float_close(cooldown, 84.0)
-    assert not any(creature.active for creature in pool.entries)
-    assert rng.state == 1
+    rush_mode_update(world, spawn, elapsed_ms=0.0, dt_ms=16.0)
+
+    assert_float_close(spawn.spawn_cooldown_ms, 68.0)
+    assert [(player.weapon.weapon_id, player.weapon.ammo) for player in world.players] == [
+        (WeaponId.ASSAULT_RIFLE, 30.0),
+        (WeaponId.ASSAULT_RIFLE, 30.0),
+    ]
+    assert not any(creature.active for creature in world.creatures.entries)
+    assert world.state.rng.state == 1
 
 
 def test_rush_spawn_stats_round_each_native_x87_operation() -> None:
@@ -46,7 +52,7 @@ def test_rush_spawn_stats_round_each_native_x87_operation() -> None:
     assert spawn(3792).size == 47.03792190551758
 
 
-def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
+def test_rush_mode_update_triggers_two_creatures() -> None:
     rng = Crand(1)
     cooldown, spawns = _tick(rng, -1.0)
 
@@ -84,13 +90,13 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert rng.state == 0x3D6C1037
 
 
-def test_tick_rush_mode_spawns_uses_native_upward_rounded_sine_scale() -> None:
+def test_rush_mode_update_uses_native_upward_rounded_sine_scale() -> None:
     _, spawns = _tick(Crand(1), -1.0, survival_elapsed_ms=63)
 
     assert spawns[0].tint.b == 0.30639997124671936
 
 
-def test_tick_rush_mode_spawns_uses_exact_native_callers() -> None:
+def test_rush_mode_update_uses_exact_native_callers() -> None:
     rng = RecordingCrand(Crand(0x1234))
 
     _tick(rng, -1.0)
@@ -105,7 +111,7 @@ def test_tick_rush_mode_spawns_uses_exact_native_callers() -> None:
     ]
 
 
-def test_tick_rush_mode_spawns_loops_when_cooldown_is_very_negative() -> None:
+def test_rush_mode_update_loops_when_cooldown_is_very_negative() -> None:
     rng = Crand(1)
     cooldown, spawns = _tick(rng, -501.0)
 

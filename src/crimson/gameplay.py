@@ -137,9 +137,6 @@ def survival_check_level_up(state: GameplayState, player: PlayerState) -> None:
         player.level += 1
 
 
-_SURVIVAL_RECENT_DEATH_CENTROID_SCALE = f32(0.33333334)
-
-
 def survival_record_recent_death(state: GameplayState, *, pos: Vec2) -> None:
     """Track Survival recent-death samples used by one-off weapon handout gating."""
 
@@ -158,56 +155,6 @@ def survival_record_recent_death(state: GameplayState, *, pos: Vec2) -> None:
     if recent_count == 3:
         state.survival_reward_fire_seen = False
         state.survival_reward_handout_enabled = False
-
-
-def survival_update_weapon_handouts(
-    state: GameplayState,
-    players: list[PlayerState],
-    *,
-    survival_elapsed_ms: float,
-) -> None:
-    """Apply native `survival_update` one-off Survival weapon handout checks."""
-
-    if len(players) != 1:
-        return
-    player = players[0]
-
-    if (
-        (not bool(state.survival_reward_damage_seen))
-        and (not bool(state.survival_reward_fire_seen))
-        and int(float(survival_elapsed_ms)) > 64000
-        and bool(state.survival_reward_handout_enabled)
-    ):
-        if player.weapon.weapon_id == WeaponId.PISTOL:
-            _weapon_assign_player(player, WeaponId.SHRINKIFIER_5K, state=state)
-            state.survival_reward_weapon_guard_id = WeaponId.SHRINKIFIER_5K
-        state.survival_reward_handout_enabled = False
-        state.survival_reward_damage_seen = True
-        state.survival_reward_fire_seen = True
-
-    if int(state.survival_recent_death_count) == 3 and (not bool(state.survival_reward_fire_seen)):
-        pos0, pos1, pos2 = state.survival_recent_death_pos
-        centroid_x = x87_pc24_mul(
-            x87_pc24_add(
-                x87_pc24_add(float(pos0.x), float(pos1.x)),
-                float(pos2.x),
-            ),
-            _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
-        )
-        centroid_y = x87_pc24_mul(
-            x87_pc24_add(
-                x87_pc24_add(float(pos0.y), float(pos1.y)),
-                float(pos2.y),
-            ),
-            _SURVIVAL_RECENT_DEATH_CENTROID_SCALE,
-        )
-        dx = x87_pc24_sub(float(player.pos.x), centroid_x)
-        dy = x87_pc24_sub(float(player.pos.y), centroid_y)
-        if x87_pc24_hypot(dx, dy) < 16.0 and float(player.health) < 15.0:
-            _weapon_assign_player(player, WeaponId.BLADE_GUN, state=state)
-            state.survival_reward_weapon_guard_id = WeaponId.BLADE_GUN
-            state.survival_reward_fire_seen = True
-            state.survival_reward_handout_enabled = False
 
 
 def survival_enforce_reward_weapon_guard(state: GameplayState, players: Sequence[PlayerState]) -> None:

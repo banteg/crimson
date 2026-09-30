@@ -87,7 +87,7 @@ Milestones (as implemented by `survival_update` and mirrored in tests):
 
 Rewrite ports (derived from decompile + validated by tests):
 
-- `src/crimson/creatures/spawn.py:advance_survival_spawn_stage`
+- `src/crimson/sim/mode_updates.py:survival_update`
 - `tests/modes/test_survival_milestones.py`
 
 ### 3) Continuous wave spawns (cadence)
@@ -122,9 +122,9 @@ Each spawn calls `survival_spawn_creature(pos)` to choose a type and stats from 
 
 Rewrite ports (derived from decompile + validated by tests):
 
-- `src/crimson/creatures/spawn.py:tick_survival_wave_spawns`
+- `src/crimson/sim/mode_updates.py:survival_update`
 - `tests/modes/test_survival_wave.py`
-- `src/crimson/creatures/spawn.py:build_survival_spawn_creature`
+- `src/crimson/creatures/spawn.py:survival_spawn_creature`
 - `tests/modes/test_survival_spawn.py`
 
 ## Progression (XP, levels, perks)

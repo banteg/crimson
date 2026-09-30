@@ -13,9 +13,12 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.runtime import PHANTOM_CREATURE_INDEX, CreaturePool
-from crimson.creatures.spawn import SpawnId, survival_spawn_creature, tick_rush_mode_spawns
+from crimson.creatures.spawn import SpawnId, survival_spawn_creature
 from crimson.math_parity import f32
 from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.mode_updates import RushSpawnState, rush_mode_update
+from crimson.sim.state_types import PlayerState
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
@@ -157,7 +160,8 @@ def test_rush_spawns_into_a_nearly_full_pool_match_native(oracle) -> None:
         oracle.rand_state = seed
         oracle.call("rush_mode_update")
         crand = CrtRand(seed)
-        tick_rush_mode_spawns(pool, 0.0, float(dt_ms), crand, player_count=1, survival_elapsed_ms=elapsed_ms)
+        world = WorldState(state=GameplayState(rng=crand), players=[PlayerState(index=0, pos=Vec2())], creatures=pool)
+        rush_mode_update(world, RushSpawnState(), elapsed_ms=float(elapsed_ms), dt_ms=float(dt_ms))
         cases += 1
         mismatches += _compare_pool(oracle, case, pool, free_slots)
         if oracle.rand_state != crand.state:

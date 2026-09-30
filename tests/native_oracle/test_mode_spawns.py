@@ -1,4 +1,4 @@
-"""Rush and Survival wave spawns vs `tick_rush_mode_spawns` / `survival_spawn_creature`.
+"""Rush and Survival wave spawns vs `rush_mode_update` / `survival_spawn_creature`.
 
 - `rush_mode_update` (0x004072b0) with the native `creature_spawn`: the cooldown
   loop, tint, edge positions and elapsed-scaled stats.
@@ -14,9 +14,12 @@ from __future__ import annotations
 import random
 
 from crimson.creatures.runtime import CreaturePool, CreatureState
-from crimson.creatures.spawn import survival_spawn_creature, tick_rush_mode_spawns
+from crimson.creatures.spawn import survival_spawn_creature
 from crimson.math_parity import f32
-from crimson.sim.state_types import TERRAIN_SIZE
+from crimson.sim.gameplay_state import GameplayState
+from crimson.sim.mode_updates import RushSpawnState, rush_mode_update
+from crimson.sim.state_types import TERRAIN_SIZE, PlayerState
+from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import CrtRand
 
@@ -90,14 +93,11 @@ def test_rush_mode_spawns_match_native(oracle) -> None:
 
         crt = CrtRand(seed)
         pool = CreaturePool()
-        cooldown = tick_rush_mode_spawns(
-            pool,
-            float(cooldown_ms),
-            float(dt_ms),
-            crt,
-            player_count=player_count,
-            survival_elapsed_ms=elapsed_ms,
-        )
+        players = [PlayerState(index=index, pos=Vec2()) for index in range(player_count)]
+        spawn = RushSpawnState(spawn_cooldown_ms=float(cooldown_ms))
+        world = WorldState(state=GameplayState(rng=crt), players=players, creatures=pool)
+        rush_mode_update(world, spawn, elapsed_ms=float(elapsed_ms), dt_ms=float(dt_ms))
+        cooldown = spawn.spawn_cooldown_ms
 
         case = f"rush elapsed_ms={elapsed_ms} dt_ms={dt_ms} players={player_count} seed=0x{seed:08x}"
         if oracle.read_i32("survival_spawn_cooldown") != cooldown:
