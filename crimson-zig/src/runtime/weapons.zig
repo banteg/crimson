@@ -719,6 +719,9 @@ fn tryFireWeaponWithGate(
     var counts_accuracy_shots = true;
 
     if (is_fire_bullets) {
+        // `fire_bullets_primary_shot_sfx_id` and `fire_bullets_secondary_shot_sfx_id`.
+        state.sfx_queue.append(.autorifle_fire);
+        state.sfx_queue.append(.plasmaminigun_fire);
         for (0..@as(usize, @intCast(pellet_count))) |_| {
             const jitter: i32 = @as(i32, @intCast(state.rng.randTagged(rng_callers.player_update_fire_bullets_pellet_jitter) % 200)) - 100;
             _ = shot.projectile(.fire_bullets, pelletAngle(shot_angle, jitter, 0.0015));
@@ -726,8 +729,9 @@ fn tryFireWeaponWithGate(
         shot_count = pellet_count;
         shot.muzzleSprite(25.0, 1.0, 0.413);
     } else {
-        // Native draws the shot SFX variant on every non-Fire-Bullets shot.
-        _ = state.rng.randTagged(rng_callers.player_update_shot_sfx);
+        const sfx_variant = state.rng.randTagged(rng_callers.player_update_shot_sfx);
+        const fire_sfx = weapon_data.fireSfx(weapon_id);
+        state.sfx_queue.append(fire_sfx[sfx_variant % fire_sfx.len]);
 
         switch (weapon_id) {
             .shrinkifier_5k, .pistol => {
@@ -943,8 +947,6 @@ fn tryFireWeaponWithGate(
     if (state.bonuses.reflex_boost <= 0.0 and !is_fire_bullets) {
         player.weapon.ammo -= ammo_cost;
     }
-
-    player.shot_seq += 1;
 
     if (!perks.perkActive(perk_player, PerkId.sharpshooter)) {
         const spread_heat_base = if (is_fire_bullets) fire_bullets_spread_heat else weapon_spread_heat;
@@ -2146,7 +2148,6 @@ test "alternate weapon swap allows same-tick fire with swapped reload timer" {
     try std.testing.expect(player.weapon.reload_timer > 0.0);
     try expectFloatClose(player.weapon.reload_timer_max, player.weapon.reload_timer);
     try std.testing.expect(player.weapon.ammo < 0.0);
-    try std.testing.expect(player.shot_seq >= 1);
 }
 
 test "alternate weapon swap preserves perk fire readiness and charges the incoming weapon" {
@@ -2194,7 +2195,6 @@ test "alternate weapon swap preserves perk fire readiness and charges the incomi
         );
 
         try std.testing.expectEqual(case.incoming, player.weapon.weapon_id);
-        try std.testing.expectEqual(@as(i32, 1), player.shot_seq);
         try std.testing.expectEqual(case.experience, player.experience);
         try expectFloatClose(case.health, player.health);
         try expectFloatClose(case.ammo, player.weapon.ammo);
@@ -2242,7 +2242,6 @@ test "captured closed fire gate stays closed after the weapon slot changes" {
         fire_gate,
         false,
     ));
-    try std.testing.expectEqual(@as(i32, 0), player.shot_seq);
     try std.testing.expectEqual(@as(i32, 1000), player.experience);
     try expectFloatClose(12.0, player.weapon.ammo);
     try std.testing.expect(!state.survival_reward_fire_seen);
@@ -2287,7 +2286,6 @@ test "alternate weapon normal readiness takes priority over perk charges after s
     );
 
     try std.testing.expectEqual(WeaponId.pistol, player.weapon.weapon_id);
-    try std.testing.expectEqual(@as(i32, 1), player.shot_seq);
     try std.testing.expectEqual(@as(i32, 1000), player.experience);
     try expectFloatClose(100.0, player.health);
     try expectFloatClose(11.0, player.weapon.ammo);
@@ -2885,7 +2883,6 @@ test "regression bullets fires during reload and costs experience" {
         ));
 
         try std.testing.expectEqual(case.after, player.experience);
-        try std.testing.expectEqual(@as(i32, 1), player.shot_seq);
         try std.testing.expect(projectiles.entries[0].active or particles.entries[0].active);
         try expectFloatClose(case.ammo, player.weapon.ammo);
     }

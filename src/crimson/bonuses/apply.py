@@ -63,6 +63,7 @@ def bonus_apply(
 ) -> None:
     """Port of `bonus_apply` (0x00409890)."""
 
+    state.sfx_queue.append(SfxRequest(SfxId.UI_BONUS, None))
     meta = BONUS_BY_ID.get(bonus_id)
     if meta is None:
         return

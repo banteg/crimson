@@ -69,7 +69,6 @@ def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon
     # Native captures both ready flags before swapping, then charges the new
     # weapon despite its zero reload timer and the swap's added cooldown.
     assert player.weapon.weapon_id == WeaponId.PISTOL
-    assert player.shot_seq == 1
     assert_float_close(player.weapon.ammo, 11.0)
     assert state.survival_reward_fire_seen
     assert player.experience == expected_xp
@@ -208,7 +207,6 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
     assert player.weapon.reload_timer > 0.0
     assert_float_close(player.weapon.reload_timer, player.weapon.reload_timer_max)
     assert player.weapon.ammo < 0.0
-    assert player.shot_seq >= 1
 
 
 def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:

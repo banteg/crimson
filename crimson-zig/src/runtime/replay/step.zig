@@ -622,7 +622,7 @@ pub fn stepTick(
     );
     // XP awarded by `bonus_update` kills (e.g. freeze cleanup) levels next tick.
     if (context.perk_progression_enabled) {
-        _ = survival_progression.survivalProgressionUpdate(&context.state, players);
+        survival_progression.survivalCheckLevelUp(&context.state, &players[0]);
     }
     if (open_perk_menu) commands.openRequestedPerkMenu(context);
     try bonus_runtime.bonusUpdate(

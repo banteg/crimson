@@ -10,6 +10,8 @@ from grim.color import RGBA
 from grim.geom import Vec2
 from grim.math import i32
 from grim.rand import CrandLike
+from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ..effects import ParticleStyleId
 from ..math_parity import (
@@ -279,15 +281,17 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     shot_count = 1
 
     if is_fire_bullets:
+        # `fire_bullets_primary_shot_sfx_id` and `fire_bullets_secondary_shot_sfx_id`.
+        state.sfx_queue.append(SfxRequest(SfxId.AUTORIFLE_FIRE, player.pos))
+        state.sfx_queue.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, player.pos))
         for _ in range(pellet_count):
             jitter = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_FIRE_BULLETS_PELLET_JITTER) % 200 - 100
             shot.projectile(ProjectileTemplateId.FIRE_BULLETS, _pellet_angle(shot_angle, jitter, 0.0015))
         shot_count = pellet_count
         shot.muzzle_sprite(25.0, 1.0, 0.413)
     else:
-        # Native gameplay fire consumes one exact `player_update` RNG draw for shot
-        # SFX variant selection on every non-Fire-Bullets shot.
-        rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_SFX)
+        sfx_variant = rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_SHOT_SFX) % len(weapon.fire_sounds)
+        state.sfx_queue.append(SfxRequest(weapon.fire_sounds[sfx_variant], player.pos))
 
         match weapon_id:
             case WeaponId.SHRINKIFIER_5K | WeaponId.PISTOL:
@@ -473,7 +477,6 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + muzzle_inc)
     player.muzzle_flash_alpha = min(0.8, player.muzzle_flash_alpha)
 
-    player.shot_seq += 1
     if state.bonuses.reflex_boost <= 0.0 and not is_fire_bullets:
         # Native allows ammo to cross below zero for reload-time firing paths
         # (for example Regression Bullets), and replay checkpoints rely on that.

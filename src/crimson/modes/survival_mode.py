@@ -103,7 +103,7 @@ class SurvivalMode(BaseGameplayMode):
             if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
                 self._debug_cheat_used()
                 self.player.experience += 5000
-                survival_check_level_up(self.player, self.state.perk_selection)
+                survival_check_level_up(self.state, self.player)
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()

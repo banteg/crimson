@@ -78,7 +78,7 @@ pub fn postStep(
         players[0].health = result.actions.force_player_health;
         if (result.actions.force_player_experience) |xp| {
             players[0].experience = xp;
-            _ = survival_progression.survivalCheckLevelUp(&players[0], &state.perk_selection);
+            survival_progression.survivalCheckLevelUp(state, &players[0]);
         }
     }
     if (result.actions.play_levelup_sfx) {

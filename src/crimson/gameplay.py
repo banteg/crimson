@@ -32,7 +32,6 @@ from .math_parity import (
 from .movement_controls import MovementControlType
 from .owner_id import player_projectile_owner_id
 from .perks import PerkId
-from .perks.state import PerkSelectionState
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import TERRAIN_SIZE
@@ -128,26 +127,14 @@ def survival_level_threshold(level: int) -> int:
     return 1000 - int(x87_pc24_mul(power, _SURVIVAL_LEVEL_XP_SCALE))
 
 
-def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState) -> int:
-    """Advance survival levels if XP exceeds thresholds, returning number of level-ups."""
+def survival_check_level_up(state: GameplayState, player: PlayerState) -> None:
+    """The level-up check of `gameplay_update_and_render`: at most one level per frame, however far XP jumps."""
 
-    # Native progression advances at most one level per update tick even when
-    # XP jumps across multiple thresholds in a single frame.
     if player.experience > survival_level_threshold(player.level):
+        state.perk_selection.pending_count += 1
+        state.perk_selection.choices_dirty = True
+        state.sfx_queue.append(SfxRequest(SfxId.UI_LEVELUP, None))
         player.level += 1
-        perk_state.pending_count += 1
-        perk_state.choices_dirty = True
-        return 1
-    return 0
-
-
-def survival_progression_update(
-    state: GameplayState,
-    players: list[PlayerState],
-) -> None:
-    """Advance survival level/perk progression."""
-
-    survival_check_level_up(players[0], state.perk_selection)
 
 
 _SURVIVAL_RECENT_DEATH_CENTROID_SCALE = f32(0.33333334)

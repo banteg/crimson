@@ -129,23 +129,6 @@ pub const Bridge = struct {
         const state = &(self.state orelse return);
         if (!state.ready) return;
 
-        for (frame_audio.shot_events[0..frame_audio.shot_event_count]) |shot| {
-            const weapon_id = weaponIdFromInt(shot.weapon_id) orelse continue;
-            if (shot.fire_bullets_active) {
-                audio_mod.playSfx(state, .autorifle_fire, reflex_boost_timer);
-                audio_mod.playSfx(state, .plasmaminigun_fire, reflex_boost_timer);
-                continue;
-            }
-            const sfx_id = weaponFireSfx(weapon_id) orelse continue;
-            audio_mod.playSfx(state, sfx_id, reflex_boost_timer);
-        }
-
-        for (frame_audio.reload_weapon_ids[0..frame_audio.reload_event_count]) |weapon_raw| {
-            const weapon_id = weaponIdFromInt(weapon_raw) orelse continue;
-            const sfx_id = weapon_data.reloadSfx(weapon_id) orelse continue;
-            audio_mod.playSfx(state, sfx_id, reflex_boost_timer);
-        }
-
         for (frame_audio.hit_events[0..frame_audio.hit_event_count]) |event| {
             if (event.trigger_game_tune) {
                 if (event.game_tune_roll) |roll| {
@@ -167,9 +150,6 @@ pub const Bridge = struct {
             audio_mod.playSfx(state, sfx_id, reflex_boost_timer);
         }
 
-        if (frame_audio.perk_menu_opened) {
-            audio_mod.playSfx(state, .ui_levelup, reflex_boost_timer);
-        }
         if (frame_audio.quest_play_hit_sfx) {
             audio_mod.playSfx(state, .questhit, reflex_boost_timer);
         }
@@ -218,67 +198,3 @@ pub const Bridge = struct {
     }
 };
 
-fn weaponIdFromInt(value: i32) ?game_ids.WeaponId {
-    if (value < 0 or value >= weapon_data.weapon_count_size) return null;
-    return @enumFromInt(value);
-}
-
-fn weaponFireSfx(weapon_id: game_ids.WeaponId) ?sfx_map.SfxId {
-    return switch (weapon_id) {
-        .none => null,
-        .pistol => .pistol_fire,
-        .assault_rifle => .autorifle_fire,
-        .shotgun => .shotgun_fire,
-        .sawed_off_shotgun => .shotgun_fire,
-        .submachine_gun => .hrpm_fire,
-        .gauss_gun => .gauss_fire,
-        .mean_minigun => .autorifle_fire,
-        .flamethrower => .flamer_fire_01,
-        .plasma_rifle => .shock_fire,
-        .multi_plasma => .shock_fire,
-        .plasma_minigun => .plasmaminigun_fire,
-        .rocket_launcher => .rocket_fire,
-        .seeker_rockets => .rocket_fire,
-        .plasma_shotgun => .plasmashotgun_fire,
-        .blow_torch => .flamer_fire_01,
-        .hr_flamer => .flamer_fire_01,
-        .mini_rocket_swarmers => .rocket_fire,
-        .rocket_minigun => .rocketmini_fire,
-        .pulse_gun => .pulse_fire,
-        .jackhammer => .shotgun_fire,
-        .ion_rifle => .shock_fire_alt,
-        .ion_minigun => .shockminigun_fire,
-        .ion_cannon => .shock_fire_alt,
-        .shrinkifier_5k => .shock_fire_alt,
-        .blade_gun => .shock_fire_alt,
-        .spider_plasma => .bloodspill_01,
-        .evil_scythe => .shock_fire_alt,
-        .plasma_cannon => .shock_fire,
-        .splitter_gun => .shock_fire_alt,
-        .gauss_shotgun => .gauss_fire,
-        .ion_shotgun => .shock_fire_alt,
-        .flameburst => .flamer_fire_01,
-        .raygun => .shock_fire_alt,
-        .unused_34,
-        .unused_35,
-        .unused_36,
-        .unused_37,
-        .unused_38,
-        .unused_39,
-        .unused_40,
-        .unused_46,
-        .unused_47,
-        .unused_48,
-        .unused_49,
-        => null,
-        .plague_spreader_gun => .bloodspill_01,
-        .bubblegun => .bloodspill_01,
-        .rainbow_gun => .bloodspill_01,
-        .grim_weapon => .bloodspill_01,
-        .fire_bullets => .autorifle_fire,
-        .transmutator => .bloodspill_01,
-        .blaster_r_300 => .shock_fire,
-        .lightning_rifle => .explosion_large,
-        .nuke_launcher => .explosion_large,
-    };
-}

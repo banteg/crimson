@@ -65,7 +65,6 @@ class PlayerState(msgspec.Struct):
     weapon: WeaponSlot = msgspec.field(default_factory=lambda: WeaponSlot(weapon_id=WeaponId.PISTOL))
     alt_weapon: WeaponSlot | None = None
 
-    shot_seq: int = 0
     weapon_reset_latch: int = 0
     aux_timer: float = 0.0
     spread_heat: float = f32(0.01)

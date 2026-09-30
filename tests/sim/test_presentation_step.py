@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from crimson.bonuses import BonusId
 from crimson.effects import FxQueue
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
@@ -9,13 +8,10 @@ from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.presentation_step import (
     plan_hit_sfx,
-    plan_world_presentation_step,
 )
-from crimson.sim.state_types import BonusPickupEvent, PlayerState
-from crimson.weapons import WeaponId
+from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
-from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
 from tests.support.decals import queue_projectile_decals
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
@@ -69,66 +65,6 @@ def test_plan_hit_sfx_no_skip_when_tune_started() -> None:
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
         RngCallerStatic.PROJECTILE_UPDATE_HIT_SFX,
     ]
-
-
-def test_plan_world_presentation_step_orders_sfx(mocker) -> None:
-    from crimson.world.audio_bridge import AudioBridge
-    from grim.audio import AudioState
-    from grim.music import init_music_state
-    from grim.rand import Crand
-    from tests.support.audio import make_sfx_state, stub_sfx_backend
-
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(0.0, 0.0))
-    player.weapon.weapon_id = WeaponId.PISTOL
-    player.shot_seq = 1
-
-    state.perk_selection.pending_count = 1
-
-    commands = plan_world_presentation_step(
-        state=state,
-        players=[player],
-        pickups=[
-            BonusPickupEvent(
-                player_index=0,
-                bonus_id=BonusId.POINTS,
-                amount=100,
-                pos=Vec2(),
-            ),
-        ],
-        event_sfx=[
-            SfxRequest(SfxId.UI_PANELCLICK),
-            SfxRequest(SfxId.UI_BUTTONCLICK),
-            SfxRequest(SfxId.UI_CLINK_01),
-            SfxRequest(SfxId.SHOCK_HIT_01),
-            SfxRequest(SfxId.EXPLOSION_SMALL),
-        ],
-        prev_audio=[(0, False, 0.0)],
-        prev_perk_pending=0,
-        perk_progression_enabled=True,
-        trigger_game_tune=False,
-        hit_sfx=[],
-    )
-
-    assert commands.trigger_game_tune is False
-    assert sfx_ids(commands.sfx) == [
-        SfxId.UI_LEVELUP,
-        SfxId.PISTOL_FIRE,
-        SfxId.UI_BONUS,
-        SfxId.UI_PANELCLICK,
-        SfxId.UI_BUTTONCLICK,
-        SfxId.UI_CLINK_01,
-        SfxId.SHOCK_HIT_01,
-        SfxId.EXPLOSION_SMALL,
-    ]
-    backend = stub_sfx_backend(mocker)
-    audio = AudioState(
-        ready=True,
-        music=init_music_state(ready=False, enabled=False, volume=1.0),
-        sfx=make_sfx_state(*sfx_ids(commands.sfx)),
-    )
-    AudioBridge(audio=audio, audio_rng=Crand(1)).apply_plan(plan=commands, camera=Vec2(), screen_width=1024.0)
-    assert backend.play_sound.call_count == 8
 
 
 def test_queue_projectile_decals_consumes_rand() -> None:

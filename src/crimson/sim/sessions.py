@@ -28,7 +28,7 @@ from .commands import (
 )
 from .input import PlayerInput
 from .mode_updates import ModeState, QuestSpawnState
-from .presentation_step import DeterministicPresentationPlan, plan_world_presentation_step
+from .presentation_step import DeterministicPresentationPlan
 from .run_result import RunOutcome, all_players_dead, death_transition_ready
 from .terrain_fx import TerrainFxScratch
 from .timing import FrameTiming, reflex_boost_time_scale_factor
@@ -265,11 +265,6 @@ class DeterministicSession(msgspec.Struct):
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
-        prev_audio = [
-            (player.shot_seq, player.weapon.reload_active, player.weapon.reload_timer) for player in self.world.players
-        ]
-        prev_perk_pending = state.perk_selection.pending_count
-
         events = self.world.step(
             timing.dt_sim,
             inputs=tick_inputs,
@@ -281,23 +276,12 @@ class DeterministicSession(msgspec.Struct):
             open_perk_menu=open_perk_menu,
         )
 
-        presentation = plan_world_presentation_step(
-            state=state,
-            players=self.world.players,
-            pickups=events.pickups,
-            event_sfx=events.sfx,
-            prev_audio=prev_audio,
-            prev_perk_pending=prev_perk_pending,
-            perk_progression_enabled=self.perk_progression_enabled,
-            trigger_game_tune=events.trigger_game_tune,
-            hit_sfx=events.hit_sfx,
-        )
-
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
             post_apply_sfx.append(SfxId.QUESTHIT)
-        presentation = msgspec.structs.replace(
-            presentation,
+        presentation = DeterministicPresentationPlan(
+            trigger_game_tune=events.trigger_game_tune,
+            sfx=(*events.hit_sfx, *events.sfx),
             terrain_fx=self.terrain_fx.take_batch(),
             post_apply_sfx=tuple(SfxRequest(sfx) for sfx in post_apply_sfx),
             sfx_dt=timing.dt_audio,

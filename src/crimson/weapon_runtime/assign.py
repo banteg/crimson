@@ -63,9 +63,7 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     player.weapon.reload_timer = 0.0
     player.weapon.shot_cooldown = 0.0
     player.aux_timer = 2.0
-
-    if state is not None:
-        state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
+    state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
 
 
 def most_used_weapon_id_for_player(
@@ -116,6 +114,7 @@ def player_start_reload(
     reload_time = f32(weapon.reload_time)
 
     if not player.weapon.reload_active:
+        state.sfx_queue.append(SfxRequest(weapon.reload_sound, player.pos))
         player.weapon.reload_active = True
 
     player.weapon.reload_timer = reload_time

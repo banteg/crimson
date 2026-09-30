@@ -2,29 +2,24 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import survival_check_level_up
-from crimson.perks.state import PerkSelectionState
+from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
 from tests.support.factories import make_step_runtime, world_with_creature
 
 
 def test_survival_level_up_advances_one_threshold_per_tick() -> None:
+    state = GameplayState()
     player = PlayerState(index=0, pos=Vec2(), level=1, experience=5000)
-    perk_state = PerkSelectionState()
 
-    advanced = survival_check_level_up(player, perk_state)
+    survival_check_level_up(state, player)
+    survival_check_level_up(state, player)
 
-    assert advanced == 1
-    assert player.level == 2
-    assert perk_state.pending_count == 1
-    assert perk_state.choices_dirty is True
-
-    advanced = survival_check_level_up(player, perk_state)
-
-    assert advanced == 1
     assert player.level == 3
-    assert perk_state.pending_count == 2
-
+    assert state.perk_selection.pending_count == 2
+    assert state.perk_selection.choices_dirty is True
+    assert [request.sfx_id for request in state.sfx_queue] == [SfxId.UI_LEVELUP, SfxId.UI_LEVELUP]
 
 
 def test_kill_experience_rounds_the_exact_int_plus_reward_once() -> None:

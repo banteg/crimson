@@ -19,7 +19,7 @@ from ..gameplay import (
     gameplay_accumulate_weapon_usage_time,
     gameplay_enforce_weapon_guards,
     player_update,
-    survival_progression_update,
+    survival_check_level_up,
 )
 from ..math_parity import f32, x87_pc24_mul
 from ..perks import PerkId
@@ -286,7 +286,7 @@ class WorldState(msgspec.Struct):
         # The death check, then the level-up check. XP awarded by `bonus_update` kills
         # (e.g. freeze cleanup) levels next tick.
         if perk_progression_enabled:
-            survival_progression_update(self.state, self.players)
+            survival_check_level_up(self.state, self.players[0])
         # A perk-menu request opens here, mid-frame: native generates the choices
         # after this frame's simulation and before `bonus_update`, and only while
         # a perk is pending and someone is alive.

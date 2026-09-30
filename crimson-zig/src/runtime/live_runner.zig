@@ -55,42 +55,14 @@ pub const FrameInput = struct {
     typo_submit: bool = false,
 };
 
-pub const ShotAudioEvent = struct {
-    weapon_id: i32,
-    fire_bullets_active: bool,
-};
-
 pub const FrameAudioEvents = struct {
-    shot_events: [8]ShotAudioEvent = [_]ShotAudioEvent{.{
-        .weapon_id = 0,
-        .fire_bullets_active = false,
-    }} ** 8,
-    shot_event_count: usize = 0,
-    reload_weapon_ids: [8]i32 = [_]i32{0} ** 8,
-    reload_event_count: usize = 0,
     hit_events: [4]creatures.HitSfxPlan = [_]creatures.HitSfxPlan{.{}} ** 4,
     hit_event_count: usize = 0,
     sfx_events: [state_mod.runtime_sfx_queue_max]state_mod.SfxId = [_]state_mod.SfxId{.ui_bonus} ** state_mod.runtime_sfx_queue_max,
     sfx_event_count: usize = 0,
     trigger_game_tune: bool = false,
-    perk_menu_opened: bool = false,
     quest_play_hit_sfx: bool = false,
     quest_play_completion_music: bool = false,
-
-    fn appendShot(self: *FrameAudioEvents, weapon_id: game_ids.WeaponId, fire_bullets_active: bool) void {
-        if (self.shot_event_count >= self.shot_events.len) return;
-        self.shot_events[self.shot_event_count] = .{
-            .weapon_id = @intFromEnum(weapon_id),
-            .fire_bullets_active = fire_bullets_active,
-        };
-        self.shot_event_count += 1;
-    }
-
-    fn appendReload(self: *FrameAudioEvents, weapon_id: game_ids.WeaponId) void {
-        if (self.reload_event_count >= self.reload_weapon_ids.len) return;
-        self.reload_weapon_ids[self.reload_event_count] = @intFromEnum(weapon_id);
-        self.reload_event_count += 1;
-    }
 
     fn appendHitPlans(self: *FrameAudioEvents, tick_stats: projectiles.ProjectileTickStats) void {
         self.trigger_game_tune = self.trigger_game_tune or tick_stats.hit_audio_trigger_game_tune;
@@ -322,9 +294,6 @@ pub const LiveRunner = struct {
             !(input.perk_menu_active and self.perkPendingCount() > 0) and
             self.accumulator + epsilon_dt >= self.session.dt_nominal)
         {
-            var before_players: [state_mod.max_players]state_mod.PlayerState = undefined;
-            const before_player_count = copyActivePlayers(&before_players, self.session.playersConst());
-            const before_perk_pending = self.perkPendingCount();
             const before_quest_hit_sfx = self.session.quest_play_hit_sfx;
             const before_quest_completion_music = self.session.quest_play_completion_music;
             const open_request = [_]replay_codec.Command{.{ .perk_menu_open = .{ .player_index = 0 } }};
@@ -337,26 +306,8 @@ pub const LiveRunner = struct {
                 self.session.dt_nominal,
                 .{},
             );
-            const after_players = self.session.playersConst();
-            const compare_count = @min(before_player_count, after_players.len);
-            for (0..compare_count) |player_idx| {
-                const before_player = before_players[player_idx];
-                const after_player = after_players[player_idx];
-                if (after_player.shot_seq > before_player.shot_seq) {
-                    frame_audio.appendShot(after_player.weapon.weapon_id, after_player.fire_bullets_timer > 0.0);
-                }
-                const reload_started = (!before_player.weapon.reload_active and after_player.weapon.reload_active) or
-                    (after_player.weapon.reload_timer > before_player.weapon.reload_timer + 1e-6);
-                if (reload_started) {
-                    frame_audio.appendReload(after_player.weapon.weapon_id);
-                }
-            }
-            if (before_perk_pending <= 0 and self.perkPendingCount() > 0) {
-                frame_audio.perk_menu_opened = true;
-            }
             frame_audio.appendHitPlans(step_result.projectile_tick_stats);
             frame_audio.appendRuntimeSfx(step_result.hit_sfx.constSlice());
-            for (step_result.bonus_pickups.constSlice()) |_| frame_audio.appendSfx(.ui_bonus);
             frame_audio.appendRuntimeSfx(step_result.sfx_events.constSlice());
             frame_audio.quest_play_hit_sfx = frame_audio.quest_play_hit_sfx or
                 (!before_quest_hit_sfx and self.session.quest_play_hit_sfx);
@@ -512,17 +463,6 @@ pub const LiveRunner = struct {
 };
 
 pub const LiveSurvivalRunner = LiveRunner;
-
-fn copyActivePlayers(
-    out: *[state_mod.max_players]state_mod.PlayerState,
-    players: []const state_mod.PlayerState,
-) usize {
-    const count = @min(players.len, state_mod.max_players);
-    for (players[0..count], 0..) |player, idx| {
-        out[idx] = player;
-    }
-    return count;
-}
 
 const TickInputs = struct {
     items: [state_mod.max_players]player_runtime.GameInput,
@@ -760,8 +700,11 @@ test "live runner emits shot audio for secondary local player" {
         .player_count = 2,
     });
 
-    try std.testing.expectEqual(@as(usize, 1), update.audio.shot_event_count);
-    try std.testing.expectEqual(@as(i32, @intFromEnum(game_ids.WeaponId.pistol)), update.audio.shot_events[0].weapon_id);
+    try std.testing.expectEqualSlices(
+        state_mod.SfxId,
+        &.{.pistol_fire},
+        update.audio.sfx_events[0..update.audio.sfx_event_count],
+    );
 }
 
 test "live survival runner pauses for pending perk picks" {

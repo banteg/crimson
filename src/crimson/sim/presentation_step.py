@@ -27,8 +27,8 @@ from ..math_parity import (
 from ..perks import PerkId
 from ..projectiles.types import ProjectileHit, ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
-from ..weapons import WEAPON_BY_ID, WeaponId, weapon_entry_for_projectile_type_id
-from .state_types import BonusPickupEvent, PlayerState
+from ..weapons import weapon_entry_for_projectile_type_id
+from .state_types import PlayerState
 from .terrain_fx import TerrainFxBatch
 
 if TYPE_CHECKING:
@@ -56,35 +56,6 @@ class DeterministicPresentationPlan(msgspec.Struct, frozen=True):
     reflex_boost_timer: float = 0.0
     sfx_dt: float = 0.0
     camera: CameraUpdate | None = None
-
-
-def plan_player_audio_sfx(
-    player: PlayerState,
-    *,
-    prev_shot_seq: int,
-    prev_reload_active: bool,
-    prev_reload_timer: float,
-) -> list[SfxRequest]:
-    sfx: list[SfxRequest] = []
-
-    weapon = WEAPON_BY_ID[player.weapon.weapon_id]
-
-    if int(player.shot_seq) > int(prev_shot_seq):
-        if float(player.fire_bullets_timer) > 0.0:
-            fire_bullets = WEAPON_BY_ID[WeaponId.FIRE_BULLETS]
-            plasma_minigun = WEAPON_BY_ID[WeaponId.PLASMA_MINIGUN]
-            sfx.append(SfxRequest(fire_bullets.fire_sound, player.pos))
-            sfx.append(SfxRequest(plasma_minigun.fire_sound, player.pos))
-        else:
-            sfx.append(SfxRequest(weapon.fire_sound, player.pos))
-
-    reload_active = player.weapon.reload_active
-    reload_timer = float(player.weapon.reload_timer)
-    reload_started = (not prev_reload_active and reload_active) or (reload_timer > prev_reload_timer + 1e-6)
-    if reload_started:
-        sfx.append(SfxRequest(weapon.reload_sound, player.pos))
-
-    return sfx
 
 
 def _hit_sfx_for_type(
@@ -301,41 +272,3 @@ def queue_projectile_decals_post_hit(
                 ),
                 rng=rng,
             )
-
-
-def plan_world_presentation_step(
-    *,
-    state: GameplayState,
-    players: Sequence[PlayerState],
-    pickups: list[BonusPickupEvent],
-    event_sfx: list[SfxRequest],
-    prev_audio: Sequence[tuple[int, bool, float]],
-    prev_perk_pending: int,
-    perk_progression_enabled: bool,
-    trigger_game_tune: bool,
-    hit_sfx: Sequence[SfxRequest],
-) -> DeterministicPresentationPlan:
-    sfx: list[SfxRequest] = []
-    if perk_progression_enabled and int(state.perk_selection.pending_count) > int(prev_perk_pending):
-        sfx.append(SfxRequest(SfxId.UI_LEVELUP))
-    sfx.extend(hit_sfx)
-    for idx, player in enumerate(players):
-        if idx >= len(prev_audio):
-            continue
-        prev_shot_seq, prev_reload_active, prev_reload_timer = prev_audio[idx]
-        sfx.extend(
-            plan_player_audio_sfx(
-                player,
-                prev_shot_seq=int(prev_shot_seq),
-                prev_reload_active=bool(prev_reload_active),
-                prev_reload_timer=float(prev_reload_timer),
-            ),
-        )
-    if pickups:
-        sfx.extend(SfxRequest(SfxId.UI_BONUS) for _ in pickups)
-    sfx.extend(event_sfx)
-    return DeterministicPresentationPlan(
-        trigger_game_tune=trigger_game_tune,
-        sfx=tuple(sfx),
-        reflex_boost_timer=float(state.bonuses.reflex_boost),
-    )

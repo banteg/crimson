@@ -111,7 +111,6 @@ pub const PlayerState = struct {
 
     weapon: WeaponSlotState = .{ .weapon_id = .pistol },
     alt_weapon: ?WeaponSlotState = null,
-    shot_seq: i32 = 0,
     weapon_reset_latch: i32 = 0,
     aux_timer: f32 = 0.0,
     spread_heat: f32 = 0.01,

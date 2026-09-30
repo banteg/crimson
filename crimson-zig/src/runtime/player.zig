@@ -124,6 +124,7 @@ pub fn playerStartReloadWithPlayers(
         return;
     }
     if (!player.weapon.reload_active) {
+        if (weapon_data.reloadSfx(player.weapon.weapon_id)) |sfx_id| state.sfx_queue.append(sfx_id);
         player.weapon.reload_active = true;
     }
     if (playerPerkActive(perk_player, .fastloader)) {

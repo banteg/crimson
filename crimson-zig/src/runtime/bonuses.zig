@@ -437,6 +437,7 @@ fn applyBonus(
     amount: i32,
     origin: state_mod.Vec2,
 ) BonusRuntimeError!void {
+    state.sfx_queue.append(.ui_bonus);
     const player_index: usize = @intCast(player.index);
     // Native perk_count_get always reads player slot zero, even when player one
     // is the pickup owner. Corrected mode keeps intuitive per-player ownership.

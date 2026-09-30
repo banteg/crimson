@@ -313,7 +313,7 @@ class ArsenalDebugView:
                 f"clip {_fmt_int(weapon.clip_size)}  reload {_fmt_float(weapon.reload_time)}  cooldown {_fmt_float(weapon.shot_cooldown)}",
                 f"pellets {_fmt_int(weapon.pellet_count)}  spread_inc {_fmt_float(weapon.spread_heat_inc)}  dmg_scale {_fmt_float(weapon.damage_scale)}  meta {_fmt_int(weapon.travel_budget)}",
                 f"ammo_class {_fmt_int(weapon.ammo_class)}  flags {_fmt_hex(weapon.flags)}  icon {_fmt_int(weapon.icon_index)}",
-                f"sfx fire {weapon.fire_sound}  reload {weapon.reload_sound}",
+                f"sfx fire {', '.join(sfx.value for sfx in weapon.fire_sounds)}  reload {weapon.reload_sound}",
             ],
         )
         return lines

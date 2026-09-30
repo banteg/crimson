@@ -55,7 +55,7 @@ def test_tutorial_recorded_first_shot_replays_the_live_startup(make_mode_config,
     live_tick = session.step_tick(dt=1 / 60, inputs=inputs)
     replay_tick = driver.step_tick(0).payload
 
-    assert session.world.players[0].shot_seq == 1
+    assert session.world.players[0].weapon.ammo == session.world.players[0].weapon.clip_size - 1
     assert session.world.players == driver.world.players
     assert session.world.state.rng.state == driver.world.state.rng.state
     assert live_tick.presentation == replay_tick.presentation

@@ -9,7 +9,6 @@ const narrowF32 = native_math.roundF32;
 const WeaponId = state_mod.WeaponId;
 const PlayerState = state_mod.PlayerState;
 const GameplayState = state_mod.GameplayState;
-const PerkSelectionState = state_mod.PerkSelectionState;
 const Vec2 = state_mod.Vec2;
 const PlayerShots = state_mod.PlayerShots;
 
@@ -93,25 +92,14 @@ pub fn survivalLevelThreshold(level_in: i32) i32 {
     return 1000 - @as(i32, @intFromFloat(native_math.pc24Mul(power, @as(f32, -1000.0))));
 }
 
-pub fn survivalCheckLevelUp(
-    player: *PlayerState,
-    perk_state: *PerkSelectionState,
-) i32 {
+/// The level-up check of `gameplay_update_and_render`: at most one level per frame, however far XP jumps.
+pub fn survivalCheckLevelUp(state: *GameplayState, player: *PlayerState) void {
     if (player.experience > survivalLevelThreshold(player.level)) {
+        state.perk_selection.pending_count += 1;
+        state.perk_selection.choices_dirty = true;
+        state.sfx_queue.append(.ui_levelup);
         player.level += 1;
-        perk_state.pending_count += 1;
-        perk_state.choices_dirty = true;
-        return 1;
     }
-    return 0;
-}
-
-pub fn survivalProgressionUpdate(
-    state: *GameplayState,
-    players: []PlayerState,
-) i32 {
-    if (players.len == 0) return 0;
-    return survivalCheckLevelUp(&players[0], &state.perk_selection);
 }
 
 pub fn survivalRecordRecentDeath(
@@ -251,24 +239,21 @@ test "weapon usage time accumulates fixed player zero with u32 wrapping" {
 }
 
 test "survival level up advances one threshold per tick" {
+    var state = GameplayState.init(1);
     var player: PlayerState = .{
         .index = 0,
         .pos = .{},
         .level = 1,
         .experience = 5000,
     };
-    var perks: PerkSelectionState = .{};
 
-    const advanced_0 = survivalCheckLevelUp(&player, &perks);
-    try std.testing.expectEqual(@as(i32, 1), advanced_0);
-    try std.testing.expectEqual(@as(i32, 2), player.level);
-    try std.testing.expectEqual(@as(i32, 1), perks.pending_count);
-    try std.testing.expect(perks.choices_dirty);
+    survivalCheckLevelUp(&state, &player);
+    survivalCheckLevelUp(&state, &player);
 
-    const advanced_1 = survivalCheckLevelUp(&player, &perks);
-    try std.testing.expectEqual(@as(i32, 1), advanced_1);
     try std.testing.expectEqual(@as(i32, 3), player.level);
-    try std.testing.expectEqual(@as(i32, 2), perks.pending_count);
+    try std.testing.expectEqual(@as(i32, 2), state.perk_selection.pending_count);
+    try std.testing.expect(state.perk_selection.choices_dirty);
+    try std.testing.expectEqualSlices(state_mod.SfxId, &.{ .ui_levelup, .ui_levelup }, state.sfx_queue.constSlice());
 }
 
 test "survival level threshold smoke values" {
