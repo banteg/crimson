@@ -10,13 +10,10 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
-from ..aim_schemes import AimScheme
 from ..game_modes import GameMode
-from ..input_codes import PadCode, input_code_is_down, input_code_is_pressed, pad_nav_pressed
-from ..movement_controls import MovementControlType
+from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
-from ..sim.input import PlayerInput
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
     draw_tutorial_overlay_panels,
@@ -51,7 +48,6 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
         self._replay_recorder: ReplayRecorder | None = None
-        self._frame_input_state: PlayerInput | None = None
 
     def _runtime_player_count(self) -> int:
         return 1
@@ -63,8 +59,6 @@ class TutorialMode(BaseGameplayMode):
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._repeat_button = UiButtonState("Repeat tutorial", force_wide=True)
 
-        self._frame_input_state = None
-
         self.state.perk_selection.pending_count = 0
         self.state.perk_selection.choices.clear()
         self.state.perk_selection.choices_dirty = True
@@ -74,7 +68,6 @@ class TutorialMode(BaseGameplayMode):
     def close(self) -> None:
         self._world_runtime.end_session()
         self._replay_recorder = None
-        self._frame_input_state = None
         super().close()
 
     def _replay_output_basename(self, *, stamp: str, replay) -> str:
@@ -85,42 +78,6 @@ class TutorialMode(BaseGameplayMode):
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.START):
             self._request_pause()
             return
-
-    def _build_input(self) -> PlayerInput:
-        controls = self.config.controls.player(0)
-        move_forward_key, move_backward_key, turn_left_key, turn_right_key = controls.move_codes
-        fire_key = controls.fire_code
-
-        move = Vec2(
-            float(input_code_is_down(turn_right_key)) - float(input_code_is_down(turn_left_key)),
-            float(input_code_is_down(move_backward_key)) - float(input_code_is_down(move_forward_key)),
-        )
-
-        mouse = self._ui_mouse_pos()
-        aim = self.screen_to_world(Vec2.from_xy(mouse))
-
-        fire_down = input_code_is_down(fire_key)
-        fire_pressed = input_code_is_pressed(fire_key)
-        reload_key = self.config.controls.reload_code
-        reload_pressed = input_code_is_pressed(reload_key)
-
-        # `move` is the held move-key direction, steered as a dual action pad; `aim` is the mouse point.
-        return PlayerInput(
-            move_mode=MovementControlType.DUAL_ACTION_PAD,
-            aim_scheme=AimScheme.MOUSE,
-            move=move,
-            aim=aim,
-            fire_down=bool(fire_down),
-            fire_pressed=bool(fire_pressed),
-            reload_pressed=bool(reload_pressed),
-        )
-
-    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
-        _ = dt
-        frame_input_state = self._frame_input_state
-        if frame_input_state is None:
-            frame_input_state = self._build_input()
-        return [frame_input_state]
 
     def _finish_tutorial_run(self, *, restart: bool) -> None:
         self._save_replay()
@@ -199,19 +156,13 @@ class TutorialMode(BaseGameplayMode):
 
         dt_world = 0.0 if self._paused or perk_menu_active else dt
 
-        input_state = self._build_input()
-        if dt_world > 0.0:
-            session = self._sim_session
-            if session is not None:
-                self._frame_input_state = input_state
-                try:
-                    self._run_deterministic_session_ticks(
-                        dt_frame=float(dt_world),
-                        session=session,
-                        recorder=self._replay_recorder,
-                    )
-                finally:
-                    self._frame_input_state = None
+        session = self._sim_session
+        if dt_world > 0.0 and session is not None:
+            self._run_deterministic_session_ticks(
+                dt_frame=float(dt_world),
+                session=session,
+                recorder=self._replay_recorder,
+            )
 
         mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
