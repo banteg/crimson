@@ -58,6 +58,8 @@ class QuestSpawnState(msgspec.Struct):
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = -1.0
+    # Native `quest_stage_banner_timer_ms`: the stage title banner's fade clock, zeroed at quest start.
+    stage_banner_timer_ms: float = 0.0
     # The frame's `timer > 2500` branch ran: results are pending and native saved the status.
     completed: bool = False
     play_hit_sfx: bool = False
@@ -251,6 +253,7 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     state = world.state
     if any(c.active for c in world.creatures.entries) or not quest_spawn_table_empty(spawn.spawn_entries):
         spawn.spawn_timeline_ms = f32(f32(spawn.spawn_timeline_ms) + f32(dt_ms))
+    spawn.stage_banner_timer_ms += dt_ms
     quest_spawn_timeline_update(world, spawn, dt_ms=dt_ms)
 
     spawn.completed = False

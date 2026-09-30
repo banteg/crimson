@@ -298,7 +298,7 @@ class QuestMode(BaseGameplayMode):
             font,
             quest.title,
             quest.level.text,
-            timer_ms=float(self._quest_spawn_state.spawn_timeline_ms),
+            timer_ms=float(self._quest_spawn_state.stage_banner_timer_ms),
         )
 
     def _draw_quest_complete_banner(self) -> None:

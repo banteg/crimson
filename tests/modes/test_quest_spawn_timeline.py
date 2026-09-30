@@ -109,10 +109,10 @@ def test_timeline_advances_while_creatures_are_active_or_entries_remain() -> Non
     assert pending.spawn_timeline_ms == 1016.0
 
 
-def test_timeline_holds_once_the_quest_is_idle_complete() -> None:
+def test_timeline_holds_once_the_quest_is_idle_complete_but_the_stage_banner_runs_on() -> None:
     world = make_world(quest_level=QuestLevel(1, 1))
-    quest = QuestSpawnState(spawn_timeline_ms=1000.0)
+    quest = QuestSpawnState(spawn_timeline_ms=1000.0, stage_banner_timer_ms=1000.0)
 
     quest_mode_update(world, quest, dt_ms=16.0)
 
-    assert quest.spawn_timeline_ms == 1000.0
+    assert (quest.spawn_timeline_ms, quest.stage_banner_timer_ms) == (1000.0, 1016.0)

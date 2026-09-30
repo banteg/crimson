@@ -511,7 +511,7 @@ class ReplayPlaybackMode:
             font,
             title,
             level.text,
-            timer_ms=float(driver.quest_spawn_state.spawn_timeline_ms),
+            timer_ms=float(driver.quest_spawn_state.stage_banner_timer_ms),
         )
 
     def _draw_quest_complete_banner(self) -> None:
