@@ -52,8 +52,8 @@ def test_creature_color_float_words_match_native(witness) -> None:
 
 @pytest.mark.parametrize("texture_size", [256, 512])
 @pytest.mark.parametrize("witness", WITNESSES, ids=lambda row: row["input"]["name"])
-def test_creature_draw_colors_match_native(witness, texture_size) -> None:
-    drawn = capture_creature_draws(witness["input"], texture_size=texture_size, include_color=True)
+def test_creature_draw_colors_match_native(headless_resources, witness, texture_size) -> None:
+    drawn = capture_creature_draws(witness["input"], headless_resources, texture_size=texture_size, include_color=True)
     assert len(drawn) == len(witness["expected"])
     for actual, native in zip(drawn, witness["expected"], strict=True):
         assert {key: actual[key] for key in ("pass", "index", "frame")} == {

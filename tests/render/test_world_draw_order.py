@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from contextlib import contextmanager
-from dataclasses import dataclass
 from types import SimpleNamespace
-from typing import Any, cast
 
 import msgspec
 import pytest
@@ -12,52 +9,14 @@ import pytest
 import crimson.render.world.draw as world_draw
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
-from crimson.render.frame import RenderFrame
-from crimson.render.rtx.mode import RtxRenderMode
-from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.draw import WorldDrawContext
-from crimson.render.world.viewport import view_transform
-from crimson.sim.gameplay_state import GameplayState
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
+from tests.support.creature_draw_capture import render_ctx_for_creatures
 from tests.support.factories import make_creature_state
 
 
-@dataclass(slots=True)
-class _TextureStub:
-    width: int = 256
-    height: int = 256
-
-
-class _ResourcesStub:
-    def texture(self, _texture_id: object) -> _TextureStub:
-        return _TextureStub()
-
-
-def _render_ctx_for_creatures(creatures: Sequence[object]):
-    frame = RenderFrame(
-        config=None,
-        camera=Vec2(),
-        ground=None,
-        state=GameplayState(),
-        players=[],
-        creatures=cast(Any, SimpleNamespace(entries=creatures)),
-        resources=cast(Any, _ResourcesStub()),
-        elapsed_ms=0.0,
-        bonus_anim_phase=0.0,
-        rtx_mode=RtxRenderMode.CLASSIC,
-    )
-    return WorldRenderCtx(
-        frame=frame,
-        view=view_transform(
-            config=frame.config,
-            camera=frame.camera,
-            out_size=Vec2(1024, 1024),
-        ),
-    )
-
-
-def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) -> None:
+def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker, headless_resources) -> None:
     creatures = [
         make_creature_state(pos=Vec2(10.0, 10.0), type_id=CreatureTypeId.SPIDER_SP2),
         make_creature_state(pos=Vec2(20.0, 20.0), type_id=CreatureTypeId.TROOPER),
@@ -67,7 +26,7 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
         make_creature_state(pos=Vec2(60.0, 60.0), type_id=CreatureTypeId.ALIEN),
         make_creature_state(pos=Vec2(70.0, 70.0), type_id=CreatureTypeId.ZOMBIE, active=False),
     ]
-    render_ctx = _render_ctx_for_creatures(creatures)
+    render_ctx = render_ctx_for_creatures(headless_resources, creatures)
     pos_to_index = {(float(creature.pos.x), float(creature.pos.y)): idx for idx, creature in enumerate(creatures)}
     call_order: list[tuple[str, int]] = []
 
@@ -81,7 +40,6 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
         call_order.append(("shadow" if not kwargs.get("body", True) else "sprite", pos_to_index[key]))
 
     mocker.patch.object(world_draw, "draw_creature_overlays", side_effect=_record_overlay)
-    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub())
     mocker.patch.object(world_draw, "draw_creature_sprite", side_effect=_record_sprite)
 
     world_draw.draw_creatures(
@@ -109,8 +67,8 @@ def test_draw_creatures_matches_native_overlay_and_species_pass_order(mocker) ->
     ]
 
 
-def test_draw_world_requires_initialized_ground(mocker) -> None:
-    render_ctx = _render_ctx_for_creatures([])
+def test_draw_world_requires_initialized_ground(mocker, headless_resources) -> None:
+    render_ctx = render_ctx_for_creatures(headless_resources, [])
     mocker.patch.object(world_draw.rl, "get_screen_width", return_value=1024)
     mocker.patch.object(world_draw.rl, "get_screen_height", return_value=768)
 
@@ -126,30 +84,31 @@ def test_draw_world_requires_initialized_ground(mocker) -> None:
         (20.0, 0.4999999701976776, CreatureFlags(0), 1),
     ],
 )
-def test_draw_creatures_uses_native_lifecycle_and_rounding_frames(mocker, lifecycle, phase, flags, frame) -> None:
+def test_draw_creatures_uses_native_lifecycle_and_rounding_frames(
+    mocker, headless_resources, lifecycle, phase, flags, frame,
+) -> None:
     creature = make_creature_state(pos=Vec2(137.0, 241.0), type_id=CreatureTypeId.SPIDER_SP1)
     creature.lifecycle_stage = lifecycle
     creature.anim_phase = phase
     creature.flags = flags
-    render_ctx = _render_ctx_for_creatures([creature])
-    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub())
+    render_ctx = render_ctx_for_creatures(headless_resources, [creature])
     draw = mocker.patch.object(world_draw.rl, "draw_texture_pro")
 
     world_draw.draw_creatures(render_ctx, ctx=WorldDrawContext())
 
-    # Both the shadow and body use this frame, without a synthetic phase.
+    # Both the shadow and body use this frame of the 512px, 8x8 spider atlas, without a synthetic phase.
     assert draw.call_count == 2
     for call in draw.call_args_list:
         source = call.args[1]
         assert (source.x, source.y, source.width, source.height) == (
-            (frame % 8) * 32,
-            (frame // 8) * 32,
-            32,
-            32,
+            (frame % 8) * 64,
+            (frame // 8) * 64,
+            64,
+            64,
         )
 
 
-def test_creature_hit_flash_draws_match_native_witnesses(mocker) -> None:
+def test_creature_hit_flash_draws_match_native_witnesses(mocker, headless_resources) -> None:
     import json
     import struct
     from pathlib import Path
@@ -190,7 +149,6 @@ def test_creature_hit_flash_draws_match_native_witnesses(mocker) -> None:
                 ),
             )
 
-    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub(512, 512))
     mocker.patch.object(world_draw.rl, "draw_texture_pro", side_effect=draw)
     mocker.patch.object(world_draw.rl, "begin_blend_mode", side_effect=begin)
     mocker.patch.object(world_draw.rl, "end_blend_mode", side_effect=end)
@@ -212,7 +170,7 @@ def test_creature_hit_flash_draws_match_native_witnesses(mocker) -> None:
             creatures.append(creature)
         config = default_crimson_cfg()
         config.display.violence_disabled = case["flash"]
-        render_ctx = _render_ctx_for_creatures(creatures)
+        render_ctx = render_ctx_for_creatures(headless_resources, creatures)
         render_ctx = msgspec.structs.replace(
             render_ctx,
             frame=msgspec.structs.replace(render_ctx.frame, config=config),
@@ -248,7 +206,7 @@ def test_creature_hit_flash_draws_match_native_witnesses(mocker) -> None:
 
 
 @pytest.mark.parametrize("violence_disabled", [0, 1])
-def test_creature_flash_follows_each_species_body_batch(mocker, violence_disabled) -> None:
+def test_creature_flash_follows_each_species_body_batch(mocker, headless_resources, violence_disabled) -> None:
     creatures = [
         make_creature_state(pos=Vec2(10.0, 10.0), type_id=CreatureTypeId.SPIDER_SP1),
         make_creature_state(pos=Vec2(20.0, 20.0), type_id=CreatureTypeId.ZOMBIE),
@@ -258,9 +216,8 @@ def test_creature_flash_follows_each_species_body_batch(mocker, violence_disable
         creature.hit_flash_timer = 0.2
     config = default_crimson_cfg()
     config.display.violence_disabled = violence_disabled
-    render_ctx = _render_ctx_for_creatures(creatures)
+    render_ctx = render_ctx_for_creatures(headless_resources, creatures)
     render_ctx = msgspec.structs.replace(render_ctx, frame=msgspec.structs.replace(render_ctx.frame, config=config))
-    mocker.patch.object(world_draw, "_creature_texture", return_value=_TextureStub())
     mocker.patch.object(world_draw.rl, "begin_blend_mode")
     mocker.patch.object(world_draw.rl, "end_blend_mode")
     sprite = mocker.patch.object(world_draw, "draw_creature_sprite")
@@ -277,8 +234,10 @@ def test_creature_flash_follows_each_species_body_batch(mocker, violence_disable
 
 
 @pytest.mark.parametrize("entity_alpha", [0.0, 0.0005, 0.001])
-def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mocker, entity_alpha: float) -> None:
-    render_ctx = _render_ctx_for_creatures([])
+def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(
+    mocker, headless_resources, entity_alpha: float,
+) -> None:
+    render_ctx = render_ctx_for_creatures(headless_resources, [])
     projectiles = render_ctx.frame.state.projectiles.entries
     projectiles[0] = Projectile(
         active=True,
@@ -300,9 +259,7 @@ def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mock
         finally:
             events.append("alpha_exit")
 
-    resources = cast(Any, render_ctx.frame.resources)
-    resources.alpha_test = SimpleNamespace(scope=alpha_scope)
-    mocker.patch.object(resources, "texture", return_value=SimpleNamespace(id=1))
+    mocker.patch.object(headless_resources, "alpha_test", SimpleNamespace(scope=alpha_scope))
     background = mocker.patch.object(world_draw, "draw_background")
     unrelated_passes = [
         mocker.patch.object(world_draw, name)
@@ -334,8 +291,8 @@ def test_draw_world_keeps_gauss_trails_inside_alpha_test_at_zero_transition(mock
         draw_pass.assert_not_called()
 
 
-def test_bonus_render_draws_pickups_under_the_effect_pools(mocker) -> None:
-    render_ctx = _render_ctx_for_creatures([])
+def test_bonus_render_draws_pickups_under_the_effect_pools(mocker, headless_resources) -> None:
+    render_ctx = render_ctx_for_creatures(headless_resources, [])
     order = mocker.Mock()
     for name in (
         "draw_bonus_pickups",

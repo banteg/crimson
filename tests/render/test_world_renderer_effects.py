@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -12,52 +11,12 @@ from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.effects import draw_effect_pool
 from crimson.render.world.viewport import view_transform
-from grim.assets import TextureId
+from crimson.sim.gameplay_state import GameplayState
+from grim.assets import RuntimeResources, TextureId
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
-
-class _TextureStub:
-    id = 1
-    width = 256
-    height = 256
-
-
-class _ResourcesStub:
-    def texture(self, texture_id: TextureId) -> _TextureStub:
-        assert texture_id == TextureId.PARTICLES
-        return _TextureStub()
-
-
-@dataclass(slots=True)
-class _EffectPoolStub:
-    entries: list[EffectEntry]
-
-
-@dataclass(slots=True)
-class _StateStub:
-    effects: _EffectPoolStub
-
-
-class _WorldStub:
-    def __init__(self, entries: list[EffectEntry]) -> None:
-        self.resources = _ResourcesStub()
-        self.state = _StateStub(effects=_EffectPoolStub(entries=entries))
-
-    def build_render_frame(self) -> RenderFrame:
-        return RenderFrame(
-            config=None,
-            camera=Vec2(),
-            ground=None,
-            state=cast(Any, self.state),
-            players=[],
-            creatures=cast(Any, SimpleNamespace(entries=[])),
-            resources=cast(Any, self.resources),
-            elapsed_ms=0.0,
-            bonus_anim_phase=0.0,
-            rtx_mode=RtxRenderMode.CLASSIC,
-        )
 
 def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
     return EffectEntry(
@@ -74,7 +33,7 @@ def _entry(*, flags: int, pos: Vec2) -> EffectEntry:
     )
 
 
-def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
+def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker, headless_resources: RuntimeResources) -> None:
     raylib_stub = SimpleNamespace(
         BlendMode=rl.BlendMode,
         Rectangle=rl.Rectangle,
@@ -84,13 +43,23 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         draw_texture_pro=mocker.Mock(),
     )
     mocker.patch.object(world_effects, "rl", raylib_stub)
+    texture = mocker.spy(RuntimeResources, "texture")
 
-    entries = [
-        _entry(flags=0x40, pos=Vec2(10.0, 20.0)),
-        _entry(flags=0x01, pos=Vec2(30.0, 40.0)),
-    ]
-    world = _WorldStub(entries)
-    frame = world.build_render_frame()
+    state = GameplayState()
+    state.effects.entries[0] = _entry(flags=0x40, pos=Vec2(10.0, 20.0))
+    state.effects.entries[1] = _entry(flags=0x01, pos=Vec2(30.0, 40.0))
+    frame = RenderFrame(
+        config=None,
+        camera=Vec2(),
+        ground=None,
+        state=state,
+        players=[],
+        creatures=cast(Any, SimpleNamespace(entries=[])),
+        resources=headless_resources,
+        elapsed_ms=0.0,
+        bonus_anim_phase=0.0,
+        rtx_mode=RtxRenderMode.CLASSIC,
+    )
     render_ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(
@@ -104,6 +73,7 @@ def test_draw_effect_pool_splits_alpha_and_additive_paths(mocker) -> None:
         view_scale=Vec2(1.0, 1.0),
     )
 
+    assert [call.args[1] for call in texture.call_args_list] == [TextureId.PARTICLES]
     assert raylib_stub.begin_blend_mode.call_count == 2
     assert {call.args[0] for call in raylib_stub.begin_blend_mode.call_args_list} == {
         int(rl.BlendMode.BLEND_ALPHA),

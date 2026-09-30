@@ -15,7 +15,7 @@ from crimson.render.world.context import WorldRenderCtx
 from crimson.render.world.viewport import ViewTransform
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
-from grim.assets import TextureId
+from grim.assets import RuntimeResources, TextureId
 from grim.geom import Vec2
 
 EVIDENCE = Path(__file__).resolve().parents[2] / "tools/match/evidence/laser-trig-rounding-2026-09-11"
@@ -60,18 +60,11 @@ def _native_cases() -> list[_NativeLaserCase]:
     return selected
 
 
-class _TextureStub:
-    id = 1
-
-
-class _ResourcesStub:
-    def texture(self, texture_id: TextureId) -> _TextureStub | None:
-        return _TextureStub() if texture_id == TextureId.BULLET_TRAIL else None
-
-
 @pytest.mark.parametrize("native", _native_cases(), ids=lambda row: str(row.index))
 @pytest.mark.parametrize("view_scale", [Vec2(1.0, 1.0), Vec2(2.0, 2.0), Vec2(1.5, 0.75), Vec2(0.25, 0.5)])
-def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _NativeLaserCase, view_scale: Vec2) -> None:
+def test_sharpshooter_submits_native_vertices_and_colors(
+    mocker, headless_resources: RuntimeResources, native: _NativeLaserCase, view_scale: Vec2,
+) -> None:
     calls = {}
     for name in (
         "begin_blend_mode",
@@ -104,7 +97,7 @@ def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _Native
         state=state,
         players=players,
         creatures=cast("Any", object()),
-        resources=cast("Any", _ResourcesStub()),
+        resources=headless_resources,
         elapsed_ms=0.0,
         bonus_anim_phase=0.0,
         rtx_mode=RtxRenderMode.CLASSIC,
@@ -118,6 +111,7 @@ def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _Native
             out_size=Vec2(1024.0, 1024.0).mul_components(view_scale),
         ),
     )
+    texture = mocker.spy(RuntimeResources, "texture")
     world_projectiles._sharpshooter_laser_pass(ctx, alpha=case["alpha"])
     actual_words = [
         struct.unpack("<I", struct.pack("<f", value))[0]
@@ -143,6 +137,8 @@ def test_sharpshooter_submits_native_vertices_and_colors(mocker, native: _Native
         (0.0, 0.5),
     ] * len(native.corners)
     calls["begin_blend_mode"].assert_called_once_with(world_projectiles.rl.BlendMode.BLEND_ADDITIVE)
-    assert [call.args for call in calls["rl_set_texture"].call_args_list] == [(1,), (0,)]
+    assert [call.args[1] for call in texture.call_args_list] == [TextureId.BULLET_TRAIL]
+    trail = headless_resources.texture(TextureId.BULLET_TRAIL)
+    assert [call.args for call in calls["rl_set_texture"].call_args_list] == [(trail.id,), (0,)]
     calls["rl_end"].assert_called_once_with()
     calls["end_blend_mode"].assert_called_once_with()

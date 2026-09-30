@@ -15,8 +15,8 @@ WITNESSES = json.loads(
 
 @pytest.mark.parametrize("texture_size", [256, 512])
 @pytest.mark.parametrize("witness", WITNESSES, ids=lambda row: row["input"]["name"])
-def test_creature_pass_order_frames_and_sizes_match_native(witness, texture_size) -> None:
-    drawn = capture_creature_draws(witness["input"], texture_size=texture_size)
+def test_creature_pass_order_frames_and_sizes_match_native(headless_resources, witness, texture_size) -> None:
+    drawn = capture_creature_draws(witness["input"], headless_resources, texture_size=texture_size)
     expected = witness["expected"]
     assert len(drawn) == len(expected)
     for actual, native in zip(drawn, expected, strict=True):

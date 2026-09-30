@@ -17,20 +17,8 @@ from crimson.render.world.context import WorldRenderCtx, draw_bullet_trail_quad
 from crimson.render.world.viewport import ViewTransform, view_transform
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState
-from grim.assets import TextureId
+from grim.assets import RuntimeResources
 from grim.geom import Vec2
-
-
-class _TextureStub:
-    id = 1
-    width = 256
-    height = 256
-
-
-class _RuntimeResourcesStub:
-    def texture(self, _texture_id: TextureId) -> _TextureStub:
-        return _TextureStub()
-
 
 _RL_DRAW_CALLS = (
     "begin_blend_mode",
@@ -57,26 +45,23 @@ def _render_projectiles(render_ctx: WorldRenderCtx, projectiles: list[Projectile
     world_projectiles.projectile_render(render_ctx, alpha=alpha)
 
 
-class _WorldStub:
-    def __init__(self) -> None:
-        self.resources = _RuntimeResourcesStub()
-
-    def build_render_frame(self) -> RenderFrame:
-        return RenderFrame(
-            config=None,
-            camera=Vec2(),
-            ground=None,
-            state=GameplayState(),
-            players=[],
-            creatures=cast(Any, object()),
-            resources=cast(Any, self.resources),
-            elapsed_ms=0.0,
-            bonus_anim_phase=0.0,
-            rtx_mode=RtxRenderMode.CLASSIC,
-        )
+@pytest.fixture
+def frame(headless_resources: RuntimeResources) -> RenderFrame:
+    return RenderFrame(
+        config=None,
+        camera=Vec2(),
+        ground=None,
+        state=GameplayState(),
+        players=[],
+        creatures=cast(Any, object()),
+        resources=headless_resources,
+        elapsed_ms=0.0,
+        bonus_anim_phase=0.0,
+        rtx_mode=RtxRenderMode.CLASSIC,
+    )
 
 
-def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
+def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker, frame: RenderFrame) -> None:
     mocker.patch.object(world_projectiles.rl, "begin_blend_mode")
     mocker.patch.object(world_projectiles.rl, "rl_set_texture")
     mocker.patch.object(world_projectiles.rl, "rl_begin")
@@ -86,8 +71,6 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
     mocker.patch.object(world_projectiles.rl, "rl_end")
     mocker.patch.object(world_projectiles.rl, "end_blend_mode")
 
-    world = _WorldStub()
-    frame = world.build_render_frame()
     render_ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(
@@ -113,6 +96,7 @@ def test_draw_bullet_trail_zero_length_still_counts_as_drawn(mocker) -> None:
 
 def _capture_projectile_trail(
     mocker,
+    frame: RenderFrame,
     projectile: Projectile,
     *,
     transition_alpha: float = 1.0,
@@ -123,7 +107,6 @@ def _capture_projectile_trail(
     vertices = rl_calls["rl_vertex2f"]
     colors = rl_calls["rl_color4ub"]
     uvs = rl_calls["rl_tex_coord2f"]
-    frame = _WorldStub().build_render_frame()
     render_ctx = WorldRenderCtx(
         frame=frame,
         view=ViewTransform(
@@ -184,6 +167,7 @@ def _native_trail_cases() -> list[_NativeTrailCase]:
 @pytest.mark.parametrize("view_scale", [Vec2(1, 1), Vec2(2, 2), Vec2(1.5, 0.75)])
 def test_bullet_trail_native_corner_rounding_precedes_viewport_scaling(
     mocker,
+    frame: RenderFrame,
     case: _NativeTrailCase,
     view_scale: Vec2,
 ) -> None:
@@ -196,6 +180,7 @@ def test_bullet_trail_native_corner_rounding_precedes_viewport_scaling(
     )
     vertices, _, _ = _capture_projectile_trail(
         mocker,
+        frame,
         projectile,
         transition_alpha=0.7,
         camera=case.camera,
@@ -220,7 +205,7 @@ def test_bullet_trail_native_corner_rounding_precedes_viewport_scaling(
         (ProjectileTemplateId.SPLITTER_GUN, 1.05),
     ],
 )
-def test_bullet_trail_native_width_and_endpoint_slots(mocker, type_id, half_width) -> None:
+def test_bullet_trail_native_width_and_endpoint_slots(mocker, frame: RenderFrame, type_id, half_width) -> None:
     # Native 0x4230e5..0x42360f uses origin for slots 0/1 and pos for slots 2/3.
     projectile = Projectile(
         type_id=type_id,
@@ -229,7 +214,7 @@ def test_bullet_trail_native_width_and_endpoint_slots(mocker, type_id, half_widt
         vel=Vec2(1.5, 0),
         life_timer=1.0,
     )
-    vertices, colors, uvs = _capture_projectile_trail(mocker, projectile)
+    vertices, colors, uvs = _capture_projectile_trail(mocker, frame, projectile)
     for actual, expected in zip(
         vertices,
         [
@@ -250,6 +235,7 @@ def test_bullet_trail_native_width_and_endpoint_slots(mocker, type_id, half_widt
 @pytest.mark.parametrize(("velocity", "offset"), [(Vec2(1.2, 0.9), Vec2(1.44, 1.08)), (Vec2(2, 1), Vec2(2.4, 1.2))])
 def test_bullet_trail_width_uses_stored_velocity_even_when_endpoints_disagree(
     mocker,
+    frame: RenderFrame,
     pos: Vec2,
     velocity: Vec2,
     offset: Vec2,
@@ -262,7 +248,7 @@ def test_bullet_trail_width_uses_stored_velocity_even_when_endpoints_disagree(
         angle=0.0,
         life_timer=1.0,
     )
-    vertices, _, _ = _capture_projectile_trail(mocker, projectile)
+    vertices, _, _ = _capture_projectile_trail(mocker, frame, projectile)
     for actual, expected in zip(
         vertices,
         [
@@ -277,7 +263,7 @@ def test_bullet_trail_width_uses_stored_velocity_even_when_endpoints_disagree(
 
 
 @pytest.mark.parametrize("transition_alpha", [1.0, 0.5, 0.0])
-def test_gauss_trail_ignores_transition_alpha(mocker, transition_alpha: float) -> None:
+def test_gauss_trail_ignores_transition_alpha(mocker, frame: RenderFrame, transition_alpha: float) -> None:
     # Native 0x42334e reloads clamped life, replacing the earlier life*transition alpha.
     projectile = Projectile(
         type_id=ProjectileTemplateId.GAUSS_GUN,
@@ -286,12 +272,14 @@ def test_gauss_trail_ignores_transition_alpha(mocker, transition_alpha: float) -
         vel=Vec2(1.5, 0),
         life_timer=0.5,
     )
-    _, colors, _ = _capture_projectile_trail(mocker, projectile, transition_alpha=transition_alpha)
+    _, colors, _ = _capture_projectile_trail(mocker, frame, projectile, transition_alpha=transition_alpha)
     assert colors == [(127, 127, 127, 0)] * 2 + [(51, 127, 255, 127)] * 2
 
 
 @pytest.mark.parametrize(("life", "transition", "expected_alpha"), [(0.5, 0.5, 63), (0.5, 0.4, 51), (1.5, 0.5, 127)])
-def test_bullet_trail_packs_alpha_after_applying_transition(mocker, life, transition, expected_alpha) -> None:
+def test_bullet_trail_packs_alpha_after_applying_transition(
+    mocker, frame: RenderFrame, life, transition, expected_alpha,
+) -> None:
     projectile = Projectile(
         type_id=ProjectileTemplateId.PISTOL,
         origin=Vec2(120, 90),
@@ -299,7 +287,7 @@ def test_bullet_trail_packs_alpha_after_applying_transition(mocker, life, transi
         vel=Vec2(1.5, 0),
         life_timer=life,
     )
-    _, colors, _ = _capture_projectile_trail(mocker, projectile, transition_alpha=transition)
+    _, colors, _ = _capture_projectile_trail(mocker, frame, projectile, transition_alpha=transition)
     assert colors == [(127, 127, 127, 0)] * 2 + [(127, 127, 127, expected_alpha)] * 2
 
 
@@ -313,11 +301,12 @@ def test_bullet_trail_packs_alpha_after_applying_transition(mocker, life, transi
         (ProjectileTemplateId.PLASMA_CANNON, 84.0, 80),
     ],
 )
-def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_size, expected_alpha) -> None:
+def test_plasma_head_alpha_matches_native_draw_boundary(
+    mocker, frame: RenderFrame, type_id, head_size, expected_alpha,
+) -> None:
     # Native small heads reuse the initial 0.5*transition value at
     # 0x423ac8, 0x423e37, and 0x423fc1; Rifle/Cannon retain 0.45.
     draws = _mock_rl(mocker)["draw_texture_pro"]
-    frame = _WorldStub().build_render_frame()
     ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),
@@ -341,6 +330,7 @@ def test_plasma_head_alpha_matches_native_draw_boundary(mocker, type_id, head_si
 )
 def test_sharpshooter_laser_draws_for_each_living_player(
     mocker,
+    frame: RenderFrame,
     sharpshooter,
     health,
     expected_centers,
@@ -352,7 +342,7 @@ def test_sharpshooter_laser_draws_for_each_living_player(
     ]
     state = GameplayState()
     state.perks[int(PerkId.SHARPSHOOTER)] = sharpshooter
-    frame = structs.replace(_WorldStub().build_render_frame(), state=state, players=players)
+    frame = structs.replace(frame, state=state, players=players)
     ctx = WorldRenderCtx(
         frame=frame,
         view=view_transform(config=None, camera=Vec2(), out_size=Vec2(1024, 1024)),

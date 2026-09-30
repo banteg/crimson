@@ -1,5 +1,7 @@
 """Capture production creature draw order at the Raylib call boundary."""
 
+from collections.abc import Sequence
+from dataclasses import dataclass
 from types import SimpleNamespace
 from typing import Any, cast
 from unittest.mock import patch
@@ -8,15 +10,48 @@ import msgspec
 
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.perks import PerkId
+from crimson.render.frame import RenderFrame
+from crimson.render.rtx.mode import RtxRenderMode
 from crimson.render.world import draw as world_draw
+from crimson.render.world.context import WorldRenderCtx
+from crimson.render.world.viewport import view_transform
+from crimson.sim.gameplay_state import GameplayState
+from grim.assets import RuntimeResources
 from grim.color import RGBA
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
-from tests.render.test_world_draw_order import _render_ctx_for_creatures, _TextureStub
 from tests.support.factories import make_creature_state
 
 
-def capture_creature_draws(case, *, module=world_draw, texture_size=512, include_color=False):
+def render_ctx_for_creatures(resources: RuntimeResources, creatures: Sequence[object]) -> WorldRenderCtx:
+    frame = RenderFrame(
+        config=None,
+        camera=Vec2(),
+        ground=None,
+        state=GameplayState(),
+        players=[],
+        creatures=cast(Any, SimpleNamespace(entries=creatures)),
+        resources=resources,
+        elapsed_ms=0.0,
+        bonus_anim_phase=0.0,
+        rtx_mode=RtxRenderMode.CLASSIC,
+    )
+    return WorldRenderCtx(
+        frame=frame,
+        view=view_transform(config=frame.config, camera=frame.camera, out_size=Vec2(1024, 1024)),
+    )
+
+
+@dataclass(slots=True)
+class _AtlasSize:
+    """A creature atlas of another size: the shipped atlases are all 512px, and the
+    native frame and quad arithmetic is also checked against 256px ones."""
+
+    width: int
+    height: int
+
+
+def capture_creature_draws(case, resources: RuntimeResources, *, module=world_draw, texture_size=512, include_color=False):
     creatures = []
     indices = {}
     for row in case["creatures"]:
@@ -38,7 +73,7 @@ def capture_creature_draws(case, *, module=world_draw, texture_size=512, include
     config = default_crimson_cfg()
     config.display.violence_disabled = case["flash"]
     config.display.shadows_enabled = case["shadows"]
-    render_ctx = _render_ctx_for_creatures(creatures)
+    render_ctx = render_ctx_for_creatures(resources, creatures)
     render_ctx.frame.state.bonuses.energizer = case["energizer"]
     render_ctx.frame.state.perks[PerkId.MONSTER_VISION] = int(case["monster_vision"])
     render_ctx = msgspec.structs.replace(
@@ -89,7 +124,7 @@ def capture_creature_draws(case, *, module=world_draw, texture_size=512, include
 
     with (
         patch.object(module, "draw_creature_overlays"),
-        patch.object(module, "_creature_texture", return_value=_TextureStub(texture_size, texture_size)),
+        patch.object(module, "_creature_texture", return_value=_AtlasSize(texture_size, texture_size)),
         patch.object(module, "draw_creature_sprite", side_effect=draw_sprite),
         patch.object(module.rl, "draw_texture_pro", side_effect=draw_texture),
         patch.object(module.rl, "begin_blend_mode", side_effect=begin),
