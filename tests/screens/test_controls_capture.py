@@ -78,7 +78,8 @@ def test_capture_prompt_draws_for_every_player(controls_view, player_index, mock
     controls_view._config_player = player_index + 1
     controls_view._capture.player_index = player_index
     draw_text = mocker.patch.object(controls, "draw_small_text")
+    draw_item = mocker.patch.object(controls, "draw_menu_item")
     controls_view._draw_contents()
     texts = [call.args[1] for call in draw_text.call_args_list]
-    assert "<press input>" in texts
+    assert "???" in [call.args[1] for call in draw_item.call_args_list]
     assert any("Esc/Right: cancel" in text for text in texts)

@@ -7,6 +7,7 @@ from crimson.screens.actions import Route
 from crimson.ui.menu_chrome import draw_ui_quad
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
+from grim.color import grim_color
 from grim.config import (
     default_crimson_cfg,
 )
@@ -28,7 +29,14 @@ from ...movement_controls import MovementControlType
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ...ui.menu_panel import draw_ui_panel
-from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
+from ...ui.perk_menu import (
+    UiButtonState,
+    UiMenuItem,
+    button_draw,
+    button_update,
+    draw_menu_item,
+    ui_menu_item_update,
+)
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
 from .controls_labels import (
@@ -51,12 +59,6 @@ CONTROLS_PLAYER_LIST_OFFSET = Vec2(340.0, 56.0)
 CONTROLS_REBIND_ITEM_COUNT = 15
 # Native configures two players; the port configures four.
 CONTROLS_PLAYER_ITEMS = ("Player 1", "Player 2", "Player 3", "Player 4")
-
-# `ui_menu_item_update`: idle rebind value tint (rgb 70,180,240 @ alpha 0.6).
-CONTROLS_REBIND_VALUE_COLOR = rl.Color(70, 180, 240, 153)
-CONTROLS_REBIND_HOVER_COLOR = rl.Color(200, 230, 250, 230)
-CONTROLS_REBIND_ACTIVE_COLOR = rl.Color(255, 228, 170, 255)
-
 
 def _row_binding_code(row: RebindRowSpec, *, player_index: int, controls) -> int:
     player_controls = controls.player(player_index)
@@ -203,12 +205,6 @@ class ControlsMenuView(PanelMenuView):
     def _start_rebind_capture(self, *, row: RebindRowSpec, player_index: int) -> None:
         self._capture = RebindCapture(row, player_index)
         self._close_lists()
-
-    @staticmethod
-    def _capture_prompt_for_binding(row: RebindRowSpec) -> str:
-        if row.axis:
-            return "<press axis>"
-        return "<press input>"
 
     def _binding_default_code(self, *, player_index: int, row: RebindRowSpec) -> int:
         return _default_row_binding_code(player_index, row)
@@ -583,6 +579,9 @@ class ControlsMenuView(PanelMenuView):
             ui_list_widget_draw(resources, widget, left_top_left + offset, focus=focus, mouse=mouse)
 
         # --- Right panel: configured bindings list ---
+        # `controls_menu_update` underlines the section headings in `render_tint_color` at 0.7.
+        section_tint = grim_color(0.58431375, 0.686274529, 0.776470602, 0.7)
+
         def _draw_section_heading(title: str, *, y: float) -> None:
             x_heading = right_top_left.x + 44.0
             draw_small_text(font, title, Vec2(x_heading, y), text_color_full)
@@ -592,7 +591,7 @@ class ControlsMenuView(PanelMenuView):
                 228.0,
                 1.0,
             )
-            rl.draw_rectangle_lines_ex(line, 1.0, rl.Color(255, 255, 255, 178))
+            rl.draw_rectangle_lines_ex(line, 1.0, section_tint)
 
         draw_small_text(
             font,
@@ -617,7 +616,6 @@ class ControlsMenuView(PanelMenuView):
             font=font,
         )
         row_iter = iter(zip(rows, self._rebind_items, strict=False))
-        dropdown_blocked = self._list_open()
 
         y = right_top_left.y + 64.0
         for section_title, section_rows in sections:
@@ -627,15 +625,12 @@ class ControlsMenuView(PanelMenuView):
                 row, item = next(row_iter)
                 capture = self._capture
                 active_row = capture is not None and capture.row == row.row and capture.player_index == player_idx
-                hovered_row = (capture is None) and (not dropdown_blocked) and row.value_rect.contains(mouse)
-                value_text = (
-                    self._capture_prompt_for_binding(row.row)
-                    if active_row
-                    else input_code_name(self._binding_code(player_index=player_idx, row=row.row))
+                # `controls_menu_update` relabels the item being rebound "???".
+                value_text = "???" if active_row else input_code_name(
+                    self._binding_code(player_index=player_idx, row=row.row),
                 )
-                value_pos = row.value_pos
                 if item.focused:
-                    focus.draw(value_pos.offset(dx=-16.0))
+                    focus.draw(row.value_pos.offset(dx=-16.0))
 
                 draw_small_text(
                     font,
@@ -643,24 +638,11 @@ class ControlsMenuView(PanelMenuView):
                     Vec2(right_top_left.x + 52.0, row_y),
                     rl.Color(255, 255, 255, 178),
                 )
-                value_color = CONTROLS_REBIND_VALUE_COLOR
-                if hovered_row:
-                    value_color = CONTROLS_REBIND_HOVER_COLOR
-                if active_row:
-                    value_color = CONTROLS_REBIND_ACTIVE_COLOR
-                draw_small_text(font, value_text, value_pos, value_color)
-                value_w = measure_small_text_width(font, value_text)
-                underline_y = row.row_y + 13.0
-                rl.draw_line(
-                    int(value_pos.x),
-                    int(underline_y),
-                    int(value_pos.x + value_w),
-                    int(underline_y),
-                    value_color,
-                )
+                draw_menu_item(resources, value_text, pos=row.value_pos, hovered=item.hovered)
                 row_y += 16.0
             y = row_y + 8.0
 
+        # The port's capture hint, in the white 0.9 native draws its "Assign control" prompt in.
         if self._capture is not None and self._capture.player_index == player_idx:
             hint_pos = Vec2(
                 right_top_left.x + 48.0,
@@ -670,5 +652,5 @@ class ControlsMenuView(PanelMenuView):
                 font,
                 "Esc/Right: cancel  Backspace: default  Delete: unbind",
                 hint_pos,
-                rl.Color(255, 226, 188, 220),
+                grim_color(1.0, 1.0, 1.0, 0.9),
             )
