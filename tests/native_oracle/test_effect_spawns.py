@@ -20,10 +20,11 @@ from crimson.bonuses.apply import bonus_apply
 from crimson.effects import EffectPool, FxQueue
 from crimson.math_parity import f32, native_fire_muzzle_pos
 from crimson.projectiles.effects import (
-    _spawn_ion_hit_effects,
-    _spawn_plasma_cannon_hit_effects,
-    _spawn_shrinkifier_hit_effects,
-    _spawn_splitter_hit_effects,
+    effect_spawn_ion_hit_core,
+    effect_spawn_ion_hit_sparks,
+    effect_spawn_plasma_hit_core,
+    effect_spawn_shrinkifier_hit,
+    effect_spawn_splitter_hit_burst,
 )
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.world_state import WorldState
@@ -113,7 +114,10 @@ def _ion_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     core_scale_step, core_lifetime, sparks_scale = _ION_HIT_ARGS[type_id]
     case.oracle.call("effect_spawn_ion_hit_core", case.pos_arg, core_scale_step, core_lifetime)
     case.oracle.call("effect_spawn_ion_hit_sparks", case.pos_arg, sparks_scale)
-    _spawn_ion_hit_effects(case.pool, [], type_id=type_id, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    effect_spawn_ion_hit_core(
+        case.pool, pos=pos, scale_step=core_scale_step, lifetime=core_lifetime, detail_preset=case.detail,
+    )
+    effect_spawn_ion_hit_sparks(case.pool, pos=pos, scale=sparks_scale, rng=case.world.state.rng, detail_preset=case.detail)
     return f"ion_hit({type_id.name})"
 
 
@@ -121,21 +125,22 @@ def _plasma_cannon_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     del rng
     case.oracle.call("effect_spawn_plasma_hit_core", case.pos_arg, 1.5, 1.0)
     case.oracle.call("effect_spawn_plasma_hit_core", case.pos_arg, 1.0, 1.0)
-    _spawn_plasma_cannon_hit_effects(case.pool, [], pos=pos, detail_preset=case.detail)
+    effect_spawn_plasma_hit_core(case.pool, pos=pos, scale_step=1.5, lifetime=1.0, detail_preset=case.detail)
+    effect_spawn_plasma_hit_core(case.pool, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=case.detail)
     return "plasma_cannon_hit"
 
 
 def _shrinkifier_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     del rng
     case.oracle.call("effect_spawn_shrinkifier_hit", case.pos_arg)
-    _spawn_shrinkifier_hit_effects(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    effect_spawn_shrinkifier_hit(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
     return "shrinkifier_hit"
 
 
 def _splitter_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
     del rng
     case.oracle.call("effect_spawn_splitter_hit_burst", case.pos_arg, 26.0, 3)
-    _spawn_splitter_hit_effects(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    effect_spawn_splitter_hit_burst(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
     return "splitter_hit"
 
 

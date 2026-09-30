@@ -1,12 +1,8 @@
 from __future__ import annotations
 
-from collections.abc import MutableSequence
-
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
-from grim.sfx_map import SfxId
-from grim.sfx_types import SfxRequest
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
@@ -21,10 +17,9 @@ from ..math_parity import (
     x87_pc24_sub,
 )
 from ..rng_caller_static import RngCallerStatic
-from .types import ProjectileTemplateId
 
 
-def _spawn_shrinkifier_hit_effects(
+def effect_spawn_shrinkifier_hit(
     effects: EffectPool,
     *,
     pos: Vec2,
@@ -70,7 +65,7 @@ def _spawn_shrinkifier_hit_effects(
         effects.spawn(EffectId.BURST, pos, detail_preset)
 
 
-def _effect_spawn_ion_hit_core(
+def effect_spawn_ion_hit_core(
     effects: EffectPool,
     *,
     pos: Vec2,
@@ -93,7 +88,7 @@ def _effect_spawn_ion_hit_core(
     effects.spawn(EffectId.RING, pos, detail_preset)
 
 
-def _effect_spawn_ion_hit_sparks(
+def effect_spawn_ion_hit_sparks(
     effects: EffectPool,
     *,
     pos: Vec2,
@@ -140,31 +135,7 @@ def _effect_spawn_ion_hit_sparks(
         effects.spawn(EffectId.BURST, pos, detail_preset)
 
 
-def _spawn_ion_hit_effects(
-    effects: EffectPool,
-    sfx_queue: MutableSequence[SfxRequest],
-    *,
-    type_id: ProjectileTemplateId,
-    pos: Vec2,
-    rng: CrandLike,
-    detail_preset: int,
-) -> None:
-    """The ion branches of the `projectile_update` hit: a core then sparks, plus the cannon's shockwave."""
-
-    match type_id:
-        case ProjectileTemplateId.ION_MINIGUN:
-            _effect_spawn_ion_hit_core(effects, pos=pos, scale_step=1.5, lifetime=0.1, detail_preset=detail_preset)
-            _effect_spawn_ion_hit_sparks(effects, pos=pos, scale=0.8, rng=rng, detail_preset=detail_preset)
-        case ProjectileTemplateId.ION_RIFLE:
-            _effect_spawn_ion_hit_core(effects, pos=pos, scale_step=1.2, lifetime=0.4, detail_preset=detail_preset)
-            _effect_spawn_ion_hit_sparks(effects, pos=pos, scale=1.2, rng=rng, detail_preset=detail_preset)
-        case ProjectileTemplateId.ION_CANNON:
-            _effect_spawn_ion_hit_core(effects, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset)
-            _effect_spawn_ion_hit_sparks(effects, pos=pos, scale=2.2, rng=rng, detail_preset=detail_preset)
-            sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
-
-
-def _effect_spawn_plasma_hit_core(
+def effect_spawn_plasma_hit_core(
     effects: EffectPool,
     *,
     pos: Vec2,
@@ -187,22 +158,7 @@ def _effect_spawn_plasma_hit_core(
     effects.spawn(EffectId.RING, pos, detail_preset)
 
 
-def _spawn_plasma_cannon_hit_effects(
-    effects: EffectPool,
-    sfx_queue: MutableSequence[SfxRequest],
-    *,
-    pos: Vec2,
-    detail_preset: int,
-) -> None:
-    """The Plasma Cannon hit extras of `projectile_update`: two sounds, then two plasma cores."""
-
-    sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, pos))
-    sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
-    _effect_spawn_plasma_hit_core(effects, pos=pos, scale_step=1.5, lifetime=1.0, detail_preset=detail_preset)
-    _effect_spawn_plasma_hit_core(effects, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset)
-
-
-def _spawn_splitter_hit_effects(
+def effect_spawn_splitter_hit_burst(
     effects: EffectPool,
     *,
     pos: Vec2,
@@ -236,8 +192,9 @@ def _spawn_splitter_hit_effects(
 
 
 __all__ = [
-    "_spawn_ion_hit_effects",
-    "_spawn_plasma_cannon_hit_effects",
-    "_spawn_shrinkifier_hit_effects",
-    "_spawn_splitter_hit_effects",
+    "effect_spawn_ion_hit_core",
+    "effect_spawn_ion_hit_sparks",
+    "effect_spawn_plasma_hit_core",
+    "effect_spawn_shrinkifier_hit",
+    "effect_spawn_splitter_hit_burst",
 ]

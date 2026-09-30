@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 import msgspec
 
 from grim.geom import Vec2
+from grim.sfx_map import SfxId
+from grim.sfx_types import SfxRequest
 
 from ...collision_math import within_native_find_radius
 from ...creatures.damage import creature_apply_damage, creatures_apply_radius_damage
@@ -16,6 +18,7 @@ from ...creatures.spawn_ids import CreatureFlags
 from ...math_parity import (
     NATIVE_HALF_PI,
     f32,
+    native_chain_angle_from_delta,
     x87_pc24_add,
     x87_pc24_cos_mul,
     x87_pc24_distance,
@@ -29,23 +32,20 @@ from ...perks import PerkId
 from ...rng_caller_static import RngCallerStatic
 from ...sim.state_types import TERRAIN_SIZE
 from ...weapons import weapon_entry_for_projectile_type_id
+from ..effects import (
+    effect_spawn_ion_hit_core,
+    effect_spawn_ion_hit_sparks,
+    effect_spawn_plasma_hit_core,
+    effect_spawn_shrinkifier_hit,
+    effect_spawn_splitter_hit_burst,
+)
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
     Projectile,
     ProjectileHit,
     ProjectileTemplateId,
 )
-from .behaviors import (
-    _post_hit_ion_common,
-    _post_hit_ion_rifle,
-    _post_hit_plague_spreader,
-    _post_hit_plasma_cannon,
-    _post_hit_pulse_gun,
-    _post_hit_shrinkifier,
-    _pre_hit_splitter,
-    _ProjectileHitInfo,
-    _ProjectileUpdateCtx,
-)
+from .collision import creature_find_nearest_active
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
@@ -199,30 +199,6 @@ class ProjectilePool:
 
         creature_spatial = CreatureSpatialHash(pool=world.creatures, is_collidable=_creature_is_collidable)
 
-        def _damage_scale(type_id: int) -> float:
-            return float(weapon_entry_for_projectile_type_id(ProjectileTemplateId(type_id)).damage_scale)
-
-        def _damage_type_for() -> int:
-            return int(CreatureDamageType.BULLET)
-
-        update_ctx = _ProjectileUpdateCtx(
-            creatures=creatures,
-            dt=float(dt),
-            detail_preset=int(detail_preset),
-            rng=rng,
-            runtime_state=runtime_state,
-            effects=effects,
-            sfx_queue=sfx_queue,
-            step_runtime=step_runtime,
-            sync_creature_index=creature_spatial.sync_index,
-        )
-
-        def _reset_shock_chain_if_owner(index: int) -> None:
-            if runtime_state.shock_chain_projectile_id != index:
-                return
-            runtime_state.shock_chain_projectile_id = -1
-            runtime_state.shock_chain_links_left = 0
-
         for proj_index, proj in enumerate(self._entries):
             if not proj.active:
                 continue
@@ -235,7 +211,9 @@ class ProjectilePool:
             if proj.life_timer < 0.4:
                 match proj.type_id:
                     case ProjectileTemplateId.ION_RIFLE | ProjectileTemplateId.ION_MINIGUN:
-                        _reset_shock_chain_if_owner(proj_index)
+                        if proj_index == runtime_state.shock_chain_projectile_id:
+                            runtime_state.shock_chain_projectile_id = -1
+                            runtime_state.shock_chain_links_left = 0
                         proj.life_timer = x87_pc24_sub(proj.life_timer, dt)
                         if proj.type_id == ProjectileTemplateId.ION_RIFLE:
                             radius, damage = x87_pc24_mul(ion_scale, 88.0), x87_pc24_mul(dt, 100.0)
@@ -385,7 +363,27 @@ class ProjectilePool:
                         creature.flags |= CreatureFlags.SELF_DAMAGE_TICK
 
                     if type_id == ProjectileTemplateId.SPLITTER_GUN:
-                        _pre_hit_splitter(update_ctx, proj, int(hit_idx))
+                        effect_spawn_splitter_hit_burst(effects, pos=proj.pos, rng=rng, detail_preset=detail_preset)
+                        # The children belong to the creature hit, so they can hit players even when the
+                        # parent was the local player's.
+                        projectile_spawn(
+                            runtime_state,
+                            players=players,
+                            pos=proj.pos,
+                            angle=x87_pc24_sub(proj.angle, f32(1.0471976)),
+                            type_id=ProjectileTemplateId.SPLITTER_GUN,
+                            owner_id=hit_idx,
+                            owner_player_index=0,
+                        )
+                        projectile_spawn(
+                            runtime_state,
+                            players=players,
+                            pos=proj.pos,
+                            angle=x87_pc24_add(proj.angle, f32(1.0471976)),
+                            type_id=ProjectileTemplateId.SPLITTER_GUN,
+                            owner_id=hit_idx,
+                            owner_player_index=0,
+                        )
 
                     # Native counts a hit for any owner (creature-owned splitter children included)
                     # while the target is still at the alive sentinel.
@@ -419,25 +417,101 @@ class ProjectilePool:
 
                     dist = x87_pc24_distance(proj.origin, proj.pos)
 
-                    hit_info = _ProjectileHitInfo(
-                        proj_index=int(proj_index), proj=proj, hit_idx=int(hit_idx), move=move, target=target,
-                    )
                     match type_id:
-                        case ProjectileTemplateId.ION_MINIGUN | ProjectileTemplateId.ION_CANNON:
-                            _post_hit_ion_common(update_ctx, hit_info)
+                        case ProjectileTemplateId.ION_MINIGUN:
+                            effect_spawn_ion_hit_core(
+                                effects, pos=proj.pos, scale_step=1.5, lifetime=0.1, detail_preset=detail_preset,
+                            )
+                            effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=0.8, rng=rng, detail_preset=detail_preset)
                         case ProjectileTemplateId.ION_RIFLE:
-                            _post_hit_ion_rifle(update_ctx, hit_info)
+                            if (
+                                runtime_state.shock_chain_links_left > 0
+                                and proj_index == runtime_state.shock_chain_projectile_id
+                            ):
+                                runtime_state.shock_chain_links_left -= 1
+                                next_idx = creature_find_nearest_active(
+                                    creatures=creatures,
+                                    origin=proj.pos,
+                                    exclude_id=hit_idx,
+                                    min_dist=100.0,
+                                    preserve_bugs=bool(runtime_state.preserve_bugs),
+                                )
+                                # Native chains to slot 0 when nothing qualifies; the rewrite ends the chain.
+                                if next_idx >= 0:
+                                    runtime_state.bonus_spawn_guard = True
+                                    runtime_state.shock_chain_projectile_id = projectile_spawn(
+                                        runtime_state,
+                                        players=players,
+                                        pos=proj.pos,
+                                        angle=native_chain_angle_from_delta(
+                                            dx=x87_pc24_sub(creatures[next_idx].pos.x, creature.pos.x),
+                                            dy=x87_pc24_sub(creatures[next_idx].pos.y, creature.pos.y),
+                                        ),
+                                        type_id=ProjectileTemplateId.ION_RIFLE,
+                                        owner_id=hit_idx,
+                                        owner_player_index=0,
+                                    )
+                                    runtime_state.bonus_spawn_guard = False
+                            effect_spawn_ion_hit_core(
+                                effects, pos=proj.pos, scale_step=1.2, lifetime=0.4, detail_preset=detail_preset,
+                            )
+                            effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=1.2, rng=rng, detail_preset=detail_preset)
+                        case ProjectileTemplateId.ION_CANNON:
+                            effect_spawn_ion_hit_core(
+                                effects, pos=proj.pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset,
+                            )
+                            effect_spawn_ion_hit_sparks(effects, pos=proj.pos, scale=2.2, rng=rng, detail_preset=detail_preset)
+                            sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, proj.pos))
                         case ProjectileTemplateId.PLASMA_CANNON:
-                            _post_hit_plasma_cannon(update_ctx, hit_info)
+                            runtime_state.bonus_spawn_guard = True
+                            # Native 0x00421370: each PC=24 op rounds; the ring angle is a float32 local.
+                            ring_radius = x87_pc24_add(x87_pc24_mul(creature.size, 0.5), 1.0)
+                            for ring_idx in range(12):
+                                ring_angle = x87_pc24_mul(float(ring_idx), f32(0.5235988))
+                                projectile_spawn(
+                                    runtime_state,
+                                    players=players,
+                                    pos=Vec2(
+                                        x87_pc24_add(x87_pc24_cos_mul(ring_angle, ring_radius), proj.pos.x),
+                                        x87_pc24_add(x87_pc24_sin_mul(ring_angle, ring_radius), proj.pos.y),
+                                    ),
+                                    angle=ring_angle,
+                                    type_id=ProjectileTemplateId.PLASMA_RIFLE,
+                                    owner_id=OWNER_LOCAL_PLAYER,
+                                    owner_player_index=0,
+                                )
+                            runtime_state.bonus_spawn_guard = False
+                            sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, proj.pos))
+                            sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, proj.pos))
+                            effect_spawn_plasma_hit_core(
+                                effects, pos=proj.pos, scale_step=1.5, lifetime=1.0, detail_preset=detail_preset,
+                            )
+                            effect_spawn_plasma_hit_core(
+                                effects, pos=proj.pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset,
+                            )
                         case ProjectileTemplateId.SHRINKIFIER:
-                            _post_hit_shrinkifier(update_ctx, hit_info)
+                            effect_spawn_shrinkifier_hit(effects, pos=proj.pos, rng=rng, detail_preset=detail_preset)
+                            creature.size = x87_pc24_mul(creature.size, f32(0.65))
+                            proj.life_timer = 0.25
+                            if creature.size < 16.0:
+                                # Native calls creature_handle_death directly: no damage pipeline, so no
+                                # heading-jitter or death-SFX rand draws, and hp stays positive so the
+                                # generic chip damage below still applies.
+                                step_runtime.handle_creature_death(hit_idx)
                         case ProjectileTemplateId.PULSE_GUN:
-                            _post_hit_pulse_gun(update_ctx, hit_info)
+                            creature.pos = Vec2(
+                                x87_pc24_add(creature.pos.x, x87_pc24_mul(move.x, 3.0)),
+                                x87_pc24_add(creature.pos.y, x87_pc24_mul(move.y, 3.0)),
+                            )
+                            # Native re-scans the pool per query, so later projectiles this tick see
+                            # the pushed creature at its new position; resync the spatial hash.
+                            creature_spatial.sync_index(hit_idx)
                         case ProjectileTemplateId.PLAGUE_SPREADER:
-                            _post_hit_plague_spreader(update_ctx, hit_info)
+                            creature.plague_infected = True
 
-                    damage_scale = _damage_scale(type_id)
-                    damage_amount = _projectile_damage_amount_f32(dist, damage_scale)
+                    damage_amount = _projectile_damage_amount_f32(
+                        dist, weapon_entry_for_projectile_type_id(type_id).damage_scale,
+                    )
 
                     if damage_amount > 0.0 and creature.hp > 0.0:
                         # `damage_pool` is a float field: native `projectile_update`
@@ -450,14 +524,13 @@ class ProjectilePool:
                         impulse_angle = f32(float(proj.angle) - NATIVE_HALF_PI)
                         impulse_axis = f32(math.cos(float(impulse_angle)) * float(proj.speed_scale))
                         impulse = Vec2(float(impulse_axis), float(impulse_axis))
-                        damage_type = _damage_type_for()
                         if remaining <= 0.0:
-                            creature_apply_damage(step_runtime, int(hit_idx), float(damage_amount), damage_type, impulse)
+                            creature_apply_damage(step_runtime, int(hit_idx), float(damage_amount), CreatureDamageType.BULLET, impulse)
                             creature_spatial.sync_index(int(hit_idx))
                             if proj.life_timer != 0.25:
                                 proj.life_timer = 0.25
                         else:
-                            creature_apply_damage(step_runtime, int(hit_idx), float(remaining), damage_type, impulse)
+                            creature_apply_damage(step_runtime, int(hit_idx), float(remaining), CreatureDamageType.BULLET, impulse)
                             creature_spatial.sync_index(int(hit_idx))
                             proj.damage_pool = x87_pc24_sub(proj.damage_pool, creature.hp)
 

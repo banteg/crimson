@@ -2,18 +2,15 @@ from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
 from crimson.creatures.spawn import CreatureFlags
-from crimson.effects import EffectPool
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
-from crimson.projectiles.effects import _spawn_ion_hit_effects
 from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
-from grim.rand import Crand, RecordingCrand
+from grim.rand import RecordingCrand
 from grim.sfx_map import SfxId
-from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime, place_creatures
@@ -144,36 +141,21 @@ def test_shrinkifier_hit_spawns_native_hit_effects() -> None:
     ]
 
 
-def test_ion_hit_effects_tag_exact_native_callers() -> None:
-    effects = EffectPool()
-    sfx_queue: list[SfxRequest] = []
-    rng = RecordingCrand(Crand(0x1234))
+def test_ion_minigun_hit_draws_the_spark_callers_right_after_the_stop_jitter() -> None:
+    world, rng = _world_with_creature(CreatureState(active=True, hp=1000.0, pos=Vec2(), size=50.0))
 
-    _spawn_ion_hit_effects(
-        effects,
-        sfx_queue,
-        type_id=ProjectileTemplateId.ION_MINIGUN,
-        pos=Vec2(),
-        rng=rng,
-        detail_preset=5,
-    )
+    _fire_at_creature(world, ProjectileTemplateId.ION_MINIGUN)
 
-    assert sfx_queue == []
-    assert len(effects.iter_active()) == 4
-    assert [record.caller for record in rng.records_since()] == [
+    # The core ring draws nothing; the 0.8-scale sparks draw four callers three times.
+    assert SfxId.SHOCKWAVE not in sfx_ids(world.state.sfx_queue)
+    callers = [record.caller for record in rng.records_since()]
+    start = callers.index(RngCallerStatic.PROJECTILE_UPDATE_STOP_ON_HIT_JITTER)
+    assert callers[start + 1 : start + 13] == [
         RngCallerStatic.ION_HIT_SPARK_ROTATION,
         RngCallerStatic.ION_HIT_SPARK_VEL_X,
         RngCallerStatic.ION_HIT_SPARK_VEL_Y,
         RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
-        RngCallerStatic.ION_HIT_SPARK_ROTATION,
-        RngCallerStatic.ION_HIT_SPARK_VEL_X,
-        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
-        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
-        RngCallerStatic.ION_HIT_SPARK_ROTATION,
-        RngCallerStatic.ION_HIT_SPARK_VEL_X,
-        RngCallerStatic.ION_HIT_SPARK_VEL_Y,
-        RngCallerStatic.ION_HIT_SPARK_SCALE_STEP,
-    ]
+    ] * 3
 
 
 def test_non_gauss_freeze_hit_draws_burn_then_single_default_shard() -> None:
