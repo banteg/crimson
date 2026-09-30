@@ -4,6 +4,8 @@ import msgspec
 
 from grim.geom import Rect, Vec2
 
+from .animation import ui_element_timeline_window
+from .focus import UiFocus
 from .layout import menu_widescreen_y_shift
 
 MENU_LABEL_WIDTH = 122.0
@@ -78,11 +80,16 @@ def ui_element_pos(index: int, screen_width: float) -> Vec2:
 
 
 class MenuEntry(msgspec.Struct):
-    slot: int
+    """A menu item element (a `ui_element_t` with a label row and an `on_activate`): its `ui_element_table` index,
+    where `ui_menu_layout_init` put it and how far it shrank and rose, and its hover ramp."""
+
+    element: int
     row: int
-    y: float
+    pos: Vec2
+    scale: float = 1.0
+    rise: float = 0.0
     hover_amount: int = 0
-    ready_timer_ms: int = 0x100
+    hovered: bool = False
     focused: bool = False
 
 
@@ -100,22 +107,37 @@ def menu_item_bounds(pos: Vec2, item_size: Vec2, item_scale: float, local_y_shif
     return Rect.from_pos_size(top_left, bottom_right - top_left)
 
 
-def update_menu_item_timers(
-    entries: list[MenuEntry], hovered_index: int | None, dt_ms: int, *, focus_timer_ms: int,
+def menu_entry_update(
+    entry: MenuEntry, *, item_size: Vec2, mouse: Vec2, dt_ms: int, focus: UiFocus, live: bool,
 ) -> None:
-    """`ui_element_update`: the ready glow ramp and the hover fade of each item; `ui_element_render` then pins a
-    focused item's hover to the focus timer while it runs."""
+    """`ui_element_update`, then `ui_element_render`'s focus, for a menu item.
 
-    for idx, entry in enumerate(entries):
-        if entry.ready_timer_ms < 0x100:
-            entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
-        if hovered_index is not None and idx == hovered_index:
-            entry.hover_amount += dt_ms * 6
-        else:
-            entry.hover_amount -= dt_ms * 2
-        entry.hover_amount = max(0, min(1000, entry.hover_amount))
-        if entry.focused and focus_timer_ms > 0:
-            entry.hover_amount = focus_timer_ms
+    The item is hovered while the mouse is over its bounds, which stay where the layout put them while it swings or
+    slides in, and its hover ramps up 6 per ms and down 2 per ms; a focused item's hover is pinned to the focus timer.
+    The update runs on while the timeline runs out (`live` off), when the screen's widgets stop registering for focus.
+    """
+    entry.hovered = menu_item_bounds(entry.pos, item_size, entry.scale, entry.rise).contains(mouse)
+    if entry.hovered:
+        entry.hover_amount += dt_ms * 6
+    else:
+        entry.hover_amount -= dt_ms * 2
+    entry.hover_amount = max(0, min(1000, entry.hover_amount))
+    if live:
+        entry.focused = focus.update(entry)
+    if entry.focused and focus.timer_ms > 0:
+        entry.hover_amount = focus.timer_ms
+
+
+def menu_entry_enabled(entry: MenuEntry, timeline_ms: int) -> bool:
+    """`ui_element_update` enables an item once the timeline reaches its `timeline_end_ms`."""
+    return timeline_ms >= ui_element_timeline_window(entry.element)[1]
+
+
+def menu_entry_activated(entry: MenuEntry, *, timeline_ms: int, focus: UiFocus, click: bool) -> bool:
+    """A click on the hovered item (`ui_element_update`: its `time_since_ready` gate starts past 255 and only
+    grows, so a sliding item takes clicks too), or Enter while it holds the focus once it is in
+    (`ui_element_render`)."""
+    return (entry.hovered and click) or (entry.focused and focus.enter and menu_entry_enabled(entry, timeline_ms))
 
 
 def label_alpha(counter_value: int) -> int:

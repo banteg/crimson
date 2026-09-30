@@ -26,6 +26,12 @@ def ui_element_direction_flag(index: int) -> bool:
     return index in (33, 40)
 
 
+def ui_element_offset_render(index: int) -> bool:
+    """`ui_menu_layout_init`'s `use_offset_render`: the panels and their Back items slide in, while the sign, the main
+    and pause menu items and the controls' Back item (slot 18) swing in about their position."""
+    return index not in (0, 1, 2, 3, 4, 5, 6, 7, 18, 23, 24, 25)
+
+
 def ui_element_anim(timeline_ms: float, *, index: int, width: float) -> tuple[float, float]:
     """`ui_element_update`: rotation angle and slide-in offset of `ui_element_table[index]`.
 

@@ -70,7 +70,7 @@ class PlayGameMenuView(PanelMenuView):
     def update(self, dt: float) -> None:
         if not self._update_panel(dt, play_open_sfx=False):
             return
-        self._update_back_button(dt)
+        self._update_back_button()
         entry = self._entry
         if self.state.ui.closing or entry is None or not self._entry_enabled():
             return

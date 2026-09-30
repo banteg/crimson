@@ -193,7 +193,7 @@ class ControlsMenuView(PanelMenuView):
             self._update_rebind_capture()
         if self._update_method_lists(left_top_left=left_top_left, resources=resources):
             click_consumed = True
-        self._update_back_button(dt, enabled=not click_consumed and not closing_list and self._capture is None)
+        self._update_back_button(enabled=not click_consumed and not closing_list and self._capture is None)
         # Native `ui_focus_input_locked`: Tab and checkbox Enter stay out of the way while a rebind waits.
         self.state.focus.input_locked = self._capture is not None
 
