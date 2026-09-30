@@ -296,7 +296,7 @@ class AlienZooKeeperView:
         if self.state.focus.escape and interactive:
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition(Route.STATISTICS)
+            self._begin_close_transition(Route.BACK)
             return
         if not interactive:
             return
@@ -337,7 +337,7 @@ class AlienZooKeeperView:
         ):
             if self.state.audio is not None:
                 play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-            self._begin_close_transition(Route.STATISTICS)
+            self._begin_close_transition(Route.BACK)
             return
 
     def draw(self) -> None:

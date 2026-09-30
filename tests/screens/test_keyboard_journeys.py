@@ -12,6 +12,7 @@ from crimson.screens.panels.alien_zookeeper import AlienZooKeeperView
 from crimson.screens.panels.credits import CreditsView
 from crimson.screens.panels.databases_perks import UnlockedPerksDatabaseView
 from crimson.screens.panels.options import OptionsMenuView
+from crimson.screens.panels.stats import StatisticsMenuView
 from crimson.ui.menu_layout import MENU_LABEL_ROW_OPTIONS
 from grim.raylib_api import rl
 from tests.support.screens import finish_transition
@@ -120,6 +121,16 @@ def test_secret_board_plays_from_the_keyboard(loop, mocker) -> None:
     press(loop, mocker, rl.KeyboardKey.KEY_DOWN)
     press(loop, mocker, rl.KeyboardKey.KEY_ENTER)
     assert board._selected_index == 1 * 6 + 1
+
+
+def test_secret_board_escape_returns_to_the_statistics(loop, mocker) -> None:
+    # `credits_secret_alien_zookeeper_update` backs out to the statistics menu, which the board replaced credits over.
+    for route in (Route.STATISTICS, Route.CREDITS, Route.ALIEN_ZOOKEEPER):
+        loop.navigation.navigate(route)
+    finish_transition(loop)
+    press(loop, mocker, rl.KeyboardKey.KEY_ESCAPE)
+    finish_transition(loop)
+    assert isinstance(loop.state.screens.active, StatisticsMenuView)
 
 
 def test_perk_database_details_follow_the_keyboard(loop, mocker) -> None:
