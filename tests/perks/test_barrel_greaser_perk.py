@@ -6,6 +6,7 @@ from crimson.creatures.damage import creature_apply_damage
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
@@ -32,11 +33,14 @@ def _step_pistol_projectile(*, barrel_greaser: bool) -> float:
     world = make_world()
     world.state.perks[int(PerkId.BARREL_GREASER)] = int(barrel_greaser)
     pool = world.state.projectiles
-    proj_idx = pool.spawn(
+    proj_idx = projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner_id=OWNER_LOCAL_PLAYER,
+        owner_player_index=0,
     )
 
     pool.step(

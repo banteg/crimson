@@ -505,13 +505,13 @@ def test_spawn_avoidance_matches_native(oracle) -> None:
 def test_angry_reloader_ring_matches_native(oracle, mocker: MockerFixture) -> None:
     """Angry Reloader ring (0x00415162..0x004151c1): `step = 6.2831855f / count`, `i * step + 0.1f`."""
 
-    import crimson.weapon_runtime.spawn as spawn_module
+    import crimson.gameplay as gameplay_module
 
     harness = _Harness(oracle)
     native_angles: list[float] = []
     oracle.stub("projectile_spawn", lambda call: native_angles.append(call.arg_f32(1)))
     harness.pristine = oracle.snapshot()
-    python_spawn = mocker.patch.object(spawn_module, "projectile_spawn")
+    python_spawn = mocker.patch.object(gameplay_module, "_projectile_spawn")
 
     rng = random.Random(0x415162)
     mismatches: list[Mismatch] = []

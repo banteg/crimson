@@ -152,8 +152,8 @@ The Python gameplay matches the 1.9.93 model (replacement + dedicated fire branc
 
 - Dedicated Fire Bullets dispatch, single-pellet cadence, and ammo bypass:
   `src/crimson/weapon_runtime/fire.py` (`fire_weapon`).
-- Projectile conversion policy: `src/crimson/weapon_runtime/spawn.py`
-  (`_fire_bullets_active`).
+- Projectile conversion policy: `src/crimson/projectiles/runtime/projectile_pool.py`
+  (`projectile_spawn`).
 
 ## Evidence anchors
 

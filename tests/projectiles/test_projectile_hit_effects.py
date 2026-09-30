@@ -6,6 +6,7 @@ from crimson.effects import EffectPool
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.projectiles.effects import _spawn_ion_hit_effects
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -35,11 +36,14 @@ def _world_with_creature(creature: CreatureState) -> tuple[WorldState, Recording
 
 
 def _fire_at_creature(world: WorldState, type_id: ProjectileTemplateId) -> WorldStepRuntime:
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(),
         angle=0.0,
         type_id=type_id,
         owner_id=OWNER_LOCAL_PLAYER,
+        owner_player_index=0,
     )
     step_runtime = make_step_runtime(world, dt=0.016)
     world.state.projectiles.step(

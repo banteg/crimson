@@ -42,11 +42,6 @@ class SecondaryProjectileTypeId(IntEnum):
     ROCKET_MINIGUN = 4
 
 
-class ProjectileCollisionProfile(msgspec.Struct, frozen=True):
-    hit_radius: float
-    initial_damage_pool: float
-
-
 class ProjectileHit(msgspec.Struct, frozen=True):
     type_id: ProjectileTemplateId
     origin: Vec2
@@ -92,7 +87,6 @@ __all__ = [
     "MAIN_PROJECTILE_POOL_SIZE",
     "SECONDARY_PROJECTILE_POOL_SIZE",
     "Projectile",
-    "ProjectileCollisionProfile",
     "ProjectileHit",
     "ProjectileTemplateId",
     "SecondaryProjectile",

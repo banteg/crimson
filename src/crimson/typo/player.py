@@ -19,10 +19,11 @@ from ..math_parity import (
 )
 from ..owner_id import OWNER_LOCAL_PLAYER
 from ..perks import PerkId
+from ..projectiles.runtime import projectile_spawn
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import TERRAIN_SIZE, PlayerState
-from ..weapon_runtime import player_start_reload, projectile_spawn, weapon_entry
+from ..weapon_runtime import player_start_reload, weapon_entry
 from ..weapons import WeaponId
 
 if TYPE_CHECKING:

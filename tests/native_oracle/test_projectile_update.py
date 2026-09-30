@@ -16,7 +16,7 @@ from crimson.creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
-from crimson.projectiles.runtime import fx_spawn_secondary_projectile
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -426,8 +426,14 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
         oracle.write_f32(pos_arg, start.x)
         oracle.write_f32(pos_arg + 4, start.y)
         index = oracle.call("projectile_spawn", pos_arg, angle, int(type_id), _OWNER_LOCAL_PLAYER).eax
-        python_index = state.projectiles.spawn(
-            pos=start, angle=angle, type_id=type_id, owner_id=OWNER_LOCAL_PLAYER,
+        python_index = projectile_spawn(
+            state,
+            players=world.players,
+            pos=start,
+            angle=angle,
+            type_id=type_id,
+            owner_id=OWNER_LOCAL_PLAYER,
+            owner_player_index=0,
         )
         assert python_index == index
         if type_id == ProjectileTemplateId.ION_RIFLE:

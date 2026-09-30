@@ -12,7 +12,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
 from crimson.owner_id import player_owner_id
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import fx_spawn_secondary_projectile
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
@@ -88,11 +88,14 @@ def _step(world: WorldState, dt: float, *, inputs: Sequence[PlayerInput] | None 
 def _shoot_pistol_at(world: WorldState, creature: CreatureState) -> None:
     """Spawn a player pistol bullet on `creature`, so this step's projectile update hits it."""
 
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=creature.pos,
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner_id=player_owner_id(0),
+        owner_player_index=0,
     )
 
 

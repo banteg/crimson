@@ -4,12 +4,12 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.perks import PerkId
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.weapon_runtime.spawn import projectile_spawn
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
 from tests.support.factories import fire_player_weapon, make_step_runtime, step_player

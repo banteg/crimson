@@ -5,6 +5,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PerkCounts, PlayerState
 from grim.geom import Vec2
@@ -33,11 +34,14 @@ def test_ion_gun_master_increases_ion_aoe_radius() -> None:
         world.state.perks[int(PerkId.ION_GUN_MASTER)] = int(ion_gun_master)
         creatures = place_creatures(world, [make_creature_state(pos=Vec2(105.0, 0.0), hp=10.0)])
         pool = world.state.projectiles
-        proj_idx = pool.spawn(
+        proj_idx = projectile_spawn(
+            world.state,
+            players=world.players,
             pos=Vec2(),
             angle=0.0,
             type_id=ProjectileTemplateId.ION_RIFLE,
             owner_id=OWNER_LOCAL_PLAYER,
+            owner_player_index=0,
         )
         pool.entries[proj_idx].life_timer = 0.39
 

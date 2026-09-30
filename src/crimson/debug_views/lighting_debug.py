@@ -21,7 +21,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..owner_id import OWNER_LOCAL_PLAYER
-from ..projectiles.runtime import fx_spawn_secondary_projectile
+from ..projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import TERRAIN_SIZE
@@ -2168,11 +2168,14 @@ class LightingDebugView:
         for i in range(count):
             angle = float(heading) + self._burst_angle(profile, i)
             if profile.primary_type_id is not None:
-                self._runtime.world.state.projectiles.spawn(
+                projectile_spawn(
+                    self._runtime.world.state,
+                    players=self._runtime.world.players,
                     pos=muzzle_pos,
                     angle=angle,
                     type_id=profile.primary_type_id,
                     owner_id=OWNER_LOCAL_PLAYER,
+                    owner_player_index=player.index,
                 )
             if profile.secondary_type_id is not None:
                 fx_spawn_secondary_projectile(

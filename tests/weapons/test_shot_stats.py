@@ -4,14 +4,13 @@ from functools import partial
 
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
-from crimson.projectiles.runtime import fx_spawn_secondary_projectile
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime import weapon_assign_player
-from crimson.weapon_runtime.spawn import projectile_spawn
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world

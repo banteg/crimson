@@ -6,7 +6,12 @@ from crimson.creatures.runtime import CreaturePool
 from crimson.creatures.spawn import CreatureTypeId, creature_spawn
 from crimson.game_modes import GameMode
 from crimson.owner_id import OWNER_LOCAL_PLAYER
-from crimson.projectiles.runtime import ProjectilePool, SecondaryProjectilePool, fx_spawn_secondary_projectile
+from crimson.projectiles.runtime import (
+    ProjectilePool,
+    SecondaryProjectilePool,
+    fx_spawn_secondary_projectile,
+    projectile_spawn,
+)
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson_re.dbg.record import _entity_samples_for_world
@@ -28,8 +33,14 @@ def test_entity_uids_follow_allocations_between_snapshots() -> None:
 
     def spawn_all() -> None:
         creature_spawn(world.creatures, Vec2(), RGBA(), CreatureTypeId.ALIEN, world.state.rng, survival_elapsed_ms=0)
-        world.state.projectiles.spawn(
-            pos=Vec2(), angle=0.0, type_id=ProjectileTemplateId.PISTOL, owner_id=OWNER_LOCAL_PLAYER,
+        projectile_spawn(
+            world.state,
+            players=world.players,
+            pos=Vec2(),
+            angle=0.0,
+            type_id=ProjectileTemplateId.PISTOL,
+            owner_id=OWNER_LOCAL_PLAYER,
+            owner_player_index=0,
         )
         fx_spawn_secondary_projectile(
             world.state,

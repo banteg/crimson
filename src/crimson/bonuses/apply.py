@@ -21,12 +21,12 @@ from ..math_parity import (
 )
 from ..owner_id import OWNER_LOCAL_PLAYER, player_projectile_owner_id
 from ..perks import PerkId
+from ..projectiles.runtime import projectile_spawn
 from ..projectiles.runtime.collision import creature_find_nearest_alive
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import PlayerState
 from ..weapon_runtime.assign import weapon_assign_player
-from ..weapon_runtime.spawn import projectile_spawn, spawn_projectile_ring
 from ..weapons import WeaponId
 from .hud import bonus_timer_values
 from .ids import BONUS_BY_ID, BonusId
@@ -185,16 +185,16 @@ def bonus_apply(
 
         case BonusId.FIREBLAST:
             state.bonus_spawn_guard = True
-            spawn_projectile_ring(
-                state,
-                origin,
-                count=16,
-                angle_offset=0.0,
-                type_id=ProjectileTemplateId.PLASMA_RIFLE,
-                owner_id=player_owner,
-                owner_player_index=player.index,
-                players=players,
-            )
+            for idx in range(16):
+                projectile_spawn(
+                    state,
+                    players=players,
+                    pos=origin,
+                    angle=x87_pc24_mul(float(idx), f32(0.39269909)),
+                    type_id=ProjectileTemplateId.PLASMA_RIFLE,
+                    owner_id=player_owner,
+                    owner_player_index=player.index,
+                )
             state.bonus_spawn_guard = False
             state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, origin))
 

@@ -15,10 +15,9 @@ from crimson.projectiles.runtime import (
     ProjectilePool,
     SecondaryProjectilePool,
     fx_spawn_secondary_projectile,
-    projectile_collision_profile,
+    projectile_spawn,
 )
 from crimson.projectiles.types import (
-    ProjectileCollisionProfile,
     ProjectileHit,
     ProjectileTemplateId,
     SecondaryProjectileTypeId,
@@ -44,6 +43,24 @@ def _recording_rng(world: WorldState) -> RecordingCrand:
     rng = RecordingCrand(world.state.rng)
     world.state.rng = rng
     return rng
+
+
+def _spawn_projectile(
+    world: WorldState,
+    type_id: ProjectileTemplateId,
+    *,
+    pos: Vec2 = Vec2(),
+    angle: float = 0.0,
+) -> int:
+    return projectile_spawn(
+        world.state,
+        players=world.players,
+        pos=pos,
+        angle=angle,
+        type_id=type_id,
+        owner_id=OWNER_LOCAL_PLAYER,
+        owner_player_index=0,
+    )
 
 
 def test_projectile_damage_formula_uses_native_per_operation_f32_stores() -> None:
@@ -78,49 +95,41 @@ def test_projectile_heading_subtraction_uses_native_f32_store() -> None:
 
 
 def test_primary_projectile_integration_rounds_each_x87_operation() -> None:
-    pool = ProjectilePool()
-    idx = pool.spawn(
+    world = _world_with([])
+    pool = world.state.projectiles
+    idx = _spawn_projectile(
+        world,
+        ProjectileTemplateId.PISTOL,
         pos=Vec2(-49.92948532104492, 681.1566772460938),
         angle=-0.8641037344932556,
-        type_id=ProjectileTemplateId.PISTOL,
-        owner_id=OWNER_LOCAL_PLAYER,
     )
 
     pool.step(
-        make_step_runtime(_world_with([]), dt=0.06000000238418579),
+        make_step_runtime(world, dt=0.06000000238418579),
     )
 
     assert pool.entries[idx].pos == Vec2(-101.94862365722656, 636.7431030273438)
 
 
 def test_gauss_linger_decay_rounds_multiply_before_subtraction() -> None:
-    pool = ProjectilePool()
-    idx = pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.GAUSS_GUN,
-        owner_id=OWNER_LOCAL_PLAYER,
-    )
+    world = _world_with([])
+    pool = world.state.projectiles
+    idx = _spawn_projectile(world, ProjectileTemplateId.GAUSS_GUN)
     pool.entries[idx].life_timer = 0.011000030674040318
 
     pool.step(
-        make_step_runtime(_world_with([]), dt=0.08000000566244125),
+        make_step_runtime(world, dt=0.08000000566244125),
     )
 
     assert pool.entries[idx].life_timer == 0.003000030294060707
 
 
 def test_ion_linger_damage_rounds_rate_product_before_subtraction() -> None:
-    pool = ProjectilePool()
-    idx = pool.spawn(
-        pos=Vec2(),
-        angle=0.0,
-        type_id=ProjectileTemplateId.ION_RIFLE,
-        owner_id=OWNER_LOCAL_PLAYER,
-    )
-    pool.entries[idx].life_timer = 0.39
     creature = _creature(pos=Vec2(), hp=12.0)
     world = _world_with([creature])
+    pool = world.state.projectiles
+    idx = _spawn_projectile(world, ProjectileTemplateId.ION_RIFLE)
+    pool.entries[idx].life_timer = 0.39
     dt = f32(0.0950000062584877)
 
     pool.step(
@@ -245,51 +254,6 @@ def test_within_native_find_radius_keeps_x87_pc24_boundary_decisions() -> None:
     )
 
 
-def test_projectile_collision_profile_matches_native_spawn_constants() -> None:
-    expected: dict[ProjectileTemplateId, ProjectileCollisionProfile] = {
-        ProjectileTemplateId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
-        ProjectileTemplateId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
-        ProjectileTemplateId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-        ProjectileTemplateId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-        ProjectileTemplateId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
-        ProjectileTemplateId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
-        ProjectileTemplateId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
-    }
-
-    for type_id, profile in expected.items():
-        assert projectile_collision_profile(type_id) == profile
-
-    assert projectile_collision_profile(ProjectileTemplateId.PISTOL) == ProjectileCollisionProfile(
-        hit_radius=1.0,
-        initial_damage_pool=1.0,
-    )
-
-
-def test_primary_spawn_uses_collision_profile_defaults() -> None:
-    pool = ProjectilePool()
-    for type_id in (
-        ProjectileTemplateId.PISTOL,
-        ProjectileTemplateId.ION_MINIGUN,
-        ProjectileTemplateId.ION_RIFLE,
-        ProjectileTemplateId.ION_CANNON,
-        ProjectileTemplateId.PLASMA_CANNON,
-        ProjectileTemplateId.GAUSS_GUN,
-        ProjectileTemplateId.FIRE_BULLETS,
-        ProjectileTemplateId.BLADE_GUN,
-    ):
-        idx = pool.spawn(
-            pos=Vec2(),
-            angle=0.0,
-            type_id=type_id,
-            owner_id=OWNER_LOCAL_PLAYER,
-        )
-        entry = pool.entries[idx]
-        profile = projectile_collision_profile(type_id)
-        assert_float_close(float(entry.hit_radius), float(profile.hit_radius))
-        assert_float_close(float(entry.damage_pool), float(profile.initial_damage_pool))
-        pool.reset()
-
-
 def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None:
     # World seeds pick the stop-on-hit jitter draw: the default seed 3 lands on 0, seed 1 on 2.
     cases: list[dict[str, Any]] = [
@@ -328,15 +292,10 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
     ]
 
     for case in cases:
-        pool = ProjectilePool()
-        idx = pool.spawn(
-            pos=Vec2(),
-            angle=math.pi / 2.0,
-            type_id=ProjectileTemplateId(int(case["type_id"])),
-            owner_id=OWNER_LOCAL_PLAYER,
-        )
         creatures = case["creatures"]
         world = _world_with(creatures, seed=int(case.get("seed", 3)))
+        pool = world.state.projectiles
+        idx = _spawn_projectile(world, ProjectileTemplateId(int(case["type_id"])), angle=math.pi / 2.0)
         step_ctx = make_step_runtime(world, dt=0.1)
         hits = pool.step(step_ctx)
         if case.get("double_update", False):
@@ -346,15 +305,10 @@ def test_primary_projectile_update_snapshot(snapshot: SnapshotAssertion) -> None
 
 
 def test_primary_spawn_persists_velocity_vector() -> None:
-    pool = ProjectilePool()
-    idx = pool.spawn(
-        pos=Vec2(12.0, 34.0),
-        angle=math.pi / 3.0,
-        type_id=ProjectileTemplateId.PISTOL,
-        owner_id=OWNER_LOCAL_PLAYER,
-    )
+    world = _world_with([])
+    idx = _spawn_projectile(world, ProjectileTemplateId.PISTOL, pos=Vec2(12.0, 34.0), angle=math.pi / 3.0)
 
-    entry = pool.entries[idx]
+    entry = world.state.projectiles.entries[idx]
     angle = float(f32(math.pi / 3.0))
     assert_float_close(float(entry.vel.x), float(f32(math.cos(float(angle)) * 1.5)))
     assert_float_close(float(entry.vel.y), float(f32(math.sin(float(angle)) * 1.5)))

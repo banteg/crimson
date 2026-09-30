@@ -4,6 +4,7 @@ import math
 
 from crimson.creatures.spawn import CreatureAiMode, CreatureFlags, SpawnId
 from crimson.math_parity import f32, f32_from_bits
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from grim.geom import Vec2
@@ -126,11 +127,14 @@ def test_ranged_projectile_can_damage_player() -> None:
     player = world.players[0]
     player.pos = Vec2(4.0, 0.0)
 
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
         owner_id=0,
+        owner_player_index=0,
     )
 
     world.state.projectiles.step(
@@ -154,11 +158,14 @@ def test_ranged_projectile_can_damage_creature_before_player() -> None:
     )[1]
     step_runtime = make_step_runtime(world, dt=0.1)
 
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(),
         angle=math.pi / 2.0,
         type_id=ProjectileTemplateId.PLASMA_RIFLE,
         owner_id=0,
+        owner_player_index=0,
     )
 
     world.state.projectiles.step(

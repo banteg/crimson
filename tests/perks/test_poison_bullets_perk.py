@@ -5,6 +5,7 @@ from crimson.creatures.spawn import CreatureFlags
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
@@ -32,11 +33,14 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
     creature.hp = 1000.0
     creature.max_hp = 1000.0
 
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner_id=OWNER_LOCAL_PLAYER,
+        owner_player_index=0,
     )
 
     events = world.step(
@@ -73,11 +77,14 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
     creature.hp = 1000.0
     creature.max_hp = 1000.0
 
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner_id=OWNER_LOCAL_PLAYER,
+        owner_player_index=0,
     )
 
     events = world.step(
@@ -145,11 +152,14 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
     creature.hp = 1000.0
     creature.max_hp = 1000.0
 
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.PISTOL,
         owner_id=OWNER_LOCAL_PLAYER,
+        owner_player_index=0,
     )
 
     world.step(
@@ -184,11 +194,14 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
 
     # Native gates the poison roll on the global perk count, so creature-owned
     # projectiles (splitter children, shock-chain segments) draw it too.
-    world.state.projectiles.spawn(
+    projectile_spawn(
+        world.state,
+        players=world.players,
         pos=Vec2(creature.pos.x, creature.pos.y),
         angle=0.0,
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner_id=7,
+        owner_player_index=0,
     )
 
     events = world.step(

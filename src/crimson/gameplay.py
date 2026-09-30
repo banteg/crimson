@@ -32,6 +32,7 @@ from .math_parity import (
 from .movement_controls import MovementControlType
 from .owner_id import player_projectile_owner_id
 from .perks import PerkId
+from .projectiles.runtime import projectile_spawn as _projectile_spawn
 from .projectiles.types import ProjectileTemplateId
 from .rng_caller_static import RngCallerStatic
 from .sim.state_types import TERRAIN_SIZE
@@ -50,12 +51,6 @@ from .weapon_runtime import (
 )
 from .weapon_runtime import (
     player_swap_alt_weapon as _player_swap_alt_weapon,
-)
-from .weapon_runtime import (
-    projectile_spawn as _projectile_spawn,
-)
-from .weapon_runtime import (
-    spawn_projectile_ring as _spawn_projectile_ring,
 )
 from .weapon_runtime import (
     weapon_assign_player as _weapon_assign_player,
@@ -800,16 +795,19 @@ def _player_tick_reload(
             if next_timer <= half:
                 count = 7 + int(player.weapon.reload_timer_max * 4.0)
                 state.bonus_spawn_guard = True
-                _spawn_projectile_ring(
-                    state,
-                    player.pos,
-                    count=count,
-                    angle_offset=0.1,
-                    type_id=ProjectileTemplateId.PLASMA_MINIGUN,
-                    owner_id=player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index),
-                    owner_player_index=player.index,
-                    players=players,
-                )
+                owner_id = player_projectile_owner_id(friendly_fire=state.friendly_fire_enabled, player_index=player.index)
+                # Native `(float)i * (6.2831855f / (float)count) + 0.1f` at PC24.
+                ring_step = x87_pc24_div(NATIVE_TAU, float(count))
+                for idx in range(count):
+                    _projectile_spawn(
+                        state,
+                        players=players,
+                        pos=player.pos,
+                        angle=x87_pc24_add(x87_pc24_mul(float(idx), ring_step), f32(0.1)),
+                        type_id=ProjectileTemplateId.PLASMA_MINIGUN,
+                        owner_id=owner_id,
+                        owner_player_index=player.index,
+                    )
                 state.bonus_spawn_guard = False
                 state.sfx_queue.append(SfxRequest(SfxId.EXPLOSION_SMALL, player.pos))
         else:

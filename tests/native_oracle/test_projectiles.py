@@ -10,7 +10,7 @@ import pytest
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
-from crimson.projectiles.runtime.projectile_pool import ProjectilePool
+from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
@@ -78,14 +78,26 @@ def test_projectile_spawn_fields_match_native(oracle) -> None:
             oracle.write_f32(pos_arg + 4, pos.y)
             index = oracle.call("projectile_spawn", pos_arg, angle, int(type_id), _OWNER_LOCAL_PLAYER).eax
 
-            pool = ProjectilePool()
-            python_index = pool.spawn(pos=pos, angle=angle, type_id=type_id, owner_id=OWNER_LOCAL_PLAYER)
+            world = make_world()
+            python_index = projectile_spawn(
+                world.state,
+                players=world.players,
+                pos=pos,
+                angle=angle,
+                type_id=type_id,
+                owner_id=OWNER_LOCAL_PLAYER,
+                owner_player_index=0,
+            )
+            pool = world.state.projectiles
             address = pool_base + index * PROJECTILE_STRIDE
             case = f"type 0x{int(type_id):02x} pos=({pos.x!r}, {pos.y!r}) angle={angle!r}"
             if python_index != index:
                 mismatches.append(Mismatch(case, "index", index, python_index, address))
             native = oracle.read_fields(address, PROJECTILE_LAYOUT)
             mismatches += compare_fields(case, native, _python_projectile(pool.entries[python_index]), address=address)
+            shots_fired = oracle.read_u32("highscore_record_shots_fired")
+            if shots_fired != world.state.shots_fired:
+                mismatches.append(Mismatch(case, "shots_fired", shots_fired, world.state.shots_fired, 0))
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
 
 

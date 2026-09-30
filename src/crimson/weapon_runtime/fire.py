@@ -27,14 +27,13 @@ from ..math_parity import (
 )
 from ..owner_id import player_projectile_owner_id
 from ..perks import PerkId
-from ..projectiles.runtime import fx_spawn_secondary_projectile
+from ..projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
 from ..sim.state_types import PerkCounts, PlayerState
 from ..weapons import WEAPON_TABLE, WeaponId, weapon_entry_for_projectile_type_id
 from .assign import player_start_reload, weapon_entry
-from .spawn import projectile_spawn
 
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState

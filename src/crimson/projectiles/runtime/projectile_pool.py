@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -31,7 +32,6 @@ from ...weapons import weapon_entry_for_projectile_type_id
 from ..types import (
     MAIN_PROJECTILE_POOL_SIZE,
     Projectile,
-    ProjectileCollisionProfile,
     ProjectileHit,
     ProjectileTemplateId,
 )
@@ -49,24 +49,11 @@ from .behaviors import (
 from .spatial_hash import CreatureSpatialHash
 
 if TYPE_CHECKING:
+    from crimson.sim.gameplay_state import GameplayState
+
     from ...creatures.runtime import CreatureState
+    from ...sim.state_types import PlayerState
     from ...sim.world_state import WorldStepRuntime
-
-
-_DEFAULT_PROJECTILE_COLLISION_PROFILE = ProjectileCollisionProfile(
-    hit_radius=1.0,
-    initial_damage_pool=1.0,
-)
-
-_PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID: dict[ProjectileTemplateId, ProjectileCollisionProfile] = {
-    ProjectileTemplateId.ION_MINIGUN: ProjectileCollisionProfile(hit_radius=3.0, initial_damage_pool=1.0),
-    ProjectileTemplateId.ION_RIFLE: ProjectileCollisionProfile(hit_radius=5.0, initial_damage_pool=1.0),
-    ProjectileTemplateId.ION_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-    ProjectileTemplateId.PLASMA_CANNON: ProjectileCollisionProfile(hit_radius=10.0, initial_damage_pool=1.0),
-    ProjectileTemplateId.GAUSS_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=300.0),
-    ProjectileTemplateId.FIRE_BULLETS: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=240.0),
-    ProjectileTemplateId.BLADE_GUN: ProjectileCollisionProfile(hit_radius=1.0, initial_damage_pool=50.0),
-}
 
 
 def _projectile_damage_amount_f32(dist: float, damage_scale: float) -> float:
@@ -87,11 +74,77 @@ def _stop_on_hit_jitter_axis_f32(direction: float, jitter: int, pos: float) -> f
     return x87_pc24_add(offset, pos)
 
 
-def projectile_collision_profile(type_id: ProjectileTemplateId) -> ProjectileCollisionProfile:
-    return _PROJECTILE_COLLISION_PROFILE_BY_TYPE_ID.get(
-        type_id,
-        _DEFAULT_PROJECTILE_COLLISION_PROFILE,
-    )
+def projectile_spawn(
+    state: GameplayState,
+    *,
+    players: Sequence[PlayerState],
+    pos: Vec2,
+    angle: float,
+    type_id: ProjectileTemplateId,
+    owner_id: int,
+    owner_player_index: int,
+) -> int:
+    """Port of `projectile_spawn` (0x00420440): a player's shot counts as fired and becomes Fire Bullets."""
+
+    if not state.bonus_spawn_guard:
+        # Native lists -100, -1, -2 and -3, so a fourth player's friendly-fire shots skip it; the rewrite takes any player.
+        if state.preserve_bugs:
+            player_owned = owner_id == OWNER_LOCAL_PLAYER or -3 <= owner_id <= -1
+        else:
+            player_owned = owner_id < 0
+        # Native loops once more after converting, so a converted shot counts twice.
+        while player_owned:
+            state.shots_fired += 1
+            if type_id == ProjectileTemplateId.FIRE_BULLETS:
+                break
+            # Native reads both players' timers whoever fired; the rewrite reads the shooter's.
+            if state.preserve_bugs:
+                fire_bullets_active = any(player.fire_bullets_timer > 0.0 for player in players[:2])
+            else:
+                fire_bullets_active = players[owner_player_index].fire_bullets_timer > 0.0
+            if not fire_bullets_active:
+                break
+            type_id = ProjectileTemplateId.FIRE_BULLETS
+
+    entries = state.projectiles.entries
+    index = next((i for i, entry in enumerate(entries) if not entry.active), MAIN_PROJECTILE_POOL_SIZE - 1)
+    entry = entries[index]
+    entry.generation += 1
+    entry.owner_id = owner_id
+    entry.active = True
+    entry.travel_budget = float(weapon_entry_for_projectile_type_id(type_id).travel_budget)
+    entry.pos = Vec2(f32(pos.x), f32(pos.y))
+    entry.origin = entry.pos
+    entry.angle = f32(angle)
+    entry.type_id = type_id
+    entry.life_timer = f32(0.4)
+    entry.reserved = 0.0
+    entry.speed_scale = 1.0
+    entry.vel = Vec2(f32(math.cos(entry.angle) * 1.5), f32(math.sin(entry.angle) * 1.5))
+
+    match type_id:
+        case ProjectileTemplateId.ION_MINIGUN:
+            entry.hit_radius = 3.0
+            entry.damage_pool = 1.0
+        case ProjectileTemplateId.ION_RIFLE:
+            entry.hit_radius = 5.0
+            entry.damage_pool = 1.0
+        case ProjectileTemplateId.ION_CANNON | ProjectileTemplateId.PLASMA_CANNON:
+            entry.hit_radius = 10.0
+            entry.damage_pool = 1.0
+        case ProjectileTemplateId.GAUSS_GUN:
+            entry.hit_radius = 1.0
+            entry.damage_pool = 300.0
+        case ProjectileTemplateId.FIRE_BULLETS:
+            entry.hit_radius = 1.0
+            entry.damage_pool = 240.0
+        case ProjectileTemplateId.BLADE_GUN:
+            entry.hit_radius = 1.0
+            entry.damage_pool = 50.0
+        case _:
+            entry.hit_radius = 1.0
+            entry.damage_pool = 1.0
+    return index
 
 
 class ProjectilePool:
@@ -106,50 +159,6 @@ class ProjectilePool:
         for entry in self._entries:
             entry.generation = 0
             entry.active = False
-
-    def spawn(
-        self,
-        *,
-        pos: Vec2,
-        angle: float,
-        type_id: ProjectileTemplateId,
-        owner_id: int,
-    ) -> int:
-        index = None
-        for i, entry in enumerate(self._entries):
-            if not entry.active:
-                index = i
-                break
-        if index is None:
-            index = len(self._entries) - 1
-        entry = self._entries[index]
-
-        entry.generation += 1
-        entry.active = True
-        # Native projectile spawn writes angle/pos as float32 fields; keep those
-        # stores narrowed so next-tick movement uses the same precision.
-        angle_f32 = f32(angle)
-        pos_f32 = Vec2(f32(pos.x), f32(pos.y))
-        entry.angle = angle_f32
-        entry.pos = pos_f32
-        entry.origin = pos_f32
-        entry.vel = Vec2(
-            f32(math.cos(float(angle_f32)) * 1.5),
-            f32(math.sin(float(angle_f32)) * 1.5),
-        )
-        entry.type_id = type_id
-        # Native stores the f32 literal 0.4.
-        entry.life_timer = f32(0.4)
-        entry.reserved = 0.0
-        entry.speed_scale = 1.0
-        weapon_entry = weapon_entry_for_projectile_type_id(type_id)
-        entry.travel_budget = float(weapon_entry.travel_budget)
-        entry.owner_id = owner_id
-
-        collision_profile = projectile_collision_profile(type_id)
-        entry.hit_radius = float(collision_profile.hit_radius)
-        entry.damage_pool = float(collision_profile.initial_damage_pool)
-        return index
 
     def iter_active(self) -> list[Projectile]:
         return [entry for entry in self._entries if entry.active]
@@ -197,7 +206,6 @@ class ProjectilePool:
             return int(CreatureDamageType.BULLET)
 
         update_ctx = _ProjectileUpdateCtx(
-            pool=self,
             creatures=creatures,
             dt=float(dt),
             detail_preset=int(detail_preset),

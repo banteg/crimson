@@ -30,6 +30,7 @@ from ..types import (
     Projectile,
     ProjectileTemplateId,
 )
+from . import projectile_pool
 from .collision import (
     creature_find_nearest_active,
 )
@@ -39,11 +40,9 @@ if TYPE_CHECKING:
 
     from ...creatures.runtime import CreatureState
     from ...sim.world_state import WorldStepRuntime
-    from .projectile_pool import ProjectilePool
 
 
 class _ProjectileUpdateCtx(msgspec.Struct):
-    pool: ProjectilePool
     creatures: Sequence[CreatureState]
     dt: float
     detail_preset: int
@@ -72,17 +71,23 @@ def _pre_hit_splitter(ctx: _ProjectileUpdateCtx, proj: Projectile, hit_idx: int)
     )
     # The children belong to the creature hit, so they can hit players even when the parent was the local player's.
     split_angle = f32(1.0471976)  # 0x0046f4e4
-    ctx.pool.spawn(
+    projectile_pool.projectile_spawn(
+        ctx.runtime_state,
+        players=ctx.step_runtime.world.players,
         pos=proj.pos,
         angle=x87_pc24_sub(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner_id=int(hit_idx),
+        owner_player_index=0,
     )
-    ctx.pool.spawn(
+    projectile_pool.projectile_spawn(
+        ctx.runtime_state,
+        players=ctx.step_runtime.world.players,
         pos=proj.pos,
         angle=x87_pc24_add(proj.angle, split_angle),
         type_id=ProjectileTemplateId.SPLITTER_GUN,
         owner_id=int(hit_idx),
+        owner_player_index=0,
     )
 
 
@@ -128,11 +133,14 @@ def _post_hit_ion_rifle(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) -> N
 
             runtime_state.bonus_spawn_guard = True
             try:
-                proj_id = ctx.pool.spawn(
+                proj_id = projectile_pool.projectile_spawn(
+                    runtime_state,
+                    players=ctx.step_runtime.world.players,
                     pos=origin_pos,
                     angle=angle,
                     type_id=ProjectileTemplateId(hit.proj.type_id),
                     owner_id=hit_creature,
+                    owner_player_index=0,
                 )
             finally:
                 runtime_state.bonus_spawn_guard = False
@@ -155,11 +163,14 @@ def _post_hit_plasma_cannon(ctx: _ProjectileUpdateCtx, hit: _ProjectileHitInfo) 
                 x87_pc24_add(x87_pc24_cos_mul(ring_angle, ring_radius), hit.proj.pos.x),
                 x87_pc24_add(x87_pc24_sin_mul(ring_angle, ring_radius), hit.proj.pos.y),
             )
-            ctx.pool.spawn(
+            projectile_pool.projectile_spawn(
+                runtime_state,
+                players=ctx.step_runtime.world.players,
                 pos=ring_pos,
                 angle=ring_angle,
                 type_id=ProjectileTemplateId.PLASMA_RIFLE,
                 owner_id=OWNER_LOCAL_PLAYER,
+                owner_player_index=0,
             )
     finally:
         runtime_state.bonus_spawn_guard = False

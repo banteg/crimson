@@ -41,6 +41,7 @@ from ..math_parity import (
 )
 from ..perks import PerkId
 from ..player_damage import player_take_damage
+from ..projectiles.runtime import projectile_spawn
 from ..projectiles.types import ProjectileTemplateId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import TERRAIN_SIZE, PlayerState
@@ -942,22 +943,28 @@ class CreaturePool:
                 if target_dist > 64.0 and creature.attack_cooldown <= 0.0:
                     if creature.flags & CreatureFlags.RANGED_ATTACK_SHOCK:
                         type_id = ProjectileTemplateId.PLASMA_RIFLE
-                        state.projectiles.spawn(
+                        projectile_spawn(
+                            state,
+                            players=players,
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=type_id,
                             owner_id=int(idx),
+                            owner_player_index=0,
                         )
                         sfx.append(SfxRequest(SfxId.SHOCK_FIRE, creature.pos))
                         creature.attack_cooldown = x87_pc24_add(f32(creature.attack_cooldown), f32(1.0))
 
                     if (creature.flags & CreatureFlags.RANGED_ATTACK_VARIANT) and creature.attack_cooldown <= 0.0:
                         projectile_type = ProjectileTemplateId(creature.ranged_projectile_type)
-                        state.projectiles.spawn(
+                        projectile_spawn(
+                            state,
+                            players=players,
                             pos=creature.pos,
                             angle=float(creature.heading),
                             type_id=projectile_type,
                             owner_id=int(idx),
+                            owner_player_index=0,
                         )
                         sfx.append(SfxRequest(SfxId.PLASMAMINIGUN_FIRE, creature.pos, gain=0.8))
                         randomized_cooldown = x87_pc24_mul(
