@@ -127,15 +127,7 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
 
 
 def _replay_mode_label(game_mode_id: GameMode) -> str:
-    match game_mode_id:
-        case GameMode.SURVIVAL:
-            return "survival"
-        case GameMode.RUSH:
-            return "rush"
-        case GameMode.QUESTS:
-            return "quests"
-        case _:
-            return "unknown"
+    return game_mode_id.name.lower()
 
 
 def _path_text(path: Path | None) -> str | None:
