@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from crimson.gameplay import gameplay_accumulate_weapon_usage_time
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapon_runtime import most_used_weapon_id_for_player, weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 
 
 def test_weapon_usage_tracks_most_used_weapon() -> None:
@@ -20,14 +19,14 @@ def test_weapon_usage_tracks_most_used_weapon() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.PISTOL, state=state)
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
     assert state.weapon_shots_fired[0][1] == 1
 
     weapon_assign_player(player, WeaponId.ASSAULT_RIFLE, state=state)
     for _ in range(3):
         player.weapon.shot_cooldown = 0.0
         player.spread_heat = 0.0
-        fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+        fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
     assert state.weapon_shots_fired[0][2] == 3
 
     state.weapon_usage_time[WeaponId.PISTOL] = 16

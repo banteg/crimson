@@ -3,13 +3,12 @@ from __future__ import annotations
 import math
 
 from crimson.math_parity import NATIVE_HALF_PI, f32
-from crimson.sim.input import PlayerInput
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 from tests.support.helpers import assert_float_close
 
 
@@ -26,7 +25,7 @@ def test_rocket_minigun_fires_full_clip_secondary_projectiles() -> None:
     weapon_assign_player(player, WeaponId.MINI_ROCKET_SWARMERS, state=state)
     assert player.weapon.ammo == player.weapon.clip_size
 
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
     spawned = [entry for entry in state.secondary_projectiles.entries if entry.active]
     assert len(spawned) == player.weapon.clip_size

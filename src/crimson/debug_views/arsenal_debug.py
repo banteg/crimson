@@ -13,9 +13,11 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..aim_schemes import AimScheme
 from ..bonuses import BONUS_TABLE, BonusId
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
+from ..movement_controls import MovementControlType
 from ..projectiles.types import ProjectileTemplateId
 from ..sim.input import PlayerInput
 from ..sim.state_types import TERRAIN_SIZE
@@ -269,7 +271,10 @@ class ArsenalDebugView:
         fire_pressed = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         reload_pressed = rl.is_key_pressed(rl.KeyboardKey.KEY_R)
 
+        # `move` is the held WASD direction, steered as a dual action pad; `aim` is the mouse point.
         return PlayerInput(
+            move_mode=MovementControlType.DUAL_ACTION_PAD,
+            aim_scheme=AimScheme.MOUSE,
             move=move,
             aim=aim,
             fire_down=fire_down,

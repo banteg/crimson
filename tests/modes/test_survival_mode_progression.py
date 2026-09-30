@@ -7,9 +7,9 @@ import pytest
 from crimson.game_modes import GameMode
 from crimson.gameplay import survival_level_threshold
 from crimson.modes.survival_mode import SurvivalMode
-from crimson.sim.input import PlayerInput
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.factories import player_input
 
 
 @pytest.mark.usefixtures("headless_resources")
@@ -26,7 +26,7 @@ def test_survival_mode_session_has_progression_enabled_and_levels_up(make_mode_c
         mode.player.experience = survival_level_threshold(1) + 1
         mode.state.perk_selection.pending_count = 0
 
-        session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput()])
+        session.step_tick(dt=1.0 / 60.0, inputs=[player_input()])
 
         assert int(mode.player.level) == 2
         assert int(mode.state.perk_selection.pending_count) == 1

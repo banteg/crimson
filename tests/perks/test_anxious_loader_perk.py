@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from crimson.math_parity import f32
 from crimson.perks import PerkId
-from crimson.sim.input import PlayerInput
 from tests.support.builders.session import make_world
-from tests.support.factories import step_player
+from tests.support.factories import player_input, step_player
 from tests.support.helpers import assert_float_close
 
 
@@ -22,7 +21,7 @@ def test_anxious_loader_reduces_reload_timer_on_fire_press() -> None:
     perk_player.weapon.reload_timer_max = 1.0
     perk_player.weapon.reload_timer = 1.0
 
-    input_state = PlayerInput(fire_pressed=True)
+    input_state = player_input(fire_pressed=True)
     step_player(base_world, base_player, input_state, 0.1)
     step_player(perk_world, perk_player, input_state, 0.1)
 

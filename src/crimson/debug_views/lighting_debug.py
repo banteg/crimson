@@ -18,8 +18,10 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..aim_schemes import AimScheme
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
+from ..movement_controls import MovementControlType
 from ..owner_id import OWNER_LOCAL_PLAYER
 from ..projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
@@ -2096,7 +2098,10 @@ class LightingDebugView:
         )
         mouse = canvas.mouse_position()
         aim = self.screen_to_world(Vec2.from_xy(mouse))
+        # `move` is the held WASD direction, steered as a dual action pad; `aim` is the mouse point.
         return PlayerInput(
+            move_mode=MovementControlType.DUAL_ACTION_PAD,
+            aim_scheme=AimScheme.MOUSE,
             move=move,
             aim=aim,
             fire_down=False,

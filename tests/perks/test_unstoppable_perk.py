@@ -5,11 +5,10 @@ import math
 from crimson.math_parity import f32, x87_pc24_add, x87_pc24_mul
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
-from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import make_step_runtime, step_player
+from tests.support.factories import make_step_runtime, player_input, step_player
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -57,6 +56,6 @@ def test_player_take_damage_heading_jitter_is_not_snapped_by_player_update() -> 
 
     player_take_damage(make_step_runtime(world), player, 10.0, dt=0.1)
     target_heading = Vec2(1.0, 0.0).to_heading()
-    step_player(world, player, PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0)), 0.1)
+    step_player(world, player, player_input(move=Vec2(1.0, 0.0), aim=Vec2(200.0, 100.0)), 0.1)
 
     assert abs((player.heading % math.tau) - target_heading) > 1e-6

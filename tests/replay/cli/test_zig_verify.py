@@ -20,10 +20,10 @@ from crimson.replay import Replay, ReplayRecorder, encode_replay_payload
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand, TypoCharCommand, TypoSubmitCommand
-from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus
 from grim.geom import Vec2
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import RECORDED_REPLAYS, finish_replay
 
 from ._helpers import (
@@ -245,7 +245,7 @@ def _typo_replay(
         typo_highscore_names=typo_highscore_names,
     )
     recorder = ReplayRecorder(run)
-    idle = [PlayerInput(aim=Vec2(512.0, 512.0))]
+    idle = [player_input(aim=Vec2(512.0, 512.0))]
     for _ in range(ticks - 1):
         recorder.record(pack_tick(idle))
     recorder.record(pack_tick(idle, tick_commands))

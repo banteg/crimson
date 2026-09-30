@@ -9,10 +9,10 @@ from crimson.aim_schemes import AimScheme
 from crimson.gameplay import _player_update_aim_by_scheme
 from crimson.math_parity import native_aim_point_from_heading
 from crimson.movement_controls import MovementControlType
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
+from tests.support.factories import player_input
 
 
 class _Witness(msgspec.Struct, frozen=True):
@@ -47,7 +47,7 @@ def test_aim_point_and_gameplay_dispatch_match_native_witnesses() -> None:
             player = PlayerState(index=0, pos=position, aim_heading=row.heading)
             _player_update_aim_by_scheme(
                 player=player,
-                input_state=PlayerInput(move=Vec2(), aim=Vec2()),
+                input_state=player_input(move=Vec2(), aim=Vec2()),
                 dt=0.0,
                 movement_mode=MovementControlType.STATIC,
                 aim_scheme=scheme,
@@ -82,7 +82,7 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
         player = PlayerState(index=0, pos=Vec2(row.position_x, row.position_y), aim_heading=row.heading)
         _player_update_aim_by_scheme(
             player=player,
-            input_state=PlayerInput(move=Vec2(), aim=Vec2(), aim_turn_left=row.left, aim_turn_right=row.right),
+            input_state=player_input(move=Vec2(), aim=Vec2(), aim_turn_left=row.left, aim_turn_right=row.right),
             dt=row.dt,
             movement_mode=MovementControlType.STATIC,
             aim_scheme=scheme,

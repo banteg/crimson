@@ -8,10 +8,10 @@ from crimson.perks import PerkId
 from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.factories import player_input
 from tests.support.helpers import ScriptedCrand
 
 
@@ -45,7 +45,7 @@ def test_poison_bullets_sets_self_damage_flag_when_rng_hits() -> None:
 
     events = world.step(
         0.016,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -89,7 +89,7 @@ def test_poison_bullets_does_not_set_flag_when_rng_misses() -> None:
 
     events = world.step(
         0.016,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -125,7 +125,7 @@ def test_poison_bullets_does_not_trigger_on_nuke_radius_damage() -> None:
 
     world.step(
         0.016,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -164,7 +164,7 @@ def test_poison_bullets_with_toxic_avenger_still_sets_only_weak_poison_on_bullet
 
     world.step(
         0.016,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -206,7 +206,7 @@ def test_poison_bullets_gate_applies_to_creature_owned_projectiles() -> None:
 
     events = world.step(
         0.016,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,

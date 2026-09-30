@@ -7,12 +7,11 @@ from crimson.perks import PerkId
 from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon, make_step_runtime, step_player
+from tests.support.factories import fire_player_weapon, make_step_runtime, player_input, step_player
 
 
 def _spawn_type(
@@ -79,7 +78,7 @@ def _perk_burst_type_ids(
     player1.hot_tempered_timer = 1.95
     player1.man_bomb_timer = 3.9
 
-    step_player(world, player1, PlayerInput(aim=Vec2(121.0, 100.0)), dt)
+    step_player(world, player1, player_input(aim=Vec2(121.0, 100.0)), dt)
     return _active_type_ids(world.state)
 
 
@@ -209,7 +208,7 @@ def test_preserve_bugs_weapon_shot_converts_while_the_other_player_has_fire_bull
     player0 = world.players[0]
     player0.weapon.shot_cooldown = 0.0
 
-    fire_player_weapon(world, player0, PlayerInput(fire_down=True, fire_pressed=True, aim=Vec2(200.0, 100.0)), 0.016)
+    fire_player_weapon(world, player0, player_input(fire_down=True, fire_pressed=True, aim=Vec2(200.0, 100.0)), 0.016)
 
     assert _active_type_ids(world.state) == [int(ProjectileTemplateId.FIRE_BULLETS)]
     # The converting pass counts the shot a second time.

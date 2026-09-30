@@ -3,12 +3,11 @@ from __future__ import annotations
 import math
 
 from crimson.math_parity import NATIVE_HALF_PI, f32
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 
 
 def _spawn_swarmer_burst(*, preserve_bugs: bool, ammo: float) -> list[tuple[float, float]]:
@@ -23,7 +22,7 @@ def _spawn_swarmer_burst(*, preserve_bugs: bool, ammo: float) -> list[tuple[floa
     )
     player.spread_heat = 0.0
 
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
 
     headings: list[tuple[float, float]] = []
     for entry in world.state.secondary_projectiles.entries:
@@ -66,7 +65,7 @@ def test_mini_rocket_swarmer_empty_clip_fires_no_rockets() -> None:
     )
     player.spread_heat = 0.0
 
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
 
     assert not any(entry.active for entry in state.secondary_projectiles.entries)
     assert player.weapon.ammo == 0.0

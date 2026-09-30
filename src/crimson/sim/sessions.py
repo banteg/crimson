@@ -219,7 +219,7 @@ class DeterministicSession(msgspec.Struct):
         self,
         *,
         dt: float,
-        inputs: Sequence[PlayerInput] | None,
+        inputs: Sequence[PlayerInput],
         commands: Sequence[GameCommand] | None = None,
         prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
@@ -247,9 +247,7 @@ class DeterministicSession(msgspec.Struct):
         for command in tick_commands:
             self.apply_command(command, dt=dt)
 
-        tick_inputs = inputs
-        if tick_inputs is not None:
-            tick_inputs = self._mode_inputs(tick_inputs)
+        tick_inputs = self._mode_inputs(inputs)
 
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)

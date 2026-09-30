@@ -7,13 +7,12 @@ import pytest
 from crimson.math_parity import NATIVE_HALF_PI, f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 from tests.support.helpers import ScriptedCrand, assert_float_close
 
 
@@ -31,7 +30,7 @@ def test_multi_plasma_fires_5_projectiles_with_fixed_spread() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.MULTI_PLASMA, state=state)
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 5
@@ -66,7 +65,7 @@ def test_plasma_shotgun_uses_0xff_jitter_and_random_speed_scale() -> None:
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == 14
@@ -96,7 +95,7 @@ def test_plasma_shotgun_consumes_one_ammo_per_shot() -> None:
     weapon_assign_player(player, WeaponId.PLASMA_SHOTGUN, state=state)
     start_ammo = float(player.weapon.ammo)
 
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
     assert_float_close(float(player.weapon.ammo), start_ammo - 1.0)
 
 
@@ -125,7 +124,7 @@ def test_shotgun_family_fires_expected_pellets(
     player.spread_heat = 0.0
 
     weapon_assign_player(player, WeaponId(weapon_id), state=state)
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
     spawned = _active_projectiles(state)
     assert len(spawned) == expected_count
@@ -165,7 +164,7 @@ def test_weapons_without_a_fire_branch_spend_the_shot_but_spawn_nothing(weapon_i
     weapon_assign_player(player, weapon_id, state=state)
     ammo = player.weapon.ammo
 
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
 
     assert _active_projectiles(state) == []
     assert not any(entry.active for entry in state.secondary_projectiles.entries)

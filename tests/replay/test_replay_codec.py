@@ -8,8 +8,10 @@ import zstandard as zstd
 
 import crimson
 import crimson.replay.codec as replay_codec_mod
+from crimson.aim_schemes import AimScheme
 from crimson.game_modes import GameMode
 from crimson.math_parity import f32
+from crimson.movement_controls import MovementControlType
 from crimson.quests.level import QuestLevel
 from crimson.replay import (
     Replay,
@@ -25,7 +27,7 @@ from crimson.replay import (
     warn_on_game_version_mismatch,
 )
 from crimson.replay import types as replay_types
-from crimson.replay.input_codec import pack_tick
+from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
 from crimson.replay.types import REPLAY_FORMAT_VERSION, current_replay_game_version
 from crimson.sim.commands import (
     PerkMenuOpenCommand,
@@ -34,11 +36,11 @@ from crimson.sim.commands import (
     TypoCharCommand,
     TypoSubmitCommand,
 )
-from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import PlayerRunResult, RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from tests.support.factories import player_input
 
 
 def _result(*, player_count: int = 1, outcome: RunOutcome = RunOutcome.DEATH, quest_final_ms: int | None = None) -> RunResult:
@@ -130,6 +132,22 @@ def test_replay_codec_roundtrip_all_command_kinds() -> None:
         assert load_replay(dump_replay(replay)) == replay
 
 
+@pytest.mark.parametrize(
+    ("flags", "move_mode"),
+    [
+        (0, MovementControlType.DUAL_ACTION_PAD),
+        (replay_types.MOVE_KEYS_PRESENT_FLAG | replay_types.MOVE_FORWARD_FLAG, MovementControlType.STATIC),
+    ],
+)
+def test_inputs_recorded_without_controls_decode_to_the_controls_the_sim_ran(
+    flags: int,
+    move_mode: MovementControlType,
+) -> None:
+    decoded = unpack_player_input((0.0, 0.0, 512.0, 512.0, flags))
+    assert (decoded.move_mode, decoded.aim_scheme) == (move_mode, AimScheme.MOUSE)
+    assert unpack_player_input(pack_player_input(decoded)) == decoded
+
+
 def test_replay_payload_layout() -> None:
     wire = _wire(
         _replay(ticks=[ReplayTick(inputs=[(0.0, 0.0, 1.0, 2.0, 0)], commands=[PerkPickCommand(player_index=0, choice_index=2)])]),
@@ -149,19 +167,25 @@ def test_replay_dump_is_deterministic() -> None:
 def test_recorder_builds_replay() -> None:
     run = RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1)
     recorder = ReplayRecorder(run, game_version="1.2.3")
-    recorder.record(pack_tick([PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(0.1, 456.0))]))
+    recorder.record(pack_tick([player_input(move=Vec2(1.0, 0.0), aim=Vec2(0.1, 456.0))]))
 
     replay = recorder.finish(_result())
 
     assert replay.run == run
-    assert replay.ticks[0].inputs == [(1.0, 0.0, float(f32(0.1)), 456.0, 0)]
+    controls = (
+        replay_types.MOVE_MODE_PRESENT_FLAG
+        | MovementControlType.DUAL_ACTION_PAD << replay_types.MOVE_MODE_SHIFT
+        | replay_types.AIM_SCHEME_PRESENT_FLAG
+        | AimScheme.MOUSE << replay_types.AIM_SCHEME_SHIFT
+    )
+    assert replay.ticks[0].inputs == [(1.0, 0.0, float(f32(0.1)), 456.0, controls)]
     assert load_replay(dump_replay(replay)) == replay
 
 
 def test_recorder_validates_player_count() -> None:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.SURVIVAL, seed=1, player_count=2))
     with pytest.raises(ValueError, match="expected 2 player inputs"):
-        recorder.record(pack_tick([PlayerInput()]))
+        recorder.record(pack_tick([player_input()]))
 
 
 # Envelope ------------------------------------------------------------------

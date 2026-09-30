@@ -10,8 +10,10 @@ from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
 
+from ..aim_schemes import AimScheme
 from ..game_modes import GameMode
 from ..input_codes import PadCode, input_code_is_down, input_code_is_pressed, pad_nav_pressed
+from ..movement_controls import MovementControlType
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
 from ..sim.input import PlayerInput
@@ -102,7 +104,10 @@ class TutorialMode(BaseGameplayMode):
         reload_key = self.config.controls.reload_code
         reload_pressed = input_code_is_pressed(reload_key)
 
+        # `move` is the held move-key direction, steered as a dual action pad; `aim` is the mouse point.
         return PlayerInput(
+            move_mode=MovementControlType.DUAL_ACTION_PAD,
+            aim_scheme=AimScheme.MOUSE,
             move=move,
             aim=aim,
             fire_down=bool(fire_down),

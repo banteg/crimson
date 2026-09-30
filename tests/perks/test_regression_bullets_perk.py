@@ -4,13 +4,12 @@ import pytest
 
 from crimson.math_parity import f32, x87_pc24_sub
 from crimson.perks import PerkId
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import WeaponSlot
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 from tests.support.helpers import assert_float_close
 
 
@@ -24,7 +23,7 @@ def _reloading_world(*, weapon_id: WeaponId, ammo: float, experience: int) -> Wo
 
 
 def _fire(world: WorldState) -> None:
-    fire_player_weapon(world, world.players[0], PlayerInput(aim=Vec2(10.0, 0.0), fire_down=True), 0.016)
+    fire_player_weapon(world, world.players[0], player_input(aim=Vec2(10.0, 0.0), fire_down=True), 0.016)
 
 
 @pytest.mark.parametrize(

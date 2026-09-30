@@ -7,7 +7,6 @@ from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
 from crimson.projectiles.runtime import fx_spawn_secondary_projectile, projectile_spawn
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from crimson.weapon_runtime import weapon_assign_player
@@ -19,6 +18,7 @@ from tests.support.factories import (
     make_creature_state,
     make_step_runtime,
     place_creatures,
+    player_input,
 )
 
 _creature = partial(make_creature_state, size=200.0)
@@ -33,7 +33,7 @@ def _fire_pistol_right() -> WorldState:
     player.spread_heat = 0.0
     player.aim_dir = Vec2(1.0, 0.0)
 
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 0.0)), 0.016)
     return world
 
 

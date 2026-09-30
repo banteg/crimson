@@ -5,13 +5,12 @@ import pytest
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.perks import PerkId
-from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import SurvivalSpawnState
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
-from tests.support.factories import step_player
+from tests.support.factories import player_input, step_player
 from tests.support.helpers import assert_float_close
 
 
@@ -26,7 +25,7 @@ def _player_roundtrip_dt(dt: float, *, reflex_boost: float) -> float:
     world.players.append(player)
     world.state.time_scale_active = True
     world.state.bonuses.reflex_boost = reflex_boost
-    return step_player(world, player, PlayerInput(), dt)
+    return step_player(world, player, player_input(), dt)
 
 
 def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
@@ -44,7 +43,7 @@ def test_reflex_boosted_perk_dt_step_scales_world_step_by_0_9() -> None:
     # The session applies the perk dt steps before stepping the world.
     world.step(
         world.world_dt_after_perk_steps(1.0),
-        inputs=[PlayerInput(move=Vec2(1.0, 0.0))],
+        inputs=[player_input(move=Vec2(1.0, 0.0))],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -65,7 +64,7 @@ def test_survival_session_shares_reflex_boosted_dt_with_mode_timers() -> None:
     spawn = SurvivalSpawnState(spawn_cooldown_ms=1000.0)
     session = DeterministicSession(world=world, perk_progression_enabled=True, mode_state=spawn)
 
-    tick = session.step_tick(dt=0.1, inputs=[PlayerInput()])
+    tick = session.step_tick(dt=0.1, inputs=[player_input()])
 
     assert tick.timing.dt_ms_i32 == 100
     # 0.1f * 0.9f stores 0.089999996f, whose native x87 * 1000 +
@@ -92,7 +91,7 @@ def test_world_step_uses_player_roundtrip_dt_for_post_player_bonus_timers() -> N
 
     world.step(
         dt,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -121,6 +120,6 @@ def test_session_does_not_apply_player_time_scale_twice() -> None:
     post_player_dt = _player_roundtrip_dt(dt_sim, reflex_boost=world.state.bonuses.reflex_boost)
     expected_reflex = f32(f32(3.0) - post_player_dt)
 
-    session.step_tick(dt=0.09, inputs=[PlayerInput()])
+    session.step_tick(dt=0.09, inputs=[player_input()])
 
     assert world.state.bonuses.reflex_boost == expected_reflex

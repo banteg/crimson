@@ -17,7 +17,7 @@ from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.builders.session import make_world
-from tests.support.factories import make_step_runtime, step_player
+from tests.support.factories import make_step_runtime, player_input, step_player
 
 _FIXTURE = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/violence-disabled-low-health.json"
 
@@ -86,7 +86,7 @@ def test_world_step_passes_gore_setting_to_low_health_players(violence_disabled)
     world.state.violence_disabled = violence_disabled
     world.step(
         0.016,
-        inputs=[PlayerInput(), PlayerInput()], 
+        inputs=[player_input(), player_input()], 
                 fx_queue=FxQueue(), fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,     )
     assert len(world.state.effects.iter_active()) == (0 if violence_disabled else 12)

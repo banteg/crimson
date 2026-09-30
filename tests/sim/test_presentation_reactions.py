@@ -4,7 +4,6 @@ import pytest
 
 from crimson.game_modes import GameMode
 from crimson.sim.commands import PerkPickCommand
-from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.presentation_step import DeterministicPresentationPlan
 from crimson.sim.sessions import DeterministicSession, IllegalCommandError
@@ -19,6 +18,7 @@ from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_session, make_world
+from tests.support.factories import player_input
 
 
 def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() -> None:
@@ -27,7 +27,7 @@ def test_session_step_tick_adds_bonus_post_apply_sfx_for_successful_perk_pick() 
 
     tick = session.step_tick(
         dt=1.0 / 60.0,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
@@ -42,7 +42,7 @@ def test_session_step_tick_rejects_stale_perk_pick() -> None:
     with pytest.raises(IllegalCommandError, match="perk_pick without a pending perk"):
         session.step_tick(
             dt=1.0 / 60.0,
-            inputs=[PlayerInput()],
+            inputs=[player_input()],
             commands=[PerkPickCommand(player_index=0, choice_index=0)],
         )
 
@@ -53,7 +53,7 @@ def test_session_step_tick_skips_bonus_post_apply_sfx_for_lenient_stale_perk_pic
 
     tick = session.step_tick(
         dt=1.0 / 60.0,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         commands=[PerkPickCommand(player_index=0, choice_index=0)],
     )
 
@@ -81,7 +81,7 @@ def test_quest_audio_requests_survive_render_partitions(
         world=world, perk_progression_enabled=True, mode_state=QuestSpawnState(completion_transition_ms=start_ms),
     )
     outputs = [
-        session.step_tick(dt=1 / 60, inputs=(PlayerInput(),)).presentation
+        session.step_tick(dt=1 / 60, inputs=(player_input(),)).presentation
         for tick_count in ticks_per_frame
         for _ in range(tick_count)
     ]
@@ -175,7 +175,7 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
                     world.players[0].health = 0.0
                 world.state.camera_shake_offset = Vec2(3, 4) if tick == 0 else Vec2(-5, 2)
                 world.state.sfx_queue.append(SfxRequest(SfxId.UI_BONUS, Vec2(128, 512)))
-                step = session.step_tick(dt=1 / 60, inputs=(PlayerInput(aim=Vec2(600, 512), fire_down=tick == 0),))
+                step = session.step_tick(dt=1 / 60, inputs=(player_input(aim=Vec2(600, 512), fire_down=tick == 0),))
                 plans.append(step.presentation)
                 tick += 1
             apply_presentation_plans(plans=plans, runtime=runtime)
@@ -196,7 +196,7 @@ def test_audio_plan_captures_typo_post_step_bonus_reset() -> None:
 
     session = initialize_run(RunSpec(game_mode_id=GameMode.TYPO, seed=1)).session
     session.world.state.bonuses.reflex_boost = 1.0
-    tick = session.step_tick(dt=1 / 60, inputs=(PlayerInput(),))
+    tick = session.step_tick(dt=1 / 60, inputs=(player_input(),))
     assert session.world.state.bonuses.reflex_boost == 0.0
     assert tick.presentation.reflex_boost_timer == 0.0
 
@@ -262,6 +262,6 @@ def test_sound_cooldowns_use_frame_time_before_reflex_slow_motion() -> None:
     world.state.perks[int(PerkId.REFLEX_BOOSTED)] = 1
     world.state.bonuses.reflex_boost = 2.0
     world.state.time_scale_active = True
-    step = session.step_tick(dt=0.1, inputs=(PlayerInput(),))
+    step = session.step_tick(dt=0.1, inputs=(player_input(),))
     assert step.presentation.sfx_dt == f32(f32(0.1) * f32(0.9))
     assert step.dt_sim == f32(step.presentation.sfx_dt * f32(0.3))

@@ -11,7 +11,7 @@ from crimson.sim.world_state import WorldEvents, WorldState
 from grim.geom import Vec2
 from grim.rand import Crand
 from tests.support.builders.session import make_world
-from tests.support.factories import make_step_runtime
+from tests.support.factories import make_step_runtime, player_input
 from tests.support.world_runtime import WorldRuntimeHost
 
 _PICKUP_BURST = [
@@ -39,7 +39,7 @@ def _step_world_over_bonuses(
     )
     events = world.step(
         0.016,
-        inputs=None,
+        inputs=[player_input() for _ in world.players],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,

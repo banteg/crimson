@@ -5,8 +5,8 @@ from pathlib import Path
 from crimson.creatures.spawn import SpawnId
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.batch_apply import apply_presentation_plans
-from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
+from tests.support.factories import player_input
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -33,7 +33,7 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
     ticks = LiveTickSource()
 
     for _ in range(120):
-        ticks.poll([PlayerInput(aim=target, fire_down=True, fire_pressed=True)])
+        ticks.poll([player_input(aim=target, fire_down=True, fire_pressed=True)])
         step = step_replay_tick(session, ticks.next_tick())
         if not step.presentation.terrain_fx.is_empty():
             break

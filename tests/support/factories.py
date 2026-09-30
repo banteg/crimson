@@ -3,10 +3,12 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
+from crimson.aim_schemes import AimScheme
 from crimson.creatures.runtime import CreatureDeath, CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import player_update
+from crimson.movement_controls import MovementControlType
 from crimson.perks.availability import prepare_perk_availability
 from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PerkCounts, PlayerState
@@ -102,6 +104,17 @@ def place_creatures(world: WorldState, creatures: Sequence[CreatureState]) -> li
     for idx, creature in enumerate(creatures):
         world.creatures.entries[idx] = creature
     return world.creatures.entries
+
+
+def player_input(
+    *,
+    move_mode: MovementControlType = MovementControlType.DUAL_ACTION_PAD,
+    aim_scheme: AimScheme = AimScheme.MOUSE,
+    **fields: Any,
+) -> PlayerInput:
+    """A `PlayerInput` whose `move` steers as a dual action pad and whose `aim` is the mouse point."""
+
+    return PlayerInput(move_mode=move_mode, aim_scheme=aim_scheme, **fields)
 
 
 def step_player(

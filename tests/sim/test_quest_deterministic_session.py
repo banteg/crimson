@@ -7,12 +7,12 @@ from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.quests.runtime import build_quest_spawn_table
 from crimson.quests.types import QuestContext
-from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.run_result import RunOutcome
 from crimson.sim.sessions import DeterministicSession
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.support.factories import player_input
 from tests.support.world_runtime import WorldRuntimeHost
 
 
@@ -42,7 +42,7 @@ def test_quest_session_tick_exposes_required_fields() -> None:
     session, spawn_state = _build_session(seed=101)
     tick = session.step_tick(
         dt=1.0 / 60.0,
-        inputs=[PlayerInput(aim=Vec2(512.0, 512.0))],
+        inputs=[player_input(aim=Vec2(512.0, 512.0))],
     )
 
     assert tick is not None
@@ -65,7 +65,7 @@ def test_quest_session_tick_exposes_required_fields() -> None:
 def test_quest_session_is_deterministic_for_same_seed_and_inputs() -> None:
     session0, spawn0 = _build_session(seed=101)
     session1, spawn1 = _build_session(seed=101)
-    inputs = [PlayerInput(aim=Vec2(512.0, 512.0))]
+    inputs = [player_input(aim=Vec2(512.0, 512.0))]
 
     trace0: list[tuple[float, int, float, float, float]] = []
     trace1: list[tuple[float, int, float, float, float]] = []
@@ -104,7 +104,7 @@ def test_quest_session_clears_reflex_boost_when_quest_is_idle_complete() -> None
 
     _tick = session.step_tick(
         dt=0.054,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
     )
 
     assert spawn_state.spawn_timeline_ms == 0.0
@@ -126,7 +126,7 @@ def _effects_after_first_spawn(*, detail_preset: int) -> int:
     session.world.state.detail_preset = detail_preset
     creatures = session.world.creatures.entries
     while not any(creature.active for creature in creatures):
-        session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(aim=Vec2(512.0, 512.0))])
+        session.step_tick(dt=1.0 / 60.0, inputs=[player_input(aim=Vec2(512.0, 512.0))])
     return len(session.world.state.effects.iter_active())
 
 

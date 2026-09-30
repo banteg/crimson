@@ -11,6 +11,7 @@ from crimson.world import WorldRuntime
 from grim.audio import AudioState
 from grim.config import CrimsonConfig
 from grim.rand import Crand
+from tests.support.factories import player_input
 
 
 class WorldRuntimeHost(WorldRuntime):
@@ -84,7 +85,7 @@ class WorldRuntimeHost(WorldRuntime):
         )
         session.elapsed_ms = float(self._survival_test_elapsed_ms)
 
-        tick_inputs = None if inputs is None else list(inputs)
+        tick_inputs = [player_input() for _ in self.world.players] if inputs is None else inputs
         tick = session.step_tick(
             dt=float(dt),
             inputs=tick_inputs,

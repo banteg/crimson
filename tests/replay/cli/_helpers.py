@@ -24,10 +24,10 @@ from crimson.replay.checkpoints import (
 )
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import GameCommand, PerkMenuOpenCommand, PerkPickCommand, TypoCharCommand, TypoSubmitCommand
-from crimson.sim.input import PlayerInput
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_spec import RunSpec
 from grim.geom import Vec2
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import _run_verify_playback, finish_replay, replay_with_simulated_result
 
 
@@ -44,13 +44,13 @@ def build_replay(
         RunSpec(game_mode_id=mode, seed=int(seed), player_count=int(player_count), quest_level=parsed_level),
     )
     for _ in range(int(ticks)):
-        recorder.record(pack_tick([PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))]))
+        recorder.record(pack_tick([player_input(aim=Vec2(512.0, 512.0)) for _ in range(int(player_count))]))
     return finish_replay(recorder)
 
 
 def build_typo_submit_replay(*, word: str = "reload", seed: int = 0xBEEF) -> Replay:
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.TYPO, seed=int(seed)))
-    baseline = PlayerInput(aim=Vec2(512.0, 512.0))
+    baseline = player_input(aim=Vec2(512.0, 512.0))
     for ch in str(word):
         recorder.record(pack_tick([baseline], [TypoCharCommand(player_index=0, ch=ch)]))
     recorder.record(pack_tick([baseline], [TypoSubmitCommand(player_index=0)]))
@@ -190,7 +190,7 @@ def record_bot_replay(
         for player in world.players:
             nearest = min(targets, key=lambda creature: (creature.pos - player.pos).length_sq(), default=None)
             aim = nearest.pos if nearest is not None else Vec2(player.pos.x + 100.0, player.pos.y)
-            inputs.append(PlayerInput(aim=aim, fire_down=fire, fire_pressed=fire and tick_index % 2 == 0))
+            inputs.append(player_input(aim=aim, fire_down=fire, fire_pressed=fire and tick_index % 2 == 0))
         # Step the same f32-quantized inputs the replay stores.
         inputs = unpack_tick_inputs(pack_tick_inputs(inputs))
         commands: list[GameCommand] = []
@@ -223,7 +223,7 @@ def _typo_bot_word(world) -> str:
 def with_idle_ticks(replay: Replay, count: int) -> Replay:
     """`replay` with `count` idle ticks appended; the recorded result is kept."""
 
-    idle = ReplayTick(inputs=pack_tick_inputs([PlayerInput() for _ in range(replay.run.player_count)]), commands=[])
+    idle = ReplayTick(inputs=pack_tick_inputs([player_input() for _ in range(replay.run.player_count)]), commands=[])
     return msgspec.structs.replace(replay, ticks=[*replay.ticks, *([idle] * int(count))])
 
 

@@ -9,7 +9,6 @@ from crimson.math_parity import f32, x87_pc24_mul
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_reset import reset_world_players
 from crimson.sim.world_state import WorldState
@@ -17,7 +16,7 @@ from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import make_step_runtime, step_player
+from tests.support.factories import make_step_runtime, player_input, step_player
 from tests.support.helpers import assert_float_close
 
 
@@ -64,7 +63,7 @@ def test_alternate_weapon_swap_preserves_perk_firing_and_charges_incoming_weapon
         reload_timer=0.0, reload_timer_max=1.2, shot_cooldown=0.0,
     )
 
-    step_player(world, player, PlayerInput(reload_pressed=True, fire_down=True, aim=Vec2(700.0, 512.0)), 0.01)
+    step_player(world, player, player_input(reload_pressed=True, fire_down=True, aim=Vec2(700.0, 512.0)), 0.01)
 
     # Native captures both ready flags before swapping, then charges the new
     # weapon despite its zero reload timer and the swap's added cooldown.
@@ -87,8 +86,8 @@ def test_alternate_weapon_slows_movement() -> None:
         player.move_speed = 2.0
         player.heading = move_heading
 
-    step_player(base_world, base, PlayerInput(move=Vec2(1.0, 0.0)), 1.0)
-    step_player(perk_world, perk, PlayerInput(move=Vec2(1.0, 0.0)), 1.0)
+    step_player(base_world, base, player_input(move=Vec2(1.0, 0.0)), 1.0)
+    step_player(perk_world, perk, player_input(move=Vec2(1.0, 0.0)), 1.0)
 
     # player_apply_move_with_spawn_avoidance scales the delta by 0.8f at PC24.
     assert base.pos.x == pytest.approx(100.0, abs=1e-4)
@@ -137,7 +136,7 @@ def test_alternate_weapon_reload_pressed_swaps_and_adds_cooldown() -> None:
 
     player.weapon.shot_cooldown = 0.0
     state.sfx_queue.clear()
-    step_player(world, player, PlayerInput(reload_pressed=True), 0.1)
+    step_player(world, player, player_input(reload_pressed=True), 0.1)
     alt = _alt(player)
 
     assert player.weapon.weapon_id == 1
@@ -154,7 +153,7 @@ def test_alternate_weapon_reload_pressed_still_swaps_in_point_click_mode() -> No
 
     player.weapon.shot_cooldown = 0.0
     state.sfx_queue.clear()
-    step_player(world, player, PlayerInput(reload_pressed=True, move_mode=MovementControlType.MOUSE_POINT_CLICK), 0.1)
+    step_player(world, player, player_input(reload_pressed=True, move_mode=MovementControlType.MOUSE_POINT_CLICK), 0.1)
     alt = _alt(player)
 
     assert player.weapon.weapon_id == 1
@@ -175,7 +174,7 @@ def test_alternate_weapon_swap_preserves_same_tick_fire_gate() -> None:
     starting_alt_ammo = float(alt.ammo)
 
     player.weapon.shot_cooldown = 0.05
-    step_player(world, player, PlayerInput(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True), 0.06)
+    step_player(world, player, player_input(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True), 0.06)
 
     assert player.weapon.weapon_id == 1
     assert player.weapon.ammo < starting_alt_ammo
@@ -201,7 +200,7 @@ def test_alternate_weapon_swap_allows_same_tick_fire_with_swapped_reload_timer()
     )
 
     player.weapon.shot_cooldown = 0.05
-    step_player(world, player, PlayerInput(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True), 0.06)
+    step_player(world, player, player_input(aim=Vec2(700.0, 512.0), reload_pressed=True, fire_down=True), 0.06)
 
     assert player.weapon.weapon_id == 11
     assert player.weapon.reload_timer > 0.0
@@ -217,16 +216,16 @@ def test_alternate_weapon_swap_held_reload_uses_native_cooldown_gate() -> None:
     _pick_up_weapon(world, player, WeaponId.ASSAULT_RIFLE)
 
     assert player.weapon.weapon_id == 2
-    step_player(world, player, PlayerInput(reload_pressed=True), 0.05)
+    step_player(world, player, player_input(reload_pressed=True), 0.05)
     assert player.weapon.weapon_id == 1
     assert player.weapon.shot_cooldown == f32(0.1)
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
     for _ in range(3):
-        step_player(world, player, PlayerInput(reload_pressed=True), 0.05)
+        step_player(world, player, player_input(reload_pressed=True), 0.05)
         assert player.weapon.weapon_id == 1
 
-    step_player(world, player, PlayerInput(reload_pressed=True), 0.05)
+    step_player(world, player, player_input(reload_pressed=True), 0.05)
     assert player.weapon.weapon_id == 2
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
@@ -238,14 +237,14 @@ def test_alternate_weapon_swap_release_resets_cooldown_gate() -> None:
     state.perks[int(PerkId.ALTERNATE_WEAPON)] = 1
     _pick_up_weapon(world, player, WeaponId.ASSAULT_RIFLE)
 
-    step_player(world, player, PlayerInput(reload_pressed=True), 0.05)
+    step_player(world, player, player_input(reload_pressed=True), 0.05)
     assert player.weapon.weapon_id == 1
     assert state.player_alt_weapon_swap_cooldown_ms == 200
 
-    step_player(world, player, PlayerInput(reload_pressed=False), 0.05)
+    step_player(world, player, player_input(reload_pressed=False), 0.05)
     assert state.player_alt_weapon_swap_cooldown_ms == 0
 
-    step_player(world, player, PlayerInput(reload_pressed=True), 0.05)
+    step_player(world, player, player_input(reload_pressed=True), 0.05)
     assert player.weapon.weapon_id == 2
 
 
@@ -260,7 +259,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
         _pick_up_weapon(world, player, WeaponId.ASSAULT_RIFLE)
     player_update(
         player0,
-        PlayerInput(reload_pressed=True, reload_down=True),
+        player_input(reload_pressed=True, reload_down=True),
         0.05,
         step_runtime=make_step_runtime(world, dt=0.05),
         reload_active_any=True,
@@ -270,7 +269,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
 
     player_update(
         player1,
-        PlayerInput(reload_pressed=False),
+        player_input(reload_pressed=False),
         0.05,
         step_runtime=make_step_runtime(world, dt=0.05),
         reload_active_any=True,
@@ -279,7 +278,7 @@ def test_alternate_weapon_multiplayer_hold_not_cleared_by_other_player() -> None
 
     player_update(
         player0,
-        PlayerInput(reload_pressed=False, reload_down=True),
+        player_input(reload_pressed=False, reload_down=True),
         0.05,
         step_runtime=make_step_runtime(world, dt=0.05),
         reload_active_any=True,

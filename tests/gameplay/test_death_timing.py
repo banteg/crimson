@@ -24,7 +24,7 @@ from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
-from tests.support.factories import make_creature_state
+from tests.support.factories import make_creature_state, player_input
 from tests.support.helpers import ScriptedCrand
 
 _ALIEN_DEATH_SFX = (SfxId.ALIEN_DIE_01, SfxId.ALIEN_DIE_02, SfxId.ALIEN_DIE_03, SfxId.ALIEN_DIE_04)
@@ -78,7 +78,7 @@ def _world_with_player(**kwargs: Any) -> WorldState:
 def _step(world: WorldState, dt: float, *, inputs: Sequence[PlayerInput] | None = None) -> WorldEvents:
     return world.step(
         dt,
-        inputs=inputs,
+        inputs=[player_input() for _ in world.players] if inputs is None else inputs,
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -458,7 +458,7 @@ def test_perk_effects_step_uses_previous_aim_before_player_update() -> None:
     creature.hp = 100.0
     creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
 
-    _step(world, 0.016, inputs=[PlayerInput(aim=Vec2(900.0, 900.0))])
+    _step(world, 0.016, inputs=[player_input(aim=Vec2(900.0, 900.0))])
 
     # `perks_update_effects` searched around the aim from before `player_update` moved it.
     assert player.doctor_target_creature == 3
@@ -484,7 +484,7 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
         type_id=SecondaryProjectileTypeId.ROCKET,
     )
 
-    events = _step(world, 0.016, inputs=[PlayerInput()])
+    events = _step(world, 0.016, inputs=[player_input()])
 
     # Native secondary-rocket hits run the same first-hit game-tune branch as
     # bullet hits instead of the panned explosion sound.

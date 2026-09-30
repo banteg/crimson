@@ -31,7 +31,6 @@ from ..rng_caller_static import RngCallerStatic
 from ..tutorial.timeline import tutorial_timeline_update
 from ..typo.runtime import typo_mode_update, typo_players_fire
 from .input import PlayerInput
-from .input_frame import normalize_input_frame
 from .mode_updates import (
     ModeState,
     QuestSpawnState,
@@ -181,7 +180,7 @@ class WorldState(msgspec.Struct):
         self,
         dt: float,
         *,
-        inputs: Sequence[PlayerInput] | None,
+        inputs: Sequence[PlayerInput],
         fx_queue: FxQueue,
         fx_queue_rotated: FxQueueRotated,
         perk_progression_enabled: bool,
@@ -193,7 +192,6 @@ class WorldState(msgspec.Struct):
         dt = float(dt)
         fx_queue.violence_disabled = self.state.violence_disabled
         frame_dt_ms = ftol_ms_i32(dt)
-        inputs = normalize_input_frame(inputs, player_count=len(self.players))
         perks_update_effects(self.state, self.players, dt, creatures=self.creatures.entries, fx_queue=fx_queue)
         # `effects_update` runs early in the native frame loop, before creature/projectile updates.
         self.state.effects.update(dt, fx_queue=fx_queue)
@@ -218,8 +216,7 @@ class WorldState(msgspec.Struct):
         else:
             reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
             player_dt = float(dt)
-            for idx, player in enumerate(self.players):
-                input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
+            for player, input_state in zip(self.players, inputs, strict=True):
                 player_dt = player_update(
                     player,
                     input_state,

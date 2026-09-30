@@ -32,13 +32,12 @@ from crimson.math_parity import f32, x87_pc24_hypot, x87_pc24_sub
 from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
 from crimson.sim.timing import reflex_boost_time_scale_factor
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import step_player
+from tests.support.factories import player_input, step_player
 
 from ._support import CREATURE_STRIDE, Mismatch, compare_fields, mismatch_report
 
@@ -391,7 +390,7 @@ def test_relative_turn_matches_native(oracle) -> None:
         state = GameplayState()
         _player_move(
             player,
-            PlayerInput(
+            player_input(
                 move_mode=MovementControlType.RELATIVE,
                 turn_left_pressed=left,
                 turn_right_pressed=not left,
@@ -529,7 +528,7 @@ def test_angry_reloader_ring_matches_native(oracle, mocker: MockerFixture) -> No
         world.players[:] = [player]
         player.weapon.reload_timer_max = reload_timer_max
         player.weapon.reload_timer = f32(reload_timer_max * 0.5 + 0.001)
-        step_player(world, player, PlayerInput(aim=Vec2(1.0, 0.0)), 0.05)
+        step_player(world, player, player_input(aim=Vec2(1.0, 0.0)), 0.05)
         python_angles = [call.kwargs["angle"] for call in python_spawn.call_args_list]
 
         case = f"reload_timer_max={reload_timer_max!r}"
@@ -571,7 +570,7 @@ def test_reflex_restored_frame_dt_drives_spread_and_reload(oracle) -> None:
         frame_dt = step_player(
             world,
             player,
-            PlayerInput(
+            player_input(
                 aim=Vec2(pos.x + 60.0, pos.y),
                 move_mode=MovementControlType.STATIC,
                 move_forward_pressed=False,
@@ -616,7 +615,7 @@ def test_aim_heading_is_recomputed_on_the_player(oracle) -> None:
         world = make_world()
         player = _python_player(pos=pos, aim_heading=1.0)
         world.players[:] = [player]
-        step_player(world, player, PlayerInput(aim=aim), 0.016)
+        step_player(world, player, player_input(aim=aim), 0.016)
         python = {
             "aim_heading": player.aim_heading,
             "helper": _aim_heading_from_aim_point_native(pos, aim),

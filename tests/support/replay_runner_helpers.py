@@ -21,12 +21,12 @@ from crimson.replay.driver.replay_info import ReplayInfoResult, collect_replay_i
 from crimson.replay.input_codec import pack_tick
 from crimson.replay.types import current_replay_game_version
 from crimson.sim.hooks import TickResult
-from crimson.sim.input import PlayerInput
 from crimson.sim.run_result import RunOutcome, RunResult
 from crimson.sim.run_spec import RunSpec
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
 from grim.rand import Crand
+from tests.support.factories import player_input
 
 # Replays recorded in live play, each with its `.chk` checkpoint sidecar.
 RECORDED_REPLAYS = tuple(sorted((Path(__file__).resolve().parents[1] / "fixtures" / "replays").glob("*.crd")))
@@ -78,7 +78,7 @@ def finish_replay(rec: ReplayRecorder) -> Replay:
 def _blank_replay(run: RunSpec, *, ticks: int, game_version: str | None = None) -> ReplayRecorder:
     rec = ReplayRecorder(run, game_version=game_version)
     for _ in range(int(ticks)):
-        rec.record(pack_tick([PlayerInput(aim=Vec2(512.0, 512.0)) for _ in range(run.player_count)]))
+        rec.record(pack_tick([player_input(aim=Vec2(512.0, 512.0)) for _ in range(run.player_count)]))
     return rec
 
 

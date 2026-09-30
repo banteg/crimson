@@ -5,14 +5,13 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.player_damage import player_take_damage
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
-from tests.support.factories import make_creature_state, make_step_runtime, place_creatures
+from tests.support.factories import make_creature_state, make_step_runtime, place_creatures, player_input
 from tests.support.helpers import assert_float_close
 
 
@@ -38,7 +37,7 @@ def test_final_revenge_triggers_explosion_damage_on_death() -> None:
 
     events = world.step(
         0.2,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -69,7 +68,7 @@ def test_final_revenge_triggers_from_player_update_damage_same_step() -> None:
 
     events = world.step(
         0.05,
-        inputs=[PlayerInput(fire_down=True, aim=Vec2(120.0, 100.0))],
+        inputs=[player_input(fire_down=True, aim=Vec2(120.0, 100.0))],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -112,7 +111,7 @@ def test_final_revenge_runs_before_later_creature_slots_update() -> None:
 
     world.step(
         0.2,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -138,7 +137,7 @@ def test_final_revenge_does_not_trigger_from_direct_death_clock_drain() -> None:
 
     events = world.step(
         0.05,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,

@@ -1,15 +1,14 @@
 from __future__ import annotations
 
-from crimson.sim.input import PlayerInput
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import step_player
+from tests.support.factories import player_input, step_player
 from tests.support.helpers import assert_float_close
 
 
 def test_speed_bonus_adds_one_to_speed_multiplier() -> None:
     dt = 0.1
-    input_state = PlayerInput(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0))
+    input_state = player_input(move=Vec2(1.0, 0.0), aim=Vec2(101.0, 100.0))
     move_heading = Vec2(1.0, 0.0).to_heading()
 
     base_world = make_world()

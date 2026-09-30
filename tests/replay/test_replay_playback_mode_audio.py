@@ -31,13 +31,14 @@ from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from grim.view import ViewContext
 from tests.support.audio import HeadlessAudio
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import finish_replay
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
-IDLE = PlayerInput(aim=Vec2(700.0, 512.0))
+IDLE = player_input(aim=Vec2(700.0, 512.0))
 # Held fire: the pistol shoots about every 43 ticks from tick 48 on.
-FIRING = PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True)
+FIRING = player_input(aim=Vec2(700.0, 512.0), fire_down=True)
 
 type OpenPlayback = Callable[..., ReplayPlaybackMode]
 

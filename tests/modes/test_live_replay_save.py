@@ -21,6 +21,7 @@ from grim.geom import Vec2
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.view import ViewContext
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import unverified_replay
 
 pytestmark = pytest.mark.usefixtures("headless_resources")
@@ -185,7 +186,7 @@ def test_perk_prompt_stays_closed_while_a_pick_is_queued(make_mode_config, asset
 def test_live_sim_consumes_the_inputs_the_replay_records(mocker, make_mode_config, assets_dir) -> None:
     mode = _open_mode(SurvivalMode, GameMode.SURVIVAL, make_mode_config=make_mode_config, assets_dir=assets_dir)
     # Stick and mouse aim math produces f64 points that f32 cannot represent.
-    live = PlayerInput(aim=Vec2(600.1, 512.3), move=Vec2(0.3, -0.7), fire_down=True)
+    live = player_input(aim=Vec2(600.1, 512.3), move=Vec2(0.3, -0.7), fire_down=True)
     mocker.patch.object(mode, "_build_local_inputs", return_value=[live])
     session, recorder = mode._sim_session, mode._replay_recorder
     assert session is not None and recorder is not None

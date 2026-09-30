@@ -7,11 +7,11 @@ from crimson.modes.components import perk_prompt_controller
 from crimson.modes.tutorial_mode import TutorialMode
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
-from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import unverified_replay
 
 pytestmark = pytest.mark.usefixtures("headless_resources")
@@ -47,7 +47,7 @@ def test_tutorial_recorded_first_shot_replays_the_live_startup(make_mode_config,
     session = mode._sim_session
     recorder = mode._replay_recorder
     assert session is not None and recorder is not None
-    inputs = (PlayerInput(aim=Vec2(600.0, 512.0), fire_down=True, fire_pressed=True),)
+    inputs = (player_input(aim=Vec2(600.0, 512.0), fire_down=True, fire_pressed=True),)
     recorder.record(pack_tick(inputs))
     driver = PlaybackDriver(unverified_replay(recorder))
     assert session.world.players == driver.world.players

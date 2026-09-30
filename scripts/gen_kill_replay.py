@@ -7,11 +7,12 @@ import sys
 from pathlib import Path
 
 from crimson.game_modes import GameMode
-from crimson.replay import REPLAY_TICK_DT, ReplayRecorder, dump_replay_file
+from crimson.replay import REPLAY_TICK_DT, ReplayRecorder, dump_replay_file, pack_tick
 from crimson.sim.input import PlayerInput
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_result import build_run_result
 from crimson.sim.run_spec import RunSpec
+from grim.config import default_player_controls
 from grim.geom import Vec2
 
 
@@ -21,13 +22,22 @@ def main() -> None:
     run = RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0xBEEF)
     session = initialize_run(run).session
     recorder = ReplayRecorder(run)
+    controls = default_player_controls(0)
     # Record like live play: stop on the tick that ends the run.
     outcome = None
     for tick in range(max_ticks):
         angle = float(tick) * 0.05
         aim = Vec2(512.0 + math.cos(angle) * 200.0, 512.0 + math.sin(angle) * 200.0)
-        inputs = [PlayerInput(aim=aim, fire_down=True, fire_pressed=tick % 30 == 0)]
-        recorder.record_tick(inputs)
+        inputs = [
+            PlayerInput(
+                move_mode=controls.movement,
+                aim_scheme=controls.aim_scheme,
+                aim=aim,
+                fire_down=True,
+                fire_pressed=tick % 30 == 0,
+            ),
+        ]
+        recorder.record(pack_tick(inputs))
         outcome = session.step_tick(dt=REPLAY_TICK_DT, inputs=inputs).outcome
         if outcome is not None:
             break

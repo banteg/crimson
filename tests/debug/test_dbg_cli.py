@@ -18,6 +18,7 @@ from crimson.sim.run_spec import RunSpec
 from crimson_re.dbg.schema import TRACE_REQUIRED_CHANNELS, TickRecord
 from crimson_re.dbg.trace import TraceReader, load_trace, write_trace
 from grim.geom import Vec2
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import finish_replay
 
 
@@ -219,11 +220,11 @@ def _write_survival_replay(path: Path, player_input: PlayerInput, *, ticks: int)
 
 
 def _write_replay(path: Path, *, ticks: int = 3) -> Path:
-    return _write_survival_replay(path, PlayerInput(aim=Vec2(512.0, 512.0)), ticks=ticks)
+    return _write_survival_replay(path, player_input(aim=Vec2(512.0, 512.0)), ticks=ticks)
 
 
 def _write_replay_with_fire(path: Path, *, ticks: int = 3) -> Path:
-    return _write_survival_replay(path, PlayerInput(aim=Vec2(700.0, 512.0), fire_down=True), ticks=ticks)
+    return _write_survival_replay(path, player_input(aim=Vec2(700.0, 512.0), fire_down=True), ticks=ticks)
 
 
 def _with_score_xp_delta(rows: list[TickRecord], *, tick_index: int, delta: int) -> list[TickRecord]:

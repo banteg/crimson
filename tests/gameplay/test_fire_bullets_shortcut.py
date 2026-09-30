@@ -8,13 +8,12 @@ from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.projectiles.types import ProjectileTemplateId
 from crimson.replay.input_codec import pack_player_input, unpack_player_input
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.config import default_crimson_cfg
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import step_player
+from tests.support.factories import player_input, step_player
 
 
 class _Witness(msgspec.Struct, frozen=True):
@@ -72,7 +71,7 @@ def test_fire_bullets_shortcut_native_witnesses_through_replay(preserve_bugs: bo
         )
         state.perks[int(PerkId.REGRESSION_BULLETS)] = int(row.regression_bullets)
         state.perks[int(PerkId.AMMUNITION_WITHIN)] = int(row.ammunition_within)
-        live = PlayerInput(
+        live = player_input(
             aim=Vec2(200.0, 100.0),
             move_mode=MovementControlType.STATIC,
             fire_down=row.fire_down,

@@ -13,11 +13,11 @@ from crimson.quests.level import QuestLevel
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import TypoCharCommand
-from crimson.sim.input import PlayerInput
 from crimson_re.dbg.state_digest import session_state_bytes
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import unverified_replay
 
 
@@ -44,7 +44,7 @@ def test_live_start_and_first_ticks_match_complete_replay_state(
     session = mode._sim_session
     recorder = mode._replay_recorder
     assert session is not None and recorder is not None
-    inputs = tuple(PlayerInput(aim=Vec2(600.0, 512.0), fire_down=True, move=Vec2(1.0, 0.0)) for _ in session.world.players)
+    inputs = tuple(player_input(aim=Vec2(600.0, 512.0), fire_down=True, move=Vec2(1.0, 0.0)) for _ in session.world.players)
     commands = (TypoCharCommand(player_index=0, ch="a"),) if game_mode == GameMode.TYPO else ()
     assert recorder.run.preserve_bugs == preserve_bugs
     for _ in range(3):

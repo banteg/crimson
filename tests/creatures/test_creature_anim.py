@@ -14,6 +14,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.factories import player_input
 from tests.support.helpers import assert_float_close
 
 
@@ -116,7 +117,7 @@ def test_creature_killed_by_a_projectile_still_advances_its_walk_cycle_that_tick
 
     events = world.step(
         dt,
-        inputs=None,
+        inputs=[player_input() for _ in world.players],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,

@@ -3,7 +3,6 @@ from __future__ import annotations
 from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
-from crimson.sim.input import PlayerInput
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
@@ -17,6 +16,7 @@ from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
+from tests.support.factories import player_input
 from tests.support.helpers import ScriptedCrand
 
 
@@ -78,12 +78,12 @@ def test_typo_submit_fires_at_the_named_creature_for_one_tick(make_world_state) 
         perk_progression_enabled=False,
     )
 
-    session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput()], commands=[TypoSubmitCommand(player_index=0)])
+    session.step_tick(dt=1.0 / 60.0, inputs=[player_input()], commands=[TypoSubmitCommand(player_index=0)])
 
     assert player.aim == Vec2(321.0, 654.0)
     assert world.state.shots_fired == 12
 
-    session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(fire_down=True, fire_pressed=True)])
+    session.step_tick(dt=1.0 / 60.0, inputs=[player_input(fire_down=True, fire_pressed=True)])
 
     # The aim point stays on the last target; player fire input does nothing.
     assert player.aim == Vec2(321.0, 654.0)

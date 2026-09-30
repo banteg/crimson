@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import WeaponSlot
 from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 
 
 def _fire_pistol(*, friendly_fire_enabled: bool) -> WorldState:
@@ -17,7 +16,7 @@ def _fire_pistol(*, friendly_fire_enabled: bool) -> WorldState:
     player.pos = Vec2(100.0, 100.0)
     player.weapon = WeaponSlot(weapon_id=WeaponId.PISTOL, clip_size=12, ammo=12)
     player.spread_heat = 0.0
-    fire_player_weapon(world, player, PlayerInput(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
+    fire_player_weapon(world, player, player_input(fire_down=True, aim=Vec2(200.0, 100.0)), 0.016)
     return world
 
 

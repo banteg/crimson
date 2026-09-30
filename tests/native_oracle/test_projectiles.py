@@ -12,7 +12,6 @@ from crimson.owner_id import OWNER_LOCAL_PLAYER
 from crimson.perks import PerkId
 from crimson.projectiles.runtime import projectile_spawn
 from crimson.projectiles.types import Projectile, ProjectileTemplateId
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.typo.player import player_fire_weapon
 from crimson.weapon_runtime import weapon_assign_player, weapon_entry
@@ -20,7 +19,7 @@ from crimson.weapons import WEAPON_TABLE, WeaponId
 from grim.geom import Vec2
 from grim.rand import CrtRand
 from tests.support.builders.session import make_world
-from tests.support.factories import fire_player_weapon
+from tests.support.factories import fire_player_weapon, player_input
 
 from ._support import (
     PARTICLE_LAYOUT,
@@ -387,7 +386,7 @@ def test_particle_weapons_match_native(oracle, weapon_id: WeaponId) -> None:
             # Keep the port's cooldown and spread gates in step with the fragment.
             python_player.weapon.shot_cooldown = 0.0
             python_player.spread_heat = 0.0
-            fire_player_weapon(world, python_player, PlayerInput(fire_down=True, aim=aim), 0.016)
+            fire_player_weapon(world, python_player, player_input(fire_down=True, aim=aim), 0.016)
             if shot == 1:
                 particle = next(entry for entry in reversed(state.particles.entries) if entry.active)
                 slot = state.particles.entries.index(particle)

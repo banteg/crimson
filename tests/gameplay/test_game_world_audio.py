@@ -6,7 +6,6 @@ import crimson.world.audio_bridge as audio_bridge_module
 from crimson.bonuses import BonusId
 from crimson.perks import PerkId
 from crimson.sim.batch_apply import apply_presentation_plans
-from crimson.sim.input import PlayerInput
 from crimson.weapons import WeaponId
 from grim.audio import AudioState
 from grim.geom import Vec2
@@ -16,6 +15,7 @@ from grim.sfx import init_sfx_state
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 from tests.support.builders.tick_payload import make_tick_payload
+from tests.support.factories import player_input
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -53,7 +53,7 @@ def test_reload_finish_and_immediate_shot_plays_fire_sfx(mocker) -> None:
     player.weapon.reload_timer_max = 1.0
     player.weapon.shot_cooldown = 0.0
 
-    fire = PlayerInput(fire_down=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
+    fire = player_input(fire_down=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
     runtime.step_survival_frame(0.05, inputs=[fire], perk_progression_enabled=False)
 
     assert _played(play_sfx) == [SfxId.PISTOL_FIRE]
@@ -68,7 +68,7 @@ def test_fire_bullets_replaces_the_weapon_fire_sfx(mocker) -> None:
     player.weapon.shot_cooldown = 0.0
     player.fire_bullets_timer = 1.0
 
-    fire = PlayerInput(fire_down=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
+    fire = player_input(fire_down=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
     runtime.step_survival_frame(0.05, inputs=[fire], perk_progression_enabled=False)
 
     assert _played(play_sfx) == [SfxId.AUTORIFLE_FIRE, SfxId.PLASMAMINIGUN_FIRE]
@@ -82,7 +82,7 @@ def test_flamethrower_shots_pick_between_both_flamer_samples(mocker) -> None:
     player.weapon.ammo = 30
     player.weapon.shot_cooldown = 0.0
 
-    fire = PlayerInput(fire_down=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
+    fire = player_input(fire_down=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
     for _ in range(12):
         runtime.step_survival_frame(0.016, inputs=[fire], perk_progression_enabled=False)
 
@@ -96,7 +96,7 @@ def test_reload_plays_its_sfx_once_when_it_starts(mocker) -> None:
     player.weapon.clip_size = 12
     player.weapon.ammo = 5
 
-    reload = PlayerInput(reload_pressed=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
+    reload = player_input(reload_pressed=True, aim=Vec2(player.pos.x + 10.0, player.pos.y))
     runtime.step_survival_frame(0.016, inputs=[reload], perk_progression_enabled=False)
     runtime.step_survival_frame(0.016, inputs=[reload], perk_progression_enabled=False)
 
@@ -116,7 +116,7 @@ def test_pending_perk_increase_plays_levelup_sfx(mocker) -> None:
 
     runtime.step_survival_frame(
         0.05,
-        inputs=[PlayerInput()],
+        inputs=[player_input()],
         perk_progression_enabled=True,
     )
 
@@ -191,7 +191,7 @@ def test_perk_bursts_play_explosion_small_sfx(mocker) -> None:
 
     player = runtime.world.players[0]
     perks = runtime.world.state.perks
-    aim = PlayerInput(aim=Vec2(player.pos.x + 1.0, player.pos.y))
+    aim = player_input(aim=Vec2(player.pos.x + 1.0, player.pos.y))
 
     play_sfx.reset_mock()
     perks[int(PerkId.MAN_BOMB)] = 1

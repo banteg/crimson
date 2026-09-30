@@ -265,27 +265,6 @@ def _direction_from_heading_native(heading: float) -> Vec2:
     return Vec2(math.cos(radians), math.sin(radians))
 
 
-def _resolve_move_mode_for_update(input_state: PlayerInput) -> MovementControlType:
-    move_mode = input_state.move_mode
-    if move_mode is not None:
-        return move_mode
-    if (
-        input_state.move_forward_pressed is not None
-        and input_state.move_backward_pressed is not None
-        and input_state.turn_left_pressed is not None
-        and input_state.turn_right_pressed is not None
-    ):
-        return MovementControlType.STATIC
-    return MovementControlType.DUAL_ACTION_PAD
-
-
-def _resolve_aim_scheme_for_update(input_state: PlayerInput) -> AimScheme:
-    aim_scheme = input_state.aim_scheme
-    if aim_scheme is not None:
-        return aim_scheme
-    return AimScheme.MOUSE
-
-
 def _player_accelerate_move_speed(player: PlayerState, perks: PerkCounts, dt: float) -> None:
     dt = f32(dt)
     if PerkId.LONG_DISTANCE_RUNNER in perks:
@@ -900,8 +879,8 @@ def player_update(
     speed_bonus_active = player.speed_bonus_timer > 0.0
     player_aux_timer_update(player, dt)
 
-    move_mode = _resolve_move_mode_for_update(input_state)
-    aim_scheme = _resolve_aim_scheme_for_update(input_state)
+    move_mode = input_state.move_mode
+    aim_scheme = input_state.aim_scheme
 
     speed_multiplier = float(player.speed_multiplier)
     if speed_bonus_active:

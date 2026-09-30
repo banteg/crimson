@@ -4,9 +4,9 @@ from collections.abc import Sequence
 
 from grim.geom import Vec2
 
-from ..aim_schemes import aim_scheme_from_value
+from ..aim_schemes import AimScheme, aim_scheme_from_value
 from ..math_parity import f32
-from ..movement_controls import movement_control_type_from_value
+from ..movement_controls import MovementControlType, movement_control_type_from_value
 from ..sim.commands import GameCommand
 from ..sim.input import PlayerInput
 from .types import (
@@ -54,24 +54,27 @@ def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
             | (TURN_LEFT_FLAG if inp.turn_left_pressed else 0)
             | (TURN_RIGHT_FLAG if inp.turn_right_pressed else 0)
         )
-    if inp.move_mode is not None:
-        flags |= MOVE_MODE_PRESENT_FLAG | (int(inp.move_mode) & MOVE_MODE_MASK) << MOVE_MODE_SHIFT
-    if inp.aim_scheme is not None:
-        flags |= AIM_SCHEME_PRESENT_FLAG | (int(inp.aim_scheme) & AIM_SCHEME_MASK) << AIM_SCHEME_SHIFT
+    flags |= MOVE_MODE_PRESENT_FLAG | (int(inp.move_mode) & MOVE_MODE_MASK) << MOVE_MODE_SHIFT
+    flags |= AIM_SCHEME_PRESENT_FLAG | (int(inp.aim_scheme) & AIM_SCHEME_MASK) << AIM_SCHEME_SHIFT
     return (f32(inp.move.x), f32(inp.move.y), f32(inp.aim.x), f32(inp.aim.y), flags)
 
 
 def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
     mx, my, ax, ay, flags = packed
-    move_mode = None
+    move_keys = bool(flags & MOVE_KEYS_PRESENT_FLAG)
+    # Older recordings (tutorial, Typ-o, scripted runs) left the controls out; the sim
+    # then ran them as static movement when the movement keys were recorded, else as
+    # a dual action pad, with mouse aim.
     if flags & MOVE_MODE_PRESENT_FLAG:
         move_mode = movement_control_type_from_value((flags >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK)
-    aim_scheme = None
+    else:
+        move_mode = MovementControlType.STATIC if move_keys else MovementControlType.DUAL_ACTION_PAD
     if flags & AIM_SCHEME_PRESENT_FLAG:
         aim_scheme_raw = (flags >> AIM_SCHEME_SHIFT) & AIM_SCHEME_MASK
         # The 3-bit field stores the -1 scheme as all ones.
         aim_scheme = aim_scheme_from_value(-1 if aim_scheme_raw == AIM_SCHEME_MASK else aim_scheme_raw)
-    move_keys = bool(flags & MOVE_KEYS_PRESENT_FLAG)
+    else:
+        aim_scheme = AimScheme.MOUSE
     return PlayerInput(
         move=Vec2(float(mx), float(my)),
         aim=Vec2(float(ax), float(ay)),

@@ -11,7 +11,6 @@ from crimson.game_modes import GameMode
 from crimson.math_parity import f32
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.mode_updates import RushSpawnState, SurvivalSpawnState
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.world_reset import reset_world_players
@@ -20,7 +19,7 @@ from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
-from tests.support.factories import make_step_runtime, place_creatures
+from tests.support.factories import make_step_runtime, place_creatures, player_input
 from tests.support.helpers import assert_float_close
 from tests.support.world_runtime import WorldRuntimeHost
 
@@ -203,7 +202,7 @@ def test_survival_session_nuke_pickup_skips_deferred_camera_decay() -> None:
 
     _tick = session.step_tick(
         dt=1.0 / 60.0,
-        inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
+        inputs=[player_input(aim=Vec2(player.pos.x, player.pos.y))],
     )
 
     assert bool(getattr(entry, "picked", False))
@@ -224,7 +223,7 @@ def test_rush_session_nuke_pickup_skips_deferred_camera_decay() -> None:
 
     _tick = session.step_tick(
         dt=1.0 / 60.0,
-        inputs=[PlayerInput(aim=Vec2(player.pos.x, player.pos.y))],
+        inputs=[player_input(aim=Vec2(player.pos.x, player.pos.y))],
     )
 
     assert bool(getattr(entry, "picked", False))

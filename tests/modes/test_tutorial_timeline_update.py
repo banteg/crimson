@@ -3,12 +3,12 @@ from __future__ import annotations
 from crimson.bonuses import BonusId
 from crimson.creatures.spawn_ids import CreatureFlags, SpawnId
 from crimson.game_modes import GameMode
-from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldState
 from crimson.tutorial.timeline import tutorial_timeline_update
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
 from tests.support.builders.session import make_session, make_world
+from tests.support.factories import player_input
 
 
 def _tutorial_world() -> WorldState:
@@ -85,7 +85,7 @@ def test_stage_5_experience_levels_up_in_the_same_world_step() -> None:
     tutorial = world.state.tutorial
     tutorial.stage_index, tutorial.stage_transition_timer_ms, tutorial.repeat_spawn_count = 5, -1, 7
 
-    session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(aim=Vec2(512.0, 512.0))])
+    session.step_tick(dt=1.0 / 60.0, inputs=[player_input(aim=Vec2(512.0, 512.0))])
 
     # `tutorial_timeline_update` runs before the level-up check, which turns the 3000 XP into a perk.
     assert world.players[0].experience == 3000

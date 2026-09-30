@@ -8,11 +8,12 @@ from ..aim_schemes import AimScheme
 from ..movement_controls import MovementControlType
 
 
-class PlayerInput(msgspec.Struct, frozen=True):
+class PlayerInput(msgspec.Struct, frozen=True, kw_only=True):
+    # The player's `config_movement_schemes` / `config_aim_schemes` entries, which `player_update` reads each frame.
+    move_mode: MovementControlType
+    aim_scheme: AimScheme
     move: Vec2 = Vec2()
     aim: Vec2 = Vec2()
-    move_mode: MovementControlType | None = None
-    aim_scheme: AimScheme | None = None
     fire_down: bool = False
     fire_pressed: bool = False
     reload_pressed: bool = False

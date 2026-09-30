@@ -5,10 +5,10 @@ from crimson.effects import FxQueue, FxQueueRotated
 from crimson.perks import PerkId
 from crimson.perks.effects import perks_update_effects
 from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
+from tests.support.factories import player_input
 from tests.support.helpers import assert_float_close
 
 
@@ -36,7 +36,7 @@ def test_evil_eyes_freezes_creature_under_aim() -> None:
     before = (float(creature.pos.x), float(creature.pos.y))
     events = world.step(
         0.5,
-        inputs=[PlayerInput(aim=Vec2(float(creature.pos.x), float(creature.pos.y)))],
+        inputs=[player_input(aim=Vec2(float(creature.pos.x), float(creature.pos.y)))],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,

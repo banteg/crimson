@@ -13,7 +13,7 @@ from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state as _creature
-from tests.support.factories import make_step_runtime, place_creatures
+from tests.support.factories import make_step_runtime, place_creatures, player_input
 from tests.support.helpers import ScriptedCrand
 
 
@@ -84,7 +84,6 @@ def test_freeze_shatters_active_corpses_below_despawn_threshold() -> None:
 
 def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
     from crimson.projectiles.types import ProjectileTemplateId
-    from crimson.sim.input import PlayerInput
     from crimson.sim.sessions import DeterministicSession
 
     world = make_world(preserve_bugs=True)
@@ -110,7 +109,7 @@ def test_freeze_pickup_shatters_same_tick_projectile_kill() -> None:
         world=world,
         perk_progression_enabled=False,
     )
-    result = session.step_tick(dt=1 / 60, inputs=[PlayerInput(aim=Vec2(600, 512))])
+    result = session.step_tick(dt=1 / 60, inputs=[player_input(aim=Vec2(600, 512))])
     assert len(result.events.deaths) == 1
     assert [p.bonus_id for p in result.events.pickups] == [BonusId.FREEZE]
     callers = [r.caller for r in rng.records_since(tick_start)]
@@ -140,7 +139,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
 
     events = world.step(
         0.2,
-        inputs=None,
+        inputs=[player_input() for _ in world.players],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
@@ -156,7 +155,7 @@ def test_freeze_stops_creature_movement_and_animation() -> None:
     world.state.bonuses.freeze = 5.0
     events = world.step(
         0.2,
-        inputs=None,
+        inputs=[player_input() for _ in world.players],
         fx_queue=FxQueue(),
         fx_queue_rotated=FxQueueRotated(),
         perk_progression_enabled=False,
