@@ -13,7 +13,7 @@ from grim.raylib_api import rl
 from ..game_modes import GameMode
 from ..game_states import GameStateId
 from ..persistence.highscores import HighScoreRecord
-from ..weapons import WEAPON_BY_ID, weapon_display_name
+from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 from .formatting import format_ordinal, highscore_format_date_label
 from .hud import weapon_icon_src
 
@@ -149,11 +149,18 @@ def ui_text_input_render(
     if not hide_weapon_row:
         _divider(pos, 192.0, 1.0, divider_color)
         pos = pos.offset(dy=4.0)
-        weapon = WEAPON_BY_ID[record.most_used_weapon_id]
+        # `weapon_table[0]` (no weapon, as in a run that never fired) keeps the entry defaults: the first icon and
+        # "Unknown".
+        match record.most_used_weapon_id:
+            case WeaponId.NONE:
+                icon_index, weapon_name = 0, "Unknown"
+            case weapon_id:
+                weapon = WEAPON_BY_ID[weapon_id]
+                icon_index, weapon_name = weapon.icon_index, weapon_display_name(weapon.weapon_id)
         wicons = resources.texture(TextureId.UI_WICONS)
         rl.draw_texture_pro(
             wicons,
-            weapon_icon_src(wicons, weapon.icon_index),
+            weapon_icon_src(wicons, icon_index),
             rl.Rectangle(float(int(pos.x)), float(int(pos.y)), 64.0, 32.0),
             rl.Vector2(0.0, 0.0),
             0.0,
@@ -162,7 +169,6 @@ def ui_text_input_render(
         inside = pos.x < mouse.x < pos.x + 64.0 and pos.y < mouse.y < pos.y + 32.0
         _hover.weapon += hover_step if inside else -hover_step
 
-        weapon_name = weapon_display_name(weapon.weapon_id)
         name_x = max(0.0, float(32 - _half_width(font, weapon_name)))
         draw_small_text(font, weapon_name, Vec2(pos.x + name_x, pos.y + 32.0), tooltip_color)
         draw_small_text(font, f"Frags: {record.creature_kill_count}", pos + Vec2(110.0, 1.0), tooltip_color)

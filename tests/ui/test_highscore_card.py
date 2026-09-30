@@ -148,3 +148,13 @@ def test_hover_tooltips_fade_in_on_result_screens_only(drawn: _Drawn) -> None:
     _render(record, GameStateId.HIGHSCORES, 0)
     assert card._hover.hit_ratio == 1.0
     assert tooltip not in drawn.texts
+
+
+def test_card_for_a_run_without_a_weapon_names_it_unknown(drawn: _Drawn) -> None:
+    record = _record(GameMode.SURVIVAL)
+    record.most_used_weapon_id = WeaponId.NONE
+
+    _render(record, GameStateId.HIGHSCORES, 0)
+
+    # `weapon_table[0]` keeps its constructor name, centred under the 64px icon: 32 - 56 // 2 in.
+    assert drawn.texts["Unknown"][0] == Vec2(120.0, 334.0)
