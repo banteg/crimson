@@ -141,8 +141,9 @@ def main():
     if a.target == "wasm":
         mathcmd[2:2] = ["-target", "wasm32-wasi"]
     elif os.uname().sysname != "Darwin":
-        # Linux clang links PIE executables by default.
-        mathcmd[2:2] = ["-fPIC", "-mcpu=baseline"]
+        # Linux clang links PIE executables by default. The imported compiler
+        # runtime must not optimize its memory loops into calls to themselves.
+        mathcmd[2:2] = ["-fPIC", "-mcpu=baseline", "-fno-builtin"]
     elif os.uname().sysname == "Darwin":
         mathcmd[2:2] = ["-target", "aarch64-macos.11.0" if os.uname().machine == "arm64" else "x86_64-macos.11.0"]
     subprocess.run(mathcmd, env=env, check=True)

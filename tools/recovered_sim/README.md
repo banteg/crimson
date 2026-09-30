@@ -173,6 +173,10 @@ that distinction. Further numerical adapters may be necessary elsewhere.
 The small [math.zig](math.zig) adapter uses Zig's bundled math routines for
 both targets; it contains no simulation. This makes trig/pow independent of
 the host libc. Zig remains a pinned build tool and math dependency.
+On Linux the math object uses a baseline CPU and `-fno-builtin`: the imported
+compiler runtime must not optimize its memory routines into recursive calls
+to themselves. Native initialization tracing is available through
+`RECOVERED_SIM_TRACE_INIT=1`; test subprocesses have timeouts.
 
 [data.py](data.py) recreates overlapping global views from the recovered
 manifest. Adjacent globals stay separate because 64-bit pointers need more
