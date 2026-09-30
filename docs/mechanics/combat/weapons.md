@@ -52,9 +52,10 @@ damage.
 Three weapons get elevated pools that enable piercing: Gauss Gun
 (300), Fire Bullets (240), and Blade Gun (50).
 
-When a piercing projectile hits, it deals the current pool value as
-damage instead of the distance formula, then subtracts the target's
-HP from the pool. The projectile keeps going until the pool is
+When a piercing projectile hits, it spends 1 from its pool and deals
+what remains as damage instead of the distance formula, then subtracts
+the target's HP from the pool. A fresh Gauss slug hits its first target
+for 299. The projectile keeps going until the pool is
 drained. Piercing shots shred crowds of weak enemies but get eaten
 quickly by a few tough targets.
 
@@ -75,9 +76,10 @@ unlock progression. Fire interval and reload are in seconds.
 
 ### 1. Pistol
 
-Clip 10 · Damage 4.1 · Fire 0.712 s · Reload 1.2 s · Bullet
+Clip 12 · Damage 4.1 · Fire 0.712 s · Reload 1.2 s · Bullet
 
-Starter weapon. Hits hard per shot but slow fire rate and tiny clip
+Starter weapon. Every run starts with a 10-round clip; a Pistol picked up
+later holds the full 12. Hits hard per shot but slow fire rate and tiny clip
 limit sustained output. While you're holding the Pistol, 75% of bonus
 drops are forced to be weapon pickups and the overall drop rate
 increases — the game actively tries to get you off it.
