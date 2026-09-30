@@ -175,12 +175,13 @@ def _external_inputs(
         for path in matchlib._scratch_build_dependencies(
             config, matchlib.DEFAULT_MATCH_ROOT, include_resolver=resolver,
         ):
-            path = path.resolve()
             # Compiler trees have their own location-independent fingerprint;
             # the resolver may find them in a sibling checkout or an env path.
-            if compiler is not None and path.is_relative_to(compiler.parent.parent.resolve()):
+            if compiler is not None and path.resolve().is_relative_to(compiler.parent.parent.resolve()):
                 continue
-            relative = path.relative_to(matchlib.REPO_ROOT).as_posix()
+            relative = matchlib.repo_relative_path(path)
+            if relative is None:
+                raise ValueError(f"{path} is outside repository root {matchlib.REPO_ROOT}")
             if relative not in tracked:
                 files[relative] = _required_hash(path)
         if compiler is not None and config.compiler not in toolchains:

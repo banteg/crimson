@@ -31,7 +31,10 @@ def _sha(data: bytes) -> str:
 
 
 def _relative(path: Path) -> str:
-    return path.resolve().relative_to(matchlib.REPO_ROOT).as_posix()
+    relative = matchlib.repo_relative_path(path)
+    if relative is None:
+        raise ValueError(f"{path} is outside repository root {matchlib.REPO_ROOT}")
+    return relative
 
 
 def _plan(functions: list[dict[str, Any]], data: dict[str, Any]) -> list[dict[str, Any]]:

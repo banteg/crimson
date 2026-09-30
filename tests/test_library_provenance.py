@@ -139,3 +139,19 @@ def test_render_library_provenance_report_is_concise() -> None:
 
     assert "failed=0" in rendered
     assert "crimsonland.exe<->grim.dll:d3dx8 ok checks=3" in rendered
+
+
+def test_artifact_paths_follow_symlinked_game_bins_but_not_parent_escapes(tmp_path: Path) -> None:
+    from crimson_re.library_provenance import _artifact_path
+
+    outside = tmp_path / "outside"
+    (outside / "crimsonland").mkdir(parents=True)
+    (outside / "crimsonland" / "crimsonland.exe").write_bytes(b"MZ")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "game_bins").symlink_to(outside)
+
+    assert _artifact_path(repo, "game_bins/crimsonland/crimsonland.exe").read_bytes() == b"MZ"
+    for escape in ("../outside/crimsonland/crimsonland.exe", "game_bins/../../outside", "/etc/passwd"):
+        with pytest.raises(ValueError, match="escapes repository"):
+            _artifact_path(repo, escape)

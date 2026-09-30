@@ -2,7 +2,7 @@
 /analysis/historical/*/captures/
 /analysis/historical/*/assets/
 /cl_mod_sdk_v1/
-/artifacts/
+/artifacts
 /_site/
 /analysis/ghidra/projects/
 /analysis/ida/databases/
@@ -12,15 +12,15 @@
 /analysis/frida/ui_render_trace_marked_frames.jsonl
 /analysis/windbg/*.log
 /analysis/binary_ninja/*.bndb
-/tools/match/bin/
-/tools/match/compilers/
+/tools/match/bin
+/tools/match/compilers
 /tools/match/idioms/build/
 /tools/match/scratches/*/build/
 /tools/match/.cache/
 /tools/native/abi/*/build/
 /tools/native/data_definitions/build/
 /tools/native/linker_aliases/build/
-/tools/native/providers/build/
+/tools/native/providers/build
 /tools/native/providers/sources/*/build/
 /analysis/native/*/link/*
 !/analysis/native/*/link/link.json

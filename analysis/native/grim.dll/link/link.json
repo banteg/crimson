@@ -117,7 +117,7 @@
       }
     }
   ],
-  "audit_digest": "dc5c0a322fb95b36dbe44fafcb3771cb65de246045447bb473d8cf38b03678d6",
+  "audit_digest": "1c4d971b80e87170c10a1317ee81e72a3cfd3864ded6b578926f1b2b5699352e",
   "entry": {
     "symbol": "DllMain"
   },
@@ -1348,7 +1348,7 @@
           "note": "The native closure classifier identifies these as MSVC toolchain externals.",
           "path": "analysis/native/grim.dll/closure.json",
           "repository_relative": true,
-          "sha256": "b94304378510bb0b0eb39079a25aafdf2679e0fb745df4b3b6ed621afdb14492"
+          "sha256": "fb43fb0e277ea0afa6785a11b98c7ffb45b52d9743b921b8af7082fbf1b6442e"
         },
         {
           "note": "VC6 SP6 dllsupp.obj defines __except_list and __fltused as absolute toolchain symbols.",

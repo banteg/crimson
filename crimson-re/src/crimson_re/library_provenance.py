@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import posixpath
 import re
 from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from . import match as matchlib
@@ -178,12 +179,11 @@ def _load_pe(path: Path) -> tuple[Any, bytes]:
 
 
 def _artifact_path(repo_root: Path, relative_path: str) -> Path:
-    path = (repo_root / relative_path).resolve()
-    try:
-        path.relative_to(repo_root.resolve())
-    except ValueError as exc:
-        raise ValueError(f"artifact path escapes repository: {relative_path}") from exc
-    return path
+    # Checked on the label, not the filesystem, so a symlinked `game_bins/` (worktrees) is still inside the repo.
+    normalized = PurePosixPath(posixpath.normpath(relative_path))
+    if normalized.is_absolute() or normalized.parts[:1] == ("..",):
+        raise ValueError(f"artifact path escapes repository: {relative_path}")
+    return repo_root / normalized
 
 
 def _normalize_module(name: str) -> str:

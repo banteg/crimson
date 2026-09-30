@@ -1282,10 +1282,10 @@ def _normalized_coff_sha256(data: bytes) -> str:
 
 
 def _path_label(path: Path, *, repo_root: Path) -> tuple[str, bool]:
-    try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix(), True
-    except ValueError:
+    relative = matchlib.repo_relative_path(path, repo_root)
+    if relative is None:
         return path.name, False
+    return relative, True
 
 
 def _file_payload(path: Path, *, repo_root: Path) -> dict[str, Any]:
@@ -1448,10 +1448,10 @@ def _toolchain_payload(
 
 
 def _repo_relative(path: Path, *, repo_root: Path) -> str:
-    try:
-        return path.resolve().relative_to(repo_root.resolve()).as_posix()
-    except ValueError as exc:
-        raise ValueError(f"{path} is outside repository root {repo_root}") from exc
+    relative = matchlib.repo_relative_path(path, repo_root)
+    if relative is None:
+        raise ValueError(f"{path} is outside repository root {repo_root}")
+    return relative
 
 
 def _image_paths(image: str) -> tuple[Path, Path, Path]:

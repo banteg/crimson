@@ -196,6 +196,44 @@ def load_name_map_rows(path: Path) -> tuple[dict[str, Any], ...]:
     return tuple(rows)
 
 
+def repo_relative_path(path: Path, root: Path = REPO_ROOT) -> str | None:
+    """`path` relative to `root`, or None outside it, counting paths reached through symlinks inside `root`.
+
+    Worktrees link `game_bins/` and ignored toolchain builds from the main checkout, so a resolved input can live
+    outside the worktree while still being addressed by a repository path.
+    """
+
+    real_root = os.path.realpath(root)
+    for candidate in (os.path.abspath(path), os.path.realpath(path)):
+        relative = os.path.relpath(candidate, real_root)
+        if relative != os.pardir and not relative.startswith(os.pardir + os.sep):
+            return Path(relative).as_posix()
+    real_path = os.path.realpath(path)
+    for link, target in _repo_symlinks(real_root):
+        if real_path == target or real_path.startswith(target + os.sep):
+            return Path(link, os.path.relpath(real_path, target)).as_posix().removesuffix("/.")
+    return None
+
+
+@cache
+def _repo_symlinks(real_root: str, max_depth: int = 4) -> tuple[tuple[str, str], ...]:
+    """Directory symlinks within `max_depth` levels of the repository root, as (repo path, resolved target)."""
+
+    links: list[tuple[str, str]] = []
+    for directory, dirnames, _files in os.walk(real_root):
+        relative = os.path.relpath(directory, real_root)
+        depth = 0 if relative == "." else relative.count(os.sep) + 1
+        for name in dirnames:
+            full = os.path.join(directory, name)
+            if os.path.islink(full):
+                links.append((os.path.normpath(os.path.join(relative, name)), os.path.realpath(full)))
+        dirnames[:] = [
+            name for name in dirnames
+            if depth + 1 < max_depth and not name.startswith(".") and not os.path.islink(os.path.join(directory, name))
+        ]
+    return tuple(links)
+
+
 def default_image_path(image: str = DEFAULT_IMAGE_NAME) -> Path:
     return DEFAULT_GAME_DIR / image
 
@@ -4931,7 +4969,8 @@ def _scratch_archive_path(config: ScratchConfig) -> Path:
     path = Path(config.archive)
     if not path.is_absolute():
         path = config.directory / path
-    return path.resolve()
+    # Normalized without following symlinks: worktrees may link the provider build from the main checkout.
+    return Path(os.path.abspath(path))
 
 
 def _mtime_ns(path: Path) -> int | None:
@@ -10577,10 +10616,8 @@ def _native_input_staleness(
         expected_files.items(),
         key=lambda item: (item[0][0], item[0][1] or ("", "")),
     ):
-        path = (root / label).resolve()
-        try:
-            path.relative_to(root)
-        except ValueError:
+        path = root / label
+        if repo_relative_path(path, root) is None:
             escaped_files += 1
             continue
         try:
@@ -10612,10 +10649,8 @@ def _native_input_staleness(
             conflicting_bundles.add(key)
     changed_bundles = 0
     for (label, trees), expected_sha256 in sorted(expected_bundles.items()):
-        path = (root / label).resolve()
-        try:
-            path.relative_to(root)
-        except ValueError:
+        path = root / label
+        if repo_relative_path(path, root) is None:
             changed_bundles += 1
             continue
         try:
