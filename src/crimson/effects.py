@@ -758,12 +758,16 @@ class EffectPool:
 
         angle_draw, speed_draw, rotation_draw, rotation_step_draw = draws
 
-        angle = float(aim_heading) + float(int(angle_draw) & 0x3F) * 0.01
-        speed = float(int(speed_draw) & 0x3F) * 0.022727273 + 1.0
-        velocity = Vec2.from_angle(angle) * (speed * 100.0)
+        angle = x87_pc24_add(x87_pc24_mul(float(int(angle_draw) & 0x3F), f32(0.01)), aim_heading)
+        speed = x87_pc24_add(x87_pc24_mul(float(int(speed_draw) & 0x3F), f32(0.022727273)), 1.0)
+        # Native stores the `cos * speed` drift before scaling it by 100.
+        velocity = Vec2(
+            x87_pc24_mul(x87_pc24_cos_mul(angle, speed), 100.0),
+            x87_pc24_mul(x87_pc24_sin_mul(angle, speed), 100.0),
+        )
 
-        rotation = float((int(rotation_draw) & 0x3F) - 0x20) * 0.1
-        rotation_step = (float(int(rotation_step_draw) % 20) * 0.1 - 1.0) * 14.0
+        rotation = x87_pc24_mul(float((int(rotation_draw) & 0x3F) - 0x20), f32(0.1))
+        rotation_step = x87_pc24_mul(x87_pc24_sub(x87_pc24_mul(float(int(rotation_step_draw) % 20), f32(0.1)), 1.0), 14.0)
 
         self.spawn(
             effect_id=int(EffectId.CASING),
@@ -886,14 +890,14 @@ class EffectPool:
         color: RGBA = RGBA(0.4, 0.5, 1.0, 0.5),
         detail_preset: int,
     ) -> None:
-        rotation = float(int(rotation_draw) & 0x7F) * 0.049087387
+        rotation = x87_pc24_mul(float(int(rotation_draw) & 0x7F), f32(0.049087387))
         velocity = Vec2(
             float((int(vel_x_draw) & 0x7F) - 0x40),
             float((int(vel_y_draw) & 0x7F) - 0x40),
         )
         if scale_step is None:
             assert scale_step_draw is not None
-            step = float(int(scale_step_draw) % 100) * 0.01 + 0.1
+            step = x87_pc24_add(x87_pc24_mul(float(int(scale_step_draw) % 100), f32(0.01)), f32(0.1))
         else:
             step = float(scale_step)
 
@@ -1062,7 +1066,7 @@ class EffectPool:
         """Port of `effect_spawn_explosion_burst` (0x0042f6c0)."""
 
         detail_preset = int(detail_preset)
-        scale = float(scale)
+        scale = f32(scale)
 
         # Shockwave ring.
         self.spawn(
@@ -1078,20 +1082,19 @@ class EffectPool:
             flags=0x19,
             color=RGBA(0.6, 0.6, 0.6, 1.0),
             rotation_step=0.0,
-            scale_step=scale * 25.0,
+            scale_step=x87_pc24_mul(scale, 25.0),
             detail_preset=detail_preset,
         )
 
         # Dark explosion puffs (high detail only).
         if detail_preset > 3:
+            puff_scale_step = x87_pc24_mul(scale, 5.0)
             for idx in range(2):
-                age = float(idx) * 0.2 - 0.5
-                lifetime = float(idx) * 0.2 + 0.6
-                rotation = (
-                    float(
-                        rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_PUFF_ROTATION) % 614,
-                    )
-                    * 0.02
+                time_offset = x87_pc24_mul(float(idx), f32(0.2))
+                age = x87_pc24_sub(time_offset, 0.5)
+                lifetime = x87_pc24_add(time_offset, f32(0.6))
+                rotation = x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_PUFF_ROTATION) % 614), f32(0.02),
                 )
                 self.spawn(
                     effect_id=int(EffectId.EXPLOSION_PUFF),
@@ -1106,7 +1109,7 @@ class EffectPool:
                     flags=0x5D,
                     color=RGBA(0.1, 0.1, 0.1, 1.0),
                     rotation_step=1.4,
-                    scale_step=scale * 5.0,
+                    scale_step=puff_scale_step,
                     detail_preset=detail_preset,
                 )
 
@@ -1124,7 +1127,7 @@ class EffectPool:
             flags=0x19,
             color=RGBA(1.0, 1.0, 1.0, 1.0),
             rotation_step=0.0,
-            scale_step=scale * 45.0,
+            scale_step=x87_pc24_mul(scale, 45.0),
             detail_preset=detail_preset,
         )
 
@@ -1135,11 +1138,8 @@ class EffectPool:
 
         # Extra shockwave particles.
         for _ in range(count):
-            rotation = (
-                float(
-                    rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION) % 314,
-                )
-                * 0.02
+            rotation = x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION) % 314), f32(0.02),
             )
             velocity = Vec2(
                 float(
@@ -1149,11 +1149,8 @@ class EffectPool:
                     (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_Y) & 0x3F) * 2 - 0x40,
                 ),
             )
-            scale_step = (
-                float(
-                    (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_SCALE_STEP) - 3) & 7,
-                )
-                * scale
+            scale_step = x87_pc24_mul(
+                float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_SCALE_STEP) - 3) & 7), scale,
             )
             rotation_step = float(
                 (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP) + 3) & 7,

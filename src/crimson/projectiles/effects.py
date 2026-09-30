@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from collections.abc import MutableSequence
 
 from grim.color import RGBA
@@ -11,6 +10,16 @@ from grim.sfx_types import SfxRequest
 
 from ..effects import EffectPool
 from ..effects_atlas import EffectId
+from ..math_parity import (
+    NATIVE_TAU,
+    f32,
+    x87_pc24_add,
+    x87_pc24_cos_mul,
+    x87_pc24_mul,
+    x87_pc24_mul_chain,
+    x87_pc24_sin_mul,
+    x87_pc24_sub,
+)
 from ..rng_caller_static import RngCallerStatic
 from .types import ProjectileTemplateId
 
@@ -47,12 +56,14 @@ def _spawn_shrinkifier_hit_effects(
     # Debris puffs (effect_id=0), detail-scaled count.
     count = 2 if detail < 3 else 4
     for _ in range(count):
-        rotation = float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_ROTATION) & 0x7F) * 0.049087387
+        rotation = x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_ROTATION) & 0x7F), f32(0.0490873866))
         velocity = Vec2(
-            float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_X) & 0x7F) - 0x40) * 1.4,
-            float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_Y) & 0x7F) - 0x40) * 1.4,
+            x87_pc24_mul(float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_X) & 0x7F) - 0x40), f32(1.4)),
+            x87_pc24_mul(float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_Y) & 0x7F) - 0x40), f32(1.4)),
         )
-        scale_step = float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP) % 100) * 0.01 + 0.1
+        scale_step = x87_pc24_add(
+            x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP) % 100), f32(0.01)), f32(0.1),
+        )
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
@@ -112,30 +123,37 @@ def _spawn_ion_hit_effects(
         half_width=4.0,
         half_height=4.0,
         age=0.0,
-        lifetime=float(ring_strength) * 0.8,
+        lifetime=x87_pc24_mul(f32(ring_strength), f32(0.8)),
         flags=0x19,
         color=RGBA(0.6, 0.6, 0.9, 1.0),
         rotation_step=0.0,
-        scale_step=float(ring_scale) * 45.0,
+        scale_step=x87_pc24_mul(f32(ring_scale), 45.0),
         detail_preset=detail,
     )
 
     # Port of `effect_spawn_ion_hit_sparks(pos, burst_scale)`.
-    burst = float(burst_scale) * 0.8
-    lifetime = min(burst * 0.7, 1.1)
-    half = burst * 32.0
-    # Native loop count is `__ftol(scale * 5.0)` after the local `scale *= 0.8`.
-    count = int(burst * 5.0)
+    burst = x87_pc24_mul(f32(burst_scale), f32(0.8))
+    lifetime = x87_pc24_mul(burst, f32(0.7))
+    if lifetime > f32(1.1):
+        lifetime = f32(1.1)
+    half = x87_pc24_mul(burst, 32.0)
+    # Native loop count is `__ftol(scale * 5.0f)` after the local `scale *= 0.8f`.
+    count = int(x87_pc24_mul(burst, 5.0))
     if detail < 3:
         count //= 2
 
     for _ in range(max(0, count)):
-        rotation = float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_ROTATION) & 0x7F) * 0.049087387
+        rotation = x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_ROTATION) & 0x7F), f32(0.0490873866))
         velocity = Vec2(
-            float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_X) & 0x7F) - 0x40) * burst * 1.4,
-            float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_Y) & 0x7F) - 0x40) * burst * 1.4,
+            x87_pc24_mul_chain(float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_X) & 0x7F) - 0x40), burst, f32(1.4)),
+            x87_pc24_mul_chain(float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_Y) & 0x7F) - 0x40), burst, f32(1.4)),
         )
-        scale_step = (float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_SCALE_STEP) % 100) * 0.01 + 0.1) * burst
+        scale_step = x87_pc24_mul(
+            x87_pc24_add(
+                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_SCALE_STEP) % 100), f32(0.01)), f32(0.1),
+            ),
+            burst,
+        )
         effects.spawn(
             effect_id=int(EffectId.BURST),
             pos=pos,
@@ -208,15 +226,21 @@ def _spawn_splitter_hit_effects(
 
     detail = int(detail_preset)
     for _ in range(3):
-        angle = float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_ANGLE) & 0x1FF) * (math.tau / 512.0)
-        radius = float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_RADIUS) % 26)
-        jitter_age = -float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF) * 0.0012
-        lifetime = 0.1 - jitter_age
+        angle = x87_pc24_mul(
+            float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_ANGLE) & 0x1FF) * 0.001953125, NATIVE_TAU,
+        )
+        distance = float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_RADIUS) % 26)
+        spawn_pos = Vec2(
+            x87_pc24_add(x87_pc24_cos_mul(angle, distance), pos.x),
+            x87_pc24_add(x87_pc24_sin_mul(angle, distance), pos.y),
+        )
+        # Native negates the integer before conversion, so a zero draw gives +0.0.
+        jitter_age = x87_pc24_mul(float(-(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF)), f32(0.0012))
+        lifetime = x87_pc24_sub(f32(0.1), jitter_age)
 
-        offset = Vec2.from_angle(angle) * radius
         effects.spawn(
             effect_id=int(EffectId.BURST),
-            pos=pos + offset,
+            pos=spawn_pos,
             vel=Vec2(),
             rotation=0.0,
             scale=1.0,
