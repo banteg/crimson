@@ -128,7 +128,7 @@ def test_quest_failed_main_menu_waits_for_exit_transition(failed: _FailedQuest, 
     assert failed.view.take_action() is None
     assert _finish_close(failed.view, mocker) == Route.MENU
     # The screen asks for its tune only while it is not closing.
-    play_music.assert_called_once_with(failed.state.audio, "shortie_monk")
+    play_music.assert_called_once_with(failed.state.audio.music, "shortie_monk")
 
 
 def test_quest_failed_panel_open_clicks_once(failed: _FailedQuest) -> None:

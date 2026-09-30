@@ -11,9 +11,9 @@ from crimson.screens.actions import (
     StartRun,
 )
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from grim.audio import play_sfx, update_audio
+from grim.audio import update_audio
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
+from grim.sfx import play_sfx
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
@@ -139,12 +139,11 @@ class QuestResultsView:
             return
         audio = self.state.audio
 
-        def _play(name: SfxId) -> None:
-            if audio is None:
-                return
-            play_sfx(audio, name)
-
-        action = ui.update(dt, play_sfx=_play if audio is not None else None, rng=self.state.rng)
+        action = ui.update(
+            dt,
+            play_sfx=(lambda name: play_sfx(audio.sfx, name)) if audio is not None else None,
+            rng=self.state.rng,
+        )
         if action == ResultAction.PLAY_AGAIN:
             assert self._quest_level is not None
             self._save_quest_selection(self._quest_level)

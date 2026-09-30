@@ -6,9 +6,9 @@ from crimson.screens.actions import Route, StartRun
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_music
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
+from grim.music import play_music
 from grim.raylib_api import rl
 
 from ...game.types import GameState
@@ -76,7 +76,7 @@ class QuestFailedView(MenuScreen):
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None and not self.state.ui.closing:
-            play_music(self.state.audio, "shortie_monk")
+            play_music(self.state.audio.music, "shortie_monk")
         self._dt = min(float(dt), 0.1)
         dt_ms = self._dt * 1000.0
         if not self._advance(dt):

@@ -12,7 +12,6 @@ from . import music, sfx
 from .config import CrimsonConfig
 from .console import CommandHandler, ConsoleState
 from .rand import CrandLike
-from .sfx_map import SfxId
 
 
 class AudioState(msgspec.Struct):
@@ -113,23 +112,6 @@ def game_tune_command(
         music.queue_track(state.music, track_key)
 
     return snd_add_game_tune
-
-
-def play_music(state: AudioState, track_name: str, *, fade_in: bool = False) -> None:
-    music.play_music(state.music, track_name, fade_in=fade_in)
-
-
-def play_sfx(
-    state: AudioState | None,
-    sfx_id: SfxId,
-    *,
-    reflex_boost_timer: float = 0.0,
-    gain: float = 1.0,
-    pan: int = 0,
-) -> None:
-    if state is None:
-        return
-    sfx.play_sfx(state.sfx, sfx_id, reflex_boost_timer=float(reflex_boost_timer), gain=gain, pan=pan)
 
 
 def update_audio(state: AudioState, dt: float, *, advance_sfx: bool = True) -> None:
