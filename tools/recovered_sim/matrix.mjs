@@ -184,11 +184,13 @@ function play(cfg, bot, limit) {
 }
 
 function rejects(label, cfg, r, expected = 5) {
+  console.log(`Checking rejection: ${label}`);
   init(e, cfg);
   if (step(e, r)) throw Error(`WASM accepted ${label}`);
   const n = spawnSync(native, [], {
     input: Buffer.concat([cfg, r]),
     maxBuffer: 1048576,
+    timeout: 10000,
   });
   if (n.status !== expected)
     throw Error(`Native ${label}: ${n.status} ${n.stderr}`);
@@ -277,9 +279,11 @@ const report = {
   cases: [],
 };
 for (const [name, cfg, bot, limit] of scenarios) {
+  console.log(`${name}: generating input stream`);
   const run = play(cfg, bot, limit);
   const filename = path.join(fixtures, `${name}.rsi`);
   fs.writeFileSync(filename, run.input);
+  console.log(`${name}: comparing ${run.input.length} input bytes`);
   const parity = await compare(run.input, native, wasm);
   const result = { name, ...parity, final: run.final, coverage: run.coverage };
   report.cases.push(result);

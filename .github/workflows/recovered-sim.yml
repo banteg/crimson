@@ -16,6 +16,7 @@ concurrency:
 jobs:
   recovered-sim:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -74,3 +75,5 @@ jobs:
             tools/recovered_sim/build/oracle.json
             tools/recovered_sim/build/*/errors.txt
             tools/recovered_sim/build/*/link.log
+            tools/recovered_sim/build/native/core
+            tools/recovered_sim/build/wasm/core.wasm

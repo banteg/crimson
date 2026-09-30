@@ -26,6 +26,7 @@ export async function compare(input, native, wasm) {
   const child = spawn(native, ["--reset-check"], {
     stdio: ["pipe", "pipe", "pipe"],
   });
+  const timeout = setTimeout(() => child.kill(), 120000);
   const completion = new Promise((resolve, reject) => {
     child.on("error", reject);
     child.on("close", (code) => resolve(code));
@@ -72,6 +73,8 @@ export async function compare(input, native, wasm) {
     child.kill();
     await completion;
     throw error;
+  } finally {
+    clearTimeout(timeout);
   }
   const last = Buffer.from(state(e));
   init(
