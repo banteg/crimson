@@ -164,6 +164,14 @@ class QuestResultsUi(msgspec.Struct):
         self._consume_enter = True
         self.phase = 0
 
+    def resume(self) -> None:
+        """Back from the high scores: `game_state_set` slides the panel in again, and `highscore_return_latch`
+        takes the screen straight to its buttons."""
+        self.timeline.enter(ui_elements_max_timeline(GameStateId.QUEST_RESULTS))
+        self._panel_open_sfx_played = False
+        self._close_action = None
+        self.phase = 2
+
     def close(self) -> None:
         return None
 

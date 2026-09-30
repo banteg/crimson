@@ -131,8 +131,9 @@ class QuestResultsView:
         )
 
     def resume(self) -> None:
-        # Result UI emits its action only after completing and clearing its close transition.
         self._action = None
+        if self._ui is not None:
+            self._ui.resume()
 
     def close(self) -> None:
         if self._ui is not None:

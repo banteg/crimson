@@ -194,6 +194,12 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
     assert state.config.gameplay.quest_level == QuestLevel(1, 1)
     assert state.pause_background is run
     increment.assert_called_once()
+    # The results slide back in on their buttons.
+    mocker.stop(update_ui)
+    for _ in range(6):
+        loop.update(0.1)
+    assert state.ui.opened
+    assert result_ui.phase == 2
 
 
 def test_launch_payload_mode_survives_later_config_changes(loop, mocker) -> None:
