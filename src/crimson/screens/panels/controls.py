@@ -46,7 +46,7 @@ from .controls_labels import (
 CONTROLS_LEFT_PANEL_POS_X = -165.0
 CONTROLS_LEFT_PANEL_POS_Y = 200.0
 CONTROLS_RIGHT_PANEL_POS_X = 590.0
-CONTROLS_RIGHT_PANEL_POS_Y = 110.0
+CONTROLS_RIGHT_PANEL_POS_Y = 200.0
 CONTROLS_RIGHT_PANEL_HEIGHT = 378.0
 CONTROLS_BACK_POS_X = -155.0
 CONTROLS_BACK_POS_Y = 420.0
@@ -164,8 +164,8 @@ def _controls_right_panel_pos_y(screen_width: float) -> float:
     """
     Right controls panel Y in panel-pos space.
 
-    Native slot40 y moves from 200 to 186 at <=640. In panel-pos coordinates this
-    is 110 -> 96.
+    Native slot40 y moves from 200 to 186 at <=640, set after `ui_menu_layout_init` moves the other elements down
+    with the window width, so it takes no widescreen shift.
     """
 
     if int(screen_width) <= 640:
@@ -311,7 +311,7 @@ class ControlsMenuView(PanelMenuView):
         return (
             Vec2(
                 _controls_right_panel_pos_x(float(self.state.config.display.width)) + slide_x,
-                _controls_right_panel_pos_y(float(self.state.config.display.width)) + self._widescreen_y_shift,
+                _controls_right_panel_pos_y(float(self.state.config.display.width)),
             )
             + self._panel_offset
         )

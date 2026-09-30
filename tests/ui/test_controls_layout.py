@@ -26,9 +26,9 @@ def test_controls_right_panel_pos_x_matches_capture_formula(screen_width: int, e
 @pytest.mark.parametrize(
     ("screen_width", "expected"),
     (
-        (640, 96.0),
-        (800, 110.0),
-        (1024, 110.0),
+        (640, 186.0),
+        (800, 200.0),
+        (1024, 200.0),
     ),
 )
 def test_controls_right_panel_pos_y_small_width_branch(screen_width: int, expected: float) -> None:

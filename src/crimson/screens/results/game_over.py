@@ -47,9 +47,9 @@ GAME_OVER_PANEL_Y = 110.0
 GAME_OVER_PANEL_W = 510.0
 GAME_OVER_PANEL_H = 378.0
 
-# Measured from ui_render_trace at 1024x768 (stable timeline):
-# panel top-left is (pos_x + 21, pos_y - 81) and size is 510x254, plus a shadow pass at +7,+7.
-GAME_OVER_PANEL_OFFSET_X = 21.0
+# The tall panel's first vertex: analysis/frida/game_over_panel_trace_summary.json has its quads at x -108..402
+# at 1024x768.
+GAME_OVER_PANEL_OFFSET_X = -63.0
 GAME_OVER_PANEL_OFFSET_Y = -81.0
 
 TEXTURE_TOP_BANNER_W = 256.0

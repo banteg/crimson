@@ -14,9 +14,9 @@ from tests.support.screens import start_run, update_frame
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
 PROFILE_NAME = "Lieutenant Maximilian"
-# At 640x480 the slid-in panel's top left is (-24, 29); the name form sits at panel + (222, 124) and its OK
+# At 640x480 the slid-in panel's top left is (-108, 29); the name form sits at panel + (222, 124) and its OK
 # button 170 right and 32 below that, hot from 2px lower.
-OK_BUTTON = rl.Vector2(-24.0 + 222.0 + 170.0 + 10.0, 29.0 + 124.0 + 32.0 + 2.0 + 10.0)
+OK_BUTTON = rl.Vector2(-108.0 + 222.0 + 170.0 + 10.0, 29.0 + 124.0 + 32.0 + 2.0 + 10.0)
 
 
 class RaylibInput:

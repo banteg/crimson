@@ -41,13 +41,13 @@ _BOARD_SIZE = 192.0
 _TIMER_RESET_MS = 0x2580
 _MATCH_TIMER_BONUS_MS = 2000
 
-# Directly mirrored from the native flow for 1024x768 mode:
-#   data_489df8 = -35, data_489dfc = 275, data_489e1c = -63, data_489e20 = -81.
+# `credits_secret_alien_zookeeper_update` lays out from `ui_element_slot_09`: pos (-35, 185) (-85 at <= 640, the
+# widescreen shift added) plus the tall panel's first vertex (-63, -81).
 _LAYOUT_OFFSET_X = -35.0
 _LAYOUT_OFFSET_X_SMALL = -85.0
 _LAYOUT_POS_X = -63.0
 _LAYOUT_POS_Y = -81.0
-_LAYOUT_BASE_Y = 275.0
+_LAYOUT_BASE_Y = 185.0
 _TITLE_BASE_Y_OFFSET = 50.0
 _BOARD_X_OFFSET = 220.0  # 300 - 80
 _BOARD_Y_OFFSET = 40.0

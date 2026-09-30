@@ -29,10 +29,10 @@ from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
+from ..high_scores_layout import hs_left_panel_pos_x
 from ..transitions import _draw_screen_fade
 
 # Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
-CREDITS_PANEL_POS_X = -119.0
 CREDITS_PANEL_POS_Y = 185.0
 CREDITS_PANEL_HEIGHT = 378.0
 
@@ -271,7 +271,7 @@ class CreditsView:
 
     def _panel_top_left(self) -> Vec2:
         return Vec2(
-            CREDITS_PANEL_POS_X + MENU_PANEL_OFFSET_X,
+            hs_left_panel_pos_x(float(self.state.config.display.width)) + MENU_PANEL_OFFSET_X,
             CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
         )
 

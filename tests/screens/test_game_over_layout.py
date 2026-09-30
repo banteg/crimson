@@ -20,8 +20,8 @@ from tests.support.helpers import ScriptedCrand
 
 pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
-# At 640x480 with the panel slid in: panel left = -45 + 21 = -24, top = 110 - 81 = 29.
-PANEL_LEFT = -24.0
+# At 640x480 with the panel slid in: panel left = -45 - 63 = -108, top = 110 - 81 = 29.
+PANEL_LEFT = -108.0
 PANEL_TOP = 29.0
 # `game_over_screen_update`: banner/content anchor = panel left + 214, panel top + 40.
 BANNER_X = PANEL_LEFT + 214.0
