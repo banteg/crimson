@@ -143,13 +143,11 @@ def run_replay_render_video(
     show_progress: bool = False,
 ) -> ReplayRenderResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
-    from grim.config import ensure_crimson_cfg
-    from grim.console import create_console, register_core_cvars
     from grim.raylib_api import rl
     from grim.view import ViewContext
 
-    from ...assets_fetch import download_missing_paqs
     from ...modes.replay_playback_mode import ReplayPlaybackMode
+    from ...runtime_boot import boot_runtime
 
     _validate_args(fps=fps, crf=crf)
 
@@ -167,25 +165,21 @@ def run_replay_render_video(
     baseline_result = baseline_driver.run()
     baseline_ticks = int(baseline_driver.tick_limit)
 
-    runtime_base_dir = Path(base_dir)
-    runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir
-    runtime_base_dir.mkdir(parents=True, exist_ok=True)
-    cfg = ensure_crimson_cfg(runtime_base_dir)
+    runtime_assets_dir = Path(assets_dir) if assets_dir is not None else Path(base_dir)
+    boot = boot_runtime(Path(base_dir), runtime_assets_dir, width=width, height=height)
+    cfg = boot.config
+    console = boot.console
+    render_width = boot.width
+    render_height = boot.height
+    if render_width <= 0 or render_height <= 0:
+        raise ReplayRenderError(
+            f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
+        )
     capture_audio = not mute_audio
     # Always mute during the video pass: it is faster and prevents local playback.
     cfg.audio.sound_disabled = True
     cfg.audio.music_disabled = True
 
-    render_width = width if width is not None else cfg.display.width
-    render_height = height if height is not None else cfg.display.height
-    if render_width <= 0 or render_height <= 0:
-        raise ReplayRenderError(
-            f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
-        )
-
-    console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
-    register_core_cvars(console, render_width, render_height)
-    download_missing_paqs(runtime_assets_dir, console)
     ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
 
     frame_count = 0

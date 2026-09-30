@@ -10,13 +10,13 @@ from tests.replay.cli._helpers import build_replay, write_replay
 
 def test_replay_play_owns_runtime_resources_at_cli_boundary(tmp_path, mocker) -> None:
     import grim.app as grim_app
-    from crimson import assets_fetch
+    from crimson import runtime_boot
     from crimson.modes import replay_playback_mode
 
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=2)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
 
-    mocker.patch.object(assets_fetch, "download_missing_paqs")
+    mocker.patch.object(runtime_boot, "download_missing_paqs")
     load_runtime_resources = mocker.patch.object(runtime_resources_view, "load_runtime_resources", return_value=object())
     unload_runtime_resources = mocker.patch.object(runtime_resources_view, "unload_runtime_resources")
     inner_open = mocker.patch.object(replay_playback_mode.ReplayPlaybackMode, "open")

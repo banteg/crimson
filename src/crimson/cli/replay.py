@@ -347,35 +347,26 @@ def cmd_replay_play(
 ) -> None:
     """Play back a recorded replay."""
     from grim.app import RunViewHooks, run_view
-    from grim.config import ensure_crimson_cfg
-    from grim.console import create_console, register_core_cvars
     from grim.view import ViewContext
 
-    from ..assets_fetch import download_missing_paqs
     from ..modes.replay_playback_mode import ReplayPlaybackMode
+    from ..runtime_boot import boot_runtime
     from ..runtime_resources_view import RuntimeResourcesView
 
     if assets_dir is None:
         assets_dir = base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
     replay_path = _require_replay_path(replay_file, base_dir=base_dir)
-    cfg = ensure_crimson_cfg(base_dir)
-    if width is None:
-        width = cfg.display.width
-    if height is None:
-        height = cfg.display.height
-    console = create_console(base_dir, assets_dir=assets_dir)
-    register_core_cvars(console, width, height)
-    download_missing_paqs(assets_dir, console)
+    boot = boot_runtime(base_dir, assets_dir, width=width, height=height)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
-    view = ReplayPlaybackMode(ctx, replay_path=replay_path, config=cfg, console=console)
+    view = ReplayPlaybackMode(ctx, replay_path=replay_path, config=boot.config, console=boot.console)
     title = f"Replay — {replay_path.name}"
 
     run_view(
         RuntimeResourcesView(view, assets_dir=assets_dir),
-        width=width,
-        height=height,
+        width=boot.width,
+        height=boot.height,
         title=title,
         fps=fps,
         hooks=RunViewHooks(should_close=view.should_close, consume_screenshot_request=view.consume_screenshot_request),

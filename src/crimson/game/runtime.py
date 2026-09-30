@@ -9,22 +9,16 @@ from pathlib import Path
 
 from grim import music
 from grim.app import RunViewHooks, run_view
-from grim.config import CrimsonConfig, ensure_crimson_cfg
-from grim.console import (
-    CommandHandler,
-    ConsoleState,
-    create_console,
-    register_boot_commands,
-    register_core_cvars,
-)
+from grim.config import CrimsonConfig
+from grim.console import CommandHandler, ConsoleState, register_boot_commands
 from grim.rand import Crand
 from grim.raylib_api import rl
 
-from ..assets_fetch import download_missing_paqs
 from ..debug import set_debug_enabled
 from ..input_codes import GAMEPAD_SLOT_COUNT, gamepad_snapshot, input_code_name, player_gamepad_index
 from ..persistence.save_status import ensure_game_status
 from ..render.rtx.mode import cycle_rtx_render_mode, mode_from_rtx_flag, parse_rtx_render_mode
+from ..runtime_boot import boot_runtime
 from ..screens.quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .loop_view import GameLoopView
 from .types import GameConfig, GameState
@@ -34,10 +28,6 @@ MUSIC_PAQ_NAME = "music.paq"
 SFX_PAQ_NAME = "sfx.paq"
 AUTOEXEC_NAME = "autoexec.txt"
 REQUIRED_RUNTIME_PAQS: tuple[str, ...] = (CRIMSON_PAQ_NAME, MUSIC_PAQ_NAME, SFX_PAQ_NAME)
-
-
-def _runtime_download_targets(assets_dir: Path) -> tuple[str, ...]:
-    return tuple(name for name in REQUIRED_RUNTIME_PAQS if not (assets_dir / name).is_file())
 
 
 def _require_runtime_assets(assets_dir: Path) -> None:
@@ -205,21 +195,18 @@ def run_game(config: GameConfig) -> None:
     crash_file = crash_path.open("a", encoding="utf-8", buffering=1)
     faulthandler.enable(crash_file)
     crash_file.write(f"\n[{dt.datetime.now(tz=dt.UTC).astimezone().isoformat()}] run_game start\n")
-    cfg = ensure_crimson_cfg(base_dir)
+    assets_dir = _resolve_assets_dir(config)
+    boot = boot_runtime(base_dir, assets_dir, width=config.width, height=config.height)
+    cfg = boot.config
+    console = boot.console
     # Display options stand in for the original launcher, which saved its choices to crimson.cfg.
-    if config.width is not None:
-        cfg.display.width = config.width
-    if config.height is not None:
-        cfg.display.height = config.height
+    cfg.display.width = boot.width
+    cfg.display.height = boot.height
     if config.windowed is not None:
         cfg.display.windowed = config.windowed
     if (config.width, config.height, config.windowed) != (None, None, None):
         cfg.save()
-    width = cfg.display.width
-    height = cfg.display.height
     rng = Crand(config.seed)
-    assets_dir = _resolve_assets_dir(config)
-    console = create_console(base_dir, assets_dir=assets_dir)
     status = ensure_game_status(base_dir)
     # Native `game_frame_update` clears hardcore every frame while fewer than 40 quests are unlocked. Unlocks only
     # grow and the quest menu refuses the checkbox below that, so clearing it once at boot is the same.
@@ -243,13 +230,11 @@ def run_game(config: GameConfig) -> None:
             rtx_mode=mode_from_rtx_flag(bool(config.rtx)),
         )
         register_boot_commands(console, _boot_command_handlers(state))
-        register_core_cvars(console, width, height)
         _apply_debug_console_defaults(console, debug=config.debug)
         console.log.log("crimson: boot start")
         console.log.log(f"config: {cfg.display.width}x{cfg.display.height} windowed={cfg.display.windowed}")
         console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
-        download_missing_paqs(assets_dir, console, names=_runtime_download_targets(assets_dir))
         _require_runtime_assets(assets_dir)
         console.log.log(f"assets: required archives ready ({', '.join(REQUIRED_RUNTIME_PAQS)})")
         console.log.log(f"commands: {len(console.commands)} registered")
@@ -264,8 +249,8 @@ def run_game(config: GameConfig) -> None:
         view = GameLoopView(state)
         run_view(
             view,
-            width=width,
-            height=height,
+            width=boot.width,
+            height=boot.height,
             title="Crimsonland",
             fps=config.fps,
             window_state=window_state,

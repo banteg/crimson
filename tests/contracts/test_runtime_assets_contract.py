@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from crimson.game.runtime import _require_runtime_assets, _runtime_download_targets
+from crimson.game.runtime import _require_runtime_assets
 
 
 def _touch(path: Path) -> None:
@@ -39,12 +39,3 @@ def test_require_runtime_assets_requires_audio_source_per_pack(tmp_path: Path) -
     with pytest.raises(FileNotFoundError, match=r"music\.paq"):
         _require_runtime_assets(tmp_path)
 
-
-def test_runtime_download_targets_skip_music_when_unpacked_dir_exists(tmp_path: Path) -> None:
-    _touch(tmp_path / "crimson.paq")
-
-    assert _runtime_download_targets(tmp_path) == ("music.paq", "sfx.paq")
-
-
-def test_runtime_download_targets_include_both_optional_paqs_when_missing(tmp_path: Path) -> None:
-    assert _runtime_download_targets(tmp_path) == ("crimson.paq", "music.paq", "sfx.paq")

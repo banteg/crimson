@@ -155,11 +155,9 @@ def run_replay_render_benchmark(
     show_progress: bool = False,
 ) -> ReplayBenchmarkResult:
     from grim.assets import load_runtime_resources, unload_runtime_resources
-    from grim.config import ensure_crimson_cfg
-    from grim.console import create_console, register_core_cvars
     from grim.raylib_api import rl
 
-    from ...assets_fetch import download_missing_paqs
+    from ...runtime_boot import boot_runtime
 
     _validate_args(runs=runs, warmup_runs=warmup_runs, top=top)
     telemetry_requested = bool(
@@ -174,24 +172,20 @@ def run_replay_render_benchmark(
         trace_rng=bool(trace_rng),
     ).run()
 
-    runtime_base_dir = Path(base_dir)
-    runtime_assets_dir = Path(assets_dir) if assets_dir is not None else runtime_base_dir
-    runtime_base_dir.mkdir(parents=True, exist_ok=True)
-    cfg = ensure_crimson_cfg(runtime_base_dir)
+    runtime_assets_dir = Path(assets_dir) if assets_dir is not None else Path(base_dir)
+    boot = boot_runtime(Path(base_dir), runtime_assets_dir, width=width, height=height)
+    cfg = boot.config
+    console = boot.console
+    render_width = boot.width
+    render_height = boot.height
+    if render_width <= 0 or render_height <= 0:
+        raise ReplayBenchmarkError(
+            f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
+        )
     if bool(mute_audio):
         cfg.audio.sound_disabled = True
         cfg.audio.music_disabled = True
 
-    render_width = int(width) if width is not None else cfg.display.width
-    render_height = int(height) if height is not None else cfg.display.height
-    if int(render_width) <= 0 or int(render_height) <= 0:
-        raise ReplayBenchmarkError(
-            f"invalid render resolution: {render_width}x{render_height}; width/height must be > 0",
-        )
-
-    console = create_console(runtime_base_dir, assets_dir=runtime_assets_dir)
-    register_core_cvars(console, render_width, render_height)
-    download_missing_paqs(runtime_assets_dir, console)
     ctx = ViewContext(assets_dir=runtime_assets_dir, preserve_bugs=False)
 
     rl.set_config_flags(rl.ConfigFlags.FLAG_WINDOW_HIDDEN | rl.ConfigFlags.FLAG_WINDOW_HIGHDPI)
