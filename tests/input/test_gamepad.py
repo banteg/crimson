@@ -117,9 +117,10 @@ def _build_input(
 
 
 def _travel_direction(move: Vec2) -> Vec2:
-    """Where the sim steers the player for a pad move vector (native heading math)."""
+    """Where the sim steers the player for a pad move vector: away from the negated stick."""
 
-    return _direction_from_heading_native(_native_move_target_heading(move, normalize=True, wrap=True))
+    away = Vec2(-move.x, -move.y)
+    return _direction_from_heading_native(_native_move_target_heading(away, normalize=True, wrap=True))
 
 
 # --- code space -----------------------------------------------------------------------

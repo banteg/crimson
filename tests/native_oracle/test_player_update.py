@@ -281,7 +281,6 @@ def test_turn_aligned_velocity_matches_native(oracle) -> None:
 def test_point_click_target_heading_matches_native(oracle) -> None:
     """Point-click target heading (0x00413fa9..0x00414018): `atan2f(pos - target) - 1.5707964f`, `+= 6.2831855f`.
 
-    `local_input` passes the raw f32 `move_target - pos` delta; the sim negates it.
     """
 
     harness = _Harness(oracle)
@@ -293,14 +292,14 @@ def test_point_click_target_heading_matches_native(oracle) -> None:
         target = Vec2(_rf(rng, 0.0, 1024.0), _rf(rng, 0.0, 1024.0))
         if rng.random() < 0.2:
             target = Vec2(pos.x, target.y)  # +0 x component
-        move = Vec2(x87_pc24_sub(target.x, pos.x), x87_pc24_sub(target.y, pos.y))
-        if (move.x * move.x + move.y * move.y) < 21.0 * 21.0:
+        away = Vec2(x87_pc24_sub(pos.x, target.x), x87_pc24_sub(pos.y, target.y))
+        if (away.x * away.x + away.y * away.y) < 21.0 * 21.0:
             continue
         cases += 1
         harness.reset(pos_x=pos.x, pos_y=pos.y, move_target_x=target.x, move_target_y=target.y)
         harness.run(0x00413FA9, 0x00414018, _Frame())
         native = {"target_heading": harness.frame_f32(0x20)}
-        python = {"target_heading": _native_move_target_heading(move, normalize=False, wrap=True)}
+        python = {"target_heading": _native_move_target_heading(away, normalize=False, wrap=True)}
         mismatches += compare_fields(f"pos={pos} target={target}", native, python, address=0x00413FA9)
     _check(cases, mismatches)
 
@@ -309,7 +308,8 @@ def test_pad_target_heading_matches_native(oracle) -> None:
     """Dual-pad target heading (0x0041421e..0x00414276): normalize, `atan2f - 1.5707964f`, `+= 6.2831855f`.
 
     `D3DXVec2Normalize` picks a CPU-specific path at runtime, so the stub answers
-    with the port's x87 model; the check covers the heading math around it.
+    with the port's x87 model; the check covers the heading math around it. The
+    stick arrives negated (`fchs`, 0x004141eb): a centred axis is -0.
     """
 
     harness = _Harness(oracle)
@@ -330,10 +330,10 @@ def test_pad_target_heading_matches_native(oracle) -> None:
         if index % 5 == 0:
             stick = Vec2(0.0, stick.y)
         harness.reset()
-        # Native steers along `-movement_input`; the port's move vector is that direction.
-        harness.run(0x0041421E, 0x00414276, _Frame().f32(0x38, x87_pc24_sub(0.0, stick.x)).f32(0x3C, x87_pc24_sub(0.0, stick.y)))
+        pad = Vec2(-stick.x, -stick.y)
+        harness.run(0x0041421E, 0x00414276, _Frame().f32(0x38, pad.x).f32(0x3C, pad.y))
         native = {"target_heading": harness.frame_f32(0x20)}
-        python = {"target_heading": _native_move_target_heading(stick, normalize=True, wrap=True)}
+        python = {"target_heading": _native_move_target_heading(pad, normalize=True, wrap=True)}
         mismatches += compare_fields(f"stick={stick}", native, python, address=0x0041421E)
     _check(_SAMPLES, mismatches)
 
@@ -361,9 +361,9 @@ def test_computer_target_heading_matches_native(oracle) -> None:
         center = Vec2(512.0, 512.0)
         center_delta = Vec2(x87_pc24_sub(center.x, pos.x), x87_pc24_sub(center.y, pos.y))
         goal = center if x87_pc24_hypot(center_delta.x, center_delta.y) > 300.0 else prey
-        move = Vec2(x87_pc24_sub(goal.x, pos.x), x87_pc24_sub(goal.y, pos.y))
+        away = Vec2(x87_pc24_sub(pos.x, goal.x), x87_pc24_sub(pos.y, goal.y))
         native = {"target_heading": harness.frame_f32(0x20)}
-        python = {"target_heading": _native_move_target_heading(move, normalize=False, wrap=False)}
+        python = {"target_heading": _native_move_target_heading(away, normalize=False, wrap=False)}
         mismatches += compare_fields(f"pos={pos} prey={prey}", native, python, address=0x00414C7F)
     _check(_SAMPLES, mismatches)
 

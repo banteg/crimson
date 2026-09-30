@@ -19,6 +19,7 @@ from .math_parity import (
     native_aim_point_from_heading,
     native_fire_muzzle_pos,
     native_shot_angle_from_jitter_draws,
+    x87_d3dx_vec2_normalize,
     x87_fpatan,
     x87_pc24_add,
     x87_pc24_crt_pow,
@@ -522,25 +523,28 @@ def _player_tick_low_health(
 
 
 
-def _native_move_target_heading(move: Vec2, *, normalize: bool, wrap: bool) -> float:
-    """Heading toward `move`, computed as native does from `movement_input = -move`.
+def _native_move_target_heading(movement_input: Vec2, *, normalize: bool, wrap: bool) -> float:
+    """Native heading for `movement_input`, the vector the player moves away from.
 
-    Native builds `movement_input` as `pos - move_target` (point click,
-    computer) or the negated stick (dual action pad), then evaluates
-    `atan2f(y, x) - 1.5707964f` (0x00413fd7, 0x00414235, 0x00414d4a).  Point
-    click and the pad lift the result into [0, 2pi) with `+= 6.2831855f`; the
-    computer path passes it through unwrapped.
+    Point click and computer control build it as `pos - target`; the dual
+    action pad negates the stick (`fchs`, 0x004141eb), so a centred axis is -0.
+    Native then evaluates `atan2f(y, x) - 1.5707964f` (0x00413fd7, 0x00414235,
+    0x00414d4a).  Point click and the pad lift the result into [0, 2pi) with
+    `+= 6.2831855f`; the computer path passes it through unwrapped.
     """
 
-    # `0 - v` keeps a +0 component positive, like native `pos - target`.
-    away = Vec2(x87_pc24_sub(0.0, move.x), x87_pc24_sub(0.0, move.y))
     if normalize:
-        away = away.normalized()  # D3DXVec2Normalize
-    heading = x87_pc24_sub(x87_fpatan(away.y, away.x), NATIVE_HALF_PI)
+        movement_input = x87_d3dx_vec2_normalize(movement_input)
+    heading = x87_pc24_sub(x87_fpatan(movement_input.y, movement_input.x), NATIVE_HALF_PI)
     if wrap:
         while heading < 0.0:
             heading = x87_pc24_add(heading, NATIVE_TAU)
     return heading
+
+
+def _away_from(move: Vec2) -> Vec2:
+    # `0 - v` keeps a +0 component positive, like native `pos - target`.
+    return Vec2(x87_pc24_sub(0.0, move.x), x87_pc24_sub(0.0, move.y))
 
 
 def _player_move_toward_heading(
@@ -672,12 +676,12 @@ def _player_move(
         target_heading: float | None = None
         if not player_controlled_movement:
             if raw_move.x != 0.0 or raw_move.y != 0.0:
-                target_heading = _native_move_target_heading(raw_move, normalize=False, wrap=False)
+                target_heading = _native_move_target_heading(_away_from(raw_move), normalize=False, wrap=False)
         elif move_mode == MovementControlType.MOUSE_POINT_CLICK:
             if raw_move.x != 0.0 or raw_move.y != 0.0:
-                target_heading = _native_move_target_heading(raw_move, normalize=False, wrap=True)
+                target_heading = _native_move_target_heading(_away_from(raw_move), normalize=False, wrap=True)
         elif x87_pc24_hypot(raw_move.x, raw_move.y) > _DUAL_ACTION_PAD_DEADZONE:
-            target_heading = _native_move_target_heading(raw_move, normalize=True, wrap=True)
+            target_heading = _native_move_target_heading(Vec2(-raw_move.x, -raw_move.y), normalize=True, wrap=True)
         move_delta = _player_move_toward_heading(
             player,
             state.perks,

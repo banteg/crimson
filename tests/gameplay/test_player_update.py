@@ -1063,9 +1063,10 @@ def test_player_update_turns_toward_move_heading_with_turn_slowdown() -> None:
 
     step_player(world, player, input_state, 0.1)
 
-    # Native steers toward `atan2f(-move) - 1.5707964f`, one ulp below pi/2 here
-    # (fpatan's pi stays wide), and eases halfway there in one 0.1 s tick.
-    target_heading = x87_pc24_sub(math.pi, NATIVE_HALF_PI)
+    # Native steers away from the fchs-negated stick (-1, -0): `atan2f(-0, -1) - 1.5707964f`
+    # is -3pi/2 (fpatan's pi stays wide), lifted by `+= 6.2831855f`; one 0.1 s tick eases
+    # halfway there.
+    target_heading = x87_pc24_add(x87_pc24_sub(-math.pi, NATIVE_HALF_PI), NATIVE_TAU)
     angle_diff = x87_pc24_sub(target_heading, 0.0)
     expected_heading = x87_pc24_mul(x87_pc24_mul(0.1, angle_diff), 5.0)
     radians = x87_pc24_sub(expected_heading, NATIVE_HALF_PI)
