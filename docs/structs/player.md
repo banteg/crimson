@@ -23,7 +23,7 @@ Pool facts:
 
 ## Runtime probe notes (2026-01-18)
 
-Captured with `scripts/frida/crimsonland_probe.js` after fixing pointer-based reads.
+Captured with a Frida probe after fixing pointer-based reads.
 
 - `player_take_damage` logs show sane values and health deltas (e.g. 100 -> 95 with `damage_f32=5`),
   confirming that the base/stride assumptions are valid for the current build.

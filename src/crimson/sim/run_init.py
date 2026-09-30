@@ -21,7 +21,7 @@ from .mode_updates import ModeState, QuestSpawnState, RushSpawnState, SurvivalSp
 from .run_spec import RunSpec
 from .sessions import DeterministicSession
 from .terrain_generate import TerrainSetup, terrain_generate, terrain_generate_random
-from .world_reset import CreatureSlotResidue, apply_creature_pool_residue, reset_world_players
+from .world_reset import reset_world_players
 from .world_state import WorldState
 
 
@@ -36,17 +36,13 @@ def initialize_run(
     spec: RunSpec,
     *,
     status: GameStatus | None = None,
-    apply_world_dt_steps: bool = True,
-    creature_pool_residue: tuple[CreatureSlotResidue, ...] | None = None,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PreparedRun:
     """Build a fresh run, preserving native startup order and RNG consumption.
 
     A live caller may supply its save object so gameplay writes remain persistent.
-    Playback owns a detached copy of the same pre-start status snapshot. Original
-    captures seed creature-slot residue and pre-transformed frame deltas; port
-    runs always start from a fresh pool.
+    Playback owns a detached copy of the same pre-start status snapshot.
     """
     quest = None
     if spec.game_mode_id == GameMode.QUESTS:
@@ -65,8 +61,6 @@ def initialize_run(
     world.state.violence_disabled = spec.violence_disabled
     world.state.friendly_fire_enabled = spec.friendly_fire
     world.creatures.apply_gameplay_reset_target_players(spec.player_count)
-    if creature_pool_residue is not None:
-        apply_creature_pool_residue(world.creatures.entries, creature_pool_residue)
     reset_world_players(world.players, state=world.state, player_count=spec.player_count)
     world.state.status = GameStatus.detached(spec.status.as_status_data()) if status is None else status
     # The seed is the rng entering `gameplay_reset_state()`, which every mode's run start calls.
@@ -121,7 +115,6 @@ def initialize_run(
         world=world,
         # `gameplay_update_and_render` levels up outside Rush; Typ-o runs its own frame.
         perk_progression_enabled=spec.game_mode_id not in (GameMode.RUSH, GameMode.TYPO),
-        apply_world_dt_steps=apply_world_dt_steps,
         mode_state=mode_state,
     )
     # Run setup happens inside a frame; `game_frame_update` ends it with its discarded draw.

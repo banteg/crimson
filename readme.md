@@ -108,13 +108,13 @@ src/
   crimson/          game logic — modes, weapons, perks, creatures, UI, replay
   grim/             engine layer — raylib wrapper, PAQ/JAZ decoders, audio, fonts
 crimson-zig/        native desktop port, shared runtime, replay/debug CLI, WASM
-crimson-re/         reverse-engineering tools (decomp matching, native link, original-game traces);
+crimson-re/         reverse-engineering tools (decomp matching, native link, replay traces);
                     not shipped with the game, adds `crimson match|native|dbg` in the dev environment
 analysis/
   ghidra/           name/type maps (source of truth) and structured snapshots
   binary_ninja/     preferred live analysis databases
   ida/              structured function/import/string snapshots
-  frida/            runtime capture evidence (state snapshots, RNG traces)
+  frida/            runtime trace summaries from past Frida sessions
   windbg/           debugger session logs
 docs/               100+ pages: formats, structs, algorithms, parity tracking
 scripts/            analysis and utility tools
@@ -130,7 +130,7 @@ in Binary Ninja, IDA, then Ghidra using the shared address-keyed workflow in
 
 **Runtime tooling** (Frida, WinDbg) validates ambiguous behavior and captures ground truth. Evidence summaries live under [`analysis/frida/`](analysis/frida/).
 
-**Differential testing** captures original execution via Frida, replays the same inputs through the rewrite's headless oracle, and compares canonical input, state, entity, timing and RNG trace channels. Compact checkpoints help localize differences; complete session digests cover same-build port regressions.
+**Differential testing** runs original functions under a Unicorn [native execution oracle](docs/verification/differential-testing/native-oracle.md) and checks port code against them bit for bit. Recorded traces compare canonical input, state, entity, timing and RNG channels between runs; compact checkpoints help localize differences, and complete session digests cover same-build port regressions.
 
 See [docs/contributor/project-tracking/provenance.md](docs/contributor/project-tracking/provenance.md) for exact binary hashes of the target build.
 
@@ -159,7 +159,7 @@ zensical serve
 1. Recover structure and intent from static analysis (`analysis/ghidra/maps/` as source-of-truth maps).
 2. Validate ambiguous behavior with runtime evidence (Frida/WinDbg captures under `analysis/frida/`).
 3. Port behavior into `src/` with deterministic simulation contracts.
-4. Verify against captures/replays with headless differential tools.
+4. Verify against replays and the native execution oracle with headless differential tools.
 
 For deterministic gameplay code, float behavior is part of the contract.  
 See [`docs/rewrite/float-parity-policy.md`](docs/rewrite/float-parity-policy.md).

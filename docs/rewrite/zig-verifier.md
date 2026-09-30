@@ -61,7 +61,7 @@ Replay and debug commands expose structured output. Native benchmarking supports
 coarse profiling; Python retains render benchmarking, cProfile export and MP4
 replay rendering. The WASM target exposes headless replay services, not the
 desktop shell. See [trace contracts](trace-format-alignment.md) for the shared
-Python/Frida/Zig artifact boundary.
+Python/Zig artifact boundary.
 
 ## Validation boundaries
 

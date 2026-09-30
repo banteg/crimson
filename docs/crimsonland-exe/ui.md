@@ -192,8 +192,7 @@ Perk selection does **not** fade the world; it keeps the gameplay render pass an
 Pause/transition fades appear to be handled elsewhere (not perk selection). Capture HUD alpha when returning from perk
 selection to confirm the exact fade-in timing/curve.
 
-Perk prompt origin/bounds can be captured with `scripts/frida/perk_prompt_trace.js` (see `analysis/ghidra/maps/data_map.json`
-for the underlying globals).
+The perk prompt origin/bounds globals are listed in `analysis/ghidra/maps/data_map.json`.
 
 Recovered action-button globals for this state:
 

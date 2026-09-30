@@ -142,27 +142,13 @@ def pytest_configure(config: pytest.Config) -> None:
         sys.path.insert(0, tests_dir)
     config.addinivalue_line("markers", "terrain: terrain generation/rendering tests (slow, opt-in)")
     config.addinivalue_line("markers", "slow: long-running test")
-    config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
     config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
     config.addinivalue_line("markers", "zig: tests of the frozen Zig port (opt-in)")
 
 
-def _test_relative_path(item: pytest.Item) -> Path:
-    try:
-        return item.path.resolve().relative_to(TESTS_ROOT)
-    except ValueError:
-        return item.path
-
-
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     for item in items:
-        relative_path = _test_relative_path(item)
-        file_name = relative_path.name
-        top_level_dir = relative_path.parts[0] if relative_path.parts else ""
-
-        if top_level_dir == "original_capture" or file_name.startswith("test_original_capture_"):
-            item.add_marker(pytest.mark.original_capture)
-            item.add_marker(pytest.mark.slow)
+        file_name = item.path.name
         if "terrain" in item.keywords:
             item.add_marker(pytest.mark.slow)
         uses_zig_bin = isinstance(item, pytest.Function) and "zig_bin" in item.fixturenames

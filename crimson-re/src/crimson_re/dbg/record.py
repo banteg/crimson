@@ -16,9 +16,9 @@ from crimson.persistence.save_status import GameStatusData
 from crimson.replay import REPLAY_TICK_DT, REPLAY_TICK_RATE, PackedTickInputs, Replay, load_replay_file
 from crimson.replay.checkpoints import ReplayCheckpoint
 from crimson.replay.driver.playback_driver import (
+    PlaybackDriver,
     PlaybackWalkObserver,
     RngTraceDraw,
-    SessionPlaybackDriver,
     build_verify_playback_driver,
 )
 from crimson.replay.payloads import BuiltinObject
@@ -48,12 +48,6 @@ from .canonical_channels import (
     TimingSampleRow,
     bonus_timer_ms,
     entity_uid,
-)
-from .capture_replay import (
-    CAPTURE_REPLAY_SUFFIX,
-    CapturePlaybackDriver,
-    CaptureReplay,
-    load_capture_replay_file,
 )
 from .schema import (
     TRACE_FORMAT_VERSION,
@@ -128,29 +122,7 @@ def _replay_recording(replay: Replay) -> _TraceRecording:
     )
 
 
-def _capture_recording(capture: CaptureReplay) -> _TraceRecording:
-    return _TraceRecording(
-        run=capture.run,
-        tick_rate=capture.tick_rate,
-        status=capture.status,
-        steps=[
-            ReplayStepSnapshot(
-                dt=_trace_f32(tick.dt),
-                inputs=_input_samples(tick.inputs),
-                prelude=list(tick.prelude),
-                postlude=list(tick.postlude),
-                commands=[],
-            )
-            for tick in capture.ticks
-        ],
-    )
-
-
-def _load_recording(path: Path) -> tuple[_TraceRecording, SessionPlaybackDriver]:
-    if path.suffix == CAPTURE_REPLAY_SUFFIX:
-        capture = load_capture_replay_file(path)
-        driver = CapturePlaybackDriver(capture, trace_rng=True, strict_rng_trace=True)
-        return _capture_recording(capture), driver
+def _load_recording(path: Path) -> tuple[_TraceRecording, PlaybackDriver]:
     replay = load_replay_file(path)
     return _replay_recording(replay), build_verify_playback_driver(replay, trace_rng=True, strict_rng_trace=True)
 
@@ -674,7 +646,7 @@ def record_replay_to_trace(
     impl: Literal["python", "zig"] = "python",
     warnings_out: list[str] | None = None,
 ) -> TraceSummary:
-    """Record a CDT trace from a port replay or, with the Python impl, a capture replay."""
+    """Record a CDT trace from a port replay."""
 
     replay_path = Path(replay_path)
     out_path = Path(out_path)
@@ -686,8 +658,6 @@ def record_replay_to_trace(
             out_path=out_path,
         )
     if str(impl) == "zig":
-        if replay_path.suffix == CAPTURE_REPLAY_SUFFIX:
-            raise ValueError("capture replays record only with the python impl")
         summary, warnings = _record_replay_to_trace_zig(
             replay_path=replay_path,
             out_path=out_path,

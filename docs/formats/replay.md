@@ -11,8 +11,7 @@ A replay (`.crd`) records one run: the settings it started from, every tick's
 inputs, and the result the recording game derived when the run ended. A
 verifier re-simulates the ticks and must derive the identical result.
 
-Replays are recorded by the port's live game. Original-game captures use a
-separate debug container (see [capture replays](#original-captures)).
+Replays are recorded by the port's live game.
 
 ## Envelope
 
@@ -171,11 +170,3 @@ precision the file cannot hold reaches the simulation.
 The live game records only runs that stay within these rules: it stops
 recording when a debug cheat changes the run outside recorded ticks, and the
 perk prompt stays closed while a pick is waiting for the next tick.
-
-## Original captures
-
-Frida captures of the original executable need per-tick native frame deltas,
-the RNG draws of frames outside gameplay, and creature-slot residue left
-by earlier runs. None of these
-exist in port play, so they live in a debug-only capture container under
-`crimson_re.dbg`, replayed by a Python debug driver. Replays never carry them.

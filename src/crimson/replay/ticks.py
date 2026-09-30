@@ -11,8 +11,6 @@ from collections.abc import Sequence
 
 import msgspec
 
-from grim.sfx_map import SfxId
-
 from ..sim.commands import GameCommand
 from ..sim.input import PlayerInput
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
@@ -20,18 +18,8 @@ from .input_codec import pack_tick, unpack_tick_inputs
 from .types import REPLAY_TICK_DT, ReplayTick
 
 
-def step_replay_tick(
-    session: DeterministicSession,
-    tick: ReplayTick,
-    *,
-    prelude_post_apply_sfx: list[SfxId] | None = None,
-) -> DeterministicSessionTick:
-    return session.step_tick(
-        dt=REPLAY_TICK_DT,
-        inputs=unpack_tick_inputs(tick.inputs),
-        commands=tick.commands,
-        prelude_post_apply_sfx=prelude_post_apply_sfx,
-    )
+def step_replay_tick(session: DeterministicSession, tick: ReplayTick) -> DeterministicSessionTick:
+    return session.step_tick(dt=REPLAY_TICK_DT, inputs=unpack_tick_inputs(tick.inputs), commands=tick.commands)
 
 
 class LiveTickSource:

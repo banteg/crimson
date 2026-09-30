@@ -8,9 +8,7 @@ tags:
 
 Operational runbooks and recurring maintenance flows.
 
-- [Frida workflow](../../frida/workflow.md)
 - [WinDbg workflow](../../windbg/workflow.md)
-- [Differential playbook](../../frida/differential-playbook.md)
 
 ## Documentation maintenance
 
@@ -27,6 +25,6 @@ current versions rather than copying them into every workflow.
 
 Run `just docs-check` and `just docs-build`. The checker covers internal Markdown
 links, nav coverage, tags, literal source paths and machine-local links. Source
-references should name repository-relative modules or symbols; generated capture
+references should name repository-relative modules or symbols; generated
 output directories are not required to exist in a fresh checkout. Regression
 tests also check the documented format matrix against the implementation.

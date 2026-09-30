@@ -19,14 +19,14 @@ Policy for the port and ranked play: every such input is either fixed in place,
 with the sim assuming the canonical value and never reading the real one, or
 recorded in the replay and pinned for ranked runs. Add newly found gates here.
 
-| Gate | Original behavior | Port | Original captures |
-|---|---|---|---|
-| Audio | see [Audio](#audio) | fixed: assumes audio works | rejected when closed |
-| Game tune latch | global, cleared by every other track | per-run flag, clear at run start | checked clear at run start |
-| Detail preset (1..5) | effect spawns draw per preset | recorded; ranked runs need 5 | recorded |
-| Violence disabled | blood and particle paths draw or skip | recorded; ranked runs need violence on | recorded |
-| Attract mode | `demo_mode_active` skips the game tune | removed: runs are never attract mode | not captured |
-| Frames outside gameplay | one discarded draw per frame | fixed: none | prelude frame counts |
+| Gate | Original behavior | Port |
+|---|---|---|
+| Audio | see [Audio](#audio) | fixed: assumes audio works |
+| Game tune latch | global, cleared by every other track | per-run flag, clear at run start |
+| Detail preset (1..5) | effect spawns draw per preset | recorded; ranked runs need 5 |
+| Violence disabled | blood and particle paths draw or skip | recorded; ranked runs need violence on |
+| Attract mode | `demo_mode_active` skips the game tune | removed: runs are never attract mode |
+| Frames outside gameplay | one discarded draw per frame | fixed: none |
 
 ## Audio
 
@@ -74,10 +74,4 @@ completed). Runs outside it still verify; they just do not rank.
 state. Each port tick carries its gameplay frame's draw. Pause, the perk menu and
 the menu's slide-in and slide-out frames draw too, and their count depends on
 wall-clock time and frame rate, so waiting in a menu changes the stream. The port
-fixes those frames at zero. Captures keep them as prelude frame counts.
-
-## Original captures
-
-`scripts/frida/gameplay_diff_capture.js` rejects a run at start with
-`audio_rng_gate_closed:<reason>` when the audio gate is closed or the tune latch
-is set. The port cannot reproduce such a stream.
+fixes those frames at zero.

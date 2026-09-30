@@ -1,16 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-import msgspec
-
-from grim.color import RGBA
 from grim.geom import Vec2
-from grim.math import f32_from_bits
 
-from ..creatures.runtime import CreatureAiMode, CreatureState, CreatureTypeId
-from ..creatures.spawn_ids import CreatureFlags
 from ..math_parity import f32
 from ..weapon_runtime import init_default_alt_weapon
 from ..weapons import WeaponId
@@ -19,97 +12,6 @@ from .state_types import TERRAIN_SIZE, PerkCounts, PlayerState
 
 if TYPE_CHECKING:
     from .world_state import WorldState
-
-
-class CreatureSlotResidue(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
-    """Persistent creature-slot state inherited at run start.
-
-    Native `creature_reset_all` (0x4281e0) clears `active` and detaches linked
-    spawn-slot owners; every other creature field keeps the previous
-    occupant's value, and spawn paths overwrite only what they write. Captured
-    at the run-setup latch so replays can seed an identical pool."""
-
-    index: int
-    phase_seed: int = 0
-    state_flag: int = 0
-    collision_flag: int = 0
-    collision_timer: float = 0.0
-    lifecycle_stage: float = 0.0
-    pos: Vec2 = msgspec.field(default_factory=Vec2)
-    vel: Vec2 = msgspec.field(default_factory=Vec2)
-    hp: float = 0.0
-    max_hp: float = 0.0
-    heading: float = 0.0
-    target_heading: float = 0.0
-    size: float = 0.0
-    hit_flash_timer: float = 0.0
-    tint_r: float = 0.0
-    tint_g: float = 0.0
-    tint_b: float = 0.0
-    tint_a: float = 0.0
-    force_target: int = 0
-    target: Vec2 = msgspec.field(default_factory=Vec2)
-    contact_damage: float = 0.0
-    move_speed: float = 0.0
-    attack_cooldown: float = 0.0
-    reward_value: float = 0.0
-    type_id: int = 0
-    target_player: int = 0
-    link_index: int = 0
-    target_offset: Vec2 = msgspec.field(default_factory=Vec2)
-    orbit_angle: float = 0.0
-    # Union field in native (radius f32 / projectile type id); raw bits.
-    orbit_radius_u32: int = 0
-    flags: int = 0
-    ai_mode: int = 0
-    anim_phase: float = 0.0
-
-
-def apply_creature_pool_residue(
-    creatures: list[CreatureState],
-    residue: Sequence[CreatureSlotResidue],
-) -> None:
-    """Seed the fresh pool with the run-start residue captured natively.
-
-    `creature_reset_all` (0x4281e0) clears `active` and detaches linked
-    spawn-slot owners, but leaves the other creature fields intact. Spawn
-    paths overwrite only the fields they write, so stale reads (link_index,
-    target_heading, AI7 timers, ...) must see the previous occupant's values."""
-
-    for slot in residue:
-        idx = int(slot.index)
-        if not (0 <= idx < len(creatures)):
-            continue
-        entry = creatures[idx]
-        entry.active = False
-        entry.phase_seed = int(slot.phase_seed)
-        entry.plague_infected = bool(slot.collision_flag)
-        entry.collision_timer = float(slot.collision_timer)
-        entry.lifecycle_stage = float(slot.lifecycle_stage)
-        entry.pos = Vec2(float(slot.pos.x), float(slot.pos.y))
-        entry.vel = Vec2(float(slot.vel.x), float(slot.vel.y))
-        entry.hp = float(slot.hp)
-        entry.max_hp = float(slot.max_hp)
-        entry.heading = float(slot.heading)
-        entry.target_heading = float(slot.target_heading)
-        entry.size = float(slot.size)
-        entry.hit_flash_timer = float(slot.hit_flash_timer)
-        entry.tint = RGBA(float(slot.tint_r), float(slot.tint_g), float(slot.tint_b), float(slot.tint_a))
-        entry.force_target = int(slot.force_target)
-        entry.target = Vec2(float(slot.target.x), float(slot.target.y))
-        entry.contact_damage = float(slot.contact_damage)
-        entry.move_speed = float(slot.move_speed)
-        entry.attack_cooldown = float(slot.attack_cooldown)
-        entry.reward_value = float(slot.reward_value)
-        entry.type_id = CreatureTypeId(int(slot.type_id))
-        entry.target_player = int(slot.target_player)
-        entry.link_index = int(slot.link_index)
-        entry.target_offset = Vec2(float(slot.target_offset.x), float(slot.target_offset.y))
-        entry.orbit_angle = float(slot.orbit_angle)
-        entry.orbit_radius = f32_from_bits(int(slot.orbit_radius_u32))
-        entry.flags = CreatureFlags(int(slot.flags))
-        entry.ai_mode = CreatureAiMode(int(slot.ai_mode))
-        entry.anim_phase = float(slot.anim_phase)
 
 
 def _reset_player_weapon_native(player: PlayerState) -> None:

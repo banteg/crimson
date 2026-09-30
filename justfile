@@ -6,8 +6,6 @@ game_dir := "game_bins/crimsonland/" + version
 assets_dir := "artifacts/assets"
 atlas_usage := "analysis/reference/atlas_usage.json"
 atlas_frames := "artifacts/atlas/frames"
-share_dir := "/mnt/c/share/frida"
-frida_share_dir := "artifacts/frida/share"
 
 default:
     @just --list
@@ -232,51 +230,6 @@ windbg-tail:
 [windows]
 ghidra-sync:
     wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
-
-[unix]
-frida-copy-share:
-    mkdir -p {{frida_share_dir}}
-    for f in {{share_dir}}/*; do \
-        [ -e "$f" ] || continue; \
-        cp -av "$f" {{frida_share_dir}}/; \
-    done
-
-[unix]
-frida-import-raw:
-    mkdir -p analysis/frida/raw
-    for f in grim_hits.jsonl crimsonland_frida_hits.jsonl gameplay_state_capture.jsonl gameplay_diff_capture.jsonl demo_trial_overlay_trace.jsonl demo_idle_threshold_trace.jsonl screen_fade_trace.jsonl ui_render_trace.jsonl game_over_panel_trace.jsonl survival_autoplay.jsonl azk_verify_no_unlock.jsonl creature_anim_trace.jsonl; do \
-        [ -e "{{share_dir}}/$f" ] || continue; \
-        cp -av "{{share_dir}}/$f" analysis/frida/raw/; \
-    done
-    for f in {{share_dir}}/gameplay_diff_capture.*.run*.cdt {{share_dir}}/gameplay_diff_capture.*.run*.ccr {{share_dir}}/gameplay_diff_capture.*.run*.rng_evidence.json {{share_dir}}/gameplay_diff_capture.*.run*.evidence.msgpack.zst; do \
-        [ -e "$f" ] || continue; \
-        cp -av "$f" analysis/frida/raw/; \
-    done
-
-[unix]
-capture-fixtures-import captures_dir=share_dir:
-    uv run scripts/import_capture_fixtures.py --captures-dir "{{captures_dir}}"
-
-[unix]
-frida-reduce:
-    uv run scripts/frida_reduce.py \
-      --log analysis/frida/raw/grim_hits.jsonl \
-      --log analysis/frida/raw/crimsonland_frida_hits.jsonl \
-      --log analysis/frida/raw/demo_trial_overlay_trace.jsonl \
-      --log analysis/frida/raw/demo_idle_threshold_trace.jsonl \
-      --out-dir analysis/frida
-
-[unix]
-game-over-panel-reduce log="artifacts/frida/share/game_over_panel_trace.jsonl" out="analysis/frida/game_over_panel_trace_summary.json":
-    uv run scripts/game_over_panel_trace_reduce.py --log {{log}} --out {{out}}
-
-[unix]
-panel-state-resolution-reduce glob="artifacts/frida/share/panel_state_resolution_capture_*.jsonl" out_json="analysis/frida/panel_state_resolution_capture_summary.json" out_md="analysis/frida/panel_state_resolution_capture_report.md":
-    uv run scripts/panel_state_resolution_capture_reduce.py --glob "{{glob}}" --out-json "{{out_json}}" --out-md "{{out_md}}"
-
-[unix]
-demo-idle-summarize log="analysis/frida/raw/demo_idle_threshold_trace.jsonl":
-    uv run scripts/demo_idle_threshold_summarize.py {{log}}
 
 # Screenshots
 [windows]

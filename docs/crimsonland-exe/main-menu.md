@@ -110,8 +110,7 @@ Animation note:
 
 Runtime verification (Frida):
 
-- Script: `scripts/frida/menu_logo_pivot_trace.js`
-- Output: `C:\share\frida\menu_logo_pivot_trace.jsonl` (raw logs are gitignored; see `analysis/frida/menu_logo_pivot_trace_summary.json` for this run)
+- Summary: `analysis/frida/menu_logo_pivot_trace_summary.json`
 - Logs `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero).
 - Observed:
   - Play / Options: `logo_update.update_disabled == 1` and `angle_deg == 0` for the whole close (no pivot).

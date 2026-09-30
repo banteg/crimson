@@ -49,7 +49,7 @@ This project prioritizes deterministic parity with the original executable. The 
 - Prefer syrupy snapshots for high-structure payloads and broad regressions.
 - Keep explicit assertions for critical invariants (for example deterministic RNG state/hash or exact event semantics).
 
-## Capture Test Data
+## Trace and Replay Test Data
 
 - Use trace/replay fixtures (`.cdt` / `.crd`) for differential and replay tests.
 - Keep serialization at API/file boundaries.

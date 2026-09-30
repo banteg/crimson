@@ -6,7 +6,6 @@ from contextlib import contextmanager
 import msgspec
 
 from grim.rand import CallerStatic, CrtRand, RecordedCallerStatic, RngTraceSink
-from grim.sfx_map import SfxId
 
 from ...game_modes import GameMode
 from ...quests.types import QuestDefinition, SpawnEntry
@@ -18,10 +17,8 @@ from ...sim.hooks import TickResult
 from ...sim.mode_updates import QuestSpawnState
 from ...sim.run_init import initialize_run
 from ...sim.run_result import RunDown, RunOutcome, RunResult, build_run_result
-from ...sim.run_spec import RunSpec
-from ...sim.sessions import DeterministicSessionTick, IllegalCommandError
+from ...sim.sessions import IllegalCommandError
 from ...sim.terrain_generate import TerrainSetup
-from ...sim.world_reset import CreatureSlotResidue
 from ...sim.world_state import WorldState
 from ...weapons import WeaponId
 from .setup import ReplayRunnerError
@@ -82,50 +79,40 @@ class PlaybackWalkResult(msgspec.Struct, frozen=True):
     ticks_completed: int
 
 
-class SessionPlaybackDriver:
-    """Step a deterministic session through an indexed tick source.
-
-    Subclasses step the session for each source tick. The replay driver below
-    steps recorded ticks exactly as live play does; debug tooling layers
-    original-capture playback on the `before_tick` hook.
-    """
+class PlaybackDriver:
+    """Step a deterministic session through a replay's recorded ticks exactly as live play does."""
 
     def __init__(
         self,
-        run: RunSpec,
+        replay: Replay,
         *,
-        tick_count: int,
         max_ticks: int | None = None,
         trace_rng: bool = False,
         strict_rng_trace: bool = False,
+        version_mismatch_action: str | None = "verification",
         spawn_entries: tuple[SpawnEntry, ...] | None = None,
         start_weapon_id: WeaponId | None = None,
-        apply_world_dt_steps: bool = True,
-        creature_pool_residue: tuple[CreatureSlotResidue, ...] | None = None,
-        strict_end: bool = True,
-        strict_commands: bool = True,
     ) -> None:
-        self.run_spec = run
-        self.mode_id = GameMode(run.game_mode_id)
-        self.tick_count = int(tick_count)
+        if version_mismatch_action is not None:
+            warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
+        self.replay = replay
+        self.run_spec = replay.run
+        self.mode_id = GameMode(replay.run.game_mode_id)
+        self.tick_count = len(replay.ticks)
         self.max_ticks = max_ticks
         self.trace_rng = bool(trace_rng)
         self.strict_rng_trace = bool(strict_rng_trace)
-        self.strict_end = bool(strict_end)
         self._run_down: RunDown | None = None
 
         try:
             prepared = initialize_run(
                 self.run_spec,
-                apply_world_dt_steps=apply_world_dt_steps,
-                creature_pool_residue=creature_pool_residue,
                 spawn_entries=spawn_entries,
                 start_weapon_id=start_weapon_id,
             )
         except ValueError as exc:
             raise ReplayRunnerError(str(exc)) from exc
         self.session = prepared.session
-        self.session.strict_commands = bool(strict_commands)
         self.world = self.session.world
         self._terrain_setup = prepared.terrain
         self._quest_definition = prepared.quest
@@ -134,20 +121,6 @@ class SessionPlaybackDriver:
         self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()
 
         self.tick_limit = self.tick_count if self.max_ticks is None else min(self.tick_count, max(0, int(self.max_ticks)))
-
-    def tick_dt(self, tick_index: int) -> float:
-        raise NotImplementedError
-
-    def step_session(self, tick_index: int, *, prelude_post_apply_sfx: list[SfxId]) -> DeterministicSessionTick:
-        """Advance the session by the source's tick `tick_index`."""
-
-        raise NotImplementedError
-
-    def before_tick(self, tick_index: int) -> list[SfxId]:
-        """Apply work between ticks, outside the tick RNG trace; returns SFX to emit with the tick."""
-
-        _ = tick_index
-        return []
 
     def build_checkpoint(
         self,
@@ -173,25 +146,19 @@ class SessionPlaybackDriver:
         self.world.state.game_mode = self.mode_id
         self._last_tick_rng_rows = ()
         try:
-            pending_sfx = self.before_tick(tick_index)
             with _tick_rng_trace(
                 self.world.state.rng,
                 enabled=bool(self.trace_rng),
                 strict=bool(self.strict_rng_trace),
             ) as tick_rng_rows:
-                session_tick = self.step_session(tick_index, prelude_post_apply_sfx=pending_sfx)
+                session_tick = step_replay_tick(self.session, self.replay.ticks[tick_index])
         except IllegalCommandError as exc:
             raise ReplayRunnerError(f"tick {tick_index}: {exc}") from exc
         outcome = session_tick.outcome
         if self._run_down is None and outcome is not None:
             self._run_down = RunDown(outcome=outcome, end_tick=tick_index)
         run_down = self._run_down
-        if (
-            self.strict_end
-            and run_down is not None
-            and run_down.tick(session_tick.dt_sim)
-            and tick_index < self.tick_count - 1
-        ):
+        if run_down is not None and run_down.tick(session_tick.dt_sim) and tick_index < self.tick_count - 1:
             raise ReplayRunnerError(
                 f"run ended ({run_down.outcome}) at tick {run_down.end_tick} and wound down by tick {tick_index} "
                 f"but the replay has {self.tick_count} ticks",
@@ -221,7 +188,7 @@ class SessionPlaybackDriver:
         active_observer = observer if observer is not None else PlaybackWalkObserver()
 
         while next_tick_index < stop_tick_index:
-            active_observer.before_tick(int(next_tick_index), self.world, float(self.tick_dt(next_tick_index)))
+            active_observer.before_tick(int(next_tick_index), self.world, REPLAY_TICK_DT)
             tick_result = self.step_tick(next_tick_index)
             next_tick_index = int(tick_result.tick_index) + 1
 
@@ -269,45 +236,6 @@ class SessionPlaybackDriver:
     @property
     def terrain_setup(self) -> TerrainSetup | None:
         return self._terrain_setup
-
-
-class PlaybackDriver(SessionPlaybackDriver):
-    """Canonical replay driver."""
-
-    def __init__(
-        self,
-        replay: Replay,
-        *,
-        max_ticks: int | None = None,
-        trace_rng: bool = False,
-        strict_rng_trace: bool = False,
-        version_mismatch_action: str | None = "verification",
-        spawn_entries: tuple[SpawnEntry, ...] | None = None,
-        start_weapon_id: WeaponId | None = None,
-    ) -> None:
-        if version_mismatch_action is not None:
-            warn_on_game_version_mismatch(replay, action=str(version_mismatch_action))
-        self.replay = replay
-        super().__init__(
-            replay.run,
-            tick_count=len(replay.ticks),
-            max_ticks=max_ticks,
-            trace_rng=trace_rng,
-            strict_rng_trace=strict_rng_trace,
-            spawn_entries=spawn_entries,
-            start_weapon_id=start_weapon_id,
-        )
-
-    def tick_dt(self, tick_index: int) -> float:
-        _ = tick_index
-        return REPLAY_TICK_DT
-
-    def step_session(self, tick_index: int, *, prelude_post_apply_sfx: list[SfxId]) -> DeterministicSessionTick:
-        return step_replay_tick(
-            self.session,
-            self.replay.ticks[tick_index],
-            prelude_post_apply_sfx=prelude_post_apply_sfx,
-        )
 
 
 def build_verify_playback_driver(

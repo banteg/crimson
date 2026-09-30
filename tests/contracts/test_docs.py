@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from crimson.replay.types import REPLAY_FORMAT_VERSION
-from crimson_re.dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION
 from crimson_re.dbg.schema import TRACE_FORMAT_VERSION, TRACE_SCHEMA_VERSION
 from scripts.check_docs import find_broken_markdown_links, find_broken_source_paths
 
@@ -78,11 +77,7 @@ def test_documented_format_matrix_matches_current_versions() -> None:
         if line.startswith("|") and len(cells := line.split("|")) >= 4
     }
 
-    assert {name: rows[name] for name in (
-        "Frida raw JSONL", "Frida evidence sidecar", "CDT container", "CDT payload schema", "CRD replay",
-    )} == {
-        "Frida raw JSONL": str(FRIDA_CAPTURE_FORMAT_VERSION),
-        "Frida evidence sidecar": str(FRIDA_EVIDENCE_FORMAT_VERSION),
+    assert {name: rows[name] for name in ("CDT container", "CDT payload schema", "CRD replay")} == {
         "CDT container": str(TRACE_FORMAT_VERSION),
         "CDT payload schema": str(TRACE_SCHEMA_VERSION),
         "CRD replay": str(REPLAY_FORMAT_VERSION),

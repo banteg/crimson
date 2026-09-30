@@ -6,7 +6,6 @@ tags:
 # Grim2D runtime validation notes
 
 This doc tracks runtime validation sessions for the Grim2D vtable.
-For the end-to-end Frida workflow, see [Frida workflow](../frida/workflow.md).
 
 ## 2026-01-18 (Win11 ARM, UTM, Frida)
 
@@ -21,31 +20,12 @@ For the end-to-end Frida workflow, see [Frida workflow](../frida/workflow.md).
 
 Goal: validate a small backlog subset using Frida hooks without pausing.
 
-How to run (Frida hook script):
-
-1) Game path (this VM): `C:\Crimsonland\crimsonland.exe`.
-2) Run Frida from the Windows checkout so `scripts/frida/grim_hooks.js` and
-   `scripts/frida/grim_hooks_targets.json` are loaded directly from the repo.
-   Optional: set `CRIMSON_FRIDA_DIR` to change the log directory or
-   `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
-
-3) Optionally edit `grim_hooks_targets.json` to swap the target list.
-4) Launch the game, then attach by process name (required; spawn is unstable on this VM):
-
-   ```text
-   frida -n crimsonland.exe -l scripts\frida\grim_hooks.js
-   ```
-
-   Spawned runs on Win11 ARM64 caused empty textures and a crash before the main menu
-   (observed 2026-01-18), so attach is required.
-
-5) Logs are written to `C:\share\frida\grim_hits.log` by default. If JSON logging is enabled
-   (default in `grim_hooks_targets.json`), events also stream to `C:\share\frida\grim_hits.jsonl`.
+The hooks attached by process name: spawned runs on Win11 ARM64 caused empty
+textures and a crash before the main menu.
 
 Artifacts:
 
-- Hook script: `scripts/frida/grim_hooks.js`
-- Target list: `scripts/frida/grim_hooks_targets.json`
+- Hook script: `grim_hooks.js` (Frida, since removed)
 - Log: `C:\share\frida\grim_hits.log`
 - JSONL log: `C:\share\frida\grim_hits.jsonl`
 - `grim.dll` base at runtime: `0x0A990000`

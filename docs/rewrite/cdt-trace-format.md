@@ -72,10 +72,7 @@ the whole trace.
 - declared tick range
 - optional captured game status
 
-Unknown fields are rejected. Producer-private Frida settings and diagnostic
-bags move to the versioned typed evidence sidecar rather than widening the
-shared metadata schema; the raw JSONL may be deleted after finalization.
-The declared tick range must exactly match the rows and footer written to disk.
+Unknown fields are rejected. The declared tick range must exactly match the rows and footer written to disk.
 
 ## Tick blocks
 
@@ -133,8 +130,7 @@ Checkpoint and simulation player counts must equal the input count.
 The checkpoint tick and elapsed time must equal their enclosing `TickRecord`.
 Effective hit and pickup counts are cross-producer fields. The non-equivalent
 audio count, detailed death rows, and SFX/hit heads are zero or empty in CDT.
-Native raw details live in the capture evidence sidecar, while replay-only
-checkpoint sidecars may retain their fully typed rows. This makes the shared
+Replay-only checkpoint sidecars may retain their fully typed rows. This makes the shared
 channel strictly comparable without producer masks.
 It carries the compact deterministic state used for fast divergence detection.
 
@@ -157,8 +153,7 @@ UIDs must be unique within each entity kind for a tick, allowing `dbg entity`
 to follow slot reuse without confusing two lifetimes. Generations advance on
 successful allocations, including an active projectile slot being overwritten
 or a slot being retired and reused between snapshots. Failed allocations to
-native sentinels do not advance a real slot. Frida resets the counters at run
-bootstrap, before any first-tick allocation; replay pools start a new epoch at
+native sentinels do not advance a real slot. Replay pools start a new epoch at
 reset. Generation zero denotes a directly seeded implementation state without
 an observed allocation. Generation overflow is an error, never UID reuse.
 
@@ -174,7 +169,7 @@ Each row contains:
 
 Every row must be a valid CRT LCG transition, `value_15` must derive from the
 after-state, and consecutive rows must form one contiguous chain. A gap is an
-incomplete capture, not replay input.
+incomplete recording, not replay input.
 
 The caller is diagnostic attribution. Equal values and states with different
 callers produce a caller-attribution diagnostic, not an RNG behavior mismatch.
@@ -184,19 +179,17 @@ callers produce a caller-attribution diagnostic, not an RNG behavior mismatch.
 Every tick has a non-empty timing set with exactly one `gpur_enter` row. Its
 `frame_dt_f32` equals `replay_step.dt`, its `frame_dt_ms_i32` equals the
 enclosing `dt_ms_i32`, and its `mode_fn` identifies
-`gameplay_update_and_render` for finalized Frida captures.
+`gameplay_update_and_render`.
 
 ## Producers
 
 The intended comparison set is:
 
-1. Frida capture format 29 finalized into CDT v2/schema 19.
-2. Python CRD v24 replay recording.
-3. Zig CRD v24 replay recording.
+1. Python CRD v24 replay recording.
+2. Zig CRD v24 replay recording.
 
-All emit the same durable channel semantics. A producer may keep additional
-diagnostics before finalization, but it may not add aliases or optional channel
-shapes to CDT.
+Both emit the same durable channel semantics. A producer may not add aliases or
+optional channel shapes to CDT.
 
 ## Diff contract
 

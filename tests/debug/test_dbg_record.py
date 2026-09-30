@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -389,33 +388,3 @@ def test_port_replay_trace_reports_the_fixed_step_boundary(tmp_path: Path) -> No
     assert [step.commands for step in steps] == [list(tick.commands) for tick in replay.ticks]
     assert all(step.dt == REPLAY_TICK_DT and not step.prelude and not step.postlude for step in steps)
     assert {tick.dt_ms_i32 for tick in ticks} == {16}
-
-
-def test_capture_replay_trace_reports_the_captured_boundary(tmp_path: Path) -> None:
-    from crimson.sim.commands import PerkMenuOpenCommand
-    from crimson_re.dbg.canonical_channels import GameFrameRngAdvanceOperation
-    from crimson_re.dbg.capture_replay import dump_capture_replay_file
-    from tests.debug.test_capture_replay import build_capture
-
-    capture = build_capture(
-        prelude={1: [GameFrameRngAdvanceOperation(frames=1)]},
-        postlude={2: [PerkMenuOpenCommand(player_index=0)]},
-    )
-    capture_path, out_path = tmp_path / "run.ccr", tmp_path / "run.cdt"
-    dump_capture_replay_file(capture_path, capture)
-    dbg_record.record_replay_to_trace(replay_path=capture_path, out_path=out_path)
-
-    meta, ticks, _ = load_trace(out_path)
-    assert meta.source.tick_rate == capture.tick_rate
-    assert meta.source.replay_sha256 == hashlib.sha256(capture_path.read_bytes()).hexdigest()
-    assert meta.status == capture.status
-    for tick, captured in zip(ticks, capture.ticks, strict=True):
-        step = tick.channels.replay_step
-        assert (step.dt, step.prelude, step.postlude, step.commands) == (
-            captured.dt,
-            captured.prelude,
-            captured.postlude,
-            [],
-        )
-    with pytest.raises(ValueError, match="python impl"):
-        dbg_record.record_replay_to_trace(replay_path=capture_path, out_path=out_path, impl="zig")

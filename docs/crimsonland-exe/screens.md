@@ -159,18 +159,6 @@ Recovered staged-reveal globals:
     `ui_button_maybe_later` (`0x00480808`), and
     `ui_button_already_paid` (`0x0047f610`).
 
-### Evidence capture (Windows VM)
-
-Use Frida to log whenever the overlay is actually rendered:
-
-- Script: `scripts\\frida\\demo_trial_overlay_trace.js`
-  - Log output (default): `C:\\share\\frida\\demo_trial_overlay_trace.jsonl`
-  - Note: this is expected to trigger on **demo builds** (retail may never render the overlay).
-  - Optional (retail): set `CONFIG.forceDemoInGameplayLoop=true` to force the demo gate checks in `gameplay_update_and_render` (for overlay-only validation).
-  - Optional (retail): set `CONFIG.forcePlaytimeMs=2400001` (with `forceDemoInGameplayLoop=true`) to trigger the “trial expired” path immediately.
-  - Optional: set `CONFIG.minOverlayLogIntervalMs=250` to log at most ~4 events/sec while the overlay is visible.
-- Copy the JSONL log into the repo under `analysis/frida/raw/` and summarize findings in your session notes.
-
 ## Mods / plugin runtime (plugin_runtime_update_and_render)
 
 - State `0x14` is the mods browser/menu flow (launch list + fallback target).

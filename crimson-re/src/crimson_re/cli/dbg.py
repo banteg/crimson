@@ -46,7 +46,7 @@ def _first_diff_path(detail: BuiltinObject | None) -> str | None:
 
 @dbg_app.command("record")
 def cmd_dbg_record(
-    replay_file: Path = typer.Argument(..., help="replay (.crd) or original capture replay (.ccr)"),
+    replay_file: Path = typer.Argument(..., help="replay (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
     impl: Literal["python", "zig"] = typer.Option(
         "python",
@@ -54,7 +54,7 @@ def cmd_dbg_record(
         help="recording backend implementation",
     ),
 ) -> None:
-    """Run replay or capture simulation and record a CDT trace."""
+    """Run replay simulation and record a CDT trace."""
     from crimson.replay.driver.setup import ReplayRunnerError
 
     from ..dbg.record import record_replay_to_trace
@@ -167,7 +167,6 @@ def cmd_dbg_verify() -> None:
     from crimson.replay.types import REPLAY_FORMAT_VERSION
 
     from ..dbg.format_contract import format_contract_errors
-    from ..dbg.frida_finalize import FRIDA_CAPTURE_FORMAT_VERSION, FRIDA_EVIDENCE_FORMAT_VERSION, FRIDA_RUNTIME_VERSION
     from ..dbg.schema import TRACE_FORMAT_VERSION, TRACE_REQUIRED_CHANNELS, TRACE_SCHEMA_VERSION
 
     channels = tuple(str(channel) for channel in TRACE_REQUIRED_CHANNELS)
@@ -176,9 +175,6 @@ def cmd_dbg_verify() -> None:
     typer.echo(f"trace_schema_version={int(TRACE_SCHEMA_VERSION)}")
     typer.echo(f"replay_format_version={int(REPLAY_FORMAT_VERSION)}")
     typer.echo(f"checkpoint_format_version={int(CHECKPOINT_FORMAT_VERSION)}")
-    typer.echo(f"frida_capture_format_version={int(FRIDA_CAPTURE_FORMAT_VERSION)}")
-    typer.echo(f"frida_evidence_format_version={int(FRIDA_EVIDENCE_FORMAT_VERSION)}")
-    typer.echo(f"frida_runtime_version={FRIDA_RUNTIME_VERSION}")
     typer.echo("required_channels=" + ",".join(channels))
     errors = format_contract_errors()
     if errors:

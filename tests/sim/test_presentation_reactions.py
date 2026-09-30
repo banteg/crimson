@@ -47,19 +47,6 @@ def test_session_step_tick_rejects_stale_perk_pick() -> None:
         )
 
 
-def test_session_step_tick_skips_bonus_post_apply_sfx_for_lenient_stale_perk_pick() -> None:
-    session, _world = make_session()
-    session.strict_commands = False
-
-    tick = session.step_tick(
-        dt=1.0 / 60.0,
-        inputs=[player_input()],
-        commands=[PerkPickCommand(player_index=0, choice_index=0)],
-    )
-
-    assert sfx_ids(tick.presentation.post_apply_sfx) == []
-
-
 @pytest.mark.parametrize(
     ("start_ms", "expected_hit", "expected_music"),
     [

@@ -28,7 +28,6 @@ def test_live_tick_path_projectile_hits_enqueue_decals() -> None:
     session = DeterministicSession(
         world=runtime.world,
         perk_progression_enabled=False,
-        apply_world_dt_steps=True,
     )
     ticks = LiveTickSource()
 

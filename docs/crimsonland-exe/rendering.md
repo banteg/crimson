@@ -114,7 +114,7 @@ current `player_state.auto_target`. In `perk_metadata_init`, this selector defau
 
 ### Runtime evidence (2026-01-26)
 
-`artifacts/frida/share/player_sprite_trace.jsonl` (`scripts/frida/player_sprite_trace.js`, summarized in `analysis/frida/player_sprite_trace_summary.json`) matches the decompile:
+A Frida trace (summarized in `analysis/frida/player_sprite_trace_summary.json`) matches the decompile:
 
 - Alive (`player_state_table.health > 0`): draws **two** sprite layers (UV frames `0..14` and `+0x10`) with a shadow/outline pass (scaled `~1.02/1.03` and offset) before the main pass; rotations come from `heading` vs `aim_heading`.
 - Dead: draws a **single** sprite layer indexed by `ftol(death_timer)` (observed monotonic `32..52` then hold at `52` / `0x34` fallback), also with shadow+main passes.

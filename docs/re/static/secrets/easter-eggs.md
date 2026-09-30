@@ -215,7 +215,7 @@ Final decoded message:
   writes to the save file upon reaching a score or matching a specific pattern. The minigame appears
   to be self-contained.
 
-- **Runtime verification (2026-02-09)**: Frida harness `scripts/frida/azk_verify_no_unlock.js`
+- **Runtime verification (2026-02-09)**: a Frida harness
   auto-entered AZK (`game_state_set(0x1a)`), reset timer to `0x2580`, then solved to a fully cleared
   board (`36` cleared cells, score `12`). Final `verdict` in
   `C:\share\frida\azk_verify_no_unlock.jsonl` reported:

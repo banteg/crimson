@@ -140,16 +140,6 @@ nav = [
     ]},
     { "Runtime" = [
       { "Overview" = "re/runtime/index.md" },
-      { "Frida" = [
-        { "Overview" = "frida/index.md" },
-        { "Workflow" = "frida/workflow.md" },
-        { "Panel state resolution sweep" = "frida/panel-state-resolution-sweep.md" },
-        { "Differential playbook" = "frida/differential-playbook.md" },
-        { "Gameplay/state capture" = "frida/gameplay-state-capture.md" },
-        { "Gameplay differential capture" = "frida/gameplay-diff-capture.md" },
-        { "Survival autoplay" = "frida/survival-autoplay.md" },
-        { "RNG divergence root cause" = "frida/rng-divergence-root-cause.md" },
-      ]},
       { "WinDbg" = [
         { "Overview" = "windbg/index.md" },
         { "Workflow" = "windbg/workflow.md" },
@@ -208,7 +198,6 @@ nav = [
       { "Third-party libraries" = "contributor/project-tracking/third-party-libs.md" },
     ]},
     { "Cheatsheets" = [
-      { "Frida GumJS" = "cheatsheets/frida.md" },
       { "raylib (Python)" = "cheatsheets/raylib.md" },
       { "DirectX 8" = "cheatsheets/directx8.md" },
     ]},

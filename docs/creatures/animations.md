@@ -15,7 +15,7 @@ See also: [Creature pool struct](struct.md), [Atlas notes](../formats/atlas.md).
   rate stored in the type table (`creature_type_table`).
 
 - The phase wraps at **31** for the long strip or **15** for the short ping‑pong strip.
-- Evidence: `analysis/frida/creature_anim_trace_summary.json` (captured via `scripts/frida/creature_anim_trace.js`).
+- Evidence: `analysis/frida/creature_anim_trace_summary.json` (captured with a Frida trace).
 
 ## Strip selection and frame mapping
 
@@ -53,7 +53,7 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
 - for long-strip corpses (`lifecycle_stage < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + lifecycle_stage * 0.5` (clamped to `>= 0`).
-- Evidence: `analysis/frida/creature_render_trace_summary.json` (captured via `scripts/frida/creature_render_trace.js`).
+- Evidence: `analysis/frida/creature_render_trace_summary.json` (captured with a Frida trace).
 
 Each species finishes **all shadows before any body**, followed by its optional
 hit flashes. The species order is zombie, spider_sp1, spider_sp2, alien, lizard.

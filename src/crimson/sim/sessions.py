@@ -11,7 +11,6 @@ from ..camera import camera_update_for_players
 from ..game_modes import GameMode
 from ..perks.availability import prepare_perk_availability
 from ..perks.selection import (
-    perk_selection_open_choices,
     perk_selection_pick,
 )
 from ..rng_caller_static import RngCallerStatic
@@ -65,10 +64,10 @@ class IllegalCommandError(ValueError):
 # ---------------------------------------------------------------------------
 
 
-def _session_timing(world: WorldState, dt: float, *, apply_world_dt_steps: bool) -> FrameTiming:
+def _session_timing(world: WorldState, dt: float) -> FrameTiming:
     """Compute frame timing from world state. Used by all session types."""
     state = world.state
-    world_dt = world.world_dt_after_perk_steps(dt) if bool(apply_world_dt_steps) else float(dt)
+    world_dt = world.world_dt_after_perk_steps(dt)
     return FrameTiming.compute(
         dt,
         world_dt=world_dt,
@@ -91,14 +90,6 @@ class DeterministicSession(msgspec.Struct):
 
     perk_progression_enabled: bool
 
-    # Sim config; the game mode, detail preset, violence flag and game-tune latch live in the
-    # gameplay state, like the native globals.
-    apply_world_dt_steps: bool = True
-    # Reject perk commands the live UI cannot issue (they would otherwise no-op
-    # or reroll perk choices). Original-capture playback replays native menu
-    # activity verbatim and disables this.
-    strict_commands: bool = True
-
     # Mutable timing
     elapsed_ms: float = 0.0
     terrain_fx: TerrainFxScratch = msgspec.field(default_factory=TerrainFxScratch)
@@ -111,11 +102,7 @@ class DeterministicSession(msgspec.Struct):
         prepare_perk_availability(state)
 
     def timing_for_dt(self, dt: float) -> FrameTiming:
-        return _session_timing(
-            self.world,
-            dt,
-            apply_world_dt_steps=bool(self.apply_world_dt_steps),
-        )
+        return _session_timing(self.world, dt)
 
     @property
     def run_elapsed_ms(self) -> float:
@@ -179,8 +166,6 @@ class DeterministicSession(msgspec.Struct):
         # The perk prompt only offers the menu while a perk is pending and a
         # player is alive; each command is checked against the state left by
         # the commands before it.
-        if not self.strict_commands:
-            return
         if int(self.world.state.perk_selection.pending_count) <= 0:
             raise IllegalCommandError(f"{name} without a pending perk")
         if all_players_dead(self.world.players):
@@ -200,13 +185,9 @@ class DeterministicSession(msgspec.Struct):
                     dt=timing.dt_sim,
                     creatures=self.world.creatures.entries,
                 )
-                if picked is None and self.strict_commands:
+                if picked is None:
                     raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
-                return SfxId.UI_BONUS if picked is not None else None
-            case PerkMenuOpenCommand():
-                # Between ticks only in original captures; recorded runs open mid-tick.
-                self._require_perk_command_allowed("perk_menu_open")
-                perk_selection_open_choices(self.world.state, self.world.players, game_mode=self.world.state.game_mode)
+                return SfxId.UI_BONUS
             case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
                 if self.world.state.game_mode != GameMode.TYPO:
                     raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
@@ -221,9 +202,8 @@ class DeterministicSession(msgspec.Struct):
         dt: float,
         inputs: Sequence[PlayerInput],
         commands: Sequence[GameCommand] | None = None,
-        prelude_post_apply_sfx: list[SfxId] | None = None,
     ) -> DeterministicSessionTick:
-        post_apply_sfx = list(prelude_post_apply_sfx or ())
+        post_apply_sfx: list[SfxId] = []
         tick_commands: list[GameCommand] = []
         open_perk_menu = False
         for command in commands or ():

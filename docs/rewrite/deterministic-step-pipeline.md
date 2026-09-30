@@ -17,8 +17,7 @@ flag words) and ordered commands, stepped with the fixed `REPLAY_TICK_DT`.
 `step_replay_tick` in `src/crimson/replay/ticks.py` is the only way live play
 and replays advance a session. Live play packs each tick with `LiveTickSource`,
 records it, then steps that same tick, so the simulation never sees input the
-replay cannot store. Original-capture playback (`crimson_re.dbg`) keeps its own
-per-tick native delta and between-tick preludes and postludes.
+replay cannot store.
 
 The session returns one `DeterministicSessionTick` containing:
 
@@ -121,6 +120,5 @@ comparison but omit state: use `session_digest` in `crimson-re/src/crimson_re/db
 for same-build port regression checks.
 
 Replay play, verify, info, benchmark and render all use this simulation contract.
-Use `uv run crimson replay --help` and command-specific help for options. Native
-capture comparisons use the [CDT contract](trace-format-alignment.md) and
-[differential playbook](../frida/differential-playbook.md).
+Use `uv run crimson replay --help` and command-specific help for options. Trace
+comparisons use the [CDT contract](trace-format-alignment.md).

@@ -984,8 +984,3 @@ class TraceReader:
 def load_trace(path: Path) -> tuple[TraceMeta, list[TickRecord], TraceFooter]:
     with TraceReader(Path(path)) as trace:
         return trace.meta, trace.all_ticks(), trace.footer
-
-
-def iter_trace_ticks(path: Path, *, tick_start: int | None = None, tick_end: int | None = None) -> Iterable[TickRecord]:
-    with TraceReader(Path(path)) as trace:
-        yield from trace.iter_ticks(tick_start=tick_start, tick_end=tick_end)

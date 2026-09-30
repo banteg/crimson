@@ -16,5 +16,4 @@ Contributor-facing docs for setup, workflows, and project tracking.
 
 ## Related
 
-- [Frida GumJS cheatsheet](../cheatsheets/frida.md)
 - [Build provenance and hashes](project-tracking/provenance.md)

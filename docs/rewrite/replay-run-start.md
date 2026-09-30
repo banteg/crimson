@@ -8,24 +8,12 @@ tags:
 # Replay run start
 
 The native game has one shared reset/startup path and a quest-specific second
-prelude. Replays and capture replays record the exact state needed at our chosen
-run boundary instead of trying to reconstruct earlier menu history.
-
-For original captures that boundary, stored in the debug-only capture replay
-(`.ccr`), is:
-
-- the CRT RNG state entering `gameplay_reset_state()`, the run seed
-- the creature-pool residue left once that reset has run
-- the mode, quest level, complete status blob, retry/hardcore/detail/violence
-  settings, tick rate, and world size
+prelude. Replays record the exact state needed at our chosen run boundary
+instead of trying to reconstruct earlier menu history.
 
 The session's most recent `crt_srand` argument is not sufficient. Menus and
-earlier startup work may already have consumed draws before gameplay begins.
-Frida therefore records `rng_state_before_bootstrap`,
-`rng_state_after_bootstrap`, and `rng_bootstrap_calls`. Finalization requires
-the complete boundary to form an exact LCG chain and stores the before-state as
-the run seed. Original captures always set `preserve_bugs=true`; run settings
-are copied exactly instead of falling back to rewrite defaults.
+earlier startup work may already have consumed draws before gameplay begins, so
+the run seed is the CRT RNG state entering `gameplay_reset_state()`.
 
 ## Native startup shape
 
@@ -80,25 +68,8 @@ end-of-frame draw. Native frames outside gameplay (pause, the perk menu and its
 transitions) draw it too, but how many there are depends on wall-clock time, so
 the port fixes them at zero; see [settings that steer the RNG](parity/environment-rng.md).
 
-For native captures, creature slots can still contain residue once the reset
-has run, so the raw `run_start.pool_residue` is copied into the capture replay.
-Port replays carry no residue and start from a fresh pool. A capture tick's
-prelude starts with the end of the previous frame, which the session already
-drew; capture playback draws only the frames after it.
-
-```mermaid
-flowchart LR
-    A["Native startup and menu history"] --> B["Run-setup RNG latch"]
-    C["Captured creature-pool residue"] --> D["Capture replay"]
-    B --> D
-    E["Mode, status, and quest settings"] --> D
-    D --> F["Shared replay session builder"]
-    F --> G["Terrain and mode startup"]
-    G --> H["Tick 0"]
-```
-
-This preserves native state directly while keeping replay startup small and
-deterministic.
+Native creature slots can still contain residue once the reset has run; port
+replays carry none and start from a fresh pool.
 
 ## Settings during a run
 
@@ -129,15 +100,6 @@ RNG between the tick's render-time pickups and its bonus timers. Typ-o commands
 apply after the mode's pre-step hook. Live play and playback share one command
 handler.
 
-Original captures also need native frame deltas and top-level RNG draws made
-between ticks. The Frida capture
-producer writes them in each raw tick's `channels.replay_step` (`dt`, `inputs`,
-`prelude`, `postlude`, `commands`). Finalization uses that channel to build the
-capture replay, and CDT preserves it for direct comparison with recorded
-traces. Prelude operations run between ticks, outside the tick RNG trace, and
-replays never carry them; postlude menu opens become the tick's ordinary
-`perk_menu_open` command.
-
 There is no independent replay-input stream or inferred movement input.
 `replay_step` is the single authority for what drove the tick.
 
@@ -157,7 +119,7 @@ The channels intentionally separate cause from effect:
 
 When movement diverges, compare `replay_step` first. Matching inputs with a
 different `sim_state` point at integration or state-reset behavior; different
-inputs point at capture or replay-driving data.
+inputs point at replay-driving data.
 
 For same-build port-to-port regression tests, `crimson_re.dbg.state_digest`
 provides `session_state_bytes` and `session_digest`. These include complete
@@ -171,7 +133,7 @@ recoverable session snapshot.
 ## Latest-only policy
 
 - Readers require the current [version matrix](trace-format-alignment.md#current-only-contract).
-- `uv run crimson dbg verify` checks Python, Zig and Frida declarations for drift.
+- `uv run crimson dbg verify` checks Python and Zig declarations for drift.
 - Unknown fields and incomplete lifecycle rows are rejected.
 - Older throwaway artifacts are regenerated, not migrated.
 
@@ -191,8 +153,7 @@ the renderer.
 Live play binds the actual save object; replay binds a detached copy of the same
 pre-start snapshot. Starting weapon usage and quest play counters are applied
 once on both paths. Snapshotting after weapon assignment would count it twice
-on replay. Native creature residue is an explicit `initialize_run` input supplied
-only by capture replays, while port runs always allocate fresh pools. The reset and residue types live in the
+on replay. Port runs always allocate fresh pools. The reset types live in the
 simulation layer without importing the replay codec.
 
 `tests/replay/test_live_run_start.py` compares complete session state at startup

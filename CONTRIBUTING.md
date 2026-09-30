@@ -8,8 +8,6 @@ We are decompiling and porting an old game. The goal is **deterministic, evidenc
 - Newly started Zig rewrite: `crimson-zig/`
 - Reverse-engineering tools (`crimson match`, `crimson native`, `crimson dbg`): `crimson-re/`, a workspace package kept out of the game wheel
 
-If you are doing **capture-driven** parity work, start with: `docs/frida/differential-playbook.md`
-
 ## core priorities
 
 1. **Deterministic parity + evidence-backed correctness** If rules conflict, preserve native-faithful behavior and prove it with captures/replays/deterministic tests.
@@ -100,11 +98,11 @@ Text rules are forgettable; structural rules enforce themselves.
 ## quick playbooks
 
 ### parity bug investigation
-1. Reproduce using the canonical capture/replay.
-2. Generate divergence report and/or verify-capture.
+1. Reproduce using the canonical replay.
+2. Generate a divergence report (`dbg diff`/`dbg bisect` on recorded traces).
 3. Isolate the **first sustained mismatch** and identify the subsystem.
 4. Fix the **root cause** (not the symptom).
-5. Re-run the **same** capture/replay and confirm the mismatch moves/disappears for the right reason.
+5. Re-run the **same** replay and confirm the mismatch moves/disappears for the right reason.
 6. Add a regression test that locks the discovered behavior.
 
 ### API/schema refactor (cutover wave)
@@ -113,12 +111,6 @@ Text rules are forgettable; structural rules enforce themselves.
 3. Delete legacy APIs/re-exports/tests in the same wave.
 4. Search for remaining references to old surfaces and remove them.
 5. Verify with `just check` / `just check-zig` and parity tests/artifacts.
-
-### capture-only triage
-1. Follow `docs/frida/differential-playbook.md`.
-2. Record capture SHA and keep notes tied to that artifact.
-3. Use divergence + bisect/focus traces **before** touching runtime code.
-4. If telemetry is insufficient, improve instrumentation and re-capture.
 
 ### docs/tooling changes
 1. Keep guidance aligned with parity-first + typed-boundary policy.
