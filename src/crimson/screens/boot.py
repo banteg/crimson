@@ -133,9 +133,6 @@ class BootView:
             play_music(self.state.audio, "crimson_theme")
         self._theme_started = True
 
-    def is_theme_started(self) -> bool:
-        return self._theme_started
-
     def _skip_triggered(self) -> bool:
         if rl.get_key_pressed() != 0:
             return True

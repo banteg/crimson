@@ -17,8 +17,6 @@ from ..sim.state_types import PlayerState
 from ..weapons import WEAPON_BY_ID, WeaponId, weapon_display_name
 
 HUD_TEXT_COLOR = rl.Color(220, 220, 220, 255)
-HUD_HINT_COLOR = rl.Color(170, 170, 180, 255)
-HUD_ACCENT_COLOR = rl.Color(240, 200, 80, 255)
 
 
 HUD_TOP_BAR_ALPHA = 0.7
@@ -55,7 +53,6 @@ HUD_SURV_PROGRESS_WIDTH = 54.0
 HUD_BONUS_BASE_Y_NO_XP = 78.0
 HUD_BONUS_BASE_Y = 121.0
 HUD_BONUS_ICON_SIZE = 32.0
-HUD_BONUS_TEXT_OFFSET = (36.0, 6.0)
 HUD_BONUS_SPACING = 52.0
 HUD_BONUS_PANEL_OFFSET_Y = -11.0
 HUD_XP_BAR_RGBA = RGBA(0.1, 0.3, 0.6, 1.0)

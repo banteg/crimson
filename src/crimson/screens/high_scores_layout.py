@@ -68,8 +68,6 @@ HS_BACK_BUTTON_Y = 301.0  # y0=495
 # state_14: [112,295]..[362,459] and inner [113,296]..[361,458]
 HS_SCORE_FRAME_X = 210.0
 HS_SCORE_FRAME_Y = 101.0
-HS_SCORE_FRAME_W = 250.0
-HS_SCORE_FRAME_H = 164.0
 
 # Quest-mode high score selector arrow (left panel).
 # state_14:High scores - Quests: ui_arrow.jaz bbox [351,256]..[383,272]
@@ -83,8 +81,6 @@ HS_HARDCORE_CHECKBOX_OFFSET = Vec2(364.0, 82.0)
 # right panel top-left at 1024x768 is (630,209).
 HS_RIGHT_CHECK_X = 44.0  # ui_checkOn bbox [674,253]..[690,269]
 HS_RIGHT_CHECK_Y = 44.0
-HS_RIGHT_SHOW_INTERNET_X = 66.0  # "Show internet scores" at (696,254)
-HS_RIGHT_SHOW_INTERNET_Y = 45.0
 
 HS_RIGHT_NUMBER_PLAYERS_X = 46.0  # "Number of players" at (676,273)
 HS_RIGHT_NUMBER_PLAYERS_Y = 64.0

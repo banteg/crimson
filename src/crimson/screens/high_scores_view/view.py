@@ -568,12 +568,5 @@ class HighScoresView(MenuScreen):
                 pending = GameStateId.QUEST_RESULTS if quest else GameStateId.GAME_OVER
         return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.HIGHSCORES, pending=pending)
 
-    def _visible_rows(self, font) -> int:
-        row_step = float(font.cell_size)
-        table_top = 188.0 + row_step
-        reserved_bottom = 96.0
-        available = max(0.0, float(canvas.height()) - table_top - reserved_bottom)
-        return max(1, int(available // row_step))
-
 
 __all__ = ["HighScoresView"]

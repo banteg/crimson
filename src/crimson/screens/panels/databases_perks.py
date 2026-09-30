@@ -147,15 +147,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
     @staticmethod
-    def _perk_desc(perk_id: PerkId, *, violence_disabled: int = 0) -> str:
-        from ...perks import perk_display_description
-
-        return perk_display_description(
-            perk_id,
-            violence_disabled=int(violence_disabled),
-        )
-
-    @staticmethod
     def _perk_prereq_name(perk_id: PerkId, *, violence_disabled: int = 0) -> str | None:
         from ...perks import PERK_BY_ID, perk_display_name
 

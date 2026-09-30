@@ -19,7 +19,6 @@ from grim.math import clamp
 from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -846,14 +845,6 @@ class BaseGameplayMode:
         ground = self.render_resources.ground
         self.render_resources.ground = None
         return ground
-
-    def adopt_ground_from_menu(self, ground: GroundRenderer | None) -> None:
-        if ground is None:
-            return
-        current = self.render_resources.ground
-        if current is not None and current is not ground:
-            current.close()
-        self.render_resources.ground = ground
 
     def menu_ground_camera(self) -> Vec2:
         return self.camera

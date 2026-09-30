@@ -53,7 +53,6 @@ QUEST_RESULTS_SCORE_CARD_X_FROM_CONTENT = 30.0
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
 COLOR_TEXT_SUBTLE = rl.Color(255, 255, 255, int(255 * 0.7))
-COLOR_GREEN = rl.Color(25, 200, 25, 255)
 # `render_tint_color_global_init_thunk` initializes `render_tint_color` to this
 # blue tint (149,175,198),
 # reused by quest/game-over captions and score-card separator outlines.

@@ -106,12 +106,6 @@ class GameOverUi(msgspec.Struct):
     def close(self) -> None:
         return None
 
-    def consume_enter(self) -> bool:
-        if self._consume_enter:
-            self._consume_enter = False
-            return True
-        return False
-
     @property
     def closing(self) -> bool:
         return self.timeline.closing
