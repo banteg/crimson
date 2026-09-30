@@ -1,0 +1,6 @@
+{
+  "cases": 3200,
+  "quests": 50,
+  "native_wasm": "bit exact",
+  "original_mismatches": []
+}

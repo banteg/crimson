@@ -1,0 +1,66 @@
+{
+  "cases": 7877,
+  "normalize_vectors": 2188,
+  "normalize_alias_modes": 2,
+  "levels": 2000,
+  "movement_trig_products": 1501,
+  "x87_control_word": "0x007f",
+  "native_wasm": "bit exact",
+  "original_mismatches": [],
+  "python_original_mismatches": [
+    {
+      "case": [
+        1,
+        3656477018,
+        444081471
+      ],
+      "original": "000080bf04c94100",
+      "python": "000080bf05c94100"
+    },
+    {
+      "case": [
+        3,
+        3656477018,
+        444081471
+      ],
+      "original": "000080bf04c94100",
+      "python": "000080bf05c94100"
+    },
+    {
+      "case": [
+        1,
+        3600005351,
+        388800480
+      ],
+      "original": "000080bfeec94a00",
+      "python": "000080bfedc94a00"
+    },
+    {
+      "case": [
+        3,
+        3600005351,
+        388800480
+      ],
+      "original": "000080bfeec94a00",
+      "python": "000080bfedc94a00"
+    },
+    {
+      "case": [
+        1,
+        338704318,
+        3545718050
+      ],
+      "original": "dabb6800ffff7fbf",
+      "python": "dbbb6800ffff7fbf"
+    },
+    {
+      "case": [
+        3,
+        338704318,
+        3545718050
+      ],
+      "original": "dabb6800ffff7fbf",
+      "python": "dbbb6800ffff7fbf"
+    }
+  ]
+}

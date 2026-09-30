@@ -16,7 +16,7 @@ We go great lengths to achieve this goal, including a headless differential test
 
 The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, and Typ-o-Shooter, with full weapon/creature/perk content, terrain/sprite/decal rendering, music, gameplay SFX, and even secrets. The simulation is fully deterministic, supporting seeded runs and headless verifiable replays.
 
-The [native Zig port](docs/rewrite/zig-verifier.md) also has a desktop shell, all five gameplay modes, replay/debug tools and a headless WASM interface. See [coverage and validation limits](docs/rewrite/status.md) for what the current checks establish.
+Python remains the fast iteration platform. The [recovered-core spike](tools/recovered_sim/README.md) is the direction for a shared game and verifier: compile the recovered C/C++ to one WASM module for desktop, web and Workers. New development on the [Zig port](docs/rewrite/zig-verifier.md) is deferred; its existing verifier remains available until the replacement passes complete replay and bot-run gates. See the [follow-up plan](tools/recovered_sim/FOLLOWUP.md) and [coverage limits](docs/rewrite/status.md).
 
 The [matching decompilation](decomp/README.md) of 1.9.93 is complete: all 858 game and engine functions in `crimsonland.exe` and `grim.dll` (360,094 bytes of code) come from recovered C/C++ source that Visual C++ 6 compiles to the original machine code, instruction for instruction, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted. Progress is tracked on [decomp.dev](https://decomp.dev/banteg/crimson), which also measures 1.9.8 from the same source.
 

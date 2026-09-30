@@ -1,0 +1,105 @@
+name: Recovered simulation spike
+
+on:
+  push:
+    branches:
+      - "master"
+  pull_request:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  recovered-sim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.13"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --frozen --group dev
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: "0.16.0"
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+
+      - name: Build native and WASM cores
+        run: |
+          uv run --no-sync python tools/recovered_sim/build.py
+          uv run --no-sync python tools/recovered_sim/build.py --target wasm
+
+      - name: Compare all modes and resets
+        env:
+          RECOVERED_SIM_TRACE_INIT: "1"
+        run: node tools/recovered_sim/matrix.mjs
+
+      - name: Download original executable
+        run: |
+          game_dir="game_bins/crimsonland/1.9.93-gog"
+          mkdir -p "$game_dir"
+          curl --fail --location --retry 3 --retry-all-errors \
+            --output "$game_dir/crimsonland.exe" \
+            "https://paq.crimson.banteg.xyz/v1.9.93/crimsonland.exe"
+          sha256sum --check <<'EOF'
+          771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+          EOF
+
+      - name: Compare all quest builders to original x86
+        run: |
+          uv run --no-sync python tools/recovered_sim/builder_oracle.py \
+            --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+            --out tools/recovered_sim/build/oracle.json
+
+      - name: Compare gameplay math and sampled movement to original x87
+        run: |
+          uv run --no-sync python tools/recovered_sim/math_oracle.py \
+            --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+            --out tools/recovered_sim/build/math-oracle.json
+          uv run --no-sync python tools/recovered_sim/movement_oracle.py \
+            --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+            --replay tests/fixtures/replays/quest-2.5-completed.crd \
+            --out tools/recovered_sim/build/movement-oracle.json
+
+      - name: Compare legacy fixture prefixes with original bugs
+        run: |
+          uv run --no-sync python tools/recovered_sim/legacy_check.py \
+            --out tools/recovered_sim/build/legacy-matrix.json
+
+      - name: Load the same WASM in the Python desktop host probe
+        run: |
+          uv run --no-sync --with wasmtime==49.0.0 python tools/recovered_sim/wasmtime_check.py \
+            --out tools/recovered_sim/build/wasmtime.json
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recovered-sim-results
+          path: |
+            tools/recovered_sim/build/report.json
+            tools/recovered_sim/build/oracle.json
+            tools/recovered_sim/build/math-oracle.json
+            tools/recovered_sim/build/movement-oracle.json
+            tools/recovered_sim/build/legacy-matrix.json
+            tools/recovered_sim/build/wasmtime.json
+            tools/recovered_sim/build/*/errors.txt
+            tools/recovered_sim/build/*/link.log
+            tools/recovered_sim/build/native/core
+            tools/recovered_sim/build/wasm/core.wasm

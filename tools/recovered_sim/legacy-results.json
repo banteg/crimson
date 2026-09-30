@@ -1,0 +1,12 @@
+{
+  "recorded_preserve_bugs": false,
+  "python_preserve_bugs": true,
+  "recovered_preserve_bugs": true,
+  "snapshots": 1201,
+  "expected_snapshots": 1201,
+  "native_exit": 0,
+  "native_stderr": "",
+  "first_differences": {},
+  "common_fields_compared": 11,
+  "common_fields_equal": true
+}

@@ -1,0 +1,35 @@
+{
+  "snapshot": 257,
+  "python_preserve_bugs": true,
+  "scope": "sampled unboosted dual-pad movement and final aim fragments",
+  "original": {
+    "pos_x": 518.3580322265625,
+    "pos_y": 520.49609375,
+    "move_dx": -9.049177169799805,
+    "move_dy": -26.779172897338867,
+    "heading": 5.9573140144348145,
+    "aim_x": 380.7469787597656,
+    "aim_y": 529.0460815429688,
+    "move_speed": 0.8333332538604736,
+    "aim_heading": -1.6328481435775757
+  },
+  "recovered": {
+    "pos_x": 518.3580322265625,
+    "pos_y": 520.49609375,
+    "move_dx": -9.049177169799805,
+    "move_dy": -26.779172897338867,
+    "heading": 5.9573140144348145,
+    "aim_x": 380.7469787597656,
+    "aim_y": 529.0460815429688,
+    "move_speed": 0.8333332538604736,
+    "aim_heading": -1.6328481435775757
+  },
+  "python": {
+    "pos_x": 518.3580322265625,
+    "pos_y": 520.49609375,
+    "heading": 5.9573140144348145,
+    "move_speed": 0.8333332538604736,
+    "aim_heading": -1.6328481435775757
+  },
+  "original_mismatches": {}
+}
