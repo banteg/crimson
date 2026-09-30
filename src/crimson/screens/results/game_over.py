@@ -118,7 +118,7 @@ class GameOverUi(msgspec.Struct):
 
     def world_entity_alpha(self) -> float:
         # `game_over_screen_update`'s buttons set `game_state_pending`; Play Again keeps the run lit.
-        match self._close_action:
+        match self._close_action if self.timeline.closing else None:
             case None:
                 pending = None
             case ResultAction.PLAY_AGAIN:
