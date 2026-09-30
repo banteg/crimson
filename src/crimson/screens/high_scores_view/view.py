@@ -29,7 +29,7 @@ from ...ui.checkbox import UiCheckbox, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_update
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_update
-from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update_keys
+from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update
 from ...ui.text_input import UiTextInput, ui_text_input_focus, update_name_entry_text
 from ..actions import ShowScores
 from ..assets import require_runtime_resources
@@ -52,6 +52,8 @@ from ..high_scores_layout import (
     HS_RIGHT_PLAYER_COUNT_WIDGET,
     HS_RIGHT_SCORE_LIST_WIDGET,
     HS_RIGHT_SHOW_SCORES_WIDGET,
+    HS_SCORE_FRAME_X,
+    HS_SCORE_FRAME_Y,
     PROFILE_ADD_ITEM,
     PROFILE_NAME_INPUT_W,
     hs_left_panel_pos_x,
@@ -60,7 +62,7 @@ from ..high_scores_layout import (
 )
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from ..transitions import _draw_screen_fade
-from .main_panel import draw_main_panel, score_row_under_mouse
+from .main_panel import draw_main_panel
 from .records import load_records
 from .right_panel import draw_right_panel
 
@@ -82,8 +84,8 @@ class HighScoresView:
         self._request = request.query
         self._return_context = request.return_context
         self._records: list[HighScoreRecord] = []
-        # `highscore_screen`'s score list scrollbar: ten rows.
-        self.score_scroll = UiScrollbar(visible_rows=10)
+        # `highscore_screen`'s score list scrollbar: ten rows of rank, score and name.
+        self.score_scroll = UiScrollbar(column_offsets=(10, 30, 44, 0, 0, 0, 0, 0), visible_rows=10)
         self._dirty = False
 
         # `highscore_screen`'s list widgets; the score list is `ui_profile_menu_update`'s named lists.
@@ -107,7 +109,10 @@ class HighScoresView:
         self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(GameStateId.HIGHSCORES))
-        self.score_scroll.scroll_offset = 0
+        self.score_scroll.scroll_offset = 0.0
+        self.score_scroll.hovered_index = -1
+        # The port's rank to show (a finished quest's) is the list's selected row.
+        self.score_scroll.selected_index = self._request.highlight_rank or 0
         self._dirty = False
         self._update_button = UiButtonState("Update scores", force_wide=True)
         self._play_button = UiButtonState("Play a game", force_wide=True)
@@ -115,8 +120,7 @@ class HighScoresView:
 
         self._close_lists()
 
-        request = self._request
-        self._records = load_records(self.state, request)
+        self._reload_records()
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
         self._is_open = True
@@ -125,7 +129,8 @@ class HighScoresView:
         self._return_context = None
         self._is_open = False
         self._records = []
-        self.score_scroll.scroll_offset = 0
+        self.score_scroll.items = []
+        self.score_scroll.scroll_offset = 0.0
         self._dirty = False
         self._close_lists()
 
@@ -231,7 +236,7 @@ class HighScoresView:
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT) and not dropdown_was_open
         self._update_quest_arrows(left_panel_top_left=left_panel_top_left, resources=resources, click=click)
-        self._update_score_scroll()
+        self._update_score_scroll(left_panel_top_left, mouse=mouse, click=click)
 
         button_base_pos = left_panel_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0)
         if button_update(
@@ -269,20 +274,25 @@ class HighScoresView:
             self._begin_close_transition(Route.BACK)
 
         # Native only runs the right panel's widgets while no score card covers them.
-        if score_row_under_mouse(self, left_panel_top_left) is None and self._request.highlight_rank is None:
+        if self.score_scroll.hovered_index == -1 and self._request.highlight_rank is None:
             self._update_right_panel_widgets(right_top_left=right_panel_top_left, resources=resources)
 
-    def _update_score_scroll(self) -> None:
-        """`highscore_screen`'s `ui_scrollbar_update` over the scores: the wheel, Up/Down while focused, PgUp/PgDn;
-        the port adds Home/End."""
+    def _update_score_scroll(self, left_panel_top_left: Vec2, *, mouse: rl.Vector2, click: bool) -> None:
+        """`highscore_screen`'s `ui_scrollbar_update` over the scores; the port adds Home/End."""
         bar = self.score_scroll
-        bar.item_count = len(self._records)
-        bar.scroll_offset -= int(rl.get_mouse_wheel_move())
-        ui_scrollbar_update_keys(self.state.focus, bar)
+        ui_scrollbar_update(
+            self.state.focus,
+            bar,
+            left_panel_top_left + Vec2(HS_SCORE_FRAME_X, HS_SCORE_FRAME_Y),
+            mouse=Vec2.from_xy(mouse),
+            click=click,
+            down=rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            wheel=rl.get_mouse_wheel_move(),
+        )
         if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
-            bar.scroll_offset = 0
+            bar.scroll_offset = 0.0
         if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
-            bar.scroll_offset = bar.max_scroll
+            bar.scroll_offset = float(bar.max_scroll)
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
         if self.state.ui.closing:
@@ -320,10 +330,19 @@ class HighScoresView:
         )
 
     def _reload_records(self) -> None:
-        request = self._request
-        self._records = load_records(self.state, request)
-        self.score_scroll.item_count = len(self._records)
-        self.score_scroll.clamp()
+        """`highscore_load_table`, then `highscore_screen`'s score lines: rank, score (seconds in Rush and Quests)
+        and name, green for a score the server took."""
+        self._records = load_records(self.state, self._request)
+        items = []
+        for rank, record in enumerate(self._records, start=1):
+            flags = record.flags
+            prefix = "\\g" if (flags & 1 or flags & 4) and (not flags & 2 or flags & 4) else ""
+            match self._request.game_mode_id:
+                case GameMode.RUSH | GameMode.QUESTS:
+                    items.append(f"{prefix}{rank}\t{record.survival_elapsed_ms // 1000}\t{record.name()}")
+                case _:
+                    items.append(f"{prefix}{rank}\t{record.score_xp}\t{record.name()}")
+        self.score_scroll.items = items
 
     def _update_right_panel_widgets(
         self,

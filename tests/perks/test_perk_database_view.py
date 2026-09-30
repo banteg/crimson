@@ -36,7 +36,7 @@ def test_hovered_perk_id_uses_hovered_row_index(make_game_state) -> None:
         PerkId.LEAN_MEAN_EXP_MACHINE,
         PerkId.PYROKINETIC,
     ]
-    view._hovered_row_index = 3
+    view.list_scroll.hovered_index = 3
     assert view._hovered_perk_id() == PerkId.PYROKINETIC
 
 
@@ -48,5 +48,5 @@ def test_hovered_perk_id_returns_none_when_not_hovered(make_game_state) -> None:
         PerkId.LEAN_MEAN_EXP_MACHINE,
         PerkId.PYROKINETIC,
     ]
-    view._hovered_row_index = -1
+    view.list_scroll.hovered_index = -1
     assert view._hovered_perk_id() is None

@@ -3,13 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from crimson.game_states import GameStateId
+from grim import canvas
 from grim.assets import TextureId
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game.types import GameState
-from ...ui.scrollbar import ui_scrollbar_draw_focus, ui_scrollbar_update_keys
+from ...ui.scrollbar import ui_scrollbar_draw, ui_scrollbar_update
 from ..assets import require_runtime_resources
 from ..high_scores_layout import weapons_db_right_detail_x_shift
 from .databases_base import _DatabaseBaseView
@@ -31,8 +32,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         super().open()
         self._weapon_ids = self._build_weapon_database_ids()
         self._selected_weapon_id = None
-        self.list_scroll.item_count = len(self._weapon_ids)
-        self.list_scroll.scroll_offset = 0
+        self.list_scroll.items = [self._weapon_label_and_icon(weapon_id)[0] for weapon_id in self._weapon_ids]
+        self.list_scroll.scroll_offset = 0.0
+        self.list_scroll.hovered_index = -1
 
     def close(self) -> None:
         self._selected_weapon_id = None
@@ -73,33 +75,9 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         draw_small_text(font, f"{count} {weapon_label} in database", left + Vec2(210.0, 80.0), dim_color)
         draw_small_text(font, "Weapon", left + Vec2(210.0, 108.0), text_color)
 
-        # Oracle frame: outer [114,322]-[364,486], inner [115,323]-[363,485].
-        frame_x = left.x + 212.0
-        frame_y = left.y + 128.0
-        frame_w = 250.0
-        frame_h = 164.0
-        ui_scrollbar_draw_focus(self.state.focus, self.list_scroll, Vec2(frame_x, frame_y))
-        rl.draw_rectangle(int(round(frame_x)), int(round(frame_y)), int(round(frame_w)), int(round(frame_h)), rl.WHITE)
-        rl.draw_rectangle(
-            int(round(frame_x + 1.0)),
-            int(round(frame_y + 1.0)),
-            max(0, int(round(frame_w - 2.0))),
-            max(0, int(round(frame_h - 2.0))),
-            rl.BLACK,
+        ui_scrollbar_draw(
+            font, self.state.focus, self.list_scroll, left + Vec2(212.0, 128.0), mouse=Vec2.from_xy(canvas.mouse_position()),
         )
-
-        # Oracle list widget is 10 rows tall.
-        list_top_left = left + Vec2(218.0, 130.0)
-        row_step = 16.0
-        visible_rows = 10
-        max_scroll = max(0, len(weapon_ids) - visible_rows)
-        start = max(0, min(max_scroll, int(self.list_scroll.scroll_offset)))
-        end = min(len(weapon_ids), start + visible_rows)
-        visible_weapon_ids = weapon_ids[start:end]
-        for row, weapon_id in enumerate(visible_weapon_ids):
-            name, _icon = self._weapon_label_and_icon(weapon_id)
-            row_color = text_color if self._selected_weapon_id is not None and int(weapon_id) == int(self._selected_weapon_id) else dim_color
-            draw_small_text(font, name, list_top_left.offset(dy=float(row) * row_step), row_color)
 
         if self._selected_weapon_id is None:
             return
@@ -126,39 +104,22 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         draw_small_text(font, f"Clip size: {clip_size}", detail_top_left + Vec2(66.0, 164.0), text_color)
 
     def _update_content_interaction(self, *, left_top_left: Vec2, mouse: rl.Vector2) -> None:
-        weapon_ids = self._weapon_ids
         bar = self.list_scroll
-        bar.item_count = len(weapon_ids)
-        bar.scroll_offset -= int(rl.get_mouse_wheel_move())
-        ui_scrollbar_update_keys(self.state.focus, bar, cursor=True)
-        if not weapon_ids:
-            self._selected_weapon_id = None
-            return
-
-        visible_rows = bar.visible_rows
-        start = bar.scroll_offset
-        end = min(len(weapon_ids), start + visible_rows)
-        row_count = end - start
-
-        row_step = 16.0
-        list_hit_x = left_top_left.x + 214.0
-        list_hit_y = left_top_left.y + 128.0
-        list_hit_w = 246.0
-        list_hit_h = min(160.0, row_step * float(row_count))
-        if (
-            list_hit_x <= mouse.x < list_hit_x + list_hit_w
-            and list_hit_y <= mouse.y < list_hit_y + list_hit_h
-        ):
-            list_text_top = left_top_left.y + 130.0
-            row = int((mouse.y - list_text_top) // row_step)
-            if 0 <= row < row_count:
-                self._selected_weapon_id = int(weapon_ids[start + row])
-                if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-                    bar.selected_index = start + row
-                return
+        ui_scrollbar_update(
+            self.state.focus,
+            bar,
+            left_top_left + Vec2(212.0, 128.0),
+            mouse=Vec2.from_xy(mouse),
+            click=rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            down=rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT),
+            wheel=rl.get_mouse_wheel_move(),
+            cursor=True,
+        )
         self._selected_weapon_id = None
-        if bar.keyed and 0 <= bar.selected_index < len(weapon_ids):
-            self._selected_weapon_id = int(weapon_ids[bar.selected_index])
+        if bar.hovered_index != -1:
+            self._selected_weapon_id = self._weapon_ids[bar.hovered_index]
+        elif bar.keyed:
+            self._selected_weapon_id = self._weapon_ids[bar.selected_index]
 
     def _build_weapon_database_ids(self) -> list[int]:
         from ...game_modes import GameMode
