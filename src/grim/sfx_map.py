@@ -85,6 +85,7 @@ class SfxSpec(msgspec.Struct, frozen=True):
     entry_name: str
 
 
+# In `audio_init_sfx` load order (`crimsonland.exe`); `sfx_load_sample()` takes the first free slot.
 _SFX_NATIVE_SPECS: Final[tuple[tuple[SfxId, SfxSpec], ...]] = (
     (SfxId.TROOPER_INPAIN_01, SfxSpec("trooper_inPain_01.ogg")),
     (SfxId.TROOPER_INPAIN_02, SfxSpec("trooper_inPain_02.ogg")),
@@ -161,7 +162,3 @@ _SFX_NATIVE_SPECS: Final[tuple[tuple[SfxId, SfxSpec], ...]] = (
 )
 
 SFX_SPECS: Final[dict[SfxId, SfxSpec]] = dict(_SFX_NATIVE_SPECS)
-
-# Extracted from `audio_init_sfx` in `crimsonland.exe`.
-# `sfx_load_sample()` allocates the first free slot, so the load order defines stable ids.
-SFX_NATIVE_ORDER: Final[tuple[SfxId, ...]] = tuple(sfx_id for sfx_id, _spec in _SFX_NATIVE_SPECS)

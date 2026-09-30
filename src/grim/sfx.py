@@ -14,7 +14,7 @@ from .audio_math import native_sound_gain, raylib_pan
 from .console import ConsoleState
 from .math import f32
 from .rand import CrandLike
-from .sfx_map import SFX_NATIVE_ORDER, SFX_SPECS, SfxId
+from .sfx_map import SFX_SPECS, SfxId
 
 SFX_PAK_NAME = "sfx.paq"
 # Native `sfx_entry_create_buffers` makes 16 buffers per sample.
@@ -223,21 +223,6 @@ def update_sfx(state: SfxState, dt: float) -> None:
         if cooldown > 0.0:
             # Native keeps negative zero-crossing residue until the next start.
             state.cooldowns[sfx_id] = f32(cooldown - dt_f32)
-
-
-def sfx_id_for_native_id(sfx_id: int) -> SfxId | None:
-    if sfx_id < 0:
-        return None
-    if sfx_id >= len(SFX_NATIVE_ORDER):
-        return None
-    return SFX_NATIVE_ORDER[sfx_id]
-
-
-def play_sfx_id(state: SfxState | None, sfx_id: int) -> None:
-    resolved = sfx_id_for_native_id(int(sfx_id))
-    if resolved is None:
-        return
-    play_sfx(state, resolved)
 
 
 def set_sfx_volume(state: SfxState | None, volume: float) -> None:

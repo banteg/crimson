@@ -125,10 +125,6 @@ def stop_music(state: AudioState | None) -> None:
     music.stop_music(state.music)
 
 
-def trigger_game_tune(state: AudioState, *, rng: CrandLike) -> str | None:
-    return music.trigger_game_tune(state.music, rng=rng)
-
-
 def play_sfx(
     state: AudioState | None,
     sfx_id: SfxId,

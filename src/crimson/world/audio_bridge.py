@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from grim.audio import AudioState, play_music, play_sfx, trigger_game_tune
+from grim.audio import AudioState, play_music, play_sfx
 from grim.audio_math import native_sound_pan
 from grim.geom import Vec2
+from grim.music import trigger_game_tune
 from grim.rand import CrandLike
 from grim.sfx import update_sfx
 from grim.sfx_map import SfxId
@@ -67,7 +68,7 @@ class AudioBridge:
         screen_width: float,
     ) -> None:
         if plan.trigger_game_tune and self.audio is not None:
-            trigger_game_tune(self.audio, rng=self.audio_rng)
+            trigger_game_tune(self.audio.music, rng=self.audio_rng)
         for request in plan.sfx:
             self._play_request(request, plan, camera=camera, screen_width=screen_width)
 

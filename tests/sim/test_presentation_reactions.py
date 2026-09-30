@@ -128,7 +128,7 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
     bridge.apply_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert calls.mock_calls == [
-        call.tune(audio, rng=rng),
+        call.tune(audio.music, rng=rng),
         call.sfx(audio, SfxId.UI_BONUS, reflex_boost_timer=0.5, gain=1.0, pan=0),
         call.sfx(audio, SfxId.UI_LEVELUP, reflex_boost_timer=0.5, gain=1.0, pan=0),
     ]
