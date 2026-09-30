@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import math
+import re
 import struct
 from collections import Counter
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from pathlib import Path
 
 from crimson.effects import EFFECT_POOL_SIZE, EffectPool, SpriteEffect
 from crimson.game_modes import GameMode
@@ -344,3 +346,41 @@ def mismatch_report(mismatches: list[Mismatch], *, total_cases: int, limit: int 
             shown[group] += 1
             lines.append(str(mismatch))
     return "\n".join(lines)
+
+
+_GRIM_HEADER = Path(__file__).resolve().parents[2] / "tools" / "match" / "include" / "grim2d_cpp.h"
+
+
+def _grim_vtable() -> list[tuple[str, int]]:
+    """`IGrim2D_cpp`'s 1.9.93 virtual methods in slot order, with their callee-popped bytes.
+
+    `__thiscall` pops the arguments (a `grim_config_value_t` is 16 bytes, a struct return adds its
+    hidden pointer); variadic methods are `__cdecl`.
+    """
+
+    header = _GRIM_HEADER.read_text()
+    body = header[header.index("class IGrim2D_cpp") :]
+    body = re.sub(r"#if CL_BUILD == 10908.*?#endif", "", body, flags=re.DOTALL)
+    methods = []
+    for returns, name, params in re.findall(r"virtual\s+([\w\s*]+?)\s*(\w+)\s*\(([^)]*)\)", body):
+        args = [arg.strip() for arg in params.split(",") if arg.strip() not in ("", "void")]
+        if "..." in args:
+            methods.append((name, 0))
+            continue
+        pop = sum(16 if arg.startswith("grim_config_value_t") else 4 for arg in args)
+        methods.append((name, pop + (4 if returns.strip() == "grim_config_value_t" else 0)))
+    return methods
+
+
+def install_fake_grim(oracle, handlers: Mapping[str, Callable[..., int]] | None = None) -> None:
+    """Point `grim_interface_ptr` at a Grim whose methods do nothing and return 0, or run `handlers[name]`."""
+
+    handlers = handlers or {}
+    slots = [oracle.load_code(b"\xc3")] * 256
+    for index, (name, pop) in enumerate(_grim_vtable()):
+        slots[index] = oracle.load_code((b"\xc2" + struct.pack("<H", pop)) if pop else b"\xc3")
+        if name in handlers:
+            oracle.stub(slots[index], handlers[name], pop=pop)
+    vtable = oracle.alloc(0x400, data=struct.pack("<256I", *slots))
+    oracle.write_u32("grim_interface_ptr", oracle.alloc(0x10, data=struct.pack("<I", vtable)))
+
