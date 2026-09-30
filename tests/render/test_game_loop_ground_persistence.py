@@ -1,153 +1,71 @@
 from __future__ import annotations
 
-import time
-from pathlib import Path
-from typing import cast
+import pytest
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game.types import GameState
-from crimson.persistence import save_status
+from crimson.game_modes import GameMode
+from crimson.modes.base_gameplay_mode import BaseGameplayMode
+from crimson.screens.actions import Route, StartRun
 from crimson.screens.chrome import ensure_menu_ground
-from crimson.screens.stack import ScreenEntry
+from crimson.screens.pause_menu import PauseMenuView
 from crimson.sim.terrain_generate import terrain_generate_random
 from grim.assets import RuntimeResources, TextureId
-from grim.config import ensure_crimson_cfg
-from grim.console import create_console
 from grim.geom import Vec2
 from grim.rand import Crand
-from grim.raylib_api import rl
-from grim.terrain_render import GroundRenderer
-from tests.support.gameplay_screen import GameplayScreenStub
+
+pytestmark = pytest.mark.usefixtures("headless_window")
 
 
-class _ResourcesStub:
-    def __init__(self) -> None:
-        self._textures = {
-            TextureId.TER_Q1_BASE: rl.Texture(),
-            TextureId.TER_Q1_OVERLAY: rl.Texture(),
-            TextureId.TER_Q2_BASE: rl.Texture(),
-            TextureId.TER_Q2_OVERLAY: rl.Texture(),
-            TextureId.TER_Q3_BASE: rl.Texture(),
-            TextureId.TER_Q3_OVERLAY: rl.Texture(),
-            TextureId.TER_Q4_BASE: rl.Texture(),
-            TextureId.TER_Q4_OVERLAY: rl.Texture(),
-        }
-
-    def texture(self, texture_id: TextureId) -> rl.Texture | None:
-        return self._textures.get(texture_id)
+@pytest.fixture
+def state(make_game_state, headless_resources: RuntimeResources) -> GameState:
+    return make_game_state(resources=headless_resources)
 
 
-class _RngStub(Crand):
-    def __init__(self, values: list[int]) -> None:
-        super().__init__(0)
-        self._values = list(values)
-
-    def _next(self) -> int:
-        if not self._values:
-            return 0
-        return int(self._values.pop(0))
-
-    def rand(self) -> int:
-        return self._next()
-
-    def rand_tagged(self, caller: int) -> int:
-        _ = caller
-        return self._next()
-
-
-class _OverlayView:
-    def open(self) -> None:
-        return None
-
-    def close(self) -> None:
-        return None
-
-    def update(self, dt: float) -> None:
-        _ = dt
-
-    def draw(self) -> None:
-        return None
-
-    def take_action(self) -> None:
-        return None
-
-
-def _build_state(tmp_path: Path) -> GameState:
-    repo_root = Path(__file__).resolve().parents[1]
-    assets_dir = repo_root / "artifacts" / "assets"
-    cfg = ensure_crimson_cfg(tmp_path)
-    return GameState(
-        base_dir=tmp_path,
-        assets_dir=assets_dir,
-        rng=Crand(0),
-        config=cfg,
-        status=save_status.ensure_game_status(tmp_path),
-        console=create_console(tmp_path, assets_dir=assets_dir),
-        preserve_bugs=False,
-        replay_checkpoints=False,
-        resources=None,
-        audio=None,
-        session_start=time.monotonic(),
-    )
-
-
-def test_capture_gameplay_ground_from_active_view(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
+def _run_from_menu(state: GameState) -> tuple[GameLoopView, BaseGameplayMode]:
+    """Open the main menu, start a survival run from it and play it for half a second."""
     loop = GameLoopView(state)
-
-    menu_texture = rl.Texture()
-    gameplay_texture = rl.Texture()
-    menu_ground = GroundRenderer(texture=menu_texture, overlay=menu_texture, overlay_detail=menu_texture)
-    gameplay_ground = GroundRenderer(
-        texture=gameplay_texture,
-        overlay=gameplay_texture,
-        overlay_detail=gameplay_texture,
-    )
-    gameplay_camera = Vec2(-321.25, -456.5)
-    gameplay_view = GameplayScreenStub(ground=gameplay_ground, camera=gameplay_camera)
-
-    state.menu_ground = menu_ground
-    state.menu_ground_camera = Vec2(-1.0, -1.0)
-    state.screens.push(ScreenEntry(gameplay_view, resume=gameplay_view.resume, gameplay=gameplay_view))
-
-    loop.navigation.capture_ground()
-
-    assert state.menu_ground is gameplay_ground
-    assert state.menu_ground_camera == gameplay_camera
-    assert gameplay_view.steal_ground_for_menu() is None
+    loop.navigation.open()
+    loop.navigation.navigate(Route.MENU)
+    assert state.menu_ground is not None
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL))
+    run = state.screens.gameplay
+    assert isinstance(run, BaseGameplayMode)
+    for _ in range(30):
+        loop.update(0.016)
+    return loop, run
 
 
-def test_capture_gameplay_ground_from_stacked_view(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
-    loop = GameLoopView(state)
+def test_leaving_a_run_hands_its_ground_and_camera_to_the_menu(state: GameState) -> None:
+    loop, run = _run_from_menu(state)
+    menu_ground = state.menu_ground
+    run_ground = run.render_resources.ground
+    run_camera = run.camera
+    assert run_ground is not None and run_ground is not menu_ground
 
-    menu_texture = rl.Texture()
-    gameplay_texture = rl.Texture()
-    menu_ground = GroundRenderer(texture=menu_texture, overlay=menu_texture, overlay_detail=menu_texture)
-    gameplay_ground = GroundRenderer(
-        texture=gameplay_texture,
-        overlay=gameplay_texture,
-        overlay_detail=gameplay_texture,
-    )
-    gameplay_camera = Vec2(-611.0, -322.0)
-    gameplay_view = GameplayScreenStub(ground=gameplay_ground, camera=gameplay_camera)
-    overlay_view = _OverlayView()
+    loop.navigation.navigate(Route.MENU)
 
-    state.menu_ground = menu_ground
-    state.menu_ground_camera = Vec2(-1.0, -1.0)
-    state.screens.push(ScreenEntry(gameplay_view, resume=gameplay_view.resume, gameplay=gameplay_view))
-    state.screens.push(ScreenEntry(overlay_view))
-
-    loop.navigation.capture_ground()
-
-    assert state.menu_ground is gameplay_ground
-    assert state.menu_ground_camera == gameplay_camera
-    assert gameplay_view.steal_ground_for_menu() is None
+    assert state.menu_ground is run_ground
+    assert state.menu_ground_camera == run_camera
+    assert run.steal_ground_for_menu() is None
 
 
-def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
-    state.resources = cast(RuntimeResources, _ResourcesStub())
+def test_quitting_from_the_pause_menu_hands_the_run_ground_to_the_menu(state: GameState) -> None:
+    loop, run = _run_from_menu(state)
+    loop.navigation.navigate(Route.PAUSE)
+    assert isinstance(state.screens.active, PauseMenuView)
+    run_ground = run.render_resources.ground
+    run_camera = run.camera
+    assert run_ground is not None
+
+    loop.navigation.navigate(Route.MENU)
+
+    assert state.menu_ground is run_ground
+    assert state.menu_ground_camera == run_camera
+    assert run.steal_ground_for_menu() is None
+
+
+def test_regenerate_menu_ground_resets_menu_camera(state: GameState) -> None:
     state.menu_ground_camera = Vec2(-100.0, -200.0)
 
     ground = ensure_menu_ground(state, regenerate=True)
@@ -156,27 +74,22 @@ def test_regenerate_menu_ground_resets_menu_camera(tmp_path: Path) -> None:
     assert state.menu_ground_camera is None
 
 
-def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
-    resources = _ResourcesStub()
-    state.resources = cast(RuntimeResources, resources)
+def test_regenerate_menu_ground_unlock_branch_selects_q4_variant(
+    state: GameState, headless_resources: RuntimeResources,
+) -> None:
     state.status.quest_unlock_index = 0x28
     # terrain_generate_random() burns three hidden prelude draws before the
-    # unlock-gated variant rolls. The fourth draw is the Q4 unlock branch gate.
-    # Remaining draws are consumed by terrain stamping and can be arbitrary.
-    state.rng = _RngStub([0, 0, 0, 3, 1234])
+    # unlock-gated variant rolls; seed 2's fourth draw passes the Q4 gate (& 7 == 3).
+    state.rng.srand(2)
 
     ground = ensure_menu_ground(state, regenerate=True)
 
-    assert ground is not None
-    assert ground.texture is resources.texture(TextureId.TER_Q4_BASE)
-    assert ground.overlay is resources.texture(TextureId.TER_Q4_OVERLAY)
-    assert ground.overlay_detail is resources.texture(TextureId.TER_Q4_BASE)
+    assert ground.texture is headless_resources.texture(TextureId.TER_Q4_BASE)
+    assert ground.overlay is headless_resources.texture(TextureId.TER_Q4_OVERLAY)
+    assert ground.overlay_detail is headless_resources.texture(TextureId.TER_Q4_BASE)
 
 
-def test_regenerate_menu_ground_draws_random_terrain_from_app_rng(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
-    state.resources = cast(RuntimeResources, _ResourcesStub())
+def test_regenerate_menu_ground_draws_random_terrain_from_app_rng(state: GameState) -> None:
     state.status.quest_unlock_index = 0x28
     state.rng.srand(0x1234)
     expected_rng = Crand(int(state.rng.state))
@@ -184,15 +97,11 @@ def test_regenerate_menu_ground_draws_random_terrain_from_app_rng(tmp_path: Path
 
     ground = ensure_menu_ground(state, regenerate=True)
 
-    assert ground is not None
     assert ground._scheduled_layers == expected_terrain.layers
     assert int(state.rng.state) == int(expected_rng.state)
 
 
-def test_existing_menu_ground_ignores_runtime_texture_scale_changes(tmp_path: Path) -> None:
-    state = _build_state(tmp_path)
-    state.resources = cast(RuntimeResources, _ResourcesStub())
-
+def test_existing_menu_ground_ignores_runtime_texture_scale_changes(state: GameState) -> None:
     ground = ensure_menu_ground(state, regenerate=True)
     state.menu_ground_camera = Vec2(-100.0, -200.0)
     before_rng_state = int(state.rng.state)
