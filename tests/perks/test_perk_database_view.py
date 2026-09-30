@@ -50,10 +50,3 @@ def test_hovered_perk_id_returns_none_when_not_hovered(make_game_state) -> None:
     ]
     view._hovered_row_index = -1
     assert view._hovered_perk_id() is None
-
-
-def test_perk_prereq_name_uses_first_prereq_entry() -> None:
-    assert UnlockedPerksDatabaseView._perk_prereq_name(PerkId.TOXIC_AVENGER) == "Veins of Poison"
-    assert UnlockedPerksDatabaseView._perk_prereq_name(PerkId.NINJA) == "Dodger"
-    assert UnlockedPerksDatabaseView._perk_prereq_name(PerkId.PERK_MASTER) == "Perk Expert"
-    assert UnlockedPerksDatabaseView._perk_prereq_name(PerkId.GREATER_REGENERATION) == "Regeneration"

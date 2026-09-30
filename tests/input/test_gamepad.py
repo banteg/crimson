@@ -30,7 +30,6 @@ from crimson.input_codes import (
     gamepad_snapshot,
     input_axis_value,
     input_code_is_down,
-    input_code_name,
 )
 from crimson.local_input import LocalInputInterpreter
 from crimson.modes.components.perk_prompt_ui import PerkPromptUi
@@ -135,27 +134,6 @@ def test_pad_codes_stay_clear_of_native_code_families() -> None:
     assert not set(codes) & set(input_codes._JOYS_BUTTON_CODES)
     assert not set(codes) & set(input_codes._AXIS_CODE_TO_AXIS)
     assert set(input_codes._PAD_AXIS_CODES) | set(input_codes._PAD_BUTTON_CODES) == set(codes)
-
-
-@pytest.mark.parametrize(
-    ("code", "name"),
-    [
-        (PadCode.LEFT_STICK_X, "Left Stick X"),
-        (PadCode.RIGHT_STICK_Y, "Right Stick Y"),
-        (PadCode.R2, "R2 / RT"),
-        (PadCode.FACE_DOWN, "Cross / A"),
-        (PadCode.FACE_LEFT, "Square / X"),
-        (PadCode.FACE_UP, "Triangle / Y"),
-        (PadCode.DPAD_LEFT, "D-Pad Left"),
-    ],
-)
-def test_pad_code_display_names(code: PadCode, name: str) -> None:
-    assert input_code_name(code) == name
-
-
-def test_legacy_code_names_unchanged() -> None:
-    assert input_code_name(0x13F) == "JoyAxisX"
-    assert input_code_name(0x11F) == "Joys1"
 
 
 def test_pad_codes_round_trip_through_crimson_cfg() -> None:

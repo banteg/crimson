@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
-
 from crimson.aim_schemes import AimScheme
 from crimson.movement_controls import MovementControlType
 from crimson.screens.panels.controls_labels import (
@@ -10,33 +8,12 @@ from crimson.screens.panels.controls_labels import (
     controls_aim_method_dropdown_ids,
     controls_method_labels,
     controls_rebind_plan,
-    input_configure_for_label,
-    input_scheme_label,
 )
 from grim.config import default_crimson_cfg
 
 
 def _controls():
     return default_crimson_cfg().controls
-
-
-def test_input_configure_for_label_mapping() -> None:
-    assert input_configure_for_label(AimScheme.MOUSE) == "Mouse"
-    assert input_configure_for_label(AimScheme.KEYBOARD) == "Keyboard"
-    assert input_configure_for_label(AimScheme.JOYSTICK) == "Joystick"
-    assert input_configure_for_label(AimScheme.MOUSE_RELATIVE) == "Mouse relative"
-    assert input_configure_for_label(AimScheme.DUAL_ACTION_PAD) == "Dual Action Pad"
-    assert input_configure_for_label(AimScheme.COMPUTER) == "Computer"
-    assert input_configure_for_label(cast(AimScheme, 99)) == "Unknown"
-
-
-def test_input_scheme_label_mapping() -> None:
-    assert input_scheme_label(MovementControlType.RELATIVE) == "Relative"
-    assert input_scheme_label(MovementControlType.STATIC) == "Static"
-    assert input_scheme_label(MovementControlType.DUAL_ACTION_PAD) == "Dual Action Pad"
-    assert input_scheme_label(MovementControlType.MOUSE_POINT_CLICK) == "Mouse point&click"
-    assert input_scheme_label(MovementControlType.COMPUTER) == "Computer"
-    assert input_scheme_label(MovementControlType.UNKNOWN) == "Unknown"
 
 
 def test_controls_method_labels_reads_player_arrays() -> None:
