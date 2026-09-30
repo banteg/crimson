@@ -649,7 +649,9 @@ class EffectPool:
         self._entries = [EffectEntry() for _ in range(EFFECT_POOL_SIZE)]
         self.template = EffectTemplate()
         self._free_head = 0
-        # Native `effect_spawn_detail_skip_counter`: never reset, not even by `effect_defaults_reset`.
+        # Native `effect_spawn_detail_skip_counter`: `effect_defaults_reset` leaves it alone, and native never
+        # resets it for the whole process. This one starts with each world so replays need not record it
+        # (docs/rewrite/replay-run-start.md).
         self._detail_skip_counter = 0
         self.reset()
 

@@ -71,6 +71,16 @@ the port fixes them at zero; see [settings that steer the RNG](parity/environmen
 Native creature slots can still contain residue once the reset has run; port
 replays carry none and start from a fresh pool.
 
+Native `effect_spawn_detail_skip_counter` is residue of the same kind: at detail
+presets 1 and 2 `effect_spawn` drops every other effect, and the counter lives
+for the whole process (`effect_defaults_reset` leaves it alone), so a run's first
+low-detail effect is kept or dropped depending on every earlier run in the
+session. The port's counter starts at zero with each world. Carrying it across
+runs would make a replay's effects, and the decals they leave on the ground,
+depend on the session it plays in, so replays would have to record it. Only
+visuals differ: `effect_spawn` returns nothing, so its callers draw the same RNG
+either way.
+
 ## Settings during a run
 
 Simulation detail and violence settings stay fixed at the values in the
