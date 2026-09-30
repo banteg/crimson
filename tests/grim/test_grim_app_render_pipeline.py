@@ -71,9 +71,6 @@ class _FakeRl:
     def end_drawing(self) -> None:
         self.end_calls += 1
 
-    def take_screenshot(self, _: str) -> None:
-        return None
-
     def close_window(self) -> None:
         self.close_calls += 1
 
@@ -179,7 +176,7 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     mocker.patch.object(grim_app, "RaylibDrawScope")
     mocker.patch.object(grim_app, "RenderPipeline", _PipelineSpy)
     mocker.patch.object(fake_rl, "window_should_close", return_value=False)
-    screenshot = mocker.spy(fake_rl, "take_screenshot")
+    screenshot = mocker.patch.object(grim_app, "_save_screenshot")
     quit_requested = mocker.Mock(side_effect=[False, True])
     screenshot_requested = mocker.Mock(side_effect=[True, False])
     grim_app.run_view(
@@ -192,7 +189,7 @@ def test_run_view_uses_explicit_quit_and_screenshot_callbacks(mocker, tmp_path) 
     )
     assert view.draw_calls == 2
     assert len(view.update_dts) == 2
-    screenshot.assert_called_once_with("shot_000.png")
+    screenshot.assert_called_once_with(tmp_path / "shot_000.png")
     assert quit_requested.call_count == screenshot_requested.call_count == 2
     assert view.close_calls == fake_rl.close_calls == 1
 

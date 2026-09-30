@@ -33,6 +33,14 @@ def height() -> int:
     return rl.get_screen_height() if _letterbox is None else _letterbox.height
 
 
+def frame_rect() -> rl.Rectangle:
+    """Where the game frame lands in the window, in window points: the letterboxed area or the whole window."""
+    box = _letterbox
+    if box is None:
+        return rl.Rectangle(0.0, 0.0, float(rl.get_screen_width()), float(rl.get_screen_height()))
+    return rl.Rectangle(box.x, box.y, box.width * box.scale, box.height * box.scale)
+
+
 def mouse_position() -> rl.Vector2:
     pos = rl.get_mouse_position()
     box = _letterbox
@@ -77,7 +85,7 @@ class Canvas:
         if box is None:
             draw_frame()
             return
-        dst = rl.Rectangle(box.x, box.y, box.width * box.scale, box.height * box.scale)
+        dst = frame_rect()
         # Render at the letterboxed size in physical pixels so the frame is drawn, not upscaled.
         dpi = rl.get_window_scale_dpi()
         target = self._ensure_target(round(dst.width * dpi.x), round(dst.height * dpi.y))

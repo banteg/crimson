@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import shutil
 from collections.abc import Callable
 from pathlib import Path
 
@@ -8,7 +7,7 @@ import msgspec
 
 from grim.raylib_api import rl
 
-from .canvas import Canvas
+from .canvas import Canvas, frame_rect
 from .render_pipeline import RaylibDrawScope, RenderPipeline, WindowSink
 from .view import View
 
@@ -34,6 +33,24 @@ class RunViewHooks(msgspec.Struct, frozen=True):
 
 def _fullscreen_toggle_pressed() -> bool:
     return rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and any(rl.is_key_down(key) for key in ALT_KEYS)
+
+
+def _save_screenshot(path: Path) -> None:
+    """Write the frame drawn so far at physical pixels, without letterbox bars.
+
+    Runs before the buffer swap. raylib's `take_screenshot` runs after it and scales the already-physical
+    HiDPI render size by the DPI again, so it wrote a double-size image with the frame in one corner.
+    """
+    # Flush the batched draws so the read sees the whole frame, not just the clear.
+    rl.rl_draw_render_batch_active()
+    image = rl.load_image_from_screen()
+    try:
+        frame = frame_rect()
+        dpi = rl.get_window_scale_dpi()
+        rl.image_crop(image, rl.Rectangle(frame.x * dpi.x, frame.y * dpi.y, frame.width * dpi.x, frame.height * dpi.y))
+        rl.export_image(image, str(path))
+    finally:
+        rl.unload_image(image)
 
 
 def _next_screenshot_name(directory: Path, index: int) -> tuple[str, int]:
@@ -93,22 +110,25 @@ def run_view(
             take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
             if run_hooks.consume_screenshot_request():
                 take_screenshot = True
+            screenshot_path = None
+            if take_screenshot:
+                screenshot_dir.mkdir(parents=True, exist_ok=True)
+                filename, screenshot_index = _next_screenshot_name(screenshot_dir, screenshot_index)
+                screenshot_path = screenshot_dir / filename
+
+            def draw_frame(screenshot_path: Path | None = screenshot_path) -> None:
+                canvas.draw(view.draw)
+                if screenshot_path is not None:
+                    _save_screenshot(screenshot_path)
+
             render_pipeline.draw(
-                draw_frame=lambda: canvas.draw(view.draw),
+                draw_frame=draw_frame,
                 width=rl.get_render_width(),
                 height=rl.get_render_height(),
             )
             render_pipeline.present()
             if run_hooks.should_close():
                 break
-            if take_screenshot:
-                screenshot_dir.mkdir(parents=True, exist_ok=True)
-                filename, screenshot_index = _next_screenshot_name(screenshot_dir, screenshot_index)
-                # raylib writes screenshots into the working directory.
-                rl.take_screenshot(filename)
-                src = Path.cwd() / filename
-                if src.exists() and src != screenshot_dir / filename:
-                    shutil.move(str(src), str(screenshot_dir / filename))
     finally:
         try:
             view.close()
