@@ -1,0 +1,7 @@
+{
+  "canonical_build": "1.9.93",
+  "canonical_sha256": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
+  "file_path": "game_bins/crimsonland/1.0.2/crimson.exe",
+  "image_base": "0x00400000",
+  "sha256": "7f7ccf19ef028570c73c4478562a23d57c54c91e7335e88c373d092e9faa07fe"
+}

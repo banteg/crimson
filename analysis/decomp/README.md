@@ -300,6 +300,6 @@ See the [integration guide](https://decomp.wiki/tools/decomp-dev) and
 ## Other builds
 
 `<build>/<image>/` holds the maps that place canonical functions and globals in
-another build of the family, derived by `uv run crimson match build-map`. They
+another build, derived from its family canonical image or explicit donor by `uv run crimson match build-map`. They
 feed `--build` comparisons and the reported builds' inventories; see
 [decomp/README.md](../../decomp/README.md#other-builds).

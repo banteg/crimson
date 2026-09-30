@@ -47,7 +47,9 @@ The game grew from one C++ object into two dozen source files, and it never
 had a C object: every build before 1.9.9 takes its runtime from an older
 compiler build, and none links a C object from the game's compiler. The
 freeware builds share their compiler with 1.9.1 but little of its code (see
-[other builds](#other-builds)), so they belong to no family yet.
+[other builds](#other-builds)), so they belong to no family yet. Their image-level `mapping_source` entries
+bootstrap comparisons from 1.9.93 without claiming that the whole source tree
+or its layouts describe freeware.
 
 Two build quirks are recorded in `builds.json`:
 
@@ -83,27 +85,28 @@ per-build trees resolve them away. Rules:
 ## Other builds
 
 The curated analysis names only the canonical images. `uv run crimson match
-build-map` derives maps for every other build of a family and writes them to
+build-map` derives maps for every other build with a family or explicit mapping source and writes them to
 `analysis/decomp/<build>/<image>/`. Each function row records how it was placed,
 strongest first:
 
 - `exact`: the body is identical up to relinking;
 - `interface`: every instruction agrees after pairing Grim virtual slots through
   the two DLLs' native vtables and mapped method identities;
+- `recovered`: a reviewed native identity and extent pinned in `recovered.json`;
 - `referenced`: an operand of an exact body points at it;
 - `called`: the same call site of a mapped caller that changed but kept its
   call sequence;
 - `ordered`: it sits between mapped neighbours in layout order, at a similar
   size.
 
-`exact` and `interface` rows have an exact extent; the others run to the next
+`exact`, `interface`, and reviewed `recovered` rows have a pinned extent; the others run to the next
 known function. A global is named when every reference to it from these bodies
 agrees. Interface mapping is placement and reference evidence, not compiled
 match credit; a candidate must still pass the build's own instruction, encoding
 and reference checks. Function aliases and colocated object/member names retain
 the same proven addresses.
 
-Game code (679 canonical functions) overlaps 1.9.93 as follows:
+The initial game-code survey (679 canonical functions) found overlap with 1.9.93 as follows:
 
 | Build | Exact | Placed |
 |---|---|---|
@@ -133,6 +136,29 @@ unresolved, so such a function reports `audit`, never `match`.
 Builds marked `reported` in `builds.json` (1.9.93 and 1.9.8) are published to
 decomp.dev, each from its own evidence; see
 [analysis/decomp/README.md](../analysis/decomp/README.md#198).
+
+## Freeware setup
+
+1.0.2, 1.3.0 and 1.4.0 have committed function, global, import and image-metadata
+maps for both `crimson.exe` and `grim.dll`. Their actual filenames and image
+hashes remain the matching targets. A scratch naming the donor's
+`crimsonland.exe` resolves to that build's `crimson.exe`; the comparison uses
+its own maps, VC6 `msvc6.5` profile and `CL_BUILD` (10002, 10300 or 10400).
+
+```sh
+uv run crimson match builds
+uv run crimson match build-map 1.0.2 1.3.0 1.4.0 --check
+uv run crimson match build-scan 1.4.0 -j 8
+uv run crimson match scratch tools/match/scratches/console_clear_log --build 1.4.0
+uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0 --source /tmp/candidate.cpp
+```
+
+These maps are a starting point for recovering changed bodies, not a complete
+inventory of freeware functions. They are not marked `reported`: publishing a
+percentage needs an independent native inventory, including functions with no
+1.9 counterpart. Placement evidence alone never earns compiled match credit.
+The shared source remains under `decomp/1.9`; add a freeware family and its own
+layout only once native evidence supports its grouping.
 
 ## Scope
 

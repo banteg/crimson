@@ -62,7 +62,7 @@ def test_reviewed_historical_map_rejects_unbound_evidence(recovered_198_map, inv
 
 def test_engine_maps_precede_the_game_interface_consumer() -> None:
     for build in {image.build for image in MAPPED_IMAGES}:
-        assert [image.name for image in MAPPED_IMAGES if image.build == build] == ["grim.dll", "crimsonland.exe"]
+        assert [image.name for image in MAPPED_IMAGES if image.build == build] == ["grim.dll", REGISTRY.image(build, "crimsonland.exe").name]
 
 
 @pytest.mark.parametrize("image", MAPPED_IMAGES, ids=lambda image: image.target.image_name)
@@ -204,3 +204,33 @@ def test_virtual_slot_pairing_requires_the_grim_receiver_without_clobbers(middle
     body = match_builds._Body(tuple(lines), ())
     assert bool(match_builds._grim_virtual_calls(body, 0x480000)) is expected
     assert not match_builds._grim_virtual_calls(body, 0x490000)
+
+
+@pytest.mark.parametrize("build", ["1.0.2", "1.3.0", "1.4.0"])
+def test_freeware_scratches_use_the_original_image_and_donor_maps(build: str) -> None:
+    image = REGISTRY.image(build, "crimsonland.exe")
+    assert image.name == "crimson.exe"
+    assert image.canonical_build is None
+    assert REGISTRY.canonical(image) == REGISTRY.image("1.9.93", "crimsonland.exe")
+    assert image == REGISTRY.image(build, "crimson.exe")
+    config = matchlib.load_scratch_config(matchlib.DEFAULT_MATCH_ROOT / "scratches/console_init")
+    built, = image.scratch_configs(config)
+    assert built.image == "crimson.exe"
+    assert built.compiler == "msvc6.5"
+    assert f"/DCL_BUILD={image.cl_build}" in built.cflags
+    assert built.end_va is None
+    assert image.target.image_path == image.path
+    assert image.target.image_name == f"{build}/crimson.exe"
+
+
+def test_order_candidates_inside_verified_bodies_cannot_split_functions() -> None:
+    mapper = match_builds._Mapper.__new__(match_builds._Mapper)
+    mapper.entry_points = [0x1000, 0x1030, 0x1040, 0x1050, 0x1060]
+    mapper.mapped = {0x2000: 0x1000, 0x2100: 0x1040}
+    mapper.evidence = {0x2000: "exact", 0x2100: "interface"}
+    code = bytes.fromhex("90 " * 63 + "c3")
+    mapper.bodies = {
+        0x2000: match_builds._body(matchlib.LoadedImage(code, 0x2000, 64), 0x2000, 64),
+        0x2100: match_builds._body(matchlib.LoadedImage(code[:31] + b"\xc3", 0x2100, 32), 0x2100, 32),
+    }
+    assert mapper.boundaries() == [0x1000, 0x1040, 0x1060]

@@ -1,0 +1,3668 @@
+[
+  {
+    "address": "0x004018C0",
+    "canonical_address": "0x00401120",
+    "end": "0x004018F0",
+    "evidence": "referenced",
+    "name": "console_cmd_arg_get",
+    "size": 48
+  },
+  {
+    "address": "0x004018F0",
+    "canonical_address": "0x00401150",
+    "end": "0x004018F6",
+    "evidence": "exact",
+    "name": "console_cmd_argc_get",
+    "size": 6
+  },
+  {
+    "address": "0x00401900",
+    "canonical_address": "0x00401160",
+    "end": "0x0040190A",
+    "evidence": "exact",
+    "name": "console_global_construct_and_register",
+    "size": 10
+  },
+  {
+    "address": "0x00401910",
+    "canonical_address": "0x00401170",
+    "end": "0x0040191A",
+    "evidence": "exact",
+    "name": "console_global_init",
+    "size": 10
+  },
+  {
+    "address": "0x00401920",
+    "canonical_address": "0x00401180",
+    "end": "0x0040192C",
+    "evidence": "exact",
+    "name": "console_register_global_destructor_atexit",
+    "size": 12
+  },
+  {
+    "address": "0x00401930",
+    "canonical_address": "0x00401190",
+    "end": "0x0040193A",
+    "evidence": "exact",
+    "name": "console_global_destroy",
+    "size": 10
+  },
+  {
+    "address": "0x00401940",
+    "canonical_address": "0x004011A0",
+    "end": "0x0040198E",
+    "evidence": "exact",
+    "name": "console_clear_log",
+    "size": 78
+  },
+  {
+    "address": "0x00401990",
+    "canonical_address": "0x00401240",
+    "end": "0x00401998",
+    "evidence": "exact",
+    "name": "console_cmd_quit",
+    "size": 8
+  },
+  {
+    "address": "0x004019F0",
+    "canonical_address": "0x00401250",
+    "end": "0x00401AE0",
+    "evidence": "ordered",
+    "name": "console_cmd_exec",
+    "size": 240
+  },
+  {
+    "address": "0x00401C70",
+    "canonical_address": "0x00401340",
+    "end": "0x00401C81",
+    "evidence": "exact",
+    "name": "console_cmd_extend",
+    "size": 17
+  },
+  {
+    "address": "0x00401C90",
+    "canonical_address": "0x00401360",
+    "end": "0x00401C9B",
+    "evidence": "exact",
+    "name": "console_cmd_minimize",
+    "size": 11
+  },
+  {
+    "address": "0x00401CD0",
+    "canonical_address": "0x00401370",
+    "end": "0x00401D11",
+    "evidence": "exact",
+    "name": "console_cmdlist",
+    "size": 65
+  },
+  {
+    "address": "0x00401D20",
+    "canonical_address": "0x004013C0",
+    "end": "0x00401D61",
+    "evidence": "exact",
+    "name": "console_vars",
+    "size": 65
+  },
+  {
+    "address": "0x00401D70",
+    "canonical_address": "0x00401410",
+    "end": "0x00401E65",
+    "evidence": "exact",
+    "name": "console_echo",
+    "size": 245
+  },
+  {
+    "address": "0x00401E70",
+    "canonical_address": "0x00401510",
+    "end": "0x00401EC0",
+    "evidence": "ordered",
+    "name": "console_cmd_set",
+    "size": 80
+  },
+  {
+    "address": "0x00401EE0",
+    "canonical_address": "0x00401560",
+    "end": "0x004020B0",
+    "evidence": "ordered",
+    "name": "console_init",
+    "size": 464,
+    "aliases": [
+      "??0console_queue_t@@QAE@XZ"
+    ]
+  },
+  {
+    "address": "0x004020B0",
+    "canonical_address": "0x004016E0",
+    "end": "0x0040216B",
+    "evidence": "exact",
+    "name": "console_destroy",
+    "size": 187,
+    "aliases": [
+      "??1console_queue_t@@QAE@XZ"
+    ]
+  },
+  {
+    "address": "0x00402170",
+    "canonical_address": "0x004017A0",
+    "end": "0x00402231",
+    "evidence": "exact",
+    "name": "console_push_line",
+    "size": 193,
+    "aliases": [
+      "?console_push_line@console_queue_t@@QAEXPAD@Z"
+    ]
+  },
+  {
+    "address": "0x00402240",
+    "canonical_address": "0x00401870",
+    "end": "0x00402290",
+    "evidence": "referenced",
+    "name": "console_printf",
+    "size": 80
+  },
+  {
+    "address": "0x004022A0",
+    "canonical_address": "0x004018D0",
+    "end": "0x00402303",
+    "evidence": "exact",
+    "name": "console_history_apply",
+    "size": 99
+  },
+  {
+    "address": "0x00402390",
+    "canonical_address": "0x00401DD0",
+    "end": "0x00402AB0",
+    "evidence": "ordered",
+    "name": "console_render",
+    "size": 1824,
+    "aliases": [
+      "?render@console_queue_t@@QAEXXZ"
+    ]
+  },
+  {
+    "address": "0x00402AB0",
+    "canonical_address": "0x00402350",
+    "end": "0x00402BB0",
+    "evidence": "ordered",
+    "name": "console_register_cvar",
+    "size": 256,
+    "aliases": [
+      "?console_register_cvar@console_queue_t@@QAEPAUconsole_cvar_entry_t@@PAD0@Z"
+    ]
+  },
+  {
+    "address": "0x00402BB0",
+    "canonical_address": "0x00402480",
+    "end": "0x00402C0C",
+    "evidence": "exact",
+    "name": "console_cvar_find",
+    "size": 92
+  },
+  {
+    "address": "0x00402C10",
+    "canonical_address": "0x00402580",
+    "end": "0x00402CB1",
+    "evidence": "exact",
+    "name": "console_tokenize_line",
+    "size": 161,
+    "aliases": [
+      "?console_tokenize_line@console_queue_t@@QAEXPAD@Z"
+    ]
+  },
+  {
+    "address": "0x00402CC0",
+    "canonical_address": "0x00402630",
+    "end": "0x00402D64",
+    "evidence": "exact",
+    "name": "console_cvar_autocomplete",
+    "size": 164
+  },
+  {
+    "address": "0x00402D70",
+    "canonical_address": "0x004026E0",
+    "end": "0x00402DD3",
+    "evidence": "exact",
+    "name": "console_register_command",
+    "size": 99
+  },
+  {
+    "address": "0x00402DE0",
+    "canonical_address": "0x00402750",
+    "end": "0x00402E3D",
+    "evidence": "exact",
+    "name": "console_command_find",
+    "size": 93
+  },
+  {
+    "address": "0x00402E40",
+    "canonical_address": "0x004027B0",
+    "end": "0x00402EE5",
+    "evidence": "exact",
+    "name": "console_command_autocomplete",
+    "size": 165
+  },
+  {
+    "address": "0x00402EF0",
+    "canonical_address": "0x00402860",
+    "end": "0x00402F60",
+    "evidence": "ordered",
+    "name": "console_flush_log",
+    "size": 112,
+    "aliases": [
+      "?flush_log@console_queue_t@@QAEEPAD@Z"
+    ]
+  },
+  {
+    "address": "0x00402F60",
+    "canonical_address": "0x004011F0",
+    "end": "0x00402FA4",
+    "evidence": "exact",
+    "name": "console_log_node_free",
+    "size": 68,
+    "aliases": [
+      "?release@console_log_node_t@@QAEPAU1@E@Z"
+    ]
+  },
+  {
+    "address": "0x00402FB0",
+    "canonical_address": "0x00402BD0",
+    "end": "0x00402FE0",
+    "evidence": "ordered",
+    "name": "game_build_path",
+    "size": 48
+  },
+  {
+    "address": "0x00402FE0",
+    "canonical_address": "0x00402ED0",
+    "end": "0x004030F0",
+    "evidence": "ordered",
+    "name": "demo_setup_variant_0",
+    "size": 272
+  },
+  {
+    "address": "0x004030F0",
+    "canonical_address": "0x00403250",
+    "end": "0x00403220",
+    "evidence": "ordered",
+    "name": "demo_setup_variant_3",
+    "size": 304
+  },
+  {
+    "address": "0x00403220",
+    "canonical_address": "0x00403370",
+    "end": "0x00403230",
+    "evidence": "ordered",
+    "name": "demo_purchase_interstitial_begin",
+    "size": 16
+  },
+  {
+    "address": "0x00403230",
+    "canonical_address": "0x0040CFD0",
+    "end": "0x00403235",
+    "evidence": "exact",
+    "name": "credits_line_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403240",
+    "canonical_address": "0x0040CFE0",
+    "end": "0x00403270",
+    "evidence": "referenced",
+    "name": "credits_line_table_global_init",
+    "size": 48
+  },
+  {
+    "address": "0x00403270",
+    "canonical_address": "0x0040DF70",
+    "end": "0x00403275",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_05_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403280",
+    "canonical_address": "0x0040DF80",
+    "end": "0x004032B0",
+    "evidence": "referenced",
+    "name": "crimson_crt_empty_initializer_slot_05",
+    "size": 48
+  },
+  {
+    "address": "0x004032B0",
+    "canonical_address": "0x0040DF90",
+    "end": "0x004032B5",
+    "evidence": "exact",
+    "name": "mod_api_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004032C0",
+    "canonical_address": "0x0040DFA0",
+    "end": "0x004032F0",
+    "evidence": "referenced",
+    "name": "mod_api_init",
+    "size": 48
+  },
+  {
+    "address": "0x00403300",
+    "canonical_address": "0x0040E350",
+    "end": "0x00403330",
+    "evidence": "ordered",
+    "name": "mod_api_gfx_set_subset",
+    "size": 48
+  },
+  {
+    "address": "0x00403340",
+    "canonical_address": "0x0040E400",
+    "end": "0x00403360",
+    "evidence": "ordered",
+    "name": "mod_api_gfx_end",
+    "size": 32
+  },
+  {
+    "address": "0x00403360",
+    "canonical_address": "0x00412080",
+    "end": "0x00403365",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_07_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403370",
+    "canonical_address": "0x00412090",
+    "end": "0x00403371",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_07",
+    "size": 1
+  },
+  {
+    "address": "0x00403380",
+    "canonical_address": "0x004120A0",
+    "end": "0x00403385",
+    "evidence": "exact",
+    "name": "gameplay_run_state_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403390",
+    "canonical_address": "0x004120B0",
+    "end": "0x004033C0",
+    "evidence": "referenced",
+    "name": "gameplay_run_state_init",
+    "size": 48
+  },
+  {
+    "address": "0x004033C0",
+    "canonical_address": "0x00412160",
+    "end": "0x004033C5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_09_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004033D0",
+    "canonical_address": "0x00412170",
+    "end": "0x004033F0",
+    "evidence": "referenced",
+    "name": "crimson_crt_empty_initializer_slot_09",
+    "size": 32
+  },
+  {
+    "address": "0x004033F0",
+    "canonical_address": "0x00412220",
+    "end": "0x004033F5",
+    "evidence": "exact",
+    "name": "bonus_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403400",
+    "canonical_address": "0x00412230",
+    "end": "0x00403420",
+    "evidence": "ordered",
+    "name": "bonus_pool_global_init",
+    "size": 32
+  },
+  {
+    "address": "0x00403420",
+    "canonical_address": "0x00412250",
+    "end": "0x00403425",
+    "evidence": "exact",
+    "name": "creature_spawn_slot_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403430",
+    "canonical_address": "0x00412260",
+    "end": "0x00403450",
+    "evidence": "referenced",
+    "name": "creature_spawn_slot_table_global_init",
+    "size": 32
+  },
+  {
+    "address": "0x00403450",
+    "canonical_address": "0x00412290",
+    "end": "0x00403455",
+    "evidence": "exact",
+    "name": "game_status_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403460",
+    "canonical_address": "0x004122A0",
+    "end": "0x00403500",
+    "evidence": "ordered",
+    "name": "game_status_global_init",
+    "size": 160
+  },
+  {
+    "address": "0x00403500",
+    "canonical_address": "0x00412350",
+    "end": "0x00403505",
+    "evidence": "exact",
+    "name": "highscore_init_sentinels_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403510",
+    "canonical_address": "0x00412360",
+    "end": "0x00403620",
+    "evidence": "referenced",
+    "name": "highscore_init_sentinels",
+    "size": 272
+  },
+  {
+    "address": "0x00403690",
+    "canonical_address": "0x004123C0",
+    "end": "0x004036A0",
+    "evidence": "ordered",
+    "name": "bonus_meta_global_construct_and_register",
+    "size": 16
+  },
+  {
+    "address": "0x004036A0",
+    "canonical_address": "0x004123D0",
+    "end": "0x004036C0",
+    "evidence": "ordered",
+    "name": "bonus_meta_table_init",
+    "size": 32
+  },
+  {
+    "address": "0x004036E0",
+    "canonical_address": "0x00412410",
+    "end": "0x00403704",
+    "evidence": "exact",
+    "name": "bonus_meta_entry_release",
+    "size": 36,
+    "aliases": [
+      "??1bonus_meta_cpp_t@@QAE@XZ",
+      "??1perk_meta_cpp_t@@QAE@XZ"
+    ]
+  },
+  {
+    "address": "0x00403710",
+    "canonical_address": "0x00412440",
+    "end": "0x0040371C",
+    "evidence": "exact",
+    "name": "bonus_meta_register_atexit",
+    "size": 12
+  },
+  {
+    "address": "0x00403720",
+    "canonical_address": "0x00412450",
+    "end": "0x00403740",
+    "evidence": "ordered",
+    "name": "bonus_meta_table_destroy",
+    "size": 32
+  },
+  {
+    "address": "0x00403740",
+    "canonical_address": "0x00417680",
+    "end": "0x00403745",
+    "evidence": "exact",
+    "name": "ui_menu_template_pool_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403750",
+    "canonical_address": "0x00417690",
+    "end": "0x00403760",
+    "evidence": "referenced",
+    "name": "ui_menu_template_pool_init",
+    "size": 16
+  },
+  {
+    "address": "0x00403760",
+    "canonical_address": "0x0041A000",
+    "end": "0x00403765",
+    "evidence": "exact",
+    "name": "reserved_color_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403770",
+    "canonical_address": "0x0041A010",
+    "end": "0x00403790",
+    "evidence": "referenced",
+    "name": "reserved_color_global_init",
+    "size": 32
+  },
+  {
+    "address": "0x00403790",
+    "canonical_address": "0x0041E170",
+    "end": "0x00403795",
+    "evidence": "exact",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004037A0",
+    "canonical_address": "0x0041E180",
+    "end": "0x004037B0",
+    "evidence": "referenced",
+    "name": "unused_effect_uv_strip16_prefix_vec2_global_init",
+    "size": 16
+  },
+  {
+    "address": "0x004037B0",
+    "canonical_address": "0x0041E450",
+    "end": "0x004037B5",
+    "evidence": "exact",
+    "name": "secondary_projectile_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004037C0",
+    "canonical_address": "0x0041E460",
+    "end": "0x004037F0",
+    "evidence": "ordered",
+    "name": "secondary_projectile_pool_global_init",
+    "size": 48
+  },
+  {
+    "address": "0x004037F0",
+    "canonical_address": "0x0041E490",
+    "end": "0x004037F5",
+    "evidence": "exact",
+    "name": "sprite_effect_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403800",
+    "canonical_address": "0x0041E4A0",
+    "end": "0x00403861",
+    "evidence": "exact",
+    "name": "sprite_effect_pool_global_init",
+    "size": 97
+  },
+  {
+    "address": "0x00403870",
+    "canonical_address": "0x0041E510",
+    "end": "0x00403875",
+    "evidence": "exact",
+    "name": "particle_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403880",
+    "canonical_address": "0x0041E520",
+    "end": "0x0040391F",
+    "evidence": "exact",
+    "name": "particle_pool_global_init",
+    "size": 159
+  },
+  {
+    "address": "0x00403920",
+    "canonical_address": "0x0041E5C0",
+    "end": "0x00403925",
+    "evidence": "exact",
+    "name": "player_state_table_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403930",
+    "canonical_address": "0x0041E5D0",
+    "end": "0x00403960",
+    "evidence": "referenced",
+    "name": "player_state_table_global_init",
+    "size": 48
+  },
+  {
+    "address": "0x00403960",
+    "canonical_address": "0x0041E710",
+    "end": "0x00403965",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_38_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403970",
+    "canonical_address": "0x0041E720",
+    "end": "0x00403971",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_38",
+    "size": 1
+  },
+  {
+    "address": "0x00403980",
+    "canonical_address": "0x0041E730",
+    "end": "0x00403985",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_39_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403990",
+    "canonical_address": "0x0041E740",
+    "end": "0x00403991",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_39",
+    "size": 1
+  },
+  {
+    "address": "0x004039A0",
+    "canonical_address": "0x0041E750",
+    "end": "0x004039A5",
+    "evidence": "exact",
+    "name": "projectile_pool_global_init_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004039B0",
+    "canonical_address": "0x0041E760",
+    "end": "0x004039C0",
+    "evidence": "referenced",
+    "name": "projectile_pool_global_init",
+    "size": 16
+  },
+  {
+    "address": "0x004039C0",
+    "canonical_address": "0x0041E7C0",
+    "end": "0x004039C5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_42_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004039D0",
+    "canonical_address": "0x0041E7D0",
+    "end": "0x004039D1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_42",
+    "size": 1
+  },
+  {
+    "address": "0x004039E0",
+    "canonical_address": "0x0041E7E0",
+    "end": "0x004039E5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_43_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x004039F0",
+    "canonical_address": "0x0041E7F0",
+    "end": "0x00403A20",
+    "evidence": "referenced",
+    "name": "crimson_crt_empty_initializer_slot_43",
+    "size": 48
+  },
+  {
+    "address": "0x00403A20",
+    "canonical_address": "0x0041E800",
+    "end": "0x00403A25",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_44_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403A30",
+    "canonical_address": "0x0041E810",
+    "end": "0x00403A81",
+    "evidence": "referenced",
+    "name": "crimson_crt_empty_initializer_slot_44",
+    "size": 81
+  },
+  {
+    "address": "0x00403AA0",
+    "canonical_address": "0x0041E820",
+    "end": "0x00403AA5",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_45_thunk",
+    "size": 5
+  },
+  {
+    "address": "0x00403AB0",
+    "canonical_address": "0x0041E830",
+    "end": "0x00403AB1",
+    "evidence": "exact",
+    "name": "crimson_crt_empty_initializer_slot_45",
+    "size": 1
+  },
+  {
+    "address": "0x00403AD0",
+    "canonical_address": "0x0041E8D0",
+    "end": "0x00403AF0",
+    "evidence": "ordered",
+    "name": "input_aim_pov_left_active",
+    "size": 32
+  },
+  {
+    "address": "0x00403B00",
+    "canonical_address": "0x0041E8F0",
+    "end": "0x00403B30",
+    "evidence": "ordered",
+    "name": "input_aim_pov_right_active",
+    "size": 48
+  },
+  {
+    "address": "0x00403D10",
+    "canonical_address": "0x0041E910",
+    "end": "0x004040F0",
+    "evidence": "ordered",
+    "name": "creature_handle_death",
+    "size": 992
+  },
+  {
+    "address": "0x00404510",
+    "canonical_address": "0x0041EC60",
+    "end": "0x00404BB0",
+    "evidence": "ordered",
+    "name": "config_sync_from_grim",
+    "size": 1696
+  },
+  {
+    "address": "0x004056D0",
+    "canonical_address": "0x0041F130",
+    "end": "0x00405760",
+    "evidence": "ordered",
+    "name": "config_ensure_file",
+    "size": 144
+  },
+  {
+    "address": "0x00405760",
+    "canonical_address": "0x0041F430",
+    "end": "0x00405890",
+    "evidence": "ordered",
+    "name": "angle_approach",
+    "size": 304
+  },
+  {
+    "address": "0x00405D10",
+    "canonical_address": "0x0041F580",
+    "end": "0x00405D40",
+    "evidence": "ordered",
+    "name": "bonus_alloc_slot",
+    "size": 48
+  },
+  {
+    "address": "0x004062C0",
+    "canonical_address": "0x0041F5B0",
+    "end": "0x00406480",
+    "evidence": "ordered",
+    "name": "bonus_spawn_at",
+    "size": 448
+  },
+  {
+    "address": "0x00406480",
+    "canonical_address": "0x0041F790",
+    "end": "0x004065B0",
+    "evidence": "ordered",
+    "name": "bonus_spawn_at_pos",
+    "size": 304
+  },
+  {
+    "address": "0x004065B0",
+    "canonical_address": "0x0041F8D0",
+    "end": "0x004067E0",
+    "evidence": "ordered",
+    "name": "bonus_try_spawn_on_kill",
+    "size": 560
+  },
+  {
+    "address": "0x00406AA0",
+    "canonical_address": "0x0041FBB0",
+    "end": "0x00406B60",
+    "evidence": "ordered",
+    "name": "fx_spawn_sprite",
+    "size": 192
+  },
+  {
+    "address": "0x00406BB0",
+    "canonical_address": "0x0041FC80",
+    "end": "0x00406E10",
+    "evidence": "ordered",
+    "name": "player_reset_all",
+    "size": 608
+  },
+  {
+    "address": "0x00406FF0",
+    "canonical_address": "0x0041FED0",
+    "end": "0x00407180",
+    "evidence": "ordered",
+    "name": "effect_uv_tables_init",
+    "size": 400
+  },
+  {
+    "address": "0x00408CF0",
+    "canonical_address": "0x00420040",
+    "end": "0x00408DC0",
+    "evidence": "ordered",
+    "name": "creature_find_nearest",
+    "size": 208
+  },
+  {
+    "address": "0x00409010",
+    "canonical_address": "0x00420130",
+    "end": "0x00409118",
+    "evidence": "exact",
+    "name": "fx_spawn_particle",
+    "size": 264
+  },
+  {
+    "address": "0x00409120",
+    "canonical_address": "0x00420240",
+    "end": "0x00409232",
+    "evidence": "exact",
+    "name": "fx_spawn_particle_slow",
+    "size": 274
+  },
+  {
+    "address": "0x00409340",
+    "canonical_address": "0x00420360",
+    "end": "0x00409430",
+    "evidence": "ordered",
+    "name": "fx_spawn_secondary_projectile",
+    "size": 240
+  },
+  {
+    "address": "0x00409430",
+    "canonical_address": "0x004205D0",
+    "end": "0x00409460",
+    "evidence": "ordered",
+    "name": "projectile_reset_pools",
+    "size": 48
+  },
+  {
+    "address": "0x00409460",
+    "canonical_address": "0x004206A0",
+    "end": "0x004094E0",
+    "evidence": "ordered",
+    "name": "creature_find_in_radius",
+    "size": 128
+  },
+  {
+    "address": "0x0040B570",
+    "canonical_address": "0x00420B90",
+    "end": "0x0040D800",
+    "evidence": "ordered",
+    "name": "projectile_update",
+    "size": 8848
+  },
+  {
+    "address": "0x0040D800",
+    "canonical_address": "0x00425D80",
+    "end": "0x0040D8C0",
+    "evidence": "ordered",
+    "name": "plaguebearer_spread_infection",
+    "size": 192
+  },
+  {
+    "address": "0x0040D8C0",
+    "canonical_address": "0x00427920",
+    "end": "0x0040E060",
+    "evidence": "ordered",
+    "name": "fx_queue_render",
+    "size": 1952
+  },
+  {
+    "address": "0x0040E6B0",
+    "canonical_address": "0x004281E0",
+    "end": "0x0040E6F0",
+    "evidence": "ordered",
+    "name": "creature_reset_all",
+    "size": 64
+  },
+  {
+    "address": "0x0040E6F0",
+    "canonical_address": "0x00428210",
+    "end": "0x0040E730",
+    "evidence": "ordered",
+    "name": "creatures_none_active",
+    "size": 64
+  },
+  {
+    "address": "0x0040E730",
+    "canonical_address": "0x00428240",
+    "end": "0x0040E830",
+    "evidence": "ordered",
+    "name": "creature_spawn",
+    "size": 256
+  },
+  {
+    "address": "0x0040E830",
+    "canonical_address": "0x004295F0",
+    "end": "0x0040F340",
+    "evidence": "ordered",
+    "name": "bonus_render",
+    "size": 2832
+  },
+  {
+    "address": "0x0040F5E0",
+    "canonical_address": "0x0042A630",
+    "end": "0x0040F610",
+    "evidence": "ordered",
+    "name": "audio_suspend_all",
+    "size": 48
+  },
+  {
+    "address": "0x0040F630",
+    "canonical_address": "0x0042A9C0",
+    "end": "0x0040F650",
+    "evidence": "ordered",
+    "name": "reg_write_dword",
+    "size": 32
+  },
+  {
+    "address": "0x0040F650",
+    "canonical_address": "0x0042ABD0",
+    "end": "0x0040FB70",
+    "evidence": "ordered",
+    "name": "load_textures_step",
+    "size": 1312
+  },
+  {
+    "address": "0x0040FB70",
+    "canonical_address": "0x0042B090",
+    "end": "0x0040FD10",
+    "evidence": "ordered",
+    "name": "game_startup_init_prelude",
+    "size": 416
+  },
+  {
+    "address": "0x004103B0",
+    "canonical_address": "0x0042C450",
+    "end": "0x004110A0",
+    "evidence": "ordered",
+    "name": "crimsonland_main",
+    "size": 3312
+  },
+  {
+    "address": "0x00412570",
+    "canonical_address": "0x0042DF10",
+    "end": "0x004126E0",
+    "evidence": "ordered",
+    "name": "effect_defaults_reset",
+    "size": 368
+  },
+  {
+    "address": "0x00416560",
+    "canonical_address": "0x0042E820",
+    "end": "0x004167B0",
+    "evidence": "ordered",
+    "name": "effects_render",
+    "size": 592
+  },
+  {
+    "address": "0x004167B0",
+    "canonical_address": "0x0042F080",
+    "end": "0x004169C0",
+    "evidence": "ordered",
+    "name": "effect_spawn_shrinkifier_hit",
+    "size": 528
+  },
+  {
+    "address": "0x004169C0",
+    "canonical_address": "0x0042FBD0",
+    "end": "0x00416A00",
+    "evidence": "ordered",
+    "name": "perk_select_random",
+    "size": 64
+  },
+  {
+    "address": "0x00416F98",
+    "canonical_address": "0x0042FD90",
+    "end": "0x00417B4D",
+    "evidence": "ordered",
+    "name": "perks_init_database",
+    "size": 2997
+  },
+  {
+    "address": "0x00417B4D",
+    "canonical_address": "0x00434250",
+    "end": "0x00417CC0",
+    "evidence": "ordered",
+    "name": "quest_spawn_timeline_update",
+    "size": 371
+  },
+  {
+    "address": "0x0041CEB1",
+    "canonical_address": "0x004343C0",
+    "end": "0x0041CED0",
+    "evidence": "ordered",
+    "name": "quest_database_advance_slot",
+    "size": 31
+  },
+  {
+    "address": "0x0041EFA0",
+    "canonical_address": "0x00435610",
+    "end": "0x0041F230",
+    "evidence": "ordered",
+    "name": "quest_build_the_beating",
+    "size": 656
+  },
+  {
+    "address": "0x0041F230",
+    "canonical_address": "0x004384A0",
+    "end": "0x0041F480",
+    "evidence": "ordered",
+    "name": "quest_build_the_killing",
+    "size": 592
+  },
+  {
+    "address": "0x0041FBA0",
+    "canonical_address": "0x0043AF30",
+    "end": "0x0041FC00",
+    "evidence": "ordered",
+    "name": "highscore_find_name_entry",
+    "size": 96
+  },
+  {
+    "address": "0x0041FC00",
+    "canonical_address": "0x0043B810",
+    "end": "0x0041FC40",
+    "evidence": "ordered",
+    "name": "sfx_entry_reset_runtime_state",
+    "size": 64,
+    "aliases": [
+      "?reset_runtime_state@sfx_entry_cpp_t@@QAEPAU1@XZ"
+    ]
+  },
+  {
+    "address": "0x0041FC40",
+    "canonical_address": "0x0043B940",
+    "end": "0x0041FC7E",
+    "evidence": "exact",
+    "name": "resource_pack_read_cstring",
+    "size": 62
+  },
+  {
+    "address": "0x0041FC80",
+    "canonical_address": "0x0043B980",
+    "end": "0x0041FCF0",
+    "evidence": "ordered",
+    "name": "resource_pack_set",
+    "size": 112
+  },
+  {
+    "address": "0x0041FCF0",
+    "canonical_address": "0x0043BF60",
+    "end": "0x0041FD30",
+    "evidence": "ordered",
+    "name": "sfx_entry_stop",
+    "size": 64
+  },
+  {
+    "address": "0x0041FD30",
+    "canonical_address": "0x0043CAA0",
+    "end": "0x00420130",
+    "evidence": "ordered",
+    "name": "audio_init_sfx",
+    "size": 1024
+  },
+  {
+    "address": "0x00420130",
+    "canonical_address": "0x0043CF90",
+    "end": "0x004201D0",
+    "evidence": "ordered",
+    "name": "sfx_system_init",
+    "size": 160
+  },
+  {
+    "address": "0x004201D0",
+    "canonical_address": "0x0043D0D0",
+    "end": "0x00420200",
+    "evidence": "ordered",
+    "name": "music_release_all",
+    "size": 48
+  },
+  {
+    "address": "0x00420200",
+    "canonical_address": "0x0043D460",
+    "end": "0x004202C0",
+    "evidence": "ordered",
+    "name": "sfx_play_exclusive",
+    "size": 192
+  },
+  {
+    "address": "0x004202C0",
+    "canonical_address": "0x0043D830",
+    "end": "0x0042038F",
+    "evidence": "ordered",
+    "name": "ui_focus_update",
+    "size": 207
+  },
+  {
+    "address": "0x0042038F",
+    "canonical_address": "0x0043D940",
+    "end": "0x00420415",
+    "evidence": "ordered",
+    "name": "ui_focus_draw",
+    "size": 134
+  },
+  {
+    "address": "0x00420415",
+    "canonical_address": "0x00445310",
+    "end": "0x004204A0",
+    "evidence": "ordered",
+    "name": "typo_target_name_is_unique",
+    "size": 139
+  },
+  {
+    "address": "0x004204A0",
+    "canonical_address": "0x00445590",
+    "end": "0x004204F0",
+    "evidence": "ordered",
+    "name": "typo_target_find_by_name",
+    "size": 80
+  },
+  {
+    "address": "0x004204F0",
+    "canonical_address": "0x00446030",
+    "end": "0x004205C0",
+    "evidence": "ordered",
+    "name": "input_primary_just_pressed",
+    "size": 208
+  },
+  {
+    "address": "0x004205C0",
+    "canonical_address": "0x00446150",
+    "end": "0x004205E0",
+    "evidence": "ordered",
+    "name": "ui_get_element_index",
+    "size": 32
+  },
+  {
+    "address": "0x004205E0",
+    "canonical_address": "0x00447420",
+    "end": "0x00420610",
+    "evidence": "ordered",
+    "name": "ui_menu_click_back_contextual",
+    "size": 48
+  },
+  {
+    "address": "0x00420610",
+    "canonical_address": "0x00447450",
+    "end": "0x00420640",
+    "evidence": "ordered",
+    "name": "ui_menu_main_click_quit",
+    "size": 48
+  },
+  {
+    "address": "0x00420640",
+    "canonical_address": "0x004474E0",
+    "end": "0x004206D0",
+    "evidence": "ordered",
+    "name": "ui_menu_pause_click_main_menu",
+    "size": 144
+  },
+  {
+    "address": "0x004206D0",
+    "canonical_address": "0x00447C90",
+    "end": "0x00420710",
+    "evidence": "ordered",
+    "name": "input_configure_for_label",
+    "size": 64
+  },
+  {
+    "address": "0x00420710",
+    "canonical_address": "0x00447D40",
+    "end": "0x004216A0",
+    "evidence": "ordered",
+    "name": "quest_select_menu_update",
+    "size": 3984
+  },
+  {
+    "address": "0x004216A0",
+    "canonical_address": "0x0044FC70",
+    "end": "0x004216D0",
+    "evidence": "ordered",
+    "name": "ui_menu_main_click_buy_full_version",
+    "size": 48
+  },
+  {
+    "address": "0x004216D0",
+    "canonical_address": "0x004534EA",
+    "end": "0x004216F0",
+    "evidence": "ordered",
+    "name": "d3dx_init_vec3_project",
+    "size": 32,
+    "aliases": [
+      "?init_D3DXVec3Project@@YGPAUD3DXVECTOR3@@PAU1@PBU1@PBU_D3DVIEWPORT8@@PBUD3DXMATRIX@@33@Z"
+    ]
+  },
+  {
+    "address": "0x00421700",
+    "canonical_address": "0x00453D2D",
+    "end": "0x00421910",
+    "evidence": "ordered",
+    "name": "d3dx_c_matrix_multiply_transpose",
+    "size": 528,
+    "aliases": [
+      "?c_D3DXMatrixMultiplyTranspose@@YGPAUD3DXMATRIX@@PAU1@PBU1@1@Z"
+    ]
+  },
+  {
+    "address": "0x00421910",
+    "canonical_address": "0x00454303",
+    "end": "0x00421940",
+    "evidence": "ordered",
+    "name": "d3dx_init_matrix_scaling",
+    "size": 48,
+    "aliases": [
+      "?init_D3DXMatrixScaling@@YGPAUD3DXMATRIX@@PAU1@MMM@Z"
+    ]
+  },
+  {
+    "address": "0x00421940",
+    "canonical_address": "0x004545DC",
+    "end": "0x00421970",
+    "evidence": "ordered",
+    "name": "d3dx_init_matrix_rotation_axis",
+    "size": 48,
+    "aliases": [
+      "?init_D3DXMatrixRotationAxis@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
+  },
+  {
+    "address": "0x00421970",
+    "canonical_address": "0x00454821",
+    "end": "0x00421990",
+    "evidence": "ordered",
+    "name": "d3dx_init_matrix_transformation",
+    "size": 32,
+    "aliases": [
+      "?init_D3DXMatrixTransformation@@YGPAUD3DXMATRIX@@PAU1@PBUD3DXVECTOR3@@PBUD3DXQUATERNION@@1121@Z"
+    ]
+  },
+  {
+    "address": "0x00421990",
+    "canonical_address": "0x00454B44",
+    "end": "0x004219A8",
+    "evidence": "ordered",
+    "name": "d3dx_init_quaternion_rotation_axis",
+    "size": 24,
+    "aliases": [
+      "?init_D3DXQuaternionRotationAxis@@YGPAUD3DXQUATERNION@@PAU1@PBUD3DXVECTOR3@@M@Z"
+    ]
+  },
+  {
+    "address": "0x004219A8",
+    "canonical_address": "0x004553F4",
+    "end": "0x004219E0",
+    "evidence": "ordered",
+    "name": "d3dx_c_plane_from_point_normal",
+    "size": 56,
+    "aliases": [
+      "?c_D3DXPlaneFromPointNormal@@YGPAUD3DXPLANE@@PAU1@PBUD3DXVECTOR3@@1@Z"
+    ]
+  },
+  {
+    "address": "0x004219E0",
+    "canonical_address": "0x00461054",
+    "end": "0x00421A07",
+    "evidence": "exact",
+    "name": "crt_ftol",
+    "size": 39,
+    "aliases": [
+      "__ftol"
+    ]
+  },
+  {
+    "address": "0x00421A07",
+    "canonical_address": "0x00456EEC",
+    "end": "0x00421AD3",
+    "evidence": "ordered",
+    "name": "d3dx_x86_vec3_normalize",
+    "size": 204,
+    "aliases": [
+      "?x86_D3DXVec3Normalize@@YGPAUD3DXVECTOR3@@PAU1@PBU1@@Z"
+    ]
+  },
+  {
+    "address": "0x00421AD3",
+    "canonical_address": "0x00460D08",
+    "end": "0x00421B40",
+    "evidence": "referenced",
+    "name": "crt_onexit",
+    "size": 109
+  },
+  {
+    "address": "0x00421B40",
+    "canonical_address": "0x00460D86",
+    "end": "0x00421B52",
+    "evidence": "exact",
+    "name": "crt_atexit",
+    "size": 18,
+    "aliases": [
+      "atexit"
+    ]
+  },
+  {
+    "address": "0x00421B81",
+    "canonical_address": "0x00460DC7",
+    "end": "0x00421B8C",
+    "evidence": "exact",
+    "name": "crt_free",
+    "size": 11,
+    "aliases": [
+      "??3@YAXPAX@Z"
+    ]
+  },
+  {
+    "address": "0x00421B8C",
+    "canonical_address": "0x00460DD2",
+    "end": "0x00421C17",
+    "evidence": "ordered",
+    "name": "crt_atol",
+    "size": 139,
+    "aliases": [
+      "_atol"
+    ]
+  },
+  {
+    "address": "0x00421C22",
+    "canonical_address": "0x00460E8E",
+    "end": "0x00421C80",
+    "evidence": "ordered",
+    "name": "crt_fclose_lk",
+    "size": 94,
+    "aliases": [
+      "__fclose_lk"
+    ]
+  },
+  {
+    "address": "0x00421C90",
+    "canonical_address": "0x00460EF0",
+    "end": "0x00421D4C",
+    "evidence": "exact",
+    "name": "crt_strchr",
+    "size": 188,
+    "aliases": [
+      "_strchr"
+    ]
+  },
+  {
+    "address": "0x00421D4C",
+    "canonical_address": "0x00460FAC",
+    "end": "0x00421DA3",
+    "evidence": "ordered",
+    "name": "crt_fgets",
+    "size": 87
+  },
+  {
+    "address": "0x00421DA3",
+    "canonical_address": "0x0046100E",
+    "end": "0x00421DC3",
+    "evidence": "referenced",
+    "name": "crt_fsopen",
+    "size": 32
+  },
+  {
+    "address": "0x00421DC3",
+    "canonical_address": "0x0046103F",
+    "end": "0x00421DD6",
+    "evidence": "exact",
+    "name": "crt_fopen",
+    "size": 19,
+    "aliases": [
+      "fopen"
+    ]
+  },
+  {
+    "address": "0x00421DD6",
+    "canonical_address": "0x00452D40",
+    "end": "0x00421DE4",
+    "evidence": "called",
+    "name": "weapon_assign_player",
+    "size": 14
+  },
+  {
+    "address": "0x00421DE4",
+    "canonical_address": "0x00461089",
+    "end": "0x00421E35",
+    "evidence": "exact",
+    "name": "crt_vsprintf",
+    "size": 81
+  },
+  {
+    "address": "0x00421E40",
+    "canonical_address": "0x00461140",
+    "end": "0x00421E59",
+    "evidence": "exact",
+    "name": "crt_ci_pow",
+    "size": 25,
+    "aliases": [
+      "__CIpow"
+    ]
+  },
+  {
+    "address": "0x00421E62",
+    "canonical_address": "0x00461162",
+    "end": "0x00422035",
+    "evidence": "exact",
+    "name": "sub_461162",
+    "size": 467
+  },
+  {
+    "address": "0x00422035",
+    "canonical_address": "0x00461335",
+    "end": "0x0042205D",
+    "evidence": "exact",
+    "name": "sub_461335",
+    "size": 40
+  },
+  {
+    "address": "0x0042205D",
+    "canonical_address": "0x0046135D",
+    "end": "0x00422100",
+    "evidence": "referenced",
+    "name": "crt_strtok",
+    "size": 163
+  },
+  {
+    "address": "0x00422100",
+    "canonical_address": "0x00461410",
+    "end": "0x00422138",
+    "evidence": "exact",
+    "name": "crt_strncmp",
+    "size": 56,
+    "aliases": [
+      "_strncmp"
+    ]
+  },
+  {
+    "address": "0x00422138",
+    "canonical_address": "0x004615DD",
+    "end": "0x00422242",
+    "evidence": "exact",
+    "name": "crt_fwrite_nolock",
+    "size": 266
+  },
+  {
+    "address": "0x00422242",
+    "canonical_address": "0x004616E7",
+    "end": "0x00422294",
+    "evidence": "exact",
+    "name": "crt_sprintf",
+    "size": 82,
+    "aliases": [
+      "sprintf"
+    ]
+  },
+  {
+    "address": "0x00422294",
+    "canonical_address": "0x00461981",
+    "end": "0x00422316",
+    "evidence": "exact",
+    "name": "crt_ehvec_ctor",
+    "size": 130,
+    "aliases": [
+      "??_L@YGXPAXIHP6EX0@Z1@Z"
+    ]
+  },
+  {
+    "address": "0x00422316",
+    "canonical_address": "0x00461A03",
+    "end": "0x00422396",
+    "evidence": "exact",
+    "name": "crt_ehvec_dtor",
+    "size": 128,
+    "aliases": [
+      "??_M@YGXPAXIHP6EX0@Z@Z"
+    ]
+  },
+  {
+    "address": "0x00422396",
+    "canonical_address": "0x00461A83",
+    "end": "0x004223F4",
+    "evidence": "exact",
+    "name": "crt_array_unwind",
+    "size": 94
+  },
+  {
+    "address": "0x004223F4",
+    "canonical_address": "0x00461AE1",
+    "end": "0x0042240A",
+    "evidence": "exact",
+    "name": "crt_array_unwind_filter",
+    "size": 22,
+    "aliases": [
+      "?ArrayUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z",
+      "?FrameUnwindFilter@@YAHPAU_EXCEPTION_POINTERS@@@Z"
+    ]
+  },
+  {
+    "address": "0x00422414",
+    "canonical_address": "0x00461746",
+    "end": "0x00422432",
+    "evidence": "referenced",
+    "name": "crt_rand",
+    "size": 30,
+    "aliases": [
+      "rand"
+    ]
+  },
+  {
+    "address": "0x00422432",
+    "canonical_address": "0x00461B26",
+    "end": "0x0042251A",
+    "evidence": "exact",
+    "name": "crt_fread_nolock",
+    "size": 232
+  },
+  {
+    "address": "0x0042251A",
+    "canonical_address": "0x004632F1",
+    "end": "0x00422547",
+    "evidence": "exact",
+    "name": "?_JumpToContinuation@@YGXPAXPAUEHRegistrationNode@@@Z",
+    "size": 45
+  },
+  {
+    "address": "0x0042254E",
+    "canonical_address": "0x00463325",
+    "end": "0x00422555",
+    "evidence": "exact",
+    "name": "crt_call_member_function_0",
+    "size": 7,
+    "aliases": [
+      "?_CallMemberFunction0@@YGXPAX0@Z"
+    ]
+  },
+  {
+    "address": "0x00422555",
+    "canonical_address": "0x0046332C",
+    "end": "0x0042255C",
+    "evidence": "exact",
+    "name": "crt_call_member_function_2",
+    "size": 7,
+    "aliases": [
+      "?_CallMemberFunction2@@YGXPAX00H@Z"
+    ]
+  },
+  {
+    "address": "0x0042255C",
+    "canonical_address": "0x00463333",
+    "end": "0x004225AB",
+    "evidence": "exact",
+    "name": "crt_unwind_nested_frames",
+    "size": 79,
+    "aliases": [
+      "?_UnwindNestedFrames@@YGXPAUEHRegistrationNode@@PAUEHExceptionRecord@@@Z"
+    ]
+  },
+  {
+    "address": "0x004225AB",
+    "canonical_address": "0x00463382",
+    "end": "0x004225E1",
+    "evidence": "exact",
+    "name": "crt_cxx_frame_handler_entry",
+    "size": 54,
+    "aliases": [
+      "___CxxFrameHandler"
+    ]
+  },
+  {
+    "address": "0x004225E1",
+    "canonical_address": "0x004633B8",
+    "end": "0x00422635",
+    "evidence": "exact",
+    "name": "crt_call_catch_block_2",
+    "size": 84,
+    "aliases": [
+      "?_CallCatchBlock2@@YAPAXPAUEHRegistrationNode@@PBU_s_FuncInfo@@PAXHK@Z"
+    ]
+  },
+  {
+    "address": "0x00422635",
+    "canonical_address": "0x0046340C",
+    "end": "0x0042265A",
+    "evidence": "exact",
+    "name": "crt_catch_guard_handler",
+    "size": 37,
+    "aliases": [
+      "?CatchGuardHandler@@YA?AW4_EXCEPTION_DISPOSITION@@PAUEHExceptionRecord@@PAUCatchGuardRN@@PAX2@Z"
+    ]
+  },
+  {
+    "address": "0x0042265A",
+    "canonical_address": "0x00463431",
+    "end": "0x0042270E",
+    "evidence": "ordered",
+    "name": "crt_call_se_translator",
+    "size": 180,
+    "aliases": [
+      "?_CallSETranslator@@YAHPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAX2PBU_s_FuncInfo@@H1@Z"
+    ]
+  },
+  {
+    "address": "0x0042270E",
+    "canonical_address": "0x004634E7",
+    "end": "0x00422783",
+    "evidence": "exact",
+    "name": "crt_translator_guard_handler",
+    "size": 117,
+    "aliases": [
+      "?TranslatorGuardHandler@@YA?AW4_EXCEPTION_DISPOSITION@@PAUEHExceptionRecord@@PAUTranslatorGuardRN@@PAX2@Z"
+    ]
+  },
+  {
+    "address": "0x00422783",
+    "canonical_address": "0x0046355C",
+    "end": "0x004227FE",
+    "evidence": "exact",
+    "name": "?_GetRangeOfTrysToCheck@@YAPBU_s_TryBlockMapEntry@@PBU_s_FuncInfo@@HHPAI1@Z",
+    "size": 123
+  },
+  {
+    "address": "0x00422800",
+    "canonical_address": "0x004635D8",
+    "end": "0x00422820",
+    "evidence": "exact",
+    "name": "crt_global_unwind2",
+    "size": 32,
+    "aliases": [
+      "__global_unwind2"
+    ]
+  },
+  {
+    "address": "0x00422820",
+    "canonical_address": "0x004635F8",
+    "end": "0x00422842",
+    "evidence": "exact",
+    "name": "crt_unwind_handler",
+    "size": 34,
+    "aliases": [
+      "__unwind_handler"
+    ]
+  },
+  {
+    "address": "0x00422842",
+    "canonical_address": "0x0046361A",
+    "end": "0x004228AA",
+    "evidence": "exact",
+    "name": "crt_local_unwind2",
+    "size": 104,
+    "aliases": [
+      "__local_unwind2"
+    ]
+  },
+  {
+    "address": "0x004228AA",
+    "canonical_address": "0x00463682",
+    "end": "0x004228CD",
+    "evidence": "exact",
+    "name": "crt_abnormal_termination",
+    "size": 35,
+    "aliases": [
+      "__abnormal_termination"
+    ]
+  },
+  {
+    "address": "0x004228CD",
+    "canonical_address": "0x004636A5",
+    "end": "0x004228D6",
+    "evidence": "exact",
+    "name": "crt_nlg_notify1",
+    "size": 9,
+    "aliases": [
+      "__NLG_Notify1"
+    ]
+  },
+  {
+    "address": "0x004228D6",
+    "canonical_address": "0x004636AE",
+    "end": "0x004228EE",
+    "evidence": "exact",
+    "name": "crt_nlg_notify",
+    "size": 24,
+    "aliases": [
+      "__NLG_Notify"
+    ]
+  },
+  {
+    "address": "0x00422AD2",
+    "canonical_address": "0x00462DA2",
+    "end": "0x00422AEC",
+    "evidence": "referenced",
+    "name": "crt_getc",
+    "size": 26,
+    "aliases": [
+      "fgetc"
+    ]
+  },
+  {
+    "address": "0x00422C10",
+    "canonical_address": "0x004636C8",
+    "end": "0x00422C2F",
+    "evidence": "ordered",
+    "name": "seh_prolog",
+    "size": 31,
+    "aliases": [
+      "__EH_prolog"
+    ]
+  },
+  {
+    "address": "0x00422C2F",
+    "canonical_address": "0x0046312E",
+    "end": "0x00422C51",
+    "evidence": "exact",
+    "name": "crt_amsg_exit",
+    "size": 34,
+    "aliases": [
+      "__amsg_exit"
+    ]
+  },
+  {
+    "address": "0x00422C78",
+    "canonical_address": "0x004636E7",
+    "end": "0x00422C8A",
+    "evidence": "exact",
+    "name": "crt_set_default_precision",
+    "size": 18,
+    "aliases": [
+      "__setdefaultprecision"
+    ]
+  },
+  {
+    "address": "0x00422C8A",
+    "canonical_address": "0x004636F9",
+    "end": "0x00422CC8",
+    "evidence": "exact",
+    "name": "crt_ms_p5_test_fdiv",
+    "size": 62,
+    "aliases": [
+      "__ms_p5_test_fdiv"
+    ]
+  },
+  {
+    "address": "0x00422CC8",
+    "canonical_address": "0x00463737",
+    "end": "0x00422CF1",
+    "evidence": "exact",
+    "name": "crt_ms_p5_mp_test_fdiv",
+    "size": 41,
+    "aliases": [
+      "__ms_p5_mp_test_fdiv"
+    ]
+  },
+  {
+    "address": "0x00422DB1",
+    "canonical_address": "0x00463820",
+    "end": "0x00422DEF",
+    "evidence": "exact",
+    "name": "crt_fassign",
+    "size": 62,
+    "aliases": [
+      "__fassign"
+    ]
+  },
+  {
+    "address": "0x00422DEF",
+    "canonical_address": "0x0046385E",
+    "end": "0x00422EF3",
+    "evidence": "referenced",
+    "name": "crt_cftoe",
+    "size": 260,
+    "aliases": [
+      "__cftoe"
+    ]
+  },
+  {
+    "address": "0x00422EF3",
+    "canonical_address": "0x00463981",
+    "end": "0x00422FD1",
+    "evidence": "referenced",
+    "name": "crt_cftof",
+    "size": 222,
+    "aliases": [
+      "__cftof"
+    ]
+  },
+  {
+    "address": "0x00422FD1",
+    "canonical_address": "0x00463A7D",
+    "end": "0x0042306C",
+    "evidence": "referenced",
+    "name": "crt_cftog",
+    "size": 155,
+    "aliases": [
+      "__cftog"
+    ]
+  },
+  {
+    "address": "0x0042306C",
+    "canonical_address": "0x004638BF",
+    "end": "0x00423093",
+    "evidence": "called",
+    "name": "crt_fp_format_exp",
+    "size": 39
+  },
+  {
+    "address": "0x00423093",
+    "canonical_address": "0x004639D6",
+    "end": "0x004230B6",
+    "evidence": "called",
+    "name": "crt_fp_format_fixed",
+    "size": 35
+  },
+  {
+    "address": "0x004230B6",
+    "canonical_address": "0x00463B10",
+    "end": "0x00423107",
+    "evidence": "exact",
+    "name": "crt_cfltcvt",
+    "size": 81,
+    "aliases": [
+      "__cfltcvt"
+    ]
+  },
+  {
+    "address": "0x00423107",
+    "canonical_address": "0x00463B61",
+    "end": "0x0042312C",
+    "evidence": "exact",
+    "name": "crt_str_shift_right",
+    "size": 37
+  },
+  {
+    "address": "0x0042312C",
+    "canonical_address": "0x004664D1",
+    "end": "0x00423350",
+    "evidence": "exact",
+    "name": "crt_lcmap_string",
+    "size": 548
+  },
+  {
+    "address": "0x00423350",
+    "canonical_address": "0x0046E5EC",
+    "end": "0x0042337B",
+    "evidence": "exact",
+    "name": "crt_strncnt",
+    "size": 43,
+    "aliases": [
+      "_strncnt"
+    ]
+  },
+  {
+    "address": "0x0042337B",
+    "canonical_address": "0x00463C74",
+    "end": "0x004233F0",
+    "evidence": "ordered",
+    "name": "crt_isctype",
+    "size": 117
+  },
+  {
+    "address": "0x00423690",
+    "canonical_address": "0x00463DF7",
+    "end": "0x004236BD",
+    "evidence": "ordered",
+    "name": "crt_unlock_file",
+    "size": 45
+  },
+  {
+    "address": "0x004236BD",
+    "canonical_address": "0x00462EDD",
+    "end": "0x004236CE",
+    "evidence": "exact",
+    "name": "crt_exit",
+    "size": 17
+  },
+  {
+    "address": "0x004236CE",
+    "canonical_address": "0x00462EEE",
+    "end": "0x004236DF",
+    "evidence": "exact",
+    "name": "crt_immediate_exit",
+    "size": 17,
+    "aliases": [
+      "__exit"
+    ]
+  },
+  {
+    "address": "0x004236DF",
+    "canonical_address": "0x00462EFF",
+    "end": "0x00423778",
+    "evidence": "referenced",
+    "name": "crt_doexit",
+    "size": 153
+  },
+  {
+    "address": "0x00423778",
+    "canonical_address": "0x00462FB6",
+    "end": "0x00423792",
+    "evidence": "exact",
+    "name": "crt_call_fn_range",
+    "size": 26
+  },
+  {
+    "address": "0x00423792",
+    "canonical_address": "0x00463E49",
+    "end": "0x004237F3",
+    "evidence": "ordered",
+    "name": "crt_close",
+    "size": 97
+  },
+  {
+    "address": "0x004237F3",
+    "canonical_address": "0x004629D9",
+    "end": "0x00423805",
+    "evidence": "exact",
+    "name": "crt_malloc",
+    "size": 18,
+    "aliases": [
+      "_malloc"
+    ]
+  },
+  {
+    "address": "0x00423805",
+    "canonical_address": "0x004629EB",
+    "end": "0x00423831",
+    "evidence": "exact",
+    "name": "crt_nh_malloc",
+    "size": 44,
+    "aliases": [
+      "__nh_malloc"
+    ]
+  },
+  {
+    "address": "0x00423831",
+    "canonical_address": "0x00462A17",
+    "end": "0x004238A5",
+    "evidence": "referenced",
+    "name": "crt_heap_alloc",
+    "size": 116,
+    "aliases": [
+      "__heap_alloc"
+    ]
+  },
+  {
+    "address": "0x004238A5",
+    "canonical_address": "0x004625C1",
+    "end": "0x00423910",
+    "evidence": "referenced",
+    "name": "crt_free_base",
+    "size": 107
+  },
+  {
+    "address": "0x00423910",
+    "canonical_address": "0x004620D0",
+    "end": "0x00423944",
+    "evidence": "exact",
+    "name": "crt_allmul",
+    "size": 52,
+    "aliases": [
+      "__allmul"
+    ]
+  },
+  {
+    "address": "0x00423978",
+    "canonical_address": "0x00463EA6",
+    "end": "0x004239F7",
+    "evidence": "ordered",
+    "name": "crt_close_nolock",
+    "size": 127
+  },
+  {
+    "address": "0x004239F7",
+    "canonical_address": "0x00463F29",
+    "end": "0x00423A22",
+    "evidence": "exact",
+    "name": "crt_freebuf",
+    "size": 43,
+    "aliases": [
+      "__freebuf"
+    ]
+  },
+  {
+    "address": "0x00423A5D",
+    "canonical_address": "0x004614A5",
+    "end": "0x00423AB9",
+    "evidence": "exact",
+    "name": "crt_flushbuf",
+    "size": 92
+  },
+  {
+    "address": "0x00423B2F",
+    "canonical_address": "0x00463F54",
+    "end": "0x00423C08",
+    "evidence": "referenced",
+    "name": "crt_filbuf",
+    "size": 217
+  },
+  {
+    "address": "0x00423C08",
+    "canonical_address": "0x00464030",
+    "end": "0x00423D78",
+    "evidence": "exact",
+    "name": "crt_openfile",
+    "size": 368
+  },
+  {
+    "address": "0x00423DF0",
+    "canonical_address": "0x00464268",
+    "end": "0x00423F05",
+    "evidence": "referenced",
+    "name": "crt_flsbuf",
+    "size": 277
+  },
+  {
+    "address": "0x00423F05",
+    "canonical_address": "0x00464380",
+    "end": "0x00424646",
+    "evidence": "referenced",
+    "name": "crt_output",
+    "size": 1857
+  },
+  {
+    "address": "0x00424646",
+    "canonical_address": "0x00464B1E",
+    "end": "0x0042467B",
+    "evidence": "exact",
+    "name": "crt_putc_nolock",
+    "size": 53
+  },
+  {
+    "address": "0x0042467B",
+    "canonical_address": "0x00464B53",
+    "end": "0x004246AC",
+    "evidence": "exact",
+    "name": "crt_putc_repeat_nolock",
+    "size": 49
+  },
+  {
+    "address": "0x004246AC",
+    "canonical_address": "0x00464B84",
+    "end": "0x004246E4",
+    "evidence": "exact",
+    "name": "crt_putc_buffer_nolock",
+    "size": 56
+  },
+  {
+    "address": "0x004246E4",
+    "canonical_address": "0x00464BBC",
+    "end": "0x004246F1",
+    "evidence": "exact",
+    "name": "crt_printf_get_int_arg",
+    "size": 13,
+    "aliases": [
+      "_get_int_arg"
+    ]
+  },
+  {
+    "address": "0x004246F1",
+    "canonical_address": "0x00464BC9",
+    "end": "0x00424701",
+    "evidence": "exact",
+    "name": "crt_printf_get_int64_arg",
+    "size": 16,
+    "aliases": [
+      "_get_int64_arg"
+    ]
+  },
+  {
+    "address": "0x00424701",
+    "canonical_address": "0x00464BD9",
+    "end": "0x0042470F",
+    "evidence": "exact",
+    "name": "crt_printf_get_short_arg",
+    "size": 14,
+    "aliases": [
+      "_get_short_arg"
+    ]
+  },
+  {
+    "address": "0x0042486E",
+    "canonical_address": "0x00464E4E",
+    "end": "0x004248B1",
+    "evidence": "exact",
+    "name": "__ffexpm1",
+    "size": 67
+  },
+  {
+    "address": "0x004248B1",
+    "canonical_address": "0x00464E91",
+    "end": "0x004248D6",
+    "evidence": "exact",
+    "name": "_isintTOS",
+    "size": 37
+  },
+  {
+    "address": "0x004248D6",
+    "canonical_address": "0x00464EB6",
+    "end": "0x004248D7",
+    "evidence": "exact",
+    "name": "_isintTOSret",
+    "size": 1
+  },
+  {
+    "address": "0x004248D7",
+    "canonical_address": "0x00464EB7",
+    "end": "0x004248DE",
+    "evidence": "exact",
+    "name": "notanint",
+    "size": 7
+  },
+  {
+    "address": "0x004248DE",
+    "canonical_address": "0x00464EBE",
+    "end": "0x004248E5",
+    "evidence": "exact",
+    "name": "evenint",
+    "size": 7
+  },
+  {
+    "address": "0x004248E5",
+    "canonical_address": "0x00464EC5",
+    "end": "0x00424AE3",
+    "evidence": "exact",
+    "name": "_usepowhlp",
+    "size": 510
+  },
+  {
+    "address": "0x00424AF0",
+    "canonical_address": "0x004650D0",
+    "end": "0x00424B07",
+    "evidence": "exact",
+    "name": "crt_start_two_arg_error_handling",
+    "size": 23,
+    "aliases": [
+      "__startTwoArgErrorHandling"
+    ]
+  },
+  {
+    "address": "0x00424B07",
+    "canonical_address": "0x004650E7",
+    "end": "0x00424B43",
+    "evidence": "exact",
+    "name": "crt_start_one_arg_error_handling",
+    "size": 60,
+    "aliases": [
+      "__startOneArgErrorHandling"
+    ]
+  },
+  {
+    "address": "0x00424B50",
+    "canonical_address": "0x00465130",
+    "end": "0x00424B65",
+    "evidence": "exact",
+    "name": "crt_two_to_tos",
+    "size": 21,
+    "aliases": [
+      "__twoToTOS"
+    ]
+  },
+  {
+    "address": "0x00424B65",
+    "canonical_address": "0x00465145",
+    "end": "0x00424B7C",
+    "evidence": "exact",
+    "name": "crt_load_cw",
+    "size": 23,
+    "aliases": [
+      "__load_CW"
+    ]
+  },
+  {
+    "address": "0x00424B7C",
+    "canonical_address": "0x0046515C",
+    "end": "0x00424B95",
+    "evidence": "exact",
+    "name": "crt_convert_tos_to_qnan",
+    "size": 25,
+    "aliases": [
+      "__convertTOStoQNaN"
+    ]
+  },
+  {
+    "address": "0x00424B95",
+    "canonical_address": "0x00465175",
+    "end": "0x00424BD8",
+    "evidence": "exact",
+    "name": "crt_fload_with_fb",
+    "size": 67,
+    "aliases": [
+      "__fload_withFB"
+    ]
+  },
+  {
+    "address": "0x00424BD8",
+    "canonical_address": "0x004651B8",
+    "end": "0x00424BEE",
+    "evidence": "exact",
+    "name": "crt_check_tos_with_fb",
+    "size": 22,
+    "aliases": [
+      "__checkTOS_withFB"
+    ]
+  },
+  {
+    "address": "0x00424C25",
+    "canonical_address": "0x00465205",
+    "end": "0x00424C39",
+    "evidence": "exact",
+    "name": "crt_check_overflow_exit",
+    "size": 20,
+    "aliases": [
+      "__check_overflow_exit"
+    ]
+  },
+  {
+    "address": "0x00424C39",
+    "canonical_address": "0x00465219",
+    "end": "0x00424CDC",
+    "evidence": "exact",
+    "name": "crt_check_range_exit",
+    "size": 163,
+    "aliases": [
+      "__check_range_exit"
+    ]
+  },
+  {
+    "address": "0x00424CDC",
+    "canonical_address": "0x004652BC",
+    "end": "0x00424E0C",
+    "evidence": "exact",
+    "name": "crt_powhlp",
+    "size": 304,
+    "aliases": [
+      "__powhlp"
+    ]
+  },
+  {
+    "address": "0x00424E0C",
+    "canonical_address": "0x004653EC",
+    "end": "0x00424E71",
+    "evidence": "exact",
+    "name": "crt_d_inttype",
+    "size": 101,
+    "aliases": [
+      "__d_inttype"
+    ]
+  },
+  {
+    "address": "0x00424E71",
+    "canonical_address": "0x00465652",
+    "end": "0x00425020",
+    "evidence": "referenced",
+    "name": "crt_write",
+    "size": 431
+  },
+  {
+    "address": "0x00425020",
+    "canonical_address": "0x004658F0",
+    "end": "0x00425180",
+    "evidence": "referenced",
+    "name": "crt_bufcpy",
+    "size": 352
+  },
+  {
+    "address": "0x00425360",
+    "canonical_address": "0x00465E70",
+    "end": "0x0042541D",
+    "evidence": "exact",
+    "name": "crt_except_handler3",
+    "size": 189,
+    "aliases": [
+      "__except_handler3"
+    ]
+  },
+  {
+    "address": "0x0042541D",
+    "canonical_address": "0x00465F2D",
+    "end": "0x00425438",
+    "evidence": "exact",
+    "name": "crt_seh_longjmp_unwind",
+    "size": 27,
+    "aliases": [
+      "__seh_longjmp_unwind@4"
+    ]
+  },
+  {
+    "address": "0x00425438",
+    "canonical_address": "0x00465F48",
+    "end": "0x00425489",
+    "evidence": "referenced",
+    "name": "crt_terminate",
+    "size": 81
+  },
+  {
+    "address": "0x0042548E",
+    "canonical_address": "0x00465FA9",
+    "end": "0x004254DF",
+    "evidence": "referenced",
+    "name": "crt_invalid_parameter_noinfo_noreturn",
+    "size": 81
+  },
+  {
+    "address": "0x004254E4",
+    "canonical_address": "0x00465FFF",
+    "end": "0x004256DA",
+    "evidence": "referenced",
+    "name": "crt_read",
+    "size": 502
+  },
+  {
+    "address": "0x004256DA",
+    "canonical_address": "0x004695FB",
+    "end": "0x00425775",
+    "evidence": "exact",
+    "name": "crt_cxx_frame_handler",
+    "size": 155
+  },
+  {
+    "address": "0x00425775",
+    "canonical_address": "0x00469696",
+    "end": "0x0042591C",
+    "evidence": "referenced",
+    "name": "crt_find_handler",
+    "size": 423,
+    "aliases": [
+      "?FindHandler@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@EH1@Z"
+    ]
+  },
+  {
+    "address": "0x0042591C",
+    "canonical_address": "0x00469849",
+    "end": "0x004259C4",
+    "evidence": "ordered",
+    "name": "?FindHandlerForForeignException@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@HH1@Z",
+    "size": 168
+  },
+  {
+    "address": "0x004259C4",
+    "canonical_address": "0x004698F3",
+    "end": "0x00425A21",
+    "evidence": "exact",
+    "name": "crt_type_match",
+    "size": 93,
+    "aliases": [
+      "?TypeMatch@@YAHPBU_s_HandlerType@@PBU_s_CatchableType@@PBU_s_ThrowInfo@@@Z"
+    ]
+  },
+  {
+    "address": "0x00425A21",
+    "canonical_address": "0x00469950",
+    "end": "0x00425ABF",
+    "evidence": "exact",
+    "name": "crt_frame_unwind_to_state",
+    "size": 158,
+    "aliases": [
+      "___FrameUnwindToState"
+    ]
+  },
+  {
+    "address": "0x00425ABF",
+    "canonical_address": "0x004699EE",
+    "end": "0x00425B3A",
+    "evidence": "exact",
+    "name": "crt_catch_it",
+    "size": 123,
+    "aliases": [
+      "?CatchIt@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PAXPBU_s_FuncInfo@@PBU_s_HandlerType@@PBU_s_CatchableType@@PBU_s_TryBlockMapEntry@@H1E@Z"
+    ]
+  },
+  {
+    "address": "0x00425B3A",
+    "canonical_address": "0x00469A69",
+    "end": "0x00425BE0",
+    "evidence": "referenced",
+    "name": "crt_call_catch_block",
+    "size": 166,
+    "aliases": [
+      "?CallCatchBlock@@YAPAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PAU_CONTEXT@@PBU_s_FuncInfo@@PAXHK@Z"
+    ]
+  },
+  {
+    "address": "0x00425C46",
+    "canonical_address": "0x00469B84",
+    "end": "0x00425C70",
+    "evidence": "exact",
+    "name": "?ExFilterRethrow@@YAHPAU_EXCEPTION_POINTERS@@@Z",
+    "size": 42
+  },
+  {
+    "address": "0x00425C70",
+    "canonical_address": "0x00469BAE",
+    "end": "0x00425E34",
+    "evidence": "exact",
+    "name": "crt_build_catch_object",
+    "size": 452,
+    "aliases": [
+      "?BuildCatchObject@@YAXPAUEHExceptionRecord@@PAUEHRegistrationNode@@PBU_s_HandlerType@@PBU_s_CatchableType@@@Z"
+    ]
+  },
+  {
+    "address": "0x00425E34",
+    "canonical_address": "0x00469D72",
+    "end": "0x00425E9B",
+    "evidence": "exact",
+    "name": "crt_destruct_exception_object",
+    "size": 103,
+    "aliases": [
+      "?_DestructExceptionObject@@YAXPAUEHExceptionRecord@@E@Z"
+    ]
+  },
+  {
+    "address": "0x00425E9B",
+    "canonical_address": "0x00469DD9",
+    "end": "0x00425EBE",
+    "evidence": "exact",
+    "name": "?AdjustPointer@@YAPAXPAXABUPMD@@@Z",
+    "size": 35
+  },
+  {
+    "address": "0x00425EC0",
+    "canonical_address": "0x00469E00",
+    "end": "0x00425F0C",
+    "evidence": "exact",
+    "name": "crt_call_setting_frame",
+    "size": 76,
+    "aliases": [
+      "__CallSettingFrame@12"
+    ]
+  },
+  {
+    "address": "0x004260B7",
+    "canonical_address": "0x004663F9",
+    "end": "0x00426151",
+    "evidence": "called",
+    "name": "crt_lseek",
+    "size": 154
+  },
+  {
+    "address": "0x004261F0",
+    "canonical_address": "0x00464C70",
+    "end": "0x0042626B",
+    "evidence": "exact",
+    "name": "crt_strlen",
+    "size": 123,
+    "aliases": [
+      "_strlen"
+    ]
+  },
+  {
+    "address": "0x004263EF",
+    "canonical_address": "0x00468913",
+    "end": "0x00426447",
+    "evidence": "exact",
+    "name": "crt_skip_program_name",
+    "size": 88
+  },
+  {
+    "address": "0x00426447",
+    "canonical_address": "0x0046896B",
+    "end": "0x00426500",
+    "evidence": "exact",
+    "name": "crt_build_environ",
+    "size": 185
+  },
+  {
+    "address": "0x00426500",
+    "canonical_address": "0x00468A24",
+    "end": "0x00426599",
+    "evidence": "exact",
+    "name": "crt_build_argv",
+    "size": 153
+  },
+  {
+    "address": "0x00426599",
+    "canonical_address": "0x00468ABD",
+    "end": "0x0042674D",
+    "evidence": "exact",
+    "name": "crt_parse_cmdline",
+    "size": 436
+  },
+  {
+    "address": "0x0042674D",
+    "canonical_address": "0x00468C71",
+    "end": "0x0042687F",
+    "evidence": "exact",
+    "name": "crt_get_environment_strings",
+    "size": 306
+  },
+  {
+    "address": "0x0042687F",
+    "canonical_address": "0x00466A61",
+    "end": "0x004268AC",
+    "evidence": "exact",
+    "name": "crt_get_linker_version",
+    "size": 45,
+    "aliases": [
+      "__GetLinkerVersion"
+    ]
+  },
+  {
+    "address": "0x004268AC",
+    "canonical_address": "0x00466A8E",
+    "end": "0x004269F4",
+    "evidence": "exact",
+    "name": "crt_heap_select",
+    "size": 328
+  },
+  {
+    "address": "0x004269F4",
+    "canonical_address": "0x00466BD6",
+    "end": "0x00426A51",
+    "evidence": "exact",
+    "name": "crt_heap_init",
+    "size": 93
+  },
+  {
+    "address": "0x00426A51",
+    "canonical_address": "0x00468DA3",
+    "end": "0x00426A8A",
+    "evidence": "exact",
+    "name": "crt_runtime_error_banner",
+    "size": 57
+  },
+  {
+    "address": "0x00426A8A",
+    "canonical_address": "0x00468DDC",
+    "end": "0x00426BDD",
+    "evidence": "referenced",
+    "name": "crt_report_runtime_error",
+    "size": 339
+  },
+  {
+    "address": "0x00426BDD",
+    "canonical_address": "0x00469E4C",
+    "end": "0x00426C12",
+    "evidence": "exact",
+    "name": "crt_control87",
+    "size": 53,
+    "aliases": [
+      "__control87"
+    ]
+  },
+  {
+    "address": "0x00426C12",
+    "canonical_address": "0x00469E81",
+    "end": "0x00426C28",
+    "evidence": "exact",
+    "name": "crt_controlfp",
+    "size": 22,
+    "aliases": [
+      "__controlfp"
+    ]
+  },
+  {
+    "address": "0x00426C28",
+    "canonical_address": "0x00469E97",
+    "end": "0x00426CBA",
+    "evidence": "exact",
+    "name": "crt_abstract_cw",
+    "size": 146,
+    "aliases": [
+      "__abstract_cw"
+    ]
+  },
+  {
+    "address": "0x00426CBA",
+    "canonical_address": "0x00469F29",
+    "end": "0x00426D43",
+    "evidence": "exact",
+    "name": "crt_hw_cw",
+    "size": 137,
+    "aliases": [
+      "__hw_cw"
+    ]
+  },
+  {
+    "address": "0x00426E0E",
+    "canonical_address": "0x00469FB2",
+    "end": "0x00426E57",
+    "evidence": "exact",
+    "name": "crt_zero_tail",
+    "size": 73,
+    "aliases": [
+      "__ZeroTail"
+    ]
+  },
+  {
+    "address": "0x00426E57",
+    "canonical_address": "0x00469FFB",
+    "end": "0x00426EAD",
+    "evidence": "exact",
+    "name": "crt_inc_man",
+    "size": 86,
+    "aliases": [
+      "__IncMan"
+    ]
+  },
+  {
+    "address": "0x00426EAD",
+    "canonical_address": "0x0046A051",
+    "end": "0x00426F39",
+    "evidence": "exact",
+    "name": "crt_round_man",
+    "size": 140,
+    "aliases": [
+      "__RoundMan"
+    ]
+  },
+  {
+    "address": "0x00426F39",
+    "canonical_address": "0x0046A0DD",
+    "end": "0x00426F54",
+    "evidence": "exact",
+    "name": "crt_copy_man",
+    "size": 27,
+    "aliases": [
+      "__CopyMan"
+    ]
+  },
+  {
+    "address": "0x00426F54",
+    "canonical_address": "0x0046A0F8",
+    "end": "0x00426F60",
+    "evidence": "exact",
+    "name": "crt_fill_zero_man",
+    "size": 12,
+    "aliases": [
+      "__FillZeroMan"
+    ]
+  },
+  {
+    "address": "0x00426F60",
+    "canonical_address": "0x0046A104",
+    "end": "0x00426F7B",
+    "evidence": "exact",
+    "name": "crt_is_zero_man",
+    "size": 27,
+    "aliases": [
+      "__IsZeroMan"
+    ]
+  },
+  {
+    "address": "0x00426F7B",
+    "canonical_address": "0x0046A11F",
+    "end": "0x00427008",
+    "evidence": "exact",
+    "name": "crt_shr_man",
+    "size": 141,
+    "aliases": [
+      "__ShrMan"
+    ]
+  },
+  {
+    "address": "0x00427008",
+    "canonical_address": "0x0046A1AC",
+    "end": "0x00427174",
+    "evidence": "exact",
+    "name": "crt_ld12cvt",
+    "size": 364,
+    "aliases": [
+      "__ld12cvt"
+    ]
+  },
+  {
+    "address": "0x00427174",
+    "canonical_address": "0x0046A318",
+    "end": "0x0042718A",
+    "evidence": "exact",
+    "name": "crt_ld12tod",
+    "size": 22,
+    "aliases": [
+      "__ld12tod"
+    ]
+  },
+  {
+    "address": "0x0042718A",
+    "canonical_address": "0x0046A32E",
+    "end": "0x004271A0",
+    "evidence": "exact",
+    "name": "crt_ld12tof",
+    "size": 22,
+    "aliases": [
+      "__ld12tof"
+    ]
+  },
+  {
+    "address": "0x004271A0",
+    "canonical_address": "0x0046A344",
+    "end": "0x004271CD",
+    "evidence": "exact",
+    "name": "crt_atodbl",
+    "size": 45,
+    "aliases": [
+      "__atodbl"
+    ]
+  },
+  {
+    "address": "0x004271CD",
+    "canonical_address": "0x0046A371",
+    "end": "0x004271FA",
+    "evidence": "exact",
+    "name": "crt_atoflt",
+    "size": 45,
+    "aliases": [
+      "__atoflt"
+    ]
+  },
+  {
+    "address": "0x00427200",
+    "canonical_address": "0x00465C30",
+    "end": "0x00427207",
+    "evidence": "exact",
+    "name": "crt_strcpy",
+    "size": 7
+  },
+  {
+    "address": "0x00427210",
+    "canonical_address": "0x00465C40",
+    "end": "0x004272F0",
+    "evidence": "exact",
+    "name": "crt_strcat",
+    "size": 224
+  },
+  {
+    "address": "0x004272F0",
+    "canonical_address": "0x0046A39E",
+    "end": "0x00427367",
+    "evidence": "exact",
+    "name": "crt_fp_round_digits",
+    "size": 119
+  },
+  {
+    "address": "0x00427367",
+    "canonical_address": "0x0046A415",
+    "end": "0x004273CB",
+    "evidence": "ordered",
+    "name": "crt_fp_to_string",
+    "size": 100
+  },
+  {
+    "address": "0x004273CB",
+    "canonical_address": "0x0046A471",
+    "end": "0x00427481",
+    "evidence": "exact",
+    "name": "crt_dtold",
+    "size": 182,
+    "aliases": [
+      "___dtold"
+    ]
+  },
+  {
+    "address": "0x00427490",
+    "canonical_address": "0x0046A530",
+    "end": "0x004274E8",
+    "evidence": "exact",
+    "name": "crt_memset",
+    "size": 88,
+    "aliases": [
+      "_memset"
+    ]
+  },
+  {
+    "address": "0x004274F0",
+    "canonical_address": "0x0046A590",
+    "end": "0x00427650",
+    "evidence": "referenced",
+    "name": "crt_memmove",
+    "size": 352
+  },
+  {
+    "address": "0x00427830",
+    "canonical_address": "0x0046CDA0",
+    "end": "0x0042785F",
+    "evidence": "exact",
+    "name": "crt_chkstk",
+    "size": 47
+  },
+  {
+    "address": "0x0042785F",
+    "canonical_address": "0x0046A8CE",
+    "end": "0x004279A8",
+    "evidence": "exact",
+    "name": "crt_get_string_type_a",
+    "size": 329,
+    "aliases": [
+      "___crtGetStringTypeA"
+    ]
+  },
+  {
+    "address": "0x004279A8",
+    "canonical_address": "0x00466C33",
+    "end": "0x004279F0",
+    "evidence": "exact",
+    "name": "crt_sbh_init",
+    "size": 72
+  },
+  {
+    "address": "0x004279F0",
+    "canonical_address": "0x00466C7B",
+    "end": "0x00427A1B",
+    "evidence": "exact",
+    "name": "crt_sbh_find_region",
+    "size": 43
+  },
+  {
+    "address": "0x00427A1B",
+    "canonical_address": "0x00466CA6",
+    "end": "0x00427D44",
+    "evidence": "exact",
+    "name": "crt_sbh_free_block",
+    "size": 809,
+    "aliases": [
+      "___sbh_free_block"
+    ]
+  },
+  {
+    "address": "0x00427D44",
+    "canonical_address": "0x00466FCF",
+    "end": "0x0042804D",
+    "evidence": "exact",
+    "name": "crt_sbh_alloc_block",
+    "size": 777,
+    "aliases": [
+      "___sbh_alloc_block"
+    ]
+  },
+  {
+    "address": "0x0042804D",
+    "canonical_address": "0x004672D8",
+    "end": "0x004280FE",
+    "evidence": "exact",
+    "name": "crt_sbh_alloc_new_region",
+    "size": 177,
+    "aliases": [
+      "___sbh_alloc_new_region"
+    ]
+  },
+  {
+    "address": "0x004280FE",
+    "canonical_address": "0x00467389",
+    "end": "0x004281F9",
+    "evidence": "exact",
+    "name": "crt_sbh_alloc_new_group",
+    "size": 251,
+    "aliases": [
+      "___sbh_alloc_new_group"
+    ]
+  },
+  {
+    "address": "0x004281F9",
+    "canonical_address": "0x00467484",
+    "end": "0x004284EF",
+    "evidence": "exact",
+    "name": "crt_sbh_resize_block",
+    "size": 758,
+    "aliases": [
+      "___sbh_resize_block"
+    ]
+  },
+  {
+    "address": "0x004284EF",
+    "canonical_address": "0x0046777A",
+    "end": "0x00428633",
+    "evidence": "exact",
+    "name": "crt_sbh_create_region",
+    "size": 324
+  },
+  {
+    "address": "0x00428633",
+    "canonical_address": "0x004678BE",
+    "end": "0x00428689",
+    "evidence": "exact",
+    "name": "crt_old_sbh_release_region",
+    "size": 86,
+    "aliases": [
+      "___old_sbh_release_region"
+    ]
+  },
+  {
+    "address": "0x00428689",
+    "canonical_address": "0x00467914",
+    "end": "0x0042874B",
+    "evidence": "exact",
+    "name": "crt_old_sbh_decommit_pages",
+    "size": 194,
+    "aliases": [
+      "___old_sbh_decommit_pages"
+    ]
+  },
+  {
+    "address": "0x0042874B",
+    "canonical_address": "0x004679D6",
+    "end": "0x004287A2",
+    "evidence": "exact",
+    "name": "crt_sbh_find_block",
+    "size": 87
+  },
+  {
+    "address": "0x004287A2",
+    "canonical_address": "0x00467A2D",
+    "end": "0x004287E7",
+    "evidence": "exact",
+    "name": "crt_old_sbh_free_block",
+    "size": 69,
+    "aliases": [
+      "___old_sbh_free_block"
+    ]
+  },
+  {
+    "address": "0x004287E7",
+    "canonical_address": "0x00467A72",
+    "end": "0x004289EF",
+    "evidence": "exact",
+    "name": "crt_old_sbh_alloc_block",
+    "size": 520,
+    "aliases": [
+      "___old_sbh_alloc_block"
+    ]
+  },
+  {
+    "address": "0x004289EF",
+    "canonical_address": "0x00467C7A",
+    "end": "0x00428B13",
+    "evidence": "exact",
+    "name": "crt_old_sbh_alloc_block_from_page",
+    "size": 292,
+    "aliases": [
+      "___old_sbh_alloc_block_from_page"
+    ]
+  },
+  {
+    "address": "0x00428BBC",
+    "canonical_address": "0x00467E47",
+    "end": "0x00428BD7",
+    "evidence": "exact",
+    "name": "crt_call_new_handler",
+    "size": 27
+  },
+  {
+    "address": "0x00428C3E",
+    "canonical_address": "0x0046AA17",
+    "end": "0x00428CD3",
+    "evidence": "ordered",
+    "name": "crt_fcloseall",
+    "size": 149,
+    "aliases": [
+      "__fcloseall"
+    ]
+  },
+  {
+    "address": "0x00428CD3",
+    "canonical_address": "0x0046ABBB",
+    "end": "0x00428D4A",
+    "evidence": "ordered",
+    "name": "crt_set_osfhnd",
+    "size": 119,
+    "aliases": [
+      "__set_osfhnd"
+    ]
+  },
+  {
+    "address": "0x00428D4A",
+    "canonical_address": "0x0046AC37",
+    "end": "0x00428DC4",
+    "evidence": "ordered",
+    "name": "crt_free_osfhnd",
+    "size": 122,
+    "aliases": [
+      "__free_osfhnd"
+    ]
+  },
+  {
+    "address": "0x00428DC4",
+    "canonical_address": "0x0046ACB6",
+    "end": "0x00428E01",
+    "evidence": "ordered",
+    "name": "crt_get_osfhandle",
+    "size": 61
+  },
+  {
+    "address": "0x00428F11",
+    "canonical_address": "0x0046AD79",
+    "end": "0x00428F55",
+    "evidence": "exact",
+    "name": "crt_file_buffer_init",
+    "size": 68
+  },
+  {
+    "address": "0x00428F55",
+    "canonical_address": "0x0046ADBD",
+    "end": "0x0042920E",
+    "evidence": "referenced",
+    "name": "crt_sopen",
+    "size": 697
+  },
+  {
+    "address": "0x0042920E",
+    "canonical_address": "0x0046B08C",
+    "end": "0x00429234",
+    "evidence": "ordered",
+    "name": "crt_isatty",
+    "size": 38,
+    "aliases": [
+      "__isatty"
+    ]
+  },
+  {
+    "address": "0x00429234",
+    "canonical_address": "0x0046B10E",
+    "end": "0x004292A0",
+    "evidence": "ordered",
+    "name": "crt_wctomb_lk",
+    "size": 108,
+    "aliases": [
+      "__wctomb_lk"
+    ]
+  },
+  {
+    "address": "0x004292A0",
+    "canonical_address": "0x0046B180",
+    "end": "0x00429308",
+    "evidence": "exact",
+    "name": "crt_aulldiv",
+    "size": 104,
+    "aliases": [
+      "__aulldiv"
+    ]
+  },
+  {
+    "address": "0x00429310",
+    "canonical_address": "0x0046B1F0",
+    "end": "0x00429385",
+    "evidence": "exact",
+    "name": "crt_aullrem",
+    "size": 117,
+    "aliases": [
+      "__aullrem"
+    ]
+  },
+  {
+    "address": "0x00429390",
+    "canonical_address": "0x0046B740",
+    "end": "0x004294A7",
+    "evidence": "exact",
+    "name": "crt_fdiv_main_routine",
+    "size": 279,
+    "aliases": [
+      "_fdiv_main_routine"
+    ]
+  },
+  {
+    "address": "0x004294A7",
+    "canonical_address": "0x0046B857",
+    "end": "0x00429946",
+    "evidence": "exact",
+    "name": "crt_adj_fdiv_r",
+    "size": 1183,
+    "aliases": [
+      "__adj_fdiv_r"
+    ]
+  },
+  {
+    "address": "0x00429946",
+    "canonical_address": "0x0046BCF6",
+    "end": "0x00429959",
+    "evidence": "exact",
+    "name": "crt_fdivp_sti_st",
+    "size": 19,
+    "aliases": [
+      "__fdivp_sti_st"
+    ]
+  },
+  {
+    "address": "0x00429959",
+    "canonical_address": "0x0046BD09",
+    "end": "0x0042996C",
+    "evidence": "exact",
+    "name": "crt_fdivrp_sti_st",
+    "size": 19,
+    "aliases": [
+      "__fdivrp_sti_st"
+    ]
+  },
+  {
+    "address": "0x00429B6C",
+    "canonical_address": "0x0046BF1C",
+    "end": "0x00429B81",
+    "evidence": "exact",
+    "name": "crt_safe_fdiv",
+    "size": 21,
+    "aliases": [
+      "__safe_fdiv"
+    ]
+  },
+  {
+    "address": "0x00429B81",
+    "canonical_address": "0x0046BF31",
+    "end": "0x00429B96",
+    "evidence": "exact",
+    "name": "crt_safe_fdivr",
+    "size": 21,
+    "aliases": [
+      "__safe_fdivr"
+    ]
+  },
+  {
+    "address": "0x00429B96",
+    "canonical_address": "0x0046BF46",
+    "end": "0x00429D9C",
+    "evidence": "exact",
+    "name": "crt_fprem_common",
+    "size": 518,
+    "aliases": [
+      "__fprem_common"
+    ]
+  },
+  {
+    "address": "0x00429D9C",
+    "canonical_address": "0x0046C14C",
+    "end": "0x00429E4E",
+    "evidence": "exact",
+    "name": "crt_adj_fprem",
+    "size": 178,
+    "aliases": [
+      "__adj_fprem"
+    ]
+  },
+  {
+    "address": "0x00429E4E",
+    "canonical_address": "0x0046C1FE",
+    "end": "0x0042A054",
+    "evidence": "exact",
+    "name": "crt_fprem1_common",
+    "size": 518,
+    "aliases": [
+      "__fprem1_common"
+    ]
+  },
+  {
+    "address": "0x0042A054",
+    "canonical_address": "0x0046C404",
+    "end": "0x0042A109",
+    "evidence": "exact",
+    "name": "crt_adj_fprem1",
+    "size": 181,
+    "aliases": [
+      "__adj_fprem1"
+    ]
+  },
+  {
+    "address": "0x0042A11B",
+    "canonical_address": "0x0046C4CB",
+    "end": "0x0042A1EB",
+    "evidence": "exact",
+    "name": "crt_x87_exception",
+    "size": 208,
+    "aliases": [
+      "__87except"
+    ]
+  },
+  {
+    "address": "0x0042A1EB",
+    "canonical_address": "0x00468F2F",
+    "end": "0x0042A214",
+    "evidence": "exact",
+    "name": "crt_set_exp",
+    "size": 41,
+    "aliases": [
+      "__set_exp"
+    ]
+  },
+  {
+    "address": "0x0042A214",
+    "canonical_address": "0x00468F58",
+    "end": "0x0042A26E",
+    "evidence": "exact",
+    "name": "crt_sptype",
+    "size": 90,
+    "aliases": [
+      "__sptype"
+    ]
+  },
+  {
+    "address": "0x0042A26E",
+    "canonical_address": "0x00468FB2",
+    "end": "0x0042A32F",
+    "evidence": "exact",
+    "name": "crt_decomp",
+    "size": 193,
+    "aliases": [
+      "__decomp"
+    ]
+  },
+  {
+    "address": "0x0042A32F",
+    "canonical_address": "0x0046C59B",
+    "end": "0x0042A341",
+    "evidence": "exact",
+    "name": "crt_frnd",
+    "size": 18,
+    "aliases": [
+      "__frnd"
+    ]
+  },
+  {
+    "address": "0x0042A341",
+    "canonical_address": "0x0046325F",
+    "end": "0x0042A3D3",
+    "evidence": "exact",
+    "name": "crt_fpclass",
+    "size": 146,
+    "aliases": [
+      "__fpclass"
+    ]
+  },
+  {
+    "address": "0x0042A3EA",
+    "canonical_address": "0x0046D66F",
+    "end": "0x0042A430",
+    "evidence": "exact",
+    "name": "crt_cxx_unhandled_exception_filter",
+    "size": 70,
+    "aliases": [
+      "?__CxxUnhandledExceptionFilter@@YGJPAU_EXCEPTION_POINTERS@@@Z"
+    ]
+  },
+  {
+    "address": "0x0042A430",
+    "canonical_address": "0x0046C862",
+    "end": "0x0042A44E",
+    "evidence": "ordered",
+    "name": "crt_is_in_dst",
+    "size": 30,
+    "aliases": [
+      "__isindst"
+    ]
+  },
+  {
+    "address": "0x0042A44E",
+    "canonical_address": "0x0046D6D3",
+    "end": "0x0042A46A",
+    "evidence": "exact",
+    "name": "?_ValidateRead@@YAHPBXI@Z",
+    "size": 28
+  },
+  {
+    "address": "0x0042A46A",
+    "canonical_address": "0x0046D6EF",
+    "end": "0x0042A486",
+    "evidence": "exact",
+    "name": "?_ValidateWrite@@YAHPAXI@Z",
+    "size": 28
+  },
+  {
+    "address": "0x0042A486",
+    "canonical_address": "0x0046D70B",
+    "end": "0x0042A49E",
+    "evidence": "exact",
+    "name": "?_ValidateExecute@@YAHP6GHXZ@Z",
+    "size": 24
+  },
+  {
+    "address": "0x0042A4A0",
+    "canonical_address": "0x0046CB90",
+    "end": "0x0042A524",
+    "evidence": "exact",
+    "name": "crt_strcmp",
+    "size": 132,
+    "aliases": [
+      "_strcmp"
+    ]
+  },
+  {
+    "address": "0x0042A524",
+    "canonical_address": "0x0046B265",
+    "end": "0x0042A9F5",
+    "evidence": "referenced",
+    "name": "crt_fp_parse",
+    "size": 1233
+  },
+  {
+    "address": "0x0042A9F5",
+    "canonical_address": "0x0046D1AD",
+    "end": "0x0042AA06",
+    "evidence": "exact",
+    "name": "crt_ismbblead",
+    "size": 17,
+    "aliases": [
+      "__ismbblead"
+    ]
+  },
+  {
+    "address": "0x0042AA06",
+    "canonical_address": "0x0046D1BE",
+    "end": "0x0042AA37",
+    "evidence": "exact",
+    "name": "crt_ismbbtype",
+    "size": 49,
+    "aliases": [
+      "_x_ismbbtype"
+    ]
+  },
+  {
+    "address": "0x0042AA37",
+    "canonical_address": "0x0046D1EF",
+    "end": "0x0042ABD0",
+    "evidence": "ordered",
+    "name": "crt_setmbcp",
+    "size": 409
+  },
+  {
+    "address": "0x0042ABD0",
+    "canonical_address": "0x0046D39C",
+    "end": "0x0042AC1A",
+    "evidence": "exact",
+    "name": "crt_get_system_cp",
+    "size": 74,
+    "aliases": [
+      "_getSystemCP"
+    ]
+  },
+  {
+    "address": "0x0042AC1A",
+    "canonical_address": "0x0046D3E6",
+    "end": "0x0042AC4D",
+    "evidence": "exact",
+    "name": "crt_cp_to_lcid",
+    "size": 51,
+    "aliases": [
+      "_CPtoLCID"
+    ]
+  },
+  {
+    "address": "0x0042AC4D",
+    "canonical_address": "0x0046D419",
+    "end": "0x0042AC76",
+    "evidence": "exact",
+    "name": "crt_set_sbcs",
+    "size": 41,
+    "aliases": [
+      "_setSBCS"
+    ]
+  },
+  {
+    "address": "0x0042AC76",
+    "canonical_address": "0x0046D442",
+    "end": "0x0042ADFB",
+    "evidence": "exact",
+    "name": "crt_set_sb_up_low",
+    "size": 389,
+    "aliases": [
+      "_setSBUpLow"
+    ]
+  },
+  {
+    "address": "0x0042ADFB",
+    "canonical_address": "0x0046D5C7",
+    "end": "0x0042AE17",
+    "evidence": "exact",
+    "name": "crt_mbcs_init",
+    "size": 28
+  },
+  {
+    "address": "0x0042AE17",
+    "canonical_address": "0x0046CDCF",
+    "end": "0x0042AE2E",
+    "evidence": "exact",
+    "name": "crt_strtol_l",
+    "size": 23
+  },
+  {
+    "address": "0x0042AE2E",
+    "canonical_address": "0x0046CDE6",
+    "end": "0x0042B040",
+    "evidence": "referenced",
+    "name": "crt_strtoxl",
+    "size": 530
+  },
+  {
+    "address": "0x0042B040",
+    "canonical_address": "0x00462B20",
+    "end": "0x0042B0C0",
+    "evidence": "exact",
+    "name": "crt_strstr",
+    "size": 128,
+    "aliases": [
+      "_strstr"
+    ]
+  },
+  {
+    "address": "0x0042B0C0",
+    "canonical_address": "0x0046D5E3",
+    "end": "0x0042B149",
+    "evidence": "exact",
+    "name": "crt_message_box_a",
+    "size": 137,
+    "aliases": [
+      "___crtMessageBoxA"
+    ]
+  },
+  {
+    "address": "0x0042B150",
+    "canonical_address": "0x0046CC20",
+    "end": "0x0042B24E",
+    "evidence": "exact",
+    "name": "crt_strncpy",
+    "size": 254,
+    "aliases": [
+      "_strncpy"
+    ]
+  },
+  {
+    "address": "0x0042B24E",
+    "canonical_address": "0x0046D8E2",
+    "end": "0x0042B26F",
+    "evidence": "exact",
+    "name": "crt_add_u32_carry",
+    "size": 33
+  },
+  {
+    "address": "0x0042B26F",
+    "canonical_address": "0x0046D903",
+    "end": "0x0042B2CD",
+    "evidence": "exact",
+    "name": "crt_add_12",
+    "size": 94,
+    "aliases": [
+      "___add_12"
+    ]
+  },
+  {
+    "address": "0x0042B2CD",
+    "canonical_address": "0x0046D961",
+    "end": "0x0042B2FB",
+    "evidence": "exact",
+    "name": "crt_u96_shl1",
+    "size": 46
+  },
+  {
+    "address": "0x0042B2FB",
+    "canonical_address": "0x0046D98F",
+    "end": "0x0042B328",
+    "evidence": "exact",
+    "name": "crt_u96_shr1",
+    "size": 45
+  },
+  {
+    "address": "0x0042B328",
+    "canonical_address": "0x0046D9BC",
+    "end": "0x0042B3EF",
+    "evidence": "exact",
+    "name": "crt_mtold12",
+    "size": 199,
+    "aliases": [
+      "___mtold12"
+    ]
+  },
+  {
+    "address": "0x0042B3EF",
+    "canonical_address": "0x0046DA83",
+    "end": "0x0042B682",
+    "evidence": "exact",
+    "name": "crt_i10_output",
+    "size": 659,
+    "aliases": [
+      "_$I10_OUTPUT"
+    ]
+  },
+  {
+    "address": "0x0042B8D1",
+    "canonical_address": "0x00469073",
+    "end": "0x0042BB84",
+    "evidence": "exact",
+    "name": "crt_raise_exc",
+    "size": 691,
+    "aliases": [
+      "__raise_exc"
+    ]
+  },
+  {
+    "address": "0x0042BB84",
+    "canonical_address": "0x00469326",
+    "end": "0x0042BD9B",
+    "evidence": "exact",
+    "name": "crt_handle_exc",
+    "size": 535,
+    "aliases": [
+      "__handle_exc"
+    ]
+  },
+  {
+    "address": "0x0042BD9B",
+    "canonical_address": "0x0046953D",
+    "end": "0x0042BDC1",
+    "evidence": "referenced",
+    "name": "crt_set_errno",
+    "size": 38,
+    "aliases": [
+      "__set_errno"
+    ]
+  },
+  {
+    "address": "0x0042BDC1",
+    "canonical_address": "0x0046D66C",
+    "end": "0x0042BDC4",
+    "evidence": "exact",
+    "name": "crt_matherr",
+    "size": 3,
+    "aliases": [
+      "__matherr"
+    ]
+  },
+  {
+    "address": "0x0042BDC4",
+    "canonical_address": "0x00469565",
+    "end": "0x0042BDD2",
+    "evidence": "exact",
+    "name": "crt_statfp",
+    "size": 14,
+    "aliases": [
+      "__statfp"
+    ]
+  },
+  {
+    "address": "0x0042BDD2",
+    "canonical_address": "0x00469573",
+    "end": "0x0042BDE1",
+    "evidence": "exact",
+    "name": "crt_clrfp",
+    "size": 15,
+    "aliases": [
+      "__clrfp"
+    ]
+  },
+  {
+    "address": "0x0042BDE1",
+    "canonical_address": "0x00469582",
+    "end": "0x0042BE04",
+    "evidence": "exact",
+    "name": "crt_ctrlfp",
+    "size": 35,
+    "aliases": [
+      "__ctrlfp"
+    ]
+  },
+  {
+    "address": "0x0042BE04",
+    "canonical_address": "0x004695A5",
+    "end": "0x0042BE5A",
+    "evidence": "exact",
+    "name": "crt_set_statfp",
+    "size": 86,
+    "aliases": [
+      "__set_statfp"
+    ]
+  },
+  {
+    "address": "0x0042BE5A",
+    "canonical_address": "0x0046DD16",
+    "end": "0x0042BF87",
+    "evidence": "ordered",
+    "name": "crt_chsize",
+    "size": 301
+  },
+  {
+    "address": "0x0042BFCC",
+    "canonical_address": "0x0046DE3B",
+    "end": "0x0042C1EC",
+    "evidence": "exact",
+    "name": "crt_ld12mul",
+    "size": 544,
+    "aliases": [
+      "___ld12mul"
+    ]
+  },
+  {
+    "address": "0x0042C1EC",
+    "canonical_address": "0x0046E05B",
+    "end": "0x0042C268",
+    "evidence": "exact",
+    "name": "crt_multtenpow12",
+    "size": 124,
+    "aliases": [
+      "___multtenpow12"
+    ]
+  },
+  {
+    "address": "0x0042C268",
+    "canonical_address": "0x0046E0D7",
+    "end": "0x0042C2E0",
+    "evidence": "ordered",
+    "name": "crt_getenv_lk",
+    "size": 120,
+    "aliases": [
+      "__getenv_lk"
+    ]
+  },
+  {
+    "address": "0x0042C2E0",
+    "canonical_address": "0x0046E920",
+    "end": "0x0042C2E6",
+    "evidence": "exact",
+    "name": "ov_pcm_seek",
+    "size": 6
+  },
+  {
+    "address": "0x0042C2E6",
+    "canonical_address": "0x0046E968",
+    "end": "0x0042C2EC",
+    "evidence": "exact",
+    "name": "RtlUnwind",
+    "size": 6
+  },
+  {
+    "address": "0x0042C2EC",
+    "canonical_address": "0x0046E8F4",
+    "end": "0x0042C317",
+    "evidence": "exact",
+    "name": "strdup_malloc",
+    "size": 43
+  }
+]

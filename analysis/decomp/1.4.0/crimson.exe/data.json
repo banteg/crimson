@@ -1,0 +1,910 @@
+{
+  "entries": [
+    {
+      "address": "0x0042d530",
+      "name": "$T318",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d530",
+      "name": "crt_ehvec_ctor_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d540",
+      "name": "$T16547",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d540",
+      "name": "crt_ehvec_dtor_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d550",
+      "name": "$T16560",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d550",
+      "name": "crt_array_unwind_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d5c0",
+      "name": "??_C@_01A@?$AA?$AA@",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d5c0",
+      "name": "crt_two_nul_literal",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d5c4",
+      "name": "??_C@_13A@?$AA?$AA?$AA?$AA@",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d5c4",
+      "name": "crt_four_nul_literal",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d5c8",
+      "name": "$T17629",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d5c8",
+      "name": "crt_lcmap_string_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d6d8",
+      "name": "$T17333",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d6d8",
+      "name": "crt_frame_unwind_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d700",
+      "name": "$T17369",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d700",
+      "name": "crt_build_catch_object_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d710",
+      "name": "$T17381",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042d710",
+      "name": "crt_destruct_exception_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042da40",
+      "name": "$T17610",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042da40",
+      "name": "crt_get_string_type_a_scope_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0042f0c4",
+      "name": "screen_height_f",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c28",
+      "name": "__FPmtterm",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c28",
+      "name": "crt_fp_mt_term",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c44",
+      "name": "__NLG_Destination",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c44",
+      "name": "crt_nlg_destination",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c54",
+      "name": "__aexit_rtn",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c54",
+      "name": "crt_exit_routine",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c58",
+      "name": "___app_type",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00432c58",
+      "name": "crt_app_type",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00433080",
+      "name": "_DoubleFormat",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00433080",
+      "name": "crt_double_format_descriptor",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00433098",
+      "name": "_FloatFormat",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00433098",
+      "name": "crt_float_format_descriptor",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004330b0",
+      "name": "___old_small_block_heap",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004330b0",
+      "name": "crt_old_small_block_heap",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004350d0",
+      "name": "___old_sbh_p_starting_region",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004350d0",
+      "name": "crt_sbh_starting_region",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354c0",
+      "name": "crt_fdiv_risc_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354c0",
+      "name": "fdiv_risc_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354d0",
+      "name": "crt_fdiv_scale_1",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354d0",
+      "name": "fdiv_scale_1",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354d4",
+      "name": "crt_fdiv_scale_2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354d4",
+      "name": "fdiv_scale_2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354d8",
+      "name": "crt_fdiv_one_shl_63",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354d8",
+      "name": "one_shl_63",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354dc",
+      "name": "crt_fprem_risc_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354dc",
+      "name": "fprem_risc_table",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354f4",
+      "name": "crt_fdiv_one_shl_64",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354f4",
+      "name": "one_shl_64",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354fc",
+      "name": "crt_fdiv_one_shr_64",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004354fc",
+      "name": "one_shr_64",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043550c",
+      "name": "crt_fdiv_half",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043550c",
+      "name": "half",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435514",
+      "name": "big_number",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435514",
+      "name": "crt_fdiv_big_number",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435620",
+      "name": "__d_inf",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435620",
+      "name": "crt_double_infinity",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435628",
+      "name": "__d_ind",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435628",
+      "name": "crt_double_indefinite",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435630",
+      "name": "__d_max",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435630",
+      "name": "crt_double_max",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435640",
+      "name": "__d_mzero",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435640",
+      "name": "crt_double_negative_zero",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435828",
+      "name": "__matherr_flag",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435828",
+      "name": "crt_matherr_flag",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043582c",
+      "name": "_over",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043582c",
+      "name": "crt_x87_overflow_value",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435838",
+      "name": "_under",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435838",
+      "name": "crt_x87_underflow_value",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435848",
+      "name": "__pow10pos",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435848",
+      "name": "crt_pow10_positive",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004359a8",
+      "name": "__pow10neg",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004359a8",
+      "name": "crt_pow10_negative",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00435b10",
+      "name": "console_input_buf",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043611c",
+      "name": "quit_requested",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436120",
+      "name": "console_input_cursor",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436124",
+      "name": "console_input_ready",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436130",
+      "name": "console_cmd_name",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436134",
+      "name": "console_cmd_arg1",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436170",
+      "name": "console_tokenize_buf",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436570",
+      "name": "console_log_queue",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436574",
+      "name": "console_command_list_head",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436578",
+      "name": "console_log_head",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043657c",
+      "name": "console_echo_enabled",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00436588",
+      "name": "console_height_px",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043699c",
+      "name": "console_cmd_argc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004369f0",
+      "name": "unused_effect_uv16_prefix_vec2",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f60",
+      "name": "particle_pool",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f64",
+      "name": "particle_pos_x",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f68",
+      "name": "particle_pos_y",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f6c",
+      "name": "particle_vel_x",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f70",
+      "name": "particle_vel_y",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f74",
+      "name": "particle_scale_x",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f84",
+      "name": "particle_intensity",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f88",
+      "name": "particle_angle",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f8c",
+      "name": "particle_spin",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f90",
+      "name": "particle_style_id",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00439f94",
+      "name": "particle_target_id",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043bb60",
+      "name": "unused_particle_pool_suffix_color",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0043cbc8",
+      "name": "sprite_effect_pool",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004428f8",
+      "name": "resource_pack_entry_name_buf",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452ed4",
+      "name": "d3dx_sse_math_bss",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f00",
+      "name": "__aenvptr",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f00",
+      "name": "crt_ansi_environment_block",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f08",
+      "name": "___error_mode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f08",
+      "name": "crt_error_mode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f1c",
+      "name": "_?f_use@?1??__crtLCMapStringA@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f1c",
+      "name": "crt_lcmap_string_use_wide_api",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f20",
+      "name": "___lc_handle",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f20",
+      "name": "crt_locale_handles",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f38",
+      "name": "___lc_codepage",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f38",
+      "name": "crt_locale_codepage",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f5c",
+      "name": "___argc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f5c",
+      "name": "crt_argc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f60",
+      "name": "___argv",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f60",
+      "name": "crt_argv",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f68",
+      "name": "crt_environ",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f78",
+      "name": "__pgmptr",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452f78",
+      "name": "crt_program_path",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452fbc",
+      "name": "_?_pgmname@?1??_setargv@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00452fbc",
+      "name": "crt_setargv_program_name",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530c0",
+      "name": "_?f_use@?1??__crtGetEnvironmentStringsA@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530c0",
+      "name": "crt_get_environment_strings_use_wide_api",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530c4",
+      "name": "__adbgmsg",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530c4",
+      "name": "crt_debug_message_enabled",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530f8",
+      "name": "_?f_use@?1??__crtGetStringTypeA@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530f8",
+      "name": "crt_get_string_type_use_wide_api",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530fc",
+      "name": "___old_sbh_decommitable_pages",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004530fc",
+      "name": "crt_sbh_decommitable_pages",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453100",
+      "name": "?_pnhHeap@@3P6AHI@ZA",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453100",
+      "name": "crt_new_handler",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453104",
+      "name": "__newmode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453104",
+      "name": "crt_new_mode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453108",
+      "name": "__cflush",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453108",
+      "name": "crt_cflush",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045310c",
+      "name": "__commode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045310c",
+      "name": "crt_commit_mode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453110",
+      "name": "_pOldExceptFilter",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453110",
+      "name": "crt_previous_exception_filter",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453114",
+      "name": "_fSystemSet",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453114",
+      "name": "crt_mb_system_codepage_set",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453118",
+      "name": "_?pfnMessageBoxA@?1??__crtMessageBoxA@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453118",
+      "name": "crt_message_box_a_proc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045311c",
+      "name": "_?pfnGetActiveWindow@?1??__crtMessageBoxA@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045311c",
+      "name": "crt_get_active_window_proc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453120",
+      "name": "_?pfnGetLastActivePopup@?1??__crtMessageBoxA@@9@9",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453120",
+      "name": "crt_get_last_active_popup_proc",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045313c",
+      "name": "___mbcodepage",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045313c",
+      "name": "crt_mb_codepage",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453140",
+      "name": "___mbulinfo",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453140",
+      "name": "crt_mb_lead_byte_ranges",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045314c",
+      "name": "___ismbcodepage",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045314c",
+      "name": "crt_is_mb_codepage",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453160",
+      "name": "__mbcasemap",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453160",
+      "name": "crt_mb_case_map",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453260",
+      "name": "__mbctype",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453260",
+      "name": "crt_mb_ctype",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453364",
+      "name": "___mblcid",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00453364",
+      "name": "crt_mb_lcid",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454384",
+      "name": "___sbh_sizeHeaderList",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454384",
+      "name": "crt_sbh_header_list_capacity",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454388",
+      "name": "___sbh_indGroupDefer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454388",
+      "name": "crt_sbh_deferred_group_index",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045438c",
+      "name": "___sbh_pHeaderScan",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045438c",
+      "name": "crt_sbh_header_scan",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454390",
+      "name": "___sbh_pHeaderDefer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454390",
+      "name": "crt_sbh_header_defer",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454394",
+      "name": "___sbh_cntHeaderList",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454394",
+      "name": "crt_sbh_header_count",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454398",
+      "name": "___sbh_pHeaderList",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x00454398",
+      "name": "crt_sbh_header_list",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045439c",
+      "name": "___sbh_threshold",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x0045439c",
+      "name": "crt_sbh_threshold",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004543a0",
+      "name": "crt_heap_handle",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004543a4",
+      "name": "crt_heap_mode",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004544c4",
+      "name": "___env_initialized",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004544c4",
+      "name": "crt_environment_initialized",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004544c8",
+      "name": "___mbctype_initialized",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004544c8",
+      "name": "crt_mbctype_initialized",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004544d4",
+      "name": "__acmdln",
+      "program": "1.4.0/crimson.exe"
+    },
+    {
+      "address": "0x004544d4",
+      "name": "crt_ansi_command_line",
+      "program": "1.4.0/crimson.exe"
+    }
+  ],
+  "notes": "Globals named by exact 1.9.93 function bodies or bodies differing only in independently mapped Grim virtual slots; every observed reference to an entry agrees."
+}

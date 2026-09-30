@@ -1,0 +1,337 @@
+[
+  {
+    "entries": [
+      {
+        "address": "0x0041B0D0",
+        "name": "_FSOUND_StopSound@4",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0D4",
+        "name": "_FSOUND_SetFrequency@8",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0D8",
+        "name": "_FSOUND_PlaySoundEx@16",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0DC",
+        "name": "_FSOUND_SetVolume@8",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0E0",
+        "name": "_FSOUND_SetPan@8",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0E4",
+        "name": "_FSOUND_SetPaused@8",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0E8",
+        "name": "_FSOUND_Sample_Free@4",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0EC",
+        "name": "_FSOUND_Close@0",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0F0",
+        "name": "_FSOUND_GetVersion@0",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0F4",
+        "name": "_FSOUND_SetOutput@4",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0F8",
+        "name": "_FSOUND_SetDriver@4",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0FC",
+        "name": "_FSOUND_Init@12",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B100",
+        "name": "_FSOUND_Sample_Load@16",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B104",
+        "name": "_FSOUND_Sample_SetLoopMode@8",
+        "ordinal": 0
+      }
+    ],
+    "module": "FMOD"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x0041B000",
+        "name": "CloseHandle",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B004",
+        "name": "SetEndOfFile",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B008",
+        "name": "GetOEMCP",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B00C",
+        "name": "GetACP",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B010",
+        "name": "GetCPInfo",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B014",
+        "name": "GetStringTypeW",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B018",
+        "name": "GetStringTypeA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B01C",
+        "name": "CreateFileA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B020",
+        "name": "FlushFileBuffers",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B024",
+        "name": "SetStdHandle",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B028",
+        "name": "VirtualAlloc",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B02C",
+        "name": "VirtualFree",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B030",
+        "name": "HeapCreate",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B034",
+        "name": "GetProcAddress",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B038",
+        "name": "LoadLibraryA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B03C",
+        "name": "QueryPerformanceCounter",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B040",
+        "name": "HeapDestroy",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B044",
+        "name": "GetVersionExA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B048",
+        "name": "GetModuleHandleA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B04C",
+        "name": "GetStartupInfoA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B050",
+        "name": "GetCommandLineA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B054",
+        "name": "GetVersion",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B058",
+        "name": "ExitProcess",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B05C",
+        "name": "RtlUnwind",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B060",
+        "name": "HeapFree",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B064",
+        "name": "HeapReAlloc",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B068",
+        "name": "HeapAlloc",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B06C",
+        "name": "TerminateProcess",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B070",
+        "name": "GetCurrentProcess",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B074",
+        "name": "HeapSize",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B078",
+        "name": "GetLastError",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B07C",
+        "name": "RaiseException",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B080",
+        "name": "WriteFile",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B084",
+        "name": "SetFilePointer",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B088",
+        "name": "ReadFile",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B08C",
+        "name": "WideCharToMultiByte",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B090",
+        "name": "MultiByteToWideChar",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B094",
+        "name": "LCMapStringA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B098",
+        "name": "LCMapStringW",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B09C",
+        "name": "UnhandledExceptionFilter",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0A0",
+        "name": "GetModuleFileNameA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0A4",
+        "name": "FreeEnvironmentStringsA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0A8",
+        "name": "FreeEnvironmentStringsW",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0AC",
+        "name": "GetEnvironmentStrings",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0B0",
+        "name": "GetEnvironmentStringsW",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0B4",
+        "name": "SetHandleCount",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0B8",
+        "name": "GetStdHandle",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0BC",
+        "name": "GetFileType",
+        "ordinal": 0
+      },
+      {
+        "address": "0x0041B0C0",
+        "name": "GetEnvironmentVariableA",
+        "ordinal": 0
+      }
+    ],
+    "module": "KERNEL32"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x0041B0C8",
+        "name": "MessageBoxA",
+        "ordinal": 0
+      }
+    ],
+    "module": "USER32"
+  }
+]

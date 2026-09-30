@@ -456,7 +456,7 @@ def cmd_match_scratch(
     build: str | None = typer.Option(
         None,
         "--build",
-        help="compile as another build of the image's family and compare against its image",
+        help="compile as the selected build and compare against its own image",
     ),
 ) -> None:
     """Compile and compare one configured scratch through the cached pipeline."""
@@ -958,7 +958,7 @@ def cmd_match_builds() -> None:
         for image in images.values():
             line = f"{image.build:8} {image.name:16} {image.state():8}"
             functions_path = image.target.functions_path
-            if image.canonical_build is None:
+            if image.source_build is None:
                 line += " no family"
             elif image.is_canonical:
                 line += " canonical"
@@ -973,10 +973,10 @@ def cmd_match_builds() -> None:
 
 @match_app.command("build-map")
 def cmd_match_build_map(
-    builds: list[str] | None = typer.Argument(None, help="builds to map (default: every non-canonical family build)"),
+    builds: list[str] | None = typer.Argument(None, help="builds to map (default: every build with a mapping source)"),
     check: bool = typer.Option(False, "--check", help="fail when a committed map differs from a fresh one"),
 ) -> None:
-    """Map canonical functions and globals into the other builds of their family."""
+    """Map source functions and globals into each configured target build."""
     registry = match_builds.load_registry()
     images = [
         image
@@ -985,7 +985,7 @@ def cmd_match_build_map(
     ]
     unknown = set(builds or ()) - {image.build for image in images}
     if unknown:
-        raise typer.BadParameter(f"not a mapped family build: {', '.join(sorted(unknown))}")
+        raise typer.BadParameter(f"not a mapped build: {', '.join(sorted(unknown))}")
     stale = []
     for image in images:
         payload = match_builds.map_build_image(image, registry.canonical(image))
@@ -1050,7 +1050,7 @@ def cmd_match_probe(
     build: str | None = typer.Option(
         None,
         "--build",
-        help="compile as another build of the image's family and compare against its image",
+        help="compile as the selected build and compare against its own image",
     ),
 ) -> None:
     """Compare an untracked source overlay against the current scratch."""

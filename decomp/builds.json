@@ -54,7 +54,11 @@
           ],
           "profiles": [
             "msvc6.5"
-          ]
+          ],
+          "mapping_source": {
+            "build": "1.9.93",
+            "image": "crimsonland.exe"
+          }
         },
         {
           "name": "grim.dll",
@@ -74,7 +78,11 @@
           ],
           "profiles": [
             "msvc6.5"
-          ]
+          ],
+          "mapping_source": {
+            "build": "1.9.93",
+            "image": "grim.dll"
+          }
         }
       ]
     },
@@ -109,7 +117,11 @@
           ],
           "profiles": [
             "msvc6.5"
-          ]
+          ],
+          "mapping_source": {
+            "build": "1.9.93",
+            "image": "crimsonland.exe"
+          }
         },
         {
           "name": "grim.dll",
@@ -129,7 +141,11 @@
           ],
           "profiles": [
             "msvc6.5"
-          ]
+          ],
+          "mapping_source": {
+            "build": "1.9.93",
+            "image": "grim.dll"
+          }
         }
       ]
     },
@@ -164,7 +180,11 @@
           ],
           "profiles": [
             "msvc6.5"
-          ]
+          ],
+          "mapping_source": {
+            "build": "1.9.93",
+            "image": "crimsonland.exe"
+          }
         },
         {
           "name": "grim.dll",
@@ -184,7 +204,11 @@
           ],
           "profiles": [
             "msvc6.5"
-          ]
+          ],
+          "mapping_source": {
+            "build": "1.9.93",
+            "image": "grim.dll"
+          }
         }
       ]
     },

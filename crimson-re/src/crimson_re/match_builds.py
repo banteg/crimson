@@ -1,4 +1,4 @@
-"""Other builds of a decomp family: registry, cross-build maps and match targets.
+"""Build registry, cross-build maps and image-specific match targets.
 
 A family shares one source tree under ``decomp/<family>``. Its canonical build
 carries the curated analysis. Every other build gets function and data maps
@@ -6,7 +6,8 @@ derived from the canonical image: a function whose body survives relinking
 unchanged is found by search, and its relocated operands then name the callees
 and globals it references in the other build. A canonical scratch can then be
 compiled as that build (its compiler and ``CL_BUILD``) and compared against its
-image.
+image. An explicit image-level donor also bootstraps builds outside a family;
+its maps remain partial and do not assign the donor's source layout to the build.
 """
 
 from __future__ import annotations
@@ -53,6 +54,14 @@ class BuildImage:
     # Every profile that built game code in some build; other toolchains built prebuilt libraries.
     game_profiles: frozenset[str]
 
+    # A donor can bootstrap a build outside its family without assigning source ownership.
+    mapping_build: str | None = None
+    source_image: str | None = None
+
+    @property
+    def source_build(self) -> str | None:
+        return self.mapping_build or self.canonical_build
+
     @property
     def is_canonical(self) -> bool:
         return self.build == self.canonical_build
@@ -86,6 +95,7 @@ class BuildImage:
         return tuple(
             replace(
                 config,
+                image=self.name,
                 compiler=compiler,
                 cflags=f"{config.cflags} /DCL_BUILD={self.cl_build}",
                 # END_VA is a canonical address; this build's map carries its own extent.
@@ -130,14 +140,19 @@ class Registry:
     def image(self, build: str, name: str) -> BuildImage:
         if build not in self.builds:
             raise ValueError(f"unknown build {build!r}; known: {', '.join(self.builds)}")
-        if name not in self.builds[build]:
-            raise ValueError(f"build {build} has no image {name!r}")
-        return self.builds[build][name]
+        images = self.builds[build]
+        if name in images:
+            return images[name]
+        # A canonical scratch names its donor image; retain the target's actual filename.
+        aliases = [image for image in images.values() if image.source_image == name]
+        if len(aliases) == 1:
+            return aliases[0]
+        raise ValueError(f"build {build} has no unambiguous image {name!r}")
 
     def canonical(self, image: BuildImage) -> BuildImage:
-        if image.canonical_build is None:
-            raise ValueError(f"build {image.build} belongs to no family")
-        return self.builds[image.canonical_build][image.name]
+        if image.source_build is None:
+            raise ValueError(f"build {image.build} has no mapping source")
+        return self.builds[image.source_build][image.source_image or image.name]
 
 
 def load_registry(path: Path = REGISTRY_PATH) -> Registry:
@@ -158,6 +173,8 @@ def load_registry(path: Path = REGISTRY_PATH) -> Registry:
                     sha256=image["sha256"],
                     profiles=tuple(image["profiles"]),
                     game_profiles=game_profiles,
+                    mapping_build=image.get("mapping_source", {}).get("build"),
+                    source_image=image.get("mapping_source", {}).get("image"),
                 )
                 for image in row["images"]
             }
@@ -261,7 +278,7 @@ def _imports(path: Path) -> list[dict[str, Any]]:
 
 
 def map_build_image(image: BuildImage, canonical: BuildImage) -> dict[str, Any]:
-    """Derive ``image``'s function and data maps from its family's canonical image."""
+    """Derive ``image``'s function and data maps from its configured source image."""
     payload = _Mapper(image, canonical).run()
     recovery = image.map_dir / "recovered.json"
     if recovery.is_file():
@@ -482,7 +499,7 @@ class _Mapper:
         self.call_votes: dict[int, set[int]] = defaultdict(set)
         self.data_votes: dict[str, set[int]] = defaultdict(set)
         self.paired_calls: set[int] = set()
-        self.grim_slots = _grim_slot_offsets(image.build) if image.name == "crimsonland.exe" else {}
+        self.grim_slots = _grim_slot_offsets(image.build) if (image.source_image or image.name) == "crimsonland.exe" else {}
         self.grim_address = next(
             (address for address, names in self.data_rows if "grim_interface_ptr" in names), None,
         )
@@ -695,7 +712,22 @@ class _Mapper:
         )
 
     def boundaries(self) -> list[int]:
-        return sorted({*self.entry_points, *self.mapped.values()})
+        # Byte-pattern entry candidates can land inside a verified body. Such a
+        # candidate cannot delimit that body or become a second function by order.
+        verified = sorted(
+            (target, target + self.bodies[address].size)
+            for address, target in self.mapped.items()
+            if self.evidence[address] in {"exact", "interface"}
+        )
+        result = []
+        index = protected_end = 0
+        for candidate in sorted({*self.entry_points, *self.mapped.values()}):
+            while index < len(verified) and verified[index][0] < candidate:
+                protected_end = max(protected_end, verified[index][1])
+                index += 1
+            if candidate >= protected_end:
+                result.append(candidate)
+        return result
 
     def fill_by_order(self) -> list[int]:
         """Pair unmapped functions between in-order mapped neighbours by layout and size.
@@ -705,6 +737,7 @@ class _Mapper:
         """
         exact = []
         taken = set(self.mapped.values())
+        boundaries = self.boundaries()
         for (low, low_target), (high, high_target) in pairwise(_increasing(sorted(self.mapped.items()))):
             missing = [
                 address
@@ -713,9 +746,9 @@ class _Mapper:
             ]
             candidates = [
                 address
-                for address in self.entry_points[
-                    bisect.bisect_right(self.entry_points, low_target) : bisect.bisect_left(
-                        self.entry_points,
+                for address in boundaries[
+                    bisect.bisect_right(boundaries, low_target) : bisect.bisect_left(
+                        boundaries,
                         high_target,
                     )
                 ]
@@ -877,12 +910,12 @@ def stale_build_map_files(image: BuildImage, payload: dict[str, Any]) -> list[Pa
 
 
 def mapped_images(registry: Registry) -> list[BuildImage]:
-    """Family builds, with Grim mapped before callers that use its interface."""
+    """Configured targets, with Grim mapped before callers that use its interface."""
     return sorted((
         image
         for images in registry.builds.values()
         for image in images.values()
-        if image.canonical_build is not None and not image.is_canonical
+        if image.source_build is not None and not image.is_canonical
     ), key=lambda image: (image.build, image.name != "grim.dll", image.name))
 
 
@@ -912,12 +945,13 @@ def scan_build(
         config = matchlib.load_scratch_config(conf_path.parent)
         if config.archive is not None or config.import_thunk is not None:
             continue
-        if (config.image, config.function) not in evidence:
+        image = registry.image(build, config.image)
+        if (image.name, config.function) not in evidence:
             continue
-        for build_config in registry.image(build, config.image).scratch_configs(config):
+        for build_config in image.scratch_configs(config):
             configs.append(build_config)
             owners.append(len(scratches))
-        scratches.append(evidence[config.image, config.function])
+        scratches.append(evidence[image.name, config.function])
     statuses = matchlib.evaluate_scratch_configs(
         configs,
         match_root,
