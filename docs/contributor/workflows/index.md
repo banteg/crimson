@@ -8,8 +8,6 @@ tags:
 
 Operational runbooks and recurring maintenance flows.
 
-- [WinDbg workflow](../../windbg/workflow.md)
-
 ## Documentation maintenance
 
 Keep each behavior or contract in one reference page. Update the owning page

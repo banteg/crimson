@@ -100,9 +100,6 @@ ida-export-grim:
 ida-rebuild-grim:
     ./analysis/ida/tooling/ida-export.sh --rebuild {{game_dir}}/grim.dll analysis/ida/raw/grim.dll
 
-entrypoint-trace:
-    uv run scripts/entrypoint_trace.py --depth 2 --skip-external
-
 native-audit image="grim.dll" *args:
     uv run crimson native audit --image "{{image}}" --out-dir "analysis/native/{{image}}" {{args}}
 
@@ -111,9 +108,6 @@ native-link image="grim.dll" *args:
 
 native-verify *args:
     uv run crimson native verify {{args}}
-
-function-hotspots:
-    uv run scripts/function_hotspots.py --top 12 --only-fun
 
 schema-inventory *args:
     uv run scripts/schema_inventory.py {{args}}
@@ -216,16 +210,6 @@ zig-test:
 
 zig-wasm:
     cd crimson-zig && zig build wasm
-
-# WinDbg
-windbg-server:
-    cdb.exe -server tcp:port=5005,password=secret -logo C:\games\crimsonland_1.9.93\windbg.log -pn crimsonland.exe -noio
-
-windbg-client:
-    cdb.exe -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
-
-windbg-tail:
-    uv run scripts/windbg_tail.py
 
 [windows]
 ghidra-sync:

@@ -142,7 +142,6 @@ nav = [
       { "Overview" = "re/runtime/index.md" },
       { "WinDbg" = [
         { "Overview" = "windbg/index.md" },
-        { "Workflow" = "windbg/workflow.md" },
         { "Sessions" = "windbg/sessions.md" },
       ]},
       { "Grim2D runtime validation" = "grim2d/runtime-validation.md" },

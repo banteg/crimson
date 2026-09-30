@@ -115,7 +115,6 @@ analysis/
   binary_ninja/     preferred live analysis databases
   ida/              structured function/import/string snapshots
   frida/            runtime trace summaries from past Frida sessions
-  windbg/           debugger session logs
 docs/               100+ pages: formats, structs, algorithms, parity tracking
 scripts/            analysis and utility tools
 tests/              gameplay, perks, physics, replay, and parity regression tests

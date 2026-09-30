@@ -11,12 +11,6 @@ can hang names and subsystems off a stable boot sequence.
 
 - PE entrypoint VA: `0x00463026`
 - Ghidra function: `entry` (`entry @ 00463026`)
-## Regenerate trace
-
-```
-uv run scripts/entrypoint_trace.py --depth 2 --skip-external
-```
-
 ## Trace (depth 2, internal calls only)
 
 ```
