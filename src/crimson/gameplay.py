@@ -454,8 +454,12 @@ def _player_update_aim_by_scheme(
     match aim_scheme:
         case AimScheme.COMPUTER:
             auto_fire = _player_computer_aim(player, creatures, dt)
-        case AimScheme.MOUSE | AimScheme.DUAL_ACTION_PAD:
+        case AimScheme.MOUSE:
             player.aim = input_state.aim
+        case AimScheme.DUAL_ACTION_PAD:
+            # 0x0041539e..0x004153ba: the stick's reach lands on the position movement just produced.
+            offset = input_state.aim
+            player.aim = Vec2(x87_pc24_add(offset.x, player.pos.x), x87_pc24_add(offset.y, player.pos.y))
         case AimScheme.MOUSE_RELATIVE:
             # 0x004153c2: the stick is the cursor's offset from screen (200, 200); a centred
             # cursor leaves the aim alone.

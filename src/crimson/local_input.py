@@ -17,17 +17,21 @@ from .input_codes import (
 from .math_parity import (
     f32,
     native_aim_point_from_heading,
+    x87_d3dx_vec2_normalize,
+    x87_pc24_add,
+    x87_pc24_hypot,
+    x87_pc24_mul,
 )
 from .movement_controls import MovementControlType
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
 
 _AIM_RADIUS_KEYBOARD = 60.0
-_AIM_RADIUS_PAD_BASE = 42.0
 # `cv_padAimDistMul`'s registered default.
 PAD_AIM_DIST_MUL_DEFAULT = 96.0
-# Port-only: native aims at the player when the stick centers; a resting stick
-# instead keeps the last direction, and small drift inside this radius is ignored.
+# Port-only unless bugs are preserved (original bug #31): native aims at the player when the
+# stick centers; a resting stick instead keeps the last direction, and small drift inside this
+# radius is ignored.
 _PAD_AIM_DEADZONE = 0.2
 
 # `player_alt_move_key_forward/backward`, `player_alt_turn_key_left/right`: the arrow keys.
@@ -238,23 +242,27 @@ class LocalInputInterpreter:
             # The sim aims from the screen cursor itself (player_update copies `ui_mouse`).
             aim = mouse_screen
         elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
-            axis_y = input_axis_value(aim_axis_y, player_index=idx)
-            axis_x = input_axis_value(aim_axis_x, player_index=idx)
-            axis_dir, mag = Vec2(axis_x, axis_y).normalized_with_length()
-            if mag > _PAD_AIM_DEADZONE:
-                heading = axis_dir.to_heading()
-                # Native clamps the stick length to 1 before scaling the reach by `cv_padAimDistMul`.
-                radius = _AIM_RADIUS_PAD_BASE + min(mag, 1.0) * pad_aim_dist_mul
-                aim = player.pos + axis_dir * radius
+            # `aim` is the offset the sim adds to the moved position.
+            stick = Vec2(
+                input_axis_value(aim_axis_x, player_index=idx),
+                input_axis_value(aim_axis_y, player_index=idx),
+            )
+            length = x87_pc24_hypot(stick.x, stick.y)
+            if self._preserve_bugs or length > _PAD_AIM_DEADZONE:
+                # 0x0041534d..0x00415396: the normalized stick times
+                # `min(|stick|, 1) * cv_padAimDistMul + 42`.
+                reach = x87_pc24_add(x87_pc24_mul(1.0 if length > 1.0 else length, f32(pad_aim_dist_mul)), 42.0)
+                direction = x87_d3dx_vec2_normalize(stick)
+                aim = Vec2(x87_pc24_mul(reach, direction.x), x87_pc24_mul(reach, direction.y))
             else:
-                aim = _aim_point_from_heading(player.pos, heading)
+                aim = _aim_point_from_heading(Vec2(), heading)
         elif aim_scheme in (AimScheme.JOYSTICK, AimScheme.UNKNOWN):
             # The sim turns the heading (player_update reads `input_aim_pov_left/right_active`).
             aim_turn_left = _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs)
             aim_turn_right = _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs)
-        delta = aim - player.pos
-        if delta.length_sq() > 1e-9:
-            heading = delta.to_heading()
+        facing = aim if aim_scheme is AimScheme.DUAL_ACTION_PAD else aim - player.pos
+        if facing.length_sq() > 1e-9:
+            heading = facing.to_heading()
         state.aim_heading = float(heading)
 
         fire_down = input_code_is_down(fire_key, player_index=idx)

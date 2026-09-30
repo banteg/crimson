@@ -42,7 +42,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `28` |
+| `format_version` | int | `29` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -92,6 +92,9 @@ A tick is a two-element **array** `[inputs, commands]`:
   `crimson/replay/types.py`; unknown bits and inconsistent presence bits are
   invalid). Keyboard and joystick aim turn with their own held bits (the aim
   keys or the POV hat, since v25); the movement turn bits only steer movement.
+  The aim axes are the world aim point, except under relative mouse aim (the
+  screen cursor) and dual action pad aim (the stick's reach, which the
+  simulation adds to the position the tick's movement produced; since v29).
 - `commands`: ordered array of command maps, each with a `type` key first:
 
 | `type` | Other keys | Rule |

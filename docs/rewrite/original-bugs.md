@@ -727,3 +727,32 @@ Rewrite behavior:
 Evidence: `decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp`;
 the only references to `typo_submit_count` and `typo_match_count` in
 `crimsonland.exe` are in that function.
+
+## 31) A resting aim stick swings the aim onto the player
+
+Native behavior:
+
+- Under Dual Action Pad aim, `player_update` (`0x004152f8..0x004153ba`) puts the
+  aim point at the normalized aim stick times `min(|stick|, 1) *
+  cv_padAimDistMul + 42`, from the position movement just produced. Unlike pad
+  movement, which ignores a stick inside radius 0.2, the aim stick has no
+  deadzone.
+- A centred stick normalizes to zero, so the aim point lands on the player and
+  the heading falls back to `fpatan(+0, +0) - pi/2`: letting go of the stick
+  swings the weapon to face left.
+- Any drift of a resting stick aims 42 units out in the drift's direction, so a
+  worn stick makes the aim twitch.
+
+Why it’s likely a bug:
+
+- Every other aim scheme keeps its last direction when its input stops.
+- The movement stick right next to it gets a deadzone.
+
+Rewrite behavior:
+
+- Default: inside stick radius 0.2 the aim keeps its last direction, 60 units
+  from the player.
+- `--preserve-bugs`: no deadzone, as native.
+
+Evidence: `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` (aim
+scheme 4) and the pad movement deadzone in the same function.

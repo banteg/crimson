@@ -241,14 +241,13 @@ def test_right_stick_aims_the_way_it_is_pushed(pads: FakePads) -> None:
     pads.axes[(0, RIGHT_X)] = 1.0
     out = _build_input(_pad_config())
     assert out.aim_scheme is AimScheme.DUAL_ACTION_PAD
-    assert out.aim.x == pytest.approx(100.0 + 42.0 + 96.0)
-    assert out.aim.y == pytest.approx(100.0)
+    # `aim` is the reach the sim adds to the moved position.
+    assert (out.aim.x, out.aim.y) == (42.0 + 96.0, 0.0)
 
     pads.axes[(0, RIGHT_X)] = 0.0
     pads.axes[(0, RIGHT_Y)] = -0.5
     out = _build_input(_pad_config())
-    assert out.aim.x == pytest.approx(100.0)
-    assert out.aim.y == pytest.approx(100.0 - (42.0 + 0.5 * 96.0))
+    assert (out.aim.x, out.aim.y) == (0.0, -(42.0 + 0.5 * 96.0))
 
 
 @pytest.mark.parametrize("pad_aim_dist_mul", [96.0, 200.0])
@@ -256,7 +255,7 @@ def test_aim_reach_clamps_stick_length_like_native(pads: FakePads, pad_aim_dist_
     pads.axes[(0, RIGHT_X)] = 1.0
     pads.axes[(0, RIGHT_Y)] = 1.0
     out = _build_input(_pad_config(), pad_aim_dist_mul=pad_aim_dist_mul)
-    reach = math.hypot(out.aim.x - 100.0, out.aim.y - 100.0)
+    reach = math.hypot(out.aim.x, out.aim.y)
     # `cv_padAimDistMul` scales the clamped stick length on top of 42.
     assert reach == pytest.approx(42.0 + pad_aim_dist_mul)
 
@@ -266,10 +265,28 @@ def test_released_aim_stick_keeps_last_direction(pads: FakePads) -> None:
     interpreter = LocalInputInterpreter()
     pads.axes[(0, RIGHT_X)] = -1.0
     _build_input(config, interpreter=interpreter)
-    pads.axes[(0, RIGHT_X)] = -0.1  # drift inside the aim deadzone
+    pads.axes[(0, RIGHT_Y)] = 0.1  # drift inside the aim deadzone
+    pads.axes[(0, RIGHT_X)] = 0.0
     out = _build_input(config, interpreter=interpreter)
-    assert out.aim.x < 100.0
-    assert out.aim.y == pytest.approx(100.0, abs=1e-4)
+    assert out.aim.x == pytest.approx(-60.0)
+    assert out.aim.y == pytest.approx(0.0, abs=1e-4)
+
+
+def test_preserved_aim_stick_has_no_deadzone(pads: FakePads) -> None:
+    config = _pad_config()
+    interpreter = LocalInputInterpreter(preserve_bugs=True)
+    pads.axes[(0, RIGHT_X)] = -1.0
+    _build_input(config, interpreter=interpreter)
+    pads.axes[(0, RIGHT_Y)] = 0.1
+    pads.axes[(0, RIGHT_X)] = 0.0
+    out = _build_input(config, interpreter=interpreter)
+    assert out.aim.x == 0.0
+    assert out.aim.y == pytest.approx(42.0 + 0.1 * 96.0)
+
+    # A centred stick puts the aim point on the player.
+    pads.axes[(0, RIGHT_Y)] = 0.0
+    out = _build_input(config, interpreter=interpreter)
+    assert (out.aim.x, out.aim.y) == (0.0, 0.0)
 
 
 def test_pad_profile_fire_and_reload_read_the_pad(pads: FakePads) -> None:

@@ -414,9 +414,8 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
         mouse_world=Vec2(),
     )
 
-    # Native radius: 42 + mag * cv_padAimDistMul (default 96).
-    assert_float_close(float(out.aim.x), 238.0)
-    assert_float_close(float(out.aim.y), 100.0)
+    # The reach the sim adds to the moved position: 42 + mag * cv_padAimDistMul (default 96).
+    assert (out.aim.x, out.aim.y) == (138.0, 0.0)
 
 
 def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(

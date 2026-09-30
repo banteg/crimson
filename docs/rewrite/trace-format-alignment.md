@@ -23,7 +23,7 @@ producer-specific aliases.
 | --- | ---: | --- |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CDT payload schema | 19 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CRD replay | 28 | `src/crimson/replay/types.py` |
+| CRD replay | 29 | `src/crimson/replay/types.py` |
 
 These artifacts are throwaway debugging data. Readers require exactly these
 versions; they do not translate, normalize, or salvage an older recording.

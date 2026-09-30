@@ -483,10 +483,6 @@ _AIM_SCHEMES = (
     AimScheme.DUAL_ACTION_PAD,
     AimScheme.COMPUTER,
 )
-# Native builds the pad aim point from the post-move position with f32 math and no stick
-# deadzone (0x004152f8..0x004153c2); the interpreter still builds it before the tick. Fixing it
-# changes the pad replay fixtures, so it waits on a decision.
-_PAD_AIM_PENDING = pytest.mark.xfail(strict=True, reason="pad aim point is built before the move")
 
 
 @pytest.mark.parametrize(
@@ -496,7 +492,6 @@ _PAD_AIM_PENDING = pytest.mark.xfail(strict=True, reason="pad aim point is built
             move_mode,
             aim_scheme,
             id=f"{move_mode.name.lower()}-{aim_scheme.name.lower()}",
-            marks=[_PAD_AIM_PENDING] if aim_scheme == AimScheme.DUAL_ACTION_PAD else [],
         )
         for move_mode in _MOVE_MODES
         for aim_scheme in _AIM_SCHEMES

@@ -1,9 +1,9 @@
 """Live play must simulate exactly what its replay records.
 
-The live loop runs real controller interpretation (stick math produces f64 aim
-points), ragged frame times (zero to six ticks per frame), press edges between
-ticks and perk commands. Verification of the saved replay must then reproduce
-the complete session state the live run had.
+The live loop runs real controller interpretation (the pad stick's aim reach,
+which the sim adds to the moved position), ragged frame times (zero to six ticks
+per frame), press edges between ticks and perk commands. Verification of the
+saved replay must then reproduce the complete session state the live run had.
 """
 
 from __future__ import annotations
@@ -34,7 +34,7 @@ _DIGEST_EVERY = 8
 
 
 def _axis(value: float) -> float:
-    # raylib reports f32 axes; the interpreter's normalisation then yields f64 aim points.
+    # raylib reports f32 axes.
     return float(f32(max(-1.0, min(1.0, value))))
 
 
@@ -49,7 +49,7 @@ def test_live_run_replays_to_identical_session_state(mocker, make_mode_config, a
 
     def axis_value(code: int, player_index: int = 0) -> float:
         # Circle-strafe on the left stick; right stick tracks the nearest creature with a wobble.
-        t = frame[0] * 0.021
+        t = frame[0] * 0.025
         match int(code):
             case PadCode.LEFT_STICK_X:
                 return _axis(math.cos(t) * 0.8)
