@@ -26,8 +26,8 @@ from tests.support.factories import (
 @pytest.mark.parametrize(
     ("preserve_bugs", "expected_projectile_count", "expected_links_left", "expected_sfx"),
     [
-        (False, 0, 0, []),
-        (True, 1, 0x20, [SfxId.SHOCK_HIT_01]),
+        (False, 0, 0, [SfxId.UI_BONUS]),
+        (True, 1, 0x20, [SfxId.UI_BONUS, SfxId.SHOCK_HIT_01]),
     ],
     ids=["default-noops-without-target", "preserve-bugs-falls-back-to-slot0"],
 )
