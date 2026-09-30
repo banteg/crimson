@@ -8,7 +8,7 @@ import msgspec
 from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
 from crimson.screens.ui_timeline import UiTimeline
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
@@ -208,9 +208,19 @@ class QuestResultsUi(msgspec.Struct):
         return min(1.0, self._anim_timer * 0.002)
 
     def world_entity_alpha(self) -> float:
-        if not self.timeline.closing:
-            return 1.0
-        return world_fade_alpha(self.timeline.timeline_ms)
+        # `quest_results_screen_update`'s buttons set `game_state_pending`; the next quest and a replay keep the run lit.
+        match self._close_action:
+            case None:
+                pending = None
+            case ResultAction.PLAY_NEXT if self.quest_level == QuestLevel(5, 10):
+                pending = GameStateId.FINAL_QUEST_END_NOTE
+            case ResultAction.PLAY_NEXT | ResultAction.PLAY_AGAIN:
+                pending = GameStateId.GAMEPLAY
+            case ResultAction.HIGH_SCORES:
+                pending = GameStateId.HIGHSCORES
+            case _:
+                pending = GameStateId.MAIN_MENU
+        return ui_transition_alpha(self.timeline.timeline_ms, state=GameStateId.QUEST_RESULTS, pending=pending)
 
     def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
         panel_slide_x = ui_element_anim(self.timeline.timeline_ms, index=35, width=QUEST_RESULTS_PANEL_W)[1]

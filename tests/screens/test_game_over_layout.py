@@ -162,14 +162,20 @@ def test_game_over_draw_places_the_classic_panel_and_banner(
 
 def test_game_over_world_entity_alpha_tracks_close_timeline(tmp_path: Path, assets_dir: Path, make_mode_config) -> None:
     ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=1)
+    assert ui.world_entity_alpha() == 1.0
 
-    ui.timeline.closing = True
+    ui._begin_close_transition(ResultAction.MAIN_MENU)
     ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
     assert ui.world_entity_alpha() == 0.5
 
     ui.timeline.timeline_ms = -1
     assert ui.world_entity_alpha() == 0.0
 
-    ui.timeline.closing = False
+
+def test_game_over_play_again_keeps_the_world_lit(tmp_path: Path, assets_dir: Path, make_mode_config) -> None:
+    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=1)
+
+    # `game_over_screen_update` makes gameplay pending, which `gameplay_render_world` holds at full alpha.
+    ui._begin_close_transition(ResultAction.PLAY_AGAIN)
     ui.timeline.timeline_ms = 0
     assert ui.world_entity_alpha() == 1.0

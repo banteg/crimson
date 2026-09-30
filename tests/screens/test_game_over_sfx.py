@@ -71,13 +71,13 @@ def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(s
     assert action == Route.BACK
 
 
-def test_high_scores_view_draw_fades_the_retained_run_during_close(scores_over_run, mocker) -> None:
+def test_high_scores_view_draw_fades_the_retained_run_with_the_timeline(scores_over_run, mocker) -> None:
     view, run, _audio = scores_over_run
     mocker.patch.object(run, "_draw_world")
     background = mocker.spy(run, "draw_pause_background")
-    view.state.ui.closing = True
-    view.state.ui.timeline_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES) // 2
+    view.state.ui.timeline_ms = ui_elements_max_timeline(GameStateId.HIGHSCORES)
 
     view.draw()
 
-    background.assert_called_once_with(entity_alpha=0.5)
+    # `gameplay_render_world` runs over `ui_element_table[28]`'s 500 ms, so the scores' 300 ms timeline stops at 0.6.
+    background.assert_called_once_with(entity_alpha=0.6)

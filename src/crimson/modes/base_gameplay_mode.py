@@ -56,7 +56,7 @@ from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.terrain_generate import TerrainSetup, terrain_generate
 from ..sim.timing import ftol_ms_i32
-from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline
+from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline, ui_transition_alpha
 from ..ui.focus import UiFocus
 from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar, ui_transparency
 from ..ui.keybind_help import ui_render_keybind_help
@@ -828,18 +828,19 @@ class BaseGameplayMode:
 
     def _world_entity_alpha(self) -> float:
         if self._game_over_active:
-            return float(self._game_over_ui.world_entity_alpha())
-        if self._gameplay_transition_latch:
-            return self._hud_alpha()
-        return 1.0
+            return self._game_over_ui.world_entity_alpha()
+        # Native `game_state_pending` while the timeline runs down: the pause menu, or the run's end (which only a
+        # Typ'o'Shooter run, outside the gameplay states, reads; its end is the game over).
+        pending = GameStateId.PAUSE_MENU if self._pause_pending else GameStateId.GAME_OVER if self._run_ending else None
+        return ui_transition_alpha(
+            self._ui_timeline.timeline_ms, state=self.game_state_id, pending=pending, latch=self._gameplay_transition_latch,
+        )
 
     def draw_pause_background(self, *, entity_alpha: float = 1.0) -> None:
-        alpha = float(entity_alpha)
-        if alpha < 0.0:
-            alpha = 0.0
-        elif alpha > 1.0:
-            alpha = 1.0
-        self._draw_world(entity_alpha=self._world_entity_alpha() * alpha)
+        # `game_update_generic_menu` renders the world only while `render_pass_mode` holds; the death clears it, so
+        # the high scores over a game over show just the terrain.
+        alpha = 0.0 if self._game_over_active else self._world_entity_alpha() * entity_alpha
+        self._draw_world(entity_alpha=alpha)
 
     def steal_ground_for_menu(self):
         ground = self.render_resources.ground

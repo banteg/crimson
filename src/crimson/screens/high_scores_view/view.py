@@ -4,7 +4,7 @@ from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
@@ -646,14 +646,21 @@ class HighScoresView:
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
     def _world_entity_alpha(self) -> float:
-        if not self.state.ui.closing:
-            return 1.0
-        alpha = float(self.state.ui.timeline_ms) / ui_elements_max_timeline(GameStateId.HIGHSCORES)
-        if alpha < 0.0:
-            return 0.0
-        if alpha > 1.0:
-            return 1.0
-        return alpha
+        # A run under the scores is the quest results' (a dead run's game over leaves only its terrain); going back
+        # to its results keeps it lit.
+        match self.state.ui.pending:
+            case None:
+                pending = None
+            case StartRun(mode=GameMode.TYPO):
+                pending = GameStateId.TYPO_GAMEPLAY
+            case StartRun():
+                pending = GameStateId.GAMEPLAY
+            case _ if self._return_context is None:
+                pending = GameStateId.STATISTICS_MENU
+            case _:
+                quest = self._return_context.game_mode_id == GameMode.QUESTS
+                pending = GameStateId.QUEST_RESULTS if quest else GameStateId.GAME_OVER
+        return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.HIGHSCORES, pending=pending)
 
     def take_action(self) -> ScreenAction | None:
         self._assert_open()

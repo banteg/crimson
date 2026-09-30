@@ -8,7 +8,6 @@ from crimson.game_modes import GameMode
 from crimson.modes.rush_mode import RushMode
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ShowScores
 from crimson.sim.sessions import DeterministicSession
-from crimson.ui.animation import ui_element_timeline_window
 from grim.audio import AudioState
 from grim.music import MusicState, MusicTrack
 from grim.rand import Crand
@@ -117,17 +116,15 @@ def test_open_stops_music_before_run_restart(make_mode_config, assets_dir) -> No
     assert music.tracks[RESULT_TRACK].muted
 
 
-def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config, assets_dir) -> None:
+def test_high_scores_over_a_game_over_draw_only_the_terrain(mocker, make_mode_config, assets_dir) -> None:
+    # The death clears native `render_pass_mode`, so `game_update_generic_menu` renders the terrain without the run.
     mode = _game_over(make_mode_config, assets_dir)
-    mode._game_over_ui.timeline.closing = True
-    mode._game_over_ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
-
+    _press_result_button(mode, ResultAction.HIGH_SCORES)
     world_draw = mocker.spy(mode, "_draw_world")
 
-    mode.draw_pause_background()
+    mode.draw_pause_background(entity_alpha=1.0)
 
-    world_draw.assert_called_once()
-    assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
+    world_draw.assert_called_once_with(entity_alpha=0.0)
 
 
 def test_rush_elapsed_helpers_use_authoritative_session_timer(make_mode_config, assets_dir) -> None:

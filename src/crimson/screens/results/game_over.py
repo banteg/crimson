@@ -25,7 +25,7 @@ from ...persistence.highscores import (
     read_highscore_table,
     scores_path_for_config,
 )
-from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
 from ...ui.focus import UiFocus
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.layout import menu_widescreen_y_shift
@@ -138,9 +138,18 @@ class GameOverUi(msgspec.Struct):
         return self.timeline.closing
 
     def world_entity_alpha(self) -> float:
-        if not self.timeline.closing:
-            return 1.0
-        return world_fade_alpha(self.timeline.timeline_ms)
+        # `game_over_screen_update`'s buttons set `game_state_pending`; Play Again keeps the run lit.
+        match self._close_action:
+            case None:
+                pending = None
+            case ResultAction.PLAY_AGAIN:
+                typo = self.config.gameplay.mode == GameMode.TYPO
+                pending = GameStateId.TYPO_GAMEPLAY if typo else GameStateId.GAMEPLAY
+            case ResultAction.HIGH_SCORES:
+                pending = GameStateId.HIGHSCORES
+            case _:
+                pending = GameStateId.MAIN_MENU
+        return ui_transition_alpha(self.timeline.timeline_ms, state=GameStateId.GAME_OVER, pending=pending)
 
     def _panel_layout(self, *, screen_w: float) -> _GameOverPanelLayout:
         # Keep consistent with the main menu panel offsets.

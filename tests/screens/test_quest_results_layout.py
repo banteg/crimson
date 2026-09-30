@@ -6,13 +6,13 @@ import pytest
 
 import crimson.screens.results.quest_results as quest_results_module
 from crimson.game_modes import GameMode
-from crimson.game_states import GameStateId
 from crimson.persistence.highscores import HighScoreRecord, read_highscore_records
 from crimson.quests.level import QuestLevel
 from crimson.quests.results import QuestFinalTime
 from crimson.rng_caller_static import RngCallerStatic
+from crimson.screens.actions import ResultAction
 from crimson.screens.results.quest_results import QuestResultsUi
-from crimson.ui.animation import ui_element_timeline_window, ui_elements_max_timeline
+from crimson.ui.animation import ui_element_timeline_window
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand
@@ -118,21 +118,27 @@ def test_quest_results_buttons_phase_passes_its_phase_to_the_card(tmp_path: Path
 
 def test_quest_results_world_entity_alpha_tracks_close_timeline(tmp_path: Path, assets_dir: Path, make_mode_config) -> None:
     ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=2)
+    assert ui.world_entity_alpha() == 1.0
 
-    ui.timeline.closing = True
-    ui.timeline.timeline_ms = 0
-    assert ui.world_entity_alpha() == 0.0
+    # The UI timeline stops at 400 ms, so closing starts from 400 / 500.
+    ui._begin_close_transition(ResultAction.MAIN_MENU)
+    assert ui.world_entity_alpha() == 0.8
 
     ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
     assert ui.world_entity_alpha() == 0.5
 
-    # The UI timeline stops at 400 ms, so closing starts from 400 / 500.
-    ui.timeline.enter(ui_elements_max_timeline(GameStateId.QUEST_RESULTS))
-    ui.timeline.timeline_ms = ui.timeline.max_timeline_ms
-    ui.timeline.closing = True
-    assert ui.world_entity_alpha() == 0.8
+    ui.timeline.timeline_ms = 0
+    assert ui.world_entity_alpha() == 0.0
 
-    ui.timeline.closing = False
+
+@pytest.mark.parametrize("action", [ResultAction.PLAY_NEXT, ResultAction.PLAY_AGAIN])
+def test_quest_results_next_run_keeps_the_world_lit(
+    tmp_path: Path, assets_dir: Path, make_mode_config, action: ResultAction,
+) -> None:
+    ui = _open_ui(tmp_path, assets_dir, make_mode_config, phase=2)
+
+    ui._begin_close_transition(action)
+    ui.timeline.timeline_ms = 0
     assert ui.world_entity_alpha() == 1.0
 
 

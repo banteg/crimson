@@ -60,13 +60,16 @@ def test_end_note_escape_waits_for_close_transition(end_note, mocker) -> None:
     assert action == Route.MENU
 
 
-def test_end_note_draw_fades_the_retained_run_during_close(end_note, mocker) -> None:
+@pytest.mark.parametrize(("action", "alpha"), [(None, 0.5), (Route.MENU, 0.5), (StartRun(GameMode.SURVIVAL), 1.0)])
+def test_end_note_draw_fades_the_retained_run_with_the_timeline(end_note, mocker, action, alpha: float) -> None:
+    # `game_update_victory_screen` fades the run in with the timeline; only a pending gameplay state holds it lit.
     view, run, _audio = end_note
     mocker.patch.object(run, "_draw_world")
     background = mocker.spy(run, "draw_pause_background")
-    view.state.ui.closing = True
+    if action is not None:
+        view._begin_close_transition(action)
     view.state.ui.timeline_ms = ui_element_timeline_window(28)[1] // 2
 
     view.draw()
 
-    background.assert_called_once_with(entity_alpha=0.5)
+    background.assert_called_once_with(entity_alpha=alpha)

@@ -18,7 +18,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...game_states import GameStateId
-from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
@@ -228,9 +228,17 @@ class QuestFailedView:
         )
 
     def _world_entity_alpha(self) -> float:
-        if not self.state.ui.closing:
-            return 1.0
-        return world_fade_alpha(self.state.ui.timeline_ms)
+        # `quest_failed_screen_update`'s buttons set `game_state_pending`; a retry keeps the run lit.
+        match self.state.ui.pending:
+            case None:
+                pending = None
+            case StartRun():
+                pending = GameStateId.GAMEPLAY
+            case Route.QUESTS:
+                pending = GameStateId.QUEST_SELECT
+            case _:
+                pending = GameStateId.MAIN_MENU
+        return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.QUEST_FAILED, pending=pending)
 
     def _panel_top_left(self) -> Vec2:
         return self._panel_origin().offset(dx=ui_element_anim(self.state.ui.timeline_ms, index=35, width=QUEST_FAILED_PANEL_W)[1])

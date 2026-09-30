@@ -161,13 +161,18 @@ def test_quest_failed_card_sits_at_the_native_input_xy(failed: _FailedQuest, moc
     assert score_card.call_args.kwargs["game_state"] == GameStateId.QUEST_FAILED
 
 
-def test_quest_failed_draw_fades_the_retained_run_during_close(failed: _FailedQuest, mocker) -> None:
+@pytest.mark.parametrize(("key", "alpha"), [(rl.KeyboardKey.KEY_ESCAPE, 0.5), (rl.KeyboardKey.KEY_ENTER, 1.0)])
+def test_quest_failed_draw_fades_the_retained_run_during_close(failed: _FailedQuest, mocker, key: int, alpha: float) -> None:
+    # Main Menu fades the run out with the timeline; a retry makes gameplay pending, which holds it lit.
+    update_frame(failed.view, failed.state)
+    _press(mocker, key)
+    update_frame(failed.view, failed.state)
+    assert failed.state.ui.closing
     draw_world = mocker.patch.object(failed.run, "_draw_world")
     background = mocker.spy(failed.run, "draw_pause_background")
-    failed.state.ui.closing = True
     failed.state.ui.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
 
     failed.view.draw()
 
-    background.assert_called_once_with(entity_alpha=0.5)
+    background.assert_called_once_with(entity_alpha=alpha)
     draw_world.assert_called_once()

@@ -16,7 +16,7 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...ui.animation import ui_element_anim, ui_elements_max_timeline, world_fade_alpha
+from ...ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
 from ...ui.menu_panel import draw_classic_menu_panel
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
@@ -231,9 +231,17 @@ class EndNoteView:
         )
 
     def _world_entity_alpha(self) -> float:
-        if not self.state.ui.closing:
-            return 1.0
-        return world_fade_alpha(self.state.ui.timeline_ms)
+        # `game_update_victory_screen` fades the run in with the timeline; Survival and Rush keep it lit on the way out.
+        match self.state.ui.pending:
+            case None:
+                pending = None
+            case StartRun(mode=GameMode.TYPO):
+                pending = GameStateId.TYPO_GAMEPLAY
+            case StartRun():
+                pending = GameStateId.GAMEPLAY
+            case _:
+                pending = GameStateId.MAIN_MENU
+        return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.FINAL_QUEST_END_NOTE, pending=pending)
 
     def _begin_close_transition(self, action: ScreenAction, *, fade_to_black: bool = False) -> None:
         if self.state.ui.closing:

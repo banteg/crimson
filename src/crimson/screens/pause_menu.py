@@ -6,7 +6,12 @@ from crimson.game_states import GameStateId
 from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background
-from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline, world_fade_alpha
+from crimson.ui.animation import (
+    ui_element_anim,
+    ui_element_timeline_window,
+    ui_elements_max_timeline,
+    ui_transition_alpha,
+)
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
@@ -146,11 +151,17 @@ class PauseMenuView:
         assert self._is_open, "PauseMenuView must be opened before use"
 
     def _pause_background_entity_alpha(self) -> float:
-        # Native gameplay_render_world keeps gameplay entities fully visible for most transitions,
-        # but fades them out when pause menu closes to main menu (ui_element_slot_28 timing = 0x1f4 ms).
-        if (not self.state.ui.closing) or (self.state.ui.pending != Route.MENU):
-            return 1.0
-        return world_fade_alpha(self.state.ui.timeline_ms)
+        # The pause items set `game_state_pending`; only quitting to the main menu fades the run out.
+        match self.state.ui.pending:
+            case None:
+                pending = None
+            case Route.MENU:
+                pending = GameStateId.MAIN_MENU
+            case Route.OPTIONS:
+                pending = GameStateId.OPTIONS_MENU
+            case _:
+                pending = GameStateId.GAMEPLAY
+        return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.PAUSE_MENU, pending=pending)
 
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):

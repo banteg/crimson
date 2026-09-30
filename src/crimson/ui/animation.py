@@ -84,6 +84,37 @@ def ui_elements_max_timeline(state: GameStateId, *, mods_available: bool = False
     return max((ui_element_timeline_window(index)[1] for index in elements), default=0)
 
 
-def world_fade_alpha(timeline_ms: float) -> float:
-    """`gameplay_render_world` fades world entities by the timeline over `ui_element_table[28]`'s span."""
-    return min(1.0, max(0.0, float(timeline_ms) / ui_element_timeline_window(28)[1]))
+def ui_transition_alpha(
+    timeline_ms: float, *, state: GameStateId, pending: GameStateId | None = None, latch: bool = False,
+) -> float:
+    """`gameplay_render_world`: `ui_transition_alpha`, which fades the world's creatures, players, projectiles and bonuses.
+
+    It is the timeline over `ui_element_table[28]`'s span, held at 1 while a transition keeps a run on screen unless
+    `gameplay_transition_latch` (`latch`) is fading a fresh run in. `pending` is `game_state_pending`, None while idle,
+    which is also when `ui_transition_direction` runs the timeline forward.
+    """
+    start_ms, end_ms = ui_element_timeline_window(28)
+    alpha = float(timeline_ms) / float(end_ms - start_ms)
+    if not latch and (
+        state in (GameStateId.GAMEPLAY, GameStateId.PERK_SELECTION)
+        or (state in (GameStateId.QUEST_RESULTS, GameStateId.QUEST_FAILED, GameStateId.GAME_OVER) and pending is None)
+        or pending
+        in (
+            GameStateId.GAMEPLAY,
+            GameStateId.PERK_SELECTION,
+            GameStateId.PAUSE_MENU,
+            GameStateId.OPTIONS_MENU,
+            GameStateId.CONTROLS_MENU,
+        )
+        or (state == GameStateId.PAUSE_MENU and pending != GameStateId.MAIN_MENU)
+        or state in (GameStateId.OPTIONS_MENU, GameStateId.CONTROLS_MENU)
+        or pending
+        in (
+            GameStateId.FINAL_QUEST_END_NOTE,
+            GameStateId.GAME_OVER,
+            GameStateId.QUEST_RESULTS,
+            GameStateId.QUEST_FAILED,
+        )
+    ):
+        alpha = 1.0
+    return min(1.0, max(0.0, alpha))
