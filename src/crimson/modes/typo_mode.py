@@ -78,7 +78,16 @@ class TypoShooterMode(BaseGameplayMode):
         # Typ-o fires, aims and reloads only through typed words.
         _ = dt
         controls = self.config.controls.player(0)
-        return [PlayerInput(move_mode=controls.movement, aim_scheme=controls.aim_scheme)]
+        return [
+            PlayerInput(
+                move_mode=controls.movement,
+                aim_scheme=controls.aim_scheme,
+                move_forward_pressed=False,
+                move_backward_pressed=False,
+                turn_left_pressed=False,
+                turn_right_pressed=False,
+            ),
+        ]
 
     def _handle_input(self) -> None:
         if self._game_over_active:

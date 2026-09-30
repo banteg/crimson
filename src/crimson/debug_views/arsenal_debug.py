@@ -259,10 +259,11 @@ class ArsenalDebugView:
             self._screenshot_requested = True
 
     def _build_input(self) -> PlayerInput:
-        move = Vec2(
-            float(rl.is_key_down(rl.KeyboardKey.KEY_D)) - float(rl.is_key_down(rl.KeyboardKey.KEY_A)),
-            float(rl.is_key_down(rl.KeyboardKey.KEY_S)) - float(rl.is_key_down(rl.KeyboardKey.KEY_W)),
-        )
+        forward = rl.is_key_down(rl.KeyboardKey.KEY_W)
+        backward = rl.is_key_down(rl.KeyboardKey.KEY_S)
+        left = rl.is_key_down(rl.KeyboardKey.KEY_A)
+        right = rl.is_key_down(rl.KeyboardKey.KEY_D)
+        move = Vec2(float(right) - float(left), float(backward) - float(forward))
 
         mouse = canvas.mouse_position()
         aim = self.screen_to_world(Vec2.from_xy(mouse))
@@ -277,6 +278,10 @@ class ArsenalDebugView:
             aim_scheme=AimScheme.MOUSE,
             move=move,
             aim=aim,
+            move_forward_pressed=forward,
+            move_backward_pressed=backward,
+            turn_left_pressed=left,
+            turn_right_pressed=right,
             fire_down=fire_down,
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,

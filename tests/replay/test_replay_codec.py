@@ -173,7 +173,8 @@ def test_recorder_builds_replay() -> None:
 
     assert replay.run == run
     controls = (
-        replay_types.MOVE_MODE_PRESENT_FLAG
+        replay_types.MOVE_KEYS_PRESENT_FLAG
+        | replay_types.MOVE_MODE_PRESENT_FLAG
         | MovementControlType.DUAL_ACTION_PAD << replay_types.MOVE_MODE_SHIFT
         | replay_types.AIM_SCHEME_PRESENT_FLAG
         | AimScheme.MOUSE << replay_types.AIM_SCHEME_SHIFT

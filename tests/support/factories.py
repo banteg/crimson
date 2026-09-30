@@ -112,8 +112,10 @@ def player_input(
     aim_scheme: AimScheme = AimScheme.MOUSE,
     **fields: Any,
 ) -> PlayerInput:
-    """A `PlayerInput` whose `move` steers as a dual action pad and whose `aim` is the mouse point."""
+    """A `PlayerInput` whose `move` steers as a dual action pad and whose `aim` is the mouse point; no movement key is held."""
 
+    for key in ("move_forward_pressed", "move_backward_pressed", "turn_left_pressed", "turn_right_pressed"):
+        fields.setdefault(key, False)
     return PlayerInput(move_mode=move_mode, aim_scheme=aim_scheme, **fields)
 
 

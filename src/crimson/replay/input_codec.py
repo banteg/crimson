@@ -43,17 +43,12 @@ def pack_player_input(inp: PlayerInput) -> PackedPlayerInput:
         | (FIRE_BULLETS_KEY_DOWN_FLAG if inp.fire_bullets_key_down else 0)
         | (AIM_TURN_LEFT_FLAG if inp.aim_turn_left else 0)
         | (AIM_TURN_RIGHT_FLAG if inp.aim_turn_right else 0)
+        | MOVE_KEYS_PRESENT_FLAG
+        | (MOVE_FORWARD_FLAG if inp.move_forward_pressed else 0)
+        | (MOVE_BACKWARD_FLAG if inp.move_backward_pressed else 0)
+        | (TURN_LEFT_FLAG if inp.turn_left_pressed else 0)
+        | (TURN_RIGHT_FLAG if inp.turn_right_pressed else 0)
     )
-    # Raw movement keys are recorded only when the input carries them.
-    move_keys = (inp.move_forward_pressed, inp.move_backward_pressed, inp.turn_left_pressed, inp.turn_right_pressed)
-    if any(key is not None for key in move_keys):
-        flags |= (
-            MOVE_KEYS_PRESENT_FLAG
-            | (MOVE_FORWARD_FLAG if inp.move_forward_pressed else 0)
-            | (MOVE_BACKWARD_FLAG if inp.move_backward_pressed else 0)
-            | (TURN_LEFT_FLAG if inp.turn_left_pressed else 0)
-            | (TURN_RIGHT_FLAG if inp.turn_right_pressed else 0)
-        )
     flags |= MOVE_MODE_PRESENT_FLAG | (int(inp.move_mode) & MOVE_MODE_MASK) << MOVE_MODE_SHIFT
     flags |= AIM_SCHEME_PRESENT_FLAG | (int(inp.aim_scheme) & AIM_SCHEME_MASK) << AIM_SCHEME_SHIFT
     return (f32(inp.move.x), f32(inp.move.y), f32(inp.aim.x), f32(inp.aim.y), flags)
@@ -64,7 +59,7 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
     move_keys = bool(flags & MOVE_KEYS_PRESENT_FLAG)
     # Older recordings (tutorial, Typ-o, scripted runs) left the controls out; the sim
     # then ran them as static movement when the movement keys were recorded, else as
-    # a dual action pad, with mouse aim.
+    # a dual action pad, with mouse aim. Recordings without the movement keys held none.
     if flags & MOVE_MODE_PRESENT_FLAG:
         move_mode = movement_control_type_from_value((flags >> MOVE_MODE_SHIFT) & MOVE_MODE_MASK)
     else:
@@ -87,10 +82,10 @@ def unpack_player_input(packed: PackedPlayerInput) -> PlayerInput:
         fire_bullets_key_down=bool(flags & FIRE_BULLETS_KEY_DOWN_FLAG),
         aim_turn_left=bool(flags & AIM_TURN_LEFT_FLAG),
         aim_turn_right=bool(flags & AIM_TURN_RIGHT_FLAG),
-        move_forward_pressed=bool(flags & MOVE_FORWARD_FLAG) if move_keys else None,
-        move_backward_pressed=bool(flags & MOVE_BACKWARD_FLAG) if move_keys else None,
-        turn_left_pressed=bool(flags & TURN_LEFT_FLAG) if move_keys else None,
-        turn_right_pressed=bool(flags & TURN_RIGHT_FLAG) if move_keys else None,
+        move_forward_pressed=bool(flags & MOVE_FORWARD_FLAG),
+        move_backward_pressed=bool(flags & MOVE_BACKWARD_FLAG),
+        turn_left_pressed=bool(flags & TURN_LEFT_FLAG),
+        turn_right_pressed=bool(flags & TURN_RIGHT_FLAG),
     )
 
 

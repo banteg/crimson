@@ -1402,7 +1402,7 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     world = make_world()
     player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=0.0, aim_heading=0.0)
     world.players[:] = [player]
-    input_state = PlayerInput(
+    input_state = player_input(
         move=Vec2(),
         aim=Vec2(500.0, 500.0),
         move_mode=MovementControlType.STATIC,

@@ -263,10 +263,10 @@ class LocalInputInterpreter:
         move_axis_y, move_axis_x = binds.move_axis_codes
 
         move_vec = Vec2()
-        move_forward_pressed: bool | None = None
-        move_backward_pressed: bool | None = None
-        turn_left_pressed: bool | None = None
-        turn_right_pressed: bool | None = None
+        move_forward_pressed = False
+        move_backward_pressed = False
+        turn_left_pressed = False
+        turn_right_pressed = False
         computer_target_index: int | None = None
         computer_move_active = move_mode_type is MovementControlType.COMPUTER
 

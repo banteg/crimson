@@ -579,10 +579,10 @@ def _player_move(
     phase_sign = 1.0
     player_controlled_movement = move_mode != MovementControlType.COMPUTER
     if player_controlled_movement and move_mode == MovementControlType.RELATIVE:
-        turning_left = bool(input_state.turn_left_pressed)
-        turning_right = bool(input_state.turn_right_pressed)
-        moving_forward = bool(input_state.move_forward_pressed)
-        moving_backward = bool(input_state.move_backward_pressed)
+        turning_left = input_state.turn_left_pressed
+        turning_right = input_state.turn_right_pressed
+        moving_forward = input_state.move_forward_pressed
+        moving_backward = input_state.move_backward_pressed
         turned = False
 
         if player.turn_speed < 1.0:
@@ -621,26 +621,10 @@ def _player_move(
             speed_scale=speed_scale,
         )
     elif player_controlled_movement and move_mode == MovementControlType.STATIC:
-        moving_forward = (
-            bool(input_state.move_forward_pressed)
-            if input_state.move_forward_pressed is not None
-            else bool(raw_move.y < -0.5)
-        )
-        moving_backward = (
-            bool(input_state.move_backward_pressed)
-            if input_state.move_backward_pressed is not None
-            else bool(raw_move.y > 0.5)
-        )
-        turning_left = (
-            bool(input_state.turn_left_pressed)
-            if input_state.turn_left_pressed is not None
-            else bool(raw_move.x < -0.5)
-        )
-        turning_right = (
-            bool(input_state.turn_right_pressed)
-            if input_state.turn_right_pressed is not None
-            else bool(raw_move.x > 0.5)
-        )
+        moving_forward = input_state.move_forward_pressed
+        moving_backward = input_state.move_backward_pressed
+        turning_left = input_state.turn_left_pressed
+        turning_right = input_state.turn_right_pressed
 
         target_heading = float(_RELATIVE_MOVE_HEADING_NONE)
         if turning_left:

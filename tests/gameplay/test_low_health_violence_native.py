@@ -10,7 +10,6 @@ from crimson.aim_schemes import AimScheme
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.movement_controls import MovementControlType
-from crimson.sim.input import PlayerInput
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from grim.geom import Vec2
@@ -49,7 +48,7 @@ def test_low_health_gore_gate_matches_native_effects_sound_timer_and_rng() -> No
         step_player(
             world,
             player,
-            PlayerInput(aim=Vec2(300.0, 400.0), aim_scheme=AimScheme.MOUSE, move_mode=MovementControlType.STATIC),
+            player_input(aim=Vec2(300.0, 400.0), aim_scheme=AimScheme.MOUSE, move_mode=MovementControlType.STATIC),
             frame["dt"],
             step_runtime=make_step_runtime(world, dt=frame["dt"]),
         )

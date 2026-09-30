@@ -26,7 +26,7 @@ def _run_render_partition(render_hz: int) -> list[tuple[ReplayCheckpoint, Determ
     controls = PlayerInput(
         move=Vec2(0, -1), aim=Vec2(700, 300),
         move_mode=MovementControlType.RELATIVE, aim_scheme=AimScheme.KEYBOARD,
-        move_forward_pressed=True, turn_left_pressed=True,
+        move_forward_pressed=True, move_backward_pressed=False, turn_left_pressed=True, turn_right_pressed=False,
         reload_down=True, fire_down=True, fire_pressed=True,
     )
     ticks = LiveTickSource()
