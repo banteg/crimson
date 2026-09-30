@@ -6,6 +6,8 @@ from crimson.quests.level import QuestLevel
 from crimson.screens.actions import ScoreQuery
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
+from grim.color import grim_color
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -26,7 +28,6 @@ from ..high_scores_layout import (
     HS_QUEST_ARROW_Y,
     HS_SCORE_FRAME_X,
     HS_SCORE_FRAME_Y,
-    HS_TITLE_UNDERLINE_Y,
 )
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from .shared import mode_label
@@ -51,24 +52,12 @@ def draw_main_panel(
             title = "High scores - Quests"
         case _:
             title = f"High scores - {mode_label(mode_id, quest_major, quest_minor)}"
-    title_x = 269.0
-    match mode_id:
-        case GameMode.SURVIVAL:
-            # state_14:High scores - Survival title at x=168 (panel left_x0 is -98).
-            title_x = 266.0
-        case _:
-            pass
-    title_draw_pos = left_panel_top_left + Vec2(title_x, 41.0)
-    draw_small_text(font, title, title_draw_pos, rl.Color(255, 255, 255, 255))
-    ul_w = measure_small_text_width(font, title)
-    ul_pos = left_panel_top_left + Vec2(title_x, HS_TITLE_UNDERLINE_Y)
-    rl.draw_rectangle(
-        int(round(ul_pos.x)),
-        int(round(ul_pos.y)),
-        int(round(ul_w)),
-        1,
-        rl.Color(255, 255, 255, int(255 * 0.7)),
-    )
+    # `highscore_screen_update` centres the title 128px into the column at (202, 41) off the panel, on the int
+    # text width halved with C integer division, and underlines it at 0.7.
+    title_w = int(measure_small_text_width(font, title))
+    title_pos = left_panel_top_left + Vec2(float(330 - title_w // 2), 41.0)
+    draw_small_text(font, title, title_pos, rl.Color(255, 255, 255, 255))
+    grim_draw_rect_outline(title_pos.offset(dy=14.0), float(title_w), 1.0, grim_color(1.0, 1.0, 1.0, 0.7))
     if mode_id == GameMode.QUESTS:
         hardcore = view.state.config.gameplay.hardcore
         if hardcore:

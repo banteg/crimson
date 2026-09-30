@@ -64,12 +64,6 @@ HS_BUTTON_STEP_Y = 33.0
 HS_BACK_BUTTON_X = 400.0  # x0=302
 HS_BACK_BUTTON_Y = 301.0  # y0=495
 
-# Underline under "High scores - ..." title.
-# state_14 quests: [171,249]..[294,250], survival: [168,249]..[297,250]
-HS_TITLE_UNDERLINE_X = 269.0
-HS_TITLE_UNDERLINE_Y = 55.0
-HS_TITLE_UNDERLINE_W = 123.0
-
 # Left score-list frame (white border + black fill).
 # state_14: [112,295]..[362,459] and inner [113,296]..[361,458]
 HS_SCORE_FRAME_X = 210.0
