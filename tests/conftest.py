@@ -199,13 +199,13 @@ def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple[replay_playb
     return view, console
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def assets_dir() -> Path:
     return Path(__file__).resolve().parents[1] / "artifacts" / "assets"
 
 
 @pytest.fixture(scope="session")
-def headless_resources() -> Iterator[RuntimeResources]:
+def headless_resources(assets_dir: Path) -> Iterator[RuntimeResources]:
     """Real runtime textures and font decoded from crimson.paq without a GPU context.
 
     Registered for the tests' assets directory, so gameplay modes open and update
@@ -214,7 +214,7 @@ def headless_resources() -> Iterator[RuntimeResources]:
     """
     from grim.assets import load_runtime_resources, unregister_runtime_resources
 
-    resources = load_runtime_resources(Path(__file__).resolve().parents[1] / "artifacts" / "assets", upload=False)
+    resources = load_runtime_resources(assets_dir, upload=False)
     yield resources
     unregister_runtime_resources(resources.assets_dir)
 

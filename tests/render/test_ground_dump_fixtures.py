@@ -13,7 +13,14 @@ import pytest
 from PIL import Image, ImageChops, ImageStat
 
 from crimson.sim.terrain_generate import terrain_generate
-from grim.assets import _load_texture_asset_from_bytes, load_paq_entries
+from crimson.terrain_slots import resolve_terrain_slots
+from grim.assets import (
+    TEXTURE_SPECS,
+    TextureId,
+    _load_texture_asset_from_bytes,
+    _select_texture_asset,
+    load_paq_entries,
+)
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -22,27 +29,18 @@ pytestmark = pytest.mark.terrain
 
 FIXTURE_DIR = Path(__file__).resolve().parents[1] / "fixtures" / "ground"
 CASES_PATH = FIXTURE_DIR / "ground_dump_cases.json"
-PAQ_DIR = Path("game_bins") / "crimsonland" / "1.9.93-gog"
-PAQ_PATH = PAQ_DIR / "crimson.paq"
 
-TEXTURE_PATHS = {
-    0: "ter/ter_q1_base.jaz",
-    1: "ter/ter_q1_tex1.jaz",
-    2: "ter/ter_q2_base.jaz",
-    3: "ter/ter_q2_tex1.jaz",
-    4: "ter/ter_q3_base.jaz",
-    5: "ter/ter_q3_tex1.jaz",
-    6: "ter/ter_q4_base.jaz",
-    7: "ter/ter_q4_tex1.jaz",
-}
-
+TERRAIN_TEXTURE_IDS = tuple(texture_id for texture_id in TextureId if texture_id.name.startswith("TER_"))
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "tests" / "ground_dumps"
 
 DOWNSAMPLE_FACTOR = int(os.environ.get("CRIMSON_GROUND_DUMP_DOWNSAMPLE", "4"))
 MAX_DELTA_TOL = int(os.environ.get("CRIMSON_GROUND_DUMP_MAX_DELTA", "40"))
-MEAN_DELTA_TOL = float(os.environ.get("CRIMSON_GROUND_DUMP_MEAN_DELTA", "3.0"))
+# The captures were rendered from the shipped JAZ terrain, the tests' crimson.paq carries the lossless source art
+# instead: the q3 pair differs from its JAZ by ~12/255 in red, which lifts that dump's mean delta from 2.2 to 4.4.
+# A misstamped ground (the next seed) stays above 6.6 on every case.
+MEAN_DELTA_TOL = float(os.environ.get("CRIMSON_GROUND_DUMP_MEAN_DELTA", "5.0"))
 _RESAMPLING = getattr(Image, "Resampling", None)
 RESAMPLE_BOX = cast(int, getattr(_RESAMPLING, "BOX", cast(Any, Image).BOX))
 
@@ -85,20 +83,19 @@ def _load_cases() -> list[GroundDumpCase]:
 
 
 @pytest.fixture(scope="module")
-def terrain_textures(raylib_context) -> Iterator[dict[int, rl.Texture]]:
-    if not PAQ_PATH.exists():
-        pytest.skip(f"missing game assets: {PAQ_PATH}")
-    entries = load_paq_entries(PAQ_DIR)
-    assets = {}
-    for terrain_id, rel_path in TEXTURE_PATHS.items():
-        asset = _load_texture_asset_from_bytes(rel_path, entries.get(rel_path))
-        if asset is None:
-            pytest.skip(f"missing terrain texture: {rel_path}")
-        assets[terrain_id] = asset
+def terrain_textures(raylib_context, assets_dir: Path) -> Iterator[dict[TextureId, rl.Texture]]:
+    """The terrain textures from the tests' crimson.paq, picked and decoded as the runtime loads them."""
+    entries = load_paq_entries(assets_dir)
+    textures: dict[TextureId, rl.Texture] = {}
     try:
-        yield assets
+        for texture_id in TERRAIN_TEXTURE_IDS:
+            rel_path, payload = _select_texture_asset(entries, TEXTURE_SPECS[texture_id].rel_path)
+            texture = _load_texture_asset_from_bytes(rel_path, payload)
+            assert texture is not None, f"undecodable terrain texture: {rel_path}"
+            textures[texture_id] = texture
+        yield textures
     finally:
-        for texture in assets.values():
+        for texture in textures.values():
             rl.unload_texture(texture)
 
 
@@ -127,7 +124,7 @@ def _diff_summary(expected: Image.Image, actual: Image.Image) -> tuple[int, floa
     return int(max_delta), float(mean_delta)
 
 
-def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) -> None:
+def test_ground_dumps_match_fixtures(terrain_textures: dict[TextureId, rl.Texture]) -> None:
     cases = _load_cases()
     assert cases, "ground dump fixtures must contain captured cases"
     out_root = _artifacts_dir()
@@ -136,9 +133,8 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
     failures: list[str] = []
     for case in cases:
         fixture_path = FIXTURE_DIR / case.fixture
-        base = terrain_textures[case.tex0_index]
-        overlay = terrain_textures[case.tex1_index]
-        detail = terrain_textures[case.tex2_index]
+        slots = (case.tex0_index, case.tex1_index, case.tex2_index)
+        base, overlay, detail = resolve_terrain_slots(slots, terrain_textures.__getitem__)
         renderer = GroundRenderer(
             texture=base,
             overlay=overlay,
@@ -149,7 +145,6 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, rl.Texture]) ->
         )
         # Compare at the capture's pixel dimensions even on a Retina display.
         renderer.texture_scale = renderer._render_pixel_ratio()
-        slots = (case.tex0_index, case.tex1_index, case.tex2_index)
         renderer.schedule_stamps(terrain_generate(Crand(case.seed), slots).layers)
         renderer.process_pending()
         assert renderer.render_target_ready()
