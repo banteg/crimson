@@ -49,7 +49,8 @@ class GroundDecal(msgspec.Struct):
     width: float
     height: float
     rotation_rad: float = 0.0
-    tint: rl.Color = rl.WHITE
+    # `rl.WHITE` is a plain tuple in pyray; the draws read `.r` / `.a`.
+    tint: rl.Color = msgspec.field(default_factory=lambda: rl.Color(255, 255, 255, 255))
 
 
 class GroundCorpseDecal(msgspec.Struct):
@@ -57,7 +58,7 @@ class GroundCorpseDecal(msgspec.Struct):
     top_left: Vec2
     size: float
     rotation_rad: float
-    tint: rl.Color = rl.WHITE
+    tint: rl.Color = msgspec.field(default_factory=lambda: rl.Color(255, 255, 255, 255))
 
 
 class GroundRenderer(msgspec.Struct):

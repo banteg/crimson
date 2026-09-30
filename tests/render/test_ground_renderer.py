@@ -261,7 +261,6 @@ def test_bake_corpse_decals_draw_the_frame_cell_point_sampled_over_its_shadow(gp
         top_left=Vec2(16.0, 16.0),
         size=32.0,
         rotation_rad=math.pi * 0.5,
-        tint=rl.Color(255, 255, 255, 255),
     )
 
     assert ground.bake_corpse_decals(bodyset, (decal,)) is True
