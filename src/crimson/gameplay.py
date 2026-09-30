@@ -450,39 +450,36 @@ def _player_update_aim_by_scheme(
 ) -> bool:
     """The aim-scheme block of `player_update`; returns computer aim's auto-fire latch."""
 
-    target_aim = input_state.aim
     auto_fire = False
-
-    if aim_scheme == AimScheme.COMPUTER:
-        auto_fire = _player_computer_aim(player, creatures, dt)
-        target_aim = player.aim
-    else:
-        if aim_scheme == AimScheme.KEYBOARD:
+    match aim_scheme:
+        case AimScheme.COMPUTER:
+            auto_fire = _player_computer_aim(player, creatures, dt)
+        case AimScheme.MOUSE | AimScheme.DUAL_ACTION_PAD:
+            player.aim = input_state.aim
+        case AimScheme.MOUSE_RELATIVE:
+            # 0x004153c2: the stick is the cursor's offset from screen (200, 200); a centred
+            # cursor leaves the aim alone.
+            cursor = input_state.aim
+            stick = Vec2(x87_pc24_sub(cursor.x, _MOUSE_RELATIVE_ORIGIN), x87_pc24_sub(cursor.y, _MOUSE_RELATIVE_ORIGIN))
+            if stick.x != 0.0 or stick.y != 0.0:
+                player.aim_heading = x87_pc24_add(x87_fpatan(stick.y, stick.x), NATIVE_HALF_PI)
+                player.aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+        case AimScheme.KEYBOARD:
+            # The aim keys only turn under relative or static movement; otherwise the aim stays.
             if movement_mode in (MovementControlType.RELATIVE, MovementControlType.STATIC):
                 if input_state.aim_turn_right:
                     player.aim_heading = f32(player.aim_heading + f32(dt * 3.0))
                 if input_state.aim_turn_left:
                     player.aim_heading = f32(player.aim_heading - f32(dt * 3.0))
-                target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
-        elif aim_scheme == AimScheme.MOUSE_RELATIVE:
-            # 0x004153c2: the stick is the cursor's offset from screen (200, 200); a centred
-            # cursor leaves the aim alone.
-            cursor = input_state.aim
-            stick = Vec2(x87_pc24_sub(cursor.x, _MOUSE_RELATIVE_ORIGIN), x87_pc24_sub(cursor.y, _MOUSE_RELATIVE_ORIGIN))
-            target_aim = player.aim
-            if stick.x != 0.0 or stick.y != 0.0:
-                player.aim_heading = x87_pc24_add(x87_fpatan(stick.y, stick.x), NATIVE_HALF_PI)
-                target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
-        elif aim_scheme == AimScheme.JOYSTICK:
+                player.aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+        case _:
+            # The joystick scheme, and any other value, turns with the POV hat (0x004155b4).
             if input_state.aim_turn_left:
                 player.aim_heading = f32(player.aim_heading - f32(dt * 4.0))
             if input_state.aim_turn_right:
                 player.aim_heading = f32(player.aim_heading + f32(dt * 4.0))
-            target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
-        elif aim_scheme == AimScheme.UNKNOWN:
-            target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+            player.aim = _player_aim_point_from_heading(player, float(player.aim_heading))
 
-    player.aim = target_aim
     aim_dir = (player.aim - player.pos).normalized()
     if aim_dir.length_sq() > 0.0:
         player.aim_dir = aim_dir
@@ -683,7 +680,10 @@ def _player_move(
     state: GameplayState, movement_dt: float, move_mode: MovementControlType,
     speed_multiplier: float, creatures: CreaturePool,
 ) -> None:
-    # Movement.
+    if move_mode == MovementControlType.UNKNOWN:
+        # Native has no branch for other scheme values (0x00413f3c..): no steering, no speed
+        # or phase change, no move at all.
+        return
     raw_move = input_state.move
     phase_sign = 1.0
     player_controlled_movement = move_mode != MovementControlType.COMPUTER

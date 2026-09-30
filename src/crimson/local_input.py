@@ -179,7 +179,6 @@ class LocalInputInterpreter:
         move_mode_type = binds.movement
         reload_key = config.controls.reload_code
 
-        move_forward_key, move_backward_key, turn_left_key, turn_right_key = binds.move_codes
         fire_key = binds.fire_code
         aim_left_key, aim_right_key = binds.keyboard_aim_codes
         aim_axis_y, aim_axis_x = binds.aim_axis_codes
@@ -192,7 +191,8 @@ class LocalInputInterpreter:
             for key, alt_key in zip(binds.move_codes, _ALT_MOVE_KEYS, strict=True)
         )
 
-        # Computer control reads no device: the sim picks its target, steers and aims.
+        # Computer control reads no device: the sim picks its target, steers and aims;
+        # other scheme values do not move at all.
         if move_mode_type is MovementControlType.RELATIVE:
             move_vec = Vec2(
                 float(turn_right_pressed) - float(turn_left_pressed),
@@ -217,13 +217,6 @@ class LocalInputInterpreter:
                 move_down=move_backward_pressed,
                 move_left=turn_left_pressed,
                 move_right=turn_right_pressed,
-            )
-        elif move_mode_type is not MovementControlType.COMPUTER:
-            move_vec = Vec2(
-                float(input_code_is_down(turn_right_key, player_index=idx))
-                - float(input_code_is_down(turn_left_key, player_index=idx)),
-                float(input_code_is_down(move_backward_key, player_index=idx))
-                - float(input_code_is_down(move_forward_key, player_index=idx)),
             )
 
         heading = float(state.aim_heading)
@@ -255,7 +248,7 @@ class LocalInputInterpreter:
                 aim = player.pos + axis_dir * radius
             else:
                 aim = _aim_point_from_heading(player.pos, heading)
-        elif aim_scheme is AimScheme.JOYSTICK:
+        elif aim_scheme in (AimScheme.JOYSTICK, AimScheme.UNKNOWN):
             # The sim turns the heading (player_update reads `input_aim_pov_left/right_active`).
             aim_turn_left = _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs)
             aim_turn_right = _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs)

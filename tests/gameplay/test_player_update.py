@@ -1436,6 +1436,27 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     assert player.aim == native_aim_point_from_heading(Vec2(100.0, 100.0), f32(0.1 * 3.0))
 
 
+def test_unknown_movement_scheme_stands_still() -> None:
+    world = make_world()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), move_speed=1.5, move_phase=3.0)
+    world.players[:] = [player]
+    held = player_input(move=Vec2(1.0, 0.0), move_mode=MovementControlType.UNKNOWN, move_forward_pressed=True)
+
+    step_player(world, player, held, 0.1)
+
+    assert (player.pos, player.move_speed, player.move_phase) == (Vec2(100.0, 100.0), 1.5, 3.0)
+
+
+def test_unknown_aim_scheme_turns_with_the_pov_hat() -> None:
+    world = make_world()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim_heading=0.0)
+    world.players[:] = [player]
+
+    step_player(world, player, player_input(aim_scheme=AimScheme.UNKNOWN, aim_turn_right=True), 0.1)
+
+    assert player.aim == native_aim_point_from_heading(Vec2(100.0, 100.0), f32(0.1 * 4.0))
+
+
 @pytest.mark.parametrize(
     ("cursor", "expected_aim"),
     [
