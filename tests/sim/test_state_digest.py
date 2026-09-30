@@ -22,7 +22,7 @@ def test_session_digest_detects_state_omitted_from_compact_checkpoints(component
         case "inactive_creature":
             sim.creatures.entries[-1].hp = 17.0
         case "effect_allocator":
-            sim.state.effects._free.reverse()
+            sim.state.effects._free_head = 1
         case "mode_time":
             session.elapsed_ms = 10.0
         case "terrain_queue":

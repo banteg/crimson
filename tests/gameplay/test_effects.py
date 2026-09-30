@@ -128,26 +128,23 @@ def test_sprite_effect_spawn_canonicalizes_native_f32_fields() -> None:
 
 def test_effect_pool_spawn_canonicalizes_native_f32_fields() -> None:
     pool = EffectPool()
+    template = pool.template
+    template.vel = Vec2(3.0 + 1e-8, 4.0 + 1e-8)
+    template.rotation = 5.0 + 1e-8
+    template.scale = 6.0 + 1e-8
+    template.half_width = 7.0 + 1e-8
+    template.half_height = 8.0 + 1e-8
+    template.age = 0.1
+    template.lifetime = 0.2
+    template.flags = 0x1D
+    template.color = RGBA(0.1, 0.2, 0.3, 0.4)
+    template.rotation_step = 9.0 + 1e-8
+    template.scale_step = 10.0 + 1e-8
 
-    idx = pool.spawn(
-        effect_id=3,
-        pos=Vec2(1.0 + 1e-8, 2.0 + 1e-8),
-        vel=Vec2(3.0 + 1e-8, 4.0 + 1e-8),
-        rotation=5.0 + 1e-8,
-        scale=6.0 + 1e-8,
-        half_width=7.0 + 1e-8,
-        half_height=8.0 + 1e-8,
-        age=0.1,
-        lifetime=0.2,
-        flags=0x1D,
-        color=RGBA(0.1, 0.2, 0.3, 0.4),
-        rotation_step=9.0 + 1e-8,
-        scale_step=10.0 + 1e-8,
-        detail_preset=5,
-    )
+    pool.spawn(3, Vec2(1.0 + 1e-8, 2.0 + 1e-8), 5)
 
-    assert idx == 0
-    entry = pool.entries[idx]
+    entry = pool.entries[0]
+    assert entry.effect_id == 3
     assert entry.pos == Vec2(1.0, 2.0)
     assert entry.vel == Vec2(3.0, 4.0)
     assert entry.rotation == 5.0
@@ -456,25 +453,12 @@ def test_effect_pool_blood_splatter_queues_decal_on_expiry() -> None:
 
 def test_effect_pool_update_keeps_native_f32_lifetime_boundary() -> None:
     pool = EffectPool()
-    idx = pool.spawn(
-        effect_id=1,
-        pos=Vec2(),
-        vel=Vec2(),
-        rotation=0.0,
-        scale=1.0,
-        half_width=1.0,
-        half_height=1.0,
-        age=0.1,
-        lifetime=1.0,
-        flags=0x19,
-        color=RGBA(),
-        rotation_step=0.0,
-        scale_step=0.0,
-        detail_preset=5,
-    )
+    pool.template.age = 0.1
+    pool.template.lifetime = 1.0
+    pool.template.flags = 0x19
+    pool.spawn(1, Vec2(), 5)
 
-    assert idx == 0
-    entry = pool.entries[idx]
+    entry = pool.entries[0]
     dt = f32(1.0 / 60.0)
     for _ in range(54):
         pool.update(dt)
@@ -488,47 +472,24 @@ def test_effect_pool_update_keeps_native_f32_lifetime_boundary() -> None:
 
 def test_effect_pool_update_runs_zero_dt_and_has_no_lifetime_epsilon() -> None:
     pool = EffectPool()
-    expired_idx = pool.spawn(
-        effect_id=0,
-        pos=Vec2(),
-        vel=Vec2(),
-        rotation=0.0,
-        scale=1.0,
-        half_width=1.0,
-        half_height=1.0,
-        age=1.0,
-        lifetime=1.0,
-        flags=1,
-        color=RGBA(),
-        rotation_step=0.0,
-        scale_step=0.0,
-        detail_preset=5,
-    )
+    template = pool.template
+    template.age = 1.0
+    template.lifetime = 1.0
+    template.flags = 1
+    pool.spawn(0, Vec2(), 5)
 
-    assert expired_idx == 0
-    expired = pool.entries[expired_idx]
+    expired = pool.entries[0]
     pool.update(0.0)
     assert expired.flags == 0
 
-    fade_idx = pool.spawn(
-        effect_id=0,
-        pos=Vec2(),
-        vel=Vec2(),
-        rotation=0.0,
-        scale=1.0,
-        half_width=1.0,
-        half_height=1.0,
-        age=0.0,
-        lifetime=1e-12,
-        flags=0x10,
-        color=RGBA(1.0, 1.0, 1.0, 0.25),
-        rotation_step=0.0,
-        scale_step=0.0,
-        detail_preset=5,
-    )
+    # The freed entry is back at the free-list head.
+    template.age = 0.0
+    template.lifetime = 1e-12
+    template.flags = 0x10
+    template.color = RGBA(1.0, 1.0, 1.0, 0.25)
+    pool.spawn(0, Vec2(), 5)
 
-    assert fade_idx == 0
-    fading = pool.entries[fade_idx]
+    fading = pool.entries[0]
     pool.update(0.0)
     assert fading.flags == 0x10
     assert fading.color.a == 1.0
@@ -563,7 +524,7 @@ def test_effect_pool_shell_casing_queues_decal_on_expiry() -> None:
     pool.spawn_shell_casing(
         pos=Vec2(10.0, 20.0),
         aim_heading=0.0,
-        draws=(0, 0, 0, 0),
+        rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST),
         detail_preset=5,
     )
 
@@ -646,23 +607,3 @@ def test_spawn_explosion_burst_tags_exact_native_callers() -> None:
         RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_SCALE_STEP,
         RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP,
     ] * 4
-
-
-def test_effect_pool_spawn_ring_spawns_effect_1() -> None:
-    pool = EffectPool()
-
-    pool.spawn_ring(
-        pos=Vec2(3.0, 4.0),
-        detail_preset=5,
-        color=RGBA(0.6, 0.6, 1.0, 1.0),
-    )
-
-    active = pool.iter_active()
-    assert len(active) == 1
-    entry = active[0]
-    assert entry.effect_id == 1
-    assert entry.flags == 0x19
-    assert_float_close(entry.pos.x, 3.0)
-    assert_float_close(entry.pos.y, 4.0)
-    assert_float_close(entry.lifetime, 0.25)
-    assert_float_close(entry.scale_step, 50.0)

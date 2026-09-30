@@ -31,6 +31,7 @@ from ._support import (
     PROJECTILE_STRIDE,
     SECONDARY_PROJECTILE_LAYOUT,
     Mismatch,
+    compare_effect_pool,
     compare_fields,
     mismatch_report,
     prepare_gameplay,
@@ -238,6 +239,7 @@ def test_secondary_rockets_match_native(oracle) -> None:
             case = f"{type_id.name} seed=0x{seed:08x} step {step}"
             native = oracle.read_fields(secondary, SECONDARY_PROJECTILE_LAYOUT)
             mismatches += compare_fields(case, native, _python_secondary(entry), address=secondary)
+            mismatches += compare_effect_pool(oracle, world.state.effects, case)
             mismatches += _rand_mismatch(oracle, world, case)
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
 
@@ -298,6 +300,7 @@ def test_secondary_detonation_matches_native(oracle) -> None:
         native = oracle.read_fields(secondary, SECONDARY_PROJECTILE_LAYOUT)
         mismatches += compare_fields(case, native, _python_secondary(entry), address=secondary)
         mismatches += _compare_creatures(oracle, world, creature_count, case)
+        mismatches += compare_effect_pool(oracle, world.state.effects, case)
         mismatches += _rand_mismatch(oracle, world, case)
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
 
@@ -390,6 +393,7 @@ def test_primary_special_hits_match_native(oracle, type_id: ProjectileTemplateId
             native_value = oracle.read_i32(name)
             if native_value != python_value:
                 mismatches.append(Mismatch(case, name, native_value, python_value, oracle.resolve(name)))
+        mismatches += compare_effect_pool(oracle, world.state.effects, case)
         mismatches += _rand_mismatch(oracle, world, case)
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
 
@@ -461,4 +465,5 @@ def test_shock_chain_bonus_matches_native(oracle) -> None:
             native_value = oracle.read_i32(name)
             if native_value != python_value:
                 mismatches.append(Mismatch(case, name, native_value, python_value, oracle.resolve(name)))
+        mismatches += compare_effect_pool(oracle, state.effects, case)
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)

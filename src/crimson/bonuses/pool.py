@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.color import RGBA
 from grim.geom import Vec2
 
+from ..effects_atlas import EffectId
 from ..game_modes import GameMode
-from ..math_parity import f32, x87_pc24_hypot, x87_pc24_sub
+from ..math_parity import f32, x87_pc24_add, x87_pc24_hypot, x87_pc24_mul, x87_pc24_sub
 from ..rng_caller_static import RngCallerStatic
 from ..sim.state_types import TERRAIN_SIZE, BonusPickupEvent, PlayerState
 from ..weapon_runtime.availability import weapon_pick_random_available
@@ -180,18 +182,28 @@ class BonusPool:
             amount = int(meta.native_amount or 0) if meta is not None else 0
         entry.amount = int(amount)
 
-        # Native `bonus_spawn_at` always spawns a 16-particle burst (4 crt_rand draws
-        # each); the tutorial writes the pool directly and emits its own burst.
-        state.effects.spawn_burst(
-            pos=entry.pos,
-            count=16,
-            rng=state.rng,
-            detail_preset=int(detail_preset),
-            rotation_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_ROTATION,
-            vel_x_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_X,
-            vel_y_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y,
-            scale_step_caller=RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP,
-        )
+        # Native `bonus_spawn_at` always spawns its own 16-particle burst, which leaves
+        # `age` to the template; the tutorial writes the pool directly and calls `effect_spawn_burst`.
+        rng = state.rng
+        template = state.effects.template
+        template.flags = 0x1D
+        template.color = RGBA(0.4, 0.5, 1.0, 0.5)
+        template.lifetime = 0.5
+        template.half_width = 32.0
+        template.half_height = 32.0
+        for _ in range(16):
+            template.rotation = x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.BONUS_SPAWN_AT_BURST_ROTATION) & 0x7F), f32(0.049087387),
+            )
+            template.vel = Vec2(
+                float(rng.rand_tagged(RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_X) % 128 - 64),
+                float(rng.rand_tagged(RngCallerStatic.BONUS_SPAWN_AT_BURST_VEL_Y) % 128 - 64),
+            )
+            template.scale_step = x87_pc24_add(
+                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.BONUS_SPAWN_AT_BURST_SCALE_STEP) % 100), f32(0.01)),
+                f32(0.1),
+            )
+            state.effects.spawn(EffectId.BURST, entry.pos, detail_preset)
         return None if self._is_sentinel_entry(entry) else entry
 
     def seed_tutorial_entry(
@@ -376,16 +388,29 @@ class BonusPool:
         return entry
 
     def _spawn_on_kill_burst(self, *, entry: BonusEntry, state: GameplayState, detail_preset: int) -> None:
+        # `bonus_try_spawn_on_kill`'s own 16-particle burst; `age` is left to the template.
         rng = state.rng
+        template = state.effects.template
+        template.flags = 0x1D
+        template.color = RGBA(0.4, 0.5, 1.0, 0.5)
+        template.lifetime = 0.5
+        template.half_width = 32.0
+        template.half_height = 32.0
         for _ in range(16):
-            state.effects.spawn_burst_particle(
-                pos=entry.pos,
-                rotation_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION),
-                vel_x_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_X),
-                vel_y_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_Y),
-                scale_step_draw=rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_SCALE_STEP),
-                detail_preset=detail_preset,
+            template.rotation = x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_ROTATION) & 0x7F), f32(0.049087387),
             )
+            template.vel = Vec2(
+                float(rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_X) % 128 - 64),
+                float(rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_VEL_Y) % 128 - 64),
+            )
+            template.scale_step = x87_pc24_add(
+                x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.BONUS_TRY_SPAWN_ON_KILL_BURST_SCALE_STEP) % 100), f32(0.01),
+                ),
+                f32(0.1),
+            )
+            state.effects.spawn(EffectId.BURST, entry.pos, detail_preset)
 
     def update(
         self,

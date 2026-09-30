@@ -49,7 +49,7 @@ def perk_apply(
             for index, creature in enumerate(creatures):
                 if index & 1 and creature.active and float(creature.hp) <= 500.0 and (int(creature.flags) & 0x04) == 0:
                     creature.active = False
-                    state.effects.spawn_burst(pos=creature.pos, count=4, rng=state.rng, detail_preset=5)
+                    state.effects.spawn_burst(pos=creature.pos, count=4, rng=state.rng, detail_preset=state.detail_preset)
 
         case PerkId.THICK_SKINNED:
             for player in players:
@@ -117,7 +117,7 @@ def perk_apply(
                 else:
                     # The perk text promises restoring up to 50% health.
                     player.health = min(100.0, x87_pc24_add(health, amount))
-                state.effects.spawn_burst(pos=player.pos, count=8, rng=state.rng, detail_preset=5)
+                state.effects.spawn_burst(pos=player.pos, count=8, rng=state.rng, detail_preset=state.detail_preset)
 
         case PerkId.MY_FAVOURITE_WEAPON:
             for player in players:

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
 from grim.sfx_map import SfxId
@@ -139,6 +140,16 @@ def queue_projectile_decals_pre_hit(
                 detail_preset=detail_preset,
                 violence_disabled=violence_disabled,
             )
+
+    # Native fills part of the effect template here without spawning; the blood splatters
+    # overwrite most of it, and the rest reaches the next spawner.
+    template = state.effects.template
+    template.flags = 0x59
+    template.color = RGBA(1.0, 1.0, 1.0, 1.0)
+    template.lifetime = 0.35
+    template.age = 0.0
+    template.half_width = 4.0
+    template.half_height = 4.0
 
     # Native `projectile_update` spawns blood splatter before terrain decals.
     # The whole splatter block (including its spread / reverse-gate rand draws)

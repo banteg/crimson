@@ -31,55 +31,113 @@ def _spawn_shrinkifier_hit_effects(
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
-    """Port of `effect_spawn_shrinkifier_hit` (0x0042f080)."""
+    """Port of `effect_spawn_shrinkifier_hit` (0x0042f080); `scale` and `rotation_step` are inherited."""
 
-    detail = int(detail_preset)
+    template = effects.template
+    template.flags = 0x19
+    template.color = RGBA(0.3, 0.6, 0.9, 1.0)
+    template.age = 0.0
+    template.lifetime = 0.3
+    template.half_width = 36.0
+    template.half_height = 36.0
+    template.rotation = 0.0
+    template.vel = Vec2()
+    template.scale_step = -4.0
+    effects.spawn(EffectId.RING, pos, detail_preset)
 
-    # Core pulse (effect_id=1).
-    effects.spawn(
-        effect_id=int(EffectId.RING),
-        pos=pos,
-        vel=Vec2(),
-        rotation=0.0,
-        scale=1.0,
-        half_width=36.0,
-        half_height=36.0,
-        age=0.0,
-        lifetime=0.3,
-        flags=0x19,
-        color=RGBA(0.3, 0.6, 0.9, 1.0),
-        rotation_step=0.0,
-        scale_step=-4.0,
-        detail_preset=detail,
-    )
+    template.flags = 0x1D
+    template.color = RGBA(0.4, 0.5, 1.0, 0.5)
+    template.age = 0.0
+    template.lifetime = 0.3
+    template.half_width = 32.0
+    template.half_height = 32.0
 
-    # Debris puffs (effect_id=0), detail-scaled count.
-    count = 2 if detail < 3 else 4
+    count = 4
+    if detail_preset < 3:
+        count //= 2
+
     for _ in range(count):
-        rotation = x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_ROTATION) & 0x7F), f32(0.0490873866))
-        velocity = Vec2(
+        template.rotation = x87_pc24_mul(
+            float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_ROTATION) & 0x7F), f32(0.0490873866),
+        )
+        template.vel = Vec2(
             x87_pc24_mul(float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_X) & 0x7F) - 0x40), f32(1.4)),
             x87_pc24_mul(float((rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_VEL_Y) & 0x7F) - 0x40), f32(1.4)),
         )
-        scale_step = x87_pc24_add(
+        template.scale_step = x87_pc24_add(
             x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.SHRINKIFIER_HIT_SCALE_STEP) % 100), f32(0.01)), f32(0.1),
         )
-        effects.spawn(
-            effect_id=int(EffectId.BURST),
-            pos=pos,
-            vel=velocity,
-            rotation=rotation,
-            scale=1.0,
-            half_width=32.0,
-            half_height=32.0,
-            age=0.0,
-            lifetime=0.3,
-            flags=0x1D,
-            color=RGBA(0.4, 0.5, 1.0, 0.5),
-            rotation_step=0.0,
-            scale_step=scale_step,
-            detail_preset=detail,
+        effects.spawn(EffectId.BURST, pos, detail_preset)
+
+
+def _effect_spawn_ion_hit_core(
+    effects: EffectPool,
+    *,
+    pos: Vec2,
+    scale_step: float,
+    lifetime: float,
+    detail_preset: int,
+) -> None:
+    """Port of `effect_spawn_ion_hit_core`; `scale` and `rotation_step` are inherited."""
+
+    template = effects.template
+    template.flags = 0x19
+    template.color = RGBA(0.6, 0.6, 0.9, 1.0)
+    template.lifetime = x87_pc24_mul(f32(lifetime), f32(0.8))
+    template.scale_step = x87_pc24_mul(f32(scale_step), 45.0)
+    template.age = 0.0
+    template.half_width = 4.0
+    template.half_height = 4.0
+    template.rotation = 0.0
+    template.vel = Vec2()
+    effects.spawn(EffectId.RING, pos, detail_preset)
+
+
+def _effect_spawn_ion_hit_sparks(
+    effects: EffectPool,
+    *,
+    pos: Vec2,
+    scale: float,
+    rng: CrandLike,
+    detail_preset: int,
+) -> None:
+    """Port of `effect_spawn_ion_hit_sparks`; `scale` and `rotation_step` are inherited."""
+
+    scale = x87_pc24_mul(f32(scale), f32(0.8))
+    template = effects.template
+    template.flags = 0x1D
+    template.color = RGBA(0.4, 0.5, 1.0, 0.5)
+    lifetime = x87_pc24_mul(scale, f32(0.7))
+    template.lifetime = lifetime
+    template.age = 0.0
+    if lifetime > f32(1.1):
+        template.lifetime = 1.1
+
+    template.half_width = x87_pc24_mul(scale, 32.0)
+    template.half_height = x87_pc24_mul(scale, 32.0)
+
+    # `__ftol(scale * 5.0f)`, halved at low detail.
+    count = int(x87_pc24_mul(scale, 5.0))
+    if detail_preset < 3:
+        count //= 2
+    if count <= 0:
+        return
+
+    for _ in range(count):
+        template.rotation = x87_pc24_mul(
+            float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_ROTATION) & 0x7F), f32(0.0490873866),
         )
+        template.vel = Vec2(
+            x87_pc24_mul_chain(float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_X) & 0x7F) - 0x40), scale, f32(1.4)),
+            x87_pc24_mul_chain(float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_Y) & 0x7F) - 0x40), scale, f32(1.4)),
+        )
+        template.scale_step = x87_pc24_mul(
+            x87_pc24_add(
+                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_SCALE_STEP) % 100), f32(0.01)), f32(0.1),
+            ),
+            scale,
+        )
+        effects.spawn(EffectId.BURST, pos, detail_preset)
 
 
 def _spawn_ion_hit_effects(
@@ -91,85 +149,42 @@ def _spawn_ion_hit_effects(
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
-    ring_scale = 0.0
-    ring_strength = 0.0
-    burst_scale = 0.0
+    """The ion branches of the `projectile_update` hit: a core then sparks, plus the cannon's shockwave."""
+
     match type_id:
         case ProjectileTemplateId.ION_MINIGUN:
-            ring_scale = 1.5
-            ring_strength = 0.1
-            burst_scale = 0.8
+            _effect_spawn_ion_hit_core(effects, pos=pos, scale_step=1.5, lifetime=0.1, detail_preset=detail_preset)
+            _effect_spawn_ion_hit_sparks(effects, pos=pos, scale=0.8, rng=rng, detail_preset=detail_preset)
         case ProjectileTemplateId.ION_RIFLE:
-            ring_scale = 1.2
-            ring_strength = 0.4
-            burst_scale = 1.2
+            _effect_spawn_ion_hit_core(effects, pos=pos, scale_step=1.2, lifetime=0.4, detail_preset=detail_preset)
+            _effect_spawn_ion_hit_sparks(effects, pos=pos, scale=1.2, rng=rng, detail_preset=detail_preset)
         case ProjectileTemplateId.ION_CANNON:
-            ring_scale = 1.0
-            ring_strength = 1.0
-            burst_scale = 2.2
+            _effect_spawn_ion_hit_core(effects, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset)
+            _effect_spawn_ion_hit_sparks(effects, pos=pos, scale=2.2, rng=rng, detail_preset=detail_preset)
             sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
-        case _:
-            return
 
-    detail = int(detail_preset)
 
-    # Port of `effect_spawn_ion_hit_core(pos, ring_scale, ring_strength)`.
-    effects.spawn(
-        effect_id=int(EffectId.RING),
-        pos=pos,
-        vel=Vec2(),
-        rotation=0.0,
-        scale=1.0,
-        half_width=4.0,
-        half_height=4.0,
-        age=0.0,
-        lifetime=x87_pc24_mul(f32(ring_strength), f32(0.8)),
-        flags=0x19,
-        color=RGBA(0.6, 0.6, 0.9, 1.0),
-        rotation_step=0.0,
-        scale_step=x87_pc24_mul(f32(ring_scale), 45.0),
-        detail_preset=detail,
-    )
+def _effect_spawn_plasma_hit_core(
+    effects: EffectPool,
+    *,
+    pos: Vec2,
+    scale_step: float,
+    lifetime: float,
+    detail_preset: int,
+) -> None:
+    """Port of `effect_spawn_plasma_hit_core`; `scale` and `rotation_step` are inherited."""
 
-    # Port of `effect_spawn_ion_hit_sparks(pos, burst_scale)`.
-    burst = x87_pc24_mul(f32(burst_scale), f32(0.8))
-    lifetime = x87_pc24_mul(burst, f32(0.7))
-    if lifetime > f32(1.1):
-        lifetime = f32(1.1)
-    half = x87_pc24_mul(burst, 32.0)
-    # Native loop count is `__ftol(scale * 5.0f)` after the local `scale *= 0.8f`.
-    count = int(x87_pc24_mul(burst, 5.0))
-    if detail < 3:
-        count //= 2
-
-    for _ in range(max(0, count)):
-        rotation = x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_ROTATION) & 0x7F), f32(0.0490873866))
-        velocity = Vec2(
-            x87_pc24_mul_chain(float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_X) & 0x7F) - 0x40), burst, f32(1.4)),
-            x87_pc24_mul_chain(float((rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_VEL_Y) & 0x7F) - 0x40), burst, f32(1.4)),
-        )
-        scale_step = x87_pc24_mul(
-            x87_pc24_add(
-                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.ION_HIT_SPARK_SCALE_STEP) % 100), f32(0.01)), f32(0.1),
-            ),
-            burst,
-        )
-        effects.spawn(
-            effect_id=int(EffectId.BURST),
-            pos=pos,
-            vel=velocity,
-            rotation=rotation,
-            scale=1.0,
-            half_width=half,
-            half_height=half,
-            age=0.0,
-            lifetime=float(lifetime),
-            flags=0x1D,
-            color=RGBA(0.4, 0.5, 1.0, 0.5),
-            rotation_step=0.0,
-            scale_step=scale_step,
-            detail_preset=detail,
-        )
+    template = effects.template
+    template.flags = 0x19
+    template.color = RGBA(0.9, 0.6, 0.3, 1.0)
+    template.age = 0.1
+    template.lifetime = lifetime
+    template.scale_step = x87_pc24_mul(f32(scale_step), 45.0)
+    template.half_width = 4.0
+    template.half_height = 4.0
+    template.rotation = 0.0
+    template.vel = Vec2()
+    effects.spawn(EffectId.RING, pos, detail_preset)
 
 
 def _spawn_plasma_cannon_hit_effects(
@@ -179,40 +194,12 @@ def _spawn_plasma_cannon_hit_effects(
     pos: Vec2,
     detail_preset: int,
 ) -> None:
-    """Port of `projectile_update` Plasma Cannon hit extras.
-
-    Native does:
-    - `sfx_play_panned(sfx_explosion_medium)`
-    - `sfx_play_panned(sfx_shockwave)`
-    - `effect_spawn_plasma_hit_core(pos, 1.5, 1.0)`
-    - `effect_spawn_plasma_hit_core(pos, 1.0, 1.0)`
-    """
+    """The Plasma Cannon hit extras of `projectile_update`: two sounds, then two plasma cores."""
 
     sfx_queue.append(SfxRequest(SfxId.EXPLOSION_MEDIUM, pos))
     sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, pos))
-
-    detail = int(detail_preset)
-
-    def _spawn_ring(*, scale: float) -> None:
-        effects.spawn(
-            effect_id=int(EffectId.RING),
-            pos=pos,
-            vel=Vec2(),
-            rotation=0.0,
-            scale=1.0,
-            half_width=4.0,
-            half_height=4.0,
-            age=0.1,
-            lifetime=1.0,
-            flags=0x19,
-            color=RGBA(0.9, 0.6, 0.3, 1.0),
-            rotation_step=0.0,
-            scale_step=float(scale) * 45.0,
-            detail_preset=detail,
-        )
-
-    _spawn_ring(scale=1.5)
-    _spawn_ring(scale=1.0)
+    _effect_spawn_plasma_hit_core(effects, pos=pos, scale_step=1.5, lifetime=1.0, detail_preset=detail_preset)
+    _effect_spawn_plasma_hit_core(effects, pos=pos, scale_step=1.0, lifetime=1.0, detail_preset=detail_preset)
 
 
 def _spawn_splitter_hit_effects(
@@ -222,9 +209,17 @@ def _spawn_splitter_hit_effects(
     rng: CrandLike,
     detail_preset: int,
 ) -> None:
-    """Port of `effect_spawn_splitter_hit_burst(pos, 26.0, 3)`."""
+    """Port of `effect_spawn_splitter_hit_burst(pos, 26.0, 3)`; `scale` and `rotation_step` are inherited."""
 
-    detail = int(detail_preset)
+    template = effects.template
+    template.flags = 0x19
+    template.color = RGBA(1.0, 0.9, 0.1, 1.0)
+    template.half_width = 4.0
+    template.half_height = 4.0
+    template.rotation = 0.0
+    template.vel = Vec2()
+    template.scale_step = 55.0
+
     for _ in range(3):
         angle = x87_pc24_mul(
             float(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_ANGLE) & 0x1FF) * 0.001953125, NATIVE_TAU,
@@ -235,25 +230,9 @@ def _spawn_splitter_hit_effects(
             x87_pc24_add(x87_pc24_sin_mul(angle, distance), pos.y),
         )
         # Native negates the integer before conversion, so a zero draw gives +0.0.
-        jitter_age = x87_pc24_mul(float(-(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF)), f32(0.0012))
-        lifetime = x87_pc24_sub(f32(0.1), jitter_age)
-
-        effects.spawn(
-            effect_id=int(EffectId.BURST),
-            pos=spawn_pos,
-            vel=Vec2(),
-            rotation=0.0,
-            scale=1.0,
-            half_width=4.0,
-            half_height=4.0,
-            age=jitter_age,
-            lifetime=lifetime,
-            flags=0x19,
-            color=RGBA(1.0, 0.9, 0.1, 1.0),
-            rotation_step=0.0,
-            scale_step=55.0,
-            detail_preset=detail,
-        )
+        template.age = x87_pc24_mul(float(-(rng.rand_tagged(RngCallerStatic.SPLITTER_HIT_AGE) & 0xFF)), f32(0.0012))
+        template.lifetime = x87_pc24_sub(f32(0.1), template.age)
+        effects.spawn(EffectId.BURST, spawn_pos, detail_preset)
 
 
 __all__ = [

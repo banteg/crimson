@@ -8,8 +8,9 @@ from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
 
-from crimson.effects import SpriteEffect
+from crimson.effects import EFFECT_POOL_SIZE, EffectPool, SpriteEffect
 from crimson.game_modes import GameMode
+from crimson.math_parity import f32
 
 # `creature_t` (0x98 bytes), third_party/headers/crimsonland_types.h.
 CREATURE_STRIDE = 0x98
@@ -243,6 +244,90 @@ def compare_fields(
             same = int(python_value) == native_value
         if not same:
             mismatches.append(Mismatch(case, name, native_value, python_value, address))
+    return mismatches
+
+
+# `effect_entry_t` (0xbc bytes) up to `scale_step`, then `next_free` at 0xb8.
+_EFFECT_ENTRY_STRIDE = 0xBC
+_EFFECT_ENTRY_NEXT_FREE = 0xB8
+_EFFECT_ENTRY_FIELDS = (
+    "pos_x", "pos_y", "effect_id", "vel_x", "vel_y", "rotation", "scale", "half_width", "half_height",
+    "age", "lifetime", "flags", "color_r", "color_g", "color_b", "color_a", "rotation_step", "scale_step",
+)  # fmt: skip
+_EFFECT_ENTRY_FORMAT = struct.Struct("<2fB3x8fi6f")
+# `effect_template_t` (0x3c bytes): the entry fields from `velocity` to `scale_step`.
+_EFFECT_TEMPLATE_FIELDS = _EFFECT_ENTRY_FIELDS[3:]
+_EFFECT_TEMPLATE_FORMAT = struct.Struct("<8fi6f")
+
+
+def compare_effect_pool(oracle, pool: EffectPool, label: str) -> list[Mismatch]:
+    """All 512 effect entries (free-list links included), the free-list head, the template and the skip counter."""
+
+    base = oracle.resolve("effect_pool")
+
+    def index(address: int) -> int:
+        return (address - base) // _EFFECT_ENTRY_STRIDE if address else -1
+
+    mismatches: list[Mismatch] = []
+    raw = oracle.read(base, _EFFECT_ENTRY_STRIDE * EFFECT_POOL_SIZE)
+    for slot, entry in enumerate(pool.entries):
+        offset = slot * _EFFECT_ENTRY_STRIDE
+        native = dict(zip(_EFFECT_ENTRY_FIELDS, _EFFECT_ENTRY_FORMAT.unpack_from(raw, offset), strict=True))
+        native["next_free"] = index(struct.unpack_from("<I", raw, offset + _EFFECT_ENTRY_NEXT_FREE)[0])
+        python = {
+            "pos_x": entry.pos.x,
+            "pos_y": entry.pos.y,
+            "effect_id": entry.effect_id,
+            "vel_x": entry.vel.x,
+            "vel_y": entry.vel.y,
+            "rotation": entry.rotation,
+            "scale": entry.scale,
+            "half_width": entry.half_width,
+            "half_height": entry.half_height,
+            "age": entry.age,
+            "lifetime": entry.lifetime,
+            "flags": entry.flags,
+            "color_r": entry.color.r,
+            "color_g": entry.color.g,
+            "color_b": entry.color.b,
+            "color_a": entry.color.a,
+            "rotation_step": entry.rotation_step,
+            "scale_step": entry.scale_step,
+            "next_free": entry.next_free,
+        }
+        mismatches += compare_fields(f"{label} effect[{slot}]", native, python, address=base + offset)
+
+    # The template slots are float32; the port rounds them when `effect_spawn` copies them.
+    template_address = oracle.resolve("effect_template")
+    native_template = dict(
+        zip(_EFFECT_TEMPLATE_FIELDS, _EFFECT_TEMPLATE_FORMAT.unpack(oracle.read(template_address, 0x3C)), strict=True),
+    )
+    template = pool.template
+    python_template = {
+        "vel_x": f32(template.vel.x),
+        "vel_y": f32(template.vel.y),
+        "rotation": f32(template.rotation),
+        "scale": f32(template.scale),
+        "half_width": f32(template.half_width),
+        "half_height": f32(template.half_height),
+        "age": f32(template.age),
+        "lifetime": f32(template.lifetime),
+        "flags": template.flags,
+        "color_r": f32(template.color.r),
+        "color_g": f32(template.color.g),
+        "color_b": f32(template.color.b),
+        "color_a": f32(template.color.a),
+        "rotation_step": f32(template.rotation_step),
+        "scale_step": f32(template.scale_step),
+    }
+    mismatches += compare_fields(f"{label} template", native_template, python_template, address=template_address)
+
+    for name, native_value, python_value in (
+        ("effect_free_list_head", index(oracle.read_u32("effect_free_list_head")), pool._free_head),
+        ("effect_spawn_detail_skip_counter", oracle.read_u32("effect_spawn_detail_skip_counter"), pool._detail_skip_counter),
+    ):
+        if native_value != python_value:
+            mismatches.append(Mismatch(label, name, native_value, python_value, 0))
     return mismatches
 
 

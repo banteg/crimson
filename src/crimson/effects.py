@@ -44,6 +44,7 @@ __all__ = [
     "SPRITE_EFFECT_POOL_SIZE",
     "EffectEntry",
     "EffectPool",
+    "EffectTemplate",
     "FxQueue",
     "FxQueueEntry",
     "FxQueueRotated",
@@ -595,18 +596,44 @@ class FxQueueRotated:
         return True
 
 
+
 class EffectEntry(msgspec.Struct):
+    """Native `effect_entry_t`; the defaults are its zeroed static storage."""
+
     pos: Vec2 = Vec2()
     effect_id: int = 0
     vel: Vec2 = Vec2()
     rotation: float = 0.0
-    scale: float = 1.0
+    scale: float = 0.0
     half_width: float = 0.0
     half_height: float = 0.0
     age: float = 0.0
     lifetime: float = 0.0
     flags: int = 0
-    color: RGBA = msgspec.field(default_factory=RGBA)
+    color: RGBA = RGBA(0.0, 0.0, 0.0, 0.0)
+    rotation_step: float = 0.0
+    scale_step: float = 0.0
+    # Native `next_free`: the entry index after this one on the free list, -1 for null.
+    next_free: int = -1
+
+
+class EffectTemplate(msgspec.Struct):
+    """Native `effect_template`: the fields `effect_spawn` copies into every new entry.
+
+    Spawners overwrite only some fields; the rest keep whatever the previous spawner
+    (or `effect_defaults_reset`) left. The slots are float32: `effect_spawn` rounds
+    them on the copy.
+    """
+
+    vel: Vec2 = Vec2()
+    rotation: float = 0.0
+    scale: float = 0.0
+    half_width: float = 0.0
+    half_height: float = 0.0
+    age: float = 0.0
+    lifetime: float = 0.0
+    flags: int = 0
+    color: RGBA = RGBA(0.0, 0.0, 0.0, 0.0)
     rotation_step: float = 0.0
     scale_step: float = 0.0
 
@@ -620,83 +647,92 @@ class EffectPool:
 
     def __init__(self) -> None:
         self._entries = [EffectEntry() for _ in range(EFFECT_POOL_SIZE)]
-        self._free = list(range(EFFECT_POOL_SIZE - 1, -1, -1))
-        self._detail_toggle = 0
-        self._overwrite_cursor = 0
+        self.template = EffectTemplate()
+        self._free_head = 0
+        # Native `effect_spawn_detail_skip_counter`: never reset, not even by `effect_defaults_reset`.
+        self._detail_skip_counter = 0
+        self.reset()
 
     @property
     def entries(self) -> list[EffectEntry]:
         return self._entries
 
     def reset(self) -> None:
-        for entry in self._entries:
+        """Port of `effect_defaults_reset` (`game_core_init`, `gameplay_reset_state`).
+
+        The free list is rebuilt as 0 -> 1 -> ... -> 511. The last entry is never
+        initialized or linked onward: its null `next_free` ends the list, so at most
+        511 entries are live and a spawn with the last entry at the head is discarded.
+        """
+
+        template = self.template
+        template.color = RGBA(1.0, 1.0, 1.0, 1.0)
+        template.flags = 1
+        template.rotation = 0.0
+        template.scale = 1.0
+        template.age = 0.0
+        template.lifetime = 0.5
+        template.half_height = 32.0
+        template.half_width = 32.0
+        template.rotation_step = 1.0
+        template.scale_step = 1.0
+        template.vel = Vec2()
+
+        for index in range(EFFECT_POOL_SIZE - 1):
+            entry = self._entries[index]
+            entry.next_free = index + 1
+            # `effect_init_entry`.
             entry.flags = 0
-        self._free = list(range(len(self._entries) - 1, -1, -1))
-        self._detail_toggle = 0
-        self._overwrite_cursor = 0
+            entry.age = 0.0
+            entry.rotation = 0.0
+            entry.scale = 1.0
+            entry.color = RGBA(1.0, 1.0, 1.0, 1.0)
+        self._free_head = 0
 
     def iter_active(self) -> list[EffectEntry]:
         return [entry for entry in self._entries if entry.flags]
 
-    def _alloc_slot(self, *, detail_preset: int) -> int | None:
-        # Native: if detail_preset < 3, skip every other spawn attempt.
-        if int(detail_preset) < 3:
-            skip = self._detail_toggle & 1
-            self._detail_toggle += 1
+    def spawn(self, effect_id: int, pos: Vec2, detail_preset: int) -> None:
+        """Port of `effect_spawn` (0x0042e120): pop the free-list head and copy the whole template into it.
+
+        Low detail presets skip every other spawn. With the free list down to its last
+        entry the spawn lands in `effect_discard_entry`, which nothing updates or draws.
+        """
+
+        if detail_preset <= 2:
+            skip = self._detail_skip_counter & 1
+            self._detail_skip_counter += 1
             if skip:
-                return None
+                return
 
-        if self._free:
-            return self._free.pop()
+        entry = self._entries[self._free_head]
+        if entry.next_free == -1:
+            return
+        self._free_head = entry.next_free
 
-        idx = self._overwrite_cursor % len(self._entries)
-        self._overwrite_cursor = idx + 1
-        return idx
-
-    def spawn(
-        self,
-        *,
-        effect_id: int,
-        pos: Vec2,
-        vel: Vec2,
-        rotation: float,
-        scale: float,
-        half_width: float,
-        half_height: float,
-        age: float,
-        lifetime: float,
-        flags: int,
-        color: RGBA,
-        rotation_step: float,
-        scale_step: float,
-        detail_preset: int,
-    ) -> int | None:
-        idx = self._alloc_slot(detail_preset=int(detail_preset))
-        if idx is None:
-            return None
-
-        entry = self._entries[idx]
+        template = self.template
+        entry.vel = f32_vec2(template.vel)
+        entry.rotation = f32(template.rotation)
+        entry.scale = f32(template.scale)
+        entry.half_width = f32(template.half_width)
+        entry.half_height = f32(template.half_height)
+        entry.age = f32(template.age)
+        entry.lifetime = f32(template.lifetime)
+        entry.flags = template.flags
+        color = template.color
+        entry.color = RGBA(f32(color.r), f32(color.g), f32(color.b), f32(color.a))
+        entry.rotation_step = f32(template.rotation_step)
+        entry.scale_step = f32(template.scale_step)
         entry.pos = f32_vec2(pos)
         entry.effect_id = int(effect_id)
-        entry.vel = f32_vec2(vel)
-        entry.rotation = f32(rotation)
-        entry.scale = f32(scale)
-        entry.half_width = f32(half_width)
-        entry.half_height = f32(half_height)
-        entry.age = f32(age)
-        entry.lifetime = f32(lifetime)
-        entry.flags = int(flags)
-        entry.color = RGBA(f32(color.r), f32(color.g), f32(color.b), f32(color.a))
-        entry.rotation_step = f32(rotation_step)
-        entry.scale_step = f32(scale_step)
-        return idx
 
     def free(self, idx: int) -> None:
-        if not (0 <= idx < len(self._entries)):
-            return
+        """Port of `effect_free`: push the entry onto the free-list head."""
+
         entry = self._entries[idx]
+        entry.next_free = self._free_head
         entry.flags = 0
-        self._free.append(idx)
+        self._free_head = idx
 
     def update(self, dt: float, *, fx_queue: FxQueue | None = None) -> None:
         """Advance active effects and enqueue terrain decals on expiry."""
@@ -751,40 +787,41 @@ class EffectPool:
         *,
         pos: Vec2,
         aim_heading: float,
-        draws: tuple[int, int, int, int],
+        rng: CrandLike,
         detail_preset: int,
     ) -> None:
-        """Port of the casing spawn in native gameplay fire (`effect_id 0x12`)."""
+        """Port of the weapon-flag-1 casing spawn in `player_update` (effect id 0x12); `scale` is inherited."""
 
-        angle_draw, speed_draw, rotation_draw, rotation_step_draw = draws
-
-        angle = x87_pc24_add(x87_pc24_mul(float(int(angle_draw) & 0x3F), f32(0.01)), aim_heading)
-        speed = x87_pc24_add(x87_pc24_mul(float(int(speed_draw) & 0x3F), f32(0.022727273)), 1.0)
+        angle = x87_pc24_add(
+            x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_CASING_ANGLE) & 0x3F), f32(0.01)),
+            aim_heading,
+        )
+        speed = x87_pc24_add(
+            x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_CASING_SPEED) & 0x3F), f32(0.022727273)),
+            1.0,
+        )
+        template = self.template
+        template.flags = 0x1C5
+        template.color = RGBA(1.0, 1.0, 1.0, 0.6)
+        template.lifetime = 0.15
+        template.age = 0.0
         # Native stores the `cos * speed` drift before scaling it by 100.
-        velocity = Vec2(
-            x87_pc24_mul(x87_pc24_cos_mul(angle, speed), 100.0),
-            x87_pc24_mul(x87_pc24_sin_mul(angle, speed), 100.0),
+        drift = Vec2(x87_pc24_cos_mul(angle, speed), x87_pc24_sin_mul(angle, speed))
+        template.rotation = x87_pc24_mul(
+            float((rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION) & 0x3F) - 0x20), f32(0.1),
         )
-
-        rotation = x87_pc24_mul(float((int(rotation_draw) & 0x3F) - 0x20), f32(0.1))
-        rotation_step = x87_pc24_mul(x87_pc24_sub(x87_pc24_mul(float(int(rotation_step_draw) % 20), f32(0.1)), 1.0), 14.0)
-
-        self.spawn(
-            effect_id=int(EffectId.CASING),
-            pos=pos,
-            vel=velocity,
-            rotation=float(rotation),
-            scale=1.0,
-            half_width=2.0,
-            half_height=2.0,
-            age=0.0,
-            lifetime=0.15,
-            flags=0x1C5,
-            color=RGBA(1.0, 1.0, 1.0, 0.6),
-            rotation_step=float(rotation_step),
-            scale_step=0.0,
-            detail_preset=int(detail_preset),
+        template.half_height = 2.0
+        template.half_width = 2.0
+        template.vel = Vec2(x87_pc24_mul(drift.x, 100.0), x87_pc24_mul(drift.y, 100.0))
+        template.rotation_step = x87_pc24_mul(
+            x87_pc24_sub(
+                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.PLAYER_UPDATE_CASING_ROTATION_STEP) % 20), f32(0.1)),
+                1.0,
+            ),
+            14.0,
         )
+        template.scale_step = 0.0
+        self.spawn(EffectId.CASING, pos, detail_preset)
 
     def spawn_blood_splatter(
         self,
@@ -796,46 +833,45 @@ class EffectPool:
         detail_preset: int,
         violence_disabled: int,
     ) -> None:
-        """Port of `effect_spawn_blood_splatter` (0x0042eb10)."""
+        """Port of `effect_spawn_blood_splatter` (0x0042eb10); `scale` is inherited."""
 
         if int(violence_disabled) != 0:
             return
 
-        lifetime = x87_pc24_sub(0.25, f32(age))
+        template = self.template
+        template.lifetime = x87_pc24_sub(0.25, f32(age))
         base = x87_pc24_add(f32(angle), NATIVE_PI)
         # The native helper stores both trig results before multiplying them
         # by each particle's independently sampled speed.
-        direction = Vec2(f32(math.cos(base)), f32(math.sin(base)))
+        direction_cos = f32(math.cos(base))
+        template.flags = 0xC9
+        template.color = RGBA(1.0, 1.0, 1.0, 0.5)
+        template.scale_step = 0.0
+        template.age = age
+        direction_sin = f32(math.sin(base))
 
         for _ in range(2):
-            r0 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_ROTATION)
-            rotation = x87_pc24_add(x87_pc24_mul(float((r0 & 0x3F) - 0x20), f32(0.1)), base)
-            r1 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_HALF)
-            half = float((r1 & 7) + 1)
-            r2 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_X)
-            speed_x = float((r2 & 0x3F) + 100)
-            r3 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_Y)
-            speed_y = float((r3 & 0x3F) + 100)
-            velocity = Vec2(x87_pc24_mul(direction.x, speed_x), x87_pc24_mul(direction.y, speed_y))
-            r4 = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SCALE_STEP)
-            scale_step = x87_pc24_add(x87_pc24_mul(float(r4 & 0x7F), f32(0.03)), f32(0.1))
-
-            self.spawn(
-                effect_id=int(EffectId.BLOOD_SPLATTER),
-                pos=pos,
-                vel=velocity,
-                rotation=rotation,
-                scale=1.0,
-                half_width=half,
-                half_height=half,
-                age=float(age),
-                lifetime=lifetime,
-                flags=0xC9,
-                color=RGBA(1.0, 1.0, 1.0, 0.5),
-                rotation_step=0.0,
-                scale_step=scale_step,
-                detail_preset=int(detail_preset),
+            template.rotation = x87_pc24_add(
+                x87_pc24_mul(
+                    float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_ROTATION) & 0x3F) - 0x20),
+                    f32(0.1),
+                ),
+                base,
             )
+            half = float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_HALF) & 7) + 1)
+            template.half_width = half
+            template.half_height = half
+            speed_x = float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_X) & 0x3F) + 100)
+            speed_y = float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SPEED_Y) & 0x3F) + 100)
+            template.vel = Vec2(x87_pc24_mul(direction_cos, speed_x), x87_pc24_mul(direction_sin, speed_y))
+            template.rotation_step = 0.0
+            template.scale_step = x87_pc24_add(
+                x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BLOOD_SPLATTER_SCALE_STEP) & 0x7F), f32(0.03),
+                ),
+                f32(0.1),
+            )
+            self.spawn(EffectId.BLOOD_SPLATTER, pos, detail_preset)
 
     def spawn_burst(
         self,
@@ -844,107 +880,30 @@ class EffectPool:
         count: int,
         rng: CrandLike,
         detail_preset: int,
-        lifetime: float = 0.5,
-        scale_step: float | None = None,
-        color: RGBA = RGBA(0.4, 0.5, 1.0, 0.5),
-        rotation_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION,
-        vel_x_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X,
-        vel_y_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y,
-        scale_step_caller: RngCallerStatic = RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP,
     ) -> None:
-        """Port of `effect_spawn_burst` (0x0042ef60)."""
+        """Port of `effect_spawn_burst` (0x0042ef60); `scale` and `rotation_step` are inherited."""
 
-        count = max(0, int(count))
+        template = self.template
+        template.flags = 0x1D
+        template.color = RGBA(0.4, 0.5, 1.0, 0.5)
+        template.age = 0.0
+        template.lifetime = 0.5
+        template.half_width = 32.0
+        template.half_height = 32.0
+
         for _ in range(count):
-            r0 = rng.rand_tagged(rotation_caller)
-            r1 = rng.rand_tagged(vel_x_caller)
-            r2 = rng.rand_tagged(vel_y_caller)
-            if scale_step is None:
-                r3 = rng.rand_tagged(scale_step_caller)
-                sampled_scale_step: int | None = r3
-            else:
-                sampled_scale_step = None
-
-            self.spawn_burst_particle(
-                pos=pos,
-                rotation_draw=r0,
-                vel_x_draw=r1,
-                vel_y_draw=r2,
-                scale_step_draw=sampled_scale_step,
-                scale_step=scale_step,
-                lifetime=lifetime,
-                color=color,
-                detail_preset=detail_preset,
+            template.rotation = x87_pc24_mul(
+                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_ROTATION) & 0x7F), f32(0.049087387),
             )
-
-    def spawn_burst_particle(
-        self,
-        *,
-        pos: Vec2,
-        rotation_draw: int,
-        vel_x_draw: int,
-        vel_y_draw: int,
-        scale_step_draw: int | None = None,
-        scale_step: float | None = None,
-        lifetime: float = 0.5,
-        color: RGBA = RGBA(0.4, 0.5, 1.0, 0.5),
-        detail_preset: int,
-    ) -> None:
-        rotation = x87_pc24_mul(float(int(rotation_draw) & 0x7F), f32(0.049087387))
-        velocity = Vec2(
-            float((int(vel_x_draw) & 0x7F) - 0x40),
-            float((int(vel_y_draw) & 0x7F) - 0x40),
-        )
-        if scale_step is None:
-            assert scale_step_draw is not None
-            step = x87_pc24_add(x87_pc24_mul(float(int(scale_step_draw) % 100), f32(0.01)), f32(0.1))
-        else:
-            step = float(scale_step)
-
-        self.spawn(
-            effect_id=int(EffectId.BURST),
-            pos=pos,
-            vel=velocity,
-            rotation=rotation,
-            scale=1.0,
-            half_width=32.0,
-            half_height=32.0,
-            age=0.0,
-            lifetime=float(lifetime),
-            flags=0x1D,
-            color=color,
-            rotation_step=0.0,
-            scale_step=step,
-            detail_preset=int(detail_preset),
-        )
-
-    def spawn_ring(
-        self,
-        *,
-        pos: Vec2,
-        detail_preset: int,
-        color: RGBA,
-        lifetime: float = 0.25,
-        scale_step: float = 50.0,
-    ) -> None:
-        """Ring/halo burst used by bonus pickup effects (`bonus_apply`)."""
-
-        self.spawn(
-            effect_id=int(EffectId.RING),
-            pos=pos,
-            vel=Vec2(),
-            rotation=0.0,
-            scale=1.0,
-            half_width=32.0,
-            half_height=32.0,
-            age=0.0,
-            lifetime=float(lifetime),
-            flags=0x19,
-            color=color,
-            rotation_step=0.0,
-            scale_step=float(scale_step),
-            detail_preset=int(detail_preset),
-        )
+            template.vel = Vec2(
+                float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_VEL_X) & 0x7F) - 0x40),
+                float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_VEL_Y) & 0x7F) - 0x40),
+            )
+            template.scale_step = x87_pc24_add(
+                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_BURST_SCALE_STEP) % 100), f32(0.01)),
+                f32(0.1),
+            )
+            self.spawn(EffectId.BURST, pos, detail_preset)
 
     def spawn_freeze_shard(
         self,
@@ -954,52 +913,45 @@ class EffectPool:
         rng: CrandLike,
         detail_preset: int,
     ) -> None:
-        """Port of `effect_spawn_freeze_shard` (0x0042ec80)."""
+        """Port of `effect_spawn_freeze_shard` (0x0042ec80); `scale` is inherited."""
 
-        lifetime = x87_pc24_add(
+        template = self.template
+        template.flags = 0x1CD
+        template.color = RGBA(1.0, 1.0, 1.0, 0.5)
+        template.lifetime = x87_pc24_add(
             x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_LIFETIME) & 0xF), f32(0.01)),
             f32(0.2),
         )
-        base = x87_pc24_add(f32(angle), NATIVE_PI)
+        template.age = 0.0
+        template.half_width = 8.0
+        template.half_height = 8.0
 
-        rotation = x87_pc24_add(
+        angle = x87_pc24_add(f32(angle), NATIVE_PI)
+        template.rotation = x87_pc24_add(
             x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION) % 100), f32(0.01)),
-            base,
+            angle,
         )
         half = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_HALF) % 5 + 7)
+        template.half_width = half
+        template.half_height = half
 
-        velocity = Vec2(x87_pc24_cos_mul(base, 114.0), x87_pc24_sin_mul(base, 114.0))
-
-        rotation_step = x87_pc24_mul(
+        template.vel = Vec2(x87_pc24_cos_mul(angle, 114.0), x87_pc24_sin_mul(angle, 114.0))
+        template.rotation_step = x87_pc24_mul(
             x87_pc24_sub(
-                x87_pc24_mul(float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP) % 20), f32(0.1)),
+                x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_ROTATION_STEP) % 20), f32(0.1),
+                ),
                 1.0,
             ),
             4.0,
         )
         # Native negates the integer before conversion, preserving positive zero.
-        scale_step = x87_pc24_mul(
+        template.scale_step = x87_pc24_mul(
             float(-(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_SCALE_STEP) & 0xF)),
             f32(0.1),
         )
 
-        effect_id = rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID) % 3 + 8
-        self.spawn(
-            effect_id=int(effect_id),
-            pos=pos,
-            vel=velocity,
-            rotation=float(rotation),
-            scale=1.0,
-            half_width=float(half),
-            half_height=float(half),
-            age=0.0,
-            lifetime=float(lifetime),
-            flags=0x1CD,
-            color=RGBA(1.0, 1.0, 1.0, 0.5),
-            rotation_step=float(rotation_step),
-            scale_step=float(scale_step),
-            detail_preset=int(detail_preset),
-        )
+        self.spawn(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHARD_EFFECT_ID) % 3 + 8, pos, detail_preset)
 
     def spawn_freeze_shatter(
         self,
@@ -1009,15 +961,26 @@ class EffectPool:
         rng: CrandLike,
         detail_preset: int,
     ) -> None:
-        """Port of `effect_spawn_freeze_shatter` (0x0042ee00)."""
+        """Port of `effect_spawn_freeze_shatter` (0x0042ee00); `scale` is inherited."""
 
-        lifetime = f32(1.1)
-        for idx in range(4):
+        template = self.template
+        template.flags = 0x5D
+        template.color = RGBA(1.0, 1.0, 1.0, 0.5)
+        template.age = 0.0
+        template.lifetime = 1.1
+        template.scale_step = 0.0
+
+        for index in range(4):
             # Native `angle + (float)index * 1.57079637f`, and the rest, in single precision.
-            rotation = x87_pc24_add(angle, x87_pc24_mul(float(idx), NATIVE_HALF_PI))
-            velocity = Vec2(x87_pc24_cos_mul(rotation, 42.0), x87_pc24_sin_mul(rotation, 42.0))
+            template.rotation = x87_pc24_add(angle, x87_pc24_mul(float(index), NATIVE_HALF_PI))
+            template.vel = Vec2(
+                x87_pc24_cos_mul(template.rotation, 42.0),
+                x87_pc24_sin_mul(template.rotation, 42.0),
+            )
             half = float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_HALF) % 10 + 18)
-            rotation_step = x87_pc24_mul(
+            template.half_width = half
+            template.half_height = half
+            template.rotation_step = x87_pc24_mul(
                 x87_pc24_sub(
                     x87_pc24_mul(
                         float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_ROTATION_STEP) % 20), f32(0.1),
@@ -1026,33 +989,16 @@ class EffectPool:
                 ),
                 f32(1.9),
             )
-
-            self.spawn(
-                effect_id=int(EffectId.FREEZE_SHATTER),
-                pos=pos,
-                vel=velocity,
-                rotation=float(rotation),
-                scale=1.0,
-                half_width=float(half),
-                half_height=float(half),
-                age=0.0,
-                lifetime=float(lifetime),
-                flags=0x5D,
-                color=RGBA(1.0, 1.0, 1.0, 0.5),
-                rotation_step=float(rotation_step),
-                scale_step=0.0,
-                detail_preset=int(detail_preset),
-            )
+            self.spawn(EffectId.FREEZE_SHATTER, pos, detail_preset)
 
         for _ in range(4):
-            shard_angle = x87_pc24_mul(
-                float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612), f32(0.01),
-            )
             self.spawn_freeze_shard(
                 pos=pos,
-                angle=float(shard_angle),
+                angle=x87_pc24_mul(
+                    float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_FREEZE_SHATTER_SHARD_ANGLE) % 612), f32(0.01),
+                ),
                 rng=rng,
-                detail_preset=int(detail_preset),
+                detail_preset=detail_preset,
             )
 
     def spawn_explosion_burst(
@@ -1063,111 +1009,80 @@ class EffectPool:
         rng: CrandLike,
         detail_preset: int,
     ) -> None:
-        """Port of `effect_spawn_explosion_burst` (0x0042f6c0)."""
+        """Port of `effect_spawn_explosion_burst` (0x0042f6c0).
 
-        detail_preset = int(detail_preset)
+        The core and the flash inherit `rotation_step`, and every piece inherits `scale`.
+        """
+
         scale = f32(scale)
+        template = self.template
 
-        # Shockwave ring.
-        self.spawn(
-            effect_id=int(EffectId.RING),
-            pos=pos,
-            vel=Vec2(),
-            rotation=0.0,
-            scale=1.0,
-            half_width=32.0,
-            half_height=32.0,
-            age=-0.1,
-            lifetime=0.35,
-            flags=0x19,
-            color=RGBA(0.6, 0.6, 0.6, 1.0),
-            rotation_step=0.0,
-            scale_step=x87_pc24_mul(scale, 25.0),
-            detail_preset=detail_preset,
-        )
+        template.flags = 0x19
+        template.color = RGBA(0.6, 0.6, 0.6, 1.0)
+        template.lifetime = 0.35
+        template.age = -0.1
+        template.half_width = 32.0
+        template.half_height = 32.0
+        template.rotation = 0.0
+        template.vel = Vec2()
+        template.scale_step = x87_pc24_mul(scale, 25.0)
+        self.spawn(EffectId.RING, pos, detail_preset)
 
-        # Dark explosion puffs (high detail only).
+        template.flags = 0x5D
+        template.color = RGBA(0.1, 0.1, 0.1, 1.0)
+        template.rotation = 0.0
+        template.vel = Vec2()
+
         if detail_preset > 3:
-            puff_scale_step = x87_pc24_mul(scale, 5.0)
-            for idx in range(2):
-                time_offset = x87_pc24_mul(float(idx), f32(0.2))
-                age = x87_pc24_sub(time_offset, 0.5)
-                lifetime = x87_pc24_add(time_offset, f32(0.6))
-                rotation = x87_pc24_mul(
+            shockwave_scale_step = x87_pc24_mul(scale, 5.0)
+            for index in range(2):
+                template.half_width = 32.0
+                template.half_height = 32.0
+                time_offset = x87_pc24_mul(float(index), f32(0.2))
+                template.age = x87_pc24_sub(time_offset, 0.5)
+                template.lifetime = x87_pc24_add(time_offset, f32(0.6))
+                template.rotation = x87_pc24_mul(
                     float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_PUFF_ROTATION) % 614), f32(0.02),
                 )
-                self.spawn(
-                    effect_id=int(EffectId.EXPLOSION_PUFF),
-                    pos=pos,
-                    vel=Vec2(),
-                    rotation=float(rotation),
-                    scale=1.0,
-                    half_width=32.0,
-                    half_height=32.0,
-                    age=float(age),
-                    lifetime=float(lifetime),
-                    flags=0x5D,
-                    color=RGBA(0.1, 0.1, 0.1, 1.0),
-                    rotation_step=1.4,
-                    scale_step=puff_scale_step,
-                    detail_preset=detail_preset,
-                )
+                template.rotation_step = 1.4
+                template.scale_step = shockwave_scale_step
+                self.spawn(EffectId.EXPLOSION_PUFF, pos, detail_preset)
 
-        # Bright flash.
-        self.spawn(
-            effect_id=int(EffectId.BURST),
-            pos=pos,
-            vel=Vec2(),
-            rotation=0.0,
-            scale=1.0,
-            half_width=32.0,
-            half_height=32.0,
-            age=0.0,
-            lifetime=0.3,
-            flags=0x19,
-            color=RGBA(1.0, 1.0, 1.0, 1.0),
-            rotation_step=0.0,
-            scale_step=x87_pc24_mul(scale, 45.0),
-            detail_preset=detail_preset,
-        )
+        template.flags = 0x19
+        template.color = RGBA(1.0, 1.0, 1.0, 1.0)
+        template.age = 0.0
+        template.lifetime = 0.3
+        template.half_width = 32.0
+        template.half_height = 32.0
+        template.rotation = 0.0
+        template.vel = Vec2()
+        template.scale_step = x87_pc24_mul(scale, 45.0)
+        self.spawn(EffectId.BURST, pos, detail_preset)
+
+        template.flags = 0x1D
+        template.color = RGBA(1.0, 1.0, 1.0, 1.0)
+        template.lifetime = 0.7
+        template.age = 0.0
+        template.half_width = 32.0
+        template.half_height = 32.0
 
         if detail_preset < 2:
             count = 1
         else:
-            count = 3 + (1 if detail_preset > 3 else 0)
+            count = 3 + (detail_preset >= 4)
 
-        # Extra shockwave particles.
         for _ in range(count):
-            rotation = x87_pc24_mul(
+            template.rotation = x87_pc24_mul(
                 float(rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION) % 314), f32(0.02),
             )
-            velocity = Vec2(
-                float(
-                    (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_X) & 0x3F) * 2 - 0x40,
-                ),
-                float(
-                    (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_Y) & 0x3F) * 2 - 0x40,
-                ),
+            template.vel = Vec2(
+                float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_X) & 0x3F) * 2 - 0x40),
+                float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_VEL_Y) & 0x3F) * 2 - 0x40),
             )
-            scale_step = x87_pc24_mul(
+            template.scale_step = x87_pc24_mul(
                 float((rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_SCALE_STEP) - 3) & 7), scale,
             )
-            rotation_step = float(
+            template.rotation_step = float(
                 (rng.rand_tagged(RngCallerStatic.EFFECT_SPAWN_EXPLOSION_BURST_ROTATION_STEP) + 3) & 7,
             )
-            self.spawn(
-                effect_id=int(EffectId.EXPLOSION_BURST),
-                pos=pos,
-                vel=velocity,
-                rotation=float(rotation),
-                scale=1.0,
-                half_width=32.0,
-                half_height=32.0,
-                age=0.0,
-                lifetime=0.7,
-                flags=0x1D,
-                color=RGBA(1.0, 1.0, 1.0, 1.0),
-                rotation_step=float(rotation_step),
-                scale_step=float(scale_step),
-                detail_preset=detail_preset,
-            )
+            self.spawn(EffectId.EXPLOSION_BURST, pos, detail_preset)

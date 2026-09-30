@@ -10,6 +10,7 @@ from grim.sfx_types import SfxRequest
 
 from ..creatures.damage import creature_apply_damage
 from ..creatures.damage_types import CreatureDamageType
+from ..effects_atlas import EffectId
 from ..math_parity import (
     f32,
     native_chain_angle_from_delta,
@@ -87,7 +88,20 @@ def bonus_apply(
             for target in players:
                 target.weapon.ammo = float(target.weapon.clip_size)
                 target.weapon.reload_timer = 0.0
-            state.effects.spawn_ring(pos=origin, detail_preset=detail_preset, color=RGBA(0.6, 0.6, 1.0, 1.0))
+            template = state.effects.template
+            template.flags = 0x19
+            template.color = RGBA(0.6, 0.6, 1.0, 1.0)
+            template.lifetime = 0.25
+            template.age = 0.0
+            template.half_width = 32.0
+            template.half_height = 32.0
+            template.rotation = 0.0
+            template.vel = Vec2()
+            template.scale_step = 50.0
+            state.effects.spawn(EffectId.RING, origin, detail_preset)
+            # Native stores these again after the spawn.
+            template.rotation = 0.0
+            template.vel = Vec2()
 
         case BonusId.WEAPON_POWER_UP:
             old = float(state.bonuses.weapon_power_up)
@@ -125,8 +139,21 @@ def bonus_apply(
                     pos=creature.pos, angle=angle, rng=state.rng, detail_preset=detail_preset,
                 )
                 creature.active = False
-            state.effects.spawn_ring(pos=origin, detail_preset=detail_preset, color=RGBA(0.3, 0.5, 0.8, 1.0))
+            template = state.effects.template
+            template.flags = 0x19
+            template.color = RGBA(0.3, 0.5, 0.8, 1.0)
+            template.lifetime = 0.25
+            template.age = 0.0
+            template.half_width = 32.0
+            template.half_height = 32.0
+            template.rotation = 0.0
+            template.vel = Vec2()
+            template.scale_step = 50.0
+            state.effects.spawn(EffectId.RING, origin, detail_preset)
             state.sfx_queue.append(SfxRequest(SfxId.SHOCKWAVE, origin))
+            # Native stores these again after the spawn.
+            template.rotation = 0.0
+            template.vel = Vec2()
 
         case BonusId.SHIELD:
             _activate_hud_slot(state, players, bonus_id)
@@ -255,18 +282,24 @@ def bonus_apply(
         case BonusId.POINTS:
             players[0].experience += int(amount)
 
-    # The pickup burst draws RNG before `bonus_apply` returns, so it precedes
-    # any later pickup applied in the same `bonus_update` pass.
+    # The pickup burst draws RNG before `bonus_apply` returns, so it precedes any later pickup
+    # applied in the same `bonus_update` pass. It leaves `age` to the template, and a Nuke still
+    # writes the template without spawning.
+    template = state.effects.template
+    template.flags = 0x1D
+    template.color = RGBA(0.4, 0.5, 1.0, 0.5)
+    template.lifetime = 0.4
+    template.half_width = 32.0
+    template.half_height = 32.0
+
     if bonus_id != BonusId.NUKE:
-        state.effects.spawn_burst(
-            pos=origin,
-            count=12,
-            rng=state.rng,
-            detail_preset=int(detail_preset),
-            lifetime=0.4,
-            scale_step=0.1,
-            color=RGBA(0.4, 0.5, 1.0, 0.5),
-            rotation_caller=RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION,
-            vel_x_caller=RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X,
-            vel_y_caller=RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y,
-        )
+        for _ in range(12):
+            template.rotation = x87_pc24_mul(
+                float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_PICKUP_BURST_ROTATION) & 0x7F), f32(0.049087387),
+            )
+            template.vel = Vec2(
+                float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_X) % 128 - 64),
+                float(state.rng.rand_tagged(RngCallerStatic.BONUS_APPLY_PICKUP_BURST_VEL_Y) % 128 - 64),
+            )
+            template.scale_step = 0.1
+            state.effects.spawn(EffectId.BURST, origin, detail_preset)

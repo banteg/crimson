@@ -1,14 +1,12 @@
-"""Native `effect_spawn_*` helpers vs their `EffectPool` / projectile-hit ports.
+"""Native effect spawners vs their `EffectPool` / projectile-hit / bonus ports, through the shared template.
 
-Each case restores a pristine effect pool, runs the native spawner with a random
-position, argument, detail preset and rand seed, and compares every entry it pops
-off the effect free list, in order, with the entries the port spawns.
-
-The native spawners fill the shared `effect_template` and leave fields they do not
-set (`rotation_step` in the burst-style spawners) from the previous spawn; the port
-passes 0.0 there, so the pristine template is primed with that value. An entry's
-`rotation_step` is only compared when its flags enable rotation (`effects_update`
-reads it under flag 0x4 alone).
+Every native spawner fills only some fields of the global `effect_template` and
+`effect_spawn` copies all of it, so a spawn inherits the rest from whichever
+spawner ran before. Each case starts both sides from `effect_defaults_reset`,
+runs the same random sequence of spawners and `effects_update` ticks, and after
+every step compares all 512 pool entries field for field (free-list links
+included), the free-list head, the template, the low-detail skip counter and the
+rand state.
 """
 
 from __future__ import annotations
@@ -17,7 +15,9 @@ import random
 import struct
 from collections.abc import Callable
 
-from crimson.effects import EffectEntry, EffectPool
+from crimson.bonuses import BonusId
+from crimson.bonuses.apply import bonus_apply
+from crimson.effects import EffectPool, FxQueue
 from crimson.math_parity import f32, native_fire_muzzle_pos
 from crimson.projectiles.effects import (
     _spawn_ion_hit_effects,
@@ -26,121 +26,22 @@ from crimson.projectiles.effects import (
     _spawn_splitter_hit_effects,
 )
 from crimson.projectiles.types import ProjectileTemplateId
+from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
-from grim.rand import CrtRand
 
-from ._support import Mismatch, compare_fields, mismatch_report, prepare_gameplay
+from ._support import Mismatch, compare_effect_pool, mismatch_report, prepare_gameplay
+from .test_projectile_update import _python_world, _seed_native_player, _step_runtime
 
-_ENTRY_NEXT_FREE = 0xB8
-_TEMPLATE_ROTATION_STEP = 0x34
-_EFFECT_LAYOUT: dict[str, tuple[int, str]] = {
-    "pos_x": (0x00, "f"),
-    "pos_y": (0x04, "f"),
-    "effect_id": (0x08, "B"),
-    "vel_x": (0x0C, "f"),
-    "vel_y": (0x10, "f"),
-    "rotation": (0x14, "f"),
-    "scale": (0x18, "f"),
-    "half_width": (0x1C, "f"),
-    "half_height": (0x20, "f"),
-    "age": (0x24, "f"),
-    "lifetime": (0x28, "f"),
-    "flags": (0x2C, "i"),
-    "color_r": (0x30, "f"),
-    "color_g": (0x34, "f"),
-    "color_b": (0x38, "f"),
-    "color_a": (0x3C, "f"),
-    "rotation_step": (0x40, "f"),
-    "scale_step": (0x44, "f"),
-}
-_CASES = 400
+# `bonus_entry_t` (0x1c bytes): bonus id, pickup position and amount.
+_BONUS_ENTRY_SIZE = 0x1C
+_BONUS_ENTRY_POS_X = 0x10
+_BONUS_ENTRY_AMOUNT = 0x18
 
-
-# `draw(rng)` picks the spawner's extra arguments; `native(oracle, pos_arg, *args)` runs the original and
-# `python(pool, crand, pos, detail, *args)` the port.
-Draw = Callable[[random.Random], tuple]
-NativeSpawn = Callable[..., None]
-PythonSpawn = Callable[..., None]
-
-
-def _python_entry(entry: EffectEntry) -> dict[str, float | int | None]:
-    return {
-        "pos_x": entry.pos.x,
-        "pos_y": entry.pos.y,
-        "effect_id": entry.effect_id,
-        "vel_x": entry.vel.x,
-        "vel_y": entry.vel.y,
-        "rotation": entry.rotation,
-        "scale": entry.scale,
-        "half_width": entry.half_width,
-        "half_height": entry.half_height,
-        "age": entry.age,
-        "lifetime": entry.lifetime,
-        "flags": entry.flags,
-        "color_r": entry.color.r,
-        "color_g": entry.color.g,
-        "color_b": entry.color.b,
-        "color_a": entry.color.a,
-        "rotation_step": entry.rotation_step if entry.flags & 0x4 else None,
-        "scale_step": entry.scale_step,
-    }
-
-
-def _check_spawns(oracle, *, seed: int, draw: Draw, native: NativeSpawn, python: PythonSpawn) -> None:
-    prepare_gameplay(oracle)
-    oracle.write_f32(oracle.resolve("effect_template") + _TEMPLATE_ROTATION_STEP, 0.0)
-    pristine = oracle.snapshot()
-    pos_arg = oracle.alloc(8)
-    rng = random.Random(seed)
-    mismatches: list[Mismatch] = []
-    for case_index in range(_CASES):
-        pos = Vec2(f32(rng.uniform(0.0, 1024.0)), f32(rng.uniform(0.0, 1024.0)))
-        detail = rng.randrange(6)
-        rand_seed = rng.getrandbits(32)
-        args = draw(rng)
-
-        oracle.restore(pristine)
-        oracle.write_u32("config_detail_preset", detail)
-        oracle.write_f32(pos_arg, pos.x)
-        oracle.write_f32(pos_arg + 4, pos.y)
-        oracle.rand_state = rand_seed
-        head = oracle.read_u32("effect_free_list_head")
-        native(oracle, pos_arg, *args)
-        popped = []
-        address = head
-        while address != oracle.read_u32("effect_free_list_head"):
-            popped.append(address)
-            address = oracle.read_u32(address + _ENTRY_NEXT_FREE)
-
-        crand = CrtRand(rand_seed)
-        pool = EffectPool()
-        python(pool, crand, pos, detail, *args)
-        spawned = [entry for entry in pool.entries if entry.flags]
-        label = f"case={case_index} detail={detail} args={args!r} seed=0x{rand_seed:08x}"
-        if len(spawned) != len(popped):
-            mismatches.append(Mismatch(label, "count", len(popped), len(spawned), head))
-        for index, (entry_address, entry) in enumerate(zip(popped, spawned, strict=False)):
-            native_fields = oracle.read_fields(entry_address, _EFFECT_LAYOUT)
-            mismatches += compare_fields(f"{label} effect[{index}]", native_fields, _python_entry(entry), address=entry_address)
-        if oracle.rand_state != crand.state:
-            mismatches.append(Mismatch(label, "rand_state", oracle.rand_state, crand.state, 0))
-    assert not mismatches, mismatch_report(mismatches, total_cases=_CASES)
-
-
-def _no_args(_rng: random.Random) -> tuple:
-    return ()
-
-
-def test_shrinkifier_hit_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x42F080,
-        draw=_no_args,
-        native=lambda oracle, pos_arg: oracle.call("effect_spawn_shrinkifier_hit", pos_arg),
-        python=lambda pool, crand, pos, detail: _spawn_shrinkifier_hit_effects(pool, pos=pos, rng=crand, detail_preset=detail),
-    )
-
+# `player_update` fire block (0x00415a1f..0x00415bcf): the muzzle offset, then the weapon-flag-1 shell casing.
+_CASING_START = 0x00415A1F
+_CASING_STOP = 0x00415BCF
+_FRAME_FIRE_HEADING = 0x1C
 
 # `projectile_update` ion hits: `effect_spawn_ion_hit_core(pos, scale_step, lifetime)` then `effect_spawn_ion_hit_sparks(pos, scale)`.
 _ION_HIT_ARGS = {
@@ -150,107 +51,225 @@ _ION_HIT_ARGS = {
 }
 
 
-def _native_ion_hit(oracle, pos_arg: int, type_id: ProjectileTemplateId) -> None:
+class _Case:
+    """One native/port pair: the oracle with its argument buffers and the Python world."""
+
+    def __init__(self, oracle, world: WorldState, detail: int, *, pos_arg: int, bonus_arg: int) -> None:
+        self.oracle = oracle
+        self.world = world
+        self.detail = detail
+        self.pos_arg = pos_arg
+        self.bonus_arg = bonus_arg
+
+    @property
+    def pool(self) -> EffectPool:
+        return self.world.state.effects
+
+    def set_pos(self, pos: Vec2) -> None:
+        self.oracle.write_f32(self.pos_arg, pos.x)
+        self.oracle.write_f32(self.pos_arg + 4, pos.y)
+
+
+def _burst(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    count = rng.randrange(1, 33)
+    case.oracle.call("effect_spawn_burst", case.pos_arg, count)
+    case.pool.spawn_burst(pos=pos, count=count, rng=case.world.state.rng, detail_preset=case.detail)
+    return f"burst({count})"
+
+
+def _blood_splatter(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    angle = f32(rng.uniform(-7.0, 7.0))
+    age = f32(rng.choice((0.0, rng.uniform(0.0, 0.25))))
+    case.oracle.call("effect_spawn_blood_splatter", case.pos_arg, angle, age)
+    case.pool.spawn_blood_splatter(
+        pos=pos, angle=angle, age=age, rng=case.world.state.rng, detail_preset=case.detail, violence_disabled=0,
+    )
+    return f"blood_splatter({angle!r}, {age!r})"
+
+
+def _explosion_burst(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    scale = f32(rng.choice((0.4, 1.0, 1.8, rng.uniform(0.1, 3.0))))
+    case.oracle.call("effect_spawn_explosion_burst", case.pos_arg, scale)
+    case.pool.spawn_explosion_burst(pos=pos, scale=scale, rng=case.world.state.rng, detail_preset=case.detail)
+    return f"explosion_burst({scale!r})"
+
+
+def _freeze_shard(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    angle = f32(rng.uniform(0.0, 6.2831855))
+    case.oracle.call("effect_spawn_freeze_shard", case.pos_arg, angle)
+    case.pool.spawn_freeze_shard(pos=pos, angle=angle, rng=case.world.state.rng, detail_preset=case.detail)
+    return f"freeze_shard({angle!r})"
+
+
+def _freeze_shatter(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    angle = f32(rng.uniform(0.0, 6.2831855))
+    case.oracle.call("effect_spawn_freeze_shatter", case.pos_arg, angle)
+    case.pool.spawn_freeze_shatter(pos=pos, angle=angle, rng=case.world.state.rng, detail_preset=case.detail)
+    return f"freeze_shatter({angle!r})"
+
+
+def _ion_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    type_id = rng.choice(tuple(_ION_HIT_ARGS))
     core_scale_step, core_lifetime, sparks_scale = _ION_HIT_ARGS[type_id]
-    oracle.call("effect_spawn_ion_hit_core", pos_arg, core_scale_step, core_lifetime)
-    oracle.call("effect_spawn_ion_hit_sparks", pos_arg, sparks_scale)
+    case.oracle.call("effect_spawn_ion_hit_core", case.pos_arg, core_scale_step, core_lifetime)
+    case.oracle.call("effect_spawn_ion_hit_sparks", case.pos_arg, sparks_scale)
+    _spawn_ion_hit_effects(case.pool, [], type_id=type_id, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    return f"ion_hit({type_id.name})"
 
 
-def test_ion_hit_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x42F270,
-        draw=lambda rng: (rng.choice(tuple(_ION_HIT_ARGS)),),
-        native=_native_ion_hit,
-        python=lambda pool, crand, pos, detail, type_id: _spawn_ion_hit_effects(
-            pool, [], type_id=type_id, pos=pos, rng=crand, detail_preset=detail,
-        ),
-    )
+def _plasma_cannon_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    del rng
+    case.oracle.call("effect_spawn_plasma_hit_core", case.pos_arg, 1.5, 1.0)
+    case.oracle.call("effect_spawn_plasma_hit_core", case.pos_arg, 1.0, 1.0)
+    _spawn_plasma_cannon_hit_effects(case.pool, [], pos=pos, detail_preset=case.detail)
+    return "plasma_cannon_hit"
 
 
-def test_plasma_cannon_hit_matches_native(oracle) -> None:
-    def native(oracle, pos_arg: int) -> None:
-        oracle.call("effect_spawn_plasma_hit_core", pos_arg, 1.5, 1.0)
-        oracle.call("effect_spawn_plasma_hit_core", pos_arg, 1.0, 1.0)
-
-    _check_spawns(
-        oracle,
-        seed=0x42F5A0,
-        draw=_no_args,
-        native=native,
-        python=lambda pool, crand, pos, detail: _spawn_plasma_cannon_hit_effects(pool, [], pos=pos, detail_preset=detail),
-    )
+def _shrinkifier_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    del rng
+    case.oracle.call("effect_spawn_shrinkifier_hit", case.pos_arg)
+    _spawn_shrinkifier_hit_effects(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    return "shrinkifier_hit"
 
 
-def test_splitter_hit_burst_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x42F3F0,
-        draw=_no_args,
-        native=lambda oracle, pos_arg: oracle.call("effect_spawn_splitter_hit_burst", pos_arg, 26.0, 3),
-        python=lambda pool, crand, pos, detail: _spawn_splitter_hit_effects(pool, pos=pos, rng=crand, detail_preset=detail),
-    )
+def _splitter_hit(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    del rng
+    case.oracle.call("effect_spawn_splitter_hit_burst", case.pos_arg, 26.0, 3)
+    _spawn_splitter_hit_effects(case.pool, pos=pos, rng=case.world.state.rng, detail_preset=case.detail)
+    return "splitter_hit"
 
 
-def test_burst_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x42EF60,
-        draw=lambda rng: (rng.randrange(1, 17),),
-        native=lambda oracle, pos_arg, count: oracle.call("effect_spawn_burst", pos_arg, count),
-        python=lambda pool, crand, pos, detail, count: pool.spawn_burst(pos=pos, count=count, rng=crand, detail_preset=detail),
-    )
-
-
-def test_blood_splatter_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x42EB10,
-        draw=lambda rng: (f32(rng.uniform(-7.0, 7.0)), f32(rng.choice((0.0, rng.uniform(0.0, 0.25))))),
-        native=lambda oracle, pos_arg, angle, age: oracle.call("effect_spawn_blood_splatter", pos_arg, angle, age),
-        python=lambda pool, crand, pos, detail, angle, age: pool.spawn_blood_splatter(
-            pos=pos, angle=angle, age=age, rng=crand, detail_preset=detail, violence_disabled=0,
-        ),
-    )
-
-
-def test_explosion_burst_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x42F6C0,
-        draw=lambda rng: (f32(rng.choice((0.4, 1.0, 1.8, rng.uniform(0.1, 3.0)))),),
-        native=lambda oracle, pos_arg, scale: oracle.call("effect_spawn_explosion_burst", pos_arg, scale),
-        python=lambda pool, crand, pos, detail, scale: pool.spawn_explosion_burst(pos=pos, scale=scale, rng=crand, detail_preset=detail),
-    )
-
-
-# `player_update` fire block (0x00415a1f..0x00415bcf): the muzzle offset, then the weapon-flag-1 shell casing.
-_CASING_START = 0x00415A1F
-_CASING_STOP = 0x00415BCF
-_FRAME_FIRE_HEADING = 0x1C
-
-
-def _native_shell_casing(oracle, pos_arg: int, aim_heading: float) -> None:
+def _shell_casing(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    aim_heading = f32(rng.uniform(-1.0, 7.3))
+    oracle = case.oracle
     player = oracle.resolve("player_state_table")
-    oracle.write(player + 0x14, oracle.read(pos_arg, 8))
+    oracle.write(player + 0x14, oracle.read(case.pos_arg, 8))
     oracle.write_u32(player + 0x2C0, int(WeaponId.ASSAULT_RIFLE))
     frame = bytearray(0x80)
     struct.pack_into("<f", frame, _FRAME_FIRE_HEADING, aim_heading)
     oracle.run(_CASING_START, _CASING_STOP, regs={"edi": player, "esi": player + 0x14}, frame=bytes(frame))
-
-
-def _python_shell_casing(pool: EffectPool, crand: CrtRand, pos: Vec2, detail: int, aim_heading: float) -> None:
-    draws = (crand.rand(), crand.rand(), crand.rand(), crand.rand())
-    pool.spawn_shell_casing(
-        pos=native_fire_muzzle_pos(pos, aim_heading), aim_heading=aim_heading, draws=draws, detail_preset=detail,
+    case.pool.spawn_shell_casing(
+        pos=native_fire_muzzle_pos(pos, aim_heading),
+        aim_heading=aim_heading,
+        rng=case.world.state.rng,
+        detail_preset=case.detail,
     )
+    return f"shell_casing({aim_heading!r})"
 
 
-def test_shell_casing_matches_native(oracle) -> None:
-    _check_spawns(
-        oracle,
-        seed=0x415A1F,
-        draw=lambda rng: (f32(rng.uniform(-1.0, 7.3)),),
-        native=_native_shell_casing,
-        python=_python_shell_casing,
+def _bonus_spawn_at(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    del rng
+    case.oracle.call("bonus_spawn_at", case.pos_arg, int(BonusId.POINTS), 500)
+    case.world.state.bonus_pool.spawn_at(pos, BonusId.POINTS, 500, state=case.world.state, detail_preset=case.detail)
+    return "bonus_spawn_at"
+
+
+def _bonus_apply(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    bonus_id = rng.choice((BonusId.POINTS, BonusId.REFLEX_BOOST, BonusId.FREEZE))
+    oracle = case.oracle
+    oracle.write_u32(case.bonus_arg, int(bonus_id))
+    oracle.write_f32(case.bonus_arg + _BONUS_ENTRY_POS_X, pos.x)
+    oracle.write_f32(case.bonus_arg + _BONUS_ENTRY_POS_X + 4, pos.y)
+    oracle.write_u32(case.bonus_arg + _BONUS_ENTRY_AMOUNT, 5)
+    oracle.call("bonus_apply", 0, case.bonus_arg)
+    world = case.world
+    bonus_apply(
+        world.state,
+        world.players[0],
+        bonus_id,
+        amount=5,
+        origin=pos,
+        creatures=world.creatures.entries,
+        players=world.players,
+        detail_preset=case.detail,
+        step_runtime=_step_runtime(world, 0.0),
     )
+    return f"bonus_apply({bonus_id.name})"
+
+
+def _update(case: _Case, pos: Vec2, rng: random.Random) -> str:
+    del pos
+    dt = f32(rng.uniform(0.005, 0.12))
+    case.oracle.write_f32("frame_dt", dt)
+    case.oracle.call("effects_update")
+    case.pool.update(dt, fx_queue=FxQueue())
+    return f"update({dt!r})"
+
+
+Step = Callable[[_Case, Vec2, random.Random], str]
+_SPAWNERS: tuple[Step, ...] = (
+    _burst,
+    _blood_splatter,
+    _explosion_burst,
+    _freeze_shard,
+    _freeze_shatter,
+    _ion_hit,
+    _plasma_cannon_hit,
+    _shrinkifier_hit,
+    _splitter_hit,
+    _shell_casing,
+    _bonus_spawn_at,
+    _bonus_apply,
+)
+
+
+def _compare_state(case: _Case, label: str) -> list[Mismatch]:
+    mismatches = compare_effect_pool(case.oracle, case.pool, label)
+    if case.oracle.rand_state != case.world.state.rng.state:
+        mismatches.append(Mismatch(label, "rand_state", case.oracle.rand_state, case.world.state.rng.state, 0))
+    return mismatches
+
+
+def _run_cases(oracle, *, seed: int, cases: int, steps: int, pick: Callable[[random.Random], Step]) -> int:
+    """Run `cases` random step sequences; return how many of them exhausted the pool."""
+
+    prepare_gameplay(oracle)
+    _seed_native_player(oracle)
+    oracle.stub("sfx_play", 0)
+    pos_arg = oracle.alloc(8)
+    bonus_arg = oracle.alloc(_BONUS_ENTRY_SIZE)
+    pristine = oracle.snapshot()
+    rng = random.Random(seed)
+    mismatches: list[Mismatch] = []
+    exhausted = 0
+    for case_index in range(cases):
+        detail = rng.randrange(6)
+        rand_seed = rng.getrandbits(32)
+        oracle.restore(pristine)
+        oracle.write_u32("config_detail_preset", detail)
+        oracle.rand_state = rand_seed
+        world = _python_world(rand_seed)
+        world.state.detail_preset = detail
+        case = _Case(oracle, world, detail, pos_arg=pos_arg, bonus_arg=bonus_arg)
+        history: list[str] = []
+        case_exhausted = False
+        for _ in range(steps):
+            pos = Vec2(f32(rng.uniform(40.0, 980.0)), f32(rng.uniform(40.0, 980.0)))
+            case.set_pos(pos)
+            history.append(pick(rng)(case, pos, rng))
+            case_exhausted |= case.pool.entries[case.pool._free_head].next_free == -1
+            label = f"case={case_index} detail={detail} seed=0x{rand_seed:08x} steps={' '.join(history[-4:])}"
+            step_mismatches = _compare_state(case, label)
+            if step_mismatches:
+                mismatches += step_mismatches
+                break
+        exhausted += case_exhausted
+    assert not mismatches, mismatch_report(mismatches, total_cases=cases)
+    return exhausted
+
+
+def test_effect_spawner_sequences_match_native(oracle) -> None:
+    def pick(rng: random.Random) -> Step:
+        return _update if rng.random() < 0.3 else rng.choice(_SPAWNERS)
+
+    _run_cases(oracle, seed=0x42E120, cases=40, steps=60, pick=pick)
+
+
+def test_effect_pool_exhaustion_matches_native(oracle) -> None:
+    """Flood the pool past its 511 live entries, let some expire, and flood again."""
+
+    def pick(rng: random.Random) -> Step:
+        return _update if rng.random() < 0.08 else rng.choice((_burst, _explosion_burst, _freeze_shatter, _bonus_spawn_at))
+
+    exhausted = _run_cases(oracle, seed=0x42E1A0, cases=12, steps=120, pick=pick)
+    assert exhausted >= 6

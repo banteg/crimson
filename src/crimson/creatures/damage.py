@@ -86,39 +86,30 @@ def _damage_lethal_ranged_shock_burst(
     effects: EffectPool,
     detail_preset: int,
 ) -> None:
-    """Port the `creature_apply_damage` lethal branch for `flags & 0x10`."""
+    """Port the `creature_apply_damage` lethal branch for `flags & 0x10`; `age` is left to the template."""
+    template = effects.template
+    template.flags = 0x1D
+    template.color = RGBA(0.8, 0.8, 0.3, 0.5)
+    template.lifetime = 0.7
+    template.half_width = 36.0
+    template.half_height = 36.0
     for _ in range(5):
-        rotation = x87_pc24_mul(
+        template.rotation = x87_pc24_mul(
             float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_ROTATION) & 0x7F),
             f32(0.049087387),
         )
-        vel = Vec2(
+        template.vel = Vec2(
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_X) & 0x7F) - 0x40),
             float((rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_VEL_Y) & 0x7F) - 0x40),
         )
-        scale_step = x87_pc24_add(
+        template.scale_step = x87_pc24_add(
             x87_pc24_mul(
                 float(rng.rand_tagged(RngCallerStatic.CREATURE_APPLY_DAMAGE_SHOCK_BURST_SCALE_STEP) % 140),
                 f32(0.01),
             ),
             f32(0.3),
         )
-        effects.spawn(
-            effect_id=int(EffectId.BURST),
-            pos=creature.pos,
-            vel=vel,
-            rotation=rotation,
-            scale=1.0,
-            half_width=36.0,
-            half_height=36.0,
-            age=0.0,
-            lifetime=0.7,
-            flags=0x1D,
-            color=RGBA(0.8, 0.8, 0.3, 0.5),
-            rotation_step=0.0,
-            scale_step=scale_step,
-            detail_preset=int(detail_preset),
-        )
+        effects.spawn(EffectId.BURST, creature.pos, detail_preset)
 
 
 def resolve_native_death_sfx(
