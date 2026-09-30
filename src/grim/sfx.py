@@ -187,14 +187,14 @@ def load_sfx_index(state: SfxState, assets_dir: Path, console: ConsoleState) -> 
 
 
 def play_sfx(
-    state: SfxState | None,
+    state: SfxState,
     sfx: SfxId,
     *,
     reflex_boost_timer: float = 0.0,
     gain: float = 1.0,
     pan: int = 0,
 ) -> None:
-    if state is None or not state.ready or not state.enabled:
+    if not state.ready or not state.enabled:
         return
 
     sample = state.sample(sfx)
@@ -225,9 +225,7 @@ def update_sfx(state: SfxState, dt: float) -> None:
             state.cooldowns[sfx_id] = f32(cooldown - dt_f32)
 
 
-def set_sfx_volume(state: SfxState | None, volume: float) -> None:
-    if state is None:
-        return
+def set_sfx_volume(state: SfxState, volume: float) -> None:
     volume = float(volume)
     if volume < 0.0:
         volume = 0.0

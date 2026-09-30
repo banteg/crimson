@@ -10,13 +10,13 @@ from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_sfx
 from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import (
     draw_small_text,
 )
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
+from grim.sfx import play_sfx
 from grim.sfx_map import SfxId
 
 from ...game.types import GameState
@@ -213,7 +213,7 @@ class AlienZooKeeperView(MenuScreen):
             return
 
         if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_CLINK_01)
+            play_sfx(self.state.audio.sfx, SfxId.UI_CLINK_01)
 
         if self._selected_index == -1:
             self._selected_index = index
@@ -242,7 +242,7 @@ class AlienZooKeeperView(MenuScreen):
         self._score += 1
         self._timer_ms += _MATCH_TIMER_BONUS_MS
         if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BONUS)
+            play_sfx(self.state.audio.sfx, SfxId.UI_BONUS)
 
     def update(self, dt: float) -> None:
         if not self._advance(dt):
@@ -257,7 +257,7 @@ class AlienZooKeeperView(MenuScreen):
                 if self._timer_ms <= 0:
                     self._timer_ms = 0
                     if self.state.audio is not None:
-                        play_sfx(self.state.audio, SfxId.TROOPER_DIE_01)
+                        play_sfx(self.state.audio.sfx, SfxId.TROOPER_DIE_01)
             elif self._timer_ms < 0:
                 self._timer_ms = 0
 
@@ -291,7 +291,7 @@ class AlienZooKeeperView(MenuScreen):
             click=click,
         ):
             if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
+                play_sfx(self.state.audio.sfx, SfxId.UI_BUTTONCLICK)
             self._reset_state()
             return
 

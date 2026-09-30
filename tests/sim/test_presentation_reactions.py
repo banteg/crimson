@@ -93,7 +93,7 @@ def test_shared_audio_sink_applies_post_tick_sfx_and_quest_music(mocker) -> None
     )
     bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert [call.args[0] for call in play_sfx.call_args_list] == [SfxId.UI_BONUS, SfxId.QUESTHIT]
-    play_music.assert_called_once_with(audio, "crimsonquest", fade_in=True)
+    play_music.assert_called_once_with(audio.music, "crimsonquest", fade_in=True)
 
 
 def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
@@ -117,8 +117,8 @@ def test_audio_sink_preserves_order_and_explicit_timer(mocker) -> None:
     bridge.apply_post_plan(plan=plan, camera=Vec2(), screen_width=1024.0)
     assert calls.mock_calls == [
         call.tune(audio.music, rng=rng),
-        call.sfx(audio, SfxId.UI_BONUS, reflex_boost_timer=0.5, gain=1.0, pan=0),
-        call.sfx(audio, SfxId.UI_LEVELUP, reflex_boost_timer=0.5, gain=1.0, pan=0),
+        call.sfx(audio.sfx, SfxId.UI_BONUS, reflex_boost_timer=0.5, gain=1.0, pan=0),
+        call.sfx(audio.sfx, SfxId.UI_LEVELUP, reflex_boost_timer=0.5, gain=1.0, pan=0),
     ]
 
 

@@ -4,9 +4,10 @@ import os
 
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_music, stop_music, update_audio
+from grim.audio import update_audio
 from grim.draw import grim_draw_rect_outline
 from grim.geom import Vec2
+from grim.music import play_music, stop_music
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -93,7 +94,7 @@ class BootView:
             self._start_theme()
             return
         if (not self._intro_started) and self.state.audio is not None:
-            play_music(self.state.audio, "intro")
+            play_music(self.state.audio.music, "intro")
             self._intro_started = True
         if not self._logo_skip and self._skip_triggered():
             self._logo_skip = True
@@ -129,8 +130,8 @@ class BootView:
         if self._theme_started:
             return
         if self.state.audio is not None:
-            stop_music(self.state.audio)
-            play_music(self.state.audio, "crimson_theme")
+            stop_music(self.state.audio.music)
+            play_music(self.state.audio.music, "crimson_theme")
         self._theme_started = True
 
     def _skip_triggered(self) -> bool:

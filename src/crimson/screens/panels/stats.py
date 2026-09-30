@@ -12,9 +12,9 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_music, stop_music
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
+from grim.music import play_music, stop_music
 from grim.rand import CrandLike
 from grim.raylib_api import rl
 
@@ -88,8 +88,8 @@ class StatisticsMenuView(MenuScreen):
         super().open()
         if self.state.audio is not None:
             if self.state.audio.music.active_track != "shortie_monk":
-                stop_music(self.state.audio)
-            play_music(self.state.audio, "shortie_monk")
+                stop_music(self.state.audio.music)
+            play_music(self.state.audio.music, "shortie_monk")
 
     def _enter(self) -> None:
         super()._enter()
@@ -104,7 +104,7 @@ class StatisticsMenuView(MenuScreen):
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None and not self.state.ui.closing:
-            play_music(self.state.audio, "shortie_monk")
+            play_music(self.state.audio.music, "shortie_monk")
         self.state.stats_menu_easter_egg_roll = _stats_menu_easter_roll(
             self.state.stats_menu_easter_egg_roll,
             rng=self.state.rng,

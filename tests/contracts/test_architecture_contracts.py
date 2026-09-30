@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, cast
 
 import crimson.replay.driver.playback_pump as playback_pump_module
 import crimson.world.audio_bridge as audio_bridge_module
@@ -45,10 +44,12 @@ def test_contract_5_plan_vs_apply_isolation_for_audio_and_render_side_effects(mo
     session, _world = make_session()
     ticks = LiveTickSource()
     ticks.poll([player_input()])
-    audio_bridge = AudioBridge(
-        audio=cast(Any, object()),  # sentinel; play_sfx is patched
-        audio_rng=Crand(0xBEEF),
+    audio = AudioState(
+        ready=False,
+        music=init_music_state(ready=False, enabled=False, volume=1.0),
+        sfx=init_sfx_state(ready=False, enabled=False, volume=1.0, rng=Crand(0x1234)),
     )
+    audio_bridge = AudioBridge(audio=audio, audio_rng=Crand(0xBEEF))
     play_sfx = mocker.patch.object(audio_bridge_module, "play_sfx")
     draw_text = mocker.patch.object(rl, "draw_text")
 

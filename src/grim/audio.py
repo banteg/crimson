@@ -119,12 +119,6 @@ def play_music(state: AudioState, track_name: str, *, fade_in: bool = False) -> 
     music.play_music(state.music, track_name, fade_in=fade_in)
 
 
-def stop_music(state: AudioState | None) -> None:
-    if state is None:
-        return
-    music.stop_music(state.music)
-
-
 def play_sfx(
     state: AudioState | None,
     sfx_id: SfxId,
@@ -136,18 +130,6 @@ def play_sfx(
     if state is None:
         return
     sfx.play_sfx(state.sfx, sfx_id, reflex_boost_timer=float(reflex_boost_timer), gain=gain, pan=pan)
-
-
-def set_sfx_volume(state: AudioState | None, volume: float) -> None:
-    if state is None:
-        return
-    sfx.set_sfx_volume(state.sfx, volume)
-
-
-def set_music_volume(state: AudioState | None, volume: float) -> None:
-    if state is None:
-        return
-    music.set_music_volume(state.music, volume)
 
 
 def update_audio(state: AudioState, dt: float, *, advance_sfx: bool = True) -> None:

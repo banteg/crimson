@@ -25,8 +25,8 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_music, stop_music
 from grim.geom import Vec2
+from grim.music import play_music, stop_music
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -54,8 +54,8 @@ class MenuView(MenuScreen):
         super().open()
         if self.state.audio is not None:
             if self.state.audio.music.active_track != "crimson_theme":
-                stop_music(self.state.audio)
-            play_music(self.state.audio, "crimson_theme")
+                stop_music(self.state.audio.music)
+            play_music(self.state.audio.music, "crimson_theme")
 
     def _ui_elements(self) -> tuple[int, ...]:
         return game_state_elements(
@@ -64,7 +64,7 @@ class MenuView(MenuScreen):
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None and not self.state.ui.closing:
-            play_music(self.state.audio, "crimson_theme")
+            play_music(self.state.audio.music, "crimson_theme")
         live = self._advance(dt)
         if live:
             self._lock_sign(dt)

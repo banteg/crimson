@@ -7,10 +7,10 @@ from crimson.screens.actions import Route
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
-from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
+from grim.sfx import play_sfx
 from grim.sfx_map import SfxId
 
 from ...debug import debug_enabled
@@ -307,10 +307,10 @@ class CreditsView(MenuScreen):
         line = self._lines[index]
         if "o" in line.text:
             if (line.flags & _FLAG_CLICKED) == 0 and self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BONUS)
+                play_sfx(self.state.audio.sfx, SfxId.UI_BONUS)
             line.flags |= _FLAG_CLICKED
         elif _credits_line_clear_flag(self._lines, index) and self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.TROOPER_INPAIN_01)
+            play_sfx(self.state.audio.sfx, SfxId.TROOPER_INPAIN_01)
 
     def _update_line_clicks(
         self,

@@ -8,10 +8,10 @@ from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_sfx
 from grim.config import SAVED_NAME_ENTRY_SIZE, HighScoreDateMode
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
+from grim.sfx import play_sfx
 from grim.sfx_map import SfxId
 
 from ...game.types import GameState
@@ -201,7 +201,7 @@ class HighScoresView(MenuScreen):
         ):
             # Reload scores from disk (no view transition).
             if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
+                play_sfx(self.state.audio.sfx, SfxId.UI_BUTTONCLICK)
             self._reload_records()
         if button_update(
             resources,
@@ -436,7 +436,7 @@ class HighScoresView(MenuScreen):
 
     def _play_sfx(self, sfx: SfxId) -> None:
         if self.state.audio is not None:
-            play_sfx(self.state.audio, sfx)
+            play_sfx(self.state.audio.sfx, sfx)
 
     def _update_quest_arrows(
         self,

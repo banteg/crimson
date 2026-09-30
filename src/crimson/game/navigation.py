@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.game_states import GameStateId
-from grim.audio import stop_music
+from grim.music import stop_music
 from grim.view import ViewContext
 
 from ..game_modes import GameMode
@@ -170,7 +170,8 @@ class ScreenNavigator:
         if self.state.screen_fade_ramp:
             self.state.screen_fade_alpha = 1.0
         self.state.screen_fade_ramp = False
-        stop_music(self.state.audio)
+        if self.state.audio is not None:
+            stop_music(self.state.audio.music)
         self.state.screens.close()
         gameplay = self._mode(request.mode)
         gameplay.bind_status(self.state.status)

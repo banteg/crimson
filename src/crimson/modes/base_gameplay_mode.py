@@ -9,13 +9,14 @@ import msgspec
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ScreenAction, ShowScores
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
-from grim.audio import AudioState, play_music, stop_music, update_audio
+from grim.audio import AudioState, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
+from grim.music import play_music, stop_music
 from grim.rand import Crand, CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -696,7 +697,8 @@ class BaseGameplayMode:
 
         # Native game_over/victory transitions call `sfx_mute_all` on menu + extra
         # tracks before restarting gameplay ("Play Again"), resetting first-hit tune gate.
-        stop_music(self.audio)
+        if self.audio is not None:
+            stop_music(self.audio.music)
 
         player_count = self._runtime_player_count()
         seed = int(self.state.rng.state)
@@ -799,7 +801,7 @@ class BaseGameplayMode:
 
     def _update_game_over_ui(self, dt: float) -> None:
         if self.audio is not None and not self._game_over_ui.closing:
-            play_music(self.audio, "shortie_monk")
+            play_music(self.audio.music, "shortie_monk")
         record = self._game_over_record
         if record is None:
             self._enter_game_over()

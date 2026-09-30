@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from grim.audio import AudioState, play_music, play_sfx
+from grim.audio import AudioState
 from grim.audio_math import native_sound_pan
 from grim.geom import Vec2
-from grim.music import trigger_game_tune
+from grim.music import play_music, trigger_game_tune
 from grim.rand import CrandLike
-from grim.sfx import update_sfx
+from grim.sfx import play_sfx, update_sfx
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
@@ -43,7 +43,7 @@ class AudioBridge:
             return
         if reflex_boost_timer is None:
             reflex_boost_timer = self._reflex_boost_timer()
-        play_sfx(self.audio, sfx, reflex_boost_timer=reflex_boost_timer, gain=gain, pan=pan)
+        play_sfx(self.audio.sfx, sfx, reflex_boost_timer=reflex_boost_timer, gain=gain, pan=pan)
 
     def _play_request(
         self,
@@ -82,6 +82,6 @@ class AudioBridge:
         for request in plan.post_apply_sfx:
             self._play_request(request, plan, camera=camera, screen_width=screen_width)
         if plan.play_quest_completion_music and self.audio is not None:
-            play_music(self.audio, "crimsonquest", fade_in=True)
+            play_music(self.audio.music, "crimsonquest", fade_in=True)
         if self.audio is not None:
             update_sfx(self.audio.sfx, plan.sfx_dt)

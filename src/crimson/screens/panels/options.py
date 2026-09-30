@@ -8,11 +8,12 @@ from crimson.ui.menu_chrome import draw_ui_quad
 from crimson.ui.menu_layout import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import set_music_volume, set_sfx_volume
 from grim.config import apply_detail_preset
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
+from grim.music import set_music_volume
 from grim.raylib_api import rl
+from grim.sfx import set_sfx_volume
 
 from ...game.types import GameState
 from ...ui.button import UiButtonState, button_draw, button_update
@@ -88,14 +89,16 @@ class OptionsMenuView(PanelMenuView):
         ui_segmented_slider_update(focus, self._slider_sfx, slider_pos.offset(dy=47.0), mouse=mouse, down=down)
         if self._slider_sfx.value != sfx_value:
             config.audio.sfx_volume = float(self._slider_sfx.value) * 0.1
-            set_sfx_volume(self.state.audio, config.audio.sfx_volume)
+            if self.state.audio is not None:
+                set_sfx_volume(self.state.audio.sfx, config.audio.sfx_volume)
             self._dirty = True
 
         music_value = self._slider_music.value
         ui_segmented_slider_update(focus, self._slider_music, slider_pos.offset(dy=67.0), mouse=mouse, down=down)
         if self._slider_music.value != music_value:
             config.audio.music_volume = float(self._slider_music.value) * 0.1
-            set_music_volume(self.state.audio, config.audio.music_volume)
+            if self.state.audio is not None:
+                set_music_volume(self.state.audio.music, config.audio.music_volume)
             self._dirty = True
 
         detail_value = self._slider_detail.value

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from grim.audio import play_sfx, update_audio
+from grim.audio import update_audio
+from grim.sfx import play_sfx
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
@@ -75,7 +76,7 @@ class MenuScreen:
             self.state.screen_fade_alpha = 0.0
             self.state.screen_fade_ramp = True
         if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
+            play_sfx(self.state.audio.sfx, SfxId.UI_BUTTONCLICK)
         self.state.ui.begin(action)
 
     def _advance(self, dt: float) -> bool:
@@ -97,7 +98,7 @@ class MenuScreen:
                 if index == 0 and self.state.menu_sign_locked:
                     continue
                 if before_ms < ui_element_timeline_window(index)[1] <= self.state.ui.timeline_ms:
-                    play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
+                    play_sfx(self.state.audio.sfx, SfxId.UI_PANELCLICK)
         return live
 
     def _lock_sign(self, dt: float) -> None:
