@@ -6,11 +6,15 @@ import pytest
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
+from crimson.modes.quest_mode import QuestMode
+from crimson.quests.level import QuestLevel
 from crimson.screens import menu
 from crimson.screens.actions import Route, StartRun
 from crimson.screens.menu import MenuView
 from crimson.screens.panels.options import OptionsMenuView
 from crimson.screens.panels.play_game import PlayGameMenuView
+from crimson.screens.quest_views.quest_failed import QuestFailedView
+from crimson.ui.focus import UI_FOCUS_TIMER_MS
 from crimson.ui.menu_layout import MENU_LABEL_ROW_OPTIONS
 from grim.raylib_api import rl
 from tests.support.screens import finish_transition
@@ -125,3 +129,51 @@ def test_pad_b_backs_out_of_a_panel(loop, mocker) -> None:
     press(loop, mocker, PAD_B)
     finish_transition(loop)
     assert isinstance(loop.state.screens.active, menu.MenuView)
+
+
+def _fail_a_quest(loop: GameLoopView) -> QuestFailedView:
+    loop.navigation.navigate(StartRun(GameMode.QUESTS, QuestLevel(1, 1)))
+    run = loop.state.screens.gameplay
+    assert isinstance(run, QuestMode)
+    run.world.players[0].health = 0.0
+    for _ in range(900):
+        if isinstance(loop.state.screens.active, QuestFailedView):
+            break
+        loop.update(1.0 / 60.0)
+    view = loop.state.screens.active
+    assert isinstance(view, QuestFailedView)
+    finish_transition(loop)
+    return view
+
+
+def test_pad_focus_stays_lit_until_the_mouse_moves(loop, mocker) -> None:
+    view = _fail_a_quest(loop)
+    press(loop, mocker, DPAD_DOWN)
+    for _ in range(120):
+        loop.update(1.0 / 60.0)
+    # Native's marker fades a second after each move; with the pad in use the focus stays in view.
+    assert view._quest_list_button.focused
+    assert loop.state.focus.timer_ms == UI_FOCUS_TIMER_MS
+    assert view._quest_list_button.hover_t == 1000
+
+    mocker.patch.object(rl, "get_mouse_delta", return_value=rl.Vector2(3.0, 0.0))
+    loop.update(1.0 / 60.0)
+    mocker.patch.object(rl, "get_mouse_delta", return_value=rl.Vector2(0.0, 0.0))
+    for _ in range(120):
+        loop.update(1.0 / 60.0)
+    assert loop.state.focus.timer_ms == 0
+
+
+def test_main_menu_after_a_failed_quest_starts_on_its_first_item(loop, mocker) -> None:
+    view = _fail_a_quest(loop)
+    dpad_to(loop, mocker, lambda: view._main_menu_button.focused)
+    press(loop, mocker, PAD_A)
+    for _ in range(300):
+        if isinstance(loop.state.screens.active, menu.MenuView):
+            break
+        loop.update(1.0 / 60.0)
+    finish_transition(loop)
+    main = loop.state.screens.active
+    assert isinstance(main, menu.MenuView)
+    # The quest-failed screen's third button must not carry over as the menu's third item.
+    assert main._menu_entries[0].focused

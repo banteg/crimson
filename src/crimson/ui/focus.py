@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import msgspec
 
+from grim import canvas
 from grim.color import grim_color
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -58,32 +59,40 @@ class UiFocus(msgspec.Struct):
     # The left stick's held direction (see `_STICK_*`) and the ms until it repeats.
     stick: int = 0
     stick_repeat_ms: int = 0
+    # Port: once a pad navigates, the marker and the focused button's highlight stay up instead of fading
+    # a second after each move, so a pad player always sees the focus. Moving the mouse returns to native.
+    pad_active: bool = False
 
     def begin_frame(self, dt_ms: int, *, stick: bool = True) -> None:
         """`ui_focus_update`'s once-per-frame half: decay the marker timer, then Tab / Shift+Tab.
 
         `stick` is off while gameplay runs, where the left stick moves the player.
         """
-        self.timer_ms = max(0, self.timer_ms - dt_ms)
         stick_press = self._stick_press(dt_ms, enabled=stick)
         pad_up = pad_nav_pressed(PadCode.DPAD_UP) or stick_press == _STICK_UP
         pad_down = pad_nav_pressed(PadCode.DPAD_DOWN) or stick_press == _STICK_DOWN
+        pad_left = pad_nav_pressed(PadCode.DPAD_LEFT) or stick_press == _STICK_LEFT
+        pad_right = pad_nav_pressed(PadCode.DPAD_RIGHT) or stick_press == _STICK_RIGHT
+        pad_enter = pad_nav_pressed(PadCode.FACE_DOWN)
+        pad_escape = pad_nav_pressed(PadCode.FACE_RIGHT)
+        pad_page_up = pad_nav_pressed(PadCode.L1)
+        pad_page_down = pad_nav_pressed(PadCode.R1)
+        mouse = canvas.mouse_delta()
+        if pad_up or pad_down or pad_left or pad_right or pad_enter or pad_escape or pad_page_up or pad_page_down:
+            self.pad_active = True
+        elif mouse.x or mouse.y:
+            self.pad_active = False
+        self.timer_ms = UI_FOCUS_TIMER_MS if self.pad_active else max(0, self.timer_ms - dt_ms)
         self.enter = (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-            or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER)
-            or pad_nav_pressed(PadCode.FACE_DOWN)
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) or rl.is_key_pressed(rl.KeyboardKey.KEY_KP_ENTER) or pad_enter
         )
-        self.escape = rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_nav_pressed(PadCode.FACE_RIGHT)
+        self.escape = rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) or pad_escape
         self.up = rl.is_key_pressed(rl.KeyboardKey.KEY_UP) or (pad_up and self.hold_up)
         self.down = rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN) or (pad_down and self.hold_down)
-        self.left = (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT) or pad_nav_pressed(PadCode.DPAD_LEFT) or stick_press == _STICK_LEFT
-        )
-        self.right = (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT) or pad_nav_pressed(PadCode.DPAD_RIGHT) or stick_press == _STICK_RIGHT
-        )
-        self.page_up = rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP) or pad_nav_pressed(PadCode.L1)
-        self.page_down = rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN) or pad_nav_pressed(PadCode.R1)
+        self.left = rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT) or pad_left
+        self.right = rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT) or pad_right
+        self.page_up = rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP) or pad_page_up
+        self.page_down = rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN) or pad_page_down
         step = int(pad_down and not self.hold_down) - int(pad_up and not self.hold_up)
         self.hold_up = self.hold_down = False
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
@@ -97,6 +106,11 @@ class UiFocus(msgspec.Struct):
             self.index = self.count - 1
         if self.index > self.count - 1:
             self.index = 0
+        self.restart = True
+
+    def screen_changed(self) -> None:
+        """Port: a newly shown screen starts on its first widget, not on the previous screen's focus index."""
+        self.index = 0
         self.restart = True
 
     def hold(self, *, up: bool, down: bool) -> None:

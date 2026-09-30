@@ -74,6 +74,7 @@ class GameLoopView:
         self.navigation = ScreenNavigator(state)
         self.resources = GameResources(state)
         self._screenshot_requested = False
+        self._focus_screen: object | None = None
         self._gamma_shader: rl.Shader | None = None
         self._gamma_gain_loc = -1
         self._gamma_target: rl.RenderTexture | None = None
@@ -126,6 +127,9 @@ class GameLoopView:
         # The left stick moves the player while gameplay (its game over and perk menu included) is on top.
         self.state.focus.begin_frame(int(self.state.frame_dt * 1000.0), stick=gameplay is None)
         active = self.state.screens.active
+        if active is not self._focus_screen:
+            self._focus_screen = active
+            self.state.focus.screen_changed()
         active.update(dt)
         action = active.take_action()
         if gameplay is not None:
