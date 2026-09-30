@@ -58,10 +58,6 @@ SCRIPT_PAQ_NAMES = ("music.paq", "crimson.paq", "sfx.paq")
 CommandHandler = Callable[[list[str]], None]
 
 
-def game_build_path(base_dir: Path, name: str) -> Path:
-    return base_dir / name
-
-
 def _parse_float(value: str) -> float:
     try:
         return float(value)
@@ -73,16 +69,6 @@ def _normalize_script_path(name: str) -> Path:
     raw = name.strip().strip("\"'")
     normalized = raw.replace("\\", "/")
     return Path(normalized)
-
-
-def _resolve_script_path(console: ConsoleState, target: Path) -> Path | None:
-    if target.is_absolute():
-        return target if target.is_file() else None
-    for base in console.script_dirs:
-        candidate = base / target
-        if candidate.is_file():
-            return candidate
-    return None
 
 
 def _primary_script_dirs(console: ConsoleState) -> tuple[Path, ...]:
@@ -174,7 +160,7 @@ class ConsoleLog(msgspec.Struct):
     def flush(self) -> None:
         if self.flushed_index >= len(self.lines):
             return
-        path = game_build_path(self.base_dir, CONSOLE_LOG_NAME)
+        path = self.base_dir / CONSOLE_LOG_NAME
         path.parent.mkdir(parents=True, exist_ok=True)
         with path.open("a", encoding="utf-8") as handle:
             for line in self.lines[self.flushed_index :]:
@@ -186,7 +172,6 @@ class ConsoleState(msgspec.Struct):
     base_dir: Path
     log: ConsoleLog
     assets_dir: Path | None = None
-    script_dirs: tuple[Path, ...] = msgspec.field(default_factory=tuple)
     commands: dict[str, CommandHandler] = msgspec.field(default_factory=dict)
     cvars: dict[str, ConsoleCvar] = msgspec.field(default_factory=dict)
     open_flag: bool = False
@@ -212,13 +197,6 @@ class ConsoleState(msgspec.Struct):
 
     def register_cvar(self, name: str, value: str) -> None:
         self.cvars[name] = ConsoleCvar.from_value(name, value)
-
-    def add_script_dir(self, path: Path | None) -> None:
-        if path is None:
-            return
-        if path in self.script_dirs:
-            return
-        self.script_dirs = (*self.script_dirs, path)
 
     def set_open(self, open_flag: bool) -> None:
         self.open_flag = open_flag
@@ -388,11 +366,6 @@ class ConsoleState(msgspec.Struct):
         if stripped.startswith("//"):
             return []
         return stripped.split()
-
-    def _prompt_text(self) -> str:
-        if "%s" in self.prompt_string:
-            return self.prompt_string.replace("%s", self.input_buffer)
-        return f"{self.prompt_string}{self.input_buffer}"
 
     def _history_prev(self) -> None:
         if not self.history:
@@ -601,23 +574,15 @@ class ConsoleState(msgspec.Struct):
 
 
 def create_console(base_dir: Path, assets_dir: Path | None = None) -> ConsoleState:
-    script_dirs: tuple[Path, ...] = (base_dir,)
-    if assets_dir is not None and assets_dir != base_dir:
-        script_dirs = (*script_dirs, assets_dir)
     console = ConsoleState(
         base_dir=base_dir,
         log=ConsoleLog(base_dir=base_dir),
         assets_dir=assets_dir,
-        script_dirs=script_dirs,
     )
     console.register_cvar("version", CONSOLE_VERSION_TEXT)
     console.register_cvar("con_monoFont", "1")
-    if console.open_flag:
-        console._slide_t = 0.0
-        console._offset_y = 0.0
-    else:
-        console._slide_t = 1.0
-        console._offset_y = -float(console.height_px)
+    # A new console starts closed, slid fully off screen.
+    console._offset_y = -float(console.height_px)
     register_core_commands(console)
     return console
 
@@ -721,13 +686,9 @@ def register_core_commands(console: ConsoleState) -> None:
         target = _normalize_script_path(args[0])
         try:
             script_text: str | None = None
-            primary_dirs = _primary_script_dirs(console)
-            path = _resolve_script_path_in(target, primary_dirs)
+            path = _resolve_script_path_in(target, _primary_script_dirs(console))
             if path is None:
                 script_text = _load_script_from_paq(console, target)
-            if path is None and script_text is None:
-                fallback_dirs = [path for path in console.script_dirs if path not in primary_dirs]
-                path = _resolve_script_path_in(target, fallback_dirs)
             if path is None and script_text is None:
                 console.log.log(f"Cannot open file '{args[0]}'")
                 return
