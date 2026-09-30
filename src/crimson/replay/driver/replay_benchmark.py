@@ -197,21 +197,13 @@ def run_replay_render_benchmark(
     except RuntimeError as exc:
         raise ReplayBenchmarkError(f"render benchmark could not initialize window: {exc}") from exc
 
-    tick_total = len(replay.ticks)
-    if max_ticks is not None:
-        tick_total = min(tick_total, max(0, int(max_ticks)))
-
+    tick_total = _tick_total(replay, max_ticks)
     planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0) + (1 if telemetry_requested else 0)
     run_bar = tqdm(total=planned_steps, unit="run", desc="render benchmark", leave=False, disable=not show_progress)
     try:
         resources = load_runtime_resources(runtime_assets_dir)
 
-        def _run_once(
-            *,
-            tick_desc: str,
-            rtx: bool,
-            telemetry_session: RenderTelemetrySession | None = None,
-        ) -> _RenderOnceResult:
+        def _run_once(tick_desc: str, telemetry_session: RenderTelemetrySession | None = None) -> _RenderOnceResult:
             with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
                 return _run_render_once(
                     ctx=ctx,
@@ -225,77 +217,25 @@ def run_replay_render_benchmark(
                     observer=_TickBar(bar=bar),
                 )
 
-        for _ in range(int(warmup_runs)):
-            _run_once(
-                tick_desc="render ticks warmup",
-                rtx=bool(rtx),
-            )
-            _step_done(run_bar, "phase=warmup")
-
-        samples: list[BenchmarkSample] = []
-        for sample_idx in range(int(runs)):
-            start_ns = time.perf_counter_ns()
-            measured = _run_once(
-                tick_desc=f"render ticks sample {sample_idx + 1}/{int(runs)}",
-                rtx=bool(rtx),
-            )
-            elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
-            wall_ms = float(elapsed_ns) / 1_000_000.0
-            wall_s = float(elapsed_ns) / 1_000_000_000.0
-            ticks_per_second = float(tick_total) / wall_s
-            realtime_x = float(measured.run_result.elapsed_ms) / wall_ms
-            samples.append(
-                BenchmarkSample(
-                    wall_ms=float(wall_ms),
-                    ticks_per_second=float(ticks_per_second),
-                    realtime_x=float(realtime_x),
-                ),
-            )
-            _assert_consistent_run_result(
-                baseline_result,
-                measured.run_result,
-                where=f"render run {sample_idx + 1}",
-            )
-            _step_done(run_bar, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
-
-        profile_result: ReplayProfileResult | None = None
-        if bool(profile):
-            prof = cProfile.Profile()
-            prof.enable()
-            profiled = _run_once(
-                tick_desc="render ticks profile",
-                rtx=bool(rtx),
-            )
-            prof.disable()
-            _assert_consistent_run_result(
-                baseline_result,
-                profiled.run_result,
-                where="render profiled run",
-            )
-
-            if profile_out is not None:
-                out_path = Path(profile_out)
-                out_path.parent.mkdir(parents=True, exist_ok=True)
-                prof.dump_stats(str(out_path))
-
-            source, hotspots = _extract_hotspots(prof, sort_key=profile_sort, top=int(top))
-            profile_result = ReplayProfileResult(
-                sort=profile_sort,
-                top=int(top),
-                source=source,
-                hotspots=tuple(hotspots),
-            )
-            _step_done(run_bar, "phase=profile")
+        measured = _measure_runs(
+            lambda tick_desc: _run_once(tick_desc).run_result,
+            mode="render",
+            baseline=baseline_result,
+            tick_total=tick_total,
+            runs=runs,
+            warmup_runs=warmup_runs,
+            profile=profile,
+            profile_sort=profile_sort,
+            top=top,
+            profile_out=profile_out,
+            run_bar=run_bar,
+        )
 
         telemetry_result: ReplayRenderTelemetryResult | None = None
         if telemetry_requested:
             telemetry_session = RenderTelemetrySession()
             with telemetry_session:
-                collected = _run_once(
-                    tick_desc="render ticks telemetry",
-                    rtx=bool(rtx),
-                    telemetry_session=telemetry_session,
-                )
+                collected = _run_once("render ticks telemetry", telemetry_session)
             _assert_consistent_run_result(
                 baseline_result,
                 collected.run_result,
@@ -347,20 +287,7 @@ def run_replay_render_benchmark(
         if window_open:
             rl.close_window()
 
-    wall_values = [sample.wall_ms for sample in samples]
-    tps_values = [sample.ticks_per_second for sample in samples]
-    realtime_values = [sample.realtime_x for sample in samples]
-
-    return ReplayBenchmarkResult(
-        ticks=tick_total,
-        run_result=baseline_result,
-        samples=tuple(samples),
-        wall_ms=_aggregate(wall_values),
-        ticks_per_second=_aggregate(tps_values),
-        realtime_x=_aggregate(realtime_values),
-        profile=profile_result,
-        render_telemetry=telemetry_result,
-    )
+    return _benchmark_result(tick_total, measured, render_telemetry=telemetry_result)
 
 
 def run_replay_benchmark(
@@ -378,84 +305,128 @@ def run_replay_benchmark(
 ) -> ReplayBenchmarkResult:
     _validate_args(runs=runs, warmup_runs=warmup_runs, top=top)
 
-    tick_total = len(replay.ticks)
-    if max_ticks is not None:
-        tick_total = min(tick_total, max(0, int(max_ticks)))
-
+    tick_total = _tick_total(replay, max_ticks)
     planned_steps = int(warmup_runs) + int(runs) + (1 if bool(profile) else 0)
     run_bar = tqdm(total=planned_steps, unit="run", desc="headless benchmark", leave=False, disable=not show_progress)
     try:
-        def _run_once(*, tick_desc: str) -> RunResult:
+
+        def _run_once(tick_desc: str) -> RunResult:
             with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
                 driver = build_verify_playback_driver(replay, max_ticks=max_ticks, trace_rng=bool(trace_rng))
                 return driver.run(observer=_TickBar(bar=bar))
 
-        for _ in range(int(warmup_runs)):
-            _run_once(tick_desc="headless ticks warmup")
-            _step_done(run_bar, "phase=warmup")
-
-        baseline_result: RunResult | None = None
-        samples: list[BenchmarkSample] = []
-        for sample_idx in range(int(runs)):
-            start_ns = time.perf_counter_ns()
-            result = _run_once(
-                tick_desc=f"headless ticks sample {sample_idx + 1}/{int(runs)}",
-            )
-            elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
-            wall_ms = float(elapsed_ns) / 1_000_000.0
-            wall_s = float(elapsed_ns) / 1_000_000_000.0
-            ticks_per_second = float(tick_total) / wall_s
-            realtime_x = float(result.elapsed_ms) / wall_ms
-            samples.append(
-                BenchmarkSample(
-                    wall_ms=float(wall_ms),
-                    ticks_per_second=float(ticks_per_second),
-                    realtime_x=float(realtime_x),
-                ),
-            )
-            if baseline_result is None:
-                baseline_result = result
-            else:
-                _assert_consistent_run_result(baseline_result, result, where=f"measured run {sample_idx + 1}")
-            _step_done(run_bar, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
-
-        assert baseline_result is not None
-        profile_result: ReplayProfileResult | None = None
-        if bool(profile):
-            prof = cProfile.Profile()
-            prof.enable()
-            prof_result = _run_once(tick_desc="headless ticks profile")
-            prof.disable()
-            _assert_consistent_run_result(baseline_result, prof_result, where="profiled run")
-
-            if profile_out is not None:
-                out_path = Path(profile_out)
-                out_path.parent.mkdir(parents=True, exist_ok=True)
-                prof.dump_stats(str(out_path))
-
-            source, hotspots = _extract_hotspots(prof, sort_key=profile_sort, top=int(top))
-            profile_result = ReplayProfileResult(
-                sort=profile_sort,
-                top=int(top),
-                source=source,
-                hotspots=tuple(hotspots),
-            )
-            _step_done(run_bar, "phase=profile")
+        measured = _measure_runs(
+            _run_once,
+            mode="headless",
+            baseline=None,
+            tick_total=tick_total,
+            runs=runs,
+            warmup_runs=warmup_runs,
+            profile=profile,
+            profile_sort=profile_sort,
+            top=top,
+            profile_out=profile_out,
+            run_bar=run_bar,
+        )
     finally:
         run_bar.close()
 
-    wall_values = [sample.wall_ms for sample in samples]
-    tps_values = [sample.ticks_per_second for sample in samples]
-    realtime_values = [sample.realtime_x for sample in samples]
+    return _benchmark_result(tick_total, measured)
 
+
+def _tick_total(replay: Replay, max_ticks: int | None) -> int:
+    if max_ticks is None:
+        return len(replay.ticks)
+    return min(len(replay.ticks), max(0, int(max_ticks)))
+
+
+class _MeasuredRuns(msgspec.Struct, frozen=True):
+    run_result: RunResult
+    samples: tuple[BenchmarkSample, ...]
+    profile: ReplayProfileResult | None
+
+
+def _measure_runs(
+    run_once: Callable[[str], RunResult],
+    *,
+    mode: str,
+    baseline: RunResult | None,
+    tick_total: int,
+    runs: int,
+    warmup_runs: int,
+    profile: bool,
+    profile_sort: ProfileSortKey,
+    top: int,
+    profile_out: Path | None,
+    run_bar: tqdm,
+) -> _MeasuredRuns:
+    """Warmup, timed and profiled runs; each must reproduce `baseline`, or the first timed run without one."""
+    for _ in range(int(warmup_runs)):
+        run_once(f"{mode} ticks warmup")
+        _step_done(run_bar, "phase=warmup")
+
+    samples: list[BenchmarkSample] = []
+    for sample_idx in range(int(runs)):
+        start_ns = time.perf_counter_ns()
+        result = run_once(f"{mode} ticks sample {sample_idx + 1}/{int(runs)}")
+        elapsed_ns = max(1, int(time.perf_counter_ns()) - int(start_ns))
+        wall_ms = float(elapsed_ns) / 1_000_000.0
+        wall_s = float(elapsed_ns) / 1_000_000_000.0
+        samples.append(
+            BenchmarkSample(
+                wall_ms=float(wall_ms),
+                ticks_per_second=float(tick_total) / wall_s,
+                realtime_x=float(result.elapsed_ms) / wall_ms,
+            ),
+        )
+        if baseline is None:
+            baseline = result
+        else:
+            _assert_consistent_run_result(baseline, result, where=f"{mode} run {sample_idx + 1}")
+        _step_done(run_bar, f"phase=measure sample={sample_idx + 1}/{int(runs)}")
+    assert baseline is not None
+
+    profile_result: ReplayProfileResult | None = None
+    if bool(profile):
+        prof = cProfile.Profile()
+        prof.enable()
+        profiled = run_once(f"{mode} ticks profile")
+        prof.disable()
+        _assert_consistent_run_result(baseline, profiled, where=f"{mode} profiled run")
+
+        if profile_out is not None:
+            out_path = Path(profile_out)
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            prof.dump_stats(str(out_path))
+
+        source, hotspots = _extract_hotspots(prof, sort_key=profile_sort, top=int(top))
+        profile_result = ReplayProfileResult(
+            sort=profile_sort,
+            top=int(top),
+            source=source,
+            hotspots=tuple(hotspots),
+        )
+        _step_done(run_bar, "phase=profile")
+
+    return _MeasuredRuns(run_result=baseline, samples=tuple(samples), profile=profile_result)
+
+
+def _benchmark_result(
+    ticks: int,
+    measured: _MeasuredRuns,
+    *,
+    render_telemetry: ReplayRenderTelemetryResult | None = None,
+) -> ReplayBenchmarkResult:
+    samples = measured.samples
     return ReplayBenchmarkResult(
-        ticks=tick_total,
-        run_result=baseline_result,
-        samples=tuple(samples),
-        wall_ms=_aggregate(wall_values),
-        ticks_per_second=_aggregate(tps_values),
-        realtime_x=_aggregate(realtime_values),
-        profile=profile_result,
+        ticks=ticks,
+        run_result=measured.run_result,
+        samples=samples,
+        wall_ms=_aggregate([sample.wall_ms for sample in samples]),
+        ticks_per_second=_aggregate([sample.ticks_per_second for sample in samples]),
+        realtime_x=_aggregate([sample.realtime_x for sample in samples]),
+        profile=measured.profile,
+        render_telemetry=render_telemetry,
     )
 
 
