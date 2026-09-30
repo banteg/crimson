@@ -90,7 +90,8 @@ def compare_checkpoints(
                 ),
             )
 
-        if checkpoint_deepdiff(exp, act) is None:
+        # Struct equality settles the common case; the field walk only runs to rule on a difference.
+        if exp == act or checkpoint_deepdiff(exp, act) is None:
             continue
 
         return ReplayDiffResult(
