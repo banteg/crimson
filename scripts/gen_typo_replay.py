@@ -78,7 +78,16 @@ def main() -> None:
     session = initialize_run(run).session
     recorder = ReplayRecorder(run)
     controls = default_player_controls(0)
-    idle = [PlayerInput(move_mode=controls.movement, aim_scheme=controls.aim_scheme)]
+    idle = [
+        PlayerInput(
+            move_mode=controls.movement,
+            aim_scheme=controls.aim_scheme,
+            move_forward_pressed=False,
+            move_backward_pressed=False,
+            turn_left_pressed=False,
+            turn_right_pressed=False,
+        ),
+    ]
     typist = Typist(random.Random(SEED))
     checkpoints = []
     rng_call_order = RngCallOrder()
