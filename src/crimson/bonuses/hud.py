@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 import msgspec
 
+from ..math_parity import f32, x87_pc24_add, x87_pc24_mul, x87_pc24_sub
 from ..sim.state_types import PlayerState
 from .ids import BonusId
 
@@ -89,9 +90,9 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState], *, dt: fl
         slot.timer_values = tuple(max(0.0, timer) for timer in bonus_timer_values(state, players, slot.bonus_id))
 
         if any(timer > 0.0 for timer in slot.timer_values):
-            slot.slide_x += dt * 350.0
+            slot.slide_x = x87_pc24_add(slot.slide_x, x87_pc24_mul(dt, f32(350.0)))
         else:
-            slot.slide_x -= dt * 320.0
+            slot.slide_x = x87_pc24_sub(slot.slide_x, x87_pc24_mul(dt, f32(320.0)))
             if not state.preserve_bugs:
                 # Bug #25: park just past the hidden edge so a re-pick slides straight back.
                 slot.slide_x = max(slot.slide_x, BONUS_HUD_HIDDEN_X - 1.0)

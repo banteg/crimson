@@ -947,8 +947,9 @@ def player_update(
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
     if player.aux_timer > 0.0:
-        aux_decay = 1.4 if player.aux_timer >= 1.0 else 0.5
-        player.aux_timer = max(0.0, player.aux_timer - dt * aux_decay)
+        # `ui_render_hud`: the weapon popup fades slower through its last second and may stop below zero.
+        aux_decay = f32(0.5) if player.aux_timer < 1.0 else f32(1.4)
+        player.aux_timer = x87_pc24_sub(player.aux_timer, x87_pc24_mul(dt, aux_decay))
 
     move_mode = _resolve_move_mode_for_update(input_state)
     aim_scheme = _resolve_aim_scheme_for_update(input_state)
