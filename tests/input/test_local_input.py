@@ -8,7 +8,6 @@ from pytest_mock import MockerFixture
 
 from crimson import local_input
 from crimson.aim_schemes import AimScheme
-from crimson.creatures.runtime import CreatureState
 from crimson.game_modes import GameMode
 from crimson.movement_controls import MovementControlType
 from crimson.sim.state_types import PlayerState
@@ -99,97 +98,6 @@ def _config_with_player_bind_values(
     return _set_player_bind_values(cfg, values, player_index=player_index)
 
 
-def test_local_input_computer_aim_auto_fires_without_fire_pressed(mocker: MockerFixture) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), aim=Vec2(560.0, 512.0))
-    creatures = [CreatureState(pos=Vec2(612.0, 512.0), active=True, hp=20.0)]
-    config = _set_player_modes(_test_config(), aim_scheme=AimScheme.COMPUTER)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=creatures,
-    )
-
-    assert out.fire_down is True
-    assert out.fire_pressed is False
-    assert_float_close(float(out.aim.x), 591.2)
-    assert_float_close(float(out.aim.y), 512.0)
-
-
-def test_local_input_computer_aim_without_target_points_away_from_center(mocker: MockerFixture) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), aim=Vec2(512.0, 512.0))
-    config = _set_player_modes(_test_config(), aim_scheme=AimScheme.COMPUTER)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
-    )
-
-    assert out.fire_down is False
-    assert out.fire_pressed is False
-    assert_float_close(float(out.aim.x), 512.0)
-    assert_float_close(float(out.aim.y), 452.0)
-
-
-def test_local_input_computer_target_state_tracks_player_identity_not_call_slot(
-    mocker: MockerFixture,
-) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player0 = PlayerState(index=0, pos=Vec2(0.0, 0.0), aim=Vec2(0.0, 0.0))
-    player1 = PlayerState(index=1, pos=Vec2(128.0, 0.0), aim=Vec2(128.0, 0.0))
-    config = _set_player_modes(_test_config(), aim_scheme=AimScheme.COMPUTER)
-    creatures = [
-        CreatureState(pos=Vec2(100.0, 0.0), active=True, hp=20.0),  # nearest to player0
-        CreatureState(pos=Vec2(130.0, 0.0), active=True, hp=20.0),  # nearest to player1
-    ]
-
-    # Simulate a subset call where player1 is fed through slot 0 first.
-    interpreter.build_player_input(
-        player_index=0,
-        player=player1,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=creatures,
-    )
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player0,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=creatures,
-    )
-
-    # Must track toward player0's nearest creature (x=100) not player1's target (x=130).
-    assert_float_close(float(out.aim.x), 60.0)
-    assert_float_close(float(out.aim.y), 0.0)
-
-
 @pytest.mark.parametrize(
     ("down_codes", "expected_move"),
     (
@@ -216,8 +124,6 @@ def test_local_input_static_mode_conflict_precedence_matches_native(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert out.move == expected_move
@@ -239,8 +145,6 @@ def test_local_input_relative_mode_single_player_uses_alt_arrow_fallback(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert out.move_forward_pressed is True
@@ -264,8 +168,6 @@ def test_local_input_relative_mode_multiplayer_does_not_use_alt_arrow_fallback(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert out.move_forward_pressed is False
@@ -292,8 +194,6 @@ def test_local_input_reload_pressed_is_available_in_multiplayer(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
     multiplayer = interpreter.build_player_input(
         player_index=0,
@@ -302,8 +202,6 @@ def test_local_input_reload_pressed_is_available_in_multiplayer(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert single_player.reload_pressed is True
@@ -329,8 +227,6 @@ def test_local_input_reload_pressed_reads_per_player_input_slot(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert out.reload_pressed is True
@@ -363,85 +259,12 @@ def test_local_input_mouse_point_click_carries_the_clicked_point(
         mouse_screen=Vec2(),
         mouse_world=mouse_world,
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert out.reload_pressed is True
     assert interpreter._states[0].move_target == mouse_world
     # The sim steers toward the target from wherever the player is on each tick.
     assert out.move == mouse_world
-
-
-def test_local_input_computer_move_mode_near_center_heads_toward_target(
-    mocker: MockerFixture,
-) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(500.0, 500.0), aim=Vec2(560.0, 500.0))
-    creatures = [CreatureState(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
-    config = _set_player_modes(_test_config(), move_mode=MovementControlType.COMPUTER)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=creatures,
-    )
-
-    assert out.move == Vec2(60.0, 0.0)
-
-
-def test_local_input_computer_move_mode_far_from_center_heads_toward_center(
-    mocker: MockerFixture,
-) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(900.0, 900.0), aim=Vec2(960.0, 900.0))
-    creatures = [CreatureState(pos=Vec2(960.0, 900.0), active=True, hp=20.0)]
-    config = _set_player_modes(_test_config(), move_mode=MovementControlType.COMPUTER)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=creatures,
-    )
-
-    assert out.move == Vec2(-388.0, -388.0)
-
-
-def test_local_input_computer_move_mode_without_target_orbits_center(
-    mocker: MockerFixture,
-) -> None:
-    _patch_no_user_input(mocker)
-
-    interpreter = local_input.LocalInputInterpreter()
-    player = PlayerState(index=0, pos=Vec2(612.0, 512.0), aim=Vec2(672.0, 512.0))
-    config = _set_player_modes(_test_config(), move_mode=MovementControlType.COMPUTER)
-
-    out = interpreter.build_player_input(
-        player_index=0,
-        player=player,
-        config=config,
-        mouse_screen=Vec2(),
-        mouse_world=Vec2(),
-        screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
-    )
-
-    assert out.move == Vec2(0.0, 100.0)
 
 
 def test_local_input_computer_aim_scheme_preserves_configured_movement(
@@ -451,7 +274,6 @@ def test_local_input_computer_aim_scheme_preserves_configured_movement(
 
     interpreter = local_input.LocalInputInterpreter()
     player = PlayerState(index=0, pos=Vec2(500.0, 500.0), aim=Vec2(560.0, 500.0))
-    creatures = [CreatureState(pos=Vec2(560.0, 500.0), active=True, hp=20.0)]
     config = _set_player_modes(
         _test_config(),
         aim_scheme=AimScheme.COMPUTER,
@@ -465,8 +287,6 @@ def test_local_input_computer_aim_scheme_preserves_configured_movement(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=creatures,
     )
 
     assert out.move == Vec2()
@@ -488,8 +308,6 @@ def test_local_input_joystick_aim_uses_pov_not_aim_keybinds(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     # Bound aim key 8 should not affect joystick aim scheme; only POV should.
@@ -512,8 +330,6 @@ def test_local_input_joystick_aim_turns_with_pov_input(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     # player_update turns the heading from the held POV direction.
@@ -547,8 +363,6 @@ def test_local_input_joystick_aim_reads_player_pov_by_default(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     # player_update turns the heading from the held POV direction.
@@ -583,8 +397,6 @@ def test_local_input_joystick_aim_preserve_bugs_uses_player1_pov_slot(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     # player_update turns the heading from the held POV direction.
@@ -613,8 +425,6 @@ def test_local_input_dual_action_pad_aim_uses_native_radius_scale(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     # Native radius: 42 + mag * cv_padAimDistMul (default 96).
@@ -642,8 +452,6 @@ def test_local_input_keyboard_aim_with_non_relative_move_mode_keeps_world_aim(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.1,
-        creatures=[],
     )
 
     assert_float_close(float(out.aim.x), 180.0)
@@ -669,8 +477,6 @@ def test_local_input_relative_mouse_aim_centered_keeps_world_aim(
         mouse_screen=center,
         mouse_world=Vec2(),
         screen_center=center,
-        dt=0.1,
-        creatures=[],
     )
 
     assert_float_close(float(out.aim.x), 180.0)

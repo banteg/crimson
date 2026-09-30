@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable, Sequence
-from typing import TYPE_CHECKING
 
 import msgspec
 
@@ -19,15 +18,10 @@ from .input_codes import (
 from .math_parity import (
     f32,
     native_aim_point_from_heading,
-    x87_pc24_hypot,
-    x87_pc24_sub,
 )
 from .movement_controls import MovementControlType
 from .sim.input import PlayerInput
 from .sim.state_types import PlayerState
-
-if TYPE_CHECKING:
-    from .creatures.runtime import CreatureState
 
 _AIM_RADIUS_KEYBOARD = 60.0
 _AIM_RADIUS_PAD_BASE = 42.0
@@ -36,12 +30,6 @@ PAD_AIM_DIST_MUL_DEFAULT = 96.0
 # Port-only: native aims at the player when the stick centers; a resting stick
 # instead keeps the last direction, and small drift inside this radius is ignored.
 _PAD_AIM_DEADZONE = 0.2
-_COMPUTER_TARGET_SWITCH_HYSTERESIS = 64.0
-_COMPUTER_ARENA_CENTER = Vec2(512.0, 512.0)
-_COMPUTER_MOVE_TARGET_RADIUS = 300.0
-_COMPUTER_AIM_SNAP_DISTANCE = 4.0
-_COMPUTER_AIM_TRACK_GAIN = 6.0
-_COMPUTER_AUTO_FIRE_DISTANCE = 128.0
 
 _ALT_MOVE_KEY_UP = 0xC8
 _ALT_MOVE_KEY_DOWN = 0xD0
@@ -54,12 +42,6 @@ _AIM_POV_RIGHT_CODE = 0x134
 class _PerPlayerInputState(msgspec.Struct):
     aim_heading: float = 0.0
     move_target: Vec2 = Vec2(-1.0, -1.0)
-    computer_target_creature_index: int = -1
-
-
-
-def _pc24_delta(target: Vec2, origin: Vec2) -> Vec2:
-    return Vec2(x87_pc24_sub(target.x, origin.x), x87_pc24_sub(target.y, origin.y))
 
 
 def _is_finite(v: float) -> bool:
@@ -167,7 +149,6 @@ class LocalInputInterpreter:
         for idx in range(4):
             state = self._states[idx]
             state.move_target = Vec2(-1.0, -1.0)
-            state.computer_target_creature_index = -1
             state.aim_heading = 0.0
         if players is None:
             return
@@ -176,58 +157,6 @@ class LocalInputInterpreter:
             candidate = float(player.aim_heading)
             if _is_finite(candidate):
                 self._states[slot].aim_heading = float(candidate)
-
-    @staticmethod
-    def _nearest_living_creature_index(pos: Vec2, creatures: Sequence[CreatureState]) -> int | None:
-        best_idx: int | None = None
-        best_dist_sq = 0.0
-        for idx, creature in enumerate(creatures):
-            if not creature.active:
-                continue
-            if float(creature.hp) <= 0.0:
-                continue
-            dist_sq = Vec2.distance_sq(pos, creature.pos)
-            if best_idx is None or float(dist_sq) < float(best_dist_sq):
-                best_idx = int(idx)
-                best_dist_sq = float(dist_sq)
-        return best_idx
-
-    def _select_computer_target(
-        self,
-        *,
-        player_index: int,
-        player: PlayerState,
-        creatures: Sequence[CreatureState],
-    ) -> int | None:
-        slot = self._state_slot_for_player(player_index=int(player_index), player=player)
-        state = self._states[slot]
-        candidate = self._nearest_living_creature_index(player.pos, creatures)
-        current = int(state.computer_target_creature_index)
-
-        if candidate is None:
-            state.computer_target_creature_index = -1
-            return None
-        if current < 0 or current >= len(creatures):
-            state.computer_target_creature_index = int(candidate)
-            return int(candidate)
-
-        current_creature = creatures[current]
-        if not current_creature.active or float(current_creature.hp) <= 0.0:
-            state.computer_target_creature_index = int(candidate)
-            return int(candidate)
-        if int(candidate) == int(current):
-            return int(current)
-
-        candidate_creature = creatures[int(candidate)]
-        if not candidate_creature.active or float(candidate_creature.hp) <= 0.0:
-            return int(current)
-
-        current_dist = (current_creature.pos - player.pos).length()
-        candidate_dist = (candidate_creature.pos - player.pos).length()
-        if float(candidate_dist) + float(_COMPUTER_TARGET_SWITCH_HYSTERESIS) < float(current_dist):
-            state.computer_target_creature_index = int(candidate)
-            return int(candidate)
-        return int(current)
 
     def _state_for_player(self, player_index: int, *, player: PlayerState | None = None) -> _PerPlayerInputState:
         slot = self._state_slot_for_player(player_index=int(player_index), player=player)
@@ -245,8 +174,6 @@ class LocalInputInterpreter:
         mouse_screen: Vec2,
         mouse_world: Vec2,
         screen_center: Vec2,
-        dt: float,
-        creatures: Sequence[CreatureState] | None = None,
         pad_aim_dist_mul: float = PAD_AIM_DIST_MUL_DEFAULT,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
@@ -267,36 +194,9 @@ class LocalInputInterpreter:
         move_backward_pressed = False
         turn_left_pressed = False
         turn_right_pressed = False
-        computer_target_index: int | None = None
-        computer_move_active = move_mode_type is MovementControlType.COMPUTER
 
-        if computer_move_active:
-            if creatures:
-                computer_target_index = self._select_computer_target(
-                    player_index=idx,
-                    player=player,
-                    creatures=creatures,
-                )
-            # The sim steers toward the raw f32 delta, so its heading sees
-            # native `pos - target` exactly (player_update 0x00414cab).
-            center_delta = _pc24_delta(_COMPUTER_ARENA_CENTER, player.pos)
-            center_dist = x87_pc24_hypot(center_delta.x, center_delta.y)
-            has_live_target = (
-                creatures is not None
-                and computer_target_index is not None
-                and 0 <= int(computer_target_index) < len(creatures)
-            )
-            if has_live_target and float(center_dist) <= _COMPUTER_MOVE_TARGET_RADIUS:
-                assert creatures is not None
-                assert computer_target_index is not None
-                move_vec = _pc24_delta(creatures[int(computer_target_index)].pos, player.pos)
-            elif has_live_target:
-                move_vec = center_delta
-            else:
-                move_vec = (player.pos - _COMPUTER_ARENA_CENTER).perp_left()
-                if move_vec.length_sq() <= 1e-12:
-                    move_vec = Vec2(0.0, 1.0)
-        elif move_mode_type is MovementControlType.RELATIVE:
+        # Computer control reads no device: the sim picks its target, steers and aims.
+        if move_mode_type is MovementControlType.RELATIVE:
             move_forward_pressed = _key_down_with_single_player_alt(
                 move_forward_key,
                 alt_key=_ALT_MOVE_KEY_UP,
@@ -373,7 +273,7 @@ class LocalInputInterpreter:
                 move_left=move_left_pressed,
                 move_right=move_right_pressed,
             )
-        else:
+        elif move_mode_type is not MovementControlType.COMPUTER:
             move_vec = Vec2(
                 float(input_code_is_down(turn_right_key, player_index=idx))
                 - float(input_code_is_down(turn_left_key, player_index=idx)),
@@ -387,7 +287,6 @@ class LocalInputInterpreter:
         aim = Vec2(float(player.aim.x), float(player.aim.y))
         aim_turn_left = False
         aim_turn_right = False
-        computer_auto_fire = False
         if aim_scheme is AimScheme.MOUSE:
             aim = mouse_world
             delta = aim - player.pos
@@ -417,34 +316,6 @@ class LocalInputInterpreter:
             # The sim turns the heading (player_update reads `input_aim_pov_left/right_active`).
             aim_turn_left = _aim_pov_left_active(player_index=idx, preserve_bugs=self._preserve_bugs)
             aim_turn_right = _aim_pov_right_active(player_index=idx, preserve_bugs=self._preserve_bugs)
-        elif aim_scheme is AimScheme.COMPUTER:
-            target_index = computer_target_index
-            if target_index is None and creatures:
-                target_index = self._select_computer_target(
-                    player_index=idx,
-                    player=player,
-                    creatures=creatures,
-                )
-            if creatures is not None and target_index is not None and 0 <= int(target_index) < len(creatures):
-                target = creatures[int(target_index)]
-                aim = Vec2(float(player.aim.x), float(player.aim.y))
-                to_target = Vec2(float(target.pos.x), float(target.pos.y)) - aim
-                target_dir, target_dist = to_target.normalized_with_length()
-                if float(target_dist) >= _COMPUTER_AIM_SNAP_DISTANCE:
-                    aim = aim + target_dir * (float(target_dist) * _COMPUTER_AIM_TRACK_GAIN * float(dt))
-                else:
-                    aim = Vec2(float(target.pos.x), float(target.pos.y))
-                delta = aim - player.pos
-                if delta.length_sq() > 1e-9:
-                    heading = delta.to_heading()
-                computer_auto_fire = float(target_dist) < _COMPUTER_AUTO_FIRE_DISTANCE
-            else:
-                away, away_mag = (player.pos - _COMPUTER_ARENA_CENTER).normalized_with_length()
-                if float(away_mag) <= 1e-6:
-                    away = Vec2(0.0, -1.0)
-                aim = player.pos + away * _AIM_RADIUS_KEYBOARD
-                heading = away.to_heading()
-
         delta = aim - player.pos
         if delta.length_sq() > 1e-9:
             heading = delta.to_heading()
@@ -452,8 +323,6 @@ class LocalInputInterpreter:
 
         fire_down = input_code_is_down(fire_key, player_index=idx)
         fire_pressed = input_code_is_pressed(fire_key, player_index=idx)
-        if aim_scheme is AimScheme.COMPUTER and computer_auto_fire:
-            fire_down = True
         reload_pressed = input_code_is_pressed(reload_key, player_index=idx)
         reload_down = input_code_is_down(reload_key, player_index=idx)
 
@@ -482,9 +351,7 @@ class LocalInputInterpreter:
         config: CrimsonConfig,
         mouse_screen: Vec2,
         screen_to_world: Callable[[Vec2], Vec2],
-        dt: float,
         pad_aim_dist_mul: float,
-        creatures: Sequence[CreatureState] | None = None,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
         screen_center = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
@@ -498,8 +365,6 @@ class LocalInputInterpreter:
                     mouse_screen=mouse_screen,
                     mouse_world=mouse_world,
                     screen_center=screen_center,
-                    dt=float(dt),
-                    creatures=creatures,
                     pad_aim_dist_mul=pad_aim_dist_mul,
                 ),
             )

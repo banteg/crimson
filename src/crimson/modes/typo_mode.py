@@ -74,9 +74,8 @@ class TypoShooterMode(BaseGameplayMode):
     def _runtime_player_count(self) -> int:
         return 1
 
-    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
+    def _build_local_inputs(self) -> list[PlayerInput]:
         # Typ-o fires, aims and reloads only through typed words.
-        _ = dt
         controls = self.config.controls.player(0)
         return [
             PlayerInput(

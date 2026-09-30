@@ -56,6 +56,7 @@ class GamepadDebugView:
         self._small = None
 
     def update(self, dt: float) -> None:
+        _ = dt
         input_begin_frame()
         for idx, player in enumerate(self._players):
             out = self._interpreter.build_player_input(
@@ -65,7 +66,6 @@ class GamepadDebugView:
                 mouse_screen=Vec2(),
                 mouse_world=Vec2(),
                 screen_center=Vec2(),
-                dt=float(dt),
             )
             player.aim = out.aim
             self._move[idx] = out.move

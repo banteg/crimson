@@ -111,7 +111,6 @@ def _build_input(
         mouse_screen=Vec2(),
         mouse_world=Vec2(),
         screen_center=Vec2(),
-        dt=0.016,
         pad_aim_dist_mul=pad_aim_dist_mul,
     )
 

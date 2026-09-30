@@ -51,6 +51,7 @@ def test_aim_point_and_gameplay_dispatch_match_native_witnesses() -> None:
                 dt=0.0,
                 movement_mode=MovementControlType.STATIC,
                 aim_scheme=scheme,
+                creatures=[],
             )
             assert _bits(player.aim) == expected, (i, scheme)
 
@@ -86,6 +87,7 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
             dt=row.dt,
             movement_mode=MovementControlType.STATIC,
             aim_scheme=scheme,
+            creatures=[],
         )
         assert _bits(player.aim) == expected, (i, "gameplay")
         config.controls.player(0).aim_scheme = scheme
@@ -105,8 +107,6 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
             mouse_screen=Vec2(),
             mouse_world=Vec2(),
             screen_center=Vec2(),
-            dt=row.dt,
-            creatures=[],
         )
         # The live input records the held controls; the sim turns the heading.
         assert (result.aim_turn_left, result.aim_turn_right) == (row.left, row.right), (i, "local input")

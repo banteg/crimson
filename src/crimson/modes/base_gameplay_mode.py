@@ -877,15 +877,13 @@ class BaseGameplayMode:
         alpha = int(255 * max(0.0, min(1.0, fade_alpha)))
         rl.draw_rectangle(0, 0, int(canvas.width()), int(canvas.height()), rl.Color(0, 0, 0, alpha))
 
-    def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
+    def _build_local_inputs(self) -> list[PlayerInput]:
         return self._local_input.build_frame_inputs(
             players=self.world.players,
             config=self.config,
             mouse_screen=self._ui_mouse,
             screen_to_world=self.screen_to_world,
-            dt=float(dt),
             pad_aim_dist_mul=self._cvar_float("cv_padAimDistMul", PAD_AIM_DIST_MUL_DEFAULT),
-            creatures=self.creatures.entries,
         )
 
     def _reset_gameplay_frame_clock(self) -> None:
@@ -955,7 +953,7 @@ class BaseGameplayMode:
         self._sync_audio()
         # Presentation only: the corpse decal alpha, never read back by the sim.
         session.terrain_fx.corpses.bodies_transparency = self._cvar_float("cv_terrainBodiesTransparency")
-        self._live_ticks.poll(self._build_local_inputs(dt=float(dt_frame)))
+        self._live_ticks.poll(self._build_local_inputs())
         plans: list[DeterministicPresentationPlan] = []
         for _ in range(self._tick_clock.advance(float(dt_frame))):
             tick = self._live_ticks.next_tick()

@@ -4,6 +4,8 @@ import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
+import msgspec
+
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
@@ -64,7 +66,7 @@ from .weapons import WeaponId
 if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
-    from .creatures.runtime import CreaturePool
+    from .creatures.runtime import CreaturePool, CreatureState
     from .sim.input import PlayerInput
     from .sim.state_types import PerkCounts, PlayerState
     from .sim.world_state import WorldStepRuntime
@@ -84,6 +86,13 @@ _AIM_POINT_RADIUS = 60.0
 _DUAL_ACTION_PAD_DEADZONE = f32(0.2)
 _POINT_CLICK_NO_TARGET = -1.0
 _POINT_CLICK_STOP_RADIUS = 20.0
+_COMPUTER_ARENA_CENTER = Vec2(512.0, 512.0)
+_COMPUTER_CHASE_RADIUS = 300.0
+_COMPUTER_NO_TARGET_DISTANCE = 100000.0
+_COMPUTER_RETARGET_MARGIN = 64.0
+_COMPUTER_AIM_SNAP_DISTANCE = 4.0
+_COMPUTER_AIM_TRACK_GAIN = 6.0
+_COMPUTER_AUTO_FIRE_DISTANCE = 128.0
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
@@ -360,6 +369,74 @@ def _aim_heading_from_aim_point_native(player_pos: Vec2, aim_pos: Vec2) -> float
     return x87_pc24_sub(x87_fpatan(dy, dx), NATIVE_HALF_PI)
 
 
+def _creature_distance(pos: Vec2, creature: CreatureState) -> float:
+    # Inline `VEC2_Length(pos - creature.pos)`: `sqrtf(dx * dx + dy * dy)` at PC24.
+    return x87_pc24_hypot(x87_pc24_sub(pos.x, creature.pos.x), x87_pc24_sub(pos.y, creature.pos.y))
+
+
+def _player_computer_retarget(player: PlayerState, creatures: Sequence[CreatureState]) -> None:
+    """Computer control's auto-target scan (0x00413e47..0x00413f17), before movement.
+
+    Pool order decides: a live creature takes over only when it is 64 units closer
+    than the best so far, starting from the current target (or 100000 when that
+    one is gone).
+    """
+
+    if player.auto_target < 0:
+        player.auto_target = 0
+    current = creatures[player.auto_target]
+    nearest = _COMPUTER_NO_TARGET_DISTANCE
+    if current.active and current.hp > 0.0:
+        nearest = _creature_distance(player.pos, current)
+    for index, creature in enumerate(creatures):
+        if not (creature.active and creature.hp > 0.0):
+            continue
+        distance = _creature_distance(player.pos, creature)
+        if distance < x87_pc24_sub(nearest, _COMPUTER_RETARGET_MARGIN):
+            player.auto_target = index
+            nearest = distance
+
+
+def _computer_move_heading(player: PlayerState, creatures: Sequence[CreatureState]) -> float:
+    """Computer steering heading (0x00414c7f..0x00414d6d).
+
+    Without a live auto-target it circles the arena centre (`atan2f(pos - centre) +
+    3.1415927f`); otherwise it heads for the centre beyond 300 units, else for the
+    target.
+    """
+
+    center_away = Vec2(
+        x87_pc24_sub(player.pos.x, _COMPUTER_ARENA_CENTER.x),
+        x87_pc24_sub(player.pos.y, _COMPUTER_ARENA_CENTER.y),
+    )
+    target = player.auto_target
+    if target < 0 or not creatures[target].hp > 0.0:
+        return x87_pc24_add(x87_fpatan(center_away.y, center_away.x), NATIVE_PI)
+    away = center_away
+    if not x87_pc24_hypot(center_away.x, center_away.y) > _COMPUTER_CHASE_RADIUS:
+        prey = creatures[target].pos
+        away = Vec2(x87_pc24_sub(player.pos.x, prey.x), x87_pc24_sub(player.pos.y, prey.y))
+    return _native_move_target_heading(away, normalize=False, wrap=False)
+
+
+def _player_computer_aim(player: PlayerState, creatures: Sequence[CreatureState], dt: float) -> bool:
+    """Computer aim (0x00415644..0x0041572e): chase the auto-target; returns the auto-fire latch."""
+
+    creature = creatures[player.auto_target]
+    delta = Vec2(x87_pc24_sub(creature.pos.x, player.aim.x), x87_pc24_sub(creature.pos.y, player.aim.y))
+    distance = x87_pc24_hypot(delta.x, delta.y)
+    if not distance >= _COMPUTER_AIM_SNAP_DISTANCE:
+        player.aim = creature.pos
+    else:
+        direction = x87_d3dx_vec2_normalize(delta)
+        step = x87_pc24_mul(x87_pc24_mul(distance, _COMPUTER_AIM_TRACK_GAIN), dt)
+        player.aim = Vec2(
+            x87_pc24_add(x87_pc24_mul(direction.x, step), player.aim.x),
+            x87_pc24_add(x87_pc24_mul(direction.y, step), player.aim.y),
+        )
+    return distance < _COMPUTER_AUTO_FIRE_DISTANCE and creature.hp > 0.0
+
+
 def _player_update_aim_by_scheme(
     *,
     player: PlayerState,
@@ -367,10 +444,17 @@ def _player_update_aim_by_scheme(
     dt: float,
     movement_mode: MovementControlType,
     aim_scheme: AimScheme,
-) -> None:
-    target_aim = input_state.aim
+    creatures: Sequence[CreatureState],
+) -> bool:
+    """The aim-scheme block of `player_update`; returns computer aim's auto-fire latch."""
 
-    if aim_scheme != AimScheme.COMPUTER:
+    target_aim = input_state.aim
+    auto_fire = False
+
+    if aim_scheme == AimScheme.COMPUTER:
+        auto_fire = _player_computer_aim(player, creatures, dt)
+        target_aim = player.aim
+    else:
         if aim_scheme == AimScheme.KEYBOARD:
             if movement_mode in (MovementControlType.RELATIVE, MovementControlType.STATIC):
                 if input_state.aim_turn_right:
@@ -394,6 +478,7 @@ def _player_update_aim_by_scheme(
     # 0x0041572e: native recomputes the heading unconditionally; an aim point on
     # the player gives `fpatan(+0, +0) - 1.5707964f`.
     player.aim_heading = _aim_heading_from_aim_point_native(player.pos, player.aim)
+    return auto_fire
 
 
 def _player_tick_perks(player: PlayerState, state: GameplayState, players: list[PlayerState], dt: float) -> None:
@@ -556,11 +641,6 @@ def _point_click_target_heading(pos: Vec2, move_target: Vec2) -> float | None:
     return _native_move_target_heading(away, normalize=False, wrap=True)
 
 
-def _away_from(move: Vec2) -> Vec2:
-    # `0 - v` keeps a +0 component positive, like native `pos - target`.
-    return Vec2(x87_pc24_sub(0.0, move.x), x87_pc24_sub(0.0, move.y))
-
-
 def _player_move_toward_heading(
     player: PlayerState,
     perks: PerkCounts,
@@ -590,7 +670,7 @@ def _player_move_toward_heading(
 def _player_move(
     player: PlayerState, input_state: PlayerInput,
     state: GameplayState, movement_dt: float, move_mode: MovementControlType,
-    speed_multiplier: float, creatures: CreaturePool | None,
+    speed_multiplier: float, creatures: CreaturePool,
 ) -> None:
     # Movement.
     raw_move = input_state.move
@@ -689,8 +769,7 @@ def _player_move(
         # input vector; native never scales speed by the stick magnitude.
         target_heading: float | None = None
         if not player_controlled_movement:
-            if raw_move.x != 0.0 or raw_move.y != 0.0:
-                target_heading = _native_move_target_heading(_away_from(raw_move), normalize=False, wrap=False)
+            target_heading = _computer_move_heading(player, creatures.entries)
         elif move_mode == MovementControlType.MOUSE_POINT_CLICK:
             target_heading = _point_click_target_heading(player.pos, raw_move)
         elif x87_pc24_hypot(raw_move.x, raw_move.y) > _DUAL_ACTION_PAD_DEADZONE:
@@ -897,6 +976,9 @@ def player_update(
 
     _player_tick_perks(player, state, players, dt)
 
+    if move_mode == MovementControlType.COMPUTER or aim_scheme == AimScheme.COMPUTER:
+        _player_computer_retarget(player, world.creatures.entries)
+
     _player_move(
         player, input_state, state, movement_dt, move_mode,
         speed_multiplier, world.creatures,
@@ -911,12 +993,13 @@ def player_update(
         player, input_state, state, frame_dt, prev_pos, move_mode, players,
     )
 
-    _player_update_aim_by_scheme(
+    auto_fire = _player_update_aim_by_scheme(
         player=player,
         input_state=input_state,
         dt=frame_dt,
         movement_mode=move_mode,
         aim_scheme=aim_scheme,
+        creatures=world.creatures.entries,
     )
 
     # Native cools spread after perk timers/movement but before weapon fire.
@@ -962,6 +1045,9 @@ def player_update(
             if reload_key_released:
                 state.player_alt_weapon_swap_cooldown_ms = 0
 
+    if auto_fire:
+        # Computer aim fires on its own when the target is in reach (0x00415729).
+        input_state = msgspec.structs.replace(input_state, fire_down=True)
     _fire_weapon(
         _WeaponFireCtx(
             player=player,

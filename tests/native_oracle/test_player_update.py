@@ -401,7 +401,7 @@ def test_relative_turn_matches_native(oracle) -> None:
             dt,
             MovementControlType.RELATIVE,
             2.0,
-            None,
+            CreaturePool(),
         )
         python = {"heading": player.heading, "aim_heading": player.aim_heading, "turn_speed": player.turn_speed}
         mismatches += compare_fields(f"{fields} dt={dt!r} left={left}", native, python, address=0x004144DC)
