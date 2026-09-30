@@ -121,6 +121,7 @@ def test_report_inventory_excludes_decoded_padding_without_truncating_operands(
     image = SimpleNamespace(
         name="crimsonland.exe",
         is_canonical=True,
+        native_inventory=None,
         target=SimpleNamespace(
             functions_path=Path("functions.json"),
             metadata_path=Path("metadata.json"),

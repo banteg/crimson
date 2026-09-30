@@ -40,7 +40,9 @@ for build in registry["builds"]:
         for function in sorted(view.functions, key=lambda f: f.start):
             blocks = sorted({(block.start, block.end) for block in function.basic_blocks})
             if blocks:
-                functions.append({"address": function.start, "name": function.name,
+                # Discovery labels identify an address, never a recovered identity.
+                # Analyzer sub_* labels would collide with the curated newer build.
+                functions.append({"address": function.start, "name": f"native_function_{function.start:08x}",
                     "blocks": [{"address": lo, "end": hi, "sha256": hashlib.sha256(view.read(lo, hi-lo)).hexdigest()}
                                for lo, hi in blocks]})
         for region in previous["ownership_ranges"]:

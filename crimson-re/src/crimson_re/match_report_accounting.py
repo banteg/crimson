@@ -213,8 +213,8 @@ def diagnostics(
                               for r in sorted(unmatched, key=lambda r: (-r["size"], native_id(r)))[:20]],
         "code_inventory": evidence["code_inventory"],
     }
-    # Unresolved executable bytes are outside the curated code denominator. Show
-    # them alongside every version's progress so a sparse build map is visible.
+    # Show executable coverage alongside progress for both curated inventories
+    # and native inventories that include unresolved bytes in the denominator.
     inventory = evidence["code_inventory"]
     result["executable_coverage"] = {
         "total_bytes": sum(s["size"] for s in inventory),
@@ -228,7 +228,7 @@ def diagnostics(
             members = [by_id[u["functions"][0]["name"]] for u in report["units"]
                        if len(u["functions"]) == 1 and u["functions"][0]["name"] in by_id
                        and category["id"] in u["metadata"]["progress_categories"]]
-            size = sum(r["size"] for r in members)
+            size = int(category["measures"]["total_code"])
             encoded_size = sum(r["size"] for r in members if r["candidate"] == "source" and r["matched"]
                                and r["proof"]["body_byte_exact"])
             result["scopes"][category["id"]] = {
@@ -279,15 +279,19 @@ def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: di
         linked = f"{measures['complete_code_percent']:.2f}%" if total else "n/a"
         linked += " / " + (f"{measures['complete_data_percent']:.2f}%" if data_total else "n/a")
         lines.append(f"| {label} | {code} | {fuzzy} | {encoded} | {data} | {linked} |")
+    native = evidence["identities"].get("inventory_policy") == "native-functions-and-full-executable-remainder-v1"
     lines.extend(["", ("Fuzzy = sum(original code bytes × source candidate score) / total original code bytes. "
                       "Prebuilt code gets no public credit; unresolved references or incomplete coverage stay below 100%."),
                   "Linked credit covers checked source components at native virtual addresses, including final bytes and relocations. Structural linker receipts earn none.", "",
-                  "| Image | Executable virtual bytes | Curated code bytes | Unresolved executable bytes |",
+                  ("| Image | Executable virtual bytes | Native function bytes | Unresolved executable bytes |" if native
+                   else "| Image | Executable virtual bytes | Curated code bytes | Unresolved executable bytes |"),
                   "| --- | --- | --- | --- |"])
     for section in evidence["code_inventory"]:
         lines.append(f"| {section['image']} {section['name']} | {section['size']:,} | "
                      f"{section['totals']['retained_code']:,} | {section['totals']['unresolved']:,} |")
     lines.extend(["", ("Unresolved executable bytes may contain code, padding or embedded data. "
+                      "They remain in each owning category's denominator with zero credit." if native else
+                      "Unresolved executable bytes may contain code, padding or embedded data. "
                       "They are not silently classified or included in a Game & Engine completion claim. "
                       "100% of curated code does not prove whole-image recovery."), ""])
     if "delta" in metrics:

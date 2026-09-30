@@ -12,7 +12,7 @@
   "functions": [
     {
       "address": 4198400,
-      "name": "sub_401000",
+      "name": "native_function_00401000",
       "blocks": [
         {
           "address": 4198400,
@@ -38,7 +38,7 @@
     },
     {
       "address": 4198704,
-      "name": "sub_401130",
+      "name": "native_function_00401130",
       "blocks": [
         {
           "address": 4198704,
@@ -59,7 +59,7 @@
     },
     {
       "address": 4198864,
-      "name": "sub_4011d0",
+      "name": "native_function_004011d0",
       "blocks": [
         {
           "address": 4198864,
@@ -75,7 +75,7 @@
     },
     {
       "address": 4199120,
-      "name": "sub_4012d0",
+      "name": "native_function_004012d0",
       "blocks": [
         {
           "address": 4199120,
@@ -91,7 +91,7 @@
     },
     {
       "address": 4199152,
-      "name": "sub_4012f0",
+      "name": "native_function_004012f0",
       "blocks": [
         {
           "address": 4199152,
@@ -107,7 +107,7 @@
     },
     {
       "address": 4199232,
-      "name": "sub_401340",
+      "name": "native_function_00401340",
       "blocks": [
         {
           "address": 4199232,
@@ -123,7 +123,7 @@
     },
     {
       "address": 4199248,
-      "name": "sub_401350",
+      "name": "native_function_00401350",
       "blocks": [
         {
           "address": 4199248,
@@ -134,7 +134,7 @@
     },
     {
       "address": 4199280,
-      "name": "sub_401370",
+      "name": "native_function_00401370",
       "blocks": [
         {
           "address": 4199280,
@@ -145,7 +145,7 @@
     },
     {
       "address": 4199312,
-      "name": "sub_401390",
+      "name": "native_function_00401390",
       "blocks": [
         {
           "address": 4199312,
@@ -176,7 +176,7 @@
     },
     {
       "address": 4199360,
-      "name": "sub_4013c0",
+      "name": "native_function_004013c0",
       "blocks": [
         {
           "address": 4199360,
@@ -187,7 +187,7 @@
     },
     {
       "address": 4199376,
-      "name": "sub_4013d0",
+      "name": "native_function_004013d0",
       "blocks": [
         {
           "address": 4199376,
@@ -198,7 +198,7 @@
     },
     {
       "address": 4199408,
-      "name": "sub_4013f0",
+      "name": "native_function_004013f0",
       "blocks": [
         {
           "address": 4199408,
@@ -214,7 +214,7 @@
     },
     {
       "address": 4199440,
-      "name": "sub_401410",
+      "name": "native_function_00401410",
       "blocks": [
         {
           "address": 4199440,
@@ -230,7 +230,7 @@
     },
     {
       "address": 4199488,
-      "name": "sub_401440",
+      "name": "native_function_00401440",
       "blocks": [
         {
           "address": 4199488,
@@ -246,7 +246,7 @@
     },
     {
       "address": 4199520,
-      "name": "sub_401460",
+      "name": "native_function_00401460",
       "blocks": [
         {
           "address": 4199520,
@@ -272,7 +272,7 @@
     },
     {
       "address": 4199584,
-      "name": "sub_4014a0",
+      "name": "native_function_004014a0",
       "blocks": [
         {
           "address": 4199584,
@@ -298,7 +298,7 @@
     },
     {
       "address": 4199712,
-      "name": "sub_401520",
+      "name": "native_function_00401520",
       "blocks": [
         {
           "address": 4199712,
@@ -324,7 +324,7 @@
     },
     {
       "address": 4199888,
-      "name": "sub_4015d0",
+      "name": "native_function_004015d0",
       "blocks": [
         {
           "address": 4199888,
@@ -350,7 +350,7 @@
     },
     {
       "address": 4199952,
-      "name": "sub_401610",
+      "name": "native_function_00401610",
       "blocks": [
         {
           "address": 4199952,
@@ -366,7 +366,7 @@
     },
     {
       "address": 4199968,
-      "name": "sub_401620",
+      "name": "native_function_00401620",
       "blocks": [
         {
           "address": 4199968,
@@ -377,7 +377,7 @@
     },
     {
       "address": 4199984,
-      "name": "sub_401630",
+      "name": "native_function_00401630",
       "blocks": [
         {
           "address": 4199984,
@@ -393,7 +393,7 @@
     },
     {
       "address": 4200000,
-      "name": "sub_401640",
+      "name": "native_function_00401640",
       "blocks": [
         {
           "address": 4200000,
@@ -404,7 +404,7 @@
     },
     {
       "address": 4200016,
-      "name": "sub_401650",
+      "name": "native_function_00401650",
       "blocks": [
         {
           "address": 4200016,
@@ -420,7 +420,7 @@
     },
     {
       "address": 4200048,
-      "name": "sub_401670",
+      "name": "native_function_00401670",
       "blocks": [
         {
           "address": 4200048,
@@ -436,7 +436,7 @@
     },
     {
       "address": 4200064,
-      "name": "sub_401680",
+      "name": "native_function_00401680",
       "blocks": [
         {
           "address": 4200064,
@@ -447,7 +447,7 @@
     },
     {
       "address": 4200080,
-      "name": "sub_401690",
+      "name": "native_function_00401690",
       "blocks": [
         {
           "address": 4200080,
@@ -473,7 +473,7 @@
     },
     {
       "address": 4200144,
-      "name": "sub_4016d0",
+      "name": "native_function_004016d0",
       "blocks": [
         {
           "address": 4200144,
@@ -499,7 +499,7 @@
     },
     {
       "address": 4200272,
-      "name": "sub_401750",
+      "name": "native_function_00401750",
       "blocks": [
         {
           "address": 4200272,
@@ -515,7 +515,7 @@
     },
     {
       "address": 4200288,
-      "name": "sub_401760",
+      "name": "native_function_00401760",
       "blocks": [
         {
           "address": 4200288,
@@ -526,7 +526,7 @@
     },
     {
       "address": 4200304,
-      "name": "sub_401770",
+      "name": "native_function_00401770",
       "blocks": [
         {
           "address": 4200304,
@@ -542,7 +542,7 @@
     },
     {
       "address": 4200320,
-      "name": "sub_401780",
+      "name": "native_function_00401780",
       "blocks": [
         {
           "address": 4200320,
@@ -553,7 +553,7 @@
     },
     {
       "address": 4200368,
-      "name": "sub_4017b0",
+      "name": "native_function_004017b0",
       "blocks": [
         {
           "address": 4200368,
@@ -564,7 +564,7 @@
     },
     {
       "address": 4200416,
-      "name": "sub_4017e0",
+      "name": "native_function_004017e0",
       "blocks": [
         {
           "address": 4200416,
@@ -615,7 +615,7 @@
     },
     {
       "address": 4200512,
-      "name": "sub_401840",
+      "name": "native_function_00401840",
       "blocks": [
         {
           "address": 4200512,
@@ -626,7 +626,7 @@
     },
     {
       "address": 4200608,
-      "name": "sub_4018a0",
+      "name": "native_function_004018a0",
       "blocks": [
         {
           "address": 4200608,
@@ -637,7 +637,7 @@
     },
     {
       "address": 4200640,
-      "name": "sub_4018c0",
+      "name": "native_function_004018c0",
       "blocks": [
         {
           "address": 4200640,
@@ -718,7 +718,7 @@
     },
     {
       "address": 4200832,
-      "name": "sub_401980",
+      "name": "native_function_00401980",
       "blocks": [
         {
           "address": 4200832,
@@ -729,7 +729,7 @@
     },
     {
       "address": 4200896,
-      "name": "sub_4019c0",
+      "name": "native_function_004019c0",
       "blocks": [
         {
           "address": 4200896,
@@ -960,7 +960,7 @@
     },
     {
       "address": 4201888,
-      "name": "sub_401da0",
+      "name": "native_function_00401da0",
       "blocks": [
         {
           "address": 4201888,
@@ -1071,7 +1071,7 @@
     },
     {
       "address": 4202208,
-      "name": "sub_401ee0",
+      "name": "native_function_00401ee0",
       "blocks": [
         {
           "address": 4202208,
@@ -1192,7 +1192,7 @@
     },
     {
       "address": 4202640,
-      "name": "sub_402090",
+      "name": "native_function_00402090",
       "blocks": [
         {
           "address": 4202640,
@@ -1223,7 +1223,7 @@
     },
     {
       "address": 4202688,
-      "name": "sub_4020c0",
+      "name": "native_function_004020c0",
       "blocks": [
         {
           "address": 4202688,
@@ -1284,7 +1284,7 @@
     },
     {
       "address": 4202944,
-      "name": "sub_4021c0",
+      "name": "native_function_004021c0",
       "blocks": [
         {
           "address": 4202944,
@@ -1505,7 +1505,7 @@
     },
     {
       "address": 4204640,
-      "name": "sub_402860",
+      "name": "native_function_00402860",
       "blocks": [
         {
           "address": 4204640,
@@ -1516,7 +1516,7 @@
     },
     {
       "address": 4204656,
-      "name": "sub_402870",
+      "name": "native_function_00402870",
       "blocks": [
         {
           "address": 4204656,
@@ -1637,7 +1637,7 @@
     },
     {
       "address": 4205088,
-      "name": "sub_402a20",
+      "name": "native_function_00402a20",
       "blocks": [
         {
           "address": 4205088,
@@ -1718,7 +1718,7 @@
     },
     {
       "address": 4205456,
-      "name": "sub_402b90",
+      "name": "native_function_00402b90",
       "blocks": [
         {
           "address": 4205456,
@@ -1869,7 +1869,7 @@
     },
     {
       "address": 4205968,
-      "name": "sub_402d90",
+      "name": "native_function_00402d90",
       "blocks": [
         {
           "address": 4205968,
@@ -1900,7 +1900,7 @@
     },
     {
       "address": 4206032,
-      "name": "sub_402dd0",
+      "name": "native_function_00402dd0",
       "blocks": [
         {
           "address": 4206032,
@@ -1921,7 +1921,7 @@
     },
     {
       "address": 4206080,
-      "name": "sub_402e00",
+      "name": "native_function_00402e00",
       "blocks": [
         {
           "address": 4206080,
@@ -1942,7 +1942,7 @@
     },
     {
       "address": 4206368,
-      "name": "sub_402f20",
+      "name": "native_function_00402f20",
       "blocks": [
         {
           "address": 4206368,
@@ -1963,7 +1963,7 @@
     },
     {
       "address": 4206432,
-      "name": "sub_402f60",
+      "name": "native_function_00402f60",
       "blocks": [
         {
           "address": 4206432,
@@ -2004,7 +2004,7 @@
     },
     {
       "address": 4206544,
-      "name": "sub_402fd0",
+      "name": "native_function_00402fd0",
       "blocks": [
         {
           "address": 4206544,
@@ -2045,7 +2045,7 @@
     },
     {
       "address": 4206592,
-      "name": "sub_403000",
+      "name": "native_function_00403000",
       "blocks": [
         {
           "address": 4206592,
@@ -2076,7 +2076,7 @@
     },
     {
       "address": 4206736,
-      "name": "sub_403090",
+      "name": "native_function_00403090",
       "blocks": [
         {
           "address": 4206736,
@@ -2197,7 +2197,7 @@
     },
     {
       "address": 4207152,
-      "name": "sub_403230",
+      "name": "native_function_00403230",
       "blocks": [
         {
           "address": 4207152,
@@ -2243,7 +2243,7 @@
     },
     {
       "address": 4207280,
-      "name": "sub_4032b0",
+      "name": "native_function_004032b0",
       "blocks": [
         {
           "address": 4207280,
@@ -2289,7 +2289,7 @@
     },
     {
       "address": 4207392,
-      "name": "sub_403320",
+      "name": "native_function_00403320",
       "blocks": [
         {
           "address": 4207392,
@@ -2300,7 +2300,7 @@
     },
     {
       "address": 4207408,
-      "name": "sub_403330",
+      "name": "native_function_00403330",
       "blocks": [
         {
           "address": 4207408,
@@ -2311,7 +2311,7 @@
     },
     {
       "address": 4207424,
-      "name": "sub_403340",
+      "name": "native_function_00403340",
       "blocks": [
         {
           "address": 4207424,
@@ -2332,7 +2332,7 @@
     },
     {
       "address": 4207568,
-      "name": "sub_4033d0",
+      "name": "native_function_004033d0",
       "blocks": [
         {
           "address": 4207568,
@@ -2353,7 +2353,7 @@
     },
     {
       "address": 4207600,
-      "name": "sub_4033f0",
+      "name": "native_function_004033f0",
       "blocks": [
         {
           "address": 4207600,
@@ -2374,7 +2374,7 @@
     },
     {
       "address": 4207632,
-      "name": "sub_403410",
+      "name": "native_function_00403410",
       "blocks": [
         {
           "address": 4207632,
@@ -2385,7 +2385,7 @@
     },
     {
       "address": 4207680,
-      "name": "sub_403440",
+      "name": "native_function_00403440",
       "blocks": [
         {
           "address": 4207680,
@@ -2396,7 +2396,7 @@
     },
     {
       "address": 4207728,
-      "name": "sub_403470",
+      "name": "native_function_00403470",
       "blocks": [
         {
           "address": 4207728,
@@ -2407,7 +2407,7 @@
     },
     {
       "address": 4207776,
-      "name": "sub_4034a0",
+      "name": "native_function_004034a0",
       "blocks": [
         {
           "address": 4207776,
@@ -2418,7 +2418,7 @@
     },
     {
       "address": 4207824,
-      "name": "sub_4034d0",
+      "name": "native_function_004034d0",
       "blocks": [
         {
           "address": 4207824,
@@ -2429,7 +2429,7 @@
     },
     {
       "address": 4207856,
-      "name": "sub_4034f0",
+      "name": "native_function_004034f0",
       "blocks": [
         {
           "address": 4207856,
@@ -2440,7 +2440,7 @@
     },
     {
       "address": 4207888,
-      "name": "sub_403510",
+      "name": "native_function_00403510",
       "blocks": [
         {
           "address": 4207888,
@@ -2531,7 +2531,7 @@
     },
     {
       "address": 4208592,
-      "name": "sub_4037d0",
+      "name": "native_function_004037d0",
       "blocks": [
         {
           "address": 4208592,
@@ -2607,7 +2607,7 @@
     },
     {
       "address": 4208816,
-      "name": "sub_4038b0",
+      "name": "native_function_004038b0",
       "blocks": [
         {
           "address": 4208816,
@@ -2628,7 +2628,7 @@
     },
     {
       "address": 4208992,
-      "name": "sub_403960",
+      "name": "native_function_00403960",
       "blocks": [
         {
           "address": 4208992,
@@ -2659,7 +2659,7 @@
     },
     {
       "address": 4209392,
-      "name": "sub_403af0",
+      "name": "native_function_00403af0",
       "blocks": [
         {
           "address": 4209392,
@@ -2725,7 +2725,7 @@
     },
     {
       "address": 4209664,
-      "name": "sub_403c00",
+      "name": "native_function_00403c00",
       "blocks": [
         {
           "address": 4209664,
@@ -2906,7 +2906,7 @@
     },
     {
       "address": 4210176,
-      "name": "sub_403e00",
+      "name": "native_function_00403e00",
       "blocks": [
         {
           "address": 4210176,
@@ -2992,7 +2992,7 @@
     },
     {
       "address": 4210400,
-      "name": "sub_403ee0",
+      "name": "native_function_00403ee0",
       "blocks": [
         {
           "address": 4210400,
@@ -3103,7 +3103,7 @@
     },
     {
       "address": 4210720,
-      "name": "sub_404020",
+      "name": "native_function_00404020",
       "blocks": [
         {
           "address": 4210720,
@@ -3134,7 +3134,7 @@
     },
     {
       "address": 4210752,
-      "name": "sub_404040",
+      "name": "native_function_00404040",
       "blocks": [
         {
           "address": 4210752,
@@ -3145,7 +3145,7 @@
     },
     {
       "address": 4210896,
-      "name": "sub_4040d0",
+      "name": "native_function_004040d0",
       "blocks": [
         {
           "address": 4210896,
@@ -3181,7 +3181,7 @@
     },
     {
       "address": 4210976,
-      "name": "sub_404120",
+      "name": "native_function_00404120",
       "blocks": [
         {
           "address": 4210976,
@@ -3362,7 +3362,7 @@
     },
     {
       "address": 4211504,
-      "name": "sub_404330",
+      "name": "native_function_00404330",
       "blocks": [
         {
           "address": 4211504,
@@ -3388,7 +3388,7 @@
     },
     {
       "address": 4211664,
-      "name": "sub_4043d0",
+      "name": "native_function_004043d0",
       "blocks": [
         {
           "address": 4211664,
@@ -3419,7 +3419,7 @@
     },
     {
       "address": 4211776,
-      "name": "sub_404440",
+      "name": "native_function_00404440",
       "blocks": [
         {
           "address": 4211776,
@@ -3450,7 +3450,7 @@
     },
     {
       "address": 4211888,
-      "name": "sub_4044b0",
+      "name": "native_function_004044b0",
       "blocks": [
         {
           "address": 4211888,
@@ -3476,7 +3476,7 @@
     },
     {
       "address": 4211984,
-      "name": "sub_404510",
+      "name": "native_function_00404510",
       "blocks": [
         {
           "address": 4211984,
@@ -3527,7 +3527,7 @@
     },
     {
       "address": 4212368,
-      "name": "sub_404690",
+      "name": "native_function_00404690",
       "blocks": [
         {
           "address": 4212368,
@@ -3548,7 +3548,7 @@
     },
     {
       "address": 4212416,
-      "name": "sub_4046c0",
+      "name": "native_function_004046c0",
       "blocks": [
         {
           "address": 4212416,
@@ -3764,7 +3764,7 @@
     },
     {
       "address": 4213344,
-      "name": "sub_404a60",
+      "name": "native_function_00404a60",
       "blocks": [
         {
           "address": 4213344,
@@ -3800,7 +3800,7 @@
     },
     {
       "address": 4213456,
-      "name": "sub_404ad0",
+      "name": "native_function_00404ad0",
       "blocks": [
         {
           "address": 4213456,
@@ -4031,7 +4031,7 @@
     },
     {
       "address": 4215552,
-      "name": "sub_405300",
+      "name": "native_function_00405300",
       "blocks": [
         {
           "address": 4215552,
@@ -4087,7 +4087,7 @@
     },
     {
       "address": 4216000,
-      "name": "sub_4054c0",
+      "name": "native_function_004054c0",
       "blocks": [
         {
           "address": 4216000,
@@ -4188,7 +4188,7 @@
     },
     {
       "address": 4217776,
-      "name": "sub_405bb0",
+      "name": "native_function_00405bb0",
       "blocks": [
         {
           "address": 4217776,
@@ -4269,7 +4269,7 @@
     },
     {
       "address": 4218000,
-      "name": "sub_405c90",
+      "name": "native_function_00405c90",
       "blocks": [
         {
           "address": 4218000,
@@ -4300,7 +4300,7 @@
     },
     {
       "address": 4218096,
-      "name": "sub_405cf0",
+      "name": "native_function_00405cf0",
       "blocks": [
         {
           "address": 4218096,
@@ -4341,7 +4341,7 @@
     },
     {
       "address": 4218208,
-      "name": "sub_405d60",
+      "name": "native_function_00405d60",
       "blocks": [
         {
           "address": 4218208,
@@ -4402,7 +4402,7 @@
     },
     {
       "address": 4218528,
-      "name": "sub_405ea0",
+      "name": "native_function_00405ea0",
       "blocks": [
         {
           "address": 4218528,
@@ -4433,7 +4433,7 @@
     },
     {
       "address": 4218560,
-      "name": "sub_405ec0",
+      "name": "native_function_00405ec0",
       "blocks": [
         {
           "address": 4218560,
@@ -4464,7 +4464,7 @@
     },
     {
       "address": 4218592,
-      "name": "sub_405ee0",
+      "name": "native_function_00405ee0",
       "blocks": [
         {
           "address": 4218592,
@@ -4475,7 +4475,7 @@
     },
     {
       "address": 4218832,
-      "name": "sub_405fd0",
+      "name": "native_function_00405fd0",
       "blocks": [
         {
           "address": 4218832,
@@ -4506,7 +4506,7 @@
     },
     {
       "address": 4218864,
-      "name": "sub_405ff0",
+      "name": "native_function_00405ff0",
       "blocks": [
         {
           "address": 4218864,
@@ -4527,7 +4527,7 @@
     },
     {
       "address": 4219088,
-      "name": "sub_4060d0",
+      "name": "native_function_004060d0",
       "blocks": [
         {
           "address": 4219088,
@@ -4558,7 +4558,7 @@
     },
     {
       "address": 4219312,
-      "name": "sub_4061b0",
+      "name": "native_function_004061b0",
       "blocks": [
         {
           "address": 4219312,
@@ -4589,7 +4589,7 @@
     },
     {
       "address": 4219360,
-      "name": "sub_4061e0",
+      "name": "native_function_004061e0",
       "blocks": [
         {
           "address": 4219360,
@@ -4630,7 +4630,7 @@
     },
     {
       "address": 4219488,
-      "name": "sub_406260",
+      "name": "native_function_00406260",
       "blocks": [
         {
           "address": 4219488,
@@ -5851,7 +5851,7 @@
     },
     {
       "address": 4227152,
-      "name": "sub_408050",
+      "name": "native_function_00408050",
       "blocks": [
         {
           "address": 4227152,
@@ -6412,7 +6412,7 @@
     },
     {
       "address": 4234176,
-      "name": "sub_409bc0",
+      "name": "native_function_00409bc0",
       "blocks": [
         {
           "address": 4234176,
@@ -6488,7 +6488,7 @@
     },
     {
       "address": 4234368,
-      "name": "sub_409c80",
+      "name": "native_function_00409c80",
       "blocks": [
         {
           "address": 4234368,
@@ -6819,7 +6819,7 @@
     },
     {
       "address": 4236224,
-      "name": "sub_40a3c0",
+      "name": "native_function_0040a3c0",
       "blocks": [
         {
           "address": 4236224,
@@ -6895,7 +6895,7 @@
     },
     {
       "address": 4237824,
-      "name": "sub_40aa00",
+      "name": "native_function_0040aa00",
       "blocks": [
         {
           "address": 4237824,
@@ -6916,7 +6916,7 @@
     },
     {
       "address": 4237888,
-      "name": "sub_40aa40",
+      "name": "native_function_0040aa40",
       "blocks": [
         {
           "address": 4237888,
@@ -6942,7 +6942,7 @@
     },
     {
       "address": 4237952,
-      "name": "sub_40aa80",
+      "name": "native_function_0040aa80",
       "blocks": [
         {
           "address": 4237952,
@@ -6963,7 +6963,7 @@
     },
     {
       "address": 4238080,
-      "name": "sub_40ab00",
+      "name": "native_function_0040ab00",
       "blocks": [
         {
           "address": 4238080,
@@ -7149,7 +7149,7 @@
     },
     {
       "address": 4239952,
-      "name": "sub_40b250",
+      "name": "native_function_0040b250",
       "blocks": [
         {
           "address": 4239952,
@@ -7210,7 +7210,7 @@
     },
     {
       "address": 4240608,
-      "name": "sub_40b4e0",
+      "name": "native_function_0040b4e0",
       "blocks": [
         {
           "address": 4240608,
@@ -7241,7 +7241,7 @@
     },
     {
       "address": 4240656,
-      "name": "sub_40b510",
+      "name": "native_function_0040b510",
       "blocks": [
         {
           "address": 4240656,
@@ -7262,7 +7262,7 @@
     },
     {
       "address": 4240688,
-      "name": "sub_40b530",
+      "name": "native_function_0040b530",
       "blocks": [
         {
           "address": 4240688,
@@ -7293,7 +7293,7 @@
     },
     {
       "address": 4240720,
-      "name": "sub_40b550",
+      "name": "native_function_0040b550",
       "blocks": [
         {
           "address": 4240720,
@@ -7474,7 +7474,7 @@
     },
     {
       "address": 4242032,
-      "name": "sub_40ba70",
+      "name": "native_function_0040ba70",
       "blocks": [
         {
           "address": 4242032,
@@ -7530,7 +7530,7 @@
     },
     {
       "address": 4242448,
-      "name": "sub_40bc10",
+      "name": "native_function_0040bc10",
       "blocks": [
         {
           "address": 4242448,
@@ -7736,7 +7736,7 @@
     },
     {
       "address": 4244128,
-      "name": "sub_40c2a0",
+      "name": "native_function_0040c2a0",
       "blocks": [
         {
           "address": 4244128,
@@ -7937,7 +7937,7 @@
     },
     {
       "address": 4247392,
-      "name": "sub_40cf60",
+      "name": "native_function_0040cf60",
       "blocks": [
         {
           "address": 4247392,
@@ -8423,7 +8423,7 @@
     },
     {
       "address": 4252352,
-      "name": "sub_40e2c0",
+      "name": "native_function_0040e2c0",
       "blocks": [
         {
           "address": 4252352,
@@ -8479,7 +8479,7 @@
     },
     {
       "address": 4252720,
-      "name": "sub_40e430",
+      "name": "native_function_0040e430",
       "blocks": [
         {
           "address": 4252720,
@@ -9700,7 +9700,7 @@
     },
     {
       "address": 4263344,
-      "name": "sub_410db0",
+      "name": "native_function_00410db0",
       "blocks": [
         {
           "address": 4263344,
@@ -9946,7 +9946,7 @@
     },
     {
       "address": 4265488,
-      "name": "sub_411610",
+      "name": "native_function_00411610",
       "blocks": [
         {
           "address": 4265488,
@@ -10027,7 +10027,7 @@
     },
     {
       "address": 4266016,
-      "name": "sub_411820",
+      "name": "native_function_00411820",
       "blocks": [
         {
           "address": 4266016,
@@ -10038,7 +10038,7 @@
     },
     {
       "address": 4266080,
-      "name": "sub_411860",
+      "name": "native_function_00411860",
       "blocks": [
         {
           "address": 4266080,
@@ -10609,7 +10609,7 @@
     },
     {
       "address": 4270848,
-      "name": "sub_412b00",
+      "name": "native_function_00412b00",
       "blocks": [
         {
           "address": 4270848,
@@ -11185,7 +11185,7 @@
     },
     {
       "address": 4272080,
-      "name": "sub_412fd0",
+      "name": "native_function_00412fd0",
       "blocks": [
         {
           "address": 4272080,
@@ -12226,7 +12226,7 @@
     },
     {
       "address": 4277341,
-      "name": "sub_41445d",
+      "name": "native_function_0041445d",
       "blocks": [
         {
           "address": 4277341,
@@ -13852,7 +13852,7 @@
     },
     {
       "address": 4284879,
-      "name": "sub_4161cf",
+      "name": "native_function_004161cf",
       "blocks": [
         {
           "address": 4284879,
@@ -14533,7 +14533,7 @@
     },
     {
       "address": 4288971,
-      "name": "sub_4171cb",
+      "name": "native_function_004171cb",
       "blocks": [
         {
           "address": 4288400,
@@ -14789,7 +14789,7 @@
     },
     {
       "address": 4289079,
-      "name": "sub_417237",
+      "name": "native_function_00417237",
       "blocks": [
         {
           "address": 4288400,
@@ -15040,7 +15040,7 @@
     },
     {
       "address": 4289267,
-      "name": "sub_4172f3",
+      "name": "native_function_004172f3",
       "blocks": [
         {
           "address": 4289267,
@@ -15201,7 +15201,7 @@
     },
     {
       "address": 4290041,
-      "name": "sub_4175f9",
+      "name": "native_function_004175f9",
       "blocks": [
         {
           "address": 4290041,
@@ -15352,7 +15352,7 @@
     },
     {
       "address": 4290693,
-      "name": "sub_417885",
+      "name": "native_function_00417885",
       "blocks": [
         {
           "address": 4290693,
@@ -15648,7 +15648,7 @@
     },
     {
       "address": 4293600,
-      "name": "sub_4183e0",
+      "name": "native_function_004183e0",
       "blocks": [
         {
           "address": 4293600,
@@ -15659,7 +15659,7 @@
     },
     {
       "address": 4293616,
-      "name": "sub_4183f0",
+      "name": "native_function_004183f0",
       "blocks": [
         {
           "address": 4293616,
@@ -15775,7 +15775,7 @@
     },
     {
       "address": 4297232,
-      "name": "sub_419210",
+      "name": "native_function_00419210",
       "blocks": [
         {
           "address": 4297232,
@@ -15846,7 +15846,7 @@
     },
     {
       "address": 4297888,
-      "name": "sub_4194a0",
+      "name": "native_function_004194a0",
       "blocks": [
         {
           "address": 4297888,
@@ -15857,7 +15857,7 @@
     },
     {
       "address": 4298480,
-      "name": "sub_4196f0",
+      "name": "native_function_004196f0",
       "blocks": [
         {
           "address": 4298480,
@@ -16088,7 +16088,7 @@
     },
     {
       "address": 4300064,
-      "name": "sub_419d20",
+      "name": "native_function_00419d20",
       "blocks": [
         {
           "address": 4300064,
@@ -16109,7 +16109,7 @@
     },
     {
       "address": 4300096,
-      "name": "sub_419d40",
+      "name": "native_function_00419d40",
       "blocks": [
         {
           "address": 4300096,
@@ -16130,7 +16130,7 @@
     },
     {
       "address": 4300128,
-      "name": "sub_419d60",
+      "name": "native_function_00419d60",
       "blocks": [
         {
           "address": 4300128,
@@ -17356,7 +17356,7 @@
     },
     {
       "address": 4306912,
-      "name": "sub_41b7e0",
+      "name": "native_function_0041b7e0",
       "blocks": [
         {
           "address": 4306912,
@@ -17367,7 +17367,7 @@
     },
     {
       "address": 4306960,
-      "name": "sub_41b810",
+      "name": "native_function_0041b810",
       "blocks": [
         {
           "address": 4306960,
@@ -17388,7 +17388,7 @@
     },
     {
       "address": 4306992,
-      "name": "sub_41b830",
+      "name": "native_function_0041b830",
       "blocks": [
         {
           "address": 4306992,
@@ -17399,7 +17399,7 @@
     },
     {
       "address": 4307008,
-      "name": "sub_41b840",
+      "name": "native_function_0041b840",
       "blocks": [
         {
           "address": 4307008,
@@ -17660,7 +17660,7 @@
     },
     {
       "address": 4307536,
-      "name": "sub_41ba50",
+      "name": "native_function_0041ba50",
       "blocks": [
         {
           "address": 4307536,
@@ -17701,7 +17701,7 @@
     },
     {
       "address": 4307584,
-      "name": "sub_41ba80",
+      "name": "native_function_0041ba80",
       "blocks": [
         {
           "address": 4307584,
@@ -17742,7 +17742,7 @@
     },
     {
       "address": 4307632,
-      "name": "sub_41bab0",
+      "name": "native_function_0041bab0",
       "blocks": [
         {
           "address": 4307632,
@@ -17763,7 +17763,7 @@
     },
     {
       "address": 4307664,
-      "name": "_FSOUND_Sample_SetLoopMode@8",
+      "name": "native_function_0041bad0",
       "blocks": [
         {
           "address": 4307664,
@@ -17774,7 +17774,7 @@
     },
     {
       "address": 4307670,
-      "name": "_FSOUND_Sample_Load@16",
+      "name": "native_function_0041bad6",
       "blocks": [
         {
           "address": 4307670,
@@ -17785,7 +17785,7 @@
     },
     {
       "address": 4307676,
-      "name": "_FSOUND_Init@12",
+      "name": "native_function_0041badc",
       "blocks": [
         {
           "address": 4307676,
@@ -17796,7 +17796,7 @@
     },
     {
       "address": 4307682,
-      "name": "_FSOUND_SetDriver@4",
+      "name": "native_function_0041bae2",
       "blocks": [
         {
           "address": 4307682,
@@ -17807,7 +17807,7 @@
     },
     {
       "address": 4307688,
-      "name": "_FSOUND_SetOutput@4",
+      "name": "native_function_0041bae8",
       "blocks": [
         {
           "address": 4307688,
@@ -17818,7 +17818,7 @@
     },
     {
       "address": 4307694,
-      "name": "_FSOUND_GetVersion@0",
+      "name": "native_function_0041baee",
       "blocks": [
         {
           "address": 4307694,
@@ -17829,7 +17829,7 @@
     },
     {
       "address": 4307700,
-      "name": "_FSOUND_Close@0",
+      "name": "native_function_0041baf4",
       "blocks": [
         {
           "address": 4307700,
@@ -17840,7 +17840,7 @@
     },
     {
       "address": 4307706,
-      "name": "_FSOUND_Sample_Free@4",
+      "name": "native_function_0041bafa",
       "blocks": [
         {
           "address": 4307706,
@@ -17851,7 +17851,7 @@
     },
     {
       "address": 4307712,
-      "name": "_FSOUND_SetPaused@8",
+      "name": "native_function_0041bb00",
       "blocks": [
         {
           "address": 4307712,
@@ -17862,7 +17862,7 @@
     },
     {
       "address": 4307718,
-      "name": "_FSOUND_SetPan@8",
+      "name": "native_function_0041bb06",
       "blocks": [
         {
           "address": 4307718,
@@ -17873,7 +17873,7 @@
     },
     {
       "address": 4307724,
-      "name": "_FSOUND_SetVolume@8",
+      "name": "native_function_0041bb0c",
       "blocks": [
         {
           "address": 4307724,
@@ -17884,7 +17884,7 @@
     },
     {
       "address": 4307730,
-      "name": "_FSOUND_PlaySoundEx@16",
+      "name": "native_function_0041bb12",
       "blocks": [
         {
           "address": 4307730,
@@ -17895,7 +17895,7 @@
     },
     {
       "address": 4307736,
-      "name": "_FSOUND_SetFrequency@8",
+      "name": "native_function_0041bb18",
       "blocks": [
         {
           "address": 4307736,
@@ -17906,7 +17906,7 @@
     },
     {
       "address": 4307742,
-      "name": "_FSOUND_StopSound@4",
+      "name": "native_function_0041bb1e",
       "blocks": [
         {
           "address": 4307742,
@@ -17917,7 +17917,7 @@
     },
     {
       "address": 4307748,
-      "name": "sub_41bb24",
+      "name": "native_function_0041bb24",
       "blocks": [
         {
           "address": 4307748,
@@ -17928,7 +17928,7 @@
     },
     {
       "address": 4307771,
-      "name": "sub_41bb3b",
+      "name": "native_function_0041bb3b",
       "blocks": [
         {
           "address": 4307771,
@@ -17939,7 +17939,7 @@
     },
     {
       "address": 4307772,
-      "name": "sub_41bb3c",
+      "name": "native_function_0041bb3c",
       "blocks": [
         {
           "address": 4307772,
@@ -17950,7 +17950,7 @@
     },
     {
       "address": 4307828,
-      "name": "sub_41bb74",
+      "name": "native_function_0041bb74",
       "blocks": [
         {
           "address": 4307828,
@@ -17976,7 +17976,7 @@
     },
     {
       "address": 4307910,
-      "name": "sub_41bbc6",
+      "name": "native_function_0041bbc6",
       "blocks": [
         {
           "address": 4307910,
@@ -18002,7 +18002,7 @@
     },
     {
       "address": 4308016,
-      "name": "sub_41bc30",
+      "name": "native_function_0041bc30",
       "blocks": [
         {
           "address": 4308016,
@@ -18023,7 +18023,7 @@
     },
     {
       "address": 4308040,
-      "name": "sub_41bc48",
+      "name": "native_function_0041bc48",
       "blocks": [
         {
           "address": 4308040,
@@ -18034,7 +18034,7 @@
     },
     {
       "address": 4308051,
-      "name": "sub_41bc53",
+      "name": "native_function_0041bc53",
       "blocks": [
         {
           "address": 4308051,
@@ -18065,7 +18065,7 @@
     },
     {
       "address": 4308160,
-      "name": "sub_41bcc0",
+      "name": "native_function_0041bcc0",
       "blocks": [
         {
           "address": 4308160,
@@ -18076,7 +18076,7 @@
     },
     {
       "address": 4308178,
-      "name": "sub_41bcd2",
+      "name": "native_function_0041bcd2",
       "blocks": [
         {
           "address": 4308178,
@@ -18097,7 +18097,7 @@
     },
     {
       "address": 4308225,
-      "name": "sub_41bd01",
+      "name": "native_function_0041bd01",
       "blocks": [
         {
           "address": 4308225,
@@ -18123,7 +18123,7 @@
     },
     {
       "address": 4308329,
-      "name": "sub_41bd69",
+      "name": "native_function_0041bd69",
       "blocks": [
         {
           "address": 4308329,
@@ -18144,7 +18144,7 @@
     },
     {
       "address": 4308353,
-      "name": "sub_41bd81",
+      "name": "native_function_0041bd81",
       "blocks": [
         {
           "address": 4308353,
@@ -18170,7 +18170,7 @@
     },
     {
       "address": 4308413,
-      "name": "sub_41bdbd",
+      "name": "native_function_0041bdbd",
       "blocks": [
         {
           "address": 4308413,
@@ -18181,7 +18181,7 @@
     },
     {
       "address": 4308447,
-      "name": "sub_41bddf",
+      "name": "native_function_0041bddf",
       "blocks": [
         {
           "address": 4308447,
@@ -18192,7 +18192,7 @@
     },
     {
       "address": 4308457,
-      "name": "sub_41bde9",
+      "name": "native_function_0041bde9",
       "blocks": [
         {
           "address": 4308457,
@@ -18203,7 +18203,7 @@
     },
     {
       "address": 4308487,
-      "name": "sub_41be07",
+      "name": "native_function_0041be07",
       "blocks": [
         {
           "address": 4308487,
@@ -18214,7 +18214,7 @@
     },
     {
       "address": 4308501,
-      "name": "sub_41be15",
+      "name": "native_function_0041be15",
       "blocks": [
         {
           "address": 4308501,
@@ -18265,7 +18265,7 @@
     },
     {
       "address": 4308587,
-      "name": "sub_41be6b",
+      "name": "native_function_0041be6b",
       "blocks": [
         {
           "address": 4308587,
@@ -18396,7 +18396,7 @@
     },
     {
       "address": 4308819,
-      "name": "sub_41bf53",
+      "name": "native_function_0041bf53",
       "blocks": [
         {
           "address": 4308819,
@@ -18417,7 +18417,7 @@
     },
     {
       "address": 4308851,
-      "name": "sub_41bf73",
+      "name": "native_function_0041bf73",
       "blocks": [
         {
           "address": 4308851,
@@ -18428,7 +18428,7 @@
     },
     {
       "address": 4308872,
-      "name": "sub_41bf88",
+      "name": "native_function_0041bf88",
       "blocks": [
         {
           "address": 4308872,
@@ -18439,7 +18439,7 @@
     },
     {
       "address": 4308911,
-      "name": "sub_41bfaf",
+      "name": "native_function_0041bfaf",
       "blocks": [
         {
           "address": 4308911,
@@ -18585,7 +18585,7 @@
     },
     {
       "address": 4309184,
-      "name": "sub_41c0c0",
+      "name": "native_function_0041c0c0",
       "blocks": [
         {
           "address": 4309184,
@@ -18596,7 +18596,7 @@
     },
     {
       "address": 4309218,
-      "name": "sub_41c0e2",
+      "name": "native_function_0041c0e2",
       "blocks": [
         {
           "address": 4309218,
@@ -18882,7 +18882,7 @@
     },
     {
       "address": 4309685,
-      "name": "sub_41c2b5",
+      "name": "native_function_0041c2b5",
       "blocks": [
         {
           "address": 4309685,
@@ -18913,7 +18913,7 @@
     },
     {
       "address": 4309725,
-      "name": "sub_41c2dd",
+      "name": "native_function_0041c2dd",
       "blocks": [
         {
           "address": 4309725,
@@ -19109,7 +19109,7 @@
     },
     {
       "address": 4310069,
-      "name": "sub_41c435",
+      "name": "native_function_0041c435",
       "blocks": [
         {
           "address": 4310069,
@@ -19190,7 +19190,7 @@
     },
     {
       "address": 4310209,
-      "name": "sub_41c4c1",
+      "name": "native_function_0041c4c1",
       "blocks": [
         {
           "address": 4310209,
@@ -19286,7 +19286,7 @@
     },
     {
       "address": 4310413,
-      "name": "sub_41c58d",
+      "name": "native_function_0041c58d",
       "blocks": [
         {
           "address": 4310413,
@@ -19297,7 +19297,7 @@
     },
     {
       "address": 4310465,
-      "name": "sub_41c5c1",
+      "name": "native_function_0041c5c1",
       "blocks": [
         {
           "address": 4310465,
@@ -19308,7 +19308,7 @@
     },
     {
       "address": 4310472,
-      "name": "sub_41c5c8",
+      "name": "native_function_0041c5c8",
       "blocks": [
         {
           "address": 4310472,
@@ -19319,7 +19319,7 @@
     },
     {
       "address": 4310479,
-      "name": "sub_41c5cf",
+      "name": "native_function_0041c5cf",
       "blocks": [
         {
           "address": 4310479,
@@ -19330,7 +19330,7 @@
     },
     {
       "address": 4310558,
-      "name": "sub_41c61e",
+      "name": "native_function_0041c61e",
       "blocks": [
         {
           "address": 4310558,
@@ -19341,7 +19341,7 @@
     },
     {
       "address": 4310612,
-      "name": "sub_41c654",
+      "name": "native_function_0041c654",
       "blocks": [
         {
           "address": 4310612,
@@ -19352,7 +19352,7 @@
     },
     {
       "address": 4310696,
-      "name": "sub_41c6a8",
+      "name": "native_function_0041c6a8",
       "blocks": [
         {
           "address": 4310696,
@@ -19363,7 +19363,7 @@
     },
     {
       "address": 4310733,
-      "name": "sub_41c6cd",
+      "name": "native_function_0041c6cd",
       "blocks": [
         {
           "address": 4310733,
@@ -19389,7 +19389,7 @@
     },
     {
       "address": 4310913,
-      "name": "sub_41c781",
+      "name": "native_function_0041c781",
       "blocks": [
         {
           "address": 4310913,
@@ -19425,7 +19425,7 @@
     },
     {
       "address": 4311022,
-      "name": "sub_41c7ee",
+      "name": "native_function_0041c7ee",
       "blocks": [
         {
           "address": 4311022,
@@ -19436,7 +19436,7 @@
     },
     {
       "address": 4311030,
-      "name": "sub_41c7f6",
+      "name": "native_function_0041c7f6",
       "blocks": [
         {
           "address": 4311030,
@@ -19507,7 +19507,7 @@
     },
     {
       "address": 4311156,
-      "name": "sub_41c874",
+      "name": "native_function_0041c874",
       "blocks": [
         {
           "address": 4311156,
@@ -19518,7 +19518,7 @@
     },
     {
       "address": 4311188,
-      "name": "sub_41c894",
+      "name": "native_function_0041c894",
       "blocks": [
         {
           "address": 4311188,
@@ -19539,7 +19539,7 @@
     },
     {
       "address": 4311222,
-      "name": "sub_41c8b6",
+      "name": "native_function_0041c8b6",
       "blocks": [
         {
           "address": 4311222,
@@ -19580,7 +19580,7 @@
     },
     {
       "address": 4311326,
-      "name": "sub_41c91e",
+      "name": "native_function_0041c91e",
       "blocks": [
         {
           "address": 4311326,
@@ -19606,7 +19606,7 @@
     },
     {
       "address": 4311361,
-      "name": "sub_41c941",
+      "name": "native_function_0041c941",
       "blocks": [
         {
           "address": 4311361,
@@ -19622,7 +19622,7 @@
     },
     {
       "address": 4311370,
-      "name": "sub_41c94a",
+      "name": "native_function_0041c94a",
       "blocks": [
         {
           "address": 4311370,
@@ -19633,7 +19633,7 @@
     },
     {
       "address": 4311394,
-      "name": "_start",
+      "name": "native_function_0041c962",
       "blocks": [
         {
           "address": 4311394,
@@ -19669,7 +19669,7 @@
     },
     {
       "address": 4311640,
-      "name": "sub_41ca58",
+      "name": "native_function_0041ca58",
       "blocks": [
         {
           "address": 4311640,
@@ -19690,7 +19690,7 @@
     },
     {
       "address": 4311677,
-      "name": "sub_41ca7d",
+      "name": "native_function_0041ca7d",
       "blocks": [
         {
           "address": 4311677,
@@ -19711,7 +19711,7 @@
     },
     {
       "address": 4311713,
-      "name": "sub_41caa1",
+      "name": "native_function_0041caa1",
       "blocks": [
         {
           "address": 4311713,
@@ -19722,7 +19722,7 @@
     },
     {
       "address": 4311731,
-      "name": "sub_41cab3",
+      "name": "native_function_0041cab3",
       "blocks": [
         {
           "address": 4311731,
@@ -19743,7 +19743,7 @@
     },
     {
       "address": 4311793,
-      "name": "sub_41caf1",
+      "name": "native_function_0041caf1",
       "blocks": [
         {
           "address": 4311731,
@@ -19784,7 +19784,7 @@
     },
     {
       "address": 4311834,
-      "name": "sub_41cb1a",
+      "name": "native_function_0041cb1a",
       "blocks": [
         {
           "address": 4311834,
@@ -19830,7 +19830,7 @@
     },
     {
       "address": 4311924,
-      "name": "sub_41cb74",
+      "name": "native_function_0041cb74",
       "blocks": [
         {
           "address": 4311924,
@@ -19906,7 +19906,7 @@
     },
     {
       "address": 4312002,
-      "name": "sub_41cbc2",
+      "name": "native_function_0041cbc2",
       "blocks": [
         {
           "address": 4312002,
@@ -19927,7 +19927,7 @@
     },
     {
       "address": 4312026,
-      "name": "sub_41cbda",
+      "name": "native_function_0041cbda",
       "blocks": [
         {
           "address": 4312026,
@@ -19948,7 +19948,7 @@
     },
     {
       "address": 4312088,
-      "name": "sub_41cc18",
+      "name": "native_function_0041cc18",
       "blocks": [
         {
           "address": 4312088,
@@ -20044,7 +20044,7 @@
     },
     {
       "address": 4312348,
-      "name": "sub_41cd1c",
+      "name": "native_function_0041cd1c",
       "blocks": [
         {
           "address": 4312348,
@@ -20135,7 +20135,7 @@
     },
     {
       "address": 4312570,
-      "name": "sub_41cdfa",
+      "name": "native_function_0041cdfa",
       "blocks": [
         {
           "address": 4312570,
@@ -20181,7 +20181,7 @@
     },
     {
       "address": 4312725,
-      "name": "sub_41ce95",
+      "name": "native_function_0041ce95",
       "blocks": [
         {
           "address": 4312725,
@@ -20192,7 +20192,7 @@
     },
     {
       "address": 4312764,
-      "name": "sub_41cebc",
+      "name": "native_function_0041cebc",
       "blocks": [
         {
           "address": 4312764,
@@ -20203,7 +20203,7 @@
     },
     {
       "address": 4312799,
-      "name": "sub_41cedf",
+      "name": "native_function_0041cedf",
       "blocks": [
         {
           "address": 4312799,
@@ -20244,7 +20244,7 @@
     },
     {
       "address": 4312880,
-      "name": "sub_41cf30",
+      "name": "native_function_0041cf30",
       "blocks": [
         {
           "address": 4312880,
@@ -20265,7 +20265,7 @@
     },
     {
       "address": 4312917,
-      "name": "sub_41cf55",
+      "name": "native_function_0041cf55",
       "blocks": [
         {
           "address": 4312917,
@@ -20401,7 +20401,7 @@
     },
     {
       "address": 4313194,
-      "name": "sub_41d06a",
+      "name": "native_function_0041d06a",
       "blocks": [
         {
           "address": 4313194,
@@ -20467,7 +20467,7 @@
     },
     {
       "address": 4313338,
-      "name": "sub_41d0fa",
+      "name": "native_function_0041d0fa",
       "blocks": [
         {
           "address": 4313238,
@@ -20568,7 +20568,7 @@
     },
     {
       "address": 4313414,
-      "name": "sub_41d146",
+      "name": "native_function_0041d146",
       "blocks": [
         {
           "address": 4313238,
@@ -20644,7 +20644,7 @@
     },
     {
       "address": 4313477,
-      "name": "sub_41d185",
+      "name": "native_function_0041d185",
       "blocks": [
         {
           "address": 4313238,
@@ -20715,7 +20715,7 @@
     },
     {
       "address": 4313530,
-      "name": "sub_41d1ba",
+      "name": "native_function_0041d1ba",
       "blocks": [
         {
           "address": 4313238,
@@ -20831,7 +20831,7 @@
     },
     {
       "address": 4313677,
-      "name": "sub_41d24d",
+      "name": "native_function_0041d24d",
       "blocks": [
         {
           "address": 4313238,
@@ -21567,7 +21567,7 @@
     },
     {
       "address": 4315051,
-      "name": "sub_41d7ab",
+      "name": "native_function_0041d7ab",
       "blocks": [
         {
           "address": 4315051,
@@ -21603,7 +21603,7 @@
     },
     {
       "address": 4315104,
-      "name": "sub_41d7e0",
+      "name": "native_function_0041d7e0",
       "blocks": [
         {
           "address": 4315104,
@@ -21634,7 +21634,7 @@
     },
     {
       "address": 4315153,
-      "name": "sub_41d811",
+      "name": "native_function_0041d811",
       "blocks": [
         {
           "address": 4315153,
@@ -21665,7 +21665,7 @@
     },
     {
       "address": 4315209,
-      "name": "sub_41d849",
+      "name": "native_function_0041d849",
       "blocks": [
         {
           "address": 4315209,
@@ -21676,7 +21676,7 @@
     },
     {
       "address": 4315222,
-      "name": "sub_41d856",
+      "name": "native_function_0041d856",
       "blocks": [
         {
           "address": 4315222,
@@ -21687,7 +21687,7 @@
     },
     {
       "address": 4315238,
-      "name": "sub_41d866",
+      "name": "native_function_0041d866",
       "blocks": [
         {
           "address": 4315238,
@@ -21698,7 +21698,7 @@
     },
     {
       "address": 4315252,
-      "name": "sub_41d874",
+      "name": "native_function_0041d874",
       "blocks": [
         {
           "address": 4315252,
@@ -21764,7 +21764,7 @@
     },
     {
       "address": 4315260,
-      "name": "sub_41d87c",
+      "name": "native_function_0041d87c",
       "blocks": [
         {
           "address": 4315260,
@@ -21830,7 +21830,7 @@
     },
     {
       "address": 4315449,
-      "name": "sub_41d939",
+      "name": "native_function_0041d939",
       "blocks": [
         {
           "address": 4315449,
@@ -21841,7 +21841,7 @@
     },
     {
       "address": 4315476,
-      "name": "sub_41d954",
+      "name": "native_function_0041d954",
       "blocks": [
         {
           "address": 4315476,
@@ -21897,7 +21897,7 @@
     },
     {
       "address": 4315581,
-      "name": "sub_41d9bd",
+      "name": "native_function_0041d9bd",
       "blocks": [
         {
           "address": 4315581,
@@ -22208,7 +22208,7 @@
     },
     {
       "address": 4316253,
-      "name": "sub_41dc5d",
+      "name": "native_function_0041dc5d",
       "blocks": [
         {
           "address": 4316253,
@@ -22229,7 +22229,7 @@
     },
     {
       "address": 4316298,
-      "name": "sub_41dc8a",
+      "name": "native_function_0041dc8a",
       "blocks": [
         {
           "address": 4316298,
@@ -22240,7 +22240,7 @@
     },
     {
       "address": 4316315,
-      "name": "sub_41dc9b",
+      "name": "native_function_0041dc9b",
       "blocks": [
         {
           "address": 4316315,
@@ -22251,7 +22251,7 @@
     },
     {
       "address": 4316332,
-      "name": "sub_41dcac",
+      "name": "native_function_0041dcac",
       "blocks": [
         {
           "address": 4316332,
@@ -22322,7 +22322,7 @@
     },
     {
       "address": 4316485,
-      "name": "sub_41dd45",
+      "name": "native_function_0041dd45",
       "blocks": [
         {
           "address": 4316485,
@@ -22358,7 +22358,7 @@
     },
     {
       "address": 4316511,
-      "name": "sub_41dd5f",
+      "name": "native_function_0041dd5f",
       "blocks": [
         {
           "address": 4316511,
@@ -22414,7 +22414,7 @@
     },
     {
       "address": 4316608,
-      "name": "sub_41ddc0",
+      "name": "native_function_0041ddc0",
       "blocks": [
         {
           "address": 4316608,
@@ -22425,7 +22425,7 @@
     },
     {
       "address": 4316626,
-      "name": "sub_41ddd2",
+      "name": "native_function_0041ddd2",
       "blocks": [
         {
           "address": 4316626,
@@ -22461,7 +22461,7 @@
     },
     {
       "address": 4316670,
-      "name": "sub_41ddfe",
+      "name": "native_function_0041ddfe",
       "blocks": [
         {
           "address": 4316670,
@@ -22547,7 +22547,7 @@
     },
     {
       "address": 4316847,
-      "name": "sub_41deaf",
+      "name": "native_function_0041deaf",
       "blocks": [
         {
           "address": 4316847,
@@ -22558,7 +22558,7 @@
     },
     {
       "address": 4316872,
-      "name": "sub_41dec8",
+      "name": "native_function_0041dec8",
       "blocks": [
         {
           "address": 4316786,
@@ -22609,7 +22609,7 @@
     },
     {
       "address": 4316933,
-      "name": "sub_41df05",
+      "name": "native_function_0041df05",
       "blocks": [
         {
           "address": 4316933,
@@ -22620,7 +22620,7 @@
     },
     {
       "address": 4316958,
-      "name": "sub_41df1e",
+      "name": "native_function_0041df1e",
       "blocks": [
         {
           "address": 4316958,
@@ -22701,7 +22701,7 @@
     },
     {
       "address": 4317137,
-      "name": "sub_41dfd1",
+      "name": "native_function_0041dfd1",
       "blocks": [
         {
           "address": 4317137,
@@ -22727,7 +22727,7 @@
     },
     {
       "address": 4317180,
-      "name": "sub_41dffc",
+      "name": "native_function_0041dffc",
       "blocks": [
         {
           "address": 4317180,
@@ -22768,7 +22768,7 @@
     },
     {
       "address": 4317239,
-      "name": "sub_41e037",
+      "name": "native_function_0041e037",
       "blocks": [
         {
           "address": 4317239,
@@ -22814,7 +22814,7 @@
     },
     {
       "address": 4317331,
-      "name": "sub_41e093",
+      "name": "native_function_0041e093",
       "blocks": [
         {
           "address": 4317331,
@@ -22825,7 +22825,7 @@
     },
     {
       "address": 4317340,
-      "name": "sub_41e09c",
+      "name": "native_function_0041e09c",
       "blocks": [
         {
           "address": 4317340,
@@ -22901,7 +22901,7 @@
     },
     {
       "address": 4317449,
-      "name": "sub_41e109",
+      "name": "native_function_0041e109",
       "blocks": [
         {
           "address": 4317449,
@@ -23017,7 +23017,7 @@
     },
     {
       "address": 4317666,
-      "name": "sub_41e1e2",
+      "name": "native_function_0041e1e2",
       "blocks": [
         {
           "address": 4317666,
@@ -23258,7 +23258,7 @@
     },
     {
       "address": 4318176,
-      "name": "sub_41e3e0",
+      "name": "native_function_0041e3e0",
       "blocks": [
         {
           "address": 4318176,
@@ -23344,7 +23344,7 @@
     },
     {
       "address": 4318428,
-      "name": "sub_41e4dc",
+      "name": "native_function_0041e4dc",
       "blocks": [
         {
           "address": 4318428,
@@ -23355,7 +23355,7 @@
     },
     {
       "address": 4318520,
-      "name": "sub_41e538",
+      "name": "native_function_0041e538",
       "blocks": [
         {
           "address": 4318520,
@@ -23366,7 +23366,7 @@
     },
     {
       "address": 4318528,
-      "name": "sub_41e540",
+      "name": "native_function_0041e540",
       "blocks": [
         {
           "address": 4318528,
@@ -23377,7 +23377,7 @@
     },
     {
       "address": 4318540,
-      "name": "sub_41e54c",
+      "name": "native_function_0041e54c",
       "blocks": [
         {
           "address": 4318540,
@@ -23388,7 +23388,7 @@
     },
     {
       "address": 4318560,
-      "name": "sub_41e560",
+      "name": "native_function_0041e560",
       "blocks": [
         {
           "address": 4318560,
@@ -23399,7 +23399,7 @@
     },
     {
       "address": 4318836,
-      "name": "sub_41e674",
+      "name": "native_function_0041e674",
       "blocks": [
         {
           "address": 4318836,
@@ -23410,7 +23410,7 @@
     },
     {
       "address": 4318928,
-      "name": "sub_41e6d0",
+      "name": "native_function_0041e6d0",
       "blocks": [
         {
           "address": 4318928,
@@ -23421,7 +23421,7 @@
     },
     {
       "address": 4318936,
-      "name": "sub_41e6d8",
+      "name": "native_function_0041e6d8",
       "blocks": [
         {
           "address": 4318936,
@@ -23432,7 +23432,7 @@
     },
     {
       "address": 4318952,
-      "name": "sub_41e6e8",
+      "name": "native_function_0041e6e8",
       "blocks": [
         {
           "address": 4318952,
@@ -23443,7 +23443,7 @@
     },
     {
       "address": 4318972,
-      "name": "sub_41e6fc",
+      "name": "native_function_0041e6fc",
       "blocks": [
         {
           "address": 4318972,
@@ -23454,7 +23454,7 @@
     },
     {
       "address": 4318997,
-      "name": "sub_41e715",
+      "name": "native_function_0041e715",
       "blocks": [
         {
           "address": 4318997,
@@ -23675,7 +23675,7 @@
     },
     {
       "address": 4319365,
-      "name": "sub_41e885",
+      "name": "native_function_0041e885",
       "blocks": [
         {
           "address": 4319365,
@@ -23741,7 +23741,7 @@
     },
     {
       "address": 4319485,
-      "name": "sub_41e8fd",
+      "name": "native_function_0041e8fd",
       "blocks": [
         {
           "address": 4319485,
@@ -23912,7 +23912,7 @@
     },
     {
       "address": 4319920,
-      "name": "sub_41eab0",
+      "name": "native_function_0041eab0",
       "blocks": [
         {
           "address": 4319920,
@@ -24018,7 +24018,7 @@
     },
     {
       "address": 4319937,
-      "name": "sub_41eac1",
+      "name": "native_function_0041eac1",
       "blocks": [
         {
           "address": 4319937,
@@ -24074,7 +24074,7 @@
     },
     {
       "address": 4320030,
-      "name": "sub_41eb1e",
+      "name": "native_function_0041eb1e",
       "blocks": [
         {
           "address": 4320030,
@@ -24090,7 +24090,7 @@
     },
     {
       "address": 4320040,
-      "name": "sub_41eb28",
+      "name": "native_function_0041eb28",
       "blocks": [
         {
           "address": 4320040,
@@ -24101,7 +24101,7 @@
     },
     {
       "address": 4320084,
-      "name": "sub_41eb54",
+      "name": "native_function_0041eb54",
       "blocks": [
         {
           "address": 4320084,
@@ -24112,7 +24112,7 @@
     },
     {
       "address": 4320100,
-      "name": "sub_41eb64",
+      "name": "native_function_0041eb64",
       "blocks": [
         {
           "address": 4320100,
@@ -24143,7 +24143,7 @@
     },
     {
       "address": 4320105,
-      "name": "sub_41eb69",
+      "name": "native_function_0041eb69",
       "blocks": [
         {
           "address": 4320035,
@@ -24179,7 +24179,7 @@
     },
     {
       "address": 4320109,
-      "name": "sub_41eb6d",
+      "name": "native_function_0041eb6d",
       "blocks": [
         {
           "address": 4320035,
@@ -24210,7 +24210,7 @@
     },
     {
       "address": 4320125,
-      "name": "sub_41eb7d",
+      "name": "native_function_0041eb7d",
       "blocks": [
         {
           "address": 4320125,
@@ -24256,7 +24256,7 @@
     },
     {
       "address": 4320185,
-      "name": "sub_41ebb9",
+      "name": "native_function_0041ebb9",
       "blocks": [
         {
           "address": 4320185,
@@ -24277,7 +24277,7 @@
     },
     {
       "address": 4320239,
-      "name": "sub_41ebef",
+      "name": "native_function_0041ebef",
       "blocks": [
         {
           "address": 4320239,
@@ -24288,7 +24288,7 @@
     },
     {
       "address": 4320257,
-      "name": "sub_41ec01",
+      "name": "native_function_0041ec01",
       "blocks": [
         {
           "address": 4320180,
@@ -24314,7 +24314,7 @@
     },
     {
       "address": 4320270,
-      "name": "sub_41ec0e",
+      "name": "native_function_0041ec0e",
       "blocks": [
         {
           "address": 4320192,
@@ -24360,7 +24360,7 @@
     },
     {
       "address": 4320337,
-      "name": "sub_41ec51",
+      "name": "native_function_0041ec51",
       "blocks": [
         {
           "address": 4320337,
@@ -24396,7 +24396,7 @@
     },
     {
       "address": 4320374,
-      "name": "sub_41ec76",
+      "name": "native_function_0041ec76",
       "blocks": [
         {
           "address": 4320374,
@@ -24407,7 +24407,7 @@
     },
     {
       "address": 4320375,
-      "name": "sub_41ec77",
+      "name": "native_function_0041ec77",
       "blocks": [
         {
           "address": 4320375,
@@ -24418,7 +24418,7 @@
     },
     {
       "address": 4320382,
-      "name": "sub_41ec7e",
+      "name": "native_function_0041ec7e",
       "blocks": [
         {
           "address": 4320382,
@@ -24429,7 +24429,7 @@
     },
     {
       "address": 4320389,
-      "name": "sub_41ec85",
+      "name": "native_function_0041ec85",
       "blocks": [
         {
           "address": 4320389,
@@ -24450,7 +24450,7 @@
     },
     {
       "address": 4320448,
-      "name": "__trandisp1",
+      "name": "native_function_0041ecc0",
       "blocks": [
         {
           "address": 4320448,
@@ -24476,7 +24476,7 @@
     },
     {
       "address": 4320708,
-      "name": "sub_41edc4",
+      "name": "native_function_0041edc4",
       "blocks": [
         {
           "address": 4320708,
@@ -24487,7 +24487,7 @@
     },
     {
       "address": 4320722,
-      "name": "sub_41edd2",
+      "name": "native_function_0041edd2",
       "blocks": [
         {
           "address": 4320722,
@@ -24508,7 +24508,7 @@
     },
     {
       "address": 4320765,
-      "name": "sub_41edfd",
+      "name": "native_function_0041edfd",
       "blocks": [
         {
           "address": 4320765,
@@ -24534,7 +24534,7 @@
     },
     {
       "address": 4320807,
-      "name": "sub_41ee27",
+      "name": "native_function_0041ee27",
       "blocks": [
         {
           "address": 4320807,
@@ -24565,7 +24565,7 @@
     },
     {
       "address": 4320889,
-      "name": "sub_41ee79",
+      "name": "native_function_0041ee79",
       "blocks": [
         {
           "address": 4320889,
@@ -24576,7 +24576,7 @@
     },
     {
       "address": 4320899,
-      "name": "sub_41ee83",
+      "name": "native_function_0041ee83",
       "blocks": [
         {
           "address": 4320899,
@@ -24597,7 +24597,7 @@
     },
     {
       "address": 4320912,
-      "name": "sub_41ee90",
+      "name": "native_function_0041ee90",
       "blocks": [
         {
           "address": 4320912,
@@ -24623,7 +24623,7 @@
     },
     {
       "address": 4320935,
-      "name": "sub_41eea7",
+      "name": "native_function_0041eea7",
       "blocks": [
         {
           "address": 4320935,
@@ -24644,7 +24644,7 @@
     },
     {
       "address": 4321008,
-      "name": "sub_41eef0",
+      "name": "native_function_0041eef0",
       "blocks": [
         {
           "address": 4321008,
@@ -24655,7 +24655,7 @@
     },
     {
       "address": 4321029,
-      "name": "sub_41ef05",
+      "name": "native_function_0041ef05",
       "blocks": [
         {
           "address": 4321029,
@@ -24666,7 +24666,7 @@
     },
     {
       "address": 4321052,
-      "name": "sub_41ef1c",
+      "name": "native_function_0041ef1c",
       "blocks": [
         {
           "address": 4321052,
@@ -24687,7 +24687,7 @@
     },
     {
       "address": 4321077,
-      "name": "sub_41ef35",
+      "name": "native_function_0041ef35",
       "blocks": [
         {
           "address": 4321077,
@@ -24708,7 +24708,7 @@
     },
     {
       "address": 4321144,
-      "name": "sub_41ef78",
+      "name": "native_function_0041ef78",
       "blocks": [
         {
           "address": 4321144,
@@ -24729,7 +24729,7 @@
     },
     {
       "address": 4321179,
-      "name": "sub_41ef9b",
+      "name": "native_function_0041ef9b",
       "blocks": [
         {
           "address": 4321179,
@@ -24765,7 +24765,7 @@
     },
     {
       "address": 4321221,
-      "name": "sub_41efc5",
+      "name": "native_function_0041efc5",
       "blocks": [
         {
           "address": 4321221,
@@ -24836,7 +24836,7 @@
     },
     {
       "address": 4321241,
-      "name": "sub_41efd9",
+      "name": "native_function_0041efd9",
       "blocks": [
         {
           "address": 4321241,
@@ -24917,7 +24917,7 @@
     },
     {
       "address": 4321404,
-      "name": "sub_41f07c",
+      "name": "native_function_0041f07c",
       "blocks": [
         {
           "address": 4321404,
@@ -25083,7 +25083,7 @@
     },
     {
       "address": 4321708,
-      "name": "sub_41f1ac",
+      "name": "native_function_0041f1ac",
       "blocks": [
         {
           "address": 4321708,
@@ -25124,7 +25124,7 @@
     },
     {
       "address": 4321809,
-      "name": "sub_41f211",
+      "name": "native_function_0041f211",
       "blocks": [
         {
           "address": 4321809,
@@ -25325,7 +25325,7 @@
     },
     {
       "address": 4322236,
-      "name": "sub_41f3bc",
+      "name": "native_function_0041f3bc",
       "blocks": [
         {
           "address": 4322236,
@@ -25396,7 +25396,7 @@
     },
     {
       "address": 4322390,
-      "name": "sub_41f456",
+      "name": "native_function_0041f456",
       "blocks": [
         {
           "address": 4322390,
@@ -25557,7 +25557,7 @@
     },
     {
       "address": 4322662,
-      "name": "sub_41f566",
+      "name": "native_function_0041f566",
       "blocks": [
         {
           "address": 4322662,
@@ -25568,7 +25568,7 @@
     },
     {
       "address": 4322842,
-      "name": "sub_41f61a",
+      "name": "native_function_0041f61a",
       "blocks": [
         {
           "address": 4322842,
@@ -25579,7 +25579,7 @@
     },
     {
       "address": 4322938,
-      "name": "sub_41f67a",
+      "name": "native_function_0041f67a",
       "blocks": [
         {
           "address": 4322938,
@@ -25615,7 +25615,7 @@
     },
     {
       "address": 4322981,
-      "name": "sub_41f6a5",
+      "name": "native_function_0041f6a5",
       "blocks": [
         {
           "address": 4322981,
@@ -25666,7 +25666,7 @@
     },
     {
       "address": 4323098,
-      "name": "sub_41f71a",
+      "name": "native_function_0041f71a",
       "blocks": [
         {
           "address": 4323098,
@@ -25742,7 +25742,7 @@
     },
     {
       "address": 4323253,
-      "name": "sub_41f7b5",
+      "name": "native_function_0041f7b5",
       "blocks": [
         {
           "address": 4316786,
@@ -25958,7 +25958,7 @@
     },
     {
       "address": 4323676,
-      "name": "sub_41f95c",
+      "name": "native_function_0041f95c",
       "blocks": [
         {
           "address": 4323676,
@@ -26019,7 +26019,7 @@
     },
     {
       "address": 4323844,
-      "name": "sub_41fa04",
+      "name": "native_function_0041fa04",
       "blocks": [
         {
           "address": 4323844,
@@ -26090,7 +26090,7 @@
     },
     {
       "address": 4323937,
-      "name": "sub_41fa61",
+      "name": "native_function_0041fa61",
       "blocks": [
         {
           "address": 4323937,
@@ -26146,7 +26146,7 @@
     },
     {
       "address": 4324040,
-      "name": "sub_41fac8",
+      "name": "native_function_0041fac8",
       "blocks": [
         {
           "address": 4324040,
@@ -26157,7 +26157,7 @@
     },
     {
       "address": 4324095,
-      "name": "sub_41faff",
+      "name": "native_function_0041faff",
       "blocks": [
         {
           "address": 4316786,
@@ -26203,7 +26203,7 @@
     },
     {
       "address": 4324117,
-      "name": "sub_41fb15",
+      "name": "native_function_0041fb15",
       "blocks": [
         {
           "address": 4324117,
@@ -26249,7 +26249,7 @@
     },
     {
       "address": 4324240,
-      "name": "sub_41fb90",
+      "name": "native_function_0041fb90",
       "blocks": [
         {
           "address": 4324240,
@@ -26260,7 +26260,7 @@
     },
     {
       "address": 4324396,
-      "name": "sub_41fc2c",
+      "name": "native_function_0041fc2c",
       "blocks": [
         {
           "address": 4324396,
@@ -26271,7 +26271,7 @@
     },
     {
       "address": 4324438,
-      "name": "sub_41fc56",
+      "name": "native_function_0041fc56",
       "blocks": [
         {
           "address": 4324438,
@@ -26312,7 +26312,7 @@
     },
     {
       "address": 4324508,
-      "name": "sub_41fc9c",
+      "name": "native_function_0041fc9c",
       "blocks": [
         {
           "address": 4324508,
@@ -26348,7 +26348,7 @@
     },
     {
       "address": 4324550,
-      "name": "sub_41fcc6",
+      "name": "native_function_0041fcc6",
       "blocks": [
         {
           "address": 4324550,
@@ -26489,7 +26489,7 @@
     },
     {
       "address": 4324990,
-      "name": "sub_41fe7e",
+      "name": "native_function_0041fe7e",
       "blocks": [
         {
           "address": 4324990,
@@ -26500,7 +26500,7 @@
     },
     {
       "address": 4325002,
-      "name": "sub_41fe8a",
+      "name": "native_function_0041fe8a",
       "blocks": [
         {
           "address": 4325002,
@@ -26526,7 +26526,7 @@
     },
     {
       "address": 4325088,
-      "name": "sub_41fee0",
+      "name": "native_function_0041fee0",
       "blocks": [
         {
           "address": 4325088,
@@ -26537,7 +26537,7 @@
     },
     {
       "address": 4325105,
-      "name": "sub_41fef1",
+      "name": "native_function_0041fef1",
       "blocks": [
         {
           "address": 4325105,
@@ -26558,7 +26558,7 @@
     },
     {
       "address": 4325152,
-      "name": "sub_41ff20",
+      "name": "native_function_0041ff20",
       "blocks": [
         {
           "address": 4325152,
@@ -26579,7 +26579,7 @@
     },
     {
       "address": 4325228,
-      "name": "sub_41ff6c",
+      "name": "native_function_0041ff6c",
       "blocks": [
         {
           "address": 4325228,
@@ -26730,7 +26730,7 @@
     },
     {
       "address": 4325549,
-      "name": "sub_4200ad",
+      "name": "native_function_004200ad",
       "blocks": [
         {
           "address": 4325549,
@@ -26776,7 +26776,7 @@
     },
     {
       "address": 4325616,
-      "name": "sub_4200f0",
+      "name": "native_function_004200f0",
       "blocks": [
         {
           "address": 4325616,
@@ -26852,7 +26852,7 @@
     },
     {
       "address": 4325704,
-      "name": "sub_420148",
+      "name": "native_function_00420148",
       "blocks": [
         {
           "address": 4325704,
@@ -26948,7 +26948,7 @@
     },
     {
       "address": 4325889,
-      "name": "sub_420201",
+      "name": "native_function_00420201",
       "blocks": [
         {
           "address": 4325889,
@@ -26989,7 +26989,7 @@
     },
     {
       "address": 4326042,
-      "name": "sub_42029a",
+      "name": "native_function_0042029a",
       "blocks": [
         {
           "address": 4326042,
@@ -27350,7 +27350,7 @@
     },
     {
       "address": 4326478,
-      "name": "sub_42044e",
+      "name": "native_function_0042044e",
       "blocks": [
         {
           "address": 4326478,
@@ -27501,7 +27501,7 @@
     },
     {
       "address": 4326784,
-      "name": "sub_420580",
+      "name": "native_function_00420580",
       "blocks": [
         {
           "address": 4326784,
@@ -27527,7 +27527,7 @@
     },
     {
       "address": 4326829,
-      "name": "sub_4205ad",
+      "name": "native_function_004205ad",
       "blocks": [
         {
           "address": 4326829,
@@ -27683,7 +27683,7 @@
     },
     {
       "address": 4327157,
-      "name": "sub_4206f5",
+      "name": "native_function_004206f5",
       "blocks": [
         {
           "address": 4327157,
@@ -27734,7 +27734,7 @@
     },
     {
       "address": 4327250,
-      "name": "sub_420752",
+      "name": "native_function_00420752",
       "blocks": [
         {
           "address": 4327250,
@@ -27775,7 +27775,7 @@
     },
     {
       "address": 4327307,
-      "name": "sub_42078b",
+      "name": "native_function_0042078b",
       "blocks": [
         {
           "address": 4327307,
@@ -27856,7 +27856,7 @@
     },
     {
       "address": 4327646,
-      "name": "sub_4208de",
+      "name": "native_function_004208de",
       "blocks": [
         {
           "address": 4327646,
@@ -27867,7 +27867,7 @@
     },
     {
       "address": 4327699,
-      "name": "sub_420913",
+      "name": "native_function_00420913",
       "blocks": [
         {
           "address": 4327699,
@@ -27878,7 +27878,7 @@
     },
     {
       "address": 4327721,
-      "name": "sub_420929",
+      "name": "native_function_00420929",
       "blocks": [
         {
           "address": 4327721,
@@ -28014,7 +28014,7 @@
     },
     {
       "address": 4327867,
-      "name": "sub_4209bb",
+      "name": "native_function_004209bb",
       "blocks": [
         {
           "address": 4327867,
@@ -28150,7 +28150,7 @@
     },
     {
       "address": 4328004,
-      "name": "sub_420a44",
+      "name": "native_function_00420a44",
       "blocks": [
         {
           "address": 4328004,
@@ -28246,7 +28246,7 @@
     },
     {
       "address": 4328207,
-      "name": "sub_420b0f",
+      "name": "native_function_00420b0f",
       "blocks": [
         {
           "address": 4328207,
@@ -28287,7 +28287,7 @@
     },
     {
       "address": 4328280,
-      "name": "sub_420b58",
+      "name": "native_function_00420b58",
       "blocks": [
         {
           "address": 4328280,
@@ -28318,7 +28318,7 @@
     },
     {
       "address": 4328366,
-      "name": "sub_420bae",
+      "name": "native_function_00420bae",
       "blocks": [
         {
           "address": 4328366,
@@ -28359,7 +28359,7 @@
     },
     {
       "address": 4328506,
-      "name": "sub_420c3a",
+      "name": "native_function_00420c3a",
       "blocks": [
         {
           "address": 4328506,
@@ -28380,7 +28380,7 @@
     },
     {
       "address": 4328533,
-      "name": "sub_420c55",
+      "name": "native_function_00420c55",
       "blocks": [
         {
           "address": 4328533,
@@ -28391,7 +28391,7 @@
     },
     {
       "address": 4328545,
-      "name": "sub_420c61",
+      "name": "native_function_00420c61",
       "blocks": [
         {
           "address": 4328545,
@@ -28422,7 +28422,7 @@
     },
     {
       "address": 4328572,
-      "name": "sub_420c7c",
+      "name": "native_function_00420c7c",
       "blocks": [
         {
           "address": 4328572,
@@ -28468,7 +28468,7 @@
     },
     {
       "address": 4328713,
-      "name": "sub_420d09",
+      "name": "native_function_00420d09",
       "blocks": [
         {
           "address": 4328713,
@@ -28579,7 +28579,7 @@
     },
     {
       "address": 4329077,
-      "name": "sub_420e75",
+      "name": "native_function_00420e75",
       "blocks": [
         {
           "address": 4329077,
@@ -28590,7 +28590,7 @@
     },
     {
       "address": 4329099,
-      "name": "sub_420e8b",
+      "name": "native_function_00420e8b",
       "blocks": [
         {
           "address": 4329099,
@@ -28601,7 +28601,7 @@
     },
     {
       "address": 4329121,
-      "name": "sub_420ea1",
+      "name": "native_function_00420ea1",
       "blocks": [
         {
           "address": 4329121,
@@ -28612,7 +28612,7 @@
     },
     {
       "address": 4329166,
-      "name": "sub_420ece",
+      "name": "native_function_00420ece",
       "blocks": [
         {
           "address": 4329166,
@@ -28623,7 +28623,7 @@
     },
     {
       "address": 4329216,
-      "name": "sub_420f00",
+      "name": "native_function_00420f00",
       "blocks": [
         {
           "address": 4329216,
@@ -28709,7 +28709,7 @@
     },
     {
       "address": 4329232,
-      "name": "sub_420f10",
+      "name": "native_function_00420f10",
       "blocks": [
         {
           "address": 4329232,
@@ -28855,7 +28855,7 @@
     },
     {
       "address": 4329456,
-      "name": "sub_420ff0",
+      "name": "native_function_00420ff0",
       "blocks": [
         {
           "address": 4329456,
@@ -28941,7 +28941,7 @@
     },
     {
       "address": 4329575,
-      "name": "sub_421067",
+      "name": "native_function_00421067",
       "blocks": [
         {
           "address": 4329575,
@@ -28952,7 +28952,7 @@
     },
     {
       "address": 4329675,
-      "name": "sub_4210cb",
+      "name": "native_function_004210cb",
       "blocks": [
         {
           "address": 4329675,
@@ -29023,7 +29023,7 @@
     },
     {
       "address": 4329872,
-      "name": "sub_421190",
+      "name": "native_function_00421190",
       "blocks": [
         {
           "address": 4329872,
@@ -29079,7 +29079,7 @@
     },
     {
       "address": 4329968,
-      "name": "sub_4211f0",
+      "name": "native_function_004211f0",
       "blocks": [
         {
           "address": 4329968,
@@ -29165,7 +29165,7 @@
     },
     {
       "address": 4330220,
-      "name": "sub_4212ec",
+      "name": "native_function_004212ec",
       "blocks": [
         {
           "address": 4330220,
@@ -29176,7 +29176,7 @@
     },
     {
       "address": 4330312,
-      "name": "sub_421348",
+      "name": "native_function_00421348",
       "blocks": [
         {
           "address": 4330312,
@@ -29187,7 +29187,7 @@
     },
     {
       "address": 4330320,
-      "name": "sub_421350",
+      "name": "native_function_00421350",
       "blocks": [
         {
           "address": 4330320,
@@ -29198,7 +29198,7 @@
     },
     {
       "address": 4330332,
-      "name": "sub_42135c",
+      "name": "native_function_0042135c",
       "blocks": [
         {
           "address": 4330332,
@@ -29209,7 +29209,7 @@
     },
     {
       "address": 4330352,
-      "name": "sub_421370",
+      "name": "native_function_00421370",
       "blocks": [
         {
           "address": 4330352,
@@ -29220,7 +29220,7 @@
     },
     {
       "address": 4330628,
-      "name": "sub_421484",
+      "name": "native_function_00421484",
       "blocks": [
         {
           "address": 4330628,
@@ -29231,7 +29231,7 @@
     },
     {
       "address": 4330720,
-      "name": "sub_4214e0",
+      "name": "native_function_004214e0",
       "blocks": [
         {
           "address": 4330720,
@@ -29242,7 +29242,7 @@
     },
     {
       "address": 4330728,
-      "name": "sub_4214e8",
+      "name": "native_function_004214e8",
       "blocks": [
         {
           "address": 4330728,
@@ -29253,7 +29253,7 @@
     },
     {
       "address": 4330744,
-      "name": "sub_4214f8",
+      "name": "native_function_004214f8",
       "blocks": [
         {
           "address": 4330744,
@@ -29264,7 +29264,7 @@
     },
     {
       "address": 4330764,
-      "name": "sub_42150c",
+      "name": "native_function_0042150c",
       "blocks": [
         {
           "address": 4330764,
@@ -29275,7 +29275,7 @@
     },
     {
       "address": 4330800,
-      "name": "sub_421530",
+      "name": "native_function_00421530",
       "blocks": [
         {
           "address": 4330800,
@@ -29351,7 +29351,7 @@
     },
     {
       "address": 4330923,
-      "name": "sub_4215ab",
+      "name": "native_function_004215ab",
       "blocks": [
         {
           "address": 4330923,
@@ -29362,7 +29362,7 @@
     },
     {
       "address": 4330932,
-      "name": "sub_4215b4",
+      "name": "native_function_004215b4",
       "blocks": [
         {
           "address": 4330932,
@@ -29388,7 +29388,7 @@
     },
     {
       "address": 4331000,
-      "name": "sub_4215f8",
+      "name": "native_function_004215f8",
       "blocks": [
         {
           "address": 4331000,
@@ -29409,7 +29409,7 @@
     },
     {
       "address": 4331038,
-      "name": "sub_42161e",
+      "name": "native_function_0042161e",
       "blocks": [
         {
           "address": 4331038,
@@ -29495,7 +29495,7 @@
     },
     {
       "address": 4331203,
-      "name": "sub_4216c3",
+      "name": "native_function_004216c3",
       "blocks": [
         {
           "address": 4331203,
@@ -29561,7 +29561,7 @@
     },
     {
       "address": 4331223,
-      "name": "sub_4216d7",
+      "name": "native_function_004216d7",
       "blocks": [
         {
           "address": 4331223,
@@ -29612,7 +29612,7 @@
     },
     {
       "address": 4331328,
-      "name": "sub_421740",
+      "name": "native_function_00421740",
       "blocks": [
         {
           "address": 4331328,
@@ -29673,7 +29673,7 @@
     },
     {
       "address": 4331440,
-      "name": "sub_4217b0",
+      "name": "native_function_004217b0",
       "blocks": [
         {
           "address": 4331440,
@@ -29734,7 +29734,7 @@
     },
     {
       "address": 4331557,
-      "name": "sub_421825",
+      "name": "native_function_00421825",
       "blocks": [
         {
           "address": 4331557,
@@ -29755,7 +29755,7 @@
     },
     {
       "address": 4331629,
-      "name": "sub_42186d",
+      "name": "native_function_0042186d",
       "blocks": [
         {
           "address": 4331629,
@@ -29791,7 +29791,7 @@
     },
     {
       "address": 4331672,
-      "name": "sub_421898",
+      "name": "native_function_00421898",
       "blocks": [
         {
           "address": 4331672,
@@ -30047,7 +30047,7 @@
     },
     {
       "address": 4332481,
-      "name": "sub_421bc1",
+      "name": "native_function_00421bc1",
       "blocks": [
         {
           "address": 4332481,
@@ -30378,7 +30378,7 @@
     },
     {
       "address": 4333258,
-      "name": "sub_421eca",
+      "name": "native_function_00421eca",
       "blocks": [
         {
           "address": 4333258,
@@ -30429,7 +30429,7 @@
     },
     {
       "address": 4333435,
-      "name": "sub_421f7b",
+      "name": "native_function_00421f7b",
       "blocks": [
         {
           "address": 4333435,
@@ -30505,7 +30505,7 @@
     },
     {
       "address": 4333686,
-      "name": "sub_422076",
+      "name": "native_function_00422076",
       "blocks": [
         {
           "address": 4333686,
@@ -30781,7 +30781,7 @@
     },
     {
       "address": 4334444,
-      "name": "sub_42236c",
+      "name": "native_function_0042236c",
       "blocks": [
         {
           "address": 4334444,
@@ -30897,7 +30897,7 @@
     },
     {
       "address": 4334768,
-      "name": "sub_4224b0",
+      "name": "native_function_004224b0",
       "blocks": [
         {
           "address": 4334768,
@@ -30928,7 +30928,7 @@
     },
     {
       "address": 4334854,
-      "name": "sub_422506",
+      "name": "native_function_00422506",
       "blocks": [
         {
           "address": 4334854,
@@ -31034,7 +31034,7 @@
     },
     {
       "address": 4335048,
-      "name": "sub_4225c8",
+      "name": "native_function_004225c8",
       "blocks": [
         {
           "address": 4335048,
@@ -31085,7 +31085,7 @@
     },
     {
       "address": 4335135,
-      "name": "sub_42261f",
+      "name": "native_function_0042261f",
       "blocks": [
         {
           "address": 4335135,
@@ -31111,7 +31111,7 @@
     },
     {
       "address": 4335204,
-      "name": "sub_422664",
+      "name": "native_function_00422664",
       "blocks": [
         {
           "address": 4335204,
@@ -31332,7 +31332,7 @@
     },
     {
       "address": 4335724,
-      "name": "sub_42286c",
+      "name": "native_function_0042286c",
       "blocks": [
         {
           "address": 4335724,
@@ -31543,7 +31543,7 @@
     },
     {
       "address": 4336016,
-      "name": "sub_422990",
+      "name": "native_function_00422990",
       "blocks": [
         {
           "address": 4336016,
@@ -31649,7 +31649,7 @@
     },
     {
       "address": 4336185,
-      "name": "sub_422a39",
+      "name": "native_function_00422a39",
       "blocks": [
         {
           "address": 4336185,
@@ -31675,7 +31675,7 @@
     },
     {
       "address": 4336235,
-      "name": "sub_422a6b",
+      "name": "native_function_00422a6b",
       "blocks": [
         {
           "address": 4336235,
@@ -31736,7 +31736,7 @@
     },
     {
       "address": 4336338,
-      "name": "sub_422ad2",
+      "name": "native_function_00422ad2",
       "blocks": [
         {
           "address": 4336338,
@@ -31817,7 +31817,7 @@
     },
     {
       "address": 4336487,
-      "name": "sub_422b67",
+      "name": "native_function_00422b67",
       "blocks": [
         {
           "address": 4336487,
@@ -31888,7 +31888,7 @@
     },
     {
       "address": 4336606,
-      "name": "sub_422bde",
+      "name": "native_function_00422bde",
       "blocks": [
         {
           "address": 4336606,
@@ -31964,7 +31964,7 @@
     },
     {
       "address": 4336728,
-      "name": "sub_422c58",
+      "name": "native_function_00422c58",
       "blocks": [
         {
           "address": 4336728,
@@ -31990,7 +31990,7 @@
     },
     {
       "address": 4336789,
-      "name": "sub_422c95",
+      "name": "native_function_00422c95",
       "blocks": [
         {
           "address": 4336789,
@@ -32041,7 +32041,7 @@
     },
     {
       "address": 4336876,
-      "name": "sub_422cec",
+      "name": "native_function_00422cec",
       "blocks": [
         {
           "address": 4336876,
@@ -32427,7 +32427,7 @@
     },
     {
       "address": 4337584,
-      "name": "sub_422fb0",
+      "name": "native_function_00422fb0",
       "blocks": [
         {
           "address": 4337584,
@@ -32538,7 +32538,7 @@
     },
     {
       "address": 4337863,
-      "name": "sub_4230c7",
+      "name": "native_function_004230c7",
       "blocks": [
         {
           "address": 4337863,
@@ -32549,7 +32549,7 @@
     },
     {
       "address": 4337882,
-      "name": "sub_4230da",
+      "name": "native_function_004230da",
       "blocks": [
         {
           "address": 4337882,
@@ -32560,7 +32560,7 @@
     },
     {
       "address": 4337893,
-      "name": "sub_4230e5",
+      "name": "native_function_004230e5",
       "blocks": [
         {
           "address": 4337893,
@@ -32571,7 +32571,7 @@
     },
     {
       "address": 4337904,
-      "name": "sub_4230f0",
+      "name": "native_function_004230f0",
       "blocks": [
         {
           "address": 4337904,
@@ -32582,7 +32582,7 @@
     },
     {
       "address": 4337910,
-      "name": "sub_4230f6",
+      "name": "native_function_004230f6",
       "blocks": [
         {
           "address": 4337910,
@@ -32593,7 +32593,7 @@
     },
     {
       "address": 4337916,
-      "name": "sub_4230fc",
+      "name": "native_function_004230fc",
       "blocks": [
         {
           "address": 4337916,
@@ -32604,7 +32604,7 @@
     },
     {
       "address": 4337922,
-      "name": "sub_423102",
+      "name": "native_function_00423102",
       "blocks": [
         {
           "address": 4337922,
@@ -32615,7 +32615,7 @@
     },
     {
       "address": 4337950,
-      "name": "sub_42311e",
+      "name": "native_function_0042311e",
       "blocks": [
         {
           "address": 4337950,
@@ -32626,7 +32626,7 @@
     },
     {
       "address": 4337977,
-      "name": "sub_423139",
+      "name": "native_function_00423139",
       "blocks": [
         {
           "address": 4337977,
@@ -32637,7 +32637,7 @@
     },
     {
       "address": 4338010,
-      "name": "sub_42315a",
+      "name": "native_function_0042315a",
       "blocks": [
         {
           "address": 4338010,
@@ -32648,7 +32648,7 @@
     },
     {
       "address": 4338026,
-      "name": "sub_42316a",
+      "name": "native_function_0042316a",
       "blocks": [
         {
           "address": 4338026,
@@ -32659,7 +32659,7 @@
     },
     {
       "address": 4338046,
-      "name": "sub_42317e",
+      "name": "native_function_0042317e",
       "blocks": [
         {
           "address": 4338046,
@@ -32670,7 +32670,7 @@
     },
     {
       "address": 4338062,
-      "name": "sub_42318e",
+      "name": "native_function_0042318e",
       "blocks": [
         {
           "address": 4338062,
@@ -32681,7 +32681,7 @@
     },
     {
       "address": 4338094,
-      "name": "sub_4231ae",
+      "name": "native_function_004231ae",
       "blocks": [
         {
           "address": 4338094,
@@ -32692,7 +32692,7 @@
     },
     {
       "address": 4338125,
-      "name": "sub_4231cd",
+      "name": "native_function_004231cd",
       "blocks": [
         {
           "address": 4338125,
@@ -32703,7 +32703,7 @@
     },
     {
       "address": 4338162,
-      "name": "sub_4231f2",
+      "name": "native_function_004231f2",
       "blocks": [
         {
           "address": 4338162,
@@ -32714,7 +32714,7 @@
     },
     {
       "address": 4338182,
-      "name": "sub_423206",
+      "name": "native_function_00423206",
       "blocks": [
         {
           "address": 4338182,
@@ -32725,7 +32725,7 @@
     },
     {
       "address": 4338206,
-      "name": "sub_42321e",
+      "name": "native_function_0042321e",
       "blocks": [
         {
           "address": 4338206,
@@ -32736,7 +32736,7 @@
     },
     {
       "address": 4338226,
-      "name": "sub_423232",
+      "name": "native_function_00423232",
       "blocks": [
         {
           "address": 4338226,
@@ -32747,7 +32747,7 @@
     },
     {
       "address": 4338258,
-      "name": "sub_423252",
+      "name": "native_function_00423252",
       "blocks": [
         {
           "address": 4338258,
@@ -32758,7 +32758,7 @@
     },
     {
       "address": 4338289,
-      "name": "sub_423271",
+      "name": "native_function_00423271",
       "blocks": [
         {
           "address": 4338289,
@@ -32769,7 +32769,7 @@
     },
     {
       "address": 4338326,
-      "name": "sub_423296",
+      "name": "native_function_00423296",
       "blocks": [
         {
           "address": 4338326,
@@ -32780,7 +32780,7 @@
     },
     {
       "address": 4338346,
-      "name": "sub_4232aa",
+      "name": "native_function_004232aa",
       "blocks": [
         {
           "address": 4338346,
@@ -32791,7 +32791,7 @@
     },
     {
       "address": 4338370,
-      "name": "sub_4232c2",
+      "name": "native_function_004232c2",
       "blocks": [
         {
           "address": 4338370,
@@ -32802,7 +32802,7 @@
     },
     {
       "address": 4338390,
-      "name": "sub_4232d6",
+      "name": "native_function_004232d6",
       "blocks": [
         {
           "address": 4338390,
@@ -32813,7 +32813,7 @@
     },
     {
       "address": 4338422,
-      "name": "sub_4232f6",
+      "name": "native_function_004232f6",
       "blocks": [
         {
           "address": 4338422,
@@ -32824,7 +32824,7 @@
     },
     {
       "address": 4338453,
-      "name": "sub_423315",
+      "name": "native_function_00423315",
       "blocks": [
         {
           "address": 4338453,
@@ -32835,7 +32835,7 @@
     },
     {
       "address": 4338490,
-      "name": "sub_42333a",
+      "name": "native_function_0042333a",
       "blocks": [
         {
           "address": 4338490,
@@ -32846,7 +32846,7 @@
     },
     {
       "address": 4338510,
-      "name": "sub_42334e",
+      "name": "native_function_0042334e",
       "blocks": [
         {
           "address": 4338510,
@@ -32857,7 +32857,7 @@
     },
     {
       "address": 4338534,
-      "name": "sub_423366",
+      "name": "native_function_00423366",
       "blocks": [
         {
           "address": 4338534,
@@ -32868,7 +32868,7 @@
     },
     {
       "address": 4338554,
-      "name": "sub_42337a",
+      "name": "native_function_0042337a",
       "blocks": [
         {
           "address": 4338554,
@@ -32879,7 +32879,7 @@
     },
     {
       "address": 4338586,
-      "name": "sub_42339a",
+      "name": "native_function_0042339a",
       "blocks": [
         {
           "address": 4338586,
@@ -32890,7 +32890,7 @@
     },
     {
       "address": 4338617,
-      "name": "sub_4233b9",
+      "name": "native_function_004233b9",
       "blocks": [
         {
           "address": 4338617,
@@ -32901,7 +32901,7 @@
     },
     {
       "address": 4338654,
-      "name": "sub_4233de",
+      "name": "native_function_004233de",
       "blocks": [
         {
           "address": 4338654,
@@ -32912,7 +32912,7 @@
     },
     {
       "address": 4338674,
-      "name": "sub_4233f2",
+      "name": "native_function_004233f2",
       "blocks": [
         {
           "address": 4338674,
@@ -32923,7 +32923,7 @@
     },
     {
       "address": 4338698,
-      "name": "sub_42340a",
+      "name": "native_function_0042340a",
       "blocks": [
         {
           "address": 4338698,
@@ -32934,7 +32934,7 @@
     },
     {
       "address": 4338718,
-      "name": "sub_42341e",
+      "name": "native_function_0042341e",
       "blocks": [
         {
           "address": 4338718,
@@ -32945,7 +32945,7 @@
     },
     {
       "address": 4338750,
-      "name": "sub_42343e",
+      "name": "native_function_0042343e",
       "blocks": [
         {
           "address": 4338750,
@@ -32956,7 +32956,7 @@
     },
     {
       "address": 4338781,
-      "name": "sub_42345d",
+      "name": "native_function_0042345d",
       "blocks": [
         {
           "address": 4338781,
@@ -32967,7 +32967,7 @@
     },
     {
       "address": 4338818,
-      "name": "sub_423482",
+      "name": "native_function_00423482",
       "blocks": [
         {
           "address": 4338818,
@@ -32978,7 +32978,7 @@
     },
     {
       "address": 4338838,
-      "name": "sub_423496",
+      "name": "native_function_00423496",
       "blocks": [
         {
           "address": 4338838,
@@ -32989,7 +32989,7 @@
     },
     {
       "address": 4338862,
-      "name": "sub_4234ae",
+      "name": "native_function_004234ae",
       "blocks": [
         {
           "address": 4338862,
@@ -33000,7 +33000,7 @@
     },
     {
       "address": 4338882,
-      "name": "sub_4234c2",
+      "name": "native_function_004234c2",
       "blocks": [
         {
           "address": 4338882,
@@ -33011,7 +33011,7 @@
     },
     {
       "address": 4338914,
-      "name": "sub_4234e2",
+      "name": "native_function_004234e2",
       "blocks": [
         {
           "address": 4338914,
@@ -33022,7 +33022,7 @@
     },
     {
       "address": 4338945,
-      "name": "sub_423501",
+      "name": "native_function_00423501",
       "blocks": [
         {
           "address": 4338945,
@@ -33033,7 +33033,7 @@
     },
     {
       "address": 4338982,
-      "name": "sub_423526",
+      "name": "native_function_00423526",
       "blocks": [
         {
           "address": 4338982,
@@ -33044,7 +33044,7 @@
     },
     {
       "address": 4339002,
-      "name": "sub_42353a",
+      "name": "native_function_0042353a",
       "blocks": [
         {
           "address": 4339002,
@@ -33055,7 +33055,7 @@
     },
     {
       "address": 4339026,
-      "name": "sub_423552",
+      "name": "native_function_00423552",
       "blocks": [
         {
           "address": 4339026,
@@ -33066,7 +33066,7 @@
     },
     {
       "address": 4339046,
-      "name": "sub_423566",
+      "name": "native_function_00423566",
       "blocks": [
         {
           "address": 4339046,
@@ -33077,7 +33077,7 @@
     },
     {
       "address": 4339065,
-      "name": "sub_423579",
+      "name": "native_function_00423579",
       "blocks": [
         {
           "address": 4339065,
@@ -33088,7 +33088,7 @@
     },
     {
       "address": 4339084,
-      "name": "sub_42358c",
+      "name": "native_function_0042358c",
       "blocks": [
         {
           "address": 4339084,
@@ -33119,7 +33119,7 @@
     },
     {
       "address": 4339160,
-      "name": "sub_4235d8",
+      "name": "native_function_004235d8",
       "blocks": [
         {
           "address": 4339160,
@@ -33150,7 +33150,7 @@
     },
     {
       "address": 4339236,
-      "name": "sub_423624",
+      "name": "native_function_00423624",
       "blocks": [
         {
           "address": 4339236,
@@ -33171,7 +33171,7 @@
     },
     {
       "address": 4339288,
-      "name": "sub_423658",
+      "name": "native_function_00423658",
       "blocks": [
         {
           "address": 4339288,
@@ -33192,7 +33192,7 @@
     },
     {
       "address": 4339340,
-      "name": "sub_42368c",
+      "name": "native_function_0042368c",
       "blocks": [
         {
           "address": 4339340,
@@ -33223,7 +33223,7 @@
     },
     {
       "address": 4339416,
-      "name": "sub_4236d8",
+      "name": "native_function_004236d8",
       "blocks": [
         {
           "address": 4339416,
@@ -33254,7 +33254,7 @@
     },
     {
       "address": 4339492,
-      "name": "sub_423724",
+      "name": "native_function_00423724",
       "blocks": [
         {
           "address": 4339492,
@@ -33275,7 +33275,7 @@
     },
     {
       "address": 4339544,
-      "name": "sub_423758",
+      "name": "native_function_00423758",
       "blocks": [
         {
           "address": 4339544,
@@ -33296,7 +33296,7 @@
     },
     {
       "address": 4339596,
-      "name": "sub_42378c",
+      "name": "native_function_0042378c",
       "blocks": [
         {
           "address": 4339596,
@@ -33307,7 +33307,7 @@
     },
     {
       "address": 4339617,
-      "name": "sub_4237a1",
+      "name": "native_function_004237a1",
       "blocks": [
         {
           "address": 4339617,
@@ -33318,7 +33318,7 @@
     },
     {
       "address": 4339638,
-      "name": "sub_4237b6",
+      "name": "native_function_004237b6",
       "blocks": [
         {
           "address": 4339638,
@@ -33444,7 +33444,7 @@
     },
     {
       "address": 4340156,
-      "name": "sub_4239bc",
+      "name": "native_function_004239bc",
       "blocks": [
         {
           "address": 4340156,
@@ -33490,7 +33490,7 @@
     },
     {
       "address": 4340334,
-      "name": "sub_423a6e",
+      "name": "native_function_00423a6e",
       "blocks": [
         {
           "address": 4340334,
@@ -33616,7 +33616,7 @@
     },
     {
       "address": 4340852,
-      "name": "sub_423c74",
+      "name": "native_function_00423c74",
       "blocks": [
         {
           "address": 4340852,
@@ -33662,7 +33662,7 @@
     },
     {
       "address": 4341033,
-      "name": "sub_423d29",
+      "name": "native_function_00423d29",
       "blocks": [
         {
           "address": 4341033,
@@ -33673,7 +33673,7 @@
     },
     {
       "address": 4341039,
-      "name": "sub_423d2f",
+      "name": "native_function_00423d2f",
       "blocks": [
         {
           "address": 4341039,
@@ -33684,7 +33684,7 @@
     },
     {
       "address": 4341045,
-      "name": "sub_423d35",
+      "name": "native_function_00423d35",
       "blocks": [
         {
           "address": 4341045,
@@ -33695,7 +33695,7 @@
     },
     {
       "address": 4341048,
-      "name": "sub_423d38",
+      "name": "native_function_00423d38",
       "blocks": [
         {
           "address": 4341048,
@@ -33706,7 +33706,7 @@
     },
     {
       "address": 4341051,
-      "name": "sub_423d3b",
+      "name": "native_function_00423d3b",
       "blocks": [
         {
           "address": 4341051,
@@ -33837,7 +33837,7 @@
     },
     {
       "address": 4341259,
-      "name": "sub_423e0b",
+      "name": "native_function_00423e0b",
       "blocks": [
         {
           "address": 4341259,
@@ -33848,7 +33848,7 @@
     },
     {
       "address": 4341300,
-      "name": "sub_423e34",
+      "name": "native_function_00423e34",
       "blocks": [
         {
           "address": 4341300,
@@ -33924,7 +33924,7 @@
     },
     {
       "address": 4341390,
-      "name": "sub_423e8e",
+      "name": "native_function_00423e8e",
       "blocks": [
         {
           "address": 4341390,
@@ -34015,7 +34015,7 @@
     },
     {
       "address": 4341583,
-      "name": "sub_423f4f",
+      "name": "native_function_00423f4f",
       "blocks": [
         {
           "address": 4341583,
@@ -34026,7 +34026,7 @@
     },
     {
       "address": 4341601,
-      "name": "sub_423f61",
+      "name": "native_function_00423f61",
       "blocks": [
         {
           "address": 4341601,
@@ -34112,7 +34112,7 @@
     },
     {
       "address": 4341760,
-      "name": "sub_424000",
+      "name": "native_function_00424000",
       "blocks": [
         {
           "address": 4341760,
@@ -34133,7 +34133,7 @@
     },
     {
       "address": 4341807,
-      "name": "sub_42402f",
+      "name": "native_function_0042402f",
       "blocks": [
         {
           "address": 4341807,
@@ -34239,7 +34239,7 @@
     },
     {
       "address": 4342056,
-      "name": "sub_424128",
+      "name": "native_function_00424128",
       "blocks": [
         {
           "address": 4342056,
@@ -34250,7 +34250,7 @@
     },
     {
       "address": 4342136,
-      "name": "sub_424178",
+      "name": "native_function_00424178",
       "blocks": [
         {
           "address": 4316786,
@@ -34326,7 +34326,7 @@
     },
     {
       "address": 4342206,
-      "name": "sub_4241be",
+      "name": "native_function_004241be",
       "blocks": [
         {
           "address": 4342206,
@@ -34337,7 +34337,7 @@
     },
     {
       "address": 4342223,
-      "name": "sub_4241cf",
+      "name": "native_function_004241cf",
       "blocks": [
         {
           "address": 4342223,
@@ -34348,7 +34348,7 @@
     },
     {
       "address": 4342236,
-      "name": "sub_4241dc",
+      "name": "native_function_004241dc",
       "blocks": [
         {
           "address": 4342236,
@@ -34369,7 +34369,7 @@
     },
     {
       "address": 4342264,
-      "name": "sub_4241f8",
+      "name": "native_function_004241f8",
       "blocks": [
         {
           "address": 4342264,
@@ -34390,7 +34390,7 @@
     },
     {
       "address": 4342292,
-      "name": "sub_424214",
+      "name": "native_function_00424214",
       "blocks": [
         {
           "address": 4342292,
@@ -34411,7 +34411,7 @@
     },
     {
       "address": 4342320,
-      "name": "sub_424230",
+      "name": "native_function_00424230",
       "blocks": [
         {
           "address": 4342320,
@@ -34522,7 +34522,7 @@
     },
     {
       "address": 4342452,
-      "name": "sub_4242b4",
+      "name": "native_function_004242b4",
       "blocks": [
         {
           "address": 4342452,
@@ -34533,7 +34533,7 @@
     },
     {
       "address": 4342469,
-      "name": "sub_4242c5",
+      "name": "native_function_004242c5",
       "blocks": [
         {
           "address": 4342469,
@@ -34574,7 +34574,7 @@
     },
     {
       "address": 4342518,
-      "name": "sub_4242f6",
+      "name": "native_function_004242f6",
       "blocks": [
         {
           "address": 4342518,
@@ -34750,7 +34750,7 @@
     },
     {
       "address": 4342927,
-      "name": "sub_42448f",
+      "name": "native_function_0042448f",
       "blocks": [
         {
           "address": 4342927,
@@ -34791,7 +34791,7 @@
     },
     {
       "address": 4343001,
-      "name": "sub_4244d9",
+      "name": "native_function_004244d9",
       "blocks": [
         {
           "address": 4343001,
@@ -34842,7 +34842,7 @@
     },
     {
       "address": 4343052,
-      "name": "sub_42450c",
+      "name": "native_function_0042450c",
       "blocks": [
         {
           "address": 4343052,
@@ -34853,7 +34853,7 @@
     },
     {
       "address": 4343093,
-      "name": "sub_424535",
+      "name": "native_function_00424535",
       "blocks": [
         {
           "address": 4343093,
@@ -35004,7 +35004,7 @@
     },
     {
       "address": 4343482,
-      "name": "sub_4246ba",
+      "name": "native_function_004246ba",
       "blocks": [
         {
           "address": 4343482,
@@ -35025,7 +35025,7 @@
     },
     {
       "address": 4343510,
-      "name": "sub_4246d6",
+      "name": "native_function_004246d6",
       "blocks": [
         {
           "address": 4343510,
@@ -35036,7 +35036,7 @@
     },
     {
       "address": 4343533,
-      "name": "sub_4246ed",
+      "name": "native_function_004246ed",
       "blocks": [
         {
           "address": 4343533,
@@ -35367,7 +35367,7 @@
     },
     {
       "address": 4344080,
-      "name": "sub_424910",
+      "name": "native_function_00424910",
       "blocks": [
         {
           "address": 4344064,
@@ -35498,7 +35498,7 @@
     },
     {
       "address": 4344272,
-      "name": "sub_4249d0",
+      "name": "native_function_004249d0",
       "blocks": [
         {
           "address": 4344064,
@@ -35719,7 +35719,7 @@
     },
     {
       "address": 4344400,
-      "name": "sub_424a50",
+      "name": "native_function_00424a50",
       "blocks": [
         {
           "address": 4344400,
@@ -35755,7 +35755,7 @@
     },
     {
       "address": 4344456,
-      "name": "sub_424a88",
+      "name": "native_function_00424a88",
       "blocks": [
         {
           "address": 4344456,
@@ -35816,7 +35816,7 @@
     },
     {
       "address": 4344608,
-      "name": "sub_424b20",
+      "name": "native_function_00424b20",
       "blocks": [
         {
           "address": 4344608,
@@ -35997,7 +35997,7 @@
     },
     {
       "address": 4344862,
-      "name": "sub_424c1e",
+      "name": "native_function_00424c1e",
       "blocks": [
         {
           "address": 4344862,
@@ -36023,7 +36023,7 @@
     },
     {
       "address": 4344895,
-      "name": "sub_424c3f",
+      "name": "native_function_00424c3f",
       "blocks": [
         {
           "address": 4344895,
@@ -36059,7 +36059,7 @@
     },
     {
       "address": 4344989,
-      "name": "sub_424c9d",
+      "name": "native_function_00424c9d",
       "blocks": [
         {
           "address": 4344989,
@@ -36070,7 +36070,7 @@
     },
     {
       "address": 4345035,
-      "name": "sub_424ccb",
+      "name": "native_function_00424ccb",
       "blocks": [
         {
           "address": 4345035,
@@ -36081,7 +36081,7 @@
     },
     {
       "address": 4345080,
-      "name": "sub_424cf8",
+      "name": "native_function_00424cf8",
       "blocks": [
         {
           "address": 4345080,
@@ -36137,7 +36137,7 @@
     },
     {
       "address": 4345279,
-      "name": "sub_424dbf",
+      "name": "native_function_00424dbf",
       "blocks": [
         {
           "address": 4345279,
@@ -36338,7 +36338,7 @@
     },
     {
       "address": 4345366,
-      "name": "sub_424e16",
+      "name": "native_function_00424e16",
       "blocks": [
         {
           "address": 4345366,
@@ -36504,7 +36504,7 @@
     },
     {
       "address": 4345385,
-      "name": "sub_424e29",
+      "name": "native_function_00424e29",
       "blocks": [
         {
           "address": 4345366,
@@ -36745,7 +36745,7 @@
     },
     {
       "address": 4345464,
-      "name": "sub_424e78",
+      "name": "native_function_00424e78",
       "blocks": [
         {
           "address": 4345395,
@@ -36981,7 +36981,7 @@
     },
     {
       "address": 4345551,
-      "name": "sub_424ecf",
+      "name": "native_function_00424ecf",
       "blocks": [
         {
           "address": 4345395,
@@ -37177,7 +37177,7 @@
     },
     {
       "address": 4345593,
-      "name": "sub_424ef9",
+      "name": "native_function_00424ef9",
       "blocks": [
         {
           "address": 4345504,
@@ -37433,7 +37433,7 @@
     },
     {
       "address": 4345684,
-      "name": "sub_424f54",
+      "name": "native_function_00424f54",
       "blocks": [
         {
           "address": 4345504,
@@ -37684,7 +37684,7 @@
     },
     {
       "address": 4345803,
-      "name": "sub_424fcb",
+      "name": "native_function_00424fcb",
       "blocks": [
         {
           "address": 4345803,
@@ -37865,7 +37865,7 @@
     },
     {
       "address": 4345857,
-      "name": "sub_425001",
+      "name": "native_function_00425001",
       "blocks": [
         {
           "address": 4345857,
@@ -38061,7 +38061,7 @@
     },
     {
       "address": 4345898,
-      "name": "sub_42502a",
+      "name": "native_function_0042502a",
       "blocks": [
         {
           "address": 4345898,
@@ -38247,7 +38247,7 @@
     },
     {
       "address": 4345931,
-      "name": "sub_42504b",
+      "name": "native_function_0042504b",
       "blocks": [
         {
           "address": 4345894,
@@ -38433,7 +38433,7 @@
     },
     {
       "address": 4345957,
-      "name": "sub_425065",
+      "name": "native_function_00425065",
       "blocks": [
         {
           "address": 4345957,
@@ -38619,7 +38619,7 @@
     },
     {
       "address": 4346031,
-      "name": "sub_4250af",
+      "name": "native_function_004250af",
       "blocks": [
         {
           "address": 4346031,
@@ -38840,7 +38840,7 @@
     },
     {
       "address": 4346512,
-      "name": "sub_425290",
+      "name": "native_function_00425290",
       "blocks": [
         {
           "address": 4346512,
@@ -39126,7 +39126,7 @@
     },
     {
       "address": 4347171,
-      "name": "sub_425523",
+      "name": "native_function_00425523",
       "blocks": [
         {
           "address": 4347171,
@@ -39242,7 +39242,7 @@
     },
     {
       "address": 4347436,
-      "name": "sub_42562c",
+      "name": "native_function_0042562c",
       "blocks": [
         {
           "address": 4347436,
@@ -39428,7 +39428,7 @@
     },
     {
       "address": 4347737,
-      "name": "sub_425759",
+      "name": "native_function_00425759",
       "blocks": [
         {
           "address": 4347737,
@@ -39474,7 +39474,7 @@
     },
     {
       "address": 4347806,
-      "name": "sub_42579e",
+      "name": "native_function_0042579e",
       "blocks": [
         {
           "address": 4347806,
@@ -39590,7 +39590,7 @@
     },
     {
       "address": 4348132,
-      "name": "sub_4258e4",
+      "name": "native_function_004258e4",
       "blocks": [
         {
           "address": 4348132,
@@ -39911,7 +39911,7 @@
     },
     {
       "address": 4348823,
-      "name": "sub_425b97",
+      "name": "native_function_00425b97",
       "blocks": [
         {
           "address": 4348823,
@@ -40202,7 +40202,7 @@
     },
     {
       "address": 4349358,
-      "name": "sub_425dae",
+      "name": "native_function_00425dae",
       "blocks": [
         {
           "address": 4349358,
@@ -40238,7 +40238,7 @@
     },
     {
       "address": 4349396,
-      "name": "sub_425dd4",
+      "name": "native_function_00425dd4",
       "blocks": [
         {
           "address": 4349396,
@@ -40249,7 +40249,7 @@
     },
     {
       "address": 4349399,
-      "name": "sub_425dd7",
+      "name": "native_function_00425dd7",
       "blocks": [
         {
           "address": 4349399,
@@ -40260,7 +40260,7 @@
     },
     {
       "address": 4349413,
-      "name": "sub_425de5",
+      "name": "native_function_00425de5",
       "blocks": [
         {
           "address": 4349413,
@@ -40271,7 +40271,7 @@
     },
     {
       "address": 4349428,
-      "name": "sub_425df4",
+      "name": "native_function_00425df4",
       "blocks": [
         {
           "address": 4349428,
@@ -40282,7 +40282,7 @@
     },
     {
       "address": 4349463,
-      "name": "sub_425e17",
+      "name": "native_function_00425e17",
       "blocks": [
         {
           "address": 4349463,
@@ -40343,7 +40343,7 @@
     },
     {
       "address": 4349549,
-      "name": "sub_425e6d",
+      "name": "native_function_00425e6d",
       "blocks": [
         {
           "address": 4349549,
@@ -40589,7 +40589,7 @@
     },
     {
       "address": 4350093,
-      "name": "sub_42608d",
+      "name": "native_function_0042608d",
       "blocks": [
         {
           "address": 4350093,
@@ -40665,7 +40665,7 @@
     },
     {
       "address": 4350217,
-      "name": "sub_426109",
+      "name": "native_function_00426109",
       "blocks": [
         {
           "address": 4350217,
@@ -40721,7 +40721,7 @@
     },
     {
       "address": 4350336,
-      "name": "Direct3DCreate8",
+      "name": "native_function_00426180",
       "blocks": [
         {
           "address": 4350336,
@@ -40732,7 +40732,7 @@
     },
     {
       "address": 4350342,
-      "name": "RtlUnwind",
+      "name": "native_function_00426186",
       "blocks": [
         {
           "address": 4350342,
@@ -40743,7 +40743,7 @@
     },
     {
       "address": 4350348,
-      "name": "sub_42618c",
+      "name": "native_function_0042618c",
       "blocks": [
         {
           "address": 4350348,
@@ -40769,7 +40769,7 @@
     },
     {
       "address": 4350400,
-      "name": "sub_4261c0",
+      "name": "native_function_004261c0",
       "blocks": [
         {
           "address": 4350400,
@@ -40780,7 +40780,7 @@
     },
     {
       "address": 4350414,
-      "name": "sub_4261ce",
+      "name": "native_function_004261ce",
       "blocks": [
         {
           "address": 4310558,

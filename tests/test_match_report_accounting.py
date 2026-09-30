@@ -194,6 +194,11 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
         assert int(measures.get("total_data", 0)) == sum(int(s["size"]) for u in units for s in u.get("sections", []))
         assert int(measures["complete_code"]) == sum(int(u["measures"]["complete_code"]) for u in units)
         assert int(measures.get("complete_data", 0)) == sum(int(u["measures"].get("complete_data", 0)) for u in units)
+        diagnostic = metrics if category is None else metrics["scopes"][category]
+        assert diagnostic["total_code"] == code
+        assert diagnostic["encoded_body_matched_percent"] == pytest.approx(
+            100 * diagnostic["encoded_body_matched_code"] / code if code else 0,
+        )
     summary = accounting.render_summary(evidence, report, metrics)
     assert f"## Crimsonland {version}" in summary
     assert "Game & Engine" in summary and "Unresolved executable bytes" in summary

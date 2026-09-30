@@ -20,6 +20,8 @@ def test_freeware_denominator_includes_unique_functions_and_every_executable_byt
     rows = match_report._inventory(build)
     assert {image.name for image in images} == {"crimson.exe", "grim.dll"}
     assert any(row["native_kind"] == "function" and "canonical_address" not in row for row in rows)
+    assert all(row["name"] == f"native_function_{row['address']:08x}" for row in rows
+               if row["native_kind"] == "function" and "canonical_address" not in row)
     assert any(row["native_kind"] == "unresolved" for row in rows)
     for image in images:
         image_rows = [row for row in rows if row["image"] == image.name]
