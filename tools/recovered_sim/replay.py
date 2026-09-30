@@ -12,6 +12,8 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+import msgspec
+
 from crimson.replay.codec import load_replay_file
 from crimson.replay.ticks import step_replay_tick
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
@@ -65,7 +67,7 @@ def encode(replay, limit):
     return config + b"".join(records)
 
 
-def diagnose(replay, payload, native):
+def diagnose(replay, payload, native, *, preserve_bugs=None):
     schema = json.loads((HERE / "schema.json").read_text())
     names = [
         f"{g['name']}{f'[{i}]' if g['count'] > 1 else ''}.{field}"
@@ -74,7 +76,18 @@ def diagnose(replay, payload, native):
         for field in g["fields"]
     ]
     indices = {n: i for i, n in enumerate(names)}
-    session = initialize_run(replay.run).session
+    expected_snapshots = 1
+    offset = 256
+    while offset < len(payload):
+        command_count = struct.unpack_from("<I", payload, offset + 20)[0]
+        offset += 24 + command_count * 8
+        expected_snapshots += 1
+    if offset != len(payload):
+        raise ValueError("Truncated diagnostic input")
+    reference_run = replay.run
+    if preserve_bugs is not None:
+        reference_run = msgspec.structs.replace(reference_run, preserve_bugs=preserve_bugs)
+    session = initialize_run(reference_run).session
     first = {}
     snapshots = 0
     with tempfile.TemporaryFile() as source, tempfile.TemporaryFile() as errors:
@@ -118,13 +131,16 @@ def diagnose(replay, payload, native):
         errors.seek(0)
         stderr = errors.read().decode()
     return {
-        "python_preserve_bugs": replay.run.preserve_bugs,
+        "recorded_preserve_bugs": replay.run.preserve_bugs,
+        "python_preserve_bugs": reference_run.preserve_bugs,
         "recovered_preserve_bugs": True,
         "snapshots": snapshots,
+        "expected_snapshots": expected_snapshots,
         "native_exit": code,
         "native_stderr": stderr,
         "first_differences": first,
-        "drop_in_compatible": code == 0 and not first,
+        "common_fields_compared": 11,
+        "common_fields_equal": code == 0 and snapshots == expected_snapshots and not first,
     }
 
 
@@ -134,12 +150,18 @@ def main():
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--ticks", type=int, default=None)
     parser.add_argument("--diagnose", type=Path, help="Native core for Python common-field comparison")
+    parser.add_argument(
+        "--preserve-bugs",
+        action="store_true",
+        default=None,
+        help="Use original bugs in the Python diagnostic; does not change inputs or validate the recorded score",
+    )
     args = parser.parse_args()
     replay = load_replay_file(args.replay)
     payload = encode(replay, args.ticks)
     args.out.write_bytes(payload)
     if args.diagnose:
-        print(json.dumps(diagnose(replay, payload, args.diagnose), indent=2))
+        print(json.dumps(diagnose(replay, payload, args.diagnose, preserve_bugs=args.preserve_bugs), indent=2))
 
 
 if __name__ == "__main__":

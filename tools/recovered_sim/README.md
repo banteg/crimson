@@ -78,7 +78,7 @@ It does not test later quest-start difficulty adjustments against x86.
 
 ## Results
 
-The checked-in [results](results.json) record 59 scenarios and 106,631 ticks
+The checked-in [results](results.json) record 59 scenarios and 107,497 ticks
 with bit-exact native/WASM snapshots and successful resets. All 50 quests run
 to an outcome; the bot completes 1.1 and 1.3 and fails the others. This does
 not claim to exercise every late wave or gameplay branch.
@@ -90,10 +90,43 @@ retry scaling, detail, violence, friendly fire and weapon-usage history.
 The [original-builder results](oracle-results.json) show zero differences in
 3,200 cases, with native and WASM also matching exactly.
 
-The 24,461-tick Survival run took about **0.43 seconds** in a warmed Node WASM
+The [math oracle](math-results.json) checks 7,877 cases against original x87
+instructions: 2,188 normalize vectors with separate/in-place destinations,
+2,000 CRT powers and level thresholds, and 1,501 movement trig products.
+Normalize includes near-unit/FLT_MIN boundaries and all finite F32 exponent
+ranges. The recovered core has zero mismatches. Python has three extreme
+vector discrepancies (six cases including alias modes) from rounding a
+subnormal result directly to F32 rather than rounding PC24 before storing it.
+This is a bounded math check, not a whole-run correctness claim.
+
+```sh
+uv run python tools/recovered_sim/math_oracle.py \
+  --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+  --out tools/recovered_sim/build/math-oracle.json
+uv run python tools/recovered_sim/movement_oracle.py \
+  --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
+  --replay tests/fixtures/replays/quest-2.5-completed.crd \
+  --out tools/recovered_sim/build/movement-oracle.json
+```
+
+## Same WASM from Python
+
+```sh
+uv run --with wasmtime==49.0.0 python tools/recovered_sim/wasmtime_check.py \
+  --out tools/recovered_sim/build/wasmtime.json
+```
+
+The [Wasmtime host probe](wasmtime-results.json) loads the exact Node/Worker
+`core.wasm`, compares the accumulated hash of every snapshot in all 59
+scenarios, and checks A/B/A resets in one reused instance. It adds no project
+dependency. This establishes a Python embedding seam using
+[wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/); it does not
+implement graphics/audio or measure their host-call cost.
+
+The 25,327-tick Survival run took about **0.73 seconds** in a warmed Node WASM
 instance, including JS input transfer and simulation but excluding snapshots,
 initialization and bot decisions. WASM linear memory stayed at **2.5 MiB**
-through the runs and resets. The stripped module is approximately **345 KiB**.
+through the runs and resets. The stripped module is approximately **357 KiB**.
 These are local measurements, not edge CPU, total isolate memory or a
 like-for-like speed comparison against Python/Zig.
 
@@ -145,15 +178,36 @@ test transport, not a replacement public replay format:
 uv run python tools/recovered_sim/replay.py \
   tests/fixtures/replays/quest-2.5-completed.crd \
   --ticks 1200 --out tools/recovered_sim/build/legacy.rsi \
-  --diagnose tools/recovered_sim/build/native/core
+  --diagnose tools/recovered_sim/build/native/core --preserve-bugs
+uv run python tools/recovered_sim/legacy_check.py \
+  --out tools/recovered_sim/build/legacy-matrix.json
 ```
 
-The [diagnostic](legacy-results.json) finds the first common-field difference
-at snapshot 257 (player Y), an RNG difference at 1018, and a later XP
-difference. That replay also uses Python's fixed-bug policy while the recovered
-core retains original bugs. Thus old replays cannot be silently submitted to
-this core as the same rules version. The example checks a prefix, not the
-recorded final score; exact whole-run x87 parity remains unproven.
+The [diagnostic](legacy-results.json) now agrees on all 11 compared fields for
+the 1,200-tick Quest 2.5 prefix. [All four fixture prefixes](legacy-matrix-results.json)
+use `preserve_bugs=True` in the Python reference. The override leaves recorded
+inputs and results unchanged; these tools do not validate a recorded score.
+Whole-run compatibility and equivalence to the original remain unproven.
+
+The old snapshot-257 divergence came from spilling the movement trig result
+before its first multiply, rather than Normalize alone. The [sampled movement
+oracle](movement-results.json) confirms the original agrees with Python and
+the repaired core at that step. Normalize fixes the separate heading divergence
+at 565. CRT power uses the existing PC24 model rather than general `pow`.
+
+World aim is consumed directly as the supplied F32 coordinates. A world-to-screen
+camera addition followed by subtraction lost one ULP in two other fixtures.
+Original-code adjudication agreed with each port when given its respective
+operands; this was an input-seam difference. The adapter now preserves the
+normalized input instead of adding that round trip.
+
+The private seam is **gameplay ticks plus semantic commands**, not original UI
+frames. Commands run in order before a tick; menu requests generate offers and
+picks consume entitlement. Picks can generate dirty offers without a preceding
+menu request. Paused menu animation frames are absent, and the host clears the
+pending perk-screen transition. A future client must freeze its gameplay clock
+while showing that UI and submit commands at this same seam. This is an explicit
+modern-rules choice; native perk-screen timing/RNG equivalence is not claimed.
 
 ## How the adapter works
 
@@ -165,13 +219,13 @@ the hashes. Generated copies and modified headers live only under `build/`.
 [adapter.py](adapter.py) contains the modern-compiler changes: C linkage,
 const references for VC6 temporaries, declaration repairs and shared math
 calls. It also preserves selected x87 evaluation boundaries: wide angle
-returns, the first projectile trig multiply, and quest trig spills. Sweep
+returns, the first player/projectile trig multiply, and quest trig spills. Sweep
 Stakes and Deja vu spill cosine to float32 while retaining sine wide. The
 original executable, rather than matching C source syntax alone, established
 that distinction. Further numerical adapters may be necessary elsewhere.
 
-The small [math.zig](math.zig) adapter uses Zig's bundled math routines for
-both targets; it contains no simulation. This makes trig/pow independent of
+The small [math.zig](math.zig) adapter uses Zig's bundled math routines and
+the CRT PC24 power model for both targets; it contains no simulation. This makes trig/pow independent of
 the host libc. Zig remains a pinned build tool and math dependency.
 On Linux the math object uses a baseline CPU and `-fno-builtin`: the imported
 compiler runtime must not optimize its memory routines into recursive calls
@@ -204,3 +258,6 @@ spike environment, not a reconstruction of every original startup path.
 
 This spike supports pursuing the recovered-core direction. It provides no
 reason to remove the working Zig verifier before those gates are met.
+
+[Follow-up direction](FOLLOWUP.md) records the stub audit, replay-seam decision,
+WASM embedding result and plan for broader original-code differentials.

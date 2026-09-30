@@ -2,6 +2,8 @@
 #include "crimsonland_gameplay.h"
 #include "crimsonland_metadata.h"
 #include "grim2d_cpp.h"
+#include "portable_math.h"
+#include <float.h>
 #include <math.h>
 #include <new>
 #include <stdarg.h>
@@ -95,10 +97,23 @@ extern "C" void sfx_entry_set_volume(music_entry_t *, float) {}
 extern "C" bool input_primary_just_pressed() { return (in.flags & 2) != 0; }
 extern "C" vec2f_t *__stdcall D3DXVec2Normalize(vec2f_t *out,
                                                 const vec2f_t *src) {
-  float length = sqrtf(src->x * src->x + src->y * src->y);
+  // D3DX8's x87 path (0x00455587), including its F32 spills and PC24
+  // arithmetic. Preserve input bits near unit length, including signed zero.
   float x = src->x, y = src->y;
-  out->x = length ? x / length : 0;
-  out->y = length ? y / length : 0;
+  float length_sq = (float)portable_round_pc24(
+      portable_round_pc24((double)y * y) + portable_round_pc24((double)x * x));
+  float difference = (float)portable_round_pc24((double)length_sq - 1.0);
+  if (difference >= -FLT_EPSILON && difference <= FLT_EPSILON) {
+    out->x = x;
+    out->y = y;
+  } else if (!(length_sq > FLT_MIN)) {
+    out->x = out->y = 0;
+  } else {
+    double length = portable_round_pc24(sqrt((double)length_sq));
+    double reciprocal = portable_round_pc24(1.0 / length);
+    out->x = (float)portable_round_pc24(reciprocal * x);
+    out->y = (float)portable_round_pc24(reciprocal * y);
+  }
   return out;
 }
 // Presentation passes still called by recovered gameplay orchestration; guards
@@ -114,6 +129,8 @@ extern "C" void demo_trial_overlay_render(float *, float) { abort(); }
 extern "C" void ui_render_keybind_help(float *, float) {}
 extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
+extern "C" float portable_world_aim_x() { return in.aim_x; }
+extern "C" float portable_world_aim_y() { return in.aim_y; }
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {
@@ -325,6 +342,33 @@ static int portable_effect_index(const effect_entry_t *p) {
 static int portable_creature_index(const creature_t *p) {
   return p ? int(p - creature_pool) : 385;
 }
+// Test-only math seam; it calls the same routines used by recovered gameplay.
+extern "C" int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b) {
+  used = 0;
+  if (operation == 1 || operation == 3) {
+    vec2f_t source, target;
+    memcpy(&source.x, &a, 4);
+    memcpy(&source.y, &b, 4);
+    vec2f_t *out = operation == 3 ? &source : &target;
+    if (D3DXVec2Normalize(out, &source) != out)
+      return 0;
+    put(out->x);
+    put(out->y);
+  } else if (operation == 2 && a >= 1 && a <= 2000) {
+    float power = portable_crt_pow_pc24((float)a, 1.8f);
+    put(power);
+    put(1000 - (int)(power * -1000.0f));
+  } else if (operation == 4) {
+    float angle, speed;
+    memcpy(&angle, &a, 4);
+    memcpy(&speed, &b, 4);
+    put(portable_mul32(portable_cos(angle), speed));
+    put(portable_mul32(portable_sin(angle), speed));
+  } else {
+    return 0;
+  }
+  return used;
+}
 // Test-only builder oracle. It leaves the run unsteppable until reinitialized.
 extern "C" int portable_builder_probe(uint32_t seed, uint32_t index,
                                       uint32_t hardcore, uint32_t players) {
@@ -371,6 +415,20 @@ struct BufferedTick {
   PortableCommand commands[16];
 };
 int main(int argc, char **argv) {
+  if (argc == 2 && strcmp(argv[1], "--math-probe") == 0) {
+    uint32_t args[3];
+    size_t bytes;
+    while ((bytes = fread(args, 1, sizeof(args), stdin))) {
+      if (bytes != sizeof(args))
+        return 4;
+      int n = portable_math_probe(args[0], args[1], args[2]);
+      if (!n)
+        return 3;
+      fwrite(&n, 4, 1, stdout);
+      fwrite(output, 4, n, stdout);
+    }
+    return ferror(stdin) ? 6 : 0;
+  }
   if (argc == 2 && strcmp(argv[1], "--quest-probe") == 0) {
     uint32_t args[4];
     while (fread(args, sizeof(args), 1, stdin) == 1) {

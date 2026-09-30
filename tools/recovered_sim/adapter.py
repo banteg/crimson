@@ -15,7 +15,8 @@ def adapt(src, txt):
         # VC6 leaves transcendental results wide until their first arithmetic
         # operation. Each following add still rounds at PC24.
         txt = txt.replace("float angle() const", "double angle() const").replace(
-            "return (float)atan2(y, x);", "return atan2(y, x);",
+            "return (float)atan2(y, x);",
+            "return atan2(y, x);",
         )
         # Sweep Stakes and Deja vu spill cosine to F32, keeping sine wide.
         for fn in ("cos", "sin"):
@@ -34,8 +35,27 @@ def adapt(src, txt):
                 "(float)" + fn + "(heading) * frame_dt * 20.0f",
                 "(float)(" + fn + "(heading) * frame_dt) * 20.0f",
             )
+    if src.stem == "player_update_heading":
+        # Replay aim is already canonical world space. Reconstructing a screen
+        # point and subtracting the camera again can lose one F32 ULP.
+        for axis in ("x", "y"):
+            expression = f"mouse_screen->{axis} - camera_offset_{axis}"
+            if txt.count(expression) != 1:
+                raise ValueError("Audit the normalized world-aim seam before changing this adapter")
+            txt = txt.replace(expression, f"portable_world_aim_{axis}()")
+        txt = '#include "api.h"\n' + txt
+        # FCOS/FSIN remain wide until the first FMUL (e.g. 0x00414335).
+        # Subsequent multipliers must still round after every PC24 operation.
+        txt, count = re.subn(
+            r"(cosf|sinf)\(player->heading - 1\.5707964f\)\s*\*\s*player->move_speed",
+            lambda m: f"portable_mul32({m[1][:-1]}(player->heading - 1.5707964f), player->move_speed)",
+            txt,
+        )
+        if count != 22:
+            raise ValueError("Audit player movement trig boundaries before changing this adapter")
     if src.stem == "gameplay_update_and_render":
         txt = txt.replace("void console_input_poll(void);", "int console_input_poll(void);")
+        txt = txt.replace("pow(", "portable_crt_pow_pc24(")
     if src.stem == "gameplay_reset_state":
         txt = txt.replace("void player_reset_all(void);", 'extern "C" void player_reset_all(void);')
     # VC6 permits mutable references to value temporaries; these operators never mutate their arguments.

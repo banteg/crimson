@@ -25,6 +25,9 @@ int portable_step_many(uint32_t command_count);
 int portable_init(uint32_t seed, int mode, int quest_major, int quest_minor);
 int portable_step(int command, int argument);
 int portable_snapshot();
+float portable_world_aim_x();
+float portable_world_aim_y();
+int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b);
 int portable_builder_probe(uint32_t seed, uint32_t index, uint32_t hardcore,
                            uint32_t players);
 }
