@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections import defaultdict
+from collections.abc import Callable, Sequence
 from enum import IntEnum
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, NamedTuple, cast
 
 import msgspec
 from construct import Array, Byte, Bytes, Float32l, Int32sl, Struct
@@ -31,8 +32,6 @@ DEFAULT_PICK_PERK_CODE = 0x101
 DEFAULT_RELOAD_CODE = 0x102
 RESERVED_KEYBIND_SLOT_COUNT = 2
 PADDING_KEYBIND_SLOT_COUNT = 3
-_DEFAULT_WIRE_RESERVED_KEYS = (KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE)
-_DEFAULT_WIRE_PADDING = (KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE, KEYBIND_UNBOUND_CODE)
 
 PLAYER_BIND_BLOCK_STRUCT = Struct(
     "move_forward" / Int32sl,
@@ -316,90 +315,8 @@ def _require_range(value: int, *, minimum: int, maximum: int, field: str) -> int
     return value
 
 
-def _parsed_player_bind_block(raw: dict[str, Any], *, player_index: int) -> dict[str, Any]:
-    idx = _player_index(player_index)
-    return raw["input_config"][idx]
-
-
-def _parsed_player_bind_block_is_uninitialized(raw_block: dict[str, Any]) -> bool:
-    return not any(
-        (
-            raw_block["move_forward"],
-            raw_block["move_backward"],
-            raw_block["turn_left"],
-            raw_block["turn_right"],
-            raw_block["fire"],
-            *raw_block["reserved_keys"],
-            raw_block["aim_left"],
-            raw_block["aim_right"],
-            raw_block["axis_aim_y"],
-            raw_block["axis_aim_x"],
-            raw_block["axis_move_y"],
-            raw_block["axis_move_x"],
-        ),
-    )
-
-
-def _player_controls_from_parsed_bind_block(
-    raw_block: dict[str, Any],
-    *,
-    player_index: int,
-    movement: MovementControlType,
-    aim_scheme: AimScheme,
-    show_direction_arrow: bool,
-) -> CrimsonPlayerControls:
-    if _parsed_player_bind_block_is_uninitialized(raw_block):
-        return msgspec.structs.replace(
-            default_player_controls(player_index),
-            movement=movement,
-            aim_scheme=aim_scheme,
-            show_direction_arrow=show_direction_arrow,
-        )
-    return CrimsonPlayerControls(
-        movement=movement,
-        aim_scheme=aim_scheme,
-        show_direction_arrow=show_direction_arrow,
-        move_codes=(
-            raw_block["move_forward"],
-            raw_block["move_backward"],
-            raw_block["turn_left"],
-            raw_block["turn_right"],
-        ),
-        fire_code=raw_block["fire"],
-        keyboard_aim_codes=(raw_block["aim_left"], raw_block["aim_right"]),
-        aim_axis_codes=(raw_block["axis_aim_y"], raw_block["axis_aim_x"]),
-        move_axis_codes=(raw_block["axis_move_y"], raw_block["axis_move_x"]),
-    )
-
-
-def _encode_player_bind_block(player: CrimsonPlayerControls) -> dict[str, object]:
-    return {
-        "move_forward": player.move_codes[0],
-        "move_backward": player.move_codes[1],
-        "turn_left": player.move_codes[2],
-        "turn_right": player.move_codes[3],
-        "fire": player.fire_code,
-        "reserved_keys": [int(_DEFAULT_WIRE_RESERVED_KEYS[0]), int(_DEFAULT_WIRE_RESERVED_KEYS[1])],
-        "aim_left": player.keyboard_aim_codes[0],
-        "aim_right": player.keyboard_aim_codes[1],
-        "axis_aim_y": player.aim_axis_codes[0],
-        "axis_aim_x": player.aim_axis_codes[1],
-        "axis_move_y": player.move_axis_codes[0],
-        "axis_move_x": player.move_axis_codes[1],
-        "padding": [int(_DEFAULT_WIRE_PADDING[0]), int(_DEFAULT_WIRE_PADDING[1]), int(_DEFAULT_WIRE_PADDING[2])],
-    }
-
-
-def _decode_direction_arrow(raw: dict, *, player_index: int) -> bool:
-    idx = _player_index(player_index)
-    return bool(int(raw["direction_arrow_flags"][idx]))
-
-
-def _encode_direction_arrow_flags(players: Sequence[CrimsonPlayerControls]) -> list[int]:
-    values = [0] * CONFIG_PLAYER_SLOT_COUNT
-    for idx in range(PORT_PLAYER_SLOT_COUNT):
-        values[idx] = 1 if bool(players[idx].show_direction_arrow) else 0
-    return values
+def _flag(value: object) -> int:
+    return 1 if value else 0
 
 
 def _decode_movement(value: int) -> MovementControlType:
@@ -407,18 +324,6 @@ def _decode_movement(value: int) -> MovementControlType:
     if raw == 0:
         return MovementControlType.STATIC
     return MovementControlType(raw)
-
-
-def _decode_aim_scheme(value: int) -> AimScheme:
-    return AimScheme(int(value))
-
-
-def _decode_game_mode(value: int) -> GameMode:
-    return GameMode(int(value))
-
-
-def _decode_high_score_date_mode(value: int) -> HighScoreDateMode:
-    return HighScoreDateMode(int(value))
 
 
 def _decode_player_name(raw: bytes) -> str:
@@ -454,8 +359,93 @@ def _encode_saved_names_blob(names: Sequence[str]) -> bytes:
     return bytes(out)
 
 
-def _saved_name_order_values() -> tuple[int, ...]:
-    return tuple(range(SAVED_NAME_SLOT_COUNT))
+# A player bind block's codes by `CrimsonPlayerControls` attribute, in native order.
+_BIND_BLOCK_CODES: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("move_codes", ("move_forward", "move_backward", "turn_left", "turn_right")),
+    ("fire_code", ("fire",)),
+    ("keyboard_aim_codes", ("aim_left", "aim_right")),
+    ("aim_axis_codes", ("axis_aim_y", "axis_aim_x")),
+    ("move_axis_codes", ("axis_move_y", "axis_move_x")),
+)
+
+
+def _decode_bind_block(block: dict[str, Any]) -> dict[str, Any]:
+    if not any(block["reserved_keys"]) and not any(block[name] for _, names in _BIND_BLOCK_CODES for name in names):
+        # A zeroed block (a slot native never filled) keeps the default binds.
+        return {}
+    attrs: dict[str, Any] = {}
+    for attr, names in _BIND_BLOCK_CODES:
+        codes = tuple(block[name] for name in names)
+        attrs[attr] = codes if len(codes) > 1 else codes[0]
+    return attrs
+
+
+def _encode_bind_block(player: CrimsonPlayerControls) -> dict[str, object]:
+    block: dict[str, object] = {
+        "reserved_keys": [KEYBIND_UNBOUND_CODE] * RESERVED_KEYBIND_SLOT_COUNT,
+        "padding": [KEYBIND_UNBOUND_CODE] * PADDING_KEYBIND_SLOT_COUNT,
+    }
+    for attr, names in _BIND_BLOCK_CODES:
+        codes = getattr(player, attr)
+        block.update(zip(names, codes if len(names) > 1 else (codes,), strict=True))
+    return block
+
+
+class _Field(NamedTuple):
+    """A `CRIMSON_CFG_STRUCT` field and the `CrimsonConfig` attribute (`section.attr`) it holds.
+
+    `players.*` targets are per-player slot arrays, of which the port keeps the first four; a bare `players` target
+    converts a whole player's bind block.
+    """
+
+    wire: str
+    target: str
+    decode: Callable[[Any], Any] = int
+    encode: Callable[[Any], Any] = int
+    bounds: tuple[int, int] | None = None
+
+    def checked(self, value: Any) -> Any:
+        if self.bounds is not None:
+            _require_range(int(value), minimum=self.bounds[0], maximum=self.bounds[1], field=self.wire)
+        return value
+
+
+# Everything the port reads and writes, in native order; the other fields ride along in `CrimsonConfig.wire`.
+_CFG_FIELDS: tuple[_Field, ...] = (
+    _Field("sound_disabled", "audio.sound_disabled", bool, _flag),
+    _Field("music_disabled", "audio.music_disabled", bool, _flag),
+    _Field("highscore_date_mode", "profile.score_date_mode", HighScoreDateMode),
+    _Field("direction_arrow_flags", "players.show_direction_arrow", bool, _flag),
+    _Field("shadows_enabled", "display.shadows_enabled", bool, _flag),
+    _Field("flame_glow_enabled", "display.flame_glow_enabled", bool, _flag),
+    _Field("smoke_enabled", "display.smoke_enabled", bool, _flag),
+    _Field("player_count", "gameplay.player_count", bounds=(1, 4)),
+    _Field("game_mode", "gameplay.mode", GameMode),
+    _Field("movement_schemes", "players.movement", _decode_movement),
+    _Field("aim_schemes", "players.aim_scheme", AimScheme),
+    _Field("texture_scale", "display.texture_scale", float, float),
+    _Field("selected_saved_name_slot", "profile.selected_saved_name_slot", bounds=(0, SAVED_NAME_SLOT_COUNT - 1)),
+    _Field("saved_name_count", "profile.saved_name_count", bounds=(1, SAVED_NAME_SLOT_COUNT)),
+    _Field("saved_names", "profile.saved_names", _decode_saved_names, _encode_saved_names_blob),
+    _Field("player_name", "profile.player_name", _decode_player_name, _encode_player_name_buffer),
+    _Field("player_name_len", "profile.player_name_input_len", bounds=(0, PLAYER_NAME_MAX_BYTES)),
+    _Field("screen_bpp", "display.bpp"),
+    _Field("screen_width", "display.width"),
+    _Field("screen_height", "display.height"),
+    _Field("windowed_flag", "display.windowed", bool, _flag),
+    _Field("input_config", "players", _decode_bind_block, _encode_bind_block),
+    _Field("hardcore_flag", "gameplay.hardcore", bool, _flag),
+    _Field("ui_info_texts", "gameplay.show_info_texts", bool, _flag),
+    _Field("level_up_count", "gameplay.level_up_count"),
+    _Field("sfx_volume", "audio.sfx_volume", float, float),
+    _Field("music_volume", "audio.music_volume", float, float),
+    _Field("violence_disabled", "display.violence_disabled"),
+    _Field("show_online_scores", "profile.show_internet_scores", bool, _flag),
+    _Field("detail_preset", "display.detail_preset", bounds=(1, 5)),
+    _Field("mouse_sensitivity", "display.mouse_sensitivity", float, float),
+    _Field("keybind_pick_perk", "controls.pick_perk_code"),
+    _Field("keybind_reload", "controls.reload_code"),
+)
 
 
 def default_player_controls(player_index: int) -> CrimsonPlayerControls:
@@ -521,90 +511,36 @@ def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
     if len(blob) != CRIMSON_CFG_SIZE:
         raise ValueError(f"{path} has unexpected size {len(blob)} (expected {CRIMSON_CFG_SIZE})")
     raw = CRIMSON_CFG_STRUCT.parse(blob)
+    if raw["detail_preset"] == 0 and not (raw["shadows_enabled"] or raw["flame_glow_enabled"] or raw["smoke_enabled"]):
+        # No detail settings at all loads as full detail.
+        raw["detail_preset"] = 5
+        raw["shadows_enabled"] = raw["flame_glow_enabled"] = raw["smoke_enabled"] = 1
 
-    shadows_enabled = bool(raw["shadows_enabled"])
-    flame_glow_enabled = bool(raw["flame_glow_enabled"])
-    smoke_enabled = bool(raw["smoke_enabled"])
-    detail_preset = int(raw["detail_preset"])
-    if detail_preset == 0 and not (shadows_enabled or flame_glow_enabled or smoke_enabled):
-        detail_preset = 5
-        shadows_enabled = True
-        flame_glow_enabled = True
-        smoke_enabled = True
-    else:
-        detail_preset = _require_range(detail_preset, minimum=1, maximum=5, field="detail_preset")
-
-    players = tuple(
-        _player_controls_from_parsed_bind_block(
-            _parsed_player_bind_block(raw, player_index=idx),
-            player_index=idx,
-            movement=_decode_movement(raw["movement_schemes"][idx]),
-            aim_scheme=_decode_aim_scheme(raw["aim_schemes"][idx]),
-            show_direction_arrow=_decode_direction_arrow(raw, player_index=idx),
-        )
-        for idx in range(4)
-    )
-
+    sections: defaultdict[str, dict[str, Any]] = defaultdict(dict)
+    players: list[dict[str, Any]] = [{} for _ in range(PORT_PLAYER_SLOT_COUNT)]
+    for field in _CFG_FIELDS:
+        section, _, attr = field.target.partition(".")
+        if section == "players":
+            for player, value in zip(players, raw[field.wire], strict=False):
+                decoded = field.decode(value)
+                player.update({attr: decoded} if attr else decoded)
+        else:
+            sections[section][attr] = field.decode(field.checked(raw[field.wire]))
     return CrimsonConfig(
         path=path,
-        display=CrimsonDisplayConfig(
-            width=int(raw["screen_width"]),
-            height=int(raw["screen_height"]),
-            windowed=bool(raw["windowed_flag"]),
-            bpp=int(raw["screen_bpp"]),
-            texture_scale=float(raw["texture_scale"]),
-            mouse_sensitivity=float(raw["mouse_sensitivity"]),
-            detail_preset=detail_preset,
-            shadows_enabled=shadows_enabled,
-            flame_glow_enabled=flame_glow_enabled,
-            smoke_enabled=smoke_enabled,
-            violence_disabled=int(raw["violence_disabled"]),
-        ),
-        audio=CrimsonAudioConfig(
-            sound_disabled=bool(raw["sound_disabled"]),
-            music_disabled=bool(raw["music_disabled"]),
-            sfx_volume=float(raw["sfx_volume"]),
-            music_volume=float(raw["music_volume"]),
-        ),
-        gameplay=CrimsonGameplayConfig(
-            mode=_decode_game_mode(raw["game_mode"]),
-            player_count=_require_range(int(raw["player_count"]), minimum=1, maximum=4, field="player_count"),
-            hardcore=bool(raw["hardcore_flag"]),
-            quest_level=None,
-            show_info_texts=bool(raw["ui_info_texts"]),
-            level_up_count=int(raw["level_up_count"]),
-        ),
-        profile=CrimsonProfileConfig(
-            player_name=_decode_player_name(raw["player_name"]),
-            player_name_input_len=_require_range(
-                int(raw["player_name_len"]),
-                minimum=0,
-                maximum=PLAYER_NAME_MAX_BYTES,
-                field="player_name_len",
-            ),
-            saved_name_count=_require_range(
-                int(raw["saved_name_count"]),
-                minimum=1,
-                maximum=SAVED_NAME_SLOT_COUNT,
-                field="saved_name_count",
-            ),
-            selected_saved_name_slot=_require_range(
-                int(raw["selected_saved_name_slot"]),
-                minimum=0,
-                maximum=SAVED_NAME_SLOT_COUNT - 1,
-                field="selected_saved_name_slot",
-            ),
-            saved_names=_decode_saved_names(raw["saved_names"]),
-            show_internet_scores=bool(raw["show_online_scores"]),
-            score_date_mode=_decode_high_score_date_mode(raw["highscore_date_mode"]),
-        ),
+        display=CrimsonDisplayConfig(**sections["display"]),
+        audio=CrimsonAudioConfig(**sections["audio"]),
+        gameplay=CrimsonGameplayConfig(quest_level=None, **sections["gameplay"]),
+        profile=CrimsonProfileConfig(**sections["profile"]),
         controls=CrimsonControlsConfig(
             players=cast(
                 "tuple[CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls, CrimsonPlayerControls]",
-                players,
+                tuple(
+                    msgspec.structs.replace(template, **player)
+                    for template, player in zip(_DEFAULT_PLAYER_CONTROL_TEMPLATES, players, strict=True)
+                ),
             ),
-            pick_perk_code=int(raw["keybind_pick_perk"]),
-            reload_code=int(raw["keybind_reload"]),
+            **sections["controls"],
         ),
         wire=bytes(blob),
     )
@@ -626,68 +562,15 @@ _DEFAULT_WIRE = _default_wire()
 
 def encode_crimson_cfg(config: CrimsonConfig) -> bytes:
     data = dict(CRIMSON_CFG_STRUCT.parse(config.wire))
-
-    data["sound_disabled"] = 1 if config.audio.sound_disabled else 0
-    data["music_disabled"] = 1 if config.audio.music_disabled else 0
-    data["highscore_date_mode"] = int(config.profile.score_date_mode)
-    data["direction_arrow_flags"] = _encode_direction_arrow_flags(config.controls.players)
-    data["shadows_enabled"] = 1 if config.display.shadows_enabled else 0
-    data["flame_glow_enabled"] = 1 if config.display.flame_glow_enabled else 0
-    data["smoke_enabled"] = 1 if config.display.smoke_enabled else 0
-    data["player_count"] = _require_range(
-        int(config.gameplay.player_count),
-        minimum=1,
-        maximum=4,
-        field="player_count",
-    )
-    data["game_mode"] = int(config.gameplay.mode)
-    data["movement_schemes"][:PORT_PLAYER_SLOT_COUNT] = [int(player.movement) for player in config.controls.players]
-    data["aim_schemes"][:PORT_PLAYER_SLOT_COUNT] = [int(player.aim_scheme) for player in config.controls.players]
-    data["texture_scale"] = float(config.display.texture_scale)
-    data["selected_saved_name_slot"] = _require_range(
-        int(config.profile.selected_saved_name_slot),
-        minimum=0,
-        maximum=SAVED_NAME_SLOT_COUNT - 1,
-        field="selected_saved_name_slot",
-    )
-    data["saved_name_count"] = _require_range(
-        int(config.profile.saved_name_count),
-        minimum=1,
-        maximum=SAVED_NAME_SLOT_COUNT,
-        field="saved_name_count",
-    )
-    data["saved_name_order"] = list(_saved_name_order_values())
-    data["saved_names"] = _encode_saved_names_blob(config.profile.saved_names)
-    data["player_name"] = _encode_player_name_buffer(config.profile.player_name)
-    data["player_name_len"] = _require_range(
-        int(config.profile.player_name_input_len),
-        minimum=0,
-        maximum=PLAYER_NAME_MAX_BYTES,
-        field="player_name_len",
-    )
-    data["screen_bpp"] = int(config.display.bpp)
-    data["screen_width"] = int(config.display.width)
-    data["screen_height"] = int(config.display.height)
-    data["windowed_flag"] = 1 if config.display.windowed else 0
-    data["input_config"][:PORT_PLAYER_SLOT_COUNT] = [
-        _encode_player_bind_block(player) for player in config.controls.players
-    ]
-    data["hardcore_flag"] = 1 if config.gameplay.hardcore else 0
-    data["ui_info_texts"] = 1 if config.gameplay.show_info_texts else 0
-    data["level_up_count"] = int(config.gameplay.level_up_count)
-    data["sfx_volume"] = float(config.audio.sfx_volume)
-    data["music_volume"] = float(config.audio.music_volume)
-    data["violence_disabled"] = int(config.display.violence_disabled)
-    data["show_online_scores"] = 1 if config.profile.show_internet_scores else 0
-    data["detail_preset"] = _require_range(
-        int(config.display.detail_preset),
-        minimum=1,
-        maximum=5,
-        field="detail_preset",
-    )
-    data["mouse_sensitivity"] = float(config.display.mouse_sensitivity)
-    data["keybind_pick_perk"] = config.controls.pick_perk_code
-    data["keybind_reload"] = config.controls.reload_code
+    for field in _CFG_FIELDS:
+        section, _, attr = field.target.partition(".")
+        if section == "players":
+            for idx, player in enumerate(config.controls.players):
+                data[field.wire][idx] = field.encode(getattr(player, attr) if attr else player)
+        else:
+            data[field.wire] = field.encode(field.checked(getattr(getattr(config, section), attr)))
+    # The port keeps the named score lists in slot order.
+    data["saved_name_order"] = list(range(SAVED_NAME_SLOT_COUNT))
     return CRIMSON_CFG_STRUCT.build(data)
 
 

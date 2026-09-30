@@ -134,3 +134,27 @@ def test_direction_arrow_roundtrip_for_players_three_and_four_uses_source_slots(
     loaded = grim_config.decode_crimson_cfg(Path("<memory>"), blob)
     assert not loaded.controls.player(2).show_direction_arrow
     assert loaded.controls.player(3).show_direction_arrow
+
+
+NATIVE_CFG = Path(__file__).parents[1] / "fixtures" / "config" / "crimson.cfg"
+
+
+def test_crimson_cfg_native_file_roundtrip() -> None:
+    # Written by the 1.9.93 GOG build, which never filled the bind blocks of players 3 and 4.
+    blob = NATIVE_CFG.read_bytes()
+    saved = grim_config.encode_crimson_cfg(grim_config.decode_crimson_cfg(NATIVE_CFG, blob))
+    assert grim_config.encode_crimson_cfg(grim_config.decode_crimson_cfg(NATIVE_CFG, saved)) == saved
+
+    native = grim_config.CRIMSON_CFG_STRUCT.parse(blob)
+    port = grim_config.CRIMSON_CFG_STRUCT.parse(saved)
+    for slot in (2, 3):
+        default = grim_config.default_player_controls(slot)
+        assert (native["input_config"][slot]["fire"], native["movement_schemes"][slot]) == (0, 0)
+        assert (port["input_config"][slot]["fire"], port["movement_schemes"][slot]) == (
+            default.fire_code,
+            int(default.movement),
+        )
+        native["input_config"][slot] = port["input_config"][slot]
+        native["movement_schemes"][slot] = port["movement_schemes"][slot]
+    # Everything else saves byte for byte as native wrote it.
+    assert grim_config.CRIMSON_CFG_STRUCT.build(native) == saved
