@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import pytest
 
@@ -16,30 +15,6 @@ from crimson.weapon_runtime import (
 from crimson.weapon_usage import weapon_usage_slot_for_weapon_id
 from crimson.weapons import WeaponId
 from tests.support.helpers import ScriptedCrand
-
-
-class _SeqRng:
-    def __init__(self, values: list[int]) -> None:
-        self._values = [int(v) for v in values] or [0]
-        self._idx = 0
-
-    def _next(self) -> int:
-        if self._idx >= len(self._values):
-            return int(self._values[-1])
-        value = int(self._values[self._idx])
-        self._idx += 1
-        return value
-
-    def rand(self) -> int:
-        return self._next()
-
-    def rand_tagged(self, caller: int) -> int:
-        _ = caller
-        return self._next()
-
-
-def _as_rng(value: object) -> Any:
-    return value
 
 
 def _status_default() -> save_status.GameStatus:
@@ -98,7 +73,9 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
     status = _status_default()
     status.quest_unlock_index = 0
 
-    state = GameplayState(rng=_as_rng(_SeqRng([1, 0])))
+    # The first pick (Assault Rifle) is still locked; the retry picks the Pistol.
+    rng = ScriptedCrand([1, 0])
+    state = GameplayState(rng=rng)
     state.status = status
     state.game_mode = GameMode.QUESTS
     prepare_weapon_availability(state)
@@ -107,35 +84,26 @@ def test_weapon_pick_random_available_enforces_unlocked() -> None:
 
     assert picked == WeaponId.PISTOL
     assert isinstance(picked, WeaponId)
+    assert rng.calls == 2
 
 
 def test_weapon_pick_random_available_rejects_uninitialized_availability() -> None:
-    rng = _SeqRng([0])
-    state = GameplayState(rng=_as_rng(rng))
+    rng = ScriptedCrand()
+    state = GameplayState(rng=rng)
 
     with pytest.raises(RuntimeError, match="call prepare_weapon_availability"):
         weapon_pick_random_available(state)
 
-    assert rng._idx == 0
+    assert rng.calls == 0
 
 
 def test_weapon_pick_random_available_has_no_synthetic_retry_cap() -> None:
-    state = GameplayState(rng=_as_rng(_SeqRng([1] * 1001 + [0])))
+    rng = ScriptedCrand([1] * 1001 + [0])
+    state = GameplayState(rng=rng)
     state.weapon_available[WeaponId.PISTOL] = True
 
     assert weapon_pick_random_available(state) == WeaponId.PISTOL
-
-
-def test_weapon_pick_random_available_rerolls_used_weapons() -> None:
-    status = _status_default()
-    _mark_weapon_used(status, WeaponId.PISTOL)
-
-    state = GameplayState(rng=_as_rng(_SeqRng([0, 0, 1])))
-    state.status = status
-    state.game_mode = GameMode.SURVIVAL
-    prepare_weapon_availability(state)
-
-    assert weapon_pick_random_available(state) == WeaponId.ASSAULT_RIFLE
+    assert rng.calls == 1002
 
 
 def test_weapon_pick_random_available_tags_exact_native_callers_on_reroll() -> None:

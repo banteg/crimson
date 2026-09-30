@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
 
 import pytest
 
@@ -1082,53 +1081,13 @@ def test_small_creature_dies_on_contact() -> None:
     assert pool.kill_count == 0
 
 
-@dataclass
-class _StubRand:
-    values: list[int]
-
-    def __post_init__(self) -> None:
-        self._idx = 0
-        self._state = 0
-
-    @property
-    def state(self) -> int:
-        return int(self._state)
-
-    def srand(self, seed: int) -> None:
-        self._state = int(seed)
-        self._idx = 0
-
-    def _next(self) -> int:
-        if self._idx >= len(self.values):
-            value = 0
-        else:
-            value = int(self.values[self._idx])
-        self._idx += 1
-        self._state = int(value) & 0xFFFFFFFF
-        return value
-
-    def rand(self) -> int:
-        return self._next()
-
-    def rand_tagged(self, caller: int) -> int:
-        _ = caller
-        return self._next()
-
-    def advance(self, draws: int) -> None:
-        steps = int(draws)
-        if steps < 0:
-            raise ValueError(f"draws must be >= 0, got {draws}")
-        for _ in range(steps):
-            self.rand()
-
-
 def test_death_awards_xp_and_can_spawn_bonus() -> None:
     state = GameplayState()
     # RNG values:
     # - try_spawn_on_kill gate: (rand % 9) == 1
     # - bonus_pick_random_type roll: roll=1 => points
     # - points amount: (rand & 7) < 3 => 1000
-    stub_rand = _StubRand([1, 0, 0])
+    stub_rand = ScriptedCrand([1, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
     state.rng = stub_rand
 
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
@@ -1152,7 +1111,7 @@ def test_death_awards_xp_and_can_spawn_bonus() -> None:
     assert any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
     assert len(state.effects.iter_active()) == 16
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
-    assert stub_rand._idx == 67
+    assert stub_rand.calls == 67
 
 
 def test_every_kill_credits_player_one() -> None:
@@ -1270,8 +1229,8 @@ def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(moc
 
 def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debris() -> None:
     state = GameplayState()
-    stub_rand = _StubRand([0] * 20)
-    state.rng = stub_rand
+    rng = RecordingCrand(state.rng)
+    state.rng = rng
     # Kill drops are out of scope here; the guard skips them before any draw.
     state.bonus_spawn_guard = True
     pool = CreaturePool()
@@ -1291,12 +1250,11 @@ def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debr
     )
 
     assert state.effects.iter_active() == []
-    assert stub_rand._idx == 0
+    assert rng.calls == 0
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:
     state = GameplayState()
-    state.rng = _StubRand([0])
 
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     player.experience = 48_841
@@ -1802,7 +1760,7 @@ def test_ai7_link_timer_uses_rounded_frame_dt_ms_for_boundary_crossing() -> None
 
     # 0.0329999998s is captured as frame_dt_ms_i32=33 in native traces.
     dt = 0.032999999821186066
-    stub_rand = _StubRand([0x11])
+    stub_rand = ScriptedCrand([0x11])
     state.rng = stub_rand
     step_creatures(world, dt)
 
@@ -1835,13 +1793,13 @@ def test_ai7_link_timer_still_ticks_for_evil_eyes_frozen_target() -> None:
     creature.move_speed = 0.0
     creature.size = 45.0
 
-    stub_rand = _StubRand([0x2A])
+    stub_rand = ScriptedCrand([0x2A])
     state.rng = stub_rand
     step_creatures(world, 1.0 / 60.0)
 
     # Native ticks AI7 link timers before Evil Eyes movement freeze.
     assert creature.link_index == -742
-    assert stub_rand._idx == 1
+    assert stub_rand.calls == 1
 
 
 def test_ai7_link_timer_still_ticks_when_live_self_damage_kills_creature() -> None:
@@ -2014,8 +1972,8 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     creature.move_speed = 0.0
     creature.size = 45.0
 
-    stub_rand = _StubRand([0x2A])
-    state.rng = stub_rand
+    rng = RecordingCrand(state.rng)
+    state.rng = rng
     step_creatures(world, 1.0 / 60.0)
 
     # Native Evil Eyes path jumps to loop tail before cooldown/interaction/ranged branches.
@@ -2024,7 +1982,7 @@ def test_evil_eyes_target_skips_cooldown_and_keeps_velocity() -> None:
     assert creature.pos == Vec2(640.0, 512.0)
     assert creature.link_index == 84
     assert creature.force_target == 0
-    assert stub_rand._idx == 0
+    assert rng.calls == 0
 
 
 def test_evil_eyes_target_still_takes_plague_infection_tick() -> None:
@@ -2133,8 +2091,7 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
     creature1.move_speed = 0.0
     creature1.size = 45.0
 
-    stub_rand = _StubRand([0x2A, 0x2B])
-    state.rng = stub_rand
+    state.rng = ScriptedCrand([0x2A, 0x2B])
     step_creatures(world, 1.0 / 60.0)
 
     assert_float_close(creature0.attack_cooldown, 1.0)

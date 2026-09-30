@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.bonuses import BonusId
-from crimson.bonuses.pool import BonusPool
+from crimson.bonuses.pool import BonusEntry, BonusPool
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
@@ -9,74 +11,29 @@ from grim.geom import Vec2
 from grim.rand import Crand
 
 
-class _SeqRng(Crand):
-    def __init__(self, values: list[int]) -> None:
-        super().__init__(0)
-        self._values = [int(v) for v in values] or [0]
-        self._idx = 0
-
-    def _next(self) -> int:
-        if self._idx >= len(self._values):
-            return int(self._values[-1])
-        value = int(self._values[self._idx])
-        self._idx += 1
-        return value
-
-    def rand(self) -> int:
-        return self._next()
-
-    def rand_tagged(self, caller: int) -> int:
-        _ = caller
-        return self._next()
-
-
-def test_original_amount_weapon_id_suppression_bug_is_fixed_by_default() -> None:
-    # Native bug: after spawning a non-points bonus, clear it if `amount == weapon_id`.
-    # Example collision: Speed uses `amount=8`, which collides with Flamethrower `weapon_id=8`.
-    state = GameplayState(rng=_SeqRng([1, 114]))
-    state.preserve_bugs = False
+def _spawn_on_kill(*, seed: int, weapon_id: WeaponId, preserve_bugs: bool) -> BonusEntry | None:
+    state = GameplayState(rng=Crand(seed), preserve_bugs=preserve_bugs)
     state.bonus_pool = BonusPool()
-
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
-    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
-    assert entry is not None
-    assert entry.bonus_id == BonusId.SPEED
+    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=weapon_id))
+    return state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
 
 
-def test_original_amount_weapon_id_suppression_bug_can_be_preserved() -> None:
-    state = GameplayState(rng=_SeqRng([1, 114]))
-    state.preserve_bugs = True
-    state.bonus_pool = BonusPool()
+# Native bug: after spawning a non-points bonus, clear it if `amount == weapon_id`.
+# Each seed rolls a drop whose amount collides with the killer's weapon id.
+@pytest.mark.parametrize(
+    ("seed", "weapon_id", "bonus_id"),
+    [
+        # Speed uses `amount=8`, which collides with Flamethrower `weapon_id=8`.
+        (198, WeaponId.FLAMETHROWER, BonusId.SPEED),
+        # Nuke and Double Experience use `amount=1`, which collides with Pistol `weapon_id=1`.
+        (130, WeaponId.PISTOL, BonusId.NUKE),
+        (86, WeaponId.PISTOL, BonusId.DOUBLE_EXPERIENCE),
+    ],
+)
+def test_original_amount_weapon_id_suppression(seed: int, weapon_id: WeaponId, bonus_id: BonusId) -> None:
+    fixed = _spawn_on_kill(seed=seed, weapon_id=weapon_id, preserve_bugs=False)
+    assert fixed is not None
+    assert fixed.bonus_id == bonus_id
+    assert fixed.amount == int(weapon_id)
 
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
-    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
-    assert entry is None
-
-
-def test_original_amount_weapon_id_suppression_triggers_for_native_nuke_amount() -> None:
-    # Force the non-pistol-special drop path and a Nuke roll:
-    # - rand#1: pistol special-case gate -> skip ((v & 3) >= 3)
-    # - rand#2: base_roll where base_roll % 9 != 1
-    # - rand#3: allow_without_magnet when pistol -> True (v % 5 == 1)
-    # - rand#4: bonus_pick_random_type roll -> 35 => Nuke
-    state = GameplayState(rng=_SeqRng([3, 0, 1, 34]))
-    state.preserve_bugs = True
-    state.bonus_pool = BonusPool()
-
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
-    assert entry is None
-
-
-def test_original_amount_weapon_id_suppression_triggers_for_native_double_xp_amount() -> None:
-    # Force the non-pistol-special path and a Double Experience roll:
-    # - rand#1: pistol special-case gate -> skip ((v & 3) >= 3)
-    # - rand#2: base_roll where base_roll % 9 == 1
-    # - rand#3: bonus_pick_random_type roll -> 45 => Double Experience
-    state = GameplayState(rng=_SeqRng([3, 1, 44]))
-    state.preserve_bugs = True
-    state.bonus_pool = BonusPool()
-
-    player = PlayerState(index=0, pos=Vec2(256.0, 256.0), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    entry = state.bonus_pool.try_spawn_on_kill(pos=Vec2(256.0, 256.0), state=state, players=[player])
-    assert entry is None
+    assert _spawn_on_kill(seed=seed, weapon_id=weapon_id, preserve_bugs=True) is None

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+
+import pytest
 
 from crimson.game_modes import GameMode
 from crimson.perks import PerkId
@@ -14,29 +15,8 @@ from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
+from grim.rand import Crand, RecordingCrand
 from tests.support.helpers import ScriptedCrand, assert_rng_progression
-
-
-class _SeqRng:
-    def __init__(self, values: list[int]) -> None:
-        self._values = [int(v) for v in values] or [0]
-        self._idx = 0
-
-    def _next(self) -> int:
-        value = int(self._values[self._idx % len(self._values)])
-        self._idx += 1
-        return value
-
-    def rand(self) -> int:
-        return self._next()
-
-    def rand_tagged(self, caller: int) -> int:
-        _ = caller
-        return self._next()
-
-
-def _as_rng(value: object) -> Any:
-    return value
 
 
 def _status_default() -> save_status.GameStatus:
@@ -63,9 +43,7 @@ def test_prepare_perk_availability_unlocks_base_and_quest_perks() -> None:
 
 
 def test_perk_generate_choices_inserts_monster_vision_on_quest_3_4() -> None:
-    # `perk_generate_choices` always fills a 7-entry list; provide enough entropy to avoid
-    # degenerately selecting from a tiny, repeatedly invalid subset.
-    state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
+    state = GameplayState()
     state.quest_level = QuestLevel(3, 4)
     player = PlayerState(index=0, pos=Vec2())
 
@@ -115,66 +93,53 @@ def test_perk_generate_choices_monster_vision_forced_slot_preserves_native_order
     ]
 
 
-def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
-    state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])))
-    for perk_id in (PerkId.PYROMANIAC, PerkId.SHARPSHOOTER, PerkId.FASTLOADER, PerkId.LEAN_MEAN_EXP_MACHINE, PerkId.LONG_DISTANCE_RUNNER, PerkId.PYROKINETIC, PerkId.INSTANT_WINNER, PerkId.GRIM_DEAL):
+def _pyromaniac_offer_choices(*weapon_ids: WeaponId, preserve_bugs: bool = False) -> list[PerkId]:
+    # Seed 1 rolls Pyromaniac among these eight perks whenever it is offerable.
+    state = GameplayState(rng=Crand(1), preserve_bugs=preserve_bugs)
+    for perk_id in (
+        PerkId.PYROMANIAC,
+        PerkId.SHARPSHOOTER,
+        PerkId.FASTLOADER,
+        PerkId.LEAN_MEAN_EXP_MACHINE,
+        PerkId.LONG_DISTANCE_RUNNER,
+        PerkId.PYROKINETIC,
+        PerkId.INSTANT_WINNER,
+        PerkId.GRIM_DEAL,
+    ):
         state.perk_available[int(perk_id)] = True
 
-    player = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
-    assert PerkId.PYROMANIAC not in choices
+    players = [
+        PlayerState(index=index, pos=Vec2(), weapon=WeaponSlot(weapon_id=weapon_id))
+        for index, weapon_id in enumerate(weapon_ids)
+    ]
+    return perk_generate_choices(state, players, game_mode=GameMode.SURVIVAL)
+
+
+def test_perk_generate_choices_rejects_pyromaniac_without_flamethrower() -> None:
+    assert PerkId.PYROMANIAC not in _pyromaniac_offer_choices(WeaponId.PISTOL)
 
 
 def test_perk_generate_choices_default_allows_pyromaniac_when_any_alive_player_has_flamethrower() -> None:
-    state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=False)
-    for perk_id in (
-        PerkId.PYROMANIAC,
-        PerkId.SHARPSHOOTER,
-        PerkId.FASTLOADER,
-        PerkId.LEAN_MEAN_EXP_MACHINE,
-        PerkId.LONG_DISTANCE_RUNNER,
-        PerkId.PYROKINETIC,
-        PerkId.INSTANT_WINNER,
-        PerkId.GRIM_DEAL,
-    ):
-        state.perk_available[int(perk_id)] = True
-
-    player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
-    choices = perk_generate_choices(state, [player0, player1], game_mode=GameMode.SURVIVAL)
-    assert PerkId.PYROMANIAC in choices
+    assert PerkId.PYROMANIAC in _pyromaniac_offer_choices(WeaponId.PISTOL, WeaponId.FLAMETHROWER)
 
 
 def test_perk_generate_choices_preserve_bugs_keeps_player1_pyromaniac_gate() -> None:
-    state = GameplayState(rng=_as_rng(_SeqRng([38, 1, 2, 3, 4, 5, 6, 7])), preserve_bugs=True)
-    for perk_id in (
-        PerkId.PYROMANIAC,
-        PerkId.SHARPSHOOTER,
-        PerkId.FASTLOADER,
-        PerkId.LEAN_MEAN_EXP_MACHINE,
-        PerkId.LONG_DISTANCE_RUNNER,
-        PerkId.PYROKINETIC,
-        PerkId.INSTANT_WINNER,
-        PerkId.GRIM_DEAL,
-    ):
-        state.perk_available[int(perk_id)] = True
-
-    player0 = PlayerState(index=0, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.PISTOL))
-    player1 = PlayerState(index=1, pos=Vec2(), weapon=WeaponSlot(weapon_id=WeaponId.FLAMETHROWER))
-    choices = perk_generate_choices(state, [player0, player1], game_mode=GameMode.SURVIVAL)
+    choices = _pyromaniac_offer_choices(WeaponId.PISTOL, WeaponId.FLAMETHROWER, preserve_bugs=True)
     assert PerkId.PYROMANIAC not in choices
 
 
-def test_perk_generate_choices_blocks_perks_when_death_clock_active() -> None:
-    state = GameplayState(rng=_as_rng(_SeqRng([41, 1, 2, 3, 4, 5, 6, 9])))
+@pytest.mark.parametrize("death_clock", [False, True])
+def test_perk_generate_choices_blocks_perks_when_death_clock_active(death_clock: bool) -> None:
+    # Seed 1 offers Jinxed unless Death Clock blocks it.
+    state = GameplayState(rng=Crand(1))
     prepare_perk_availability(state)
     state.perk_available[int(PerkId.JINXED)] = True
 
     player = PlayerState(index=0, pos=Vec2())
-    state.perks[int(PerkId.DEATH_CLOCK)] = 1
+    state.perks[int(PerkId.DEATH_CLOCK)] = int(death_clock)
 
     choices = perk_generate_choices(state, [player], game_mode=GameMode.SURVIVAL)
-    assert PerkId.JINXED not in choices
+    assert (PerkId.JINXED in choices) is not death_clock
 
 
 def test_perk_generate_choices_applies_rarity_gate() -> None:
@@ -195,31 +160,10 @@ def test_perk_generate_choices_applies_rarity_gate() -> None:
 
 
 def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -> None:
-    class _LcgRng:
-        def __init__(self, seed: int) -> None:
-            self._state = int(seed) & 0x7FFFFFFF
-            self.calls = 0
-
-        @property
-        def state(self) -> int:
-            return int(self._state)
-
-        def _next(self) -> int:
-            self.calls += 1
-            self._state = (1103515245 * self._state + 12345) & 0x7FFFFFFF
-            return self._state
-
-        def rand(self) -> int:
-            return self._next()
-
-        def rand_tagged(self, caller: int) -> int:
-            _ = caller
-            return self._next()
-
     status = _status_default()
     status.quest_unlock_index = 40
-    rng = _LcgRng(123)
-    state = GameplayState(rng=_as_rng(rng))
+    rng = RecordingCrand(Crand(123))
+    state = GameplayState(rng=rng)
     state.status = status
     state.quest_level = QuestLevel(4, 10)
     prepare_perk_availability(state)
@@ -234,18 +178,18 @@ def test_perk_generate_choices_degenerate_all_owned_matches_reference_stream() -
     assert choices == [
         PerkId.RANDOM_WEAPON,
         PerkId.INSTANT_WINNER,
+        PerkId.INSTANT_WINNER,
+        PerkId.INSTANT_WINNER,
         PerkId.RANDOM_WEAPON,
         PerkId.RANDOM_WEAPON,
-        PerkId.RANDOM_WEAPON,
-        PerkId.RANDOM_WEAPON,
-        PerkId.RANDOM_WEAPON,
+        PerkId.INSTANT_WINNER,
     ]
     assert_rng_progression(
         rng,
         before_calls=before_calls,
         before_state=before_state,
-        expected_draws=65860,
-        expected_after_state=790131735,
+        expected_draws=65708,
+        expected_after_state=1991494647,
     )
 
 
@@ -254,7 +198,7 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
 
     status = _status_default()
     status.quest_unlock_index = 40
-    state = GameplayState(rng=_as_rng(_SeqRng(list(range(2048)))))
+    state = GameplayState(rng=Crand(123))
     state.status = status
     state.quest_level = QuestLevel(4, 10)
     prepare_perk_availability(state)
@@ -274,12 +218,12 @@ def test_perk_generate_choices_caches_offerability_checks(mocker) -> None:
     mocker.patch.object(selection_mod, "perk_can_offer", side_effect=_counting_perk_can_offer)
     choices = selection_mod.perk_generate_choices(state, [player], game_mode=GameMode.QUESTS)
     assert choices == [
-        PerkId.INSTANT_WINNER,
         PerkId.RANDOM_WEAPON,
         PerkId.INSTANT_WINNER,
         PerkId.INSTANT_WINNER,
         PerkId.INSTANT_WINNER,
-        PerkId.INSTANT_WINNER,
+        PerkId.RANDOM_WEAPON,
+        PerkId.RANDOM_WEAPON,
         PerkId.INSTANT_WINNER,
     ]
     assert calls <= PERK_ID_MAX
