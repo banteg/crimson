@@ -1,10 +1,17 @@
 name: Zig CI
 
+# The Zig port is frozen; build it only when its sources change.
 on:
   push:
     branches:
       - "master"
+    paths:
+      - "crimson-zig/**"
+      - ".github/workflows/zig.yml"
   pull_request:
+    paths:
+      - "crimson-zig/**"
+      - ".github/workflows/zig.yml"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"

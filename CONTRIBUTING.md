@@ -85,7 +85,8 @@ Text rules are forgettable; structural rules enforce themselves.
 - Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
 - `pre-commit` runs fast checks only (ruff/ty/docs/ast-grep/ziglint) and is file-scoped.
 - `pre-push` runs the fast packaging and Zig unit-test checks and is file-scoped.
-- Full pytest plus optimized/WASM Zig builds run in CI and remain explicit local checks.
+- Full pytest runs in CI. The Zig port is frozen: its tests are skipped unless you pass `--run-zig`, and
+  its CI only runs when `crimson-zig/` changes.
 - ziglint behavior is configured in `crimson-zig/.ziglint.zon`.
 - Manual runs:
   - `prek run --stage pre-commit`

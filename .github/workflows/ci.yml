@@ -24,63 +24,53 @@ jobs:
           - task: docs-check
             use_uv: true
             do_sync: false
-            use_zig: false
             command: uv run --no-sync python scripts/check_docs.py
             sync_args: ""
           - task: resolved-name-audit
             use_uv: true
             do_sync: true
-            use_zig: false
             command: uv run --no-sync crimson match resolved-name-audit --check
             sync_args: ""
           - task: ast-grep
             use_uv: false
             do_sync: false
-            use_zig: false
             command: ast-grep scan && ast-grep test
             sync_args: ""
           - task: ruff
             use_uv: true
             do_sync: true
-            use_zig: false
             command: uv run --no-sync ruff check .
             sync_args: --only-group dev
           - task: ty
             use_uv: true
             do_sync: true
-            use_zig: false
             command: uv run --no-sync ty check src crimson-re/src tests
             sync_args: --group dev
           - task: pytest
             use_uv: true
             do_sync: true
-            use_zig: true
             # A virtual display with software GL runs the render and terrain tests that need a raylib window.
             command: xvfb-run -a uv run --no-sync pytest --run-terrain
             sync_args: --group dev
           - task: native-oracle
             use_uv: true
             do_sync: true
-            use_zig: false
             # Fail if Unicorn is missing instead of silently skipping the oracle tests.
             command: uv run --no-sync python -c "import unicorn" && CRIMSON_NATIVE_ORACLE=1 uv run --no-sync pytest -q tests/native_oracle
             sync_args: --group dev
           - task: native-closure
             use_uv: true
             do_sync: true
-            use_zig: false
             command: uv run --no-sync crimson native verify --require-game-closure --allow-absent-toolchain
             sync_args: ""
           - task: match-regressions
             use_uv: true
             do_sync: true
-            use_zig: false
             command: uv run --no-sync crimson match regressions --base "$MATCH_BASE"
             sync_args: ""
           - task: build
             use_uv: true
             do_sync: false
-            use_zig: false
             command: uv build
             sync_args: ""
 
@@ -105,17 +95,13 @@ jobs:
             mkdir -p "$UV_CACHE_DIR"
           fi
 
-      - name: Setup Zig
-        if: matrix.use_zig
-        uses: mlugg/setup-zig@v2
-        with:
-          version: "0.16.0"
-
-      - name: Install Zig system libraries
-        if: matrix.use_zig
+      - name: Install virtual display and GL libraries
+        if: ${{ matrix.task == 'pytest' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y \
+            xvfb \
+            libgl1-mesa-dri \
             libgl1-mesa-dev \
             libglx-dev \
             libx11-dev \
@@ -126,10 +112,6 @@ jobs:
             libxinerama-dev \
             libxrandr-dev \
             libxrender-dev
-
-      - name: Install virtual display
-        if: ${{ matrix.task == 'pytest' }}
-        run: sudo apt-get install -y xvfb libgl1-mesa-dri
 
       - name: Setup Node
         if: ${{ matrix.task == 'ast-grep' }}

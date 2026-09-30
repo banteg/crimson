@@ -117,6 +117,12 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         help="run replay fixture integration tests",
     )
     parser.addoption(
+        "--run-zig",
+        action="store_true",
+        default=False,
+        help="run tests that build or compare against the frozen Zig port",
+    )
+    parser.addoption(
         "--update-rng-golden",
         action="store_true",
         default=False,
@@ -138,6 +144,7 @@ def pytest_configure(config: pytest.Config) -> None:
     config.addinivalue_line("markers", "slow: long-running test")
     config.addinivalue_line("markers", "original_capture: tests for original-capture conversion/replay/parity")
     config.addinivalue_line("markers", "replay_fixture: replay fixture integration tests (slow, opt-in)")
+    config.addinivalue_line("markers", "zig: tests of the frozen Zig port (opt-in)")
 
 
 def _test_relative_path(item: pytest.Item) -> Path:
@@ -158,6 +165,9 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             item.add_marker(pytest.mark.slow)
         if "terrain" in item.keywords:
             item.add_marker(pytest.mark.slow)
+        uses_zig_bin = isinstance(item, pytest.Function) and "zig_bin" in item.fixturenames
+        if file_name.startswith("test_zig_") or "zig" in item.name or uses_zig_bin:
+            item.add_marker(pytest.mark.zig)
 
     if config.getoption("--run-terrain"):
         skip_terrain = None
@@ -171,7 +181,14 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
             reason="use --run-replay-fixtures to run replay fixture integration tests",
         )
 
+    if config.getoption("--run-zig"):
+        skip_zig = None
+    else:
+        skip_zig = pytest.mark.skip(reason="the Zig port is frozen; use --run-zig to run its tests")
+
     for item in items:
+        if skip_zig is not None and "zig" in item.keywords:
+            item.add_marker(skip_zig)
         if skip_terrain is not None and "terrain" in item.keywords:
             item.add_marker(skip_terrain)
         if skip_replay_fixtures is not None and "replay_fixture" in item.keywords:

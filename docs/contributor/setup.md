@@ -21,7 +21,7 @@ just docs-build
 
 ## Useful commands
 
-- `just check` — Python lint/type checks, docs and native-recovery checks, ast-grep scan/tests, pytest, and Zig tests/native/WASM builds
+- `just check` — Python lint/type checks, docs and native-recovery checks, ast-grep scan/tests and pytest (the frozen Zig port is checked separately by `just check-zig`)
 - `just docs-build` — build docs site
 
 ## Run and inspect

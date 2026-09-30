@@ -26,7 +26,6 @@ check *args:
     ast-grep scan
     ast-grep test
     uv run pytest {{args}}
-    just check-zig
 
 check-zig:
     cd crimson-zig && zig build test --summary all
