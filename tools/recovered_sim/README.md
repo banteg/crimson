@@ -5,10 +5,11 @@ across Rush, Survival and all 50 Quests. This is a feasibility experiment;
 Python, the Zig simulation, matching sources and existing verification paths
 are unchanged.
 
-The direction looks viable: keep Python for experimentation, and develop the
-recovered core into the shared shipped-game/verifier implementation. Keep Zig
-as the existing verifier and comparison baseline until the new client, rules
-version and replay migration are ready. This spike does **not** establish
+The direction is to keep Python for fast iteration and develop the recovered
+core into the shared shipped-game/verifier implementation. Freeze Zig catch-up
+and feature work now; keep its existing verifier available during the transition.
+The next gate is complete Python replay-fixture and bot-run agreement, not more
+work on a third simulation mirror. This spike does **not** yet establish
 compatibility with existing Python scores or whole-run equivalence to the
 original executable.
 
@@ -247,17 +248,27 @@ spike environment, not a reconstruction of every original startup path.
 
 ## Gates before replacing the shipped simulation
 
-1. Freeze the intended numerical rules and replay version; decide whether old
-   scores stay on legacy verification or require exact x87 compatibility.
-2. Backport the selected Python bug fixes and improvements with shared-core
-   tests; add the remaining controller schemes and multiplayer as needed.
-3. Drive a real client through this same core, with rendering/audio outputs
-   separated from authoritative simulation and identical canonical input.
-4. Add server-owned run configuration, score/terminal policy and public replay
+1. Run every Rush, Survival and Quest fixture in full plus a fixed bot sweep,
+   comparing the complete Python `RunResult` with `preserve_bugs=True`. Include
+   required input schemes, settings and players; unsupported cases fail the
+   coverage gate. The current four-prefix allowlist is not this gate.
+2. Add the documented Python improvements behind a runtime bug-policy flag,
+   then run both policies and verify default-policy Python replays too.
+3. Define finite-state/NaN handling and a rules version covering normalized
+   world aim, command order, UI pause and timing. Keep broad sampled original
+   differentials and use Unicorn to adjudicate disagreements; whole-run original
+   equivalence is a fidelity goal, not the product's release gate.
+4. Run the whole recovered game, including menus, options, high scores and the
+   perk screen, in the same module as the verifier. Supply Grim rendering,
+   input and audio imports; collect draw commands per tick and present the
+   latest completed tick when the host runs zero to many ticks per frame.
+5. Add server-owned run configuration, score/terminal policy and public replay
    decoding; measure dense/adversarial workloads and deployed Workers CPU.
 
-This spike supports pursuing the recovered-core direction. It provides no
-reason to remove the working Zig verifier before those gates are met.
+Retire the independent Zig simulation when the recovered verifier passes every
+fixture and the bot sweep under the declared bug policies and can take over
+verification. Keep legacy replay versions on frozen artifacts where necessary;
+do not maintain Zig as a third evolving implementation.
 
-[Follow-up direction](FOLLOWUP.md) records the stub audit, replay-seam decision,
-WASM embedding result and plan for broader original-code differentials.
+[Follow-up direction](FOLLOWUP.md) defines the full-result gate, Zig retirement,
+stub audit, replay seam, WASM client and original-code differential plan.

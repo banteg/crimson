@@ -13,6 +13,13 @@ regression tests alone does not establish parity with the original.
 Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or
 [Zig build and tooling](zig-verifier.md).
 
+Python remains the fast iteration platform. The next shipped-game/verifier
+implementation will extend the recovered C/C++ and use one WASM artifact across
+desktop, browser and Workers. Zig catch-up and feature work are deferred; its
+existing verifier stays available during the transition. The spike and staged
+replacement gates are documented in `tools/recovered_sim/README.md` and
+`tools/recovered_sim/FOLLOWUP.md`.
+
 ## Architecture and contracts
 
 - [Module map](module-map.md): package boundaries, screen ownership, and runtime components.

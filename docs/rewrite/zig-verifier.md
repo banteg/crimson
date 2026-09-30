@@ -13,6 +13,21 @@ debug tooling, and a freestanding WASM interface. Live play and replay share
 `crimson-zig/src/runtime/session_builders.zig`; the desktop loop drives this core
 through `crimson-zig/src/runtime/live_runner.zig`.
 
+## Development status
+
+New Zig simulation, parity and product work is deferred. Do not mirror further
+Python or recovered-core changes into Zig, including the shared UI timeline,
+Typ-o follow-ups and phantom spawn-slot work. The existing verifier remains
+available while the recovered C/C++ becomes the shared game/verifier WASM core;
+Python remains the fast iteration platform.
+
+The retirement criterion is complete replay-fixture and fixed bot-sweep agreement
+with Python's full `RunResult` under each supported bug policy, including the
+controllers, settings and players exercised by that corpus. Unsupported cases
+are gaps, not passes. Then switch verification to the recovered core; retain a
+frozen legacy artifact only where existing replay versions still need it.
+The staged parity and deployment gates are in `tools/recovered_sim/FOLLOWUP.md`.
+
 ## Build and run
 
 ```bash

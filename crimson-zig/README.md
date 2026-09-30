@@ -2,6 +2,12 @@
 
 Standalone Zig workspace for the native Crimson port.
 
+New Zig simulation, parity and product work is deferred. Python stays the fast
+iteration platform; the recovered C/C++ will provide the shared game/verifier
+WASM core. Keep the existing verifier available until complete replay-fixture
+and bot-sweep results agree with Python under the declared bug policy. See the
+[replacement plan](../tools/recovered_sim/FOLLOWUP.md).
+
 ## What it is now
 
 `crimson-zig/` is no longer a replay-verifier side project. It already contains:
@@ -26,23 +32,24 @@ The desktop target now owns a real boot-to-menu-to-gameplay loop:
 - native config/status loading and saveback,
 - high-score entry and statistics surfaces,
 
-The strongest public tooling surface is still replay verification, but the
-workspace direction is a full native port, not a verifier-only fork.
+The strongest public tooling surface is replay verification. These existing
+desktop and tooling surfaces are retained during the recovered-core transition.
 
 Network play is deferred; local co-op and deterministic replays remain supported.
 
-## Current gaps
+## Deferred gaps
 
-The biggest remaining Zig work is no longer basic rendering or menu existence.
-It is mostly closure work:
+The remaining gaps are recorded for reference; they are not an active Zig
+catch-up plan:
 
 - replay/tooling breadth still lags Python,
 - some product-shell flows are still thinner than Python,
 - WASM is still a narrow replay/runtime ABI, but exposes replay
   verify/info/benchmark JSON paths plus checkpoint text and JSON paths,
 
-For the staged remaining-work breakdown, see
-[`docs/rewrite/zig-roadmap.md`](/Users/banteg/dev/banteg/crimson/docs/rewrite/zig-roadmap.md).
+Further work belongs in the recovered core rather than another simulation
+mirror. The shared UI timeline, Typ-o follow-ups and phantom spawn slot are
+deferred on the Zig side.
 
 ## Codecs and assets
 
