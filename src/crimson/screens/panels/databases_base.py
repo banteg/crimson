@@ -4,11 +4,9 @@ from crimson.screens.actions import Route
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
-from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...ui.button import UiButtonState, button_draw, button_update
@@ -28,8 +26,6 @@ class _DatabaseBaseView(MenuScreen):
     def open(self) -> None:
         super().open()
         self._back_button = UiButtonState("Back", force_wide=False)
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
     def _panel_rect(self, index: int) -> Rect:
         """The databases lay out on `ui_element_slot_09` (the list) and slot 33 (the details)."""

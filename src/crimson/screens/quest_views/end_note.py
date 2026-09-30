@@ -4,11 +4,9 @@ from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, StartRun
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
-from grim.audio import play_sfx
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -48,13 +46,9 @@ class EndNoteView(MenuScreen):
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
     def update(self, dt: float) -> None:
-        panel_was_hidden = not self.state.ui.opened
         if not self._advance(dt):
             return
         dt_ms = int(min(float(dt), 0.1) * 1000.0)
-        if panel_was_hidden and self.state.ui.opened and self.state.audio is not None:
-            # ui_element_update clicks as the panel element becomes enabled.
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
         enabled = self.state.ui.opened
         if self.state.focus.escape and enabled:

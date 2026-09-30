@@ -64,12 +64,12 @@ class PanelMenuView(MenuScreen):
         if self._update_panel(dt):
             self._update_back_button()
 
-    def _update_panel(self, dt: float, *, play_open_sfx: bool = True) -> bool:
+    def _update_panel(self, dt: float) -> bool:
         """Advance presentation and the Back item's hover without consuming widget or navigation input; False while
         the timeline runs out."""
         live = self._advance(dt)
         if live:
-            self._lock_sign(dt, click=play_open_sfx)
+            self._lock_sign(dt)
 
         # The back element sits later in the element table than the panel, so native's backwards walk registers
         # it for focus before the panel's own widgets.

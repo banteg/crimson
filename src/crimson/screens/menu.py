@@ -4,7 +4,7 @@ import os
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route
-from crimson.ui.animation import ui_elements_max_timeline
+from crimson.ui.animation import game_state_elements
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_entry, draw_menu_sign
@@ -57,13 +57,10 @@ class MenuView(MenuScreen):
                 stop_music(self.state.audio)
             play_music(self.state.audio, "crimson_theme")
 
-    def _enter(self) -> None:
-        self.state.ui.enter(
-            ui_elements_max_timeline(
-                GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
-            ),
+    def _ui_elements(self) -> tuple[int, ...]:
+        return game_state_elements(
+            GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
         )
-        self._panel_open_sfx_played = False
 
     def update(self, dt: float) -> None:
         if self.state.audio is not None and not self.state.ui.closing:

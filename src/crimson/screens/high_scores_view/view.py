@@ -103,8 +103,6 @@ class HighScoresView(MenuScreen):
         self._close_lists()
 
         self._reload_records()
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
     def close(self) -> None:
         super().close()

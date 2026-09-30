@@ -48,14 +48,14 @@ def scores_over_run(make_game_state, headless_resources, mocker):
     return view, run, audio
 
 
-def test_high_scores_view_open_plays_panel_click_and_escape_plays_button_click(scores_over_run, mocker) -> None:
+def test_high_scores_view_clicks_as_its_panels_come_in_and_escape_plays_button_click(scores_over_run, mocker) -> None:
     view, _run, audio = scores_over_run
 
-    assert audio.played() == [SfxId.UI_PANELCLICK]
-
-    # High scores view animates in; advance its timeline before pressing escape.
+    # The panels click as they come in at 300ms, not as the screen opens.
+    assert audio.played() == []
     view.update(0.1)
     view.update(0.1)
+    assert audio.played() == []
     mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     update_frame(view, view.state, 0.1)
 

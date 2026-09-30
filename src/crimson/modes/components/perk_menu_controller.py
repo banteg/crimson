@@ -6,7 +6,7 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.ui_timeline import UiTimeline
-from crimson.ui.animation import ui_elements_max_timeline
+from crimson.ui.animation import ui_element_timeline_window, ui_elements_max_timeline
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.math import clamp
@@ -89,6 +89,7 @@ class PerkMenuController:
         self._choice_items = tuple(UiMenuItem() for _ in range(10))
         self._open = False
         self._closing = False
+        self._panel_clicked = False
         self._selected_index = 0
 
     def close(self) -> None:
@@ -102,15 +103,19 @@ class PerkMenuController:
         """`game_state_set(GAME_STATE_PERK_SELECTION)`."""
         if self._open:
             return
-        self._play_sfx(SfxId.UI_PANELCLICK)
         self._open = True
+        self._panel_clicked = False
         self._selected_index = 0
         # The choices register first, so this focuses the first one (native keeps whatever index was focused).
         self.focus.index = 0
         self.timeline.enter(ui_elements_max_timeline(GameStateId.PERK_SELECTION))
 
     def tick_timeline(self) -> None:
-        """Once the panel has slid out, the pending state is gameplay: `game_state_set(GAME_STATE_GAMEPLAY)`."""
+        """`ui_element_update` clicks as the panel (slot 27) comes in; once it has slid out, the pending state is
+        gameplay: `game_state_set(GAME_STATE_GAMEPLAY)`."""
+        if self._open and not self._panel_clicked and self.timeline.timeline_ms >= ui_element_timeline_window(27)[1]:
+            self._play_sfx(SfxId.UI_PANELCLICK)
+            self._panel_clicked = True
         if self._closing and self.timeline.ready:
             self._closing = False
             self.timeline.enter(ui_elements_max_timeline(GameStateId.GAMEPLAY))

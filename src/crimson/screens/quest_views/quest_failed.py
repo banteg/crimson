@@ -6,11 +6,10 @@ from crimson.screens.actions import Route, StartRun
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_music, play_sfx
+from grim.audio import play_music
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -80,12 +79,8 @@ class QuestFailedView(MenuScreen):
             play_music(self.state.audio, "shortie_monk")
         self._dt = min(float(dt), 0.1)
         dt_ms = self._dt * 1000.0
-        panel_was_hidden = not self.state.ui.opened
         if not self._advance(dt):
             return
-        if panel_was_hidden and self.state.ui.opened and self.state.audio is not None:
-            # ui_element_update clicks as the panel element becomes enabled.
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
         outcome = self._outcome
         # Port shortcuts: Escape for Main Menu and Q for Play Another. Enter takes the focused button, as native.

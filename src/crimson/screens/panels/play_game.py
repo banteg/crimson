@@ -68,7 +68,7 @@ class PlayGameMenuView(PanelMenuView):
         self._mode_buttons.clear()
 
     def update(self, dt: float) -> None:
-        if not self._update_panel(dt, play_open_sfx=False):
+        if not self._update_panel(dt):
             return
         self._update_back_button()
         entry = self._entry

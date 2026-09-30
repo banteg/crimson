@@ -75,13 +75,19 @@ def _ctx() -> PerkMenuUiContext:
     )
 
 
-def test_open_perk_menu_plays_panel_click() -> None:
+def test_perk_menu_clicks_as_its_panel_comes_in() -> None:
     played: list[SfxId] = []
     menu = _menu(played)
 
     assert menu.open is False
     menu.open_menu()
     assert menu.open is True
+    menu.tick_timeline()
+    assert played == []
+    # Slot 27 comes in at 400ms, and clicks once.
+    for _ in range(5):
+        menu.timeline.advance(100)
+        menu.tick_timeline()
     assert played == [SfxId.UI_PANELCLICK]
 
 

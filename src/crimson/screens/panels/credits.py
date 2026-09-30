@@ -227,9 +227,6 @@ class CreditsView(MenuScreen):
         self._back_button = UiButtonState("Back", force_wide=False)
         self._secret_button = UiButtonState("Secret", force_wide=False)
 
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-
     def _panel_rect(self) -> Rect:
         return ui_panel_rect(9, self.state.ui.timeline_ms, self.state.config.display.width)
 

@@ -12,12 +12,11 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_music, play_sfx, stop_music
+from grim.audio import play_music, stop_music
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
@@ -91,12 +90,6 @@ class StatisticsMenuView(MenuScreen):
             if self.state.audio.music.active_track != "shortie_monk":
                 stop_music(self.state.audio)
             play_music(self.state.audio, "shortie_monk")
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-
-    def resume(self) -> None:
-        super().resume()
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
 
     def _enter(self) -> None:
         super()._enter()

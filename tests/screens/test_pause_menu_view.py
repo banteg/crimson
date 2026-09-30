@@ -25,6 +25,8 @@ def paused(make_game_state, headless_resources, mocker):
     assert isinstance(view, PauseMenuView)
     while not state.ui.opened:
         view.update(0.1)
+    # `ui_element_update` clicks as each element comes in: the sign at 300ms, then the three items at 400, 500, 600.
+    assert audio.played() == [SfxId.UI_PANELCLICK] * 4
     return view, run, audio
 
 
@@ -41,7 +43,7 @@ def test_pause_menu_quit_fades_the_paused_run_toward_the_main_menu(paused, mocke
     _press(view, mocker, rl.KeyboardKey.KEY_ENTER)
     assert view.state.ui.closing
     assert view.state.ui.pending == Route.MENU
-    assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
+    assert audio.played()[4:] == [SfxId.UI_BUTTONCLICK]
 
     mocker.patch.object(run, "_draw_world")
     background = mocker.spy(run, "draw_pause_background")
@@ -56,7 +58,7 @@ def test_pause_menu_back_keeps_the_paused_run_opaque(paused, mocker) -> None:
     _press(view, mocker, rl.KeyboardKey.KEY_ESCAPE)
     assert view.state.ui.closing
     assert view.state.ui.pending == Route.BACK
-    assert audio.played() == [SfxId.UI_PANELCLICK, SfxId.UI_BUTTONCLICK]
+    assert audio.played()[4:] == [SfxId.UI_BUTTONCLICK]
 
     mocker.patch.object(run, "_draw_world")
     background = mocker.spy(run, "draw_pause_background")
