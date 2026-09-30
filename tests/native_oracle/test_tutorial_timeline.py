@@ -11,31 +11,51 @@ from __future__ import annotations
 
 import random
 import struct
+from pathlib import Path
 
+from pytest_mock import MockerFixture
+
+from crimson import local_input
 from crimson.bonuses import BonusId
 from crimson.creatures.spawn import pack_bonus_on_death_args
 from crimson.creatures.spawn_ids import CreatureFlags
 from crimson.game_modes import GameMode
+from crimson.local_input import LocalInputInterpreter
+from crimson.movement_controls import MovementControlType
+from crimson.replay.input_codec import pack_tick, unpack_tick_inputs
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
+from crimson.tutorial.runtime import tutorial_input_transform
 from crimson.tutorial.timeline import tutorial_timeline_update
 from crimson.weapon_runtime import prepare_weapon_availability
+from grim.config import default_crimson_cfg
 from grim.geom import Vec2
 
-from ._support import CREATURE_LAYOUT, CREATURE_POOL_SLOTS, CREATURE_STRIDE, PLAYER_OFFSETS, prepare_gameplay
+from ._support import (
+    CREATURE_LAYOUT,
+    CREATURE_POOL_SLOTS,
+    CREATURE_STRIDE,
+    PLAYER_OFFSETS,
+    PLAYER_STRIDE,
+    prepare_gameplay,
+)
 
 _PLAYER_EXPERIENCE = 0xAC
 _BONUS_STRIDE = 0x1C
 _GRIM_SET_COLOR_SLOT = 69  # vtable +0x114
+_GRIM_IS_KEY_ACTIVE_SLOT = 32  # vtable +0x80
 
 
-def _fake_grim_interface(oracle) -> int:
-    """Every key (`grim_is_key_active`, +0x80) reads as up; `grim_set_color` (+0x114) pops its four floats."""
+def _fake_grim_interface(oracle, held: set[int] | None = None) -> int:
+    """`grim_is_key_active` (+0x80) reads `held` (every key up by default); `grim_set_color` (+0x114) pops its four floats."""
 
     ret_one_arg = oracle.load_code(b"\x31\xc0\xc2\x04\x00")  # xor eax, eax; ret 4
     ret_four_args = oracle.load_code(b"\xc2\x10\x00")  # ret 0x10
     slots = [ret_one_arg] * 256
     slots[_GRIM_SET_COLOR_SLOT] = ret_four_args
+    if held is not None:
+        slots[_GRIM_IS_KEY_ACTIVE_SLOT] = oracle.load_code(b"\xcc" * 16)
+        oracle.stub(slots[_GRIM_IS_KEY_ACTIVE_SLOT], lambda call: int(call.arg_u32(0) in held), pop=4)
     vtable = oracle.alloc(0x400, data=struct.pack("<256I", *slots))
     return oracle.alloc(0x10, data=struct.pack("<I", vtable))
 
@@ -200,3 +220,79 @@ def test_tutorial_timeline_matches_native(oracle) -> None:
 
     assert spawned > 50, f"only {spawned} creatures spawned over {cases} cases"
     assert not failures, "\n".join(failures[:40]) + f"\n{len(failures)} mismatches"
+
+
+_TUTORIAL_KEY_STAGES = (1, 3)
+_INPUT_MOVE_KEYS = 0x32C
+_INPUT_FIRE_KEY = 0x33C
+_ALT_MOVE_KEYS = (0xC8, 0xD0, 0xCB, 0xCD)
+
+
+def test_tutorial_key_stages_match_native(oracle, mocker: MockerFixture) -> None:
+    """Stages 1 and 3 poll the move keys and the fire key of players 0 and 1 under every movement scheme.
+
+    The port sees them through the live interpreter and a replay tick. Single-player runs
+    reach player 1's default arrow bindings through the arrow alternates.
+    """
+
+    held: set[int] = set()
+    axes: dict[int, float] = {}
+    prepare_gameplay(oracle)
+    oracle.write_u32("grim_interface_ptr", _fake_grim_interface(oracle, held))
+    oracle.write_u32("config_game_mode", int(GameMode.TUTORIAL))
+    # Only the stage transition is compared: the prompt, the bursts and the spawns are stubbed.
+    for name in ("tutorial_prompt_dialog", "sfx_play", "effect_spawn_burst", "creature_spawn_template"):
+        oracle.stub(name, 0)
+    config = default_crimson_cfg(Path("<memory>"))
+    config.gameplay.player_count = 1
+    player_table = oracle.resolve("player_state_table")
+    for index in range(2):
+        binds = config.controls.player(index)
+        oracle.write(player_table + index * PLAYER_STRIDE + _INPUT_MOVE_KEYS, struct.pack("<4i", *binds.move_codes))
+        oracle.write_u32(player_table + index * PLAYER_STRIDE + _INPUT_FIRE_KEY, binds.fire_code)
+    pristine = oracle.snapshot()
+    mocker.patch.object(local_input, "input_code_is_down", side_effect=lambda code, **_kw: int(code) in held)
+    mocker.patch.object(local_input, "input_code_is_pressed", return_value=False)
+    mocker.patch.object(local_input, "input_axis_value", side_effect=lambda code, **_kw: axes.get(int(code), 0.0))
+
+    binds = config.controls.player(0)
+    codes = (*binds.move_codes, *_ALT_MOVE_KEYS, binds.fire_code, *binds.keyboard_aim_codes)
+    rng = random.Random(0x408D6B)
+    failures: list[str] = []
+    advanced = 0
+    for _ in range(400):
+        stage = rng.choice(_TUTORIAL_KEY_STAGES)
+        binds.movement = rng.choice(list(MovementControlType)[1:])
+        held.clear()
+        held.update(code for code in codes if rng.random() < 0.15)
+        axes.clear()
+        axes.update({int(code): rng.choice((0.0, 0.9, -0.9)) for code in binds.move_axis_codes})
+
+        oracle.restore(pristine)
+        oracle.write_u32("tutorial_stage_index", stage)
+        oracle.write_u32("tutorial_stage_transition_timer", 0xFFFF_FFFF)
+        oracle.write_u32("tutorial_hint_index", 0xFFFF_FFFF)
+        oracle.write_f32(player_table + PLAYER_OFFSETS["health"], 100.0)
+        oracle.write_u32("frame_dt_ms", 16)
+        oracle.call("tutorial_timeline_update")
+
+        world = _python_world(0x1234)
+        tutorial = world.state.tutorial
+        tutorial.stage_index = stage
+        tutorial.stage_transition_timer_ms = -1
+        tutorial.hint_index = -1
+        live = LocalInputInterpreter().build_player_input(
+            player_index=0, player=world.players[0], config=config, mouse_screen=Vec2(), mouse_world=Vec2(),
+        )
+        tutorial_input_transform(world, unpack_tick_inputs(pack_tick([live]).inputs))
+        tutorial_timeline_update(world, dt_ms=16)
+
+        native = oracle.read_i32("tutorial_stage_transition_timer")
+        advanced += native == -1000
+        if native != tutorial.stage_transition_timer_ms:
+            failures.append(
+                f"stage={stage} {binds.movement.name} held={sorted(held)} axes={axes}: "
+                f"native={native} port={tutorial.stage_transition_timer_ms}",
+            )
+    assert advanced > 100
+    assert not failures, "\n".join(failures[:20]) + f"\n{len(failures)} mismatches"

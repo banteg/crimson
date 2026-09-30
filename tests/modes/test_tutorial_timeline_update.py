@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.bonuses import BonusId
 from crimson.creatures.spawn_ids import CreatureFlags, SpawnId
 from crimson.game_modes import GameMode
+from crimson.movement_controls import MovementControlType
+from crimson.sim.input import PlayerInput
 from crimson.sim.world_state import WorldState
+from crimson.tutorial.runtime import tutorial_input_transform
 from crimson.tutorial.timeline import tutorial_timeline_update
 from grim.geom import Vec2
 from grim.sfx_map import SfxId
@@ -25,6 +30,22 @@ def test_the_first_stage_starts_after_the_bootstrap_transition() -> None:
     assert world.state.tutorial.stage_index == 0
     assert world.state.tutorial.stage_transition_timer_ms == 0
     assert world.state.tutorial_overlay.prompt_text == "In this tutorial you'll learn how to play Crimsonland"
+
+
+@pytest.mark.parametrize(
+    ("inp", "moving"),
+    [
+        (player_input(move=Vec2(1.0, 0.0)), False),  # a pushed stick is no move key
+        (player_input(move_forward_pressed=True), True),
+        (player_input(move_mode=MovementControlType.COMPUTER, turn_right_pressed=True), True),
+    ],
+)
+def test_stage_1_waits_for_a_held_move_key_in_any_scheme(inp: PlayerInput, moving: bool) -> None:
+    world = _tutorial_world()
+
+    tutorial_input_transform(world, [inp])
+
+    assert world.state.tutorial.move_active_this_tick is moving
 
 
 def test_moving_on_stage_1_seeds_three_point_bonuses() -> None:

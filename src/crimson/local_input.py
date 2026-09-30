@@ -30,10 +30,8 @@ PAD_AIM_DIST_MUL_DEFAULT = 96.0
 # instead keeps the last direction, and small drift inside this radius is ignored.
 _PAD_AIM_DEADZONE = 0.2
 
-_ALT_MOVE_KEY_UP = 0xC8
-_ALT_MOVE_KEY_DOWN = 0xD0
-_ALT_MOVE_KEY_LEFT = 0xCB
-_ALT_MOVE_KEY_RIGHT = 0xCD
+# `player_alt_move_key_forward/backward`, `player_alt_turn_key_left/right`: the arrow keys.
+_ALT_MOVE_KEYS = (0xC8, 0xD0, 0xCB, 0xCD)
 _AIM_POV_LEFT_CODE = 0x133
 _AIM_POV_RIGHT_CODE = 0x134
 
@@ -188,37 +186,14 @@ class LocalInputInterpreter:
         move_axis_y, move_axis_x = binds.move_axis_codes
 
         move_vec = Vec2()
-        move_forward_pressed = False
-        move_backward_pressed = False
-        turn_left_pressed = False
-        turn_right_pressed = False
+        # Held in every scheme: the tutorial polls the move keys whatever the movement mode.
+        move_forward_pressed, move_backward_pressed, turn_left_pressed, turn_right_pressed = (
+            _key_down_with_single_player_alt(key, alt_key=alt_key, config=config, player_index=idx)
+            for key, alt_key in zip(binds.move_codes, _ALT_MOVE_KEYS, strict=True)
+        )
 
         # Computer control reads no device: the sim picks its target, steers and aims.
         if move_mode_type is MovementControlType.RELATIVE:
-            move_forward_pressed = _key_down_with_single_player_alt(
-                move_forward_key,
-                alt_key=_ALT_MOVE_KEY_UP,
-                config=config,
-                player_index=idx,
-            )
-            move_backward_pressed = _key_down_with_single_player_alt(
-                move_backward_key,
-                alt_key=_ALT_MOVE_KEY_DOWN,
-                config=config,
-                player_index=idx,
-            )
-            turn_left_pressed = _key_down_with_single_player_alt(
-                turn_left_key,
-                alt_key=_ALT_MOVE_KEY_LEFT,
-                config=config,
-                player_index=idx,
-            )
-            turn_right_pressed = _key_down_with_single_player_alt(
-                turn_right_key,
-                alt_key=_ALT_MOVE_KEY_RIGHT,
-                config=config,
-                player_index=idx,
-            )
             move_vec = Vec2(
                 float(turn_right_pressed) - float(turn_left_pressed),
                 float(move_backward_pressed) - float(move_forward_pressed),
@@ -237,39 +212,11 @@ class LocalInputInterpreter:
                 state.move_target = Vec2(f32(mouse_world.x), f32(mouse_world.y))
             move_vec = state.move_target
         elif move_mode_type is MovementControlType.STATIC:
-            move_up_pressed = _key_down_with_single_player_alt(
-                move_forward_key,
-                alt_key=_ALT_MOVE_KEY_UP,
-                config=config,
-                player_index=idx,
-            )
-            move_down_pressed = _key_down_with_single_player_alt(
-                move_backward_key,
-                alt_key=_ALT_MOVE_KEY_DOWN,
-                config=config,
-                player_index=idx,
-            )
-            move_left_pressed = _key_down_with_single_player_alt(
-                turn_left_key,
-                alt_key=_ALT_MOVE_KEY_LEFT,
-                config=config,
-                player_index=idx,
-            )
-            move_right_pressed = _key_down_with_single_player_alt(
-                turn_right_key,
-                alt_key=_ALT_MOVE_KEY_RIGHT,
-                config=config,
-                player_index=idx,
-            )
-            move_forward_pressed = move_up_pressed
-            move_backward_pressed = move_down_pressed
-            turn_left_pressed = move_left_pressed
-            turn_right_pressed = move_right_pressed
             move_vec = _resolve_static_move_vector(
-                move_up=move_up_pressed,
-                move_down=move_down_pressed,
-                move_left=move_left_pressed,
-                move_right=move_right_pressed,
+                move_up=move_forward_pressed,
+                move_down=move_backward_pressed,
+                move_left=turn_left_pressed,
+                move_right=turn_right_pressed,
             )
         elif move_mode_type is not MovementControlType.COMPUTER:
             move_vec = Vec2(
