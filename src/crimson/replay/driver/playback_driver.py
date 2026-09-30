@@ -265,7 +265,6 @@ def build_runtime_playback_driver(
     replay: Replay,
     *,
     max_ticks: int | None,
-    trace_rng: bool,
     spawn_entries: tuple[SpawnEntry, ...] | None = None,
     start_weapon_id: WeaponId | None = None,
 ) -> PlaybackDriver:
@@ -274,7 +273,6 @@ def build_runtime_playback_driver(
     return PlaybackDriver(
         replay,
         max_ticks=max_ticks,
-        trace_rng=bool(trace_rng),
         version_mismatch_action=None,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,

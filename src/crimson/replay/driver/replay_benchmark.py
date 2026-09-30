@@ -142,7 +142,6 @@ def run_replay_render_benchmark(
     runs: int = 5,
     warmup_runs: int = 1,
     max_ticks: int | None = None,
-    trace_rng: bool = False,
     profile: bool = False,
     profile_sort: ProfileSortKey = "cumtime",
     top: int = 20,
@@ -166,11 +165,7 @@ def run_replay_render_benchmark(
         or render_charts_out_dir is not None,
     )
 
-    baseline_result = build_verify_playback_driver(
-        replay,
-        max_ticks=max_ticks,
-        trace_rng=bool(trace_rng),
-    ).run()
+    baseline_result = build_verify_playback_driver(replay, max_ticks=max_ticks).run()
 
     runtime_assets_dir = Path(assets_dir) if assets_dir is not None else Path(base_dir)
     boot = boot_runtime(Path(base_dir), runtime_assets_dir, width=width, height=height)
@@ -211,7 +206,6 @@ def run_replay_render_benchmark(
                     cfg=cfg,
                     console=console,
                     max_ticks=max_ticks,
-                    trace_rng=bool(trace_rng),
                     rtx=bool(rtx),
                     telemetry_session=telemetry_session,
                     observer=_TickBar(bar=bar),
@@ -296,7 +290,6 @@ def run_replay_benchmark(
     runs: int = 5,
     warmup_runs: int = 1,
     max_ticks: int | None = None,
-    trace_rng: bool = False,
     profile: bool = False,
     profile_sort: ProfileSortKey = "cumtime",
     top: int = 20,
@@ -312,7 +305,7 @@ def run_replay_benchmark(
 
         def _run_once(tick_desc: str) -> RunResult:
             with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
-                driver = build_verify_playback_driver(replay, max_ticks=max_ticks, trace_rng=bool(trace_rng))
+                driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
                 return driver.run(observer=_TickBar(bar=bar))
 
         measured = _measure_runs(
@@ -446,7 +439,6 @@ def _run_render_once(
     cfg: CrimsonConfig,
     console: ConsoleState,
     max_ticks: int | None,
-    trace_rng: bool,
     rtx: bool,
     telemetry_session: RenderTelemetrySession | None = None,
     observer: PlaybackWalkObserver | None = None,
@@ -457,7 +449,6 @@ def _run_render_once(
         config=cfg,
         console=console,
         max_ticks=max_ticks,
-        trace_rng=bool(trace_rng),
         rtx=bool(rtx),
     )
     mode.open()

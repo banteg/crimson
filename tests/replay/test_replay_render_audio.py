@@ -110,7 +110,6 @@ def test_capture_audio_track_counts_captured_ticks(mocker, tmp_path: Path) -> No
         config=_FakeConfig(),
         console=object(),
         max_ticks=None,
-        trace_rng=False,
         output_path=tmp_path / "audio.raw",
         replay_tick_rate=60,
         show_progress=False,

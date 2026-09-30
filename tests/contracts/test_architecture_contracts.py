@@ -106,7 +106,7 @@ def test_contract_8_live_and_replay_frames_advance_the_presentation_clock_alike(
     harness = StandaloneTickHarness(game_mode=GameMode.SURVIVAL, frame_inputs=lambda _dt: [player_input()])
 
     replay = idle_replay(16, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=0))
-    driver = build_runtime_playback_driver(replay, max_ticks=None, trace_rng=False)
+    driver = build_runtime_playback_driver(replay, max_ticks=None)
     replay_runtime = WorldRuntime(assets_dir=tmp_path, audio_rng=Crand(0))
     replay_runtime.start_session(driver.session)
     replay_clock = FixedStepClock(tick_rate=60)

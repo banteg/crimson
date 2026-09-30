@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 _REPLAY_VERIFY_SCHEMA_VERSION = 4
 _REPLAY_INFO_SCHEMA_VERSION = 2
-_REPLAY_BENCHMARK_SCHEMA_VERSION = 3
+_REPLAY_BENCHMARK_SCHEMA_VERSION = 4
 _REPLAY_VERIFY_MISMATCH_EXIT_CODE = 3
 
 
@@ -467,11 +467,6 @@ def cmd_replay_verify(
         help="replay file path (.crd); if a filename is provided, also search base-dir/replays",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    trace_rng: bool = typer.Option(
-        False,
-        "--trace-rng",
-        help="enable replay RNG trace mode during simulation",
-    ),
     output_format: Literal["human", "json"] = typer.Option(
         "human",
         "--format",
@@ -503,7 +498,7 @@ def cmd_replay_verify(
     try:
         replay_payload = inflate_replay_payload(Path(replay_path).read_bytes())
         replay = decode_replay_payload(replay_payload)
-        driver = build_verify_playback_driver(replay, max_ticks=max_ticks, trace_rng=trace_rng)
+        driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
         result = driver.run()
     except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
@@ -611,7 +606,6 @@ def cmd_replay_info(
                 replay,
                 max_ticks=max_ticks,
                 warn_on_version_mismatch=True,
-                trace_rng=False,
             ),
             player_index=player_index,
             include_extra_events=bool(verbose),
@@ -693,11 +687,6 @@ def cmd_replay_benchmark(
         help="enable non-canonical RTX render mode (render mode only)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    trace_rng: bool = typer.Option(
-        False,
-        "--trace-rng",
-        help="enable replay RNG trace mode during simulation",
-    ),
     profile: bool = typer.Option(False, "--profile", help="run one cProfile pass and include hotspot summary"),
     profile_sort: Literal["cumtime", "tottime"] = typer.Option(
         "cumtime",
@@ -783,7 +772,6 @@ def cmd_replay_benchmark(
                 runs=resolved_runs,
                 warmup_runs=resolved_warmup_runs,
                 max_ticks=max_ticks,
-                trace_rng=trace_rng,
                 profile=profile,
                 profile_sort=profile_sort,
                 top=top,
@@ -800,7 +788,6 @@ def cmd_replay_benchmark(
                 runs=resolved_runs,
                 warmup_runs=resolved_warmup_runs,
                 max_ticks=max_ticks,
-                trace_rng=trace_rng,
                 profile=profile,
                 profile_sort=profile_sort,
                 top=top,
@@ -820,7 +807,6 @@ def cmd_replay_benchmark(
             "runs": resolved_runs,
             "warmup_runs": resolved_warmup_runs,
             "max_ticks": max_ticks,
-            "trace_rng": trace_rng,
             "profile": profile,
             "profile_sort": profile_sort,
             "top": top,
@@ -931,11 +917,6 @@ def cmd_replay_render(
     height: int | None = typer.Option(None, help="render height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, "--fps", min=1, help="output video fps"),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    trace_rng: bool = typer.Option(
-        False,
-        "--trace-rng",
-        help="enable replay RNG trace mode during simulation",
-    ),
     ffmpeg_bin: Path | None = typer.Option(
         None,
         "--ffmpeg-bin",
@@ -1007,7 +988,6 @@ def cmd_replay_render(
             height=height,
             fps=int(fps),
             max_ticks=max_ticks,
-            trace_rng=bool(trace_rng),
             ffmpeg_bin=(Path(ffmpeg_bin) if ffmpeg_bin is not None else None),
             crf=int(crf),
             preset=preset,
@@ -1042,11 +1022,6 @@ def cmd_replay_verify_checkpoints(
         help="checkpoint sidecar path (default: <replay>.chk)",
     ),
     max_ticks: int | None = typer.Option(None, help="stop after N ticks (default: full replay)"),
-    trace_rng: bool = typer.Option(
-        False,
-        "--trace-rng",
-        help="include presentation RNG draw marks in verification checkpoints",
-    ),
     base_dir: Path = typer.Option(
         default_runtime_dir(),
         "--base-dir",
@@ -1118,11 +1093,7 @@ def cmd_replay_verify_checkpoints(
                     raise _CheckpointMismatchStop(tick_diff)
 
     try:
-        driver = build_verify_playback_driver(
-            replay,
-            max_ticks=max_ticks,
-            trace_rng=bool(trace_rng),
-        )
+        driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
 
         result = driver.run(
             observer=_CheckpointVerifyObserver(

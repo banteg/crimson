@@ -234,7 +234,7 @@ def test_skip_forward_applies_every_skipped_ticks_terrain_fx(open_playback: Open
     view.update(0.0)
 
     # The same fx a tick-by-tick run of the skipped ticks produces, in order.
-    stepped = build_runtime_playback_driver(replay, max_ticks=None, trace_rng=False)
+    stepped = build_runtime_playback_driver(replay, max_ticks=None)
     fx_by_tick = [stepped.step_tick(tick).payload.presentation.terrain_fx for tick in range(view.tick_index)]
     expected = [fx for fx in fx_by_tick[skip_from:] if not fx.is_empty()]
     assert expected

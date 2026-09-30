@@ -60,7 +60,6 @@ def _live_runtime_checkpoints(
     driver = build_runtime_playback_driver(
         replay,
         max_ticks=None,
-        trace_rng=False,
         spawn_entries=spawn_entries,
         start_weapon_id=start_weapon_id,
     )
@@ -131,7 +130,6 @@ def test_runtime_playback_driver_matches_verify_terrain_fx_output() -> None:
     runtime_driver = build_runtime_playback_driver(
         replay,
         max_ticks=None,
-        trace_rng=False,
     )
     verify_driver = build_verify_playback_driver(replay)
 

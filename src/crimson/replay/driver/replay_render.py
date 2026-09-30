@@ -133,7 +133,6 @@ def run_replay_render_video(
     height: int | None = None,
     fps: int = 60,
     max_ticks: int | None = None,
-    trace_rng: bool = False,
     ffmpeg_bin: Path | None = None,
     crf: int = 16,
     preset: X264Preset = "slow",
@@ -157,11 +156,7 @@ def run_replay_render_video(
         raise ReplayRenderError(f"output exists: {out_path} (pass --overwrite to replace)")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    baseline_driver = build_verify_playback_driver(
-        replay,
-        max_ticks=max_ticks,
-        trace_rng=bool(trace_rng),
-    )
+    baseline_driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
     baseline_result = baseline_driver.run()
     baseline_ticks = int(baseline_driver.tick_limit)
 
@@ -219,7 +214,6 @@ def run_replay_render_video(
                 config=cfg,
                 console=console,
                 max_ticks=max_ticks,
-                trace_rng=trace_rng,
                 show_replay_widget=False,
             )
             mode.open()
@@ -278,7 +272,6 @@ def run_replay_render_video(
                     config=cfg,
                     console=console,
                     max_ticks=max_ticks,
-                    trace_rng=trace_rng,
                     output_path=audio_raw_path,
                     replay_tick_rate=replay_tick_rate,
                     show_progress=show_progress,
@@ -429,7 +422,6 @@ def _capture_replay_audio_track(
     config,
     console,
     max_ticks: int | None,
-    trace_rng: bool,
     output_path: Path,
     replay_tick_rate: int,
     show_progress: bool,
@@ -456,7 +448,6 @@ def _capture_replay_audio_track(
             config=cfg,
             console=console,
             max_ticks=max_ticks,
-            trace_rng=trace_rng,
             show_replay_widget=False,
         )
         mode.open()

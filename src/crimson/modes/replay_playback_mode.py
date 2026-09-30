@@ -84,7 +84,6 @@ class ReplayPlaybackMode:
         config: CrimsonConfig,
         console: ConsoleState,
         max_ticks: int | None = None,
-        trace_rng: bool = False,
         rtx: bool = False,
         show_replay_widget: bool = True,
     ) -> None:
@@ -93,7 +92,6 @@ class ReplayPlaybackMode:
         self._config = config
         self._console = console
         self._max_ticks = max(0, int(max_ticks)) if max_ticks is not None else None
-        self._trace_rng = bool(trace_rng)
         self._rtx = bool(rtx)
         self._show_replay_widget = bool(show_replay_widget)
 
@@ -319,11 +317,7 @@ class ReplayPlaybackMode:
         runtime.open_runtime()
 
         try:
-            self._driver = build_runtime_playback_driver(
-                replay,
-                max_ticks=self._max_ticks,
-                trace_rng=bool(self._trace_rng),
-            )
+            self._driver = build_runtime_playback_driver(replay, max_ticks=self._max_ticks)
             driver = self._driver
             runtime.start_session(driver.session)
         except ReplayRunnerError as exc:  # pragma: no cover

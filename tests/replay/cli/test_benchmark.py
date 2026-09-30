@@ -108,7 +108,7 @@ def test_replay_benchmark_json_output_payload_ok(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     assert payload["status"] == "ok"
     assert payload["replay"] == str(replay_path)
     assert payload["settings"]["runs"] == 2
@@ -477,7 +477,7 @@ def test_replay_benchmark_render_mode_passes_extended_profiling_kwargs(tmp_path:
 
     assert result.exit_code == 0, result.output
     payload = json.loads(result.output)
-    assert payload["schema_version"] == 3
+    assert payload["schema_version"] == 4
     assert payload["render_telemetry"] is not None
     assert payload["render_telemetry"]["summary"]["top_draw_ms_ticks"][0]["tick_index"] == 1
 
