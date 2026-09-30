@@ -77,6 +77,7 @@ def _live_runtime_checkpoints(
                 tick_index=int(tick_index),
                 world=runtime.world,
                 elapsed_ms=float(driver.elapsed_ms),
+                rng_callers_crc32=driver.rng_call_order.crc32(),
                 deaths=step.events.deaths,
                 events=step.events,
             ),

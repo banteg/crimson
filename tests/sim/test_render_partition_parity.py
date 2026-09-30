@@ -8,6 +8,7 @@ from crimson.movement_controls import MovementControlType
 from crimson.perks import PerkId
 from crimson.replay.checkpoints import ReplayCheckpoint, build_checkpoint
 from crimson.replay.input_codec import unpack_player_input
+from crimson.replay.rng_call_order import RngCallOrder
 from crimson.replay.ticks import LiveTickSource, step_replay_tick
 from crimson.sim.clock import FixedStepClock
 from crimson.sim.input import PlayerInput
@@ -32,17 +33,19 @@ def _run_render_partition(render_hz: int) -> list[tuple[ReplayCheckpoint, Determ
     ticks = LiveTickSource()
     clock = FixedStepClock(tick_rate=60)
     rows = []
+    rng_call_order = RngCallOrder()
 
     frame_input = controls
     for _ in range(render_hz // 15):
         ticks.poll([frame_input])
         for _ in range(clock.advance(1 / render_hz)):
             tick = ticks.next_tick()
-            step = step_replay_tick(session, tick)
+            with rng_call_order.recording(session.world.state.rng):
+                step = step_replay_tick(session, tick)
             rows.append((
                 build_checkpoint(
-                    tick_index=len(rows), world=session.world,
-                    elapsed_ms=session.elapsed_ms, events=step.events, deaths=step.events.deaths,
+                    tick_index=len(rows), world=session.world, elapsed_ms=session.elapsed_ms,
+                    rng_callers_crc32=rng_call_order.crc32(), events=step.events, deaths=step.events.deaths,
                 ),
                 step.presentation,
                 unpack_player_input(tick.inputs[0]),

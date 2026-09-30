@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import zlib
 from collections.abc import Callable
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
+from crimson.cli import app
 from crimson.game_modes import GameMode
 from crimson.modes import base_gameplay_mode, survival_mode
 from crimson.modes.base_gameplay_mode import BaseGameplayMode
@@ -12,6 +15,7 @@ from crimson.modes.rush_mode import RushMode
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.perks import PerkId
 from crimson.replay import load_replay
+from crimson.replay.checkpoints import load_checkpoints_file
 from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import unpack_player_input
 from crimson.sim.commands import PerkPickCommand
@@ -113,6 +117,11 @@ def test_saved_live_replay_round_trips_and_verifies(
     assert len(replay.ticks) == 5
     assert replay.result.outcome == RunOutcome.INCOMPLETE
     assert build_verify_playback_driver(replay).run() == replay.result
+    if replay_checkpoints:
+        # Live play digests each tick's RNG call order as headless verification does.
+        assert any(ckpt.rng_callers_crc32 != zlib.crc32(b"") for ckpt in load_checkpoints_file(saved[1]).checkpoints)
+        verified = CliRunner().invoke(app, ["replay", "verify-checkpoints", str(saved[0])])
+        assert verified.exit_code == 0, verified.output
 
 
 def test_run_left_before_first_tick_saves_no_replay(make_mode_config, assets_dir, tmp_path) -> None:

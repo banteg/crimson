@@ -38,7 +38,14 @@ from ._helpers import (
     write_replay,
 )
 
+# The frozen Zig port reads checkpoint format 6, which predates the per-tick `rng_callers_crc32`.
+_ZIG_CHECKPOINTS_STALE = pytest.mark.xfail(
+    strict=True,
+    reason="Zig reads checkpoint format 6; format 7 checkpoints carry rng_callers_crc32",
+)
 
+
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_accepts_python_sidecars(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -208,6 +215,7 @@ def test_zig_replay_verify_checkpoints_rejects_non_crd_replay_extension(tmp_path
     assert "replay verification failed: replay file must use .crd extension" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -221,6 +229,7 @@ def test_zig_replay_diff_checkpoints_reports_state_mismatch(tmp_path: Path) -> N
     assert "score_xp expected=0 actual=999999" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_reports_player_field_mismatch(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -241,6 +250,7 @@ def test_zig_replay_diff_checkpoints_reports_player_field_mismatch(tmp_path: Pat
     assert "first state diff: players[0].health" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_reports_event_field_mismatch(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -260,6 +270,7 @@ def test_zig_replay_diff_checkpoints_reports_event_field_mismatch(tmp_path: Path
     assert "first state diff: events.sfx_count" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_reports_event_sfx_head_summary(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -284,6 +295,7 @@ def test_zig_replay_diff_checkpoints_reports_event_sfx_head_summary(tmp_path: Pa
     assert "actual=(hits=0, pickups=0, sfx=0, head=['menu_click'])" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_reports_first_death_detail(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -312,6 +324,7 @@ def test_zig_replay_diff_checkpoints_reports_first_death_detail(tmp_path: Path) 
     assert "creature_index=7, type_id=2, reward_value=3.5, xp_awarded=4" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_rejects_rng_only_mismatch(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")
@@ -330,6 +343,7 @@ def test_zig_replay_diff_checkpoints_rejects_rng_only_mismatch(tmp_path: Path) -
     assert "first state diff: rng_state" in result.stderr
 
 
+@_ZIG_CHECKPOINTS_STALE
 def test_zig_replay_diff_checkpoints_emits_json_and_artifact(tmp_path: Path) -> None:
     replay = build_replay(mode=GameMode.SURVIVAL, ticks=3)
     replay_path = write_replay(tmp_path, replay=replay, name="survival.crd")

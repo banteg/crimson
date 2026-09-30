@@ -29,9 +29,9 @@ def test_dbg_verify_reports_complete_current_format_matrix() -> None:
 
     assert result.exit_code == 0, result.output
     assert "trace_format_version=2" in result.output
-    assert "trace_schema_version=19" in result.output
+    assert "trace_schema_version=20" in result.output
     assert "replay_format_version=29" in result.output
-    assert "checkpoint_format_version=6" in result.output
+    assert "checkpoint_format_version=7" in result.output
     assert "result=ok" in result.output
 
 
@@ -67,7 +67,7 @@ def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
     )
     assert health_result.exit_code == 0, health_result.output
     assert "trace_format_version=2" in health_result.output
-    assert "trace_schema_version=19" in health_result.output
+    assert "trace_schema_version=20" in health_result.output
     assert 'tick_spans=[{"end_tick": 2, "start_tick": 0, "tick_count": 3}]' in health_result.output
     assert "tick_gaps=[]" in health_result.output
     assert "replay_step_rows=3" in health_result.output

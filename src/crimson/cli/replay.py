@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -64,8 +64,10 @@ def _default_replay_render_output_path(replay_path: Path) -> Path:
     return Path(replay_path).with_suffix(".render.mp4")
 
 
-def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
+def _render_checkpoint_diff_failure(diff: ReplayDiffResult, *, actual_rng_callers: Sequence[int] | None = None) -> None:
+    """Report the first divergence; `actual_rng_callers` are the diverging tick's draws when the verifier ran it."""
     from ..replay.checkpoint_diff import checkpoint_deepdiff
+    from ..replay.rng_call_order import caller_names
 
     failure = diff.failure
     assert failure is not None
@@ -83,6 +85,16 @@ def _render_checkpoint_diff_failure(diff: ReplayDiffResult) -> None:
     assert act is not None
     typer.echo(f"checkpoint mismatch at tick={int(failure.tick_index)}", err=True)
     typer.echo(f"  rng_state expected={exp.rng_state} actual={act.rng_state}", err=True)
+    typer.echo(
+        f"  rng_callers_crc32 expected=0x{exp.rng_callers_crc32:08x} actual=0x{act.rng_callers_crc32:08x}",
+        err=True,
+    )
+    if exp.rng_callers_crc32 != act.rng_callers_crc32 and actual_rng_callers is not None:
+        typer.echo(
+            f"  rng call order diverged at tick={int(failure.tick_index)}: {len(actual_rng_callers)} draws "
+            f"{caller_names(actual_rng_callers)}",
+            err=True,
+        )
     typer.echo(f"  elapsed_ms expected={exp.elapsed_ms} actual={act.elapsed_ms}", err=True)
     typer.echo(f"  score_xp expected={exp.score_xp} actual={act.score_xp}", err=True)
     typer.echo(f"  kills expected={exp.kills} actual={act.kills}", err=True)
@@ -1071,8 +1083,9 @@ def cmd_replay_verify_checkpoints(
     actual: list[ReplayCheckpoint] = []
 
     class _CheckpointMismatchStop(Exception):
-        def __init__(self, diff: object) -> None:
+        def __init__(self, diff: object, rng_callers: list[int]) -> None:
             self.diff = diff
+            self.rng_callers = rng_callers
 
     class _CheckpointVerifyObserver(PlaybackWalkObserver):
         driver: PlaybackDriver
@@ -1090,7 +1103,7 @@ def cmd_replay_verify_checkpoints(
                     [checkpoint],
                 )
                 if not tick_diff.ok:
-                    raise _CheckpointMismatchStop(tick_diff)
+                    raise _CheckpointMismatchStop(tick_diff, list(self.driver.rng_call_order.callers))
 
     try:
         driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
@@ -1103,7 +1116,7 @@ def cmd_replay_verify_checkpoints(
             ),
         )
     except _CheckpointMismatchStop as exc:
-        _render_checkpoint_diff_failure(cast("ReplayDiffResult", exc.diff))
+        _render_checkpoint_diff_failure(cast("ReplayDiffResult", exc.diff), actual_rng_callers=exc.rng_callers)
     except (ReplayGameVersionError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc

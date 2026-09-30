@@ -18,7 +18,7 @@ workflow details, see
 ## Versioning
 
 - `trace_format_version = 2`: container and envelope
-- `trace_schema_version = 19`: typed tick payloads
+- `trace_schema_version = 20`: typed tick payloads
 
 The reader requires both exact versions. There is no compatibility path for an
 older CDT because traces are cheap to record again.
@@ -98,7 +98,7 @@ Schema 19 changes these semantics and allocation generations. Earlier traces
 are rejected and must be regenerated; rewriting their version number cannot
 recover missing allocation events or correct their clocks.
 
-## Channel contract (schema 19)
+## Channel contract (schema 20)
 
 Every tick requires all six channels:
 
@@ -132,7 +132,8 @@ Effective hit and pickup counts are cross-producer fields. The non-equivalent
 audio count, detailed death rows, and SFX/hit heads are zero or empty in CDT.
 Replay-only checkpoint sidecars may retain their fully typed rows. This makes the shared
 channel strictly comparable without producer masks.
-It carries the compact deterministic state used for fast divergence detection.
+It carries the compact deterministic state used for fast divergence detection, including
+`rng_callers_crc32`, the CRC32 of the tick's RNG call-site tags in draw order that `rng_stream` lists.
 
 ### `sim_state`
 

@@ -5,13 +5,14 @@ from contextlib import contextmanager
 
 import msgspec
 
-from grim.rand import CallerStatic, CrtRand, RecordedCallerStatic, RngTraceSink
+from grim.rand import CallerStatic, CrandLike, CrtRand, RecordedCallerStatic, RngTraceSink
 
 from ...game_modes import GameMode
 from ...quests.types import QuestDefinition, SpawnEntry
 from ...replay import REPLAY_TICK_DT, Replay, warn_on_game_version_mismatch
 from ...replay.checkpoints import ReplayCheckpoint
 from ...replay.checkpoints import build_checkpoint as build_replay_checkpoint
+from ...replay.rng_call_order import RngCallOrder
 from ...replay.ticks import step_replay_tick
 from ...sim.hooks import TickResult
 from ...sim.mode_updates import QuestSpawnState
@@ -27,36 +28,41 @@ type RngTraceDraw = tuple[int, int, int, RecordedCallerStatic]
 
 
 @contextmanager
-def _tick_rng_trace(rng: object, *, enabled: bool, strict: bool = False) -> Iterator[list[RngTraceDraw]]:
+def _tick_rng_trace(
+    rng: CrandLike,
+    call_order: RngCallOrder,
+    *,
+    enabled: bool,
+    strict: bool = False,
+) -> Iterator[list[RngTraceDraw]]:
+    """Record the tick's caller order for its checkpoint and, when enabled, every draw."""
+
     draws: list[RngTraceDraw] = []
-    if not enabled or not isinstance(rng, CrtRand):
+    with call_order.recording(rng):
+        if not enabled:
+            yield draws
+            return
+        assert isinstance(rng, CrtRand)
+
+        def _sink(
+            state_before_u32: int,
+            state_after_u32: int,
+            value_15: int,
+            caller: CallerStatic | None,
+        ) -> None:
+            call_order(state_before_u32, state_after_u32, value_15, caller)
+            draws.append(
+                (
+                    int(state_before_u32),
+                    int(value_15),
+                    int(state_after_u32),
+                    caller,
+                ),
+            )
+
+        trace_sink: RngTraceSink = _sink
+        rng.set_trace_sink(trace_sink, require_caller=bool(strict))
         yield draws
-        return
-
-    previous_sink = rng.trace_sink
-    previous_require_caller = rng.trace_require_caller
-
-    def _sink(
-        state_before_u32: int,
-        state_after_u32: int,
-        value_15: int,
-        caller: CallerStatic | None,
-    ) -> None:
-        draws.append(
-            (
-                int(state_before_u32),
-                int(value_15),
-                int(state_after_u32),
-                caller,
-            ),
-        )
-
-    trace_sink: RngTraceSink = _sink
-    rng.set_trace_sink(trace_sink, require_caller=bool(strict))
-    try:
-        yield draws
-    finally:
-        rng.set_trace_sink(previous_sink, require_caller=bool(previous_require_caller))
 
 
 class PlaybackWalkObserver(msgspec.Struct):
@@ -119,6 +125,8 @@ class PlaybackDriver:
         mode_state = self.session.mode_state
         self._quest_spawn_state = mode_state if isinstance(mode_state, QuestSpawnState) else None
         self._last_tick_rng_rows: tuple[RngTraceDraw, ...] = ()
+        # The caller tags of the last stepped tick's draws, in order.
+        self.rng_call_order = RngCallOrder()
 
         self.tick_limit = self.tick_count if self.max_ticks is None else min(self.tick_count, max(0, int(self.max_ticks)))
 
@@ -132,6 +140,7 @@ class PlaybackDriver:
             tick_index=int(tick_result.tick_index),
             world=self.world,
             elapsed_ms=float(self.elapsed_ms),
+            rng_callers_crc32=self.rng_call_order.crc32(),
             creature_count_override=(
                 int(tick_result.payload.creature_count_world_step) if bool(use_world_step_creature_count) else None
             ),
@@ -148,6 +157,7 @@ class PlaybackDriver:
         try:
             with _tick_rng_trace(
                 self.world.state.rng,
+                self.rng_call_order,
                 enabled=bool(self.trace_rng),
                 strict=bool(self.strict_rng_trace),
             ) as tick_rng_rows:

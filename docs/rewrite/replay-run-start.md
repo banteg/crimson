@@ -97,8 +97,10 @@ replay's `RunSpec` holds the run seed, mode, player count, the run-relevant
 status fields, and quest and presentation settings; port runs always start from
 a fresh creature pool. Replay envelopes are capped at 65 MiB compressed and
 64 MiB decoded. Checkpoint sidecars use the same single-frame zstd rule with
-checkpoint format 5, capped at 257 MiB compressed and 256 MiB decoded in both
-Python and Zig.
+checkpoint format 7, capped at 257 MiB compressed and 256 MiB decoded. Each
+checkpoint pins the tick's RNG state and `rng_callers_crc32`, a CRC32 of the
+tick's RNG call-site tags in draw order, which catches draws reordered within the
+tick. The frozen Zig port reads format 6, which predates the call-order digest.
 
 Every tick runs at the fixed float32 1/60 s delta and carries one f32-quantized
 packed input row per player plus an ordered command list. Perk picks apply
@@ -184,8 +186,8 @@ callers. Only the fallthrough stamps with the random generator's own callers and
 
 The renderer draws the setup's stamps and never regenerates them, so drawing or re-applying a setup consumes
 no RNG. `PreparedRun.terrain` is derived during initialization, not stored in the
-CRD header or checkpoints. The `.rng` goldens trace ticks, not initialization, so startup ordering is
-pinned by the tests named below instead.
+CRD header or checkpoints. The checkpoints' call-order digests cover ticks, not initialization, so startup
+ordering is pinned by the tests named below instead.
 
 Every run's reset ends with `terrain_generate_random`. Quests then draw the score tag and generate the
 quest terrain with `terrain_generate`: two complete generations, of which only the second is shown. The

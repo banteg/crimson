@@ -20,7 +20,7 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         TRACE_SCHEMA_VERSION,
         REPLAY_FORMAT_VERSION,
         CHECKPOINT_FORMAT_VERSION,
-    ) == (2, 19, 29, 6)
+    ) == (2, 20, 29, 7)
 
 
 # The frozen Zig port stays at the formats it froze with; `--run-zig` checks it against the current ones.

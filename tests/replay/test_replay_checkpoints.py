@@ -47,7 +47,7 @@ def test_checkpoints_codec_roundtrip_is_stable(base_world: WorldState) -> None:
         PerkId.SHARPSHOOTER,
         PerkId.FASTLOADER,
     ]
-    ckpt = build_checkpoint(tick_index=0, world=world, elapsed_ms=0.0)
+    ckpt = build_checkpoint(tick_index=0, world=world, elapsed_ms=0.0, rng_callers_crc32=0)
     checkpoints = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=60, checkpoints=[ckpt])
 
     data0 = dump_checkpoints(checkpoints)
@@ -82,6 +82,7 @@ def test_checkpoints_codec_roundtrip_preserves_debug_fields(base_world: WorldSta
         tick_index=15,
         world=world,
         elapsed_ms=250.0,
+        rng_callers_crc32=0,
         deaths=[
             CreatureDeath(
                 index=33,
@@ -210,7 +211,7 @@ def test_build_checkpoint_captures_typo_sidecar(base_world: WorldState) -> None:
     world.creatures.entries[4].active = True
     world.state.typo.names.names[4] = "alpha"
 
-    ckpt = build_checkpoint(tick_index=7, world=world, elapsed_ms=500.0)
+    ckpt = build_checkpoint(tick_index=7, world=world, elapsed_ms=500.0, rng_callers_crc32=0)
 
     assert ckpt.typo is not None
     assert ckpt.typo.input_text == "alpha"
@@ -235,7 +236,7 @@ def test_load_checkpoints_rejects_invalid_zstd_payload() -> None:
     [b"trailing-garbage", zstd.ZstdCompressor().compress(b"second-frame")],
 )
 def test_load_checkpoints_rejects_data_after_zstd_frame(base_world: WorldState, suffix: bytes) -> None:
-    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
+    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0, rng_callers_crc32=0)
     checkpoints = ReplayCheckpoints(
         version=FORMAT_VERSION,
         sample_rate=1,
@@ -247,7 +248,7 @@ def test_load_checkpoints_rejects_data_after_zstd_frame(base_world: WorldState, 
 
 @pytest.mark.parametrize("sample_rate", [0, -1])
 def test_checkpoints_reject_nonpositive_sample_rate(base_world: WorldState, sample_rate: int) -> None:
-    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
+    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0, rng_callers_crc32=0)
     payload = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=sample_rate, checkpoints=[checkpoint])
 
     with pytest.raises(ReplayCheckpointsError, match=r"\$\.sample_rate"):
@@ -262,7 +263,7 @@ def test_checkpoints_reject_empty_rows() -> None:
 
 
 def test_checkpoints_reject_duplicate_or_out_of_order_ticks(base_world: WorldState) -> None:
-    checkpoint = build_checkpoint(tick_index=1, world=base_world, elapsed_ms=16)
+    checkpoint = build_checkpoint(tick_index=1, world=base_world, elapsed_ms=16, rng_callers_crc32=0)
     duplicate = ReplayCheckpoints(
         version=FORMAT_VERSION,
         sample_rate=1,
@@ -289,7 +290,7 @@ def test_checkpoints_reject_values_outside_native_wire(
     value: int,
     message: str,
 ) -> None:
-    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
+    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0, rng_callers_crc32=0)
     checkpoint = msgspec.structs.replace(checkpoint, **{field: value})
     payload = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[checkpoint])
 
@@ -303,7 +304,7 @@ def test_load_checkpoints_rejects_raw_msgpack_payload() -> None:
 
 
 def test_load_checkpoints_rejects_noncanonical_f32(base_world: WorldState) -> None:
-    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
+    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0, rng_callers_crc32=0)
     player = msgspec.structs.replace(checkpoint.players[0], health=0.123456789123)
     checkpoint = msgspec.structs.replace(checkpoint, players=[player])
     payload = ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[checkpoint])
@@ -335,6 +336,7 @@ def test_load_checkpoints_rejects_integer_tokens_for_f32_fields(
         tick_index=0,
         world=base_world,
         elapsed_ms=0,
+        rng_callers_crc32=0,
         deaths=[
             CreatureDeath(
                 index=1,
@@ -382,7 +384,7 @@ def test_load_checkpoints_rejects_integer_tokens_for_f32_fields(
 
 
 def test_checkpoints_require_fixed_perk_slots_and_matching_pending(base_world: WorldState) -> None:
-    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
+    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0, rng_callers_crc32=0)
     short_perk = msgspec.structs.replace(checkpoint.perk, choices=[1, 2, 3])
     short = msgspec.structs.replace(checkpoint, perk=short_perk)
     with pytest.raises(ReplayCheckpointsError, match=r"perk\.choices"):
@@ -395,7 +397,7 @@ def test_checkpoints_require_fixed_perk_slots_and_matching_pending(base_world: W
 
 @pytest.mark.parametrize("mutation", ["missing", "unknown"])
 def test_load_checkpoints_requires_exact_vec2_fields(base_world: WorldState, mutation: str) -> None:
-    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0)
+    checkpoint = build_checkpoint(tick_index=0, world=base_world, elapsed_ms=0, rng_callers_crc32=0)
     encoded = dump_checkpoints(ReplayCheckpoints(version=FORMAT_VERSION, sample_rate=1, checkpoints=[checkpoint]))
     raw = msgspec.msgpack.decode(zstd.ZstdDecompressor().decompress(encoded))
     root = cast("dict[str, object]", raw)

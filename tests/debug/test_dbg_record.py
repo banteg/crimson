@@ -132,6 +132,7 @@ def test_record_replay_to_trace_python_writes_unattributed_rows(
             return ReplayCheckpoint(
                 tick_index=int(tick_result.tick_index),
                 rng_state=0,
+                rng_callers_crc32=0,
                 elapsed_ms=0,
                 score_xp=0,
                 kills=0,

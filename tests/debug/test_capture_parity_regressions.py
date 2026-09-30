@@ -18,6 +18,12 @@ from crimson_re.dbg.trace import load_trace, write_trace
 from tests.debug.test_dbg_trace import _write_raw_trace, _write_unchecked_trace
 from tests.replay.cli._helpers import build_replay
 
+# The frozen Zig port reads CDT schema 19, which predates the checkpoint's `rng_callers_crc32`.
+_ZIG_CDT_SCHEMA_STALE = pytest.mark.xfail(
+    strict=True,
+    reason="Zig reads CDT schema 19; schema 20 checkpoints carry rng_callers_crc32",
+)
+
 
 @pytest.fixture(scope="module")
 def zig_bin() -> Path:
@@ -39,6 +45,7 @@ def fresh_trace(tmp_path: Path) -> Path:
     return path
 
 
+@_ZIG_CDT_SCHEMA_STALE
 @pytest.mark.parametrize(
     ("channel", "path", "value"),
     [
@@ -107,6 +114,7 @@ def test_both_readers_reject_invalid_fresh_trace(zig_bin: Path, fresh_trace: Pat
     assert _zig(zig_bin, "diff", changed, changed).returncode != 0
 
 
+@_ZIG_CDT_SCHEMA_STALE
 def test_zig_compares_all_channels_and_treats_callers_as_diagnostics(zig_bin: Path, fresh_trace: Path) -> None:
     meta, ticks, _ = load_trace(fresh_trace)
     ticks[0].channels.rng_stream[0] = msgspec.structs.replace(ticks[0].channels.rng_stream[0], caller=None)
@@ -130,6 +138,7 @@ def test_zig_compares_all_channels_and_treats_callers_as_diagnostics(zig_bin: Pa
     assert report["channel_first_mismatches"]["replay_step"]["tick_index"] == 3
 
 
+@_ZIG_CDT_SCHEMA_STALE
 def test_zig_entity_order_and_tick_coverage(zig_bin: Path, fresh_trace: Path) -> None:
     meta, ticks, _ = load_trace(fresh_trace)
     for tick in ticks:

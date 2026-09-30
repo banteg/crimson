@@ -109,6 +109,7 @@ def _channels(*, tick_index: int, elapsed_ms: int, score_xp: int) -> ReplayTickC
         checkpoint=ReplayCheckpoint(
             tick_index=int(tick_index),
             rng_state=0,
+            rng_callers_crc32=0,
             elapsed_ms=int(elapsed_ms),
             score_xp=int(score_xp),
             kills=0,

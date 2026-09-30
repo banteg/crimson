@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import datetime as dt
 from collections.abc import Sequence
+from contextlib import nullcontext
 from typing import TYPE_CHECKING
 
 import msgspec
@@ -42,6 +43,7 @@ from ..replay.checkpoints import (
 from ..replay.checkpoints import (
     FORMAT_VERSION as CHECKPOINTS_FORMAT_VERSION,
 )
+from ..replay.rng_call_order import RngCallOrder
 from ..replay.ticks import LiveTickSource, step_replay_tick
 from ..screens.results.game_over import GameOverUi
 from ..screens.ui_timeline import UiTimeline
@@ -173,6 +175,8 @@ class BaseGameplayMode:
         # Checkpoint sidecars are a parity-debugging aid; off unless requested.
         self._replay_checkpoints_enabled = bool(ctx.replay_checkpoints)
         self._replay_checkpoints_last_tick: int | None = None
+        # The caller order of the last recorded tick's draws, which its checkpoint pins.
+        self._replay_rng_call_order = RngCallOrder()
         self._replay_result: RunResult | None = None
         self._live_ticks = LiveTickSource()
         self._tick_clock = FixedStepClock(tick_rate=REPLAY_TICK_RATE)
@@ -609,6 +613,7 @@ class BaseGameplayMode:
                 tick_index=int(tick_index),
                 world=self.world,
                 elapsed_ms=float(self._replay_checkpoint_elapsed_ms()),
+                rng_callers_crc32=self._replay_rng_call_order.crc32(),
                 deaths=deaths,
                 events=events,
             ),
@@ -958,7 +963,12 @@ class BaseGameplayMode:
         for _ in range(self._tick_clock.advance(float(dt_frame))):
             tick = self._live_ticks.next_tick()
             tick_index = recorder.record(tick) if recorder is not None else None
-            step = step_replay_tick(session, tick)
+            with (
+                self._replay_rng_call_order.recording(session.world.state.rng)
+                if tick_index is not None and self._replay_checkpoints_enabled
+                else nullcontext()
+            ):
+                step = step_replay_tick(session, tick)
             self._world_runtime.advance_presentation_clock(dt_sim=step.dt_sim)
             plans.append(step.presentation)
             if tick_index is not None:

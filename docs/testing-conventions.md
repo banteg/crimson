@@ -52,6 +52,13 @@ This project prioritizes deterministic parity with the original executable. The 
 ## Trace and Replay Test Data
 
 - Use trace/replay fixtures (`.cdt` / `.crd`) for differential and replay tests.
+- To add a recorded replay fixture, play the run with `uv run crimson --replay-checkpoints`, then copy the
+  saved `<name>.crd` and its `<name>.crd.chk` checkpoint sidecar from the runtime `replays/` directory into
+  `tests/fixtures/replays/`. The fixture tests replay it headlessly and compare every tick's checkpoint;
+  `uv run crimson replay verify-checkpoints tests/fixtures/replays/<name>.crd` runs the same check.
+- A checkpoint pins the RNG state after its tick, which a reorder of draws within the tick leaves unchanged,
+  so it also carries `rng_callers_crc32`: a CRC32 of the tick's RNG call sites in draw order. A reorder fails
+  at its tick, and `verify-checkpoints` lists the tick's call sites.
 - Keep serialization at API/file boundaries.
 - For negative validation tests, it is acceptable to inject malformed rows directly at the boundary layer.
 

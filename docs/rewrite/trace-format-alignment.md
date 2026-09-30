@@ -22,7 +22,7 @@ producer-specific aliases.
 | Artifact | Current version | Authority |
 | --- | ---: | --- |
 | CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
-| CDT payload schema | 19 | `crimson-re/src/crimson_re/dbg/schema.py` |
+| CDT payload schema | 20 | `crimson-re/src/crimson_re/dbg/schema.py` |
 | CRD replay | 29 | `src/crimson/replay/types.py` |
 
 These artifacts are throwaway debugging data. Readers require exactly these
@@ -118,8 +118,8 @@ fingerprint and implementation, and is validated through the same typed
 
 ### Zig replay recorder
 
-Zig writes the same CDT v2/schema 19 chunks and channel payloads for CRD
-replays. Use
+The frozen Zig port writes CDT v2/schema 19 chunks and channel payloads for CRD
+replays; schema 20 adds the checkpoint's `rng_callers_crc32`, which it predates. Use
 `crimson-zig dbg record <replay.crd> --out <trace.cdt>` to record and
 `crimson-zig dbg verify` to check that its compiled schema and replay versions
 match the owned contract.

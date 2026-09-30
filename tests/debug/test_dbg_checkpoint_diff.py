@@ -26,6 +26,7 @@ def _checkpoint_with_health(health: float) -> ReplayCheckpoint:
     return ReplayCheckpoint(
         tick_index=0,
         rng_state=123,
+        rng_callers_crc32=0,
         elapsed_ms=1000,
         score_xp=0,
         kills=0,

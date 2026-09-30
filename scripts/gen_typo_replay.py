@@ -3,9 +3,6 @@
 Writes the replay and its per-tick checkpoint sidecar, as live play records them:
 
     uv run python scripts/gen_typo_replay.py tests/fixtures/replays/typo-<score>.crd
-
-then pin its RNG call order with `pytest tests/replay/test_replay_fixture_integrations.py
---run-replay-fixtures --update-rng-golden -k typo`.
 """
 
 from __future__ import annotations
@@ -24,6 +21,7 @@ from crimson.replay.checkpoints import (
     build_checkpoint,
     dump_checkpoints_file,
 )
+from crimson.replay.rng_call_order import RngCallOrder
 from crimson.replay.ticks import step_replay_tick
 from crimson.sim.commands import GameCommand, TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from crimson.sim.input import PlayerInput
@@ -83,19 +81,22 @@ def main() -> None:
     idle = [PlayerInput(move_mode=controls.movement, aim_scheme=controls.aim_scheme)]
     typist = Typist(random.Random(SEED))
     checkpoints = []
+    rng_call_order = RngCallOrder()
     # Record like live play: stop on the tick that ends the run.
     outcome = None
     while outcome is None:
         commands = typist.commands(session) if recorder.tick_index < TYPING_TICKS else []
         tick = pack_tick(idle, commands)
         tick_index = recorder.record(tick)
-        step = step_replay_tick(session, tick)
+        with rng_call_order.recording(session.world.state.rng):
+            step = step_replay_tick(session, tick)
         if tick_index % DEFAULT_CHECKPOINT_SAMPLE_RATE == 0:
             checkpoints.append(
                 build_checkpoint(
                     tick_index=tick_index,
                     world=session.world,
                     elapsed_ms=session.elapsed_ms,
+                    rng_callers_crc32=rng_call_order.crc32(),
                     deaths=step.events.deaths,
                     events=step.events,
                 ),

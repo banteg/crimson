@@ -20,7 +20,7 @@ from ..sim.world_state import WorldEvents, WorldState
 from ..weapons import WeaponId
 from .codec import zstd_pack, zstd_unpack
 
-FORMAT_VERSION = 6
+FORMAT_VERSION = 7
 DEFAULT_CHECKPOINT_SAMPLE_RATE = 1
 MAX_CHECKPOINTS_PAYLOAD_BYTES = 256 * 1024 * 1024
 MAX_CHECKPOINTS_FILE_BYTES = 257 * 1024 * 1024
@@ -75,6 +75,8 @@ class ReplayTutorialSnapshot(msgspec.Struct, frozen=True, forbid_unknown_fields=
 class ReplayCheckpoint(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     tick_index: NonNegativeI32
     rng_state: U32
+    # `rng_state` misses draws reordered within the tick; this pins their order (see `rng_call_order`).
+    rng_callers_crc32: U32
     elapsed_ms: NonNegativeI32
     score_xp: NonNegativeI32
     kills: NonNegativeI32
@@ -146,6 +148,7 @@ def build_checkpoint(
     tick_index: int,
     world: WorldState,
     elapsed_ms: float,
+    rng_callers_crc32: int,
     creature_count_override: int | None = None,
     deaths: Sequence[CreatureDeath] | None = None,
     events: WorldEvents | None = None,
@@ -268,6 +271,7 @@ def build_checkpoint(
     return ReplayCheckpoint(
         tick_index=int(tick_index),
         rng_state=int(state.rng.state),
+        rng_callers_crc32=int(rng_callers_crc32),
         elapsed_ms=int(round(elapsed_ms)),
         score_xp=int(score_xp),
         kills=int(kills),

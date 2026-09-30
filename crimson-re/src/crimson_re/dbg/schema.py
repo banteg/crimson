@@ -15,7 +15,7 @@ from .canonical_channels import (
 
 TRACE_MAGIC = b"crimson_debug_trace_v2\n"
 TRACE_FORMAT_VERSION = 2
-TRACE_SCHEMA_VERSION = 19
+TRACE_SCHEMA_VERSION = 20
 
 TRACE_REQUIRED_CHANNELS = (
     "replay_step",
