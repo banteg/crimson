@@ -1,21 +1,19 @@
 from __future__ import annotations
 
+from typing import NamedTuple
+from unittest.mock import MagicMock
+
 import pytest
 
 from crimson.game import resources as resources_module
 from crimson.game.loop_view import GameLoopView
 from crimson.game_modes import GameMode
-from crimson.modes.quest_mode import QuestRunOutcome
-from crimson.persistence.highscores import HighScoreRecord
+from crimson.modes.base_gameplay_mode import BaseGameplayMode
 from crimson.quests.level import QuestLevel
 from crimson.screens import menu
 from crimson.screens.actions import (
     ResultAction,
     Route,
-    ScoreQuery,
-    ScoreReturnContext,
-    ShowQuestOutcome,
-    ShowScores,
     StartRun,
 )
 from crimson.screens.high_scores_layout import HS_RIGHT_GAME_MODE_WIDGET, hs_right_options_x_shift
@@ -26,9 +24,9 @@ from crimson.screens.panels.options import OptionsMenuView
 from crimson.screens.pause_menu import PauseMenuView
 from crimson.screens.quest_views.quest_results import QuestResultsView
 from crimson.screens.stack import ScreenEntry, ScreenStack
+from crimson.sim.run_result import RunOutcome
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from tests.support.gameplay_screen import GameplayScreenStub
 from tests.support.screens import ScreenStub, finish_transition
 
 
@@ -57,39 +55,59 @@ def test_menu_options_controls_back_preserves_parent_and_config(loop, mocker) ->
     assert loop.state.pause_background is None
 
 
-def test_pause_options_controls_return_resumes_exact_run_once(loop) -> None:
+class _RunSpies(NamedTuple):
+    open: MagicMock
+    close: MagicMock
+    resume: MagicMock
+
+
+def _start_run(loop: GameLoopView, mocker, request: StartRun) -> tuple[BaseGameplayMode, _RunSpies]:
+    """Start `request` from the loop's main menu, spying the run's lifecycle calls before the stack binds them."""
+    run = loop.navigation._mode(request.mode)
+    spies = _RunSpies(*(mocker.spy(run, name) for name in _RunSpies._fields))
+    loop.navigation.navigate(request)
+    assert loop.state.screens.gameplay is run
+    return run, spies
+
+
+def _update_until(loop: GameLoopView, screen_type: type, *, dt: float = 0.1) -> None:
+    for _ in range(30):
+        if isinstance(loop.state.screens.active, screen_type):
+            return
+        loop.update(dt)
+    raise AssertionError(f"the loop never reached {screen_type.__name__}")
+
+
+def test_pause_options_controls_return_resumes_exact_run_once(loop, mocker) -> None:
     state = loop.state
-    gameplay = GameplayScreenStub()
-    state.screens.reset(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
-    gameplay._action = Route.PAUSE
+    run, spies = _start_run(loop, mocker, StartRun(GameMode.SURVIVAL))
+    # Escape runs the HUD out, then the run asks the loop for the pause menu.
+    mocker.patch.object(rl, "is_key_pressed", side_effect=lambda key: key == rl.KeyboardKey.KEY_ESCAPE)
     loop.update(0.016)
-    pause = state.screens.active
-    assert isinstance(pause, PauseMenuView)
-    assert state.pause_background is gameplay
+    mocker.patch.object(rl, "is_key_pressed", return_value=False)
+    _update_until(loop, PauseMenuView)
+    assert state.pause_background is run
     loop.navigation.navigate(Route.OPTIONS)
     loop.navigation.navigate(Route.CONTROLS)
     for _ in range(3):
         loop.navigation.navigate(Route.BACK)
-    assert state.screens.active is gameplay
+    assert state.screens.active is run
     assert state.pause_background is None
-    assert gameplay.open_calls == 1
-    assert gameplay.close_calls == 0
-    assert gameplay.resume_calls == 1
+    spies.open.assert_called_once_with()
+    spies.close.assert_not_called()
+    spies.resume.assert_called_once_with()
     state.screens.close()
-    assert gameplay.close_calls == 1
+    spies.close.assert_called_once_with()
 
 
-def test_scores_back_restores_original_run_context_through_loop(loop, screen_resources, mocker) -> None:
+def test_scores_back_restores_original_run_context_through_loop(loop, headless_resources, mocker) -> None:
     state = loop.state
     state.config.gameplay.mode = GameMode.SURVIVAL
-    gameplay = GameplayScreenStub(
-        action=ShowScores(
-            ScoreQuery(GameMode.SURVIVAL),
-            ScoreReturnContext.capture(state.config),
-        ),
-    )
-    state.screens.reset(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
-    loop.update(0.016)
+    run, spies = _start_run(loop, mocker, StartRun(GameMode.SURVIVAL))
+    # The game over's High scores button closes its panel, then the run asks the loop for the scores.
+    run._enter_game_over()
+    run._game_over_ui._begin_close_transition(ResultAction.HIGH_SCORES)
+    _update_until(loop, scores_module.HighScoresView)
     scores = state.screens.active
     assert isinstance(scores, scores_module.HighScoresView)
     # Take "Rush", the second row of the open game mode list.
@@ -99,7 +117,7 @@ def test_scores_back_restores_original_run_context_through_loop(loop, screen_res
     mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     scores._update_right_panel_widgets(
         right_top_left=Vec2(),
-        resources=screen_resources,
+        resources=headless_resources,
     )
     assert state.config.gameplay.mode == GameMode.RUSH
     assert not scores.game_mode_list.open
@@ -108,9 +126,9 @@ def test_scores_back_restores_original_run_context_through_loop(loop, screen_res
     # The closing branch does not poll any dropdowns.
     for _ in range(4):
         loop.update(0.1)
-    assert state.screens.active is gameplay
+    assert state.screens.active is run
     assert state.config.gameplay.mode == GameMode.SURVIVAL
-    assert gameplay.resume_calls == 1
+    spies.resume.assert_called_once_with()
     assert state.pause_background is None
 
 
@@ -153,17 +171,9 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
     state = loop.state
     state.config.gameplay.mode = GameMode.QUESTS
     state.config.gameplay.quest_level = QuestLevel(1, 1)
-    outcome = QuestRunOutcome(
-        kind="completed",
-        level=QuestLevel(1, 1),
-        base_time_ms=60000,
-        player_health_values=(100.0,),
-        pending_perk_count=0,
-        record=HighScoreRecord.blank(rand_value=123),
-    )
-    gameplay = GameplayScreenStub(action=ShowQuestOutcome(outcome))
-    state.screens.reset(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
+    run, _spies = _start_run(loop, mocker, StartRun(GameMode.QUESTS, QuestLevel(1, 1)))
     increment = mocker.spy(type(state.status), "increment_quest_play_count")
+    run._finish_run(RunOutcome.QUEST_COMPLETED)
     loop.update(0.016)
     results = state.screens.active
     assert isinstance(results, QuestResultsView)
@@ -182,7 +192,7 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
     assert state.screens.active is results
     assert results._ui is result_ui
     assert state.config.gameplay.quest_level == QuestLevel(1, 1)
-    assert state.pause_background is gameplay
+    assert state.pause_background is run
     increment.assert_called_once()
 
 
@@ -197,12 +207,12 @@ def test_launch_payload_mode_survives_later_config_changes(loop, mocker) -> None
     assert state.screens.active is mode
 
 
-def test_resources_outlive_boot_and_dispose_after_screens(make_game_state, screen_resources, mocker) -> None:
+def test_resources_outlive_boot_and_dispose_after_screens(make_game_state, headless_resources, mocker) -> None:
     state = make_game_state()
     view = GameLoopView(state)
     mocker.patch.object(rl, "hide_cursor")
     mocker.patch.object(rl, "show_cursor")
-    mocker.patch.object(resources_module, "load_runtime_resources", return_value=screen_resources)
+    mocker.patch.object(resources_module, "load_runtime_resources", return_value=headless_resources)
     mocker.patch.object(resources_module, "init_audio_state", return_value=None)
     mocker.patch.object(type(state.console), "exec_line")
     disposal = mocker.Mock()
@@ -214,10 +224,10 @@ def test_resources_outlive_boot_and_dispose_after_screens(make_game_state, scree
     disposal.attach_mock(mocker.patch.object(panel, "close"), "screen")
     state.screens.replace(ScreenEntry(panel))
     boot_close.assert_called_once()
-    assert state.resources is screen_resources
+    assert state.resources is headless_resources
     unload.assert_not_called()
     view.close()
-    assert disposal.mock_calls == [mocker.call.screen(), mocker.call.assets(screen_resources)]
+    assert disposal.mock_calls == [mocker.call.screen(), mocker.call.assets(headless_resources)]
     assert state.resources is None
 
 

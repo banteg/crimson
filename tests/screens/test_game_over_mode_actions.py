@@ -1,43 +1,64 @@
 from __future__ import annotations
 
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
 from crimson.game_modes import GameMode
-from crimson.modes import base_gameplay_mode
 from crimson.modes.rush_mode import RushMode
-from crimson.persistence.highscores import HighScoreRecord
 from crimson.screens.actions import ResultAction, Route, ScoreQuery, ScoreReturnContext, ShowScores
-from crimson.screens.results.game_over import GameOverUi
 from crimson.sim.sessions import DeterministicSession
 from crimson.ui.animation import ui_element_timeline_window
 from grim.audio import AudioState
-from grim.music import init_music_state
+from grim.music import MusicState, MusicTrack
 from grim.rand import Crand
+from grim.raylib_api import rl
 from grim.sfx import init_sfx_state
 from grim.view import ViewContext
 
+pytestmark = pytest.mark.usefixtures("headless_resources", "headless_window")
 
-def _make_mode(*, config) -> RushMode:
-    repo_root = Path(__file__).resolve().parents[1]
-    ctx = ViewContext(assets_dir=repo_root / "artifacts" / "assets")
-    mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
-    mode._game_over_active = True
-    mode._game_over_record = HighScoreRecord.blank()
+RESULT_TRACK = "shortie_monk"
+
+
+def _audio() -> AudioState:
+    """Music on and playing, its one track already at volume so requests only switch the active track."""
+    return AudioState(
+        ready=True,
+        music=MusicState(
+            ready=True,
+            enabled=True,
+            volume=1.0,
+            tracks={RESULT_TRACK: MusicTrack(stream=rl.Music(), track_id=0, volume=1.0, muted=False)},
+        ),
+        sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
+    )
+
+
+def _game_over(make_mode_config, assets_dir: Path, *, audio: AudioState | None = None) -> RushMode:
+    """A rush run that just died into its game over panel."""
+    mode = RushMode(ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(0xBEEF))
+    mode.bind_audio(audio, mode.audio_rng)
+    mode.open()
+    mode._enter_game_over()
     return mode
 
 
-def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> None:
-    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
+def _press_result_button(mode: RushMode, action: ResultAction) -> None:
+    """Press the game over panel's `action` button and run the panel's close transition out."""
+    ui = mode._game_over_ui
+    ui._begin_close_transition(action)
+    for _ in range(30):
+        mode._update_game_over_ui(0.1)
+        if ui._close_action is None:
+            return
+    raise AssertionError("the game over panel never finished closing")
 
-    def _update(*_args, **_kwargs):
-        return ResultAction.HIGH_SCORES
 
-    mocker.patch.object(GameOverUi, "update", side_effect=_update)
+def test_update_game_over_ui_routes_high_scores(make_mode_config, assets_dir) -> None:
+    mode = _game_over(make_mode_config, assets_dir)
 
-    mode._update_game_over_ui(0.1)
+    _press_result_button(mode, ResultAction.HIGH_SCORES)
 
     assert mode.take_action() == ShowScores(
         ScoreQuery(mode.default_game_mode_id),
@@ -46,88 +67,62 @@ def test_update_game_over_ui_routes_high_scores(mocker, make_mode_config) -> Non
     assert mode.close_requested is False
 
 
-def test_game_over_requests_result_music_until_the_exit_transition(mocker, make_mode_config) -> None:
-    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode.bind_audio(
-        AudioState(
-            ready=False,
-            music=init_music_state(ready=False, enabled=True, volume=1.0),
-            sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
-        ),
-        mode.audio_rng,
-    )
-    play_music = mocker.patch.object(base_gameplay_mode, "play_music")
-    mocker.patch.object(GameOverUi, "update", return_value=None)
-    mode._update_game_over_ui(0.1)
-    mode._update_game_over_ui(0.1)
-    assert play_music.call_count == 2
-    play_music.assert_called_with(mode.audio, "shortie_monk")
+def test_game_over_requests_result_music_until_the_exit_transition(make_mode_config, assets_dir) -> None:
+    audio = _audio()
+    mode = _game_over(make_mode_config, assets_dir, audio=audio)
+    music = audio.music
+    assert music.active_track is None
+
+    # The panel asks for the result music every frame, so a track switched away comes back.
+    for _ in range(2):
+        mode._update_game_over_ui(0.1)
+        assert music.active_track == RESULT_TRACK
+        music.active_track = None
+
     mode._game_over_ui._begin_close_transition(ResultAction.MAIN_MENU)
     mode._update_game_over_ui(0.1)
-    assert play_music.call_count == 2
+    assert music.active_track is None
 
 
-def test_update_game_over_ui_routes_main_menu(mocker, make_mode_config) -> None:
-    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
+def test_update_game_over_ui_routes_main_menu(make_mode_config, assets_dir) -> None:
+    mode = _game_over(make_mode_config, assets_dir)
 
-    def _update(*_args, **_kwargs):
-        return ResultAction.MAIN_MENU
-
-    mocker.patch.object(GameOverUi, "update", side_effect=_update)
-
-    mode._update_game_over_ui(0.1)
+    _press_result_button(mode, ResultAction.MAIN_MENU)
 
     assert mode.take_action() == Route.MENU
     assert mode.close_requested is True
 
 
-def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config) -> None:
-    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    open_mode = mocker.patch.object(mode, "open")
+def test_update_game_over_ui_calls_open_on_play_again(mocker, make_mode_config, assets_dir) -> None:
+    mode = _game_over(make_mode_config, assets_dir)
+    open_mode = mocker.spy(mode, "open")
 
-    def _update(*_args, **_kwargs):
-        return ResultAction.PLAY_AGAIN
-
-    mocker.patch.object(GameOverUi, "update", side_effect=_update)
-
-    mode._update_game_over_ui(0.1)
+    _press_result_button(mode, ResultAction.PLAY_AGAIN)
 
     open_mode.assert_called_once_with()
     assert mode.take_action() is None
+    assert mode._game_over_active is False
 
 
-def test_open_stops_music_before_run_restart(mocker, make_mode_config) -> None:
-    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
-    mode.bind_audio(
-        AudioState(
-            ready=False,
-            music=init_music_state(ready=False, enabled=True, volume=1.0),
-            sfx=init_sfx_state(ready=False, enabled=True, volume=1.0, rng=Crand(0x1234)),
-        ),
-        mode.audio_rng,
-    )
-    stop_music = mocker.patch.object(base_gameplay_mode, "stop_music")
-    mocker.patch.object(base_gameplay_mode, "load_small_font", return_value=SimpleNamespace(texture=None))
-    mocker.patch.object(base_gameplay_mode, "load_grim_mono_font", return_value=SimpleNamespace(texture=None))
-    mocker.patch.object(base_gameplay_mode.rl, "get_screen_width", return_value=1024)
-    mocker.patch.object(base_gameplay_mode.rl, "get_screen_height", return_value=768)
-    mocker.patch.object(base_gameplay_mode.rl, "get_render_width", return_value=1024)
-    mocker.patch.object(base_gameplay_mode.rl, "get_render_height", return_value=768)
-    mocker.patch.object(mode.world_runtime, "reset", side_effect=lambda **_kwargs: None)
-    mocker.patch.object(mode.world_runtime, "open_runtime", side_effect=lambda: None)
-    mocker.patch.object(mode._local_input, "reset", side_effect=lambda **_kwargs: None)
+def test_open_stops_music_before_run_restart(make_mode_config, assets_dir) -> None:
+    audio = _audio()
+    mode = _game_over(make_mode_config, assets_dir, audio=audio)
+    mode._update_game_over_ui(0.1)
+    music = audio.music
+    assert music.active_track == RESULT_TRACK
 
-    base_gameplay_mode.BaseGameplayMode.open(mode)
+    mode.open()
 
-    stop_music.assert_called_once_with(mode.audio)
+    assert music.active_track is None
+    assert music.tracks[RESULT_TRACK].muted
 
 
-def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config) -> None:
-    mode = _make_mode(config=make_mode_config(game_mode=GameMode.RUSH))
+def test_draw_pause_background_fades_entities_during_game_over_close(mocker, make_mode_config, assets_dir) -> None:
+    mode = _game_over(make_mode_config, assets_dir)
     mode._game_over_ui.timeline.closing = True
     mode._game_over_ui.timeline.timeline_ms = int(ui_element_timeline_window(28)[1] * 0.5)
 
-    world_draw = mocker.patch.object(mode, "_draw_world")
+    world_draw = mocker.spy(mode, "_draw_world")
 
     mode.draw_pause_background()
 
@@ -135,19 +130,12 @@ def test_draw_pause_background_fades_entities_during_game_over_close(mocker, mak
     assert world_draw.call_args.kwargs["entity_alpha"] == 0.5
 
 
-@pytest.mark.usefixtures("headless_resources")
-def test_rush_elapsed_helpers_use_authoritative_session_timer(mocker, make_mode_config, assets_dir) -> None:
-    ctx = ViewContext(assets_dir=assets_dir)
-    config = make_mode_config(game_mode=GameMode.RUSH)
-    mode = RushMode(ctx, config=config, audio_rng=Crand(0xBEEF))
-    mocker.patch.object(mode, "apply_terrain_setup")
-    mocker.patch.object(mode.world_runtime, "open_runtime")
-    mocker.patch.object(mode, "_save_replay")
+def test_rush_elapsed_helpers_use_authoritative_session_timer(make_mode_config, assets_dir) -> None:
+    mode = RushMode(ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(0xBEEF))
     mode.open()
     session = mode._sim_session
     assert isinstance(session, DeterministicSession)
     session.elapsed_ms = 9876.0
-    mocker.patch.object(GameOverUi, "open", return_value=None)
 
     mode._enter_game_over()
 

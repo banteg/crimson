@@ -18,14 +18,13 @@ from crimson.screens.high_scores_layout import (
     hs_right_options_x_shift,
     hs_right_panel_pos_x,
 )
-from crimson.screens.high_scores_view import view as scores_module
 from crimson.screens.high_scores_view.view import HighScoresView
-from crimson.ui import perk_menu
 from grim.geom import Vec2
 from grim.raylib_api import rl
 from tests.support.screens import update_frame
 
 LISTS = ("score_list", "date_filter_list", "player_count_list", "game_mode_list")
+UPDATE_ROW, PLAY_ROW = 0, 1
 
 
 @pytest.mark.parametrize("name", LISTS)
@@ -48,12 +47,10 @@ def test_open_list_keeps_focus_until_a_press_closes_it(scores_view, mocker) -> N
     view._request.highlight_rank = None
     view.open()
     view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
-    mocker.patch.object(scores_module, "button_update", perk_menu.button_update)
     width = float(view.state.config.display.width)
     right_top_left = view._panel_top_left(pos=Vec2(hs_right_panel_pos_x(width), HS_RIGHT_PANEL_POS_Y))
     header = right_top_left + Vec2(hs_right_options_x_shift(width), 0.0) + HS_RIGHT_GAME_MODE_WIDGET
-    left_top_left = view._panel_top_left(pos=Vec2(hs_left_panel_pos_x(width), HS_LEFT_PANEL_POS_Y))
-    play = left_top_left + Vec2(HS_BUTTON_X, HS_BUTTON_Y0 + HS_BUTTON_STEP_Y)
+    play = _left_button(view, PLAY_ROW)
 
     def frame(mouse: Vec2, *, click: bool) -> None:
         mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(mouse.x, mouse.y))
@@ -72,36 +69,46 @@ def test_open_list_keeps_focus_until_a_press_closes_it(scores_view, mocker) -> N
     assert not view.game_mode_list.open
     assert view.state.config.gameplay.mode == mode
     assert not view.state.ui.closing
-    frame(play + Vec2(20.0, 10.0), click=True)
+    frame(play, click=True)
     assert isinstance(view.state.ui.pending, StartRun)
 
 
 @pytest.fixture
-def scores_view(make_game_state, screen_resources, screen_io, mocker) -> HighScoresView:
-    mocker.patch.object(scores_module, "ensure_menu_ground", return_value=None)
-    mocker.patch.object(scores_module, "button_update", return_value=False)
-    state = make_game_state(resources=screen_resources)
+def scores_view(make_game_state, headless_resources, headless_window) -> HighScoresView:
+    state = make_game_state(resources=headless_resources)
     state.config.gameplay.mode = GameMode.QUESTS
     state.config.gameplay.quest_level = QuestLevel(1, 1)
     return HighScoresView(state, ShowScores(ScoreQuery(GameMode.QUESTS, QuestLevel(1, 1), highlight_rank=4)))
 
 
-def click_button(view: HighScoresView, label: str, mocker) -> None:
+def _left_button(view: HighScoresView, row: int) -> Vec2:
+    """A point on the left panel's `row`th button (Update scores, Play a game) with the panel slid in."""
+    left_top_left = view._panel_top_left(
+        pos=Vec2(hs_left_panel_pos_x(float(view.state.config.display.width)), HS_LEFT_PANEL_POS_Y),
+    )
+    return left_top_left + Vec2(HS_BUTTON_X + 20.0, HS_BUTTON_Y0 + HS_BUTTON_STEP_Y * row + 10.0)
+
+
+def click_button(view: HighScoresView, row: int, mocker) -> None:
     view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
-    mocker.patch.object(scores_module, "button_update", side_effect=lambda _resources, button, **_k: button.label == label)
+    pos = _left_button(view, row)
+    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(pos.x, pos.y))
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=True)
     update_frame(view, view.state)
+    mocker.patch.object(rl, "is_mouse_button_pressed", return_value=False)
 
 
-def test_refresh_keeps_query_and_saves_changed_preferences(scores_view, screen_resources, mocker) -> None:
+def test_refresh_keeps_query_and_saves_changed_preferences(scores_view, headless_resources, mocker) -> None:
     view = scores_view
     view.open()
     view.state.status.quest_unlock_index = 2
     mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(HS_QUEST_ARROW_X + 1, HS_QUEST_ARROW_Y + 1))
     # The arrow handler applies the same query/config mutation as an actual click.
-    view._update_quest_arrows(left_panel_top_left=Vec2(), resources=screen_resources, click=True)
-    mocker.patch.object(rl, "get_mouse_position", return_value=rl.Vector2(-1000, -1000))
+    view._update_quest_arrows(left_panel_top_left=Vec2(), resources=headless_resources, click=True)
     query = view._request
-    click_button(view, "Update scores", mocker)
+    reload = mocker.spy(view, "_reload_records")
+    click_button(view, UPDATE_ROW, mocker)
+    reload.assert_called_once_with()
     assert view._request is query
     assert query.quest_level == QuestLevel(1, 2)
     assert query.highlight_rank == 4
@@ -135,7 +142,7 @@ def test_play_starts_selected_mode(scores_view, mode, mocker) -> None:
     view = scores_view
     view._request.game_mode_id = mode
     view.open()
-    click_button(view, "Play a game", mocker)
+    click_button(view, PLAY_ROW, mocker)
     assert view.state.ui.pending == StartRun(mode, view._request.quest_level)
     assert view.state.screen_fade_ramp
 
@@ -146,6 +153,6 @@ def test_play_locked_quest_does_not_transition(scores_view, hardcore, mocker) ->
     view.state.config.gameplay.hardcore = hardcore
     view._request.quest_level = QuestLevel(5, 10)
     view.open()
-    click_button(view, "Play a game", mocker)
+    click_button(view, PLAY_ROW, mocker)
     assert view.state.ui.pending is None
     assert not view.state.screen_fade_ramp

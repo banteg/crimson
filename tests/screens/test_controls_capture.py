@@ -42,8 +42,8 @@ def test_enter_on_a_list_header_opens_it_instead_of_leaving(controls_view, name,
 
 
 @pytest.fixture
-def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuView:
-    view = ControlsMenuView(make_game_state(resources=screen_resources))
+def controls_view(make_game_state, headless_resources, headless_window) -> ControlsMenuView:
+    view = ControlsMenuView(make_game_state(resources=headless_resources))
     view.open()
     view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
     view._capture = RebindCapture(RebindRowSpec("Fire:", RebindTarget.PLAYER_FIRE_CODE), 0, skip_frames=0)

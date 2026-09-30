@@ -80,8 +80,8 @@ def test_reset_of_other_players_keeps_player_one_globals(pad_connected: bool) ->
 
 
 @pytest.fixture
-def controls_view(make_game_state, screen_resources, screen_io) -> ControlsMenuView:
-    view = ControlsMenuView(make_game_state(resources=screen_resources))
+def controls_view(make_game_state, headless_resources, headless_window) -> ControlsMenuView:
+    view = ControlsMenuView(make_game_state(resources=headless_resources))
     view.open()
     view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
     return view

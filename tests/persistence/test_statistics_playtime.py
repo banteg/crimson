@@ -3,10 +3,9 @@ from __future__ import annotations
 import pytest
 
 from crimson.game.loop_view import GameLoopView
+from crimson.game_modes import GameMode
+from crimson.screens.actions import Route, StartRun
 from crimson.screens.panels.stats import _format_playtime_text
-from crimson.screens.stack import ScreenEntry
-from tests.support.gameplay_screen import GameplayScreenStub
-from tests.support.screens import ScreenStub
 
 
 def test_format_playtime_text_uses_hour_and_minute_buckets() -> None:
@@ -17,15 +16,6 @@ def test_format_playtime_text_uses_hour_and_minute_buckets() -> None:
 def test_format_playtime_text_pluralizes_in_default_mode() -> None:
     assert _format_playtime_text((1 * 60 * 60 + 1 * 60) * 1000) == "played for 1 hours 1 minutes"
     assert _format_playtime_text((1 * 60 * 60 + 2 * 60) * 1000) == "played for 1 hours 2 minutes"
-
-
-def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
-    assert (
-        _format_playtime_text(
-            (1 * 60 * 60 + 1 * 60) * 1000,
-        )
-        == "played for 1 hours 1 minutes"
-    )
 
 
 @pytest.mark.parametrize(
@@ -43,17 +33,18 @@ def test_format_playtime_text_preserve_bugs_keeps_native_plural_form() -> None:
         "skips-non-gameplay-views",
     ],
 )
+@pytest.mark.usefixtures("headless_window")
 def test_tick_statistics_playtime_behavior(
     make_game_state,
+    headless_resources,
     is_gameplay: bool,
     dt: float,
     start_value: int,
     expected_value: int,
 ) -> None:
-    state = make_game_state()
+    state = make_game_state(resources=headless_resources)
     loop = GameLoopView(state)
-    active = GameplayScreenStub() if is_gameplay else ScreenStub()
-    state.screens.push(ScreenEntry(active, gameplay=active if isinstance(active, GameplayScreenStub) else None))
+    loop.navigation.navigate(StartRun(GameMode.SURVIVAL) if is_gameplay else Route.MENU)
     state.status.play_time_ms = start_value
 
     loop._tick_statistics_playtime(dt)

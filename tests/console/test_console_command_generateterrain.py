@@ -1,17 +1,14 @@
 from __future__ import annotations
 
-from types import SimpleNamespace
-
 import pytest
 
 from crimson.game.loop_view import GameLoopView
 from crimson.game.runtime import _boot_command_handlers
 from crimson.game_modes import GameMode
 from crimson.modes.survival_mode import SurvivalMode
-from crimson.screens.stack import ScreenEntry
+from crimson.screens.actions import StartRun
 from grim.rand import Crand
 from grim.view import ViewContext
-from tests.support.gameplay_screen import GameplayScreenStub
 
 
 def test_generateterrain_command_sets_regenerate_request(make_game_state) -> None:
@@ -23,23 +20,24 @@ def test_generateterrain_command_sets_regenerate_request(make_game_state) -> Non
     assert state.terrain_regenerate_requested is True
 
 
-def test_game_loop_consumes_terrain_regenerate_request(make_game_state) -> None:
-    class _DummyResources:
-        def texture(self, *_args, **_kwargs):
-            return SimpleNamespace(width=1, height=1)
-
-    state = make_game_state()
-    state.resources = _DummyResources()
+@pytest.mark.usefixtures("headless_window")
+def test_game_loop_consumes_terrain_regenerate_request(make_game_state, headless_resources) -> None:
+    state = make_game_state(resources=headless_resources)
     view = GameLoopView(state)
-    fake = GameplayScreenStub()
-    state.screens.push(ScreenEntry(fake, gameplay=fake))
+    view.navigation.navigate(StartRun(GameMode.SURVIVAL))
+    run = state.screens.gameplay
+    assert isinstance(run, SurvivalMode)
+    started = run.world_runtime.terrain_setup
+    assert started is not None
     state.terrain_regenerate_requested = True
 
     view._handle_console_requests()
 
     assert state.terrain_regenerate_requested is False
     assert state.menu_ground is not None
-    assert fake.regenerate_calls == 1
+    regenerated = run.world_runtime.terrain_setup
+    assert regenerated is not None
+    assert regenerated.layers.base != started.layers.base
 
 
 @pytest.mark.usefixtures("headless_resources")

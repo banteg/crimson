@@ -23,7 +23,7 @@ PAD_B = rl.GamepadButton.GAMEPAD_BUTTON_RIGHT_FACE_RIGHT
 
 
 @pytest.fixture
-def pad(screen_io, mocker) -> None:
+def pad(headless_window, mocker) -> None:
     """One pad in the second slot, sticks at rest; `press` supplies its button edges."""
     mocker.patch.object(rl, "is_gamepad_available", side_effect=lambda gamepad: int(gamepad) == 1)
     mocker.patch.object(rl, "get_gamepad_axis_movement", return_value=0.0)
