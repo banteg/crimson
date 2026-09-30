@@ -14,7 +14,7 @@ from crimson.input_codes import PadCode
 from crimson.movement_controls import MovementControlType
 from crimson.screens.assets import require_runtime_resources
 from crimson.screens.panels.controls import CONTROLS_RESET_BUTTON_OFFSET, ControlsMenuView
-from crimson.ui.perk_menu import button_width
+from crimson.ui.button import button_width
 from grim.config import (
     DEFAULT_PICK_PERK_CODE,
     DEFAULT_RELOAD_CODE,

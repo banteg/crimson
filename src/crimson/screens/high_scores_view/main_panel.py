@@ -14,8 +14,8 @@ from grim.raylib_api import rl
 
 from ...game_modes import GameMode
 from ...quests import quest_by_level
+from ...ui.button import button_draw
 from ...ui.checkbox import ui_checkbox_draw
-from ...ui.perk_menu import button_draw
 from ...ui.scrollbar import ui_scrollbar_draw, ui_scrollbar_row_under_mouse
 from ..high_scores_layout import (
     HS_BACK_BUTTON_X,

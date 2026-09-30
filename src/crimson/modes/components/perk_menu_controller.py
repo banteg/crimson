@@ -15,13 +15,11 @@ from grim.sfx_map import SfxId
 
 from ...perks import PerkId, perk_display_name
 from ...sim.state_types import PerkCounts, PlayerState
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.focus import UiFocus
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import (
-    UiButtonState,
     UiMenuItem,
-    button_draw,
-    button_update,
     draw_menu_item,
     draw_ui_text,
     menu_item_hit_rect,

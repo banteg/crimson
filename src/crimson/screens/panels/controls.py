@@ -27,17 +27,11 @@ from ...input_codes import (
     player_gamepad_index,
 )
 from ...movement_controls import MovementControlType
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
 from ...ui.menu_panel import draw_ui_panel
-from ...ui.perk_menu import (
-    UiButtonState,
-    UiMenuItem,
-    button_draw,
-    button_update,
-    draw_menu_item,
-    ui_menu_item_update,
-)
+from ...ui.perk_menu import UiMenuItem, draw_menu_item, ui_menu_item_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
 from .controls_labels import (

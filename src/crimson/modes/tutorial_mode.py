@@ -14,12 +14,12 @@ from ..game_modes import GameMode
 from ..input_codes import PadCode, pad_nav_pressed
 from ..perks.selection import perk_selection_prepared_choices
 from ..replay import ReplayRecorder
+from ..ui.button import UiButtonState, button_draw, button_update, button_width
 from ..ui.overlays.tutorial_run import (
     TUTORIAL_PANEL_POS,
     draw_tutorial_overlay_panels,
     tutorial_prompt_panel_rect,
 )
-from ..ui.perk_menu import UiButtonState, button_draw, button_update, button_width
 from .base_gameplay_mode import BaseGameplayMode
 
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)

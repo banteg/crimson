@@ -21,9 +21,9 @@ from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..menu_screen import MenuScreen
 

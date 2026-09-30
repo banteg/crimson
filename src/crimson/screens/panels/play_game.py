@@ -17,8 +17,8 @@ from grim.raylib_api import rl
 
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
 

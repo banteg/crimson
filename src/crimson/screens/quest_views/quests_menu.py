@@ -16,9 +16,10 @@ from grim.raylib_api import rl
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
-from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
+from ...ui.perk_menu import UiMenuItem, ui_menu_item_update
 from ..assets import require_runtime_resources
 from ..menu_screen import MenuScreen
 from .shared import (

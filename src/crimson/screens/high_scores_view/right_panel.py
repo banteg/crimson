@@ -9,10 +9,10 @@ from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ...game_states import GameStateId
+from ...ui.button import button_draw
 from ...ui.checkbox import ui_checkbox_draw
 from ...ui.dropdown import ui_list_widget_draw
 from ...ui.highscore_card import ui_text_input_render
-from ...ui.perk_menu import button_draw
 from ...ui.text_input import ui_text_input_draw, ui_text_input_draw_focus
 from ..high_scores_layout import (
     HS_RIGHT_CHECK_X,

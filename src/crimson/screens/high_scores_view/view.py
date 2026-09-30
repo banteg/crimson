@@ -17,10 +17,10 @@ from grim.sfx_map import SfxId
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
+from ...ui.button import UiButtonState, button_update
 from ...ui.checkbox import UiCheckbox, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_update
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
-from ...ui.perk_menu import UiButtonState, button_update
 from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update
 from ...ui.text_input import UiTextInput, ui_text_input_focus, update_name_entry_text
 from ..actions import ShowScores

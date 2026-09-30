@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.ui.button import UiButtonState
 from crimson.ui.checkbox import UiCheckbox, ui_checkbox_update
 from crimson.ui.focus import UiFocus
-from crimson.ui.perk_menu import UiButtonState
 from grim.geom import Vec2
 from grim.raylib_api import rl
 

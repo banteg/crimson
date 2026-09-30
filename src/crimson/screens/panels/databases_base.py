@@ -11,8 +11,8 @@ from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
 from ...game.types import GameState
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ...ui.scrollbar import UiScrollbar
 from ..assets import require_runtime_resources
 from ..menu_screen import MenuScreen

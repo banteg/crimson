@@ -31,12 +31,12 @@ from ...persistence.highscores import (
 )
 from ...quests.level import QuestLevel
 from ...quests.results import QuestFinalTime, QuestResultsReveal
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.focus import UiFocus
 from ...ui.formatting import format_time_mm_ss
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.name_entry import HighScoreNameEntry
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
 
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0

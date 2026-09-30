@@ -26,11 +26,11 @@ from ...persistence.highscores import (
     scores_path_for_config,
 )
 from ...ui.animation import ui_elements_max_timeline, ui_transition_alpha
+from ...ui.button import UiButtonState, button_draw, button_update
 from ...ui.focus import UiFocus
 from ...ui.highscore_card import ui_text_input_render
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.name_entry import HighScoreNameEntry
-from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ...ui.text_input import (
     flush_text_input_events,
 )

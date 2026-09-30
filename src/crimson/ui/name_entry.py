@@ -13,8 +13,9 @@ from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 
 from ..persistence.highscores import NAME_MAX_EDIT, HighScoreRecord, upsert_highscore_record
+from .button import UiButtonState, button_draw, button_update
 from .focus import UiFocus
-from .perk_menu import UiButtonState, button_draw, button_update, draw_ui_text
+from .perk_menu import draw_ui_text
 from .text_input import (
     UiTextInput,
     flush_text_input_events,
