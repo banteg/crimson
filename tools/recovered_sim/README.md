@@ -106,7 +106,7 @@ uv run python tools/recovered_sim/math_oracle.py \
   --out tools/recovered_sim/build/math-oracle.json
 uv run python tools/recovered_sim/movement_oracle.py \
   --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
-  --replay tests/fixtures/replays/quest-2.5-completed.crd \
+  --replay tests/fixtures/replays/<pad-fixture>.crd \
   --out tools/recovered_sim/build/movement-oracle.json
 ```
 
@@ -177,10 +177,11 @@ test transport, not a replacement public replay format:
 
 ```sh
 uv run python tools/recovered_sim/replay.py \
-  tests/fixtures/replays/quest-2.5-completed.crd \
+  tests/fixtures/replays/<pad-fixture>.crd \
   --ticks 1200 --out tools/recovered_sim/build/legacy.rsi \
   --diagnose tools/recovered_sim/build/native/core --preserve-bugs
 uv run python tools/recovered_sim/legacy_check.py \
+  --replay <pad-fixture>.crd \
   --out tools/recovered_sim/build/legacy-matrix.json
 ```
 
@@ -189,6 +190,12 @@ the 1,200-tick Quest 2.5 prefix. [All four fixture prefixes](legacy-matrix-resul
 use `preserve_bugs=True` in the Python reference. The override leaves recorded
 inputs and results unchanged; these tools do not validate a recorded score.
 Whole-run compatibility and equivalence to the original remain unproven.
+
+The four dual action pad fixtures these results came from (Quests 2.5, 2.10
+and 4.10, and a Survival run) were removed with replay v29, which records pad
+aim as the stick's reach from the moved position rather than a world point. The
+movement and prefix checks wait on re-recorded pad fixtures, and on the world
+aim seam adding the moved position for them.
 
 The old snapshot-257 divergence came from spilling the movement trig result
 before its first multiply, rather than Normalize alone. The [sampled movement

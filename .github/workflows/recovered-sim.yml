@@ -67,20 +67,11 @@ jobs:
             --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
             --out tools/recovered_sim/build/oracle.json
 
-      - name: Compare gameplay math and sampled movement to original x87
+      - name: Compare gameplay math to original x87
         run: |
           uv run --no-sync python tools/recovered_sim/math_oracle.py \
             --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
             --out tools/recovered_sim/build/math-oracle.json
-          uv run --no-sync python tools/recovered_sim/movement_oracle.py \
-            --exe game_bins/crimsonland/1.9.93-gog/crimsonland.exe \
-            --replay tests/fixtures/replays/quest-2.5-completed.crd \
-            --out tools/recovered_sim/build/movement-oracle.json
-
-      - name: Compare legacy fixture prefixes with original bugs
-        run: |
-          uv run --no-sync python tools/recovered_sim/legacy_check.py \
-            --out tools/recovered_sim/build/legacy-matrix.json
 
       - name: Load the same WASM in the Python desktop host probe
         run: |
@@ -96,8 +87,6 @@ jobs:
             tools/recovered_sim/build/report.json
             tools/recovered_sim/build/oracle.json
             tools/recovered_sim/build/math-oracle.json
-            tools/recovered_sim/build/movement-oracle.json
-            tools/recovered_sim/build/legacy-matrix.json
             tools/recovered_sim/build/wasmtime.json
             tools/recovered_sim/build/*/errors.txt
             tools/recovered_sim/build/*/link.log
