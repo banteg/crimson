@@ -29,7 +29,7 @@ def _reset_player_weapon_native(player: PlayerState) -> None:
     weapon.ammo = 10.0
     weapon.reload_timer = 0.0
     weapon.reload_timer_max = 1.0
-    weapon.shot_cooldown = 0.8
+    weapon.shot_cooldown = f32(0.8)
 
 
 def reset_world_players(

@@ -79,7 +79,7 @@ def test_typo_runner_uses_header_highscore_names() -> None:
 
     driver = build_verify_playback_driver(replay)
 
-    assert driver.world.state.typo.highscore_names == ("quick", "brown", "fox")
+    assert driver.world.state.typo.highscore_names.names == ("quick", "brown", "fox")
 
 
 def test_typo_runner_checkpoints_capture_typo_state() -> None:

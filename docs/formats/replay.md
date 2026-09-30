@@ -42,7 +42,7 @@ alternative encoding "wins".
 
 | Key | Type | Meaning |
 |---|---|---|
-| `format_version` | int | `27` |
+| `format_version` | int | `28` |
 | `game_version` | str | Build that recorded the run (see below) |
 | `run` | `RunSpec` | Run start settings |
 | `result` | `RunResult` | Result the recorder derived |
@@ -69,6 +69,15 @@ from that commit (modified or new unignored files) appends `.dirty`.
 | `status` | `RunStatus` | Save-status fields that influence the run |
 | `typo_dictionary_words` | array of str | Optional custom Typ-o dictionary: at most 2048 words of 1..15 printable ASCII characters |
 | `typo_highscore_names` | array of str | Typ-o name pool from the local score table: at most 512 names of 1..31 ASCII letters or `.` |
+| `typo_carry` | `TypoCarry` | Typ-o state the game keeps between runs (since v28); defaults outside Typ-o |
+
+`TypoCarry` is a map of `target_world` (`{x, y}` f32 map or nil: the aim point
+the last Typ-o run left, nil before the game's first Typ-o run),
+`submit_count` and `match_count` (i32 word counters the game never resets;
+a run scores only its own words unless `preserve_bugs`), and
+`highscore_names_loaded` (bool: an earlier run already loaded the score-table
+name cache, so this run's first highscore-name pick skips the table load's RNG
+draws).
 
 `RunStatus` is a map of `quest_unlock_index` (i32), `quest_unlock_index_full`
 (i32) and `weapon_usage_counts` (exactly 53 u32 values). Unlock indices gate

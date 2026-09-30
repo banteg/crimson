@@ -6,7 +6,7 @@ from crimson.creatures.spawn import CreatureTypeId
 from crimson.math_parity import f32
 from crimson.sim.state_types import TERRAIN_SIZE
 from crimson.sim.world_state import WorldState
-from crimson.typo.runtime import typo_mode_update
+from crimson.typo.runtime import typo_spawn_update
 from crimson.typo.state import reset_typo_state
 from tests.support.builders.session import make_world
 
@@ -24,7 +24,7 @@ def _spawned(world: WorldState) -> list[tuple[CreatureTypeId, float, float]]:
 def test_typo_spawns_a_spider_and_alien_pair_from_the_sides() -> None:
     world = _typo_world()
 
-    typo_mode_update(world, elapsed_ms=0.0, dt_ms=1.0)
+    typo_spawn_update(world, elapsed_ms=0, dt_ms=1)
 
     assert world.state.typo.spawn_cooldown_ms == 3499
     y = 256.0 + TERRAIN_SIZE * 0.5
@@ -37,7 +37,7 @@ def test_typo_spawns_a_spider_and_alien_pair_from_the_sides() -> None:
 def test_typo_spawns_a_pair_per_elapsed_cooldown() -> None:
     world = _typo_world()
 
-    typo_mode_update(world, elapsed_ms=8000.0, dt_ms=10_000.0)
+    typo_spawn_update(world, elapsed_ms=8000, dt_ms=10_000)
 
     spawned = _spawned(world)
     assert world.state.typo.spawn_cooldown_ms >= 100

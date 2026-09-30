@@ -22,13 +22,15 @@ from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import finish_replay
 
 
+# `dbg verify` checks the frozen Zig port's format wiring, which stays at the formats it froze with.
+@pytest.mark.zig
 def test_dbg_verify_reports_complete_current_format_matrix() -> None:
     result = CliRunner().invoke(app, ["dbg", "verify"])
 
     assert result.exit_code == 0, result.output
     assert "trace_format_version=2" in result.output
     assert "trace_schema_version=19" in result.output
-    assert "replay_format_version=27" in result.output
+    assert "replay_format_version=28" in result.output
     assert "checkpoint_format_version=6" in result.output
     assert "result=ok" in result.output
 

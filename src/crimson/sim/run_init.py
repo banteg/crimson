@@ -96,16 +96,20 @@ def initialize_run(
             if index is not None:
                 world.state.status.increment_quest_play_count(index)
         case GameMode.TYPO:
+            # Native's static aim point starts 128 units right of player 1 on the process's first
+            # Typ-o frame, then carries over between runs.
+            target_world = spec.typo_carry.target_world
+            if target_world is None:
+                player = world.players[0]
+                target_world = Vec2(x87_pc24_add(player.pos.x, 128.0), player.pos.y)
             reset_typo_state(
                 world.state.typo,
                 creature_capacity=len(world.creatures.entries),
+                target_world=target_world,
+                carry=spec.typo_carry,
                 dictionary_words=spec.typo_dictionary_words,
                 highscore_names=spec.typo_highscore_names,
             )
-            # Native's static aim point starts 128 units right of player 1 on the process's first
-            # Typ-o frame and carries over between runs; each port run starts fresh.
-            player = world.players[0]
-            world.state.typo.target_world = Vec2(x87_pc24_add(player.pos.x, 128.0), player.pos.y)
         case GameMode.TUTORIAL:
             weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
             reset_tutorial_state(world.state.tutorial, world.state.tutorial_overlay)

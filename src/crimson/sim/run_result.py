@@ -81,7 +81,7 @@ def run_shot_counts(state: GameplayState) -> tuple[int, int]:
     """The high-score record's shots: typed and matched words in Typ-o, otherwise the native counters with hits
     clamped to shots, since piercing shots can hit several creatures."""
     if state.game_mode == GameMode.TYPO:
-        return typo_shot_counts(state.typo)
+        return typo_shot_counts(state.typo, preserve_bugs=state.preserve_bugs)
     fired = max(0, state.shots_fired)
     return fired, max(0, min(state.shots_hit, fired))
 

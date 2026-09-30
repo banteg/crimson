@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from crimson.math_parity import f32
 from crimson.perks import PerkId
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PerkCounts, PlayerState, WeaponSlot
@@ -125,7 +126,7 @@ def test_reset_world_players_preserves_native_unwritten_residue() -> None:
     assert reset.weapon.reload_active is True
     assert reset.weapon.reload_timer == 0.0
     assert reset.weapon.reload_timer_max == 1.0
-    assert reset.weapon.shot_cooldown == 0.8
+    assert reset.weapon.shot_cooldown == f32(0.8)
 
     assert reset.move_phase == 4.5
     assert reset.turn_speed == 3.0

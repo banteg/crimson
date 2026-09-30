@@ -15,7 +15,7 @@ from ..perks.selection import (
 )
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.runtime import tutorial_input_transform
-from ..typo.runtime import apply_typo_command, typo_post_step
+from ..typo.runtime import TYPO_TIME_SCALE_FACTOR, TypoCommand, typo_gameplay_update
 from ..weapon_runtime.availability import prepare_weapon_availability
 from .commands import (
     GameCommand,
@@ -68,6 +68,11 @@ class IllegalCommandError(ValueError):
 def _session_timing(world: WorldState, dt: float) -> FrameTiming:
     """Compute frame timing from world state. Used by all session types."""
     state = world.state
+    if state.game_mode == GameMode.TYPO:
+        # `game_frame_update` applies Reflex Boosted only in `GAME_STATE_GAMEPLAY`.
+        return FrameTiming.compute(
+            dt, time_scale_active_entry=bool(state.time_scale_active), time_scale_factor=TYPO_TIME_SCALE_FACTOR,
+        )
     world_dt = world.world_dt_after_perk_steps(dt)
     return FrameTiming.compute(
         dt,
@@ -128,9 +133,12 @@ class DeterministicSession(msgspec.Struct):
                 if isinstance(self.mode_state, QuestSpawnState) and self.mode_state.completed:
                     return RunOutcome.QUEST_COMPLETED
                 return None
-            case GameMode.RUSH | GameMode.TYPO:
-                # No death-animation hold: Rush and Typ-o stop simulating on death.
+            case GameMode.RUSH:
+                # No death-animation hold: Rush stops simulating on death.
                 return RunOutcome.DEATH if all_players_dead(players) else None
+            case GameMode.TYPO:
+                # `typo_gameplay_update_and_render` plays the death animation out, like Survival.
+                return RunOutcome.DEATH if death_transition_ready(players) else None
             case _:
                 return None
 
@@ -159,10 +167,6 @@ class DeterministicSession(msgspec.Struct):
             case _:
                 return inputs
 
-    def _mode_after_step(self) -> None:
-        if self.world.state.game_mode == GameMode.TYPO:
-            typo_post_step(self.world)
-
     def _require_perk_command_allowed(self, name: str) -> None:
         # The perk prompt only offers the menu while a perk is pending and a
         # player is alive; each command is checked against the state left by
@@ -189,10 +193,6 @@ class DeterministicSession(msgspec.Struct):
                 if picked is None:
                     raise IllegalCommandError(f"perk_pick choice_index={int(choice_index)} is not an offered choice")
                 return SfxId.UI_BONUS
-            case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
-                if self.world.state.game_mode != GameMode.TYPO:
-                    raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
-                apply_typo_command(self.world, command)
             case _:
                 raise RuntimeError(f"unhandled command type: {type(command).__name__}")
         return None
@@ -205,7 +205,7 @@ class DeterministicSession(msgspec.Struct):
         commands: Sequence[GameCommand] | None = None,
     ) -> DeterministicSessionTick:
         post_apply_sfx: list[SfxId] = []
-        tick_commands: list[GameCommand] = []
+        typo_commands: list[TypoCommand] = []
         open_perk_menu = False
         for command in commands or ():
             match command:
@@ -217,35 +217,44 @@ class DeterministicSession(msgspec.Struct):
                     # Live play requests the menu only while it may open.
                     self._require_perk_command_allowed("perk_menu_open")
                     open_perk_menu = True
+                case TypoCharCommand() | TypoBackspaceCommand() | TypoSubmitCommand():
+                    if self.world.state.game_mode != GameMode.TYPO:
+                        raise IllegalCommandError(f"Typ-o command in non-Typo session: {type(command).__name__}")
+                    typo_commands.append(command)
                 case _:
-                    tick_commands.append(command)
+                    raise RuntimeError(f"unhandled command type: {type(command).__name__}")
 
         # Picks belong to the between-tick prelude (the perk screen pauses the
         # game). A menu request opens mid-tick at the native point, see
         # `WorldState.step`. Typ-o input belongs inside the tick, at the start of
         # `typo_gameplay_update_and_render`.
         timing = self.timing_for_dt(dt)
-        for command in tick_commands:
-            self.apply_command(command, dt=dt)
-
-        tick_inputs = self._mode_inputs(inputs)
-
         state = self.world.state
         dt_sim_ms = float(timing.dt_sim_ms_i32)
         elapsed_before_ms = self.elapsed_ms
 
         fx_queue = self.terrain_fx.decals
         fx_queue_rotated = self.terrain_fx.corpses
-        events = self.world.step(
-            timing.dt_sim,
-            inputs=tick_inputs,
-            fx_queue=fx_queue,
-            fx_queue_rotated=fx_queue_rotated,
-            perk_progression_enabled=self.perk_progression_enabled,
-            mode_state=self.mode_state,
-            elapsed_ms=elapsed_before_ms,
-            open_perk_menu=open_perk_menu,
-        )
+        if state.game_mode == GameMode.TYPO:
+            events = typo_gameplay_update(
+                self.world,
+                commands=typo_commands,
+                timing=timing,
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+                elapsed_ms=elapsed_before_ms,
+            )
+        else:
+            events = self.world.step(
+                timing.dt_sim,
+                inputs=self._mode_inputs(inputs),
+                fx_queue=fx_queue,
+                fx_queue_rotated=fx_queue_rotated,
+                perk_progression_enabled=self.perk_progression_enabled,
+                mode_state=self.mode_state,
+                elapsed_ms=elapsed_before_ms,
+                open_perk_menu=open_perk_menu,
+            )
 
         quest_spawn = self.mode_state if isinstance(self.mode_state, QuestSpawnState) else None
         if quest_spawn is not None and quest_spawn.play_hit_sfx:
@@ -264,7 +273,6 @@ class DeterministicSession(msgspec.Struct):
             events=events,
             presentation=presentation,
         )
-        self._mode_after_step()
         self.elapsed_ms = elapsed_before_ms + dt_sim_ms
 
         step.elapsed_ms = self.elapsed_ms

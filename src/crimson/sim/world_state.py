@@ -29,7 +29,6 @@ from ..player_damage import player_take_projectile_damage
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.timeline import tutorial_timeline_update
-from ..typo.runtime import typo_mode_update, typo_players_fire
 from .input import PlayerInput
 from .mode_updates import (
     ModeState,
@@ -176,6 +175,17 @@ class WorldState(msgspec.Struct):
             return x87_pc24_mul(f32(dt), f32(0.9))
         return dt
 
+    def projectile_update(self, step_runtime: WorldStepRuntime) -> tuple[list[ProjectileHit], int]:
+        """`projectile_update`: the primary and secondary projectiles, then the sprite and particle loops."""
+        dt = step_runtime.dt
+        hits = self.state.projectiles.step(step_runtime)
+        secondary_hit_count = self.state.secondary_projectiles.step(step_runtime)
+        # Native updates the sprite pool before the particle loop, so sprites
+        # spawned by particles only advance on the next tick.
+        self.state.sprite_effects.update(dt)
+        self.state.particles.update(dt, step_runtime=step_runtime)
+        return hits, secondary_hit_count
+
     def step(
         self,
         dt: float,
@@ -205,26 +215,18 @@ class WorldState(msgspec.Struct):
             sfx=[],
         )
         self.creatures.update(step_runtime)
-        hits = self.state.projectiles.step(step_runtime)
-        secondary_hit_count = self.state.secondary_projectiles.step(step_runtime)
-        # Native updates the sprite pool before the particle loop, so sprites
-        # spawned by particles only advance on the next tick.
-        self.state.sprite_effects.update(dt)
-        self.state.particles.update(dt, step_runtime=step_runtime)
-        if self.state.game_mode == GameMode.TYPO:
-            typo_players_fire(self, dt=f32(dt))
-        else:
-            reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
-            player_dt = float(dt)
-            for player, input_state in zip(self.players, inputs, strict=True):
-                player_dt = player_update(
-                    player,
-                    input_state,
-                    player_dt,
-                    step_runtime=step_runtime,
-                    reload_active_any=bool(reload_active_any),
-                )
-            dt = float(player_dt)
+        hits, secondary_hit_count = self.projectile_update(step_runtime)
+        reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
+        player_dt = float(dt)
+        for player, input_state in zip(self.players, inputs, strict=True):
+            player_dt = player_update(
+                player,
+                input_state,
+                player_dt,
+                step_runtime=step_runtime,
+                reload_active_any=bool(reload_active_any),
+            )
+        dt = float(player_dt)
         # The mode updates read the elapsed run time from before this frame.
         match mode_state:
             case SurvivalSpawnState():
@@ -233,8 +235,6 @@ class WorldState(msgspec.Struct):
                 rush_mode_update(self, mode_state, elapsed_ms=elapsed_ms, dt_ms=float(frame_dt_ms))
             case QuestSpawnState():
                 quest_mode_update(self, mode_state, dt_ms=float(frame_dt_ms))
-            case None if self.state.game_mode == GameMode.TYPO:
-                typo_mode_update(self, elapsed_ms=elapsed_ms, dt_ms=float(frame_dt_ms))
         # The rest follows `gameplay_update_and_render` after the mode update:
         # bonus timers, camera, world render (Telekinetic pickups happen in
         # `bonus_render`), level-up, then `bonus_update`.

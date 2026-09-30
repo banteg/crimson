@@ -15,6 +15,7 @@ from ..pause_background import PauseBackground
 from ..render.rtx.mode import RtxRenderMode
 from ..screens.stack import ScreenStack
 from ..screens.ui_timeline import UiTimeline
+from ..typo.state import TypoSession
 from ..ui.focus import UiFocus
 
 
@@ -107,6 +108,7 @@ class GameState(msgspec.Struct):
     stats_menu_easter_egg_roll: int = -1
     screens: ScreenStack = msgspec.field(default_factory=ScreenStack)
     quest_fail_retry_count: int = 0
+    typo: TypoSession = msgspec.field(default_factory=TypoSession)
     terrain_regenerate_requested: bool = False
     survival_elapsed_ms: float = 0.0
     quit_requested: bool = False

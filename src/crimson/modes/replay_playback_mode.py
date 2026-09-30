@@ -577,7 +577,8 @@ class ReplayPlaybackMode:
             aim_enhancement_fade=clamp(self._console.cvars["cv_aimEnhancementFade"].value_f, 0.0, 1.0),
         )
         mode_id = replay.run.game_mode_id
-        show_typo_ui = mode_id == GameMode.TYPO and players[0].health > 0.0
+        # Native draws the labels and the typing panel every Typ-o frame, the dying ones too.
+        show_typo_ui = mode_id == GameMode.TYPO
         quest_progress_ratio: float | None = None
         elapsed_ms = float(runtime.presentation_elapsed_ms)
         match mode_id:

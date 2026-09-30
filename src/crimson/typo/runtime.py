@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import math
-from typing import TYPE_CHECKING
+from collections.abc import Sequence
+
+import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -9,24 +11,34 @@ from grim.math import clamp01
 from grim.sfx_map import SfxId
 from grim.sfx_types import SfxRequest
 
-from ..creatures.runtime import PHANTOM_CREATURE_INDEX
+from ..bonuses.ids import BonusId
+from ..bonuses.update import bonus_telekinetic_update
+from ..camera import camera_shake_update
 from ..creatures.spawn import CreatureTypeId
-from ..gameplay import player_aux_timer_update
+from ..effects import FxQueue, FxQueueRotated
+from ..gameplay import gameplay_accumulate_weapon_usage_time, gameplay_enforce_weapon_guards, player_aux_timer_update
 from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
+from ..perks.effects import perks_update_effects
 from ..rng_caller_static import RngCallerStatic
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.state_types import TERRAIN_SIZE
+from ..sim.timing import FrameTiming
+from ..sim.world_state import WorldEvents, WorldState, WorldStepRuntime
 from ..weapons import WeaponId
 from .player import player_fire_weapon
 from .spawns import creature_spawn_tinted
 
-if TYPE_CHECKING:
-    from ..sim.world_state import WorldState
+type TypoCommand = TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand
+
+# `typo_gameplay_update_and_render`: Reflex Boost slows Typ-o by a flat factor.
+TYPO_TIME_SCALE_FACTOR = f32(0.3)
 
 
-def _require_single_player_typo(command) -> None:
-    if int(command.player_index) != 0:
-        raise RuntimeError("Typ-o Shooter commands are single-player only")
+class TypoFireRequest(msgspec.Struct):
+    """The frame's Enter results, the locals `typo_gameplay_update_and_render` hands `player_fire_weapon`."""
+
+    fire: bool = False
+    reload: bool = False
 
 
 def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> SfxId:
@@ -35,91 +47,66 @@ def _typeclick_sfx(world: WorldState, *, caller: RngCallerStatic) -> SfxId:
     return SfxId.UI_TYPECLICK_02
 
 
-def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspaceCommand | TypoSubmitCommand) -> None:
-    _require_single_player_typo(command)
+def typo_input_update(world: WorldState, commands: Sequence[TypoCommand]) -> TypoFireRequest:
+    """The typing block that opens `typo_gameplay_update_and_render`: Enter, then the polled key.
+
+    Live play queues Enter before the frame's one key, as native reads them.
+    """
+
     typo = world.state.typo
     typing = typo.typing
-
-    match command:
-        case TypoCharCommand(ch=ch):
-            if ch:
+    request = TypoFireRequest()
+    for command in commands:
+        if int(command.player_index) != 0:
+            raise RuntimeError("Typ-o Shooter commands are single-player only")
+        match command:
+            case TypoSubmitCommand():
+                if not typing.text:
+                    continue
+                world.state.sfx_queue.append(SfxRequest(SfxId.UI_TYPEENTER, None))
+                active_mask = [entry.active for entry in world.creatures.entries]
+                target_idx = typo.names.find_by_name(typing.text, active_mask=active_mask)
+                entered = typing.submit(matched=target_idx is not None)
+                if target_idx is not None:
+                    request.fire = True
+                    typo.target_world = world.creatures.entries[target_idx].pos
+                elif entered == "reload":
+                    request.reload = True
+            case TypoBackspaceCommand():
+                world.state.sfx_queue.append(
+                    SfxRequest(_typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE), None),
+                )
+                typing.backspace()
+            case TypoCharCommand(ch=ch):
                 typing.push_char(str(ch))
                 world.state.sfx_queue.append(
                     SfxRequest(_typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_CHAR), None),
                 )
-        case TypoBackspaceCommand():
-            typing.backspace()
-            world.state.sfx_queue.append(
-                SfxRequest(_typeclick_sfx(world, caller=RngCallerStatic.TYPO_GAMEPLAY_TYPECLICK_BACKSPACE), None),
-            )
-        case TypoSubmitCommand():
-            if not typing.text:
-                return
-            world.state.sfx_queue.append(SfxRequest(SfxId.UI_TYPEENTER, None))
-            active_mask = [bool(entry.active) for entry in world.creatures.entries]
-            target_idx = typo.names.find_by_name(typing.text, active_mask=active_mask)
-            entered = typing.submit(matched=target_idx is not None)
-            if entered is None:
-                return
-            if target_idx is not None:
-                typo.fire_requested = True
-                typo.target_world = world.creatures.entries[int(target_idx)].pos
-                return
-            if entered == "reload":
-                typo.reload_requested = True
-        case _:
-            raise RuntimeError(f"unhandled Typ-o command: {type(command).__name__}")
+    return request
 
 
-def typo_players_fire(world: WorldState, *, dt: float) -> None:
-    """`typo_gameplay_update_and_render`'s player loop: Typ-o never runs `player_update`."""
+def typo_spawn_update(world: WorldState, *, elapsed_ms: int, dt_ms: int) -> None:
+    """The spawn loop of `typo_gameplay_update_and_render`: a spider and an alien from the sides per cooldown."""
 
     typo = world.state.typo
-    for player in world.players:
-        player_fire_weapon(
-            world.state,
-            world.players,
-            player,
-            typo.target_world,
-            fire_requested=typo.fire_requested,
-            reload_requested=typo.reload_requested,
-            dt=dt,
-        )
-    typo.fire_requested = False
-    typo.reload_requested = False
-    # `hud_update_and_render` fades the weapon popup later in the frame.
-    for player in world.players:
-        player_aux_timer_update(player, dt)
-
-
-def typo_mode_update(world: WorldState, *, elapsed_ms: float, dt_ms: float) -> None:
-    # After firing, native stomps player 0 to the shotgun with 30 ammo, without
-    # `weapon_assign_player`: the reset pistol's clip stays.
-    player = world.players[0]
-    player.weapon.weapon_id = WeaponId.SHOTGUN
-    player.weapon.ammo = 30.0
-    typo = world.state.typo
-    typo.spawn_cooldown_ms -= int(dt_ms) * len(world.players)
+    typo.spawn_cooldown_ms -= dt_ms * len(world.players)
     while typo.spawn_cooldown_ms < 0:
-        typo.spawn_cooldown_ms = max(100, typo.spawn_cooldown_ms + 3500 - int(elapsed_ms) // 800)
-        # `typo_gameplay_update_and_render` (0x00445af4..0x00445c15): float literals at PC24;
-        # `fsin`/`fcos` stay wide until the next op rounds.
-        tint_t = float(int(elapsed_ms) + 1)
+        typo.spawn_cooldown_ms = max(100, typo.spawn_cooldown_ms + 3500 - elapsed_ms // 800)
+        # 0x00445af4..0x00445c15: float literals at PC24; `fsin`/`fcos` stay wide until the next op rounds.
+        tint_t = float(elapsed_ms + 1)
         tint = RGBA(
             clamp01(x87_pc24_add(x87_pc24_mul(tint_t, f32(0.00000833333343)), f32(0.3))),
             clamp01(x87_pc24_add(x87_pc24_mul(tint_t, 10000.0), f32(0.3))),
             clamp01(x87_pc24_add(math.sin(x87_pc24_mul(tint_t, f32(0.000100000005))), f32(0.3))),
             1.0,
         )
-        y = x87_pc24_add(x87_pc24_cos_mul(x87_pc24_mul(float(int(elapsed_ms)), f32(0.001)), 256.0), TERRAIN_SIZE * 0.5)
+        y = x87_pc24_add(x87_pc24_cos_mul(x87_pc24_mul(float(elapsed_ms), f32(0.001)), 256.0), TERRAIN_SIZE * 0.5)
         for pos, type_id in (
             (Vec2(x87_pc24_add(TERRAIN_SIZE, 64.0), y), CreatureTypeId.SPIDER_SP2),
             (Vec2(-64.0, y), CreatureTypeId.ALIEN),
         ):
+            # A full pool hands back the phantom slot, which native names too, one past its name table.
             creature_idx = creature_spawn_tinted(world, pos, tint, type_id)
-            if creature_idx == PHANTOM_CREATURE_INDEX:
-                # Native names the phantom slot too, one past its 384-entry name table.
-                continue
             typo.names.assign_random(
                 creature_idx,
                 world.state.rng,
@@ -130,9 +117,87 @@ def typo_mode_update(world: WorldState, *, elapsed_ms: float, dt_ms: float) -> N
             )
 
 
-def typo_post_step(world: WorldState) -> None:
+def typo_gameplay_update(
+    world: WorldState,
+    *,
+    commands: Sequence[TypoCommand],
+    timing: FrameTiming,
+    fx_queue: FxQueue,
+    fx_queue_rotated: FxQueueRotated,
+    elapsed_ms: float,
+) -> WorldEvents:
+    """The simulation of `typo_gameplay_update_and_render` (0x004457c0), in native order.
+
+    Typ-o never runs `player_update`, `bonus_update` or the level-up check. `timing` carries the
+    frame's dt before (`dt`) and after (`dt_sim`) the Reflex Boost scaling; perks and the HUD see the
+    unscaled one. The mode's elapsed time advances with the session.
+    """
+
     state = world.state
+    players = world.players
+    fx_queue.violence_disabled = state.violence_disabled
+    fire_request = typo_input_update(world, commands)
+
+    perks_update_effects(state, players, timing.dt, creatures=world.creatures.entries, fx_queue=fx_queue)
+    dt = timing.dt_sim
+    frame_dt_ms = timing.dt_sim_ms_i32
+    state.effects.update(dt, fx_queue=fx_queue)
+
+    step_runtime = WorldStepRuntime(
+        world=world,
+        dt=dt,
+        fx_queue=fx_queue,
+        fx_queue_rotated=fx_queue_rotated,
+        deaths=[],
+        sfx=[],
+    )
+    world.creatures.update(step_runtime)
+    hits, secondary_hit_count = world.projectile_update(step_runtime)
+    for player in players:
+        player_fire_weapon(
+            state,
+            players,
+            player,
+            state.typo.target_world,
+            fire_requested=fire_request.fire,
+            reload_requested=fire_request.reload,
+            dt=dt,
+        )
+
+    # Native stomps player 0 to the shotgun with 30 ammo, without `weapon_assign_player`:
+    # the reset pistol's clip stays.
+    players[0].weapon.weapon_id = WeaponId.SHOTGUN
+    players[0].weapon.ammo = 30.0
+    typo_spawn_update(world, elapsed_ms=int(elapsed_ms), dt_ms=frame_dt_ms)
+
+    state.highscore_score_xp = int(players[0].experience)
     state.bonuses.weapon_power_up = 0.0
     state.bonuses.reflex_boost = 0.0
     state.time_scale_active = False
-    state.bonus_pool.reset()
+    gameplay_accumulate_weapon_usage_time(state, players, frame_dt_ms)
+
+    camera_shake_update(state, dt)
+    # `gameplay_render_world`: the weapon guards, `creature_render_all` culls finished corpses,
+    # then `bonus_render` makes the Telekinetic pickups.
+    gameplay_enforce_weapon_guards(state, players)
+    creature_count_before_render = len(world.creatures.iter_active())
+    world.creatures.finalize_post_render_lifecycle()
+    pickups = bonus_telekinetic_update(
+        state,
+        players,
+        dt,
+        creatures=world.creatures.entries,
+        detail_preset=state.detail_preset,
+        step_runtime=step_runtime,
+    )
+    for entry in state.bonus_pool.entries:
+        entry.bonus_id = BonusId.UNUSED
+    # `hud_update_and_render`, after the frame dt is restored.
+    for player in players:
+        player_aux_timer_update(player, timing.dt)
+
+    step_runtime.sfx.extend(state.sfx_queue)
+    state.sfx_queue.clear()
+    events = step_runtime.build_events(hits=hits, secondary_hit_count=secondary_hit_count, pickups=pickups)
+    events.creature_count_before_render = creature_count_before_render
+    return events

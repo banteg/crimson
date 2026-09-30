@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import msgspec
+import pytest
 
 from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
 from crimson.replay.types import REPLAY_FORMAT_VERSION
@@ -19,9 +20,11 @@ def test_current_recording_format_matrix_is_explicit() -> None:
         TRACE_SCHEMA_VERSION,
         REPLAY_FORMAT_VERSION,
         CHECKPOINT_FORMAT_VERSION,
-    ) == (2, 19, 27, 6)
+    ) == (2, 19, 28, 6)
 
 
+# The frozen Zig port stays at the formats it froze with; `--run-zig` checks it against the current ones.
+@pytest.mark.zig
 def test_cross_language_format_contract_is_wired() -> None:
     assert format_contract_errors() == []
 

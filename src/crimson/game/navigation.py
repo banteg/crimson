@@ -178,6 +178,8 @@ class ScreenNavigator:
         gameplay.bind_audio(self.state.audio, self.state.rng)
         gameplay.set_rtx_mode(self.state.rtx_mode)
         gameplay.bind_screen_fade(self.state)
+        if isinstance(gameplay, TypoShooterMode):
+            gameplay.typo_session = self.state.typo
         self.state.screens.push(ScreenEntry(gameplay, resume=gameplay.resume, gameplay=gameplay))
         if isinstance(gameplay, QuestMode):
             assert request.quest_level is not None

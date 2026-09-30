@@ -8,7 +8,7 @@ import msgspec
 from grim.rand import CrandLike
 
 from ..game_modes import GameMode
-from ..persistence.highscores import read_highscore_table
+from ..persistence.highscores import TABLE_MAX, read_highscore_table
 from ..rng_caller_static import RngCallerStatic
 
 NAME_MAX_CHARS = 16  # creature_name_assign_random enforces strlen < 0x10.
@@ -88,14 +88,24 @@ def _draw(rng: CrandLike, *, caller: int) -> int:
     return rng.rand_tagged(caller)
 
 
-def _pick_highscore_name(rng: CrandLike, highscore_names: Sequence[str]) -> str:
-    if not highscore_names:
-        return "quickbrownfox"
-    return str(
-        highscore_names[
-            _draw(rng, caller=RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME) % len(highscore_names)
-        ],
-    )
+class TypoHighscoreNames(msgspec.Struct):
+    """`typo_word_pick_highscore_name`'s cache of the Typ-o score table's names."""
+
+    names: tuple[str, ...] = ()
+    # `typo_word_highscore_cache_ready`, native's process-lifetime latch.
+    loaded: bool = False
+
+    def pick(self, rng: CrandLike) -> str:
+        if not self.loaded:
+            # The first pick loads the table: `highscore_load_table` resets its read record and
+            # every row, each reset drawing a random tag.
+            _draw(rng, caller=RngCallerStatic.HIGHSCORE_LOAD_TABLE_READ_RECORD_RANDOM_TAG)
+            for _ in range(TABLE_MAX):
+                _draw(rng, caller=RngCallerStatic.HIGHSCORE_LOAD_TABLE_ROW_RANDOM_TAG)
+            self.loaded = True
+        if not self.names:
+            return "quickbrownfox"
+        return self.names[_draw(rng, caller=RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME) % len(self.names)]
 
 
 def typo_name_part(rng: CrandLike, *, allow_the: bool) -> str:
@@ -106,12 +116,20 @@ def typo_name_part(rng: CrandLike, *, allow_the: bool) -> str:
     return _NAME_PARTS[idx]
 
 
+def _typo_name_parts(rng: CrandLike, count: int) -> str:
+    """`crt_sprintf(name, "%s%s...", pick(1), pick(0), ...)`: MSVC evaluates the arguments right to
+    left, so the last part draws first and only the first part, drawn last, may be "the"."""
+
+    tail = [typo_name_part(rng, allow_the=False) for _ in range(count - 1)]
+    return typo_name_part(rng, allow_the=True) + "".join(reversed(tail))
+
+
 def typo_build_name(
     rng: CrandLike,
     *,
     score_xp: int,
+    highscore_names: TypoHighscoreNames,
     dictionary_words: Sequence[str] | None = None,
-    highscore_names: Sequence[str] = (),
 ) -> str:
     score_xp = int(score_xp)
     if dictionary_words:
@@ -122,39 +140,21 @@ def typo_build_name(
         )
     if score_xp > 120:
         if _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE) % 100 < 10:
-            return _pick_highscore_name(rng, highscore_names)
+            return highscore_names.pick(rng)
         if _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_FOUR_WORD_GATE) % 100 < 80:
-            return "".join(
-                [
-                    typo_name_part(rng, allow_the=True),
-                    typo_name_part(rng, allow_the=False),
-                    typo_name_part(rng, allow_the=False),
-                    typo_name_part(rng, allow_the=False),
-                ],
-            )
+            return _typo_name_parts(rng, 4)
 
     if (score_xp > 80 and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT80) % 100 < 80) or (
         score_xp > 60
         and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT60) % 100 < 40
     ):
-        return "".join(
-            [
-                typo_name_part(rng, allow_the=True),
-                typo_name_part(rng, allow_the=False),
-                typo_name_part(rng, allow_the=False),
-            ],
-        )
+        return _typo_name_parts(rng, 3)
 
     if (score_xp > 40 and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40) % 100 < 80) or (
         score_xp > 20
         and _draw(rng, caller=RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT20) % 100 < 40
     ):
-        return "".join(
-            [
-                typo_name_part(rng, allow_the=True),
-                typo_name_part(rng, allow_the=False),
-            ],
-        )
+        return _typo_name_parts(rng, 2)
 
     return typo_name_part(rng, allow_the=False)
 
@@ -291,8 +291,8 @@ class CreatureNameTable(msgspec.Struct):
         *,
         score_xp: int,
         active_mask: Sequence[bool],
+        highscore_names: TypoHighscoreNames,
         dictionary_words: Sequence[str] | None = None,
-        highscore_names: Sequence[str] = (),
     ) -> str:
         idx = int(creature_idx)
         if not (0 <= idx < len(self.names)):

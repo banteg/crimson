@@ -707,3 +707,23 @@ Rewrite behavior:
 Evidence: `decomp/1.9/crimsonland/ui_widgets/ui_list_widget_update.cpp` and its
 callers in `highscore_screen.cpp`, `controls_menu_update.cpp` and
 `play_game_menu_update.cpp`.
+
+## 30) Typ-o shot counts carry over from earlier runs
+
+Native behavior:
+
+- `typo_gameplay_update_and_render` counts Enter presses in `typo_submit_count`
+  and name matches in `typo_match_count`, and copies both into the score
+  record's shots fired and shots hit every frame.
+- Nothing ever resets the two counters, so every Typ-o run after the first in a
+  game session reports the words typed in all earlier runs too.
+
+Rewrite behavior:
+
+- The counters carry over like native (replays record them in `typo_carry`).
+- Default: a run's score record counts only that run's words.
+- `--preserve-bugs`: the record reports the running totals, as native.
+
+Evidence: `decomp/1.9/crimsonland/typo/typo_gameplay_update_and_render.cpp`;
+the only references to `typo_submit_count` and `typo_match_count` in
+`crimsonland.exe` are in that function.

@@ -21,6 +21,7 @@ from ..typo.names import (
     is_typo_dictionary_word,
     is_typo_highscore_name,
 )
+from ..typo.state import TypoCarry
 from .types import REPLAY_FORMAT_VERSION, Replay, ReplayTick, input_flags_validation_error
 
 _ZSTD_MAGIC = b"\x28\xb5\x2f\xfd"
@@ -149,6 +150,13 @@ def _validate_run(run: RunSpec) -> None:
             is_typo_highscore_name(name),
             f"run.typo_highscore_names[{index}] must be 1..{HIGHSCORE_NAME_MAX_CHARS} ASCII letters or '.'",
         )
+    carry = run.typo_carry
+    _require(mode == GameMode.TYPO or carry == TypoCarry(), "run.typo_carry is set only for typo")
+    if carry.target_world is not None:
+        _require_f32(carry.target_world.x, field="run.typo_carry.target_world.x")
+        _require_f32(carry.target_world.y, field="run.typo_carry.target_world.y")
+    _require_int(carry.submit_count, low=0, high=_I32_MAX, field="run.typo_carry.submit_count")
+    _require_int(carry.match_count, low=0, high=carry.submit_count, field="run.typo_carry.match_count")
 
 
 def _validate_result(result: RunResult, run: RunSpec) -> None:

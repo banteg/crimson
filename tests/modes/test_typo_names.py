@@ -8,7 +8,13 @@ from crimson.game_modes import GameMode
 from crimson.modes.typo_mode import TypoShooterMode
 from crimson.persistence.highscores import HighScoreRecord, scores_path_for_mode, write_highscore_records
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.typo.names import NAME_MAX_CHARS, CreatureNameTable, load_typo_highscore_names, typo_build_name
+from crimson.typo.names import (
+    NAME_MAX_CHARS,
+    CreatureNameTable,
+    TypoHighscoreNames,
+    load_typo_highscore_names,
+    typo_build_name,
+)
 from grim.rand import Crand
 from grim.view import ViewContext
 from tests.support.helpers import ScriptedCrand
@@ -20,7 +26,9 @@ def test_creature_name_table_assign_random_unique_and_bounded() -> None:
     rng = Crand(0x1234)
 
     for idx in range(20):
-        name = table.assign_random(idx, rng, score_xp=130, active_mask=active)
+        name = table.assign_random(
+            idx, rng, score_xp=130, active_mask=active, highscore_names=TypoHighscoreNames(loaded=True),
+        )
         assert name
         assert len(name) < NAME_MAX_CHARS
 
@@ -39,6 +47,7 @@ def test_creature_name_table_allows_native_long_name_retry_count(mocker) -> None
         Crand(1),
         score_xp=0,
         active_mask=[False],
+        highscore_names=TypoHighscoreNames(loaded=True),
     )
 
     assert name == "abcdefghijklmnop"
@@ -69,7 +78,7 @@ def test_typo_build_name_uses_highscore_names_when_highscore_branch_hits() -> No
     name = typo_build_name(
         rng,
         score_xp=130,
-        highscore_names=("alpha", "beta"),
+        highscore_names=TypoHighscoreNames(names=("alpha", "beta"), loaded=True),
     )
 
     assert name == "beta"
@@ -85,7 +94,7 @@ def test_typo_build_name_falls_back_to_quickbrownfox_without_highscore_names() -
     name = typo_build_name(
         rng,
         score_xp=130,
-        highscore_names=(),
+        highscore_names=TypoHighscoreNames(loaded=True),
     )
 
     assert name == "quickbrownfox"
@@ -94,12 +103,31 @@ def test_typo_build_name_falls_back_to_quickbrownfox_without_highscore_names() -
     ]
 
 
+def test_first_highscore_name_pick_loads_the_score_table() -> None:
+    # `highscore_load_table` resets its read record and 100 rows, a random tag each, then the pick draws.
+    names = TypoHighscoreNames(names=("alpha", "beta"))
+    rng = ScriptedCrand([5, *([0] * 101), 1, 5, 0], fallback=ScriptedCrand.Fallback.RAISE)
+
+    first = typo_build_name(rng, score_xp=130, highscore_names=names)
+    second = typo_build_name(rng, score_xp=130, highscore_names=names)
+
+    assert (first, second, names.loaded) == ("beta", "alpha", True)
+    assert [record.caller for record in rng.records_since()] == [
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE,
+        RngCallerStatic.HIGHSCORE_LOAD_TABLE_READ_RECORD_RANDOM_TAG,
+        *[RngCallerStatic.HIGHSCORE_LOAD_TABLE_ROW_RANDOM_TAG] * 100,
+        RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME,
+        RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE,
+        RngCallerStatic.TYPO_WORD_PICK_HIGHSCORE_NAME,
+    ]
+
+
 def test_typo_build_name_tags_exact_four_word_branch_callers() -> None:
     rng = ScriptedCrand([10, 79, 0, 1, 2, 39], fallback=ScriptedCrand.Fallback.RAISE)
 
-    name = typo_build_name(rng, score_xp=130)
+    name = typo_build_name(rng, score_xp=130, highscore_names=TypoHighscoreNames(loaded=True))
 
-    assert name == "lambgunheadnerd"
+    assert name == "nerdheadgunlamb"
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_HIGHSCORE_GATE,
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_FOUR_WORD_GATE,
@@ -113,9 +141,9 @@ def test_typo_build_name_tags_exact_four_word_branch_callers() -> None:
 def test_typo_build_name_tags_exact_three_word_gt80_branch_callers() -> None:
     rng = ScriptedCrand([79, 0, 1, 2], fallback=ScriptedCrand.Fallback.RAISE)
 
-    name = typo_build_name(rng, score_xp=81)
+    name = typo_build_name(rng, score_xp=81, highscore_names=TypoHighscoreNames(loaded=True))
 
-    assert name == "lambgunhead"
+    assert name == "headgunlamb"
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT80,
         RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
@@ -127,9 +155,9 @@ def test_typo_build_name_tags_exact_three_word_gt80_branch_callers() -> None:
 def test_typo_build_name_tags_exact_three_word_gt60_branch_callers() -> None:
     rng = ScriptedCrand([39, 0, 1, 2], fallback=ScriptedCrand.Fallback.RAISE)
 
-    name = typo_build_name(rng, score_xp=61)
+    name = typo_build_name(rng, score_xp=61, highscore_names=TypoHighscoreNames(loaded=True))
 
-    assert name == "lambgunhead"
+    assert name == "headgunlamb"
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_THREE_WORD_GATE_GT60,
         RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
@@ -141,9 +169,9 @@ def test_typo_build_name_tags_exact_three_word_gt60_branch_callers() -> None:
 def test_typo_build_name_tags_exact_two_word_gt40_branch_callers() -> None:
     rng = ScriptedCrand([79, 0, 1], fallback=ScriptedCrand.Fallback.RAISE)
 
-    name = typo_build_name(rng, score_xp=41)
+    name = typo_build_name(rng, score_xp=41, highscore_names=TypoHighscoreNames(loaded=True))
 
-    assert name == "lambgun"
+    assert name == "gunlamb"
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT40,
         RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
@@ -154,9 +182,9 @@ def test_typo_build_name_tags_exact_two_word_gt40_branch_callers() -> None:
 def test_typo_build_name_tags_exact_two_word_gt20_branch_callers() -> None:
     rng = ScriptedCrand([39, 0, 1], fallback=ScriptedCrand.Fallback.RAISE)
 
-    name = typo_build_name(rng, score_xp=21)
+    name = typo_build_name(rng, score_xp=21, highscore_names=TypoHighscoreNames(loaded=True))
 
-    assert name == "lambgun"
+    assert name == "gunlamb"
     assert [record.caller for record in rng.records_since()] == [
         RngCallerStatic.TYPO_TARGET_NAME_ASSIGN_RANDOM_TWO_WORD_GATE_GT20,
         RngCallerStatic.TYPO_WORD_PICK_FRAGMENT,
@@ -197,6 +225,6 @@ def test_typo_mode_open_loads_highscore_names_into_state_and_replay_header(
 
     mode.open()
 
-    assert mode.state.typo.highscore_names == ("Alpha", "Beta.Test")
+    assert mode.state.typo.highscore_names.names == ("Alpha", "Beta.Test")
     assert mode._replay_recorder is not None
     assert mode._replay_recorder.run.typo_highscore_names == ("Alpha", "Beta.Test")

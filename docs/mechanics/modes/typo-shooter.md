@@ -28,7 +28,8 @@ Unlocked after completing all tier 1-4 quests on normal difficulty.
 - Press Enter to match the buffer against living creature names. On a
   match, the player fires at that creature.
 - Backspace deletes the last character.
-- Mouse still controls the aiming direction.
+- The mouse does not aim: the trooper keeps aiming at the last creature it
+  shot, even into the next run.
 
 ## Creature names
 
@@ -69,7 +70,8 @@ shot.
 ## Scoring
 
 Ranked by elapsed time. The record includes shots fired (Enter presses)
-and shots hit (successful name matches).
+and shots hit (successful name matches). The original keeps counting
+these across runs in one session; the rewrite counts each run's own.
 
 ## Game over
 

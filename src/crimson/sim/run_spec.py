@@ -6,6 +6,7 @@ from ..game_modes import GameMode
 from ..msgspec_types import NonNegativeInt, PlayerCount
 from ..persistence.save_status import GameStatusData
 from ..quests.level import QuestLevel
+from ..typo.state import TypoCarry
 from ..weapon_usage import ZERO_WEAPON_USAGE_COUNTS, WeaponUsageCounts
 
 # Native terrain and world bounds; every run uses the same arena.
@@ -47,4 +48,7 @@ class RunSpec(msgspec.Struct, frozen=True, forbid_unknown_fields=True):
     friendly_fire: bool = False
     status: RunStatus = msgspec.field(default_factory=RunStatus)
     typo_dictionary_words: tuple[str, ...] = ()
+    # The score table's names as `typo_word_pick_highscore_name`'s cache holds them: loaded by an
+    # earlier run of the process (see `typo_carry`), or the table as this run would load it.
     typo_highscore_names: tuple[str, ...] = ()
+    typo_carry: TypoCarry = msgspec.field(default_factory=TypoCarry)

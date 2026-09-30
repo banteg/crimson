@@ -1,4 +1,4 @@
-"""Typ-o spawn block vs `typo_mode_update`.
+"""Typ-o spawn block vs `typo_spawn_update`.
 
 Runs the spawn fragment of `typo_gameplay_update_and_render` natively
 (0x00445a62..0x00445c85: cooldown, tint/position math, `creature_spawn_tinted`)
@@ -15,7 +15,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.state_types import TERRAIN_SIZE, PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.typo.runtime import typo_mode_update
+from crimson.typo.runtime import typo_spawn_update
 from crimson.typo.state import reset_typo_state
 from grim.geom import Vec2
 from grim.rand import CrtRand
@@ -65,7 +65,7 @@ def _python_step(seed: int, *, elapsed_ms: int, dt_ms: int, cooldown_ms: int) ->
 
     rng.set_trace_sink(sink)
     world.state.rng = rng
-    typo_mode_update(world, elapsed_ms=float(elapsed_ms), dt_ms=float(dt_ms))
+    typo_spawn_update(world, elapsed_ms=elapsed_ms, dt_ms=dt_ms)
     return world, alloc_states
 
 

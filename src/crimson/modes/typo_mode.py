@@ -15,12 +15,12 @@ from ..replay import Replay
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
+from ..typo.state import TypoSession
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
 
 
 class TypoShooterMode(BaseGameplayMode):
-    _RUN_DOWN_ON_OUTCOME = False
     _KEY_INFO_PAUSE = False
 
     def __init__(
@@ -42,6 +42,8 @@ class TypoShooterMode(BaseGameplayMode):
         )
         # Native `game_time_s`, which blinks the typing caret.
         self._game_time_s = 0.0
+        # The game hands in its own, so the Typ-o globals outlive the run.
+        self.typo_session = TypoSession()
 
     def open(self) -> None:
         super().open()
@@ -49,12 +51,21 @@ class TypoShooterMode(BaseGameplayMode):
         dictionary_words: tuple[str, ...] = ()
         if dictionary_path.is_file():
             dictionary_words = tuple(load_typo_dictionary(dictionary_path))
-        scores_path = scores_path_for_mode(
-            self._base_dir, GameMode.TYPO, named_list=self.config.profile.named_score_list,
-        )
-        highscore_names = tuple(load_typo_highscore_names(scores_path))
+        # The names a run picks from: the process's cache, or the table as the run's first pick loads it.
+        session = self.typo_session
+        highscore_names = session.highscore_names
+        if not session.carry.highscore_names_loaded:
+            scores_path = scores_path_for_mode(
+                self._base_dir, GameMode.TYPO, named_list=self.config.profile.named_score_list,
+            )
+            highscore_names = tuple(load_typo_highscore_names(scores_path))
 
-        self._initialize_run(GameMode.TYPO, dictionary_words=dictionary_words, highscore_names=highscore_names)
+        self._initialize_run(
+            GameMode.TYPO,
+            dictionary_words=dictionary_words,
+            highscore_names=highscore_names,
+            typo_carry=session.carry,
+        )
 
     def close(self) -> None:
         self._world_runtime.end_session()
@@ -119,44 +130,19 @@ class TypoShooterMode(BaseGameplayMode):
             self._update_game_over_ui(dt)
             return
 
-        # `typo_gameplay_update_and_render`: game over is pending once the trooper death animation
-        # finishes, then the HUD fades out before it opens. Typ-o plays both outside ticks.
-        if self.player.health <= 0.0:
-            if dt > 0.0:
-                self.player.death_timer -= float(dt) * 20.0
-            if self.player.death_timer < 0.0 and not self._run_ending:
-                self._run_ending = True
-                self._pause_pending = False
-                self._ui_timeline.begin()
-            if (self._run_ending or self._pause_pending) and dt > 0.0:
-                self._ui_timeline.advance(int(self._last_dt_ms))
-                if self._ui_timeline.ready and self._run_ending:
-                    self._run_ending = False
-                    self._enter_game_over()
-                    self._update_game_over_ui(dt)
-                elif self._ui_timeline.ready:
-                    self._pause_pending = False
-                    self._action = Route.PAUSE
-            return
-
-        if dt > 0.0:
-            self._enqueue_typing_commands()
-
-        if dt <= 0.0:
-            return
-
         session = self._sim_session
-        if session is None:
+        if dt <= 0.0 or session is None:
             return
 
+        # `typo_gameplay_update_and_render` keeps simulating (and typing) through the trooper
+        # death animation and the HUD fade that follows it.
+        self._enqueue_typing_commands()
         self._run_deterministic_session_ticks(
             dt_frame=float(dt),
             session=session,
             recorder=self._replay_recorder,
         )
-        # Death/game-over flow is handled at the start of the next frame so the
-        # trooper death animation can play before the UI slides in.
-
+        self.typo_session.keep(self.state.typo)
 
     def _draw_name_labels(self) -> None:
         draw_typo_name_labels(
@@ -177,8 +163,8 @@ class TypoShooterMode(BaseGameplayMode):
         )
 
     def draw(self) -> None:
-        alive = self.player.health > 0.0
-        show_gameplay_ui = alive and (not self._game_over_active)
+        # Native draws the HUD and the typing panel every Typ-o frame, the dying ones too.
+        show_gameplay_ui = not self._game_over_active
 
         self._draw_world(entity_alpha=self._world_entity_alpha())
         self._draw_screen_fade()

@@ -1,20 +1,25 @@
 from __future__ import annotations
 
+import pytest
+
 from crimson.game_modes import GameMode
+from crimson.modes.typo_mode import TypoShooterMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
+from crimson.sim.run_result import run_shot_counts
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from crimson.typo.names import CreatureNameTable
-from crimson.typo.runtime import apply_typo_command, typo_mode_update
-from crimson.typo.state import reset_typo_state
+from crimson.typo.runtime import typo_input_update, typo_spawn_update
+from crimson.typo.state import TypoCarry, reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
 from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
+from grim.view import ViewContext
 from tests.support.audio import sfx_ids
 from tests.support.factories import player_input
 from tests.support.helpers import ScriptedCrand
@@ -95,7 +100,7 @@ def test_typo_char_command_tags_exact_typeclick_caller(make_world_state) -> None
     reset_typo_state(world.state.typo, creature_capacity=len(world.creatures.entries))
     world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    apply_typo_command(world, TypoCharCommand(player_index=0, ch="a"))
+    typo_input_update(world, [TypoCharCommand(player_index=0, ch="a")])
 
     assert sfx_ids(world.state.sfx_queue) == [SfxId.UI_TYPECLICK_01]
     assert [record.caller for record in world.state.rng.records_since()] == [
@@ -109,7 +114,7 @@ def test_typo_backspace_command_tags_exact_typeclick_caller(make_world_state) ->
     world.state.typo.typing.text = "ab"
     world.state.rng = ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST)
 
-    apply_typo_command(world, TypoBackspaceCommand(player_index=0))
+    typo_input_update(world, [TypoBackspaceCommand(player_index=0)])
 
     assert sfx_ids(world.state.sfx_queue) == [SfxId.UI_TYPECLICK_01]
     assert world.state.typo.typing.text == "a"
@@ -130,7 +135,7 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
     world.state.highscore_score_xp = 7
     assign_random = mocker.spy(CreatureNameTable, "assign_random")
 
-    typo_mode_update(world, elapsed_ms=0.0, dt_ms=1.0)
+    typo_spawn_update(world, elapsed_ms=0, dt_ms=1)
 
     callers = [
         record.caller
@@ -153,3 +158,40 @@ def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
         RngCallerStatic.CREATURE_SPAWN_TINTED_SIZE,
     ]
     assert [call.kwargs["score_xp"] for call in assign_random.call_args_list] == [7, 7]
+
+
+@pytest.mark.usefixtures("headless_resources")
+@pytest.mark.parametrize("preserve_bugs", [False, True])
+def test_typo_aim_point_and_word_counts_carry_into_the_next_run(make_mode_config, assets_dir, preserve_bugs) -> None:
+    mode = TypoShooterMode(
+        ViewContext(assets_dir=assets_dir, preserve_bugs=preserve_bugs),
+        config=make_mode_config(game_mode=GameMode.TYPO),
+        audio_rng=Crand(1),
+    )
+    mode.open()
+    session = mode._sim_session
+    assert session is not None
+    first_aim = mode.state.typo.target_world
+    creature = mode.creatures.entries[5]
+    creature.active = True
+    creature.hp = 1.0
+    creature.pos = Vec2(300.0, 200.0)
+    mode.state.typo.names.names[5] = "alpha"
+    for ch in "alpha":
+        session.step_tick(dt=1.0 / 60.0, inputs=[player_input()], commands=[TypoCharCommand(player_index=0, ch=ch)])
+    # Enter reads before the creatures move.
+    target = creature.pos
+    session.step_tick(dt=1.0 / 60.0, inputs=[player_input()], commands=[TypoSubmitCommand(player_index=0)])
+    mode.typo_session.keep(mode.state.typo)
+
+    mode.open()
+
+    # Native keeps its static aim point and never resets the word counters.
+    assert first_aim != target
+    assert mode._replay_recorder is not None
+    assert mode._replay_recorder.run.typo_carry == TypoCarry(target_world=target, submit_count=1, match_count=1)
+    session = mode._sim_session
+    assert session is not None
+    session.step_tick(dt=1.0 / 60.0, inputs=[player_input()])
+    assert mode.player.aim == target
+    assert run_shot_counts(mode.state) == ((1, 1) if preserve_bugs else (0, 0))

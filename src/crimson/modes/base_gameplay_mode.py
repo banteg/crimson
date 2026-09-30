@@ -56,6 +56,7 @@ from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.terrain_generate import TerrainSetup, terrain_generate
 from ..sim.timing import ftol_ms_i32
+from ..typo.state import TypoCarry
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline, ui_transition_alpha
 from ..ui.focus import UiFocus
 from ..ui.hud import HudRenderContext, HudState, draw_hud_overlay, draw_target_health_bar, ui_transparency
@@ -722,6 +723,7 @@ class BaseGameplayMode:
         quest_level: QuestLevel | None = None,
         dictionary_words: tuple[str, ...] = (),
         highscore_names: tuple[str, ...] = (),
+        typo_carry: TypoCarry | None = None,
     ) -> PreparedRun:
         status = self._status_base
         spec = RunSpec(
@@ -738,6 +740,7 @@ class BaseGameplayMode:
             status=RunStatus() if status is None else RunStatus.from_status_data(status),
             typo_dictionary_words=dictionary_words,
             typo_highscore_names=highscore_names,
+            typo_carry=TypoCarry() if typo_carry is None else typo_carry,
         )
         prepared = initialize_run(spec, status=status)
         self._world_runtime.start_session(prepared.session)

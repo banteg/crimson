@@ -432,9 +432,9 @@ _NON_CANONICAL = {
     "non-minimal-str": (b"\xa4seed", b"\xd9\x04seed"),
     "reordered-keys": (b"\xa8hardcore\xc2\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa8hardcore\xc2"),
     "duplicate-key": (b"\xadpreserve_bugs\xc2", b"\xa8hardcore\xc2"),
-    "missing-key": (b"\x8d\xacgame_mode_id\x01", b"\x8c\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b""),
+    "missing-key": (b"\x8e\xacgame_mode_id\x01", b"\x8d\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b""),
     "extra-key": (
-        b"\x8d\xacgame_mode_id\x01", b"\x8e\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa5extra\x00",
+        b"\x8e\xacgame_mode_id\x01", b"\x8f\xacgame_mode_id\x01", b"\xadpreserve_bugs\xc2", b"\xadpreserve_bugs\xc2\xa5extra\x00",
     ),
     "reordered-command-keys": (
         b"\xa4type\xa9typo_char\xacplayer_index\x00",
@@ -474,7 +474,7 @@ def test_zig_replay_verify_rejects_trailing_payload_bytes(tmp_path: Path, zig_bi
 
 def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path, zig_bin: Path) -> None:
     survival = build_replay(mode=GameMode.SURVIVAL, ticks=1)
-    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x1b", b"\xaeformat_version\x1a", 1)
+    old_format = encode_replay_payload(survival).replace(b"\xaeformat_version\x1c", b"\xaeformat_version\x1b", 1)
     cases = {
         "typo-event": (
             write_current_typo_event_replay(tmp_path, replay=survival, name="typo-event.crd"),
@@ -504,7 +504,7 @@ def test_zig_replay_verify_reports_validation_errors_like_python(tmp_path: Path,
         ),
         "old-format": (
             write_payload_bytes(tmp_path, payload=old_format, name="old-format.crd"),
-            "unsupported replay format version: 26",
+            "unsupported replay format version: 27",
         ),
     }
 
