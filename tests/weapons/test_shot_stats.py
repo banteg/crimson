@@ -4,7 +4,7 @@ from functools import partial
 
 from crimson.creatures.runtime import CreatureState
 from crimson.owner_id import OWNER_LOCAL_PLAYER, player_owner_id
-from crimson.projectiles.runtime import SecondarySpawnSpec
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.input import PlayerInput
@@ -41,14 +41,10 @@ def _fire_pistol_right() -> WorldState:
 def _step_rocket_into(creature: CreatureState) -> GameplayState:
     world = make_world()
     state = world.state
-    state.secondary_projectiles.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.ROCKET,
-        ),
-    )
     place_creatures(world, [creature])
+    fx_spawn_secondary_projectile(
+        state, world.players[0], world.creatures.entries, pos=Vec2(), angle=0.0, type_id=SecondaryProjectileTypeId.ROCKET,
+    )
 
     state.secondary_projectiles.step(
         make_step_runtime(world, dt=0.1),

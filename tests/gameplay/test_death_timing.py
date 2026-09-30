@@ -12,7 +12,7 @@ from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated, ParticleStyleId
 from crimson.owner_id import player_owner_id
 from crimson.perks import PerkId
-from crimson.projectiles.runtime import SecondarySpawnSpec
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.input import PlayerInput
@@ -266,14 +266,14 @@ def test_detonation_followup_does_not_duplicate_resolved_death_sfx() -> None:
         type_id=CreatureTypeId.ALIEN,
     )
 
-    world.state.secondary_projectiles.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=creature.pos,
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.DETONATION,
-            time_to_live=1.0,
-        ),
-    )
+    # A rocket's direct-hit detonation state: `vel` carries (t, scale).
+    detonation = world.state.secondary_projectiles.entries[0]
+    detonation.active = True
+    detonation.type_id = SecondaryProjectileTypeId.DETONATION
+    detonation.pos = creature.pos
+    detonation.vel = Vec2(0.0, 1.0)
+    detonation.detonation_t = 0.0
+    detonation.detonation_scale = 1.0
 
     events = _step(world, 0.1)
 
@@ -472,12 +472,13 @@ def test_first_secondary_rocket_hit_triggers_game_tune() -> None:
     creature.max_hp = 1000.0
     creature.size = 50.0
 
-    world.state.secondary_projectiles.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(100.0, 100.0),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.ROCKET,
-        ),
+    fx_spawn_secondary_projectile(
+        world.state,
+        world.players[0],
+        world.creatures.entries,
+        pos=Vec2(100.0, 100.0),
+        angle=0.0,
+        type_id=SecondaryProjectileTypeId.ROCKET,
     )
 
     events = _step(world, 0.016, inputs=[PlayerInput()])

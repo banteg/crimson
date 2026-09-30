@@ -27,7 +27,7 @@ from ..math_parity import (
 )
 from ..owner_id import player_projectile_owner_id
 from ..perks import PerkId
-from ..projectiles.runtime import SecondarySpawnSpec
+from ..projectiles.runtime import fx_spawn_secondary_projectile
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..rng_caller_static import RngCallerStatic
 from ..sim.input import PlayerInput
@@ -81,6 +81,7 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
 
     state: GameplayState
     players: list[PlayerState]
+    creatures: Sequence[CreatureState]
     player_index: int
     muzzle: Vec2
     aim_heading: float
@@ -99,25 +100,14 @@ class _ShotSpawner(msgspec.Struct, frozen=True):
             owner_player_index=self.player_index,
         )
 
-    def secondary(
-        self,
-        type_id: SecondaryProjectileTypeId,
-        angle: float,
-        *,
-        target_hint: Vec2 | None = None,
-        creatures: Sequence[CreatureState] | None = None,
-    ) -> None:
-        # Native `fx_spawn_secondary_projectile` counts every rocket as a shot fired.
-        self.state.shots_fired += 1
-        self.state.secondary_projectiles.spawn_from_spec(
-            SecondarySpawnSpec(
-                pos=self.muzzle,
-                angle=angle,
-                type_id=type_id,
-                target_hint=target_hint,
-                creatures=creatures,
-                preserve_bugs=bool(self.state.preserve_bugs),
-            ),
+    def secondary(self, type_id: SecondaryProjectileTypeId, angle: float) -> None:
+        fx_spawn_secondary_projectile(
+            self.state,
+            self.players[self.player_index],
+            self.creatures,
+            pos=self.muzzle,
+            angle=angle,
+            type_id=type_id,
         )
 
     def muzzle_sprite(self, speed: float, scale: float, alpha: float) -> None:
@@ -262,6 +252,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
     shot = _ShotSpawner(
         state=state,
         players=ctx.step_runtime.world.players,
+        creatures=creatures,
         player_index=player.index,
         muzzle=muzzle,
         aim_heading=aim_heading,
@@ -419,7 +410,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
                     step = 0.0 if rocket_count <= 1 else x87_pc24_div(spread, float(rocket_count - 1))
                     angle = x87_pc24_sub(shot_angle, x87_pc24_mul(NATIVE_PI, f32(1.0 / 3.0)))
                 for _ in range(rocket_count):
-                    shot.secondary(SecondaryProjectileTypeId.HOMING_ROCKET, angle, target_hint=aim, creatures=creatures)
+                    shot.secondary(SecondaryProjectileTypeId.HOMING_ROCKET, angle)
                     angle = x87_pc24_add(angle, step)
                 # Native subtracts the full clip value, zeroing the ammo even when
                 # the clip was fractional or negative.
@@ -431,7 +422,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
             case WeaponId.SEEKER_ROCKETS:
                 shot.muzzle_sprite(25.0, 1.0, 0.31)
                 shot.muzzle_sprite(15.0, 2.0, 0.243)
-                shot.secondary(SecondaryProjectileTypeId.HOMING_ROCKET, shot_angle, target_hint=aim, creatures=creatures)
+                shot.secondary(SecondaryProjectileTypeId.HOMING_ROCKET, shot_angle)
             case WeaponId.MEAN_MINIGUN:
                 shot.projectile(ProjectileTemplateId.PISTOL, shot_angle)
             case WeaponId.PLASMA_SHOTGUN:

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from crimson.creatures.runtime import CreatureState
-from crimson.projectiles.runtime import SecondaryProjectilePool, SecondarySpawnSpec
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile
 from crimson.projectiles.runtime.spatial_hash import CreatureSpatialHash
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
@@ -49,15 +49,6 @@ def test_creature_spatial_hash_sync_updates_membership() -> None:
 
 
 def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
-    pool = SecondaryProjectilePool()
-    pool.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(96.0, 0.0),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.ROCKET,
-            time_to_live=2.0,
-        ),
-    )
     world = make_world()
     creatures = place_creatures(
         world,
@@ -66,8 +57,16 @@ def test_secondary_projectile_hit_order_matches_linear_index_scan() -> None:
             _creature(pos=Vec2(70.0, -9.0), hp=1000.0, size=500.0),
         ],
     )
+    fx_spawn_secondary_projectile(
+        world.state,
+        world.players[0],
+        world.creatures.entries,
+        pos=Vec2(96.0, 0.0),
+        angle=0.0,
+        type_id=SecondaryProjectileTypeId.ROCKET,
+    )
 
-    pool.step(make_step_runtime(world, dt=0.1))
+    world.state.secondary_projectiles.step(make_step_runtime(world, dt=0.1))
 
     assert creatures[0].hp < 1000.0
     assert creatures[1].hp == 1000.0

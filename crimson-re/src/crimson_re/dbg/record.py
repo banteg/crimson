@@ -291,7 +291,7 @@ def _entity_samples_for_world(
                 angle=_trace_f32(projectile.angle),
                 pos=SnapshotVec2(x=_trace_f32(projectile.pos.x), y=_trace_f32(projectile.pos.y)),
                 vel=SnapshotVec2(x=_trace_f32(projectile.vel.x), y=_trace_f32(projectile.vel.y)),
-                speed=_trace_f32(projectile.speed),
+                speed=_trace_f32(projectile.life_timer),
                 trail_timer=_trace_f32(projectile.trail_timer),
                 # Native secondaries carry no owner; the capture reports -100 for them too.
                 owner_id=OWNER_LOCAL_PLAYER,

@@ -16,6 +16,7 @@ from crimson.creatures.lifecycle import CREATURE_LIFECYCLE_ALIVE
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.math_parity import f32
 from crimson.owner_id import OWNER_LOCAL_PLAYER
+from crimson.projectiles.runtime import fx_spawn_secondary_projectile
 from crimson.projectiles.types import ProjectileTemplateId, SecondaryProjectile, SecondaryProjectileTypeId
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState, WorldStepRuntime
@@ -30,6 +31,7 @@ from ._support import (
     PROJECTILE_LAYOUT,
     PROJECTILE_STRIDE,
     SECONDARY_PROJECTILE_LAYOUT,
+    SECONDARY_PROJECTILE_STRIDE,
     Mismatch,
     compare_effect_pool,
     compare_fields,
@@ -129,7 +131,7 @@ def _python_secondary(entry: SecondaryProjectile) -> dict[str, float | int | Non
     return {
         "active": int(entry.active),
         "angle": entry.angle,
-        "life_timer": entry.speed,
+        "life_timer": entry.life_timer,
         "pos_x": entry.pos.x,
         "pos_y": entry.pos.y,
         "vel_x": entry.detonation_t if detonation else entry.vel.x,
@@ -171,7 +173,7 @@ def _seed_secondary(
     entry.active = True
     entry.type_id = type_id
     entry.angle = angle
-    entry.speed = life_timer
+    entry.life_timer = life_timer
     entry.pos = pos
     entry.vel = vel
     entry.trail_timer = trail_timer
@@ -241,6 +243,72 @@ def test_secondary_rockets_match_native(oracle) -> None:
             mismatches += compare_fields(case, native, _python_secondary(entry), address=secondary)
             mismatches += compare_effect_pool(oracle, world.state.effects, case)
             mismatches += _rand_mismatch(oracle, world, case)
+    assert not mismatches, mismatch_report(mismatches, total_cases=cases)
+
+
+def test_secondary_spawn_matches_native(oracle) -> None:
+    """`fx_spawn_secondary_projectile`: slot pick, velocity, shot count and the seeker's target near the aim."""
+
+    prepare_gameplay(oracle)
+    _seed_native_player(oracle)
+    pristine = oracle.snapshot()
+    pool = oracle.resolve("secondary_projectile_pool")
+    player = oracle.resolve("player_state_table")
+    pos_arg = oracle.alloc(8)
+    rng = random.Random(0x41E000)
+    mismatches: list[Mismatch] = []
+    cases = 0
+    for _ in range(200):
+        cases += 1
+        oracle.restore(pristine)
+        world = _python_world(0)
+        for index in range(6):
+            _place_creature(
+                oracle,
+                world,
+                index,
+                pos=Vec2(f32(rng.uniform(0.0, 1024.0)), f32(rng.uniform(0.0, 1024.0))),
+                health=100.0,
+                size=50.0,
+                lifecycle=rng.choice((CREATURE_LIFECYCLE_ALIVE, CREATURE_LIFECYCLE_ALIVE, f32(8.0))),
+            )
+        aim = Vec2(f32(rng.uniform(0.0, 1024.0)), f32(rng.uniform(0.0, 1024.0)))
+        oracle.write_f32(player + PLAYER_OFFSETS["aim_x"], aim.x)
+        oracle.write_f32(player + PLAYER_OFFSETS["aim_y"], aim.y)
+        world.players[0].aim = aim
+        # A few live slots ahead of the free one.
+        for index in range(rng.randrange(4)):
+            oracle.write_u8(pool + index * SECONDARY_PROJECTILE_STRIDE, 1)
+            world.state.secondary_projectiles.entries[index].active = True
+        pos = Vec2(f32(rng.uniform(0.0, 1024.0)), f32(rng.uniform(0.0, 1024.0)))
+        angle = f32(rng.uniform(-7.0, 7.0))
+        type_id = rng.choice(
+            (
+                SecondaryProjectileTypeId.ROCKET,
+                SecondaryProjectileTypeId.HOMING_ROCKET,
+                SecondaryProjectileTypeId.ROCKET_MINIGUN,
+            ),
+        )
+        oracle.write_f32(pos_arg, pos.x)
+        oracle.write_f32(pos_arg + 4, pos.y)
+        index = oracle.call("fx_spawn_secondary_projectile", pos_arg, angle, int(type_id)).eax
+        python_index = fx_spawn_secondary_projectile(
+            world.state, world.players[0], world.creatures.entries, pos=pos, angle=angle, type_id=type_id,
+        )
+
+        case = f"{type_id.name} pos=({pos.x!r}, {pos.y!r}) angle={angle!r}"
+        address = pool + index * SECONDARY_PROJECTILE_STRIDE
+        if python_index != index:
+            mismatches.append(Mismatch(case, "index", index, python_index, address))
+        native = oracle.read_fields(address, SECONDARY_PROJECTILE_LAYOUT)
+        python = _python_secondary(world.state.secondary_projectiles.entries[python_index])
+        if type_id != SecondaryProjectileTypeId.HOMING_ROCKET:
+            # Only the seeker writes a target; the others keep the slot's stale id.
+            python["target_id"] = None
+        mismatches += compare_fields(case, native, python, address=address)
+        shots_fired = oracle.read_u32("highscore_record_shots_fired")
+        if shots_fired != world.state.shots_fired:
+            mismatches.append(Mismatch(case, "shots_fired", shots_fired, world.state.shots_fired, 0))
     assert not mismatches, mismatch_report(mismatches, total_cases=cases)
 
 

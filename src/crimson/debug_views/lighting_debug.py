@@ -21,7 +21,7 @@ from grim.view import ViewContext
 from ..creatures.spawn import SpawnId
 from ..game_modes import GameMode
 from ..owner_id import OWNER_LOCAL_PLAYER
-from ..projectiles.runtime import SecondarySpawnSpec
+from ..projectiles.runtime import fx_spawn_secondary_projectile
 from ..projectiles.types import ProjectileTemplateId, SecondaryProjectileTypeId
 from ..sim.input import PlayerInput
 from ..sim.state_types import TERRAIN_SIZE
@@ -155,7 +155,6 @@ class EmissiveProfile(msgspec.Struct, frozen=True):
     burst_count: int = 1
     spread_rad: float = 0.0
     spawn_distance: float = 28.0
-    secondary_ttl: float = 2.0
     flash_radius: float = 120.0
     flash_ttl: float = 0.2
     flash_strength: float = 1.0
@@ -343,7 +342,6 @@ EMISSIVE_PROFILES: tuple[EmissiveProfile, ...] = (
         auto_interval=0.45,
         rate_weapon_id=WeaponId.ROCKET_LAUNCHER,
         secondary_type_id=SecondaryProjectileTypeId.DETONATION,
-        secondary_ttl=0.95,
         flash_radius=280.0,
         flash_ttl=0.3,
         flash_strength=1.0,
@@ -2141,14 +2139,17 @@ class LightingDebugView:
                 TERRAIN_SIZE - 16.0,
                 TERRAIN_SIZE - 16.0,
             )
-            self._runtime.world.state.secondary_projectiles.spawn_from_spec(
-                SecondarySpawnSpec(
-                    pos=impact,
-                    angle=float(heading),
-                    type_id=SecondaryProjectileTypeId.DETONATION,
-                    time_to_live=float(profile.secondary_ttl),
-                ),
+            state = self._runtime.world.state
+            index = fx_spawn_secondary_projectile(
+                state,
+                player,
+                self._runtime.world.creatures.entries,
+                pos=impact,
+                angle=float(heading),
+                type_id=SecondaryProjectileTypeId.ROCKET,
             )
+            # A rocket with its life spent detonates on the next update.
+            state.secondary_projectiles.entries[index].life_timer = 0.0
             self._push_transient_light(
                 impact,
                 radius=float(profile.flash_radius),
@@ -2174,15 +2175,13 @@ class LightingDebugView:
                     owner_id=OWNER_LOCAL_PLAYER,
                 )
             if profile.secondary_type_id is not None:
-                self._runtime.world.state.secondary_projectiles.spawn_from_spec(
-                    SecondarySpawnSpec(
-                        pos=muzzle_pos,
-                        angle=angle,
-                        type_id=profile.secondary_type_id,
-                        time_to_live=float(profile.secondary_ttl),
-                        creatures=self._runtime.world.creatures.entries,
-                        target_hint=player.aim,
-                    ),
+                fx_spawn_secondary_projectile(
+                    self._runtime.world.state,
+                    player,
+                    self._runtime.world.creatures.entries,
+                    pos=muzzle_pos,
+                    angle=angle,
+                    type_id=profile.secondary_type_id,
                 )
 
         self._push_transient_light(

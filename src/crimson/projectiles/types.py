@@ -78,7 +78,7 @@ class SecondaryProjectile(msgspec.Struct):
     generation: int = 0
     active: bool = False
     angle: float = 0.0
-    speed: float = 0.0
+    life_timer: float = 0.0
     pos: Vec2 = Vec2()
     vel: Vec2 = Vec2()
     detonation_t: float = 0.0

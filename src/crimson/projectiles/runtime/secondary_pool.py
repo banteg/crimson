@@ -4,8 +4,6 @@ import math
 from collections.abc import Sequence
 from typing import TYPE_CHECKING
 
-import msgspec
-
 from grim.color import RGBA
 from grim.geom import Vec2
 from grim.rand import CrandLike
@@ -40,6 +38,7 @@ if TYPE_CHECKING:
     from crimson.sim.gameplay_state import GameplayState
 
     from ...creatures.runtime import CreatureState
+    from ...sim.state_types import PlayerState
     from ...sim.world_state import WorldStepRuntime
 
 
@@ -61,16 +60,6 @@ _SECONDARY_PRE_HIT_DECAL_CALLERS = (
 
 _DETONATION_IMPULSE_SCALE = f32(0.1)
 _TRAIL_DECAY_SCALE = f32(0.01)
-
-
-class SecondarySpawnSpec(msgspec.Struct, frozen=True):
-    pos: Vec2
-    angle: float
-    type_id: SecondaryProjectileTypeId
-    time_to_live: float = 2.0
-    target_hint: Vec2 | None = None
-    creatures: Sequence[CreatureState] | None = None
-    preserve_bugs: bool = False
 
 
 def _creature_is_collidable(creature: CreatureState) -> bool:
@@ -161,7 +150,7 @@ def _move_rocket(
                     f32(factor * float(entry.vel.x)),
                     f32(factor * float(entry.vel.y)),
                 )
-            entry.speed = x87_pc24_sub(entry.speed, f32(dt))
+            entry.life_timer = x87_pc24_sub(entry.life_timer, f32(dt))
         case SecondaryProjectileTypeId.HOMING_ROCKET:
             # Type 2: homing projectile.
             target_id = entry.target_id
@@ -230,7 +219,7 @@ def _move_rocket(
                         ),
                     )
 
-            entry.speed = x87_pc24_sub(entry.speed, x87_pc24_mul(dt, 0.5))
+            entry.life_timer = x87_pc24_sub(entry.life_timer, x87_pc24_mul(dt, 0.5))
 
 
 def _tick_rocket_trail(
@@ -262,6 +251,43 @@ def _tick_rocket_trail(
         entry.trail_timer = f32(0.06)
 
 
+def fx_spawn_secondary_projectile(
+    state: GameplayState,
+    player: PlayerState,
+    creatures: Sequence[CreatureState],
+    *,
+    pos: Vec2,
+    angle: float,
+    type_id: SecondaryProjectileTypeId,
+) -> int:
+    """Port of `fx_spawn_secondary_projectile`; `player` is `render_overlay_player_index`'s, whose aim seeds the seeker."""
+
+    entries = state.secondary_projectiles.entries
+    index = next((i for i, entry in enumerate(entries) if not entry.active), SECONDARY_PROJECTILE_POOL_SIZE - 1)
+    state.shots_fired += 1
+
+    entry = entries[index]
+    entry.generation += 1
+    entry.active = True
+    entry.pos = Vec2(f32(pos.x), f32(pos.y))
+    entry.life_timer = 2.0
+    radians = x87_pc24_sub(f32(angle), NATIVE_HALF_PI)
+    entry.vel = Vec2(x87_pc24_cos_mul(radians, 90.0), x87_pc24_sin_mul(radians, 90.0))
+    entry.angle = f32(angle)
+    entry.trail_timer = 0.0
+    entry.type_id = type_id
+
+    if type_id == SecondaryProjectileTypeId.HOMING_ROCKET:
+        entry.target_id = creature_find_nearest_alive(
+            creatures=creatures,
+            origin=player.aim,
+            preserve_bugs=bool(state.preserve_bugs),
+        )
+        # Native stores each trig result as float32 before the seeker's 190x velocity override.
+        entry.vel = Vec2(x87_pc24_cos_mul(radians, 1.0, 190.0), x87_pc24_sin_mul(radians, 1.0, 190.0))
+    return index
+
+
 class SecondaryProjectilePool:
     def __init__(self) -> None:
         self._entries = [SecondaryProjectile() for _ in range(SECONDARY_PROJECTILE_POOL_SIZE)]
@@ -274,62 +300,6 @@ class SecondaryProjectilePool:
         for entry in self._entries:
             entry.generation = 0
             entry.active = False
-
-    def spawn_from_spec(self, spec: SecondarySpawnSpec) -> int:
-        pos = Vec2(f32(spec.pos.x), f32(spec.pos.y))
-        angle = f32(spec.angle)
-        type_id = SecondaryProjectileTypeId(spec.type_id)
-        time_to_live = float(spec.time_to_live)
-        target_hint = spec.target_hint
-        creatures = spec.creatures
-        preserve_bugs = bool(spec.preserve_bugs)
-
-        index = None
-        for i, entry in enumerate(self._entries):
-            if not entry.active:
-                index = i
-                break
-        if index is None:
-            index = len(self._entries) - 1
-
-        entry = self._entries[index]
-        entry.generation += 1
-        entry.active = True
-        entry.angle = float(angle)
-        entry.type_id = type_id
-        entry.pos = pos
-        entry.trail_timer = 0.0
-        entry.vel = Vec2()
-        entry.detonation_t = 0.0
-        entry.detonation_scale = 1.0
-
-        match type_id:
-            case SecondaryProjectileTypeId.DETONATION:
-                entry.detonation_t = 0.0
-                entry.detonation_scale = float(time_to_live)
-                entry.vel = Vec2(0.0, f32(time_to_live))
-                entry.speed = f32(time_to_live)
-                return index
-            case SecondaryProjectileTypeId.HOMING_ROCKET:
-                radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
-                # Native stores each trig result as float32 before the seeker's 190x velocity override.
-                entry.vel = Vec2(x87_pc24_cos_mul(radians, 1.0, 190.0), x87_pc24_sin_mul(radians, 1.0, 190.0))
-                entry.speed = f32(time_to_live)
-                # Native `fx_spawn_secondary_projectile` seeds the seeker target with
-                # `creature_find_nearest(&player_aim_x, -1, 0.0)`.
-                entry.target_id = -1
-                if creatures is not None:
-                    entry.target_id = creature_find_nearest_alive(
-                        creatures=creatures,
-                        origin=target_hint if target_hint is not None else pos,
-                        preserve_bugs=preserve_bugs,
-                    )
-            case _:
-                radians = x87_pc24_sub(float(angle), NATIVE_HALF_PI)
-                entry.vel = Vec2(x87_pc24_cos_mul(radians, 90.0), x87_pc24_sin_mul(radians, 90.0))
-                entry.speed = f32(time_to_live)
-
-        return index
 
     def iter_active(self) -> list[SecondaryProjectile]:
         return [entry for entry in self._entries if entry.active]
@@ -410,13 +380,13 @@ class SecondaryProjectilePool:
 
                 match type_id:
                     case SecondaryProjectileTypeId.ROCKET:
-                        damage = x87_pc24_add(x87_pc24_mul(entry.speed, 50.0), 500.0)
+                        damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 50.0), 500.0)
                         if detail_preset >= 3:
                             effects.spawn_explosion_burst(pos=entry.pos, scale=0.4, rng=rng, detail_preset=detail_preset)
                     case SecondaryProjectileTypeId.HOMING_ROCKET:
-                        damage = x87_pc24_add(x87_pc24_mul(entry.speed, 20.0), 80.0)
+                        damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 20.0), 80.0)
                     case SecondaryProjectileTypeId.ROCKET_MINIGUN:
-                        damage = x87_pc24_add(x87_pc24_mul(entry.speed, 20.0), 40.0)
+                        damage = x87_pc24_add(x87_pc24_mul(entry.life_timer, 20.0), 40.0)
                     case _:
                         damage = 150.0
 
@@ -499,7 +469,7 @@ class SecondaryProjectilePool:
             # iteration (no early-out): a rocket that hits while its TTL is
             # already spent gets its detonation scale overwritten to 0.5, and
             # exactly-zero TTL detonates this tick (<=, not <).
-            if entry.speed <= 0.0:
+            if entry.life_timer <= 0.0:
                 entry.type_id = SecondaryProjectileTypeId.DETONATION
                 entry.vel = Vec2(0.0, 0.5)
                 entry.detonation_t = 0.0

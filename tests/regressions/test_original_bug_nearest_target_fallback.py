@@ -8,8 +8,7 @@ from crimson.bonuses import BonusId
 from crimson.bonuses.apply import bonus_apply
 from crimson.math_parity import NATIVE_HALF_PI, NATIVE_PI, x87_pc24_sub
 from crimson.projectiles.runtime import (
-    SecondaryProjectilePool,
-    SecondarySpawnSpec,
+    fx_spawn_secondary_projectile,
 )
 from crimson.projectiles.types import SecondaryProjectileTypeId
 from grim.geom import Vec2
@@ -152,20 +151,19 @@ def test_shock_chain_retarget_miss_handling(preserve_bugs: bool, expect_new_segm
     ids=["default-uses-no-target-sentinel", "preserve-bugs-falls-back-to-slot0"],
 )
 def test_seeker_spawn_target_miss_handling(preserve_bugs: bool, expected_target_id: int) -> None:
-    pool = SecondaryProjectilePool()
-    creatures = [make_creature_state(pos=Vec2(100.0, 0.0), active=False)]
+    world = make_world(preserve_bugs=preserve_bugs)
+    place_creatures(world, [make_creature_state(pos=Vec2(100.0, 0.0), active=False)])
 
-    idx = pool.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-            creatures=creatures,
-            preserve_bugs=preserve_bugs,
-        ),
+    idx = fx_spawn_secondary_projectile(
+        world.state,
+        world.players[0],
+        world.creatures.entries,
+        pos=Vec2(),
+        angle=0.0,
+        type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
     )
 
-    assert pool.entries[idx].target_id == expected_target_id
+    assert world.state.secondary_projectiles.entries[idx].target_id == expected_target_id
 
 
 @pytest.mark.parametrize(
@@ -181,12 +179,13 @@ def test_seeker_retarget_miss_handling(preserve_bugs: bool, expected_target_id: 
     pool = world.state.secondary_projectiles
     place_creatures(world, [make_creature_state(pos=Vec2(100.0, 0.0), active=False)])
 
-    idx = pool.spawn_from_spec(
-        SecondarySpawnSpec(
-            pos=Vec2(),
-            angle=0.0,
-            type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
-        ),
+    idx = fx_spawn_secondary_projectile(
+        world.state,
+        world.players[0],
+        world.creatures.entries,
+        pos=Vec2(),
+        angle=0.0,
+        type_id=SecondaryProjectileTypeId.HOMING_ROCKET,
     )
     pool.entries[idx].target_id = 0
 
