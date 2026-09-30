@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from contextlib import ExitStack
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from grim.raylib_api import rl
 
 from . import music, sfx
 from .config import CrimsonConfig
-from .console import ConsoleState
+from .console import CommandHandler, ConsoleState
 from .rand import CrandLike
 from .sfx_map import SfxId
 
@@ -89,6 +90,29 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
         music.load_music_tracks(state.music, assets_dir, console)
         cleanup.pop_all()
     return state
+
+
+def game_tune_command(
+    console: ConsoleState,
+    assets_dir: Path,
+    audio: Callable[[], AudioState | None],
+) -> CommandHandler:
+    """`snd_addGameTune <tuneName.ogg>`: load a tune from `music/` and queue it for the game-tune rotation."""
+
+    def snd_add_game_tune(args: list[str]) -> None:
+        if len(args) != 1:
+            console.log.log("snd_addGameTune <tuneName.ogg>")
+            return
+        state = audio()
+        if state is None:
+            return
+        result = music.load_music_track(state.music, assets_dir, f"music/{args[0]}", console=console)
+        if result is None:
+            return
+        track_key, _track_id = result
+        music.queue_track(state.music, track_key)
+
+    return snd_add_game_tune
 
 
 def play_music(state: AudioState, track_name: str, *, fade_in: bool = False) -> None:

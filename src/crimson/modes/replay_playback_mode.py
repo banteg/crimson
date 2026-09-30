@@ -5,11 +5,10 @@ from pathlib import Path
 import msgspec
 
 from grim import canvas
-from grim import music as grim_music
 from grim.assets import (
     TextureId,
 )
-from grim.audio import AudioState, init_audio_state, shutdown_audio, update_audio
+from grim.audio import AudioState, game_tune_command, init_audio_state, shutdown_audio, update_audio
 from grim.config import CrimsonConfig
 from grim.console import ConsoleState
 from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
@@ -155,22 +154,10 @@ class ReplayPlaybackMode:
 
     def _register_replay_audio_commands(self) -> None:
         console = self._console
-
-        def cmd_snd_add_game_tune(args: list[str]) -> None:
-            if len(args) != 1:
-                console.log.log("snd_addGameTune <tuneName.ogg>")
-                return
-            audio = self._audio
-            if audio is None:
-                return
-            rel_path = f"music/{args[0]}"
-            result = grim_music.load_music_track(audio.music, self._ctx.assets_dir, rel_path, console=console)
-            if result is None:
-                return
-            track_key, _track_id = result
-            grim_music.queue_track(audio.music, track_key)
-
-        console.register_command("snd_addGameTune", cmd_snd_add_game_tune)
+        console.register_command(
+            "snd_addGameTune",
+            game_tune_command(console, self._ctx.assets_dir, lambda: self._audio),
+        )
 
     def _load_game_tune_queue(self) -> None:
         if self._audio is None:

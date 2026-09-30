@@ -7,8 +7,8 @@ import time
 import webbrowser
 from pathlib import Path
 
-from grim import music
 from grim.app import RunViewHooks, run_view
+from grim.audio import game_tune_command
 from grim.config import CrimsonConfig
 from grim.console import CommandHandler, ConsoleState, register_boot_commands
 from grim.rand import Crand
@@ -60,20 +60,6 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
             return
         state.gamma_ramp = value
         console.log.log(f"Gamma ramp regenerated and multiplied with {value:.6f}")
-
-    def cmd_snd_add_game_tune(args: list[str]) -> None:
-        if len(args) != 1:
-            console.log.log("snd_addGameTune <tuneName.ogg>")
-            return
-        audio = state.audio
-        if audio is None:
-            return
-        rel_path = f"music/{args[0]}"
-        result = music.load_music_track(audio.music, state.assets_dir, rel_path, console=console)
-        if result is None:
-            return
-        track_key, _track_id = result
-        music.queue_track(audio.music, track_key)
 
     def cmd_generate_terrain(_args: list[str]) -> None:
         state.terrain_regenerate_requested = True
@@ -162,7 +148,7 @@ def _boot_command_handlers(state: GameState) -> dict[str, CommandHandler]:
 
     return {
         "setGammaRamp": cmd_set_gamma_ramp,
-        "snd_addGameTune": cmd_snd_add_game_tune,
+        "snd_addGameTune": game_tune_command(console, state.assets_dir, lambda: state.audio),
         "generateterrain": cmd_generate_terrain,
         "telltimesurvived": cmd_tell_time_survived,
         "setresourcepaq": cmd_set_resource_paq,
