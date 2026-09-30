@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.creatures.spawn import SpawnId
 from crimson.quests.helpers import spawn
+from crimson.quests.level import QuestLevel
 from crimson.quests.timeline import quest_spawn_timeline_update
 from crimson.sim.mode_updates import QuestSpawnState, quest_mode_update
 from crimson.sim.world_state import WorldState
@@ -109,7 +110,7 @@ def test_timeline_advances_while_creatures_are_active_or_entries_remain() -> Non
 
 
 def test_timeline_holds_once_the_quest_is_idle_complete() -> None:
-    world = make_world()
+    world = make_world(quest_level=QuestLevel(1, 1))
     quest = QuestSpawnState(spawn_timeline_ms=1000.0)
 
     quest_mode_update(world, quest, dt_ms=16.0)

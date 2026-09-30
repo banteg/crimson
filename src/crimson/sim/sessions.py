@@ -45,7 +45,8 @@ class DeterministicSessionTick(msgspec.Struct):
     presentation: DeterministicPresentationPlan
     elapsed_ms: float = 0.0
     creature_count_world_step: int = 0
-    quest_completed: bool = False
+    # Native called `game_save_status` during this tick; the live mode writes the status file.
+    save_status: bool = False
     # Set on the tick that ends the run; a valid replay ends on this tick.
     outcome: RunOutcome | None = None
 
@@ -268,7 +269,8 @@ class DeterministicSession(msgspec.Struct):
 
         step.elapsed_ms = self.elapsed_ms
         step.creature_count_world_step = events.creature_count_before_render
-        step.quest_completed = quest_spawn is not None and quest_spawn.completed
+        # `quest_mode_update` saves the status on each frame of its `timer > 2500` branch.
+        step.save_status = quest_spawn is not None and quest_spawn.completed
         step.outcome = self.terminal_outcome()
         step.presentation = msgspec.structs.replace(
             step.presentation,

@@ -30,6 +30,7 @@ def _build_session(*, seed: int = 101, level: str = "1.1") -> tuple[Deterministi
     )
     spawn_state = QuestSpawnState(spawn_entries=entries)
     runtime.world.state.game_mode = GameMode.QUESTS
+    runtime.world.state.quest_level = quest.level
     session = DeterministicSession(
         world=runtime.world,
         perk_progression_enabled=True,

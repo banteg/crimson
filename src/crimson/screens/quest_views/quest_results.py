@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from crimson.quests.level import QuestLevel
-from crimson.quests.status import tracked_quest_completed_counter_index
 from crimson.screens.actions import (
     ResultAction,
     Route,
@@ -38,7 +37,7 @@ class QuestResultsView:
         self._action: ScreenAction | None = None
 
     def open(self) -> None:
-        from ...quests.results import advance_quest_unlocks, compute_quest_final_time
+        from ...quests.results import compute_quest_final_time
         from ..results.quest_results import QuestResultsUi
 
         self._action = None
@@ -90,23 +89,8 @@ class QuestResultsView:
         player_name_default = _player_name_default(self.state.config) or "Player"
         record.set_name(player_name_default)
 
-        global_index = int(level.global_index)
-        completed_idx = tracked_quest_completed_counter_index(level)
-        if completed_idx is not None:
-            try:
-                self.state.status.increment_quest_play_count(completed_idx)
-            except (IndexError, KeyError, TypeError, ValueError) as exc:
-                self._log_nonfatal("failed to increment quest play count", exc)
-
-        # Advance quest unlock progression when completing the currently-unlocked quest.
-        if global_index >= 0:
-            next_unlock = int(global_index + 1)
-            hardcore = self.state.config.gameplay.hardcore
-            try:
-                advance_quest_unlocks(self.state.status, next_unlock=next_unlock, hardcore=hardcore)
-            except (KeyError, TypeError, ValueError) as exc:
-                self._log_nonfatal("failed to update quest unlock progression", exc)
-
+        # `game_state_set(GAME_STATE_QUEST_RESULTS)` saves the status again; `quest_mode_update` already
+        # counted the completion and raised the unlocks.
         try:
             self.state.status.save_if_dirty()
         except (OSError, ValueError) as exc:

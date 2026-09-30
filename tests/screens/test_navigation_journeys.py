@@ -167,12 +167,11 @@ def test_stack_closes_replaced_and_retained_screens_once() -> None:
     assert root.close_calls == 1
 
 
-def test_results_scores_back_preserves_result_and_applies_completion_once(loop, mocker) -> None:
+def test_results_scores_back_preserves_result(loop, mocker) -> None:
     state = loop.state
     state.config.gameplay.mode = GameMode.QUESTS
     state.config.gameplay.quest_level = QuestLevel(1, 1)
     run, _spies = _start_run(loop, mocker, StartRun(GameMode.QUESTS, QuestLevel(1, 1)))
-    increment = mocker.spy(type(state.status), "increment_quest_play_count")
     run._finish_run(RunOutcome.QUEST_COMPLETED)
     loop.update(0.016)
     results = state.screens.active
@@ -193,7 +192,6 @@ def test_results_scores_back_preserves_result_and_applies_completion_once(loop, 
     assert results._ui is result_ui
     assert state.config.gameplay.quest_level == QuestLevel(1, 1)
     assert state.pause_background is run
-    increment.assert_called_once()
     # The results slide back in on their buttons.
     mocker.stop(update_ui)
     for _ in range(6):

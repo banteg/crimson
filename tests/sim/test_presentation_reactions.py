@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.game_modes import GameMode
+from crimson.quests.level import QuestLevel
 from crimson.sim.commands import PerkPickCommand
 from crimson.sim.mode_updates import QuestSpawnState
 from crimson.sim.presentation_step import DeterministicPresentationPlan
@@ -62,7 +63,7 @@ def test_quest_audio_requests_survive_render_partitions(
     expected_music,
     ticks_per_frame,
 ) -> None:
-    world = make_world()
+    world = make_world(quest_level=QuestLevel(1, 1))
     world.state.game_mode = GameMode.QUESTS
     session = DeterministicSession(
         world=world, perk_progression_enabled=True, mode_state=QuestSpawnState(completion_transition_ms=start_ms),

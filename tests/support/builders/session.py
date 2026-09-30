@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from crimson.game_modes import GameMode
 from crimson.perks.availability import prepare_perk_availability
+from crimson.quests.level import QuestLevel
 from crimson.sim.sessions import DeterministicSession
 from crimson.sim.world_reset import build_reset_world
 from crimson.sim.world_state import WorldState
@@ -13,10 +14,12 @@ def make_world(
     seed: int = 0xBEEF,
     player_count: int = 1,
     preserve_bugs: bool = False,
+    quest_level: QuestLevel | None = None,
 ) -> WorldState:
     world = build_reset_world(
         seed=seed, player_count=player_count, preserve_bugs=preserve_bugs,
     )
+    world.state.quest_level = quest_level
     # A session prepares both tables on start; so do sessionless test worlds.
     prepare_weapon_availability(world.state)
     prepare_perk_availability(world.state)

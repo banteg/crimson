@@ -29,6 +29,8 @@ from ..math_parity import (
     x87_pc24_sin_mul,
     x87_pc24_sub,
 )
+from ..quests.results import advance_quest_unlocks
+from ..quests.status import tracked_quest_completed_counter_index
 from ..quests.timeline import quest_spawn_table_empty, quest_spawn_timeline_update
 from ..quests.types import SpawnEntry
 from ..rng_caller_static import RngCallerStatic
@@ -56,6 +58,7 @@ class QuestSpawnState(msgspec.Struct):
     spawn_timeline_ms: float = 0.0
     no_creatures_timer_ms: float = 0.0
     completion_transition_ms: float = -1.0
+    # The frame's `timer > 2500` branch ran: results are pending and native saved the status.
     completed: bool = False
     play_hit_sfx: bool = False
     play_completion_music: bool = False
@@ -240,7 +243,9 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
 
     The scaled dt keeps the timeline (the quest score), the stall timer and the
     completion transition slowed under Reflex Boost. The questhit stinger and the
-    completion music are left as flags for the presentation pass.
+    completion music are left as flags for the presentation pass. The completion
+    bookkeeping lands in the run's status here; the `game_save_status` call is the
+    live mode's to make once it sees `completed`.
     """
 
     state = world.state
@@ -252,15 +257,19 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
     spawn.play_hit_sfx = False
     spawn.play_completion_music = False
     if any(c.active for c in world.creatures.entries) or not quest_spawn_table_empty(spawn.spawn_entries):
-        spawn.completion_transition_ms = -1.0
         return
 
     # No player-alive gate: if the timer crosses 2500 ms while the death
     # animation still plays, the quest completes despite the player dying.
     timer = spawn.completion_transition_ms
     state.bonuses.reflex_boost = 0.0
+    level = state.quest_level
+    assert level is not None
     if timer < 0.0:
         timer = 0.0
+        completed_index = tracked_quest_completed_counter_index(level)
+        if completed_index is not None:
+            state.status.increment_quest_play_count(completed_index)
     elif 800.0 < timer <= 850.0:
         spawn.play_hit_sfx = True
         timer = 851.0
@@ -268,6 +277,7 @@ def quest_mode_update(world: WorldState, spawn: QuestSpawnState, *, dt_ms: float
         timer = 2051.0
         spawn.play_completion_music = True
     elif timer > 2500.0:
+        advance_quest_unlocks(state.status, next_unlock=level.global_index + 1, hardcore=state.hardcore)
         spawn.completed = True
     spawn.completion_transition_ms = timer + dt_ms
 

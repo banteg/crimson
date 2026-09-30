@@ -26,6 +26,7 @@ from ..quests.types import QuestDefinition
 from ..replay import Replay, ReplayRecorder
 from ..sim.mode_updates import QuestSpawnState
 from ..sim.run_result import RunOutcome
+from ..sim.sessions import DeterministicSessionTick
 from ..ui.overlays.quest_run import (
     draw_quest_complete_banner_overlay,
     draw_quest_title_timer_overlay,
@@ -210,6 +211,17 @@ class QuestMode(BaseGameplayMode):
             )
         self._save_replay()
         self.close_requested = True
+
+    def _on_tick_applied(self, tick: DeterministicSessionTick) -> bool:
+        if tick.save_status:
+            # Native `quest_mode_update` calls `game_save_status` itself, so the completion and the unlock
+            # reach game.cfg even when a death then turns the pending results into Quest Failed.
+            try:
+                self.state.status.save_if_dirty()
+            except OSError as exc:
+                if self._console is not None:
+                    self._console.log.log(f"quest: status not saved ({exc})")
+        return super()._on_tick_applied(tick)
 
     def update(self, dt: float) -> None:
         frame = self._begin_mode_update(float(dt))
