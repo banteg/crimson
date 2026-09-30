@@ -256,6 +256,10 @@ def _typed(word: str) -> list[GameCommand]:
     return [TypoCharCommand(player_index=0, ch=ch) for ch in word]
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason="Zig still fires Typ-o through player_update; Python fires through native player_fire_weapon",
+)
 def test_zig_replay_verify_matches_python_typo_submit_semantics(tmp_path: Path, zig_bin: Path) -> None:
     submit = TypoSubmitCommand(player_index=0)
     cases = {

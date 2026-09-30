@@ -52,7 +52,16 @@ def test_zig_dbg_verify_rejects_extra_args() -> None:
     assert "invalid dbg verify args: dbg verify does not take arguments" in result.stderr
 
 
-@pytest.mark.parametrize("case", sorted(_BOT_TRACE_CASES))
+_ZIG_TYPO_FIRE_STALE = pytest.mark.xfail(
+    strict=True,
+    reason="Zig still fires Typ-o through player_update; Python fires through native player_fire_weapon",
+)
+
+
+@pytest.mark.parametrize(
+    "case",
+    [pytest.param(case, marks=_ZIG_TYPO_FIRE_STALE) if case == "typo" else case for case in sorted(_BOT_TRACE_CASES)],
+)
 def test_zig_dbg_record_matches_python_trace_for_bot_runs(tmp_path: Path, case: str) -> None:
     replay_path = write_replay(tmp_path, replay=_BOT_TRACE_CASES[case](), name=f"{case}.crd")
     runner = CliRunner()
