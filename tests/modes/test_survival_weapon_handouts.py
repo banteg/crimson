@@ -2,17 +2,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from crimson.creatures.runtime import CreaturePool
+from crimson.creatures.runtime import CreatureState
 from crimson.gameplay import gameplay_enforce_weapon_guards, survival_enforce_reward_weapon_guard
 from crimson.persistence.save_status import GameStatus
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.mode_updates import SurvivalSpawnState, survival_update
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
-from crimson.weapon_runtime import prepare_weapon_availability, weapon_assign_player
+from crimson.weapon_runtime import weapon_assign_player
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.builders.session import make_world
+from tests.support.factories import kill_creature, world_with_creature
 
 
 def _survival_frame(world: WorldState, *, elapsed_ms: float) -> None:
@@ -113,26 +114,14 @@ def test_survival_handout_centroid_keeps_native_pc24_radius_boundary() -> None:
 
 
 def test_creature_handle_death_tracks_survival_recent_death_samples() -> None:
-    state = GameplayState()
-    prepare_weapon_availability(state)
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0))
-    pool = CreaturePool()
+    world = world_with_creature(CreatureState(), players=[PlayerState(index=0, pos=Vec2(512.0, 512.0))])
+    state = world.state
     state.survival_reward_fire_seen = True
     state.survival_reward_handout_enabled = True
 
     for idx, pos in enumerate((Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0))):
-        creature = pool.entries[idx]
-        creature.active = True
-        creature.hp = 0.0
-        creature.reward_value = 0.0
-        creature.pos = pos
-        pool.handle_death(
-            idx,
-            state=state,
-            players=[player],
-            rng=state.rng,
-            fx_queue=None,
-        )
+        world.creatures.entries[idx] = CreatureState(active=True, hp=0.0, reward_value=0.0, pos=pos)
+        kill_creature(world, idx)
 
     assert int(state.survival_recent_death_count) == 3
     assert state.survival_recent_death_pos == [Vec2(10.0, 20.0), Vec2(30.0, 40.0), Vec2(50.0, 60.0)]

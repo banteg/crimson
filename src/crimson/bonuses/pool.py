@@ -289,8 +289,6 @@ class BonusPool:
             return None
         if game_mode == GameMode.TUTORIAL:
             return None
-        if state.bonus_spawn_guard:
-            return None
 
         rng = state.rng
         force_drop_has_pistol = any(player.weapon.weapon_id == WeaponId.PISTOL for player in players)

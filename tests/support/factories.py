@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Sequence
 from typing import Any
 
-from crimson.creatures.runtime import CreatureState
+from crimson.creatures.runtime import CreatureDeath, CreatureState
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId
 from crimson.effects import FxQueue, FxQueueRotated
 from crimson.gameplay import player_update
@@ -58,6 +58,21 @@ def make_step_runtime(world: WorldState, *, dt: float = 0.1, fx_queue: FxQueue |
         deaths=[],
         sfx=[],
     )
+
+
+def kill_creature(
+    world: WorldState,
+    creature_index: int = 0,
+    *,
+    keep_corpse: bool = True,
+    dt: float = 0.1,
+    fx_queue: FxQueue | None = None,
+) -> CreatureDeath:
+    """Run `creature_handle_death` on one pool slot inside a fresh step runtime; returns its death event."""
+
+    step_runtime = make_step_runtime(world, dt=dt, fx_queue=fx_queue)
+    world.creatures.handle_death(step_runtime, creature_index, keep_corpse=keep_corpse)
+    return step_runtime.deaths[-1]
 
 
 def world_with_creature(

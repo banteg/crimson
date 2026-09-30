@@ -1,4 +1,4 @@
-"""Kill XP award in `creature_handle_death` (0x0041eb34..0x0041ebb5) vs the port's `handle_death`."""
+"""Kill XP award in `creature_handle_death` (0x0041eb34..0x0041ebb5) vs the port's `CreaturePool.handle_death`."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from crimson.creatures.runtime import CreatureState
 from crimson.math_parity import f32
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
-from tests.support.factories import make_step_runtime, world_with_creature
+from tests.support.factories import kill_creature, world_with_creature
 
 from ._support import Mismatch, mismatch_report
 
@@ -37,7 +37,7 @@ def test_kill_experience_award_matches_native(oracle) -> None:
         world = world_with_creature(CreatureState(active=True, hp=0.0, reward_value=reward), players=[player])
         world.state.bonuses.double_experience = double_experience
         world.state.bonus_spawn_guard = True
-        make_step_runtime(world).handle_creature_death(0)
+        kill_creature(world)
         if player.experience != native:
             case = f"experience={experience} reward={reward!r} double={double_experience}"
             mismatches.append(Mismatch(case, "experience", native, player.experience, 0x0041EB5B))

@@ -77,30 +77,6 @@ class WorldStepRuntime(msgspec.Struct):
     def apply_player_damage(self, player_index: int, damage: float) -> None:
         player_take_projectile_damage(self.world.state, self.world.players[player_index], damage)
 
-    def handle_creature_death(self, creature_index: int, *, keep_corpse: bool = True) -> None:
-        """`creature_handle_death` for this frame, recording the death event."""
-
-        self.deaths.append(
-            self.world.creatures.handle_death(
-                creature_index,
-                state=self.world.state,
-                players=self.world.players,
-                rng=self.world.state.rng,
-                dt=f32(self.dt),
-                detail_preset=self.world.state.detail_preset,
-                fx_queue=self.fx_queue,
-                keep_corpse=keep_corpse,
-            ),
-        )
-
-    def on_secondary_detonation_kill(self, creature_index: int) -> None:
-        if self.world.creatures.entries[creature_index].hp > 0.0:
-            return
-        # Native detonation follow-up re-enters creature death handling but does
-        # not run a second death-SFX random pick (`creature_apply_damage` only
-        # does that on the original killing hit).
-        self.handle_creature_death(creature_index)
-
     def begin_hit_presentation(self, hit: ProjectileHit) -> ProjectileDecalPostCtx:
         return queue_projectile_decals_pre_hit(
             state=self.world.state,

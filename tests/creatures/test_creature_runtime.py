@@ -6,8 +6,7 @@ import pytest
 
 import crimson.creatures.runtime as creature_runtime
 from crimson.bonuses import BonusId
-from crimson.bonuses.pool import BonusEntry
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, PHANTOM_CREATURE_INDEX, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, PHANTOM_CREATURE_INDEX, CreaturePool, CreatureState
 from crimson.creatures.spawn import (
     HAS_SPAWN_SLOT_FLAG,
     NATIVE_SPAWN_SLOT_COUNT,
@@ -28,6 +27,7 @@ from crimson.projectiles.types import ProjectileTemplateId
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.gameplay_state import GameplayState
 from crimson.sim.state_types import PlayerState, WeaponSlot
+from crimson.sim.world_state import WorldState
 from crimson.weapons import WeaponId
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -35,7 +35,7 @@ from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
 from tests.support.audio import sfx_ids
 from tests.support.builders.session import make_world
-from tests.support.factories import step_creatures
+from tests.support.factories import kill_creature, step_creatures, world_with_creature
 from tests.support.helpers import ScriptedCrand, assert_float_close, assert_rng_progression
 
 
@@ -1082,252 +1082,110 @@ def test_small_creature_dies_on_contact() -> None:
 
 
 def test_death_awards_xp_and_can_spawn_bonus() -> None:
-    state = GameplayState()
     # RNG values:
     # - try_spawn_on_kill gate: (rand % 9) == 1
     # - bonus_pick_random_type roll: roll=1 => points
     # - points amount: (rand & 7) < 3 => 1000
     stub_rand = ScriptedCrand([1, 0, 0], fallback=ScriptedCrand.Fallback.ZERO)
-    state.rng = stub_rand
-
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
-
-    creature = pool.entries[0]
-    creature.active = True
-    creature.pos = Vec2(100.0, 100.0)
-    creature.reward_value = 10.0
-    creature.hp = 0.0
-
-    death = pool.handle_death(
-        0,
-        state=state,
+    world = world_with_creature(
+        CreatureState(active=True, pos=Vec2(100.0, 100.0), reward_value=10.0, hp=0.0),
+        rng=stub_rand,
         players=[player],
-        rng=state.rng,
-        fx_queue=None,
     )
+
+    death = kill_creature(world)
+
     assert death.xp_awarded == 10
     assert player.experience == 10
-    assert any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
-    assert len(state.effects.iter_active()) == 16
+    assert any(entry.bonus_id != BonusId.UNUSED for entry in world.state.bonus_pool.entries)
+    assert len(world.state.effects.iter_active()) == 16
     # Successful spawn-on-kill emits a 16-particle burst (4 RNG draws each).
     assert stub_rand.calls == 67
 
 
+def test_death_steps_the_corpse_or_deactivates_an_eaten_creature() -> None:
+    corpse = world_with_creature(CreatureState(active=True, hp=0.0, lifecycle_stage=15.0, reward_value=10.0))
+    corpse.state.bonus_spawn_guard = True
+    kill_creature(corpse)
+    assert corpse.creatures.entries[0].lifecycle_stage == x87_pc24_sub(15.0, f32(0.1))
+    assert corpse.creatures.entries[0].active
+
+    eaten = world_with_creature(CreatureState(active=True, hp=0.0, lifecycle_stage=15.0, reward_value=10.0))
+    eaten.state.bonus_spawn_guard = True
+    death = kill_creature(eaten, keep_corpse=False)
+    assert eaten.creatures.entries[0].lifecycle_stage == 15.0
+    assert not eaten.creatures.entries[0].active
+    assert death.xp_awarded == 10
+
+
 def test_every_kill_credits_player_one() -> None:
     # Native `creature_handle_death` adds the XP to player one, whoever landed the hit.
-    state = GameplayState()
-    state.bonus_spawn_guard = True
-    players = [
-        PlayerState(index=0, pos=Vec2()),
-        PlayerState(index=1, pos=Vec2()),
-    ]
-    state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
-    pool = CreaturePool()
-    pool.entries[0].active = True
-    pool.entries[0].hp = 0.0
-    pool.entries[0].reward_value = 10.0
+    players = [PlayerState(index=0, pos=Vec2()), PlayerState(index=1, pos=Vec2())]
+    world = world_with_creature(CreatureState(active=True, hp=0.0, reward_value=10.0), players=players)
+    world.state.bonus_spawn_guard = True
+    world.state.perks[int(PerkId.BLOODY_MESS_QUICK_LEARNER)] = 1
 
-    death = pool.handle_death(
-        0,
-        state=state,
-        players=players,
-        rng=state.rng,
-        fx_queue=None,
-    )
+    death = kill_creature(world)
 
     assert death.xp_awarded == 13
     assert (players[0].experience, players[1].experience) == (13, 0)
 
 
-def test_bonus_on_death_does_not_synthesize_burst_from_mocked_try_spawn_result(mocker) -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
-
-    creature = pool.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = BonusId.POINTS
-    creature.bonus_duration_override = 5
-    creature.pos = Vec2(100.0, 100.0)
-    creature.hp = 0.0
-
-    spawn_at = mocker.patch.object(
-        state.bonus_pool,
-        "spawn_at",
-        return_value=BonusEntry(
-            bonus_id=BonusId.POINTS,
-            pos=Vec2(100.0, 100.0),
-            time_left=10.0,
-            time_max=10.0,
-            amount=5,
-        ),
-    )
-    try_spawn_on_kill = mocker.patch.object(
-        state.bonus_pool,
-        "try_spawn_on_kill",
-        return_value=BonusEntry(
-            bonus_id=BonusId.ENERGIZER,
-            pos=Vec2(200.0, 200.0),
-            time_left=10.0,
-            time_max=10.0,
-            amount=1,
-        ),
-    )
-
-    pool.handle_death(
-        0,
-        state=state,
-        players=[player],
-        rng=state.rng,
-        fx_queue=None,
-    )
-
-    spawn_at.assert_called_once()
-    try_spawn_on_kill.assert_called_once()
-    assert state.effects.iter_active() == []
-
-
-def test_bonus_on_death_forced_drop_does_not_emit_burst_when_try_spawn_fails(mocker) -> None:
-    state = GameplayState()
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
-
-    creature = pool.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = BonusId.POINTS
-    creature.pos = Vec2(100.0, 100.0)
-    creature.hp = 0.0
-
-    spawn_at = mocker.patch.object(
-        state.bonus_pool,
-        "spawn_at",
-        return_value=BonusEntry(
-            bonus_id=BonusId.POINTS,
-            pos=Vec2(100.0, 100.0),
-            time_left=10.0,
-            time_max=10.0,
-            amount=5,
-        ),
-    )
-    try_spawn_on_kill = mocker.patch.object(state.bonus_pool, "try_spawn_on_kill", return_value=None)
-
-    pool.handle_death(
-        0,
-        state=state,
-        players=[player],
-        rng=state.rng,
-        fx_queue=None,
-    )
-
-    spawn_at.assert_called_once()
-    try_spawn_on_kill.assert_called_once()
-    assert state.effects.iter_active() == []
-
-
 def test_handle_death_shock_flag_has_no_resolved_death_sfx_without_spawning_debris() -> None:
-    state = GameplayState()
-    rng = RecordingCrand(state.rng)
-    state.rng = rng
-    # Kill drops are out of scope here; the guard skips them before any draw.
-    state.bonus_spawn_guard = True
-    pool = CreaturePool()
-
-    creature = pool.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.RANGED_ATTACK_SHOCK
-    creature.pos = Vec2(100.0, 100.0)
-    creature.hp = 0.0
-
-    pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=state.rng,
-        fx_queue=None,
+    rng = RecordingCrand(Crand(0xBEEF))
+    world = world_with_creature(
+        CreatureState(active=True, flags=CreatureFlags.RANGED_ATTACK_SHOCK, pos=Vec2(100.0, 100.0), hp=0.0),
+        rng=rng,
     )
+    # Kill drops are out of scope here; the guard skips them before any draw.
+    world.state.bonus_spawn_guard = True
 
-    assert state.effects.iter_active() == []
+    kill_creature(world)
+
+    assert world.state.effects.iter_active() == []
     assert rng.calls == 0
 
 
 def test_death_award_uses_float32_sum_before_truncation() -> None:
-    state = GameplayState()
-
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
     player.experience = 48_841
-    pool = CreaturePool()
-
-    creature = pool.entries[0]
-    creature.active = True
-    creature.pos = Vec2(100.0, 100.0)
-    creature.reward_value = 60.998285714285714
-    creature.hp = 0.0
-
-    death = pool.handle_death(
-        0,
-        state=state,
+    world = world_with_creature(
+        CreatureState(active=True, pos=Vec2(100.0, 100.0), reward_value=60.998285714285714, hp=0.0),
         players=[player],
-        rng=state.rng,
-        fx_queue=None,
     )
+
+    death = kill_creature(world)
+
     assert death.xp_awarded == 61
     assert player.experience == 48_902
 
 
-def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random(mocker) -> None:
-    state = GameplayState()
-    state.game_mode = GameMode.RUSH
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = True
-    creature.hp = 0.0
-    creature.pos = Vec2(100.0, 100.0)
-
+def test_handle_death_no_freeze_does_not_enqueue_fx_queue_random() -> None:
+    world = world_with_creature(CreatureState(active=True, hp=0.0, pos=Vec2(100.0, 100.0)))
+    world.state.game_mode = GameMode.RUSH
     fx_queue = FxQueue()
-    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
-    pool.handle_death(
-        0,
-        state=state,
-        players=[player],
-        rng=state.rng,
-        fx_queue=fx_queue,
-    )
+    kill_creature(world, fx_queue=fx_queue)
 
-    add_random.assert_not_called()
+    assert fx_queue.count == 0
 
 
-def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
-    state = GameplayState()
-    state.game_mode = GameMode.RUSH
-    state.bonuses.freeze = 1.0
-    state.rng = RecordingCrand(Crand(0x1234))
-    player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = True
-    creature.hp = 0.0
-    creature.pos = Vec2(100.0, 100.0)
-
+def test_handle_death_freeze_shatters_the_creature_and_enqueues_one_random_decal() -> None:
+    rng = RecordingCrand(Crand(0x1234))
+    world = world_with_creature(CreatureState(active=True, hp=0.0, pos=Vec2(100.0, 100.0)), rng=rng)
+    world.state.game_mode = GameMode.RUSH
+    world.state.bonuses.freeze = 1.0
     fx_queue = FxQueue()
-    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
 
-    pool.handle_death(
-        0,
-        state=state,
-        players=[player],
-        rng=state.rng,
-        fx_queue=fx_queue,
-    )
+    kill_creature(world, fx_queue=fx_queue)
 
-    add_random.assert_called_once()
+    assert fx_queue.count == 1
+    assert not world.creatures.entries[0].active
+    assert world.creatures.kill_count == 1
     tagged_callers = [
         record.caller
-        for record in state.rng.records_since()
+        for record in rng.records_since()
         if record.caller
         in {
             RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE,
@@ -1341,118 +1199,60 @@ def test_handle_death_freeze_enqueues_fx_queue_random_once(mocker) -> None:
     ]
 
 
-def test_handle_death_inactive_entry_skips_reentrant_side_effects(mocker) -> None:
-    state = GameplayState()
-    state.game_mode = GameMode.RUSH
-    state.bonuses.freeze = 1.0
+def test_handle_death_inactive_entry_skips_reentrant_side_effects() -> None:
     player = PlayerState(index=0, pos=Vec2(512.0, 512.0), weapon=WeaponSlot(weapon_id=WeaponId.ASSAULT_RIFLE))
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = False
-    creature.hp = -1.0
-    creature.reward_value = 49.0
-    creature.pos = Vec2(100.0, 100.0)
-
-    fx_queue = FxQueue()
-    add_random = mocker.patch.object(fx_queue, "add_random", wraps=fx_queue.add_random)
-
-    death = pool.handle_death(
-        0,
-        state=state,
+    world = world_with_creature(
+        CreatureState(active=False, hp=-1.0, reward_value=49.0, pos=Vec2(100.0, 100.0)),
         players=[player],
-        rng=state.rng,
-        fx_queue=fx_queue,
     )
+    world.state.game_mode = GameMode.RUSH
+    world.state.bonuses.freeze = 1.0
+    fx_queue = FxQueue()
+
+    death = kill_creature(world, fx_queue=fx_queue)
 
     assert death.xp_awarded == 0
     assert player.experience == 0
-    add_random.assert_not_called()
-    assert not any(entry.bonus_id != BonusId.UNUSED for entry in state.bonus_pool.entries)
+    assert fx_queue.count == 0
+    assert world.state.effects.iter_active() == []
+    assert not any(entry.bonus_id != BonusId.UNUSED for entry in world.state.bonus_pool.entries)
 
 
-def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_default(mocker) -> None:
-    state = GameplayState()
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = False
-    creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = BonusId.POINTS
-    creature.bonus_duration_override = 5
-    creature.hp = -1.0
-    creature.pos = Vec2(100.0, 100.0)
-
-    spawn_at = mocker.patch.object(
-        state.bonus_pool,
-        "spawn_at",
-        return_value=BonusEntry(
+def _inactive_bonus_carrier_world(*, preserve_bugs: bool) -> WorldState:
+    world = world_with_creature(
+        CreatureState(
+            active=False,
+            flags=CreatureFlags.BONUS_ON_DEATH,
             bonus_id=BonusId.POINTS,
+            bonus_duration_override=5,
+            hp=-1.0,
             pos=Vec2(100.0, 100.0),
-            time_left=10.0,
-            time_max=10.0,
-            amount=5,
         ),
     )
+    world.state.preserve_bugs = preserve_bugs
+    return world
 
-    death = pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=state.rng,
-        fx_queue=None,
-    )
-    pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=state.rng,
-        fx_queue=None,
-    )
 
-    spawn_at.assert_called_once()
+def test_handle_death_inactive_entry_forced_bonus_on_death_is_one_shot_by_default() -> None:
+    world = _inactive_bonus_carrier_world(preserve_bugs=False)
+
+    death = kill_creature(world)
+    kill_creature(world)
+
+    assert [entry.bonus_id for entry in world.state.bonus_pool.entries].count(BonusId.POINTS) == 1
     assert death.xp_awarded == 0
+    creature = world.creatures.entries[0]
     assert creature.bonus_id is None
     assert creature.bonus_duration_override is None
 
 
-def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve_bugs(mocker) -> None:
-    state = GameplayState(preserve_bugs=True)
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = False
-    creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = BonusId.POINTS
-    creature.bonus_duration_override = 5
-    creature.hp = -1.0
-    creature.pos = Vec2(100.0, 100.0)
+def test_handle_death_inactive_entry_forced_bonus_on_death_repeats_with_preserve_bugs() -> None:
+    world = _inactive_bonus_carrier_world(preserve_bugs=True)
 
-    spawn_at = mocker.patch.object(
-        state.bonus_pool,
-        "spawn_at",
-        return_value=BonusEntry(
-            bonus_id=BonusId.POINTS,
-            pos=Vec2(100.0, 100.0),
-            time_left=10.0,
-            time_max=10.0,
-            amount=5,
-        ),
-    )
+    kill_creature(world)
+    kill_creature(world)
 
-    pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=state.rng,
-        fx_queue=None,
-    )
-    pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=state.rng,
-        fx_queue=None,
-    )
-
-    assert spawn_at.call_count == 2
+    assert [entry.bonus_id for entry in world.state.bonus_pool.entries].count(BonusId.POINTS) == 2
 
 
 def test_survival_spawn_resets_the_fields_native_writes_and_keeps_the_rest() -> None:
@@ -2103,32 +1903,28 @@ def test_evil_eyes_default_freezes_targets_from_multiple_players() -> None:
 
 
 def test_bonus_on_death_drop_emits_native_burst_and_clamps_corpse() -> None:
-    state = GameplayState()
-    state.bonus_spawn_guard = True
     draw_callers: list[int | None] = []
     rng = Crand(1)
     rng.set_trace_sink(
         lambda _before, _after, _value, caller: draw_callers.append(caller),
         require_caller=True,
     )
-    state.rng = rng
-    pool = CreaturePool()
-
-    creature = pool.entries[0]
-    creature.active = True
-    creature.flags = CreatureFlags.BONUS_ON_DEATH
-    creature.bonus_id = BonusId.POINTS
-    creature.bonus_duration_override = 5
-    creature.pos = Vec2(5.0, 1010.0)
-    creature.hp = 0.0
-
-    pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=state.rng,
-        fx_queue=None,
+    world = world_with_creature(
+        CreatureState(
+            active=True,
+            flags=CreatureFlags.BONUS_ON_DEATH,
+            bonus_id=BonusId.POINTS,
+            bonus_duration_override=5,
+            pos=Vec2(5.0, 1010.0),
+            hp=0.0,
+        ),
+        rng=rng,
     )
+    state = world.state
+    state.bonus_spawn_guard = True
+    creature = world.creatures.entries[0]
+
+    kill_creature(world)
 
     # Native bonus_spawn_at clamps the corpse position through the pointer and
     # always spawns a 16-particle burst (4 crt_rand draws each).

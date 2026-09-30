@@ -248,7 +248,7 @@ class ParticlePool:
                             )
                             step_runtime.on_bubblegun_expiry_sfx(target_id, sound_slot)
                         # Death history and forced bonuses precede the native active check.
-                        step_runtime.handle_creature_death(target_id, keep_corpse=False)
+                        step_runtime.world.creatures.handle_death(step_runtime, target_id, keep_corpse=False)
                 continue
 
             if entry.render_flag:

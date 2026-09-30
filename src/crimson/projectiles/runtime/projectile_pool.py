@@ -497,7 +497,7 @@ class ProjectilePool:
                                 # Native calls creature_handle_death directly: no damage pipeline, so no
                                 # heading-jitter or death-SFX rand draws, and hp stays positive so the
                                 # generic chip damage below still applies.
-                                step_runtime.handle_creature_death(hit_idx)
+                                step_runtime.world.creatures.handle_death(step_runtime, hit_idx)
                         case ProjectileTemplateId.PULSE_GUN:
                             creature.pos = Vec2(
                                 x87_pc24_add(creature.pos.x, x87_pc24_mul(move.x, 3.0)),

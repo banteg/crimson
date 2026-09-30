@@ -1,42 +1,35 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
+from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreatureState
 from crimson.creatures.spawn import CreatureFlags
 from crimson.math_parity import NATIVE_HALF_PI, f32
 from crimson.rng_caller_static import RngCallerStatic
-from crimson.sim.gameplay_state import GameplayState
-from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.support.factories import kill_creature, world_with_creature
 from tests.support.helpers import ScriptedCrand
 
 
 def test_split_on_death_spawns_two_smaller_children() -> None:
-    state = GameplayState()
-    # Kill drops are out of scope here; the guard skips them before any draw.
-    state.bonus_spawn_guard = True
     rng = ScriptedCrand([0x111, 0x123, 0x222, 0x456], fallback=ScriptedCrand.Fallback.ZERO)
-
-    pool = CreaturePool()
-    parent = pool.entries[0]
-    parent.active = True
-    parent.flags = CreatureFlags.SPLIT_ON_DEATH
-    parent.pos = Vec2(100.0, 200.0)
-    parent.heading = 3.0
-    parent.target_heading = -0.75
-    parent.hp = 0.0
-    parent.max_hp = 400.0
-    parent.reward_value = 90.0
-    parent.size = 40.0
-    parent.move_speed = 2.0
-    parent.contact_damage = 10.0
-
-    pool.handle_death(
-        0,
-        state=state,
-        players=[PlayerState(index=0, pos=Vec2())],
-        rng=rng,
-        fx_queue=None,
+    parent = CreatureState(
+        active=True,
+        flags=CreatureFlags.SPLIT_ON_DEATH,
+        pos=Vec2(100.0, 200.0),
+        heading=3.0,
+        target_heading=-0.75,
+        hp=0.0,
+        max_hp=400.0,
+        reward_value=90.0,
+        size=40.0,
+        move_speed=2.0,
+        contact_damage=10.0,
     )
+    world = world_with_creature(parent, rng=rng)
+    # Kill drops are out of scope here; the guard skips them before any draw.
+    world.state.bonus_spawn_guard = True
+    pool = world.creatures
+
+    kill_creature(world)
 
     child1 = pool.entries[1]
     child2 = pool.entries[2]

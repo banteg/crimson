@@ -110,7 +110,6 @@ def _step_detonation(
             x87_pc24_sub(creature.pos.y, entry.pos.y),
         )
         if distance < radius:
-            hp_before = float(creature.hp)
             impulse_dir = (creature.pos - entry.pos).normalized()
             impulse = Vec2(
                 x87_pc24_mul(impulse_dir.x, _DETONATION_IMPULSE_SCALE),
@@ -118,12 +117,12 @@ def _step_detonation(
             )
             creature_apply_damage(step_runtime, creature_idx, damage, CreatureDamageType.EXPLOSION, impulse)
             creature_spatial.sync_index(int(creature_idx))
-            if hp_before > 0.0 and float(creature.hp) <= 0.0:
+            if creature.hp <= 0.0:
                 # Native detonation AoE does an extra two random decals and a
                 # second `creature_handle_death` call after the killing hit.
                 fx_queue.add_random(pos=creature.pos, rng=rng)
                 fx_queue.add_random(pos=creature.pos, rng=rng)
-                step_runtime.on_secondary_detonation_kill(int(creature_idx))
+                step_runtime.world.creatures.handle_death(step_runtime, creature_idx)
 
 
 def _move_rocket(

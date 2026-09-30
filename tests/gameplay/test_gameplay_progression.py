@@ -29,7 +29,7 @@ def test_kill_experience_rounds_the_exact_int_plus_reward_once() -> None:
     world.state.bonus_spawn_guard = True
     step_runtime = make_step_runtime(world)
 
-    step_runtime.handle_creature_death(0)
+    world.creatures.handle_death(step_runtime, 0)
 
     # `fild` keeps 2^24 + 1 exact; the PC24 `fadd` rounds 2^24 + 1.5 up to 2^24 + 2,
     # and the Double Experience repeat lands on 2^24 + 2 again.

@@ -18,7 +18,7 @@ from grim.sfx_types import SfxRequest
 
 from ..bonuses import BonusId
 from ..bonuses.pool import BONUS_SPAWN_MARGIN
-from ..effects import EffectPool, FxQueue, FxQueueRotated
+from ..effects import EffectPool, FxQueueRotated
 from ..gameplay import (
     experience_plus_reward,
     survival_record_recent_death,
@@ -776,7 +776,7 @@ class CreaturePool:
                     plague_killed = False
                     if creature.hp < 0.0:
                         state.plaguebearer_infection_count += 1
-                        step_runtime.handle_creature_death(idx)
+                        self.handle_death(step_runtime, idx)
                         # Native plague-kill path consumes one rand draw for
                         # creature attack SFX bank-b selection after death side effects.
                         contact_sfx_options = _CREATURE_CONTACT_SFX.get(creature.type_id)
@@ -990,7 +990,7 @@ class CreaturePool:
                     state.effects.spawn_burst(pos=creature.pos, count=6, rng=rng, detail_preset=detail_preset)
                     sfx.append(SfxRequest(SfxId.UI_BONUS, creature.pos, gain=0.8))
                     state.bonus_spawn_guard = True
-                    step_runtime.handle_creature_death(idx, keep_corpse=False)
+                    self.handle_death(step_runtime, idx, keep_corpse=False)
                     state.bonus_spawn_guard = False
 
             # Native has no aliveness re-check here: a creature plague-killed earlier in the tick
@@ -1034,21 +1034,19 @@ class CreaturePool:
                 creature.hp = 0.0
                 creature.lifecycle_stage = f32(float(creature.lifecycle_stage) - float(dt))
 
-    def handle_death(
-        self,
-        idx: int,
-        *,
-        state: GameplayState,
-        players: list[PlayerState],
-        rng: CrandLike,
-        dt: float = 0.0,
-        detail_preset: int = 5,
-        fx_queue: FxQueue | None,
-        keep_corpse: bool = True,
-    ) -> CreatureDeath:
-        """Run one-shot death side effects and return the `CreatureDeath` event."""
+    def handle_death(self, step_runtime: WorldStepRuntime, idx: int, *, keep_corpse: bool = True) -> None:
+        """Port of `creature_handle_death` (0x0041e910), recording the frame's `CreatureDeath` event.
 
-        creature = self._entries[int(idx)]
+        The forced drop and the Survival death sample run on every call; the rest only for an
+        active creature: spawn-slot release, split-on-death children, the corpse step (or
+        deactivation), player one's XP, the kill-drop roll, then the Freeze shatter.
+        """
+
+        state = step_runtime.world.state
+        players = step_runtime.world.players
+        rng = state.rng
+        detail_preset = state.detail_preset
+        creature = self._entries[idx]
         if (creature.flags & CreatureFlags.BONUS_ON_DEATH) and creature.bonus_id is not None:
             # Native `bonus_spawn_at` clamps through the creature pos pointer
             # (also in rush, where no bonus spawns), moving the corpse to the
@@ -1062,73 +1060,99 @@ class CreaturePool:
             state.bonus_pool.spawn_at(
                 pos=creature.pos,
                 bonus_id=creature.bonus_id,
-                duration_override=int(creature.bonus_duration_override)
-                if creature.bonus_duration_override is not None
-                else -1,
+                duration_override=-1 if creature.bonus_duration_override is None else creature.bonus_duration_override,
                 state=state,
-                detail_preset=int(detail_preset),
+                detail_preset=detail_preset,
             )
-            if not bool(state.preserve_bugs):
+            if not state.preserve_bugs:
                 creature.bonus_id = None
                 creature.bonus_duration_override = None
         survival_record_recent_death(state, pos=creature.pos)
+        # Re-entrant calls (the secondary detonation follow-up) land on an already deactivated creature.
         if not creature.active:
-            # Native `creature_handle_death` gates its XP/bonus/freeze body under
-            # `if (active != 0)`. Re-entrant callers (notably secondary
-            # detonation follow-up) can invoke death handling after the first call
-            # has already deactivated the creature.
-            return CreatureDeath(
-                index=int(idx),
-                pos=creature.pos,
-                type_id=creature.type_id,
-                reward_value=float(creature.reward_value),
-                xp_awarded=0,
+            step_runtime.deaths.append(
+                CreatureDeath(
+                    index=idx,
+                    pos=creature.pos,
+                    type_id=creature.type_id,
+                    reward_value=creature.reward_value,
+                    xp_awarded=0,
+                ),
             )
-        death = self._start_death(
-            int(idx),
-            creature,
-            state=state,
-            players=players,
-            rng=rng,
-            detail_preset=int(detail_preset),
-        )
+            return
+
+        self._release_spawn_slot(creature)
+
+        if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and creature.size > 35.0:
+            for heading_offset, phase_seed_caller in (
+                (-NATIVE_HALF_PI, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
+                (NATIVE_HALF_PI, RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
+            ):
+                # The struct copy from the parent overwrites what `creature_alloc_slot` seeded;
+                # a full pool copies the child into the phantom slot.
+                child_idx = self.alloc_slot(rng)
+                child = msgspec.structs.replace(creature, generation=self.creature(child_idx).generation)
+                child.phase_seed = rng.rand_tagged(phase_seed_caller) & 0xFF
+                # Native stores `heading +- 1.5707964f` unwrapped and leaves
+                # `target_heading` as the parent's stale copy.
+                child.heading = f32(creature.heading + heading_offset)
+                child.hp = f32(creature.max_hp * f32(0.25))
+                # Native multiplies by the f32 literal 0.6666667.
+                child.reward_value = f32(child.reward_value * f32(0.6666667))
+                child.size = f32(child.size - f32(8.0))
+                child.move_speed = f32(child.move_speed + f32(0.1))
+                child.contact_damage = f32(child.contact_damage * f32(0.7))
+                child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
+                if child_idx == PHANTOM_CREATURE_INDEX:
+                    self.phantom = child
+                else:
+                    self._entries[child_idx] = child
+            state.effects.spawn_burst(pos=creature.pos, count=8, rng=rng, detail_preset=detail_preset)
 
         if keep_corpse:
-            # Native `creature_handle_death` always decrements lifecycle_stage by
-            # frame_dt for corpse-keeping deaths, independent of current value.
-            creature.lifecycle_stage = x87_pc24_sub(float(creature.lifecycle_stage), float(dt))
+            creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(step_runtime.dt))
         else:
             creature.active = False
 
-        if float(state.bonuses.freeze) > 0.0:
-            creature_pos = creature.pos
+        # Native credits every kill to player one; score and level-ups read only that player.
+        killer = players[0]
+        experience_before = killer.experience
+        quick_learner = PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks
+        # Double Experience repeats the whole award block.
+        for _ in range(2 if state.bonuses.double_experience > 0.0 else 1):
+            if quick_learner:
+                killer.experience += quick_learner_kill_xp(creature.reward_value)
+            else:
+                killer.experience = experience_plus_reward(killer.experience, creature.reward_value)
+
+        if not state.bonus_spawn_guard:
+            state.bonus_pool.try_spawn_on_kill(pos=creature.pos, state=state, players=players, detail_preset=detail_preset)
+
+        if state.bonuses.freeze > 0.0:
             for _ in range(8):
                 angle = x87_pc24_mul(
-                    float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE)) % 612),
+                    float(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHARD_ANGLE) % 612),
                     f32(0.01),
                 )
-                state.effects.spawn_freeze_shard(
-                    pos=creature_pos,
-                    angle=angle,
-                    rng=rng,
-                    detail_preset=int(detail_preset),
-                )
+                state.effects.spawn_freeze_shard(pos=creature.pos, angle=angle, rng=rng, detail_preset=detail_preset)
             angle = x87_pc24_mul(
-                float(int(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE)) % 612),
+                float(rng.rand_tagged(RngCallerStatic.CREATURE_HANDLE_DEATH_FREEZE_SHATTER_ANGLE) % 612),
                 f32(0.01),
             )
-            state.effects.spawn_freeze_shatter(
-                pos=creature_pos,
-                angle=angle,
-                rng=rng,
-                detail_preset=int(detail_preset),
-            )
-            if fx_queue is not None:
-                fx_queue.add_random(pos=creature_pos, rng=rng)
+            state.effects.spawn_freeze_shatter(pos=creature.pos, angle=angle, rng=rng, detail_preset=detail_preset)
             self.kill_count += 1
             creature.active = False
+            step_runtime.fx_queue.add_random(pos=creature.pos, rng=rng)
 
-        return death
+        step_runtime.deaths.append(
+            CreatureDeath(
+                index=idx,
+                pos=creature.pos,
+                type_id=creature.type_id,
+                reward_value=creature.reward_value,
+                xp_awarded=killer.experience - experience_before,
+            ),
+        )
 
     def _release_spawn_slot(self, creature: CreatureState) -> None:
         """A dying or culled spawner (flag 0x4) frees the spawn slot in its `link_index`."""
@@ -1262,77 +1286,3 @@ class CreaturePool:
                 continue
             self._release_spawn_slot(creature)
             creature.active = False
-
-    def _start_death(
-        self,
-        idx: int,
-        creature: CreatureState,
-        *,
-        state: GameplayState,
-        players: list[PlayerState],
-        rng: CrandLike,
-        detail_preset: int = 5,
-    ) -> CreatureDeath:
-        self._release_spawn_slot(creature)
-
-        if (creature.flags & CreatureFlags.SPLIT_ON_DEATH) and float(creature.size) > 35.0:
-            for heading_offset, phase_seed_caller in (
-                (-float(NATIVE_HALF_PI), RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_1_PHASE_SEED),
-                (float(NATIVE_HALF_PI), RngCallerStatic.CREATURE_HANDLE_DEATH_SPLIT_CHILD_2_PHASE_SEED),
-            ):
-                # The struct copy from the parent overwrites what `creature_alloc_slot` seeded;
-                # a full pool copies the child into the phantom slot.
-                child_idx = self.alloc_slot(rng)
-                child = msgspec.structs.replace(creature, generation=self.creature(child_idx).generation)
-                child.phase_seed = int(rng.rand_tagged(phase_seed_caller)) & 0xFF
-                # Native stores `heading +- 1.5707964f` unwrapped and leaves
-                # `target_heading` as the parent's stale copy.
-                child.heading = f32(float(creature.heading) + float(heading_offset))
-                child.hp = f32(float(creature.max_hp) * f32(0.25))
-                # Native multiplies by the f32 literal 0.6666667.
-                child.reward_value = f32(float(child.reward_value) * f32(0.6666667))
-                child.size = f32(float(child.size) - f32(8.0))
-                child.move_speed = f32(float(child.move_speed) + f32(0.1))
-                child.contact_damage = f32(float(child.contact_damage) * f32(0.7))
-                child.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-                if child_idx == PHANTOM_CREATURE_INDEX:
-                    self.phantom = child
-                else:
-                    self._entries[child_idx] = child
-
-            state.effects.spawn_burst(
-                pos=creature.pos,
-                count=8,
-                rng=rng,
-                detail_preset=int(detail_preset),
-            )
-
-        # Native credits every kill to player one; score and level-ups read only that player.
-        killer = players[0]
-
-        experience_before = killer.experience
-        if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
-            killer.experience += quick_learner_kill_xp(creature.reward_value)
-        else:
-            killer.experience = experience_plus_reward(killer.experience, creature.reward_value)
-        if state.bonuses.double_experience > 0.0:
-            if PerkId.BLOODY_MESS_QUICK_LEARNER in state.perks:
-                killer.experience += quick_learner_kill_xp(creature.reward_value)
-            else:
-                killer.experience = experience_plus_reward(killer.experience, creature.reward_value)
-        xp_awarded = killer.experience - experience_before
-
-        state.bonus_pool.try_spawn_on_kill(
-            pos=creature.pos,
-            state=state,
-            players=players,
-            detail_preset=detail_preset,
-        )
-
-        return CreatureDeath(
-            index=int(idx),
-            pos=creature.pos,
-            type_id=creature.type_id,
-            reward_value=float(creature.reward_value),
-            xp_awarded=int(xp_awarded),
-        )

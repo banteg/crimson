@@ -194,7 +194,7 @@ def creature_apply_damage(
         creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, dt)
     else:
         creature.lifecycle_stage = x87_pc24_sub(creature.lifecycle_stage, f32(0.001))
-    step_runtime.handle_creature_death(creature_index)
+    step_runtime.world.creatures.handle_death(step_runtime, creature_index)
     creature.vel = Vec2(
         x87_pc24_sub(creature.vel.x, x87_pc24_mul(impulse.x, 2.0)),
         x87_pc24_sub(creature.vel.y, x87_pc24_mul(impulse.y, 2.0)),

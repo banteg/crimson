@@ -1,32 +1,18 @@
 from __future__ import annotations
 
-from crimson.creatures.runtime import CREATURE_LIFECYCLE_ALIVE, CreaturePool
-from crimson.sim.gameplay_state import GameplayState
+from crimson.creatures.runtime import CreatureState
 from crimson.sim.state_types import PlayerState
 from grim.geom import Vec2
+from tests.support.factories import kill_creature, world_with_creature
 
 
 def test_creature_handle_death_doubles_xp_when_double_xp_bonus_active() -> None:
-    state = GameplayState()
-    state.bonus_spawn_guard = True
-    state.bonuses.double_experience = 5.0
-
     player = PlayerState(index=0, pos=Vec2(), experience=100)
+    world = world_with_creature(CreatureState(active=True, hp=10.0, reward_value=12.7), players=[player])
+    world.state.bonus_spawn_guard = True
+    world.state.bonuses.double_experience = 5.0
 
-    pool = CreaturePool()
-    creature = pool.entries[0]
-    creature.active = True
-    creature.hp = 10.0
-    creature.lifecycle_stage = CREATURE_LIFECYCLE_ALIVE
-    creature.reward_value = 12.7
-
-    death = pool.handle_death(
-        0,
-        state=state,
-        players=[player],
-        rng=state.rng,
-        fx_queue=None,
-    )
+    death = kill_creature(world)
 
     assert death.xp_awarded == 24  # 2 * int(12.7)
     assert player.experience == 124
