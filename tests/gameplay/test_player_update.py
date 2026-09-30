@@ -1416,6 +1416,26 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     assert player.aim == native_aim_point_from_heading(Vec2(100.0, 100.0), f32(0.1 * 3.0))
 
 
+@pytest.mark.parametrize("aim_scheme", [AimScheme.KEYBOARD, AimScheme.JOYSTICK])
+def test_heading_aim_schemes_fire_at_the_player_aim_point(aim_scheme: AimScheme) -> None:
+    # The shot jitters around `player.aim` (0x00415c24), not the recorded input aim.
+    world = make_world()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim_heading=0.0)
+    world.players[:] = [player]
+    input_state = player_input(
+        aim=Vec2(500.0, 500.0),
+        move_mode=MovementControlType.STATIC,
+        aim_scheme=aim_scheme,
+        fire_down=True,
+    )
+
+    step_player(world, player, input_state, 0.016)
+
+    (shot,) = [projectile for projectile in world.state.projectiles.entries if projectile.active]
+    # Aiming straight up from (100, 100): the shot angle is ~0, not toward (500, 500).
+    assert abs(shot.angle) < 0.05
+
+
 def test_player_update_wraps_negative_target_heading_before_turning() -> None:
     world = make_world()
     player = PlayerState(

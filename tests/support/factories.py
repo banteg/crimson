@@ -146,8 +146,12 @@ def fire_player_weapon(
     *,
     step_runtime: WorldStepRuntime | None = None,
 ) -> WeaponFireResult:
-    """Fire `player`'s weapon with the gate `player_update` would capture right now."""
+    """Fire `player`'s weapon with the gate `player_update` would capture right now.
 
+    The input's aim is the mouse point `player_update` stores in `player.aim` before the fire block.
+    """
+
+    player.aim = input_state.aim
     return fire_weapon(
         WeaponFireCtx(
             player=player,

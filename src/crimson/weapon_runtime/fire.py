@@ -224,9 +224,9 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         shot_cooldown = x87_pc24_mul(shot_cooldown, f32(1.05))
     player.weapon.shot_cooldown = max(0.0, f32(shot_cooldown))
 
-    aim = input_state.aim
-    # `player_update` computes and stores aim_heading before entering the fire
-    # branch; later muzzle and presentation math reload that exact float field.
+    # `player_update` computes and stores aim and aim_heading before entering the
+    # fire branch; the spread jitter reads `player_state_table[i].aim` (0x00415c24)
+    # and later muzzle and presentation math reload that exact heading field.
     aim_heading = f32(player.aim_heading)
 
     muzzle = native_fire_muzzle_pos(player.pos, aim_heading)
@@ -241,7 +241,7 @@ def fire_weapon(ctx: WeaponFireCtx) -> WeaponFireResult:
         )
 
     shot_angle = _native_shot_angle_with_jitter(
-        aim=aim,
+        aim=player.aim,
         player_pos=player.pos,
         spread_heat=float(player.spread_heat),
         rng=state.rng,
