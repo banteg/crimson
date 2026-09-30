@@ -3,9 +3,7 @@ from __future__ import annotations
 import datetime as dt
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
-from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_elements_max_timeline
+from crimson.screens.actions import Route, ScoreQuery, ShowScores
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
 from crimson.ui.menu_layout import (
@@ -14,20 +12,19 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_music, play_sfx, stop_music, update_audio
+from grim.audio import play_music, play_sfx, stop_music
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from ..transitions import _draw_screen_fade
+from ..menu_screen import MenuScreen
 
 # Child layout inside the panel (relative to panel top-left).
 _TITLE_X = 290.0
@@ -68,7 +65,7 @@ def _format_playtime_text(game_sequence_ms: int) -> str:
     return f"played for {hours} hours {minutes} minutes"
 
 
-class StatisticsMenuView:
+class StatisticsMenuView(MenuScreen):
     """
     Classic "Statistics" menu (state_id=4).
 
@@ -78,11 +75,10 @@ class StatisticsMenuView:
       - Credits
     """
 
-    def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
+    game_state = GameStateId.STATISTICS_MENU
 
+    def __init__(self, state: GameState) -> None:
+        super().__init__(state)
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
@@ -90,73 +86,41 @@ class StatisticsMenuView:
         self._btn_back = UiButtonState("Back", force_wide=False)
 
     def open(self) -> None:
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
-
-        self._btn_high_scores = UiButtonState("High scores", force_wide=True)
-        self._btn_weapons = UiButtonState("Weapons", force_wide=True)
-        self._btn_perks = UiButtonState("Perks", force_wide=True)
-        self._btn_credits = UiButtonState("Credits", force_wide=True)
-        self._btn_back = UiButtonState("Back", force_wide=False)
-
+        super().open()
         if self.state.audio is not None:
             if self.state.audio.music.active_track != "shortie_monk":
                 stop_music(self.state.audio)
             play_music(self.state.audio, "shortie_monk")
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-        self._is_open = True
-
-    def close(self) -> None:
-        self._is_open = False
-        self._ground = None
 
     def resume(self) -> None:
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
+        super().resume()
+        if self.state.audio is not None:
+            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
+
+    def _enter(self) -> None:
+        super()._enter()
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
         self._btn_credits = UiButtonState("Credits", force_wide=True)
         self._btn_back = UiButtonState("Back", force_wide=False)
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "StatisticsMenuView must be opened before use"
 
     def _panel_rect(self) -> Rect:
         return ui_panel_rect(39, self.state.ui.timeline_ms, self.state.config.display.width)
 
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        self.state.ui.begin(action)
-
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            if not self.state.ui.closing:
-                play_music(self.state.audio, "shortie_monk")
-            update_audio(self.state.audio, dt)
+        if self.state.audio is not None and not self.state.ui.closing:
+            play_music(self.state.audio, "shortie_monk")
         self.state.stats_menu_easter_egg_roll = _stats_menu_easter_roll(
             self.state.stats_menu_easter_egg_roll,
             rng=self.state.rng,
         )
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_ms = int(min(float(dt), 0.1) * 1000.0)
-
-        if not self.state.ui.advance(dt_ms):
+        if not self._advance(dt):
             return
 
-        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
-
+        interactive = self.state.ui.opened
         if self.state.focus.escape and interactive:
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.MENU)
             return
 
@@ -175,36 +139,25 @@ class StatisticsMenuView:
 
         button_base = panel_top_left + Vec2(_BUTTON_X, _BUTTON_Y0)
         if _update_button(self._btn_high_scores, pos=button_base.offset(dy=_BUTTON_STEP_Y * 0.0)):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(ShowScores(ScoreQuery.from_config(self.state.config)))
             return
         if _update_button(self._btn_weapons, pos=button_base.offset(dy=_BUTTON_STEP_Y * 1.0)):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.WEAPONS)
             return
         if _update_button(self._btn_perks, pos=button_base.offset(dy=_BUTTON_STEP_Y * 2.0)):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.PERKS)
             return
         if _update_button(self._btn_credits, pos=button_base.offset(dy=_BUTTON_STEP_Y * 3.0)):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.CREDITS)
             return
 
         if _update_button(self._btn_back, pos=panel_top_left + Vec2(_BACK_BUTTON_X, _BACK_BUTTON_Y)):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.MENU)
             return
 
     def draw(self) -> None:
         self._assert_open()
-        draw_screen_background(self.state, self._ground)
-        _draw_screen_fade(self.state)
+        self._draw_background()
 
         resources = require_runtime_resources(self.state)
 

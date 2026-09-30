@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
+from crimson.screens.actions import Route, ScreenAction
+from crimson.ui.animation import ui_element_anim, ui_element_timeline_window
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
@@ -16,19 +15,16 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ..assets import require_runtime_resources
-from ..transitions import _draw_screen_fade
+from ..menu_screen import MenuScreen
 
 
-class PanelMenuView:
+class PanelMenuView(MenuScreen):
     def __init__(
         self,
         state: GameState,
@@ -40,38 +36,26 @@ class PanelMenuView:
         body: str | None = None,
         back_action: ScreenAction = Route.MENU,
     ) -> None:
-        self.state = state
-        self._game_state = game_state
+        super().__init__(state)
+        self.game_state = game_state
         self._panel_element = panel_element
         self._back_element = back_element
-        self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
         self._back_action = back_action
-        self._ground: GroundRenderer | None = None
         self._entry: MenuEntry | None = None
         self._hovered = False
         self._menu_screen_width = 0
-        self._panel_open_sfx_played = False
 
     def open(self) -> None:
         self._menu_screen_width = int(self.state.config.display.width)
         back_y = ui_element_pos(self._back_element, self._menu_screen_width).y
         self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=back_y)
-        self._hovered = False
-        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
-        self._panel_open_sfx_played = False
-        self._init_ground()
-        self._is_open = True
+        super().open()
 
-    def resume(self) -> None:
-        self.state.ui.enter(ui_elements_max_timeline(self._game_state))
+    def _enter(self) -> None:
+        super()._enter()
         self._hovered = False
-        self._panel_open_sfx_played = False
-
-    def close(self) -> None:
-        self._is_open = False
-        self._ground = None
 
     def update(self, dt: float) -> None:
         if self._update_panel(dt):
@@ -79,20 +63,9 @@ class PanelMenuView:
 
     def _update_panel(self, dt: float, *, play_open_sfx: bool = True) -> bool:
         """Advance presentation without consuming widget or navigation input."""
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self.state.ui.advance(dt_ms):
+        if not self._advance(dt):
             return False
-
-        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
-            self.state.menu_sign_locked = True
-            if play_open_sfx and (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-                self._panel_open_sfx_played = True
+        self._lock_sign(dt, click=play_open_sfx)
 
         # The back element sits later in the element table than the panel, so native's backwards walk registers
         # it for focus before the panel's own widgets.
@@ -132,8 +105,7 @@ class PanelMenuView:
 
     def draw(self) -> None:
         self._assert_open()
-        draw_screen_background(self.state, self._ground)
-        _draw_screen_fade(self.state)
+        self._draw_background()
         entry = self._entry
         assert entry is not None, "PanelMenuView entry must be initialized before draw()"
         self._draw_panel()
@@ -148,13 +120,6 @@ class PanelMenuView:
         self._draw_contents()
         ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
 
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, f"{self.__class__.__name__} must be opened before use"
-
     def _draw_contents(self) -> None:
         self._draw_title_text()
 
@@ -166,22 +131,6 @@ class PanelMenuView:
         for line in self._body_lines:
             rl.draw_text(line, x, y, 18, rl.Color(190, 190, 200, 255))
             y += 22
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        if isinstance(action, StartRun):
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self.state.ui.begin(action)
-
-    def _init_ground(self) -> None:
-        if self.state.pause_background is not None:
-            self._ground = None
-            return
-        self._ground = ensure_menu_ground(self.state)
 
     def _panel_rect(self, index: int) -> Rect:
         return ui_panel_rect(index, self.state.ui.timeline_ms, self._menu_screen_width)

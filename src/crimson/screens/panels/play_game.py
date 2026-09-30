@@ -55,7 +55,6 @@ class PlayGameMenuView(PanelMenuView):
         )
         # Native lists two players; the port plays up to four.
         self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
-        self._dirty = False
 
         # Hover fade timers for tooltips (0..1000ms-ish; original uses ~0.0009 alpha scale).
         self._tooltip_ms: dict[str, int] = {}
@@ -116,16 +115,6 @@ class PlayGameMenuView(PanelMenuView):
         if self._update_player_count(layout.drop_pos, resources=resources) or activated is None:
             return
         self._activate_mode(activated)
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
-                self._dirty = False
-        super()._begin_close_transition(action)
 
     def _content_layout(self) -> _PlayGameContentLayout:
         panel_top_left = self._panel_rect(self._panel_element).top_left
@@ -280,7 +269,8 @@ class PlayGameMenuView(PanelMenuView):
         if mode.game_mode is not None:
             self.state.config.gameplay.mode = GameMode(int(mode.game_mode))
             self._dirty = True
-        self._begin_close_transition(mode.action)
+        # `play_game_menu_update` fades to black for the modes that start a run.
+        self._begin_close_transition(mode.action, fade_to_black=isinstance(mode.action, StartRun))
 
     def _update_tooltip_timer(self, key: str, hovered: bool, dt_ms: int) -> None:
         value = int(self._tooltip_ms.get(key, 0))

@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScreenAction
+from crimson.screens.actions import Route
 from crimson.ui.menu_chrome import draw_ui_quad
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
@@ -145,7 +145,6 @@ class ControlsMenuView(PanelMenuView):
         self.move_method_list = UiListWidget()
         self.aim_method_list = UiListWidget()
         self.player_list = UiListWidget()
-        self._dirty = False
         self._capture: RebindCapture | None = None
         self._reset_button = UiButtonState("Reset")
         self._direction_arrow_checkbox = UiCheckbox("Show direction arrow")
@@ -197,16 +196,6 @@ class ControlsMenuView(PanelMenuView):
         self._update_back_button(dt, enabled=not click_consumed and not closing_list and self._capture is None)
         # Native `ui_focus_input_locked`: Tab and checkbox Enter stay out of the way while a rebind waits.
         self.state.focus.input_locked = self._capture is not None
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
-                self._dirty = False
-        super()._begin_close_transition(action)
 
     def _current_player_index(self) -> int:
         return max(0, min(3, int(self._config_player) - 1))

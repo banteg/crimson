@@ -3,18 +3,16 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_elements_max_timeline, ui_transition_alpha
+from crimson.ui.animation import ui_transition_alpha
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_sfx
 from grim.config import SAVED_NAME_ENTRY_SIZE, HighScoreDateMode
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
@@ -48,8 +46,8 @@ from ..high_scores_layout import (
     PROFILE_NAME_INPUT_W,
     hs_right_options_x_shift,
 )
+from ..menu_screen import MenuScreen
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
-from ..transitions import _draw_screen_fade
 from .main_panel import draw_main_panel
 from .records import load_records
 from .right_panel import draw_right_panel
@@ -59,11 +57,11 @@ DATE_FILTER_ITEMS = ("Best of all time", "Best of month", "Best of week", "Best 
 PLAYER_COUNT_ITEMS = ("1 player", "2 players", "3 players", "4 players")
 
 
-class HighScoresView:
+class HighScoresView(MenuScreen):
+    game_state = GameStateId.HIGHSCORES
+
     def __init__(self, state: GameState, request: ShowScores) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
+        super().__init__(state)
         self._dt = 0.0
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
@@ -73,7 +71,6 @@ class HighScoresView:
         self._records: list[HighScoreRecord] = []
         # `highscore_screen`'s score list scrollbar: ten rows of rank, score and name.
         self.score_scroll = UiScrollbar(column_offsets=(10, 30, 44, 0, 0, 0, 0, 0), visible_rows=10)
-        self._dirty = False
 
         # `highscore_screen`'s list widgets; the score list is `ui_profile_menu_update`'s named lists.
         self.score_list = UiListWidget()
@@ -92,8 +89,8 @@ class HighScoresView:
         self.hardcore_checkbox = UiCheckbox("Hardcore")
 
     def open(self) -> None:
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.HIGHSCORES))
+        
+        super().open()
         self.score_scroll.scroll_offset = 0.0
         self.score_scroll.hovered_index = -1
         # The port's rank to show (a finished quest's) is the list's selected row.
@@ -108,11 +105,10 @@ class HighScoresView:
         self._reload_records()
         if self.state.audio is not None:
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-        self._is_open = True
 
     def close(self) -> None:
+        super().close()
         self._return_context = None
-        self._is_open = False
         self._records = []
         self.score_scroll.items = []
         self.score_scroll.scroll_offset = 0.0
@@ -165,18 +161,12 @@ class HighScoresView:
         return ui_panel_rect(index, self.state.ui.timeline_ms, self.state.config.display.width)
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
         self._dt = min(dt, 0.1)
-
-        dt_ms = int(min(float(dt), 0.1) * 1000.0)
-        if not self.state.ui.advance(dt_ms):
+        if not self._advance(dt):
             return
+        dt_ms = int(min(float(dt), 0.1) * 1000.0)
 
-        enabled = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
+        enabled = self.state.ui.opened
         focus = self.state.focus
 
         if focus.escape and enabled:
@@ -257,24 +247,11 @@ class HighScoresView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
             bar.scroll_offset = float(bar.max_scroll)
 
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        if action == Route.BACK and self._return_context is not None:
+    def _begin_close_transition(self, action: ScreenAction, *, fade_to_black: bool = False) -> None:
+        # `highscore_return_latch`: back to a run's results restores the settings the scores were browsed with.
+        if action == Route.BACK and not self.state.ui.closing and self._return_context is not None:
             self._return_context.restore(self.state.config)
-        if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
-                self._dirty = False
-        if isinstance(action, StartRun):
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self.state.ui.begin(action)
+        super()._begin_close_transition(action, fade_to_black=fade_to_black)
 
     def _start_selected_game(self) -> None:
         request = self._request
@@ -288,9 +265,7 @@ class HighScoresView:
             )
             if level.global_index > unlock:
                 return
-        self._begin_close_transition(
-            StartRun(request.game_mode_id, request.quest_level),
-        )
+        self._begin_close_transition(StartRun(request.game_mode_id, request.quest_level), fade_to_black=True)
 
     def _reload_records(self) -> None:
         """`highscore_load_table`, then `highscore_screen`'s score lines: rank, score (seconds in Rush and Quests)
@@ -536,8 +511,7 @@ class HighScoresView:
 
     def draw(self) -> None:
         self._assert_open()
-        draw_screen_background(self.state, self._ground, entity_alpha=self._world_entity_alpha())
-        _draw_screen_fade(self.state)
+        self._draw_background(entity_alpha=self._world_entity_alpha())
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font
@@ -595,13 +569,6 @@ class HighScoresView:
                 quest = self._return_context.game_mode_id == GameMode.QUESTS
                 pending = GameStateId.QUEST_RESULTS if quest else GameStateId.GAME_OVER
         return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.HIGHSCORES, pending=pending)
-
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "HighScoresView must be opened before use"
 
     def _visible_rows(self, font) -> int:
         row_step = float(font.cell_size)

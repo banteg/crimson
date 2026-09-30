@@ -5,21 +5,18 @@ import math
 import msgspec
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_elements_max_timeline
+from crimson.screens.actions import Route
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_sfx
 from grim.fonts.small import (
     draw_small_text,
 )
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
@@ -27,7 +24,7 @@ from ...ui.focus import UiFocusTarget
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from ..transitions import _draw_screen_fade
+from ..menu_screen import MenuScreen
 
 _BOARD_SIDE = 6
 _BOARD_CELLS = _BOARD_SIDE * _BOARD_SIDE
@@ -109,12 +106,11 @@ def _credits_secret_match3_find(board: list[int]) -> tuple[bool, int, int]:
     return False, 0, 0
 
 
-class AlienZooKeeperView:
-    def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
+class AlienZooKeeperView(MenuScreen):
+    game_state = GameStateId.CREDITS_SECRET
 
+    def __init__(self, state: GameState) -> None:
+        super().__init__(state)
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
         self._timer_ms = 0
@@ -128,32 +124,13 @@ class AlienZooKeeperView:
         self._cursor_index = 0
 
     def open(self) -> None:
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.CREDITS_SECRET))
-
+        super().open()
         self._reset_button = UiButtonState(_RESET_LABEL, force_wide=False)
         self._back_button = UiButtonState(_BACK_LABEL, force_wide=False)
 
         # Native puzzle state is process-lifetime storage. The initial board
         # and timer are zeroed, and leaving/re-entering the screen does not
         # reroll or restart it; only the Reset button calls _reset_state().
-        self._is_open = True
-
-    def close(self) -> None:
-        self._is_open = False
-        self._ground = None
-
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "AlienZooKeeperView must be opened before use"
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        self.state.ui.begin(action)
 
     def _layout(self) -> _AzkLayout:
         panel = ui_panel_rect(9, self.state.ui.timeline_ms, self.state.config.display.width)
@@ -267,17 +244,10 @@ class AlienZooKeeperView:
             play_sfx(self.state.audio, SfxId.UI_BONUS)
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-
+        if not self._advance(dt):
+            return
         dt_clamped = min(float(dt), 0.1)
         dt_ms = int(dt_clamped * 1000.0)
-
-        if not self.state.ui.advance(dt_ms):
-            return
 
         if dt_ms > 0:
             self._anim_time_ms += dt_ms
@@ -292,10 +262,8 @@ class AlienZooKeeperView:
 
         self._fill_empty_cells()
 
-        interactive = self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms
+        interactive = self.state.ui.opened
         if self.state.focus.escape and interactive:
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
             return
         if not interactive:
@@ -335,15 +303,12 @@ class AlienZooKeeperView:
             mouse=mouse,
             click=click,
         ):
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
             return
 
     def draw(self) -> None:
         self._assert_open()
-        draw_screen_background(self.state, self._ground)
-        _draw_screen_fade(self.state)
+        self._draw_background()
 
         resources = require_runtime_resources(self.state)
         font = resources.small_font

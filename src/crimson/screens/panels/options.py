@@ -3,7 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScreenAction
+from crimson.screens.actions import Route
 from crimson.ui.menu_chrome import draw_ui_quad
 from crimson.ui.menu_layout import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS
 from grim import canvas
@@ -46,7 +46,6 @@ class OptionsMenuView(PanelMenuView):
         self._slider_music = UiSegmentedSlider(value=10)
         self._slider_detail = UiSegmentedSlider(value=5, max=5, min=1)
         self._info_checkbox = UiCheckbox("UI Info texts")
-        self._dirty = False
 
     def open(self) -> None:
         super().open()
@@ -120,16 +119,6 @@ class OptionsMenuView(PanelMenuView):
             click=click,
         ):
             self._begin_close_transition(Route.CONTROLS)
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self._dirty:
-            try:
-                self.state.config.save()
-            except (OSError, ValueError) as exc:
-                self.state.console.log.log(f"config: save failed: {exc}")
-            else:
-                self._dirty = False
-        super()._begin_close_transition(action)
 
     def _sync_from_config(self) -> None:
         config = self.state.config

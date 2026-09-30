@@ -4,8 +4,7 @@ import math
 import os
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
+from crimson.screens.actions import Route
 from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
@@ -28,27 +27,24 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
-from grim.audio import play_music, play_sfx, stop_music, update_audio
+from grim.audio import play_music, stop_music
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ..game.types import GameState
 from .assets import require_runtime_resources
-from .transitions import _draw_screen_fade
+from .menu_screen import MenuScreen
 
 
-class MenuView:
+class MenuView(MenuScreen):
+    game_state = GameStateId.MAIN_MENU
+
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
+        super().__init__(state)
         self._menu_entries: list[MenuEntry] = []
         self._hovered_index: int | None = None
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
-        self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
@@ -59,51 +55,32 @@ class MenuView:
             other_games=self._other_games_enabled(),
         )
         self._hovered_index = None
-        self._enter_timeline()
-        self._panel_open_sfx_played = False
-        self._init_ground()
+        super().open()
         if self.state.audio is not None:
             if self.state.audio.music.active_track != "crimson_theme":
                 stop_music(self.state.audio)
             play_music(self.state.audio, "crimson_theme")
-        self._is_open = True
 
-    def resume(self) -> None:
-        self._enter_timeline()
-        self._panel_open_sfx_played = False
-
-    def _enter_timeline(self) -> None:
+    def _enter(self) -> None:
         self.state.ui.enter(
             ui_elements_max_timeline(
                 GameStateId.MAIN_MENU, mods_available=self._mods_available(), other_games=self._other_games_enabled(),
             ),
         )
-
-    def close(self) -> None:
-        self._is_open = False
-        self._ground = None
+        self._panel_open_sfx_played = False
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            if not self.state.ui.closing:
-                play_music(self.state.audio, "crimson_theme")
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
+        if self.state.audio is not None and not self.state.ui.closing:
+            play_music(self.state.audio, "crimson_theme")
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self.state.ui.advance(dt_ms):
+        if not self._advance(dt):
             # `ui_element_update` runs on while the items slide out, so the clicked item keeps lighting up.
             update_menu_item_timers(
                 self._menu_entries, self._hovered_index, dt_ms, focus_timer_ms=self.state.focus.timer_ms,
             )
             return
 
-        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
-            self.state.menu_sign_locked = True
-            if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-                self._panel_open_sfx_played = True
+        self._lock_sign(dt)
         if not self._menu_entries:
             return
 
@@ -136,10 +113,7 @@ class MenuView:
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
+        self._draw_background()
         resources = require_runtime_resources(self.state)
         self._draw_menu_items(resources)
         draw_menu_sign(
@@ -151,19 +125,10 @@ class MenuView:
         )
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "MenuView must be opened before use"
-
     def _activate_menu_entry(self, index: int) -> None:
         if not (0 <= index < len(self._menu_entries)):
             return
         entry = self._menu_entries[index]
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self.state.console.log.log(f"menu select: {index} (row {entry.row})")
         self.state.console.log.flush()
         if entry.row == MENU_LABEL_ROW_QUIT:
@@ -179,17 +144,9 @@ class MenuView:
         elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
             self._begin_close_transition(Route.OTHER_GAMES)
 
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        self.state.ui.begin(action)
-
     def _begin_quit_transition(self) -> None:
         self.state.menu_sign_locked = False
         self._begin_close_transition(Route.QUIT)
-
-    def _init_ground(self) -> None:
-        self._ground = ensure_menu_ground(self.state)
 
     def _menu_entries_for_flags(
         self,

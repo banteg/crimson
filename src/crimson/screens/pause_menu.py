@@ -5,11 +5,9 @@ import math
 from crimson.game_states import GameStateId
 from crimson.input_codes import PadCode, pad_nav_pressed
 from crimson.screens.actions import Route, ScreenAction
-from crimson.screens.chrome import draw_screen_background
 from crimson.ui.animation import (
     ui_element_anim,
     ui_element_timeline_window,
-    ui_elements_max_timeline,
     ui_transition_alpha,
 )
 from crimson.ui.cursor import ui_cursor_render
@@ -30,25 +28,23 @@ from crimson.ui.menu_layout import (
 )
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 
 from ..game.types import GameState
 from .assets import require_runtime_resources
-from .transitions import _draw_screen_fade
+from .menu_screen import MenuScreen
 
 
-class PauseMenuView:
+class PauseMenuView(MenuScreen):
+    game_state = GameStateId.PAUSE_MENU
+
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
+        super().__init__(state)
         self._menu_entries: list[MenuEntry] = []
         self._hovered_index: int | None = None
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
-        self._panel_open_sfx_played = False
 
     def open(self) -> None:
         layout_w = float(self.state.config.display.width)
@@ -64,38 +60,26 @@ class PauseMenuView:
             MenuEntry(slot=1, row=MENU_LABEL_ROW_QUIT, y=ys[1]),
             MenuEntry(slot=2, row=MENU_LABEL_ROW_BACK, y=ys[2]),
         ]
-        self._hovered_index = None
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.PAUSE_MENU))
-        self._panel_open_sfx_played = False
-        self._is_open = True
+        super().open()
 
-    def resume(self) -> None:
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.PAUSE_MENU))
+    def _enter(self) -> None:
+        super()._enter()
         self._hovered_index = None
-        self._panel_open_sfx_played = False
 
     def close(self) -> None:
-        self._is_open = False
+        super().close()
         self._menu_entries = []
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-
         dt_ms = int(min(dt, 0.1) * 1000.0)
-        if not self.state.ui.advance(dt_ms):
+        if not self._advance(dt):
             # `ui_element_update` runs on while the items slide out, so the clicked item keeps lighting up.
             update_menu_item_timers(
                 self._menu_entries, self._hovered_index, dt_ms, focus_timer_ms=self.state.focus.timer_ms,
             )
             return
 
-        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
-            self.state.menu_sign_locked = True
-            if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-                self._panel_open_sfx_played = True
+        self._lock_sign(dt)
 
         if not self._menu_entries:
             return
@@ -130,8 +114,7 @@ class PauseMenuView:
 
     def draw(self) -> None:
         self._assert_open()
-        draw_screen_background(self.state, None, entity_alpha=self._pause_background_entity_alpha())
-        _draw_screen_fade(self.state)
+        self._draw_background(entity_alpha=self._pause_background_entity_alpha())
 
         self._draw_menu_items()
         draw_menu_sign(
@@ -142,13 +125,6 @@ class PauseMenuView:
             timeline_ms=self.state.ui.timeline_ms,
         )
         ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
-
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "PauseMenuView must be opened before use"
 
     def _pause_background_entity_alpha(self) -> float:
         # The pause items set `game_state_pending`; only quitting to the main menu fades the run out.
@@ -170,8 +146,6 @@ class PauseMenuView:
         action = self._action_for_entry(entry)
         if action is None:
             return
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
         self._begin_close_transition(action)
 
     @staticmethod
@@ -183,11 +157,6 @@ class PauseMenuView:
         if entry.row == MENU_LABEL_ROW_BACK:
             return Route.BACK
         return None
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        self.state.ui.begin(action)
 
     def _menu_item_bounds(self, entry: MenuEntry) -> Rect:
         item = require_runtime_resources(self.state).texture(TextureId.UI_MENU_ITEM)

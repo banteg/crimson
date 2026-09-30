@@ -3,20 +3,14 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
-from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
-from crimson.ui.animation import ui_elements_max_timeline
+from crimson.screens.actions import Route, StartRun
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import TextureId
-from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ...debug import debug_enabled
 from ...game.types import GameState
@@ -25,7 +19,7 @@ from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
 from ..assets import require_runtime_resources
-from ..transitions import _draw_screen_fade
+from ..menu_screen import MenuScreen
 from .shared import (
     QUEST_BACK_BUTTON_X_OFFSET,
     QUEST_BACK_BUTTON_Y_OFFSET,
@@ -53,7 +47,7 @@ from .shared import (
 )
 
 
-class QuestsMenuView:
+class QuestsMenuView(MenuScreen):
     """Quest selection menu.
 
     Layout and gating are based on `quest_select_menu_update` (crimsonland.exe).
@@ -62,32 +56,23 @@ class QuestsMenuView:
     entered from the Play Game panel.
     """
 
+    game_state = GameStateId.QUEST_SELECT
+
     def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._is_open = False
-        self._ground: GroundRenderer | None = None
+        super().__init__(state)
         self._back_button = UiButtonState("Back")
         self._hardcore_checkbox = UiCheckbox("Hardcore")
         # Port focus targets for the ten quest rows: native picks a row only by mouse or the number keys.
         self._row_items = tuple(UiMenuItem() for _ in range(10))
 
         self._menu_screen_width = 0
-        self._widescreen_y_shift = 0.0
-
         self._stage = 1
-        self._dirty = False
-        self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
-        # Sign and ground match the main menu/panels.
-        self._init_ground()
+        self._menu_screen_width = int(self.state.config.display.width)
+        super().open()
         self._dirty = False
         self._stage = max(1, min(5, int(self._stage)))
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.QUEST_SELECT))
-        self._panel_open_sfx_played = False
         self._back_button = UiButtonState("Back")
 
         # Ensure the quest registry is populated so titles render.
@@ -95,34 +80,20 @@ class QuestsMenuView:
         from ... import quests as _quests
 
         _ = _quests
-        self._is_open = True
 
     def close(self) -> None:
-        self._is_open = False
         if self._dirty:
             try:
                 self.state.config.save()
             except (OSError, ValueError) as exc:
                 self.state.console.log.log(f"failed to save quest menu config: {exc}")
             self._dirty = False
-        self._ground = None
+        super().close()
 
     def update(self, dt: float) -> None:
-        self._assert_open()
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_ms = int(min(float(dt), 0.1) * 1000.0)
-
-        if not self.state.ui.advance(dt_ms):
+        if not self._advance(dt):
             return
-
-        if dt_ms > 0 and self.state.ui.timeline_ms >= self.state.ui.max_timeline_ms:
-            self.state.menu_sign_locked = True
-            if (not self._panel_open_sfx_played) and (self.state.audio is not None):
-                play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
-                self._panel_open_sfx_played = True
+        self._lock_sign(dt)
 
         status = self.state.status
 
@@ -197,10 +168,7 @@ class QuestsMenuView:
 
     def draw(self) -> None:
         self._assert_open()
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(menu_ground_camera(self.state))
-        _draw_screen_fade(self.state)
+        self._draw_background()
 
         self._draw_panel()
         draw_menu_sign(
@@ -212,16 +180,6 @@ class QuestsMenuView:
         )
         self._draw_contents()
         ui_cursor_render(require_runtime_resources(self.state), dt=self.state.frame_dt)
-
-    def take_action(self) -> ScreenAction | None:
-        self._assert_open()
-        return self.state.ui.take_action()
-
-    def _assert_open(self) -> None:
-        assert self._is_open, "QuestsMenuView must be opened before use"
-
-    def _init_ground(self) -> None:
-        self._ground = ensure_menu_ground(self.state)
 
     def _panel_rect(self) -> Rect:
         """`quest_select_menu_update` lays out on `ui_element_slot_37`'s panel."""
@@ -330,7 +288,7 @@ class QuestsMenuView:
         self.state.config.gameplay.mode = GameMode.QUESTS
         self.state.config.gameplay.quest_level = level
         self._dirty = True
-        self._begin_close_transition(StartRun(GameMode.QUESTS, level))
+        self._begin_close_transition(StartRun(GameMode.QUESTS, level), fade_to_black=True)
 
     def _quest_title(self, stage: int, row: int) -> str:
         from ...quests import quest_by_level
@@ -524,16 +482,6 @@ class QuestsMenuView:
             require_runtime_resources(self.state), 37, self._panel_rect(),
             shadow=self.state.config.display.shadows_enabled,
         )
-
-    def _begin_close_transition(self, action: ScreenAction) -> None:
-        if self.state.ui.closing:
-            return
-        if isinstance(action, StartRun):
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self.state.ui.begin(action)
 
 
 __all__ = ["QuestsMenuView"]

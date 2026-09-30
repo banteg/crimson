@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
-    _game_state = GameStateId.WEAPON_DATABASE
+    game_state = GameStateId.WEAPON_DATABASE
 
     def __init__(self, state: GameState) -> None:
         super().__init__(state)

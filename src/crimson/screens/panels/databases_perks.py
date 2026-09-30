@@ -3,11 +3,9 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route
 from grim import canvas
-from grim.audio import play_sfx
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
-from grim.sfx_map import SfxId
 
 from ...game.types import GameState
 from ...perks import PerkId
@@ -18,7 +16,7 @@ from .databases_base import _DatabaseBaseView
 
 
 class UnlockedPerksDatabaseView(_DatabaseBaseView):
-    _game_state = GameStateId.PERK_DATABASE
+    game_state = GameStateId.PERK_DATABASE
 
     def __init__(self, state: GameState) -> None:
         super().__init__(state)
@@ -127,8 +125,6 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         )
 
         if self._nav_focus_index == 0 and focus.enter:
-            if self.state.audio is not None:
-                play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
             self._begin_close_transition(Route.BACK)
 
     def _hovered_perk_id(self) -> PerkId | None:

@@ -1,24 +1,22 @@
 from __future__ import annotations
 
 from crimson.game_states import GameStateId
-from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
+from crimson.screens.actions import Route, StartRun
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
-from grim.audio import play_sfx, update_audio
+from grim.audio import play_sfx
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
-from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...ui.animation import ui_elements_max_timeline, ui_transition_alpha
+from ...ui.animation import ui_transition_alpha
 from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from ..transitions import _draw_screen_fade
+from ..menu_screen import MenuScreen
 from .shared import (
     END_NOTE_AFTER_BODY_Y_GAP,
     END_NOTE_BODY_X_OFFSET,
@@ -32,7 +30,7 @@ from .shared import (
 )
 
 
-class EndNoteView:
+class EndNoteView(MenuScreen):
     """Final quest "Show End Note" flow.
 
     Classic:
@@ -40,32 +38,20 @@ class EndNoteView:
       - clicking it transitions to state 0x15 (game_update_victory_screen @ 0x00406350)
     """
 
-    def __init__(self, state: GameState) -> None:
-        self.state = state
-        self._ground: GroundRenderer | None = None
+    game_state = GameStateId.FINAL_QUEST_END_NOTE
 
+    def __init__(self, state: GameState) -> None:
+        super().__init__(state)
         self._survival_button = UiButtonState("Survival", force_wide=True)
         self._rush_button = UiButtonState("  Rush  ", force_wide=True)
         self._typo_button = UiButtonState("Typ'o'Shooter", force_wide=True)
         self._main_menu_button = UiButtonState("Main Menu", force_wide=True)
 
-    def open(self) -> None:
-        self.state.ui.enter(ui_elements_max_timeline(GameStateId.FINAL_QUEST_END_NOTE))
-        self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
-
-    def close(self) -> None:
-        self._ground = None
-
     def update(self, dt: float) -> None:
-        if self.state.audio is not None:
-            update_audio(self.state.audio, dt)
-        if self._ground is not None:
-            self._ground.process_pending()
-        dt_step = min(float(dt), 0.1)
-        dt_ms = int(dt_step * 1000.0)
         panel_was_hidden = not self.state.ui.opened
-        if not self.state.ui.advance(int(dt_ms)):
+        if not self._advance(dt):
             return
+        dt_ms = int(min(float(dt), 0.1) * 1000.0)
         if panel_was_hidden and self.state.ui.opened and self.state.audio is not None:
             # ui_element_update clicks as the panel element becomes enabled.
             play_sfx(self.state.audio, SfxId.UI_PANELCLICK)
@@ -140,8 +126,8 @@ class EndNoteView:
             return
 
     def draw(self) -> None:
-        draw_screen_background(self.state, self._ground, entity_alpha=self._world_entity_alpha())
-        _draw_screen_fade(self.state)
+        self._assert_open()
+        self._draw_background(entity_alpha=self._world_entity_alpha())
 
         resources = require_runtime_resources(self.state)
 
@@ -199,9 +185,6 @@ class EndNoteView:
 
         ui_cursor_render(resources, dt=self.state.frame_dt)
 
-    def take_action(self) -> ScreenAction | None:
-        return self.state.ui.take_action()
-
     def _panel_rect(self) -> Rect:
         """`game_update_victory_screen` lays out on `ui_element_slot_35`'s panel."""
         return ui_panel_rect(35, self.state.ui.timeline_ms, canvas.width())
@@ -218,16 +201,6 @@ class EndNoteView:
             case _:
                 pending = GameStateId.MAIN_MENU
         return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.FINAL_QUEST_END_NOTE, pending=pending)
-
-    def _begin_close_transition(self, action: ScreenAction, *, fade_to_black: bool = False) -> None:
-        if self.state.ui.closing:
-            return
-        if fade_to_black:
-            self.state.screen_fade_alpha = 0.0
-            self.state.screen_fade_ramp = True
-        if self.state.audio is not None:
-            play_sfx(self.state.audio, SfxId.UI_BUTTONCLICK)
-        self.state.ui.begin(action)
 
 
 __all__ = ["EndNoteView"]
