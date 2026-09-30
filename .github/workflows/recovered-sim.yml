@@ -46,6 +46,8 @@ jobs:
           uv run --no-sync python tools/recovered_sim/build.py --target wasm
 
       - name: Compare all modes and resets
+        env:
+          RECOVERED_SIM_TRACE_INIT: "1"
         run: node tools/recovered_sim/matrix.mjs
 
       - name: Download original executable

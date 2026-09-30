@@ -116,7 +116,16 @@ extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
+static void trace_init(const char *stage) {
+#ifndef __wasm__
+  if (getenv("RECOVERED_SIM_TRACE_INIT"))
+    fprintf(stderr, "init: %s\n", stage);
+#else
+  (void)stage;
+#endif
+}
 extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
+  trace_init("begin");
   ready = false;
   if (cfg.detail > 5 || cfg.unlock > 50 || cfg.unlock_full > 50 ||
       cfg.retry > 2147483647u)
@@ -130,6 +139,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   if (mode == GAME_MODE_QUEST &&
       (major < 1 || major > 5 || minor < 1 || minor > 10))
     return 0;
+  trace_init("reset data");
   portable_reset_data();
   string_used = 0;
   rng = seed;
@@ -183,22 +193,31 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
     new (&perk_meta_table[i]) perk_meta_cpp_t;
   for (int i = 0; i < 15; ++i)
     new (&bonus_meta_table[i]) bonus_meta_cpp_t;
+  trace_init("creature pool");
   creature_pool_global_init();
+  trace_init("player table");
   player_state_table_global_init();
+  trace_init("projectile pool");
   projectile_pool_global_init();
+  trace_init("weapon defaults");
   weapon_table_defaults_global_init();
+  trace_init("perk database");
   perks_init_database();
+  trace_init("bonus metadata");
   bonus_metadata_init();
+  trace_init("quest database");
   quest_database_init();
   game_state_id = GAME_STATE_GAMEPLAY;
   game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
   render_pass_mode = 1;
+  trace_init("gameplay reset");
   gameplay_reset_state();
   player_state_table[0].input.fire_key = 100;
   player_state_table[0].input.axis_move_x = 0;
   player_state_table[0].input.axis_move_y = 1;
   quest_stage_major = major;
   quest_stage_minor = minor;
+  trace_init("quest start");
   if (mode == GAME_MODE_QUEST)
     quest_start_selected(major, minor);
   // A successful, silent audio backend keeps the native music-selection RNG
@@ -212,6 +231,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
     music_playlist[i] = i + 1;
   crt_rand();
   ready = true;
+  trace_init("ready");
   return 1;
 }
 // The menu request is consumed at the recovered mid-tick prompt. Picks run
