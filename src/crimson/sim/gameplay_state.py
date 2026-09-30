@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 import msgspec
 
@@ -13,15 +13,13 @@ from ..bonuses.pool import BonusPool
 from ..effects import EffectPool, ParticlePool, SpriteEffectPool
 from ..game_modes import GameMode
 from ..perks.state import PerkEffectIntervals, PerkSelectionState
+from ..persistence.save_status import GameStatus, GameStatusData
 from ..projectiles.runtime import ProjectilePool, SecondaryProjectilePool
 from ..quests.level import QuestLevel
 from ..tutorial.state import TutorialOverlayState, TutorialState
 from ..typo.state import TypoState
 from ..weapons import WEAPON_TABLE, WeaponId
 from .state_types import PERK_COUNT_SIZE, PerkCounts
-
-if TYPE_CHECKING:
-    from ..persistence.save_status import GameStatus
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
@@ -61,7 +59,7 @@ class GameplayState(msgspec.Struct):
     # The global quest retry counter; hardcore creature spawns clear it.
     quest_fail_retry_count: int = 0
     preserve_bugs: bool = False
-    status: GameStatus | None = None
+    status: GameStatus = msgspec.field(default_factory=lambda: GameStatus.detached(GameStatusData()))
     quest_level: QuestLevel | None = None
     tutorial: TutorialState = msgspec.field(default_factory=TutorialState)
     tutorial_overlay: TutorialOverlayState = msgspec.field(default_factory=TutorialOverlayState)

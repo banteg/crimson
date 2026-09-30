@@ -111,7 +111,7 @@ class QuestMode(BaseGameplayMode):
         self._outcome = None
         return outcome
 
-    def start_run(self, level: QuestLevel, *, status: GameStatus | None) -> None:
+    def start_run(self, level: QuestLevel, *, status: GameStatus) -> None:
         quest = quest_by_level(level)
         if quest is None:
             self._quest_def = None

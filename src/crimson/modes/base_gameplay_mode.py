@@ -315,7 +315,7 @@ class BaseGameplayMode:
     def save_status(self) -> GameStatus | None:
         return self._status_base
 
-    def bind_status(self, status: GameStatus | None) -> None:
+    def bind_status(self, status: GameStatus) -> None:
         self._status_base = status
         self.state.status = status
 

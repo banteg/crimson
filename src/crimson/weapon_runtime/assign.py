@@ -46,10 +46,9 @@ def weapon_assign_player(player: PlayerState, weapon_id: WeaponId, *, state: Gam
     """Assign weapon and reset per-weapon runtime state (ammo/cooldowns)."""
 
     weapon_id = WeaponId(weapon_id)
-    if state.status is not None:
-        usage_slot = weapon_usage_slot_for_weapon_id(int(weapon_id))
-        if usage_slot is not None:
-            state.status.increment_weapon_usage_slot(usage_slot)
+    usage_slot = weapon_usage_slot_for_weapon_id(int(weapon_id))
+    if usage_slot is not None:
+        state.status.increment_weapon_usage_slot(usage_slot)
 
     weapon = weapon_entry(weapon_id)
     player.weapon.weapon_id = weapon_id

@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import msgspec
 
 from ..perks.availability import build_perk_availability
-from ..persistence.save_status import GameStatus
 from ..quests.level import QUEST_COUNT
 from ..sim.run_spec import RunSpec, RunStatus
 from ..weapon_runtime.availability import build_weapon_availability
@@ -39,10 +36,10 @@ def unranked_reasons(run: RunSpec) -> list[str]:
 
 
 def _unlocks(status: RunStatus, run: RunSpec) -> tuple[list[bool], list[bool]]:
-    game_status = GameStatus.from_data(path=Path("run://status"), data=status.as_status_data(), dirty=False)
+    status_data = status.as_status_data()
     return (
-        build_weapon_availability(status=game_status, game_mode=run.game_mode_id),
-        build_perk_availability(status=game_status),
+        build_weapon_availability(status=status_data, game_mode=run.game_mode_id),
+        build_perk_availability(status=status_data),
     )
 
 

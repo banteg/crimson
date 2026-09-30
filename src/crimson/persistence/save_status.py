@@ -90,6 +90,11 @@ class GameStatus(GameStatusData, kw_only=True):
     def from_data(cls, *, path: Path, data: GameStatusData, dirty: bool = False) -> GameStatus:
         return cls(path=path, dirty=dirty, **_status_fields(data))
 
+    @classmethod
+    def detached(cls, data: GameStatusData) -> GameStatus:
+        """A status no save file backs: headless runs and replays own one, like native's zeroed blob."""
+        return cls.from_data(path=Path("run://status"), data=data)
+
     def as_data(self) -> GameStatusData:
         """The status without its file binding."""
         return GameStatusData(**_status_fields(self))

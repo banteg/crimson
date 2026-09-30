@@ -8,6 +8,7 @@ from crimson.game_modes import GameMode
 from crimson.modes.quest_mode import QuestMode
 from crimson.perks import PerkId
 from crimson.perks.apply import perk_apply
+from crimson.persistence.save_status import GameStatus, GameStatusData
 from crimson.quests.level import QuestLevel
 from grim.rand import Crand
 from grim.view import ViewContext
@@ -16,7 +17,7 @@ from grim.view import ViewContext
 def _make_quest_mode(mocker, *, config, assets_dir: Path) -> QuestMode:
     mode = QuestMode(ViewContext(assets_dir=assets_dir), config=config, audio_rng=Crand(0xBEEF))
     mode.open()
-    mode.start_run(QuestLevel(1, 1), status=None)
+    mode.start_run(QuestLevel(1, 1), status=GameStatus.detached(GameStatusData()))
     return mode
 
 

@@ -182,11 +182,7 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
                     include = True
                 else:
                     usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
-                    include = bool(
-                        status is not None
-                        and usage_slot is not None
-                        and status.weapon_usage_count_slot(usage_slot) != 0,
-                    )
+                    include = usage_slot is not None and status.weapon_usage_count_slot(usage_slot) != 0
             if include:
                 used.append(weapon_id)
         used.sort()

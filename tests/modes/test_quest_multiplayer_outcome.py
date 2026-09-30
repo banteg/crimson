@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from crimson.modes.quest_mode import QuestMode
+from crimson.persistence.save_status import GameStatus, GameStatusData
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
 from crimson.sim.run_result import RunOutcome
@@ -23,7 +24,7 @@ def test_quest_failed_outcome_captures_all_player_health_and_the_start_tag(tmp_p
     ctx = ViewContext(assets_dir=assets_dir)
 
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
-    mode.start_run(QuestLevel(1, 1), status=None)
+    mode.start_run(QuestLevel(1, 1), status=GameStatus.detached(GameStatusData()))
     health_values = (91.2, 50.6, 10.4, 0.49)
     for idx, health in enumerate(health_values):
         mode.world.players[idx].health = float(health)
@@ -42,7 +43,7 @@ def test_start_run_queues_start_weapon_assign_sfx(tmp_path: Path, assets_dir: Pa
     ctx = ViewContext(assets_dir=assets_dir)
 
     mode = QuestMode(ctx, config=cfg, audio_rng=Crand(0xBEEF))
-    mode.start_run(QuestLevel(1, 1), status=None)
+    mode.start_run(QuestLevel(1, 1), status=GameStatus.detached(GameStatusData()))
 
     quest = quest_by_level(QuestLevel(1, 1))
     assert quest is not None
@@ -61,7 +62,7 @@ def test_start_run_uses_session_rng_seed_instead_of_fixed_level_seed(tmp_path: P
     mode.state.rng.srand(seed_before_run)
 
     reset_spy = mocker.spy(mode.world_runtime, "reset")
-    mode.start_run(QuestLevel(1, 1), status=None)
+    mode.start_run(QuestLevel(1, 1), status=GameStatus.detached(GameStatusData()))
 
     assert reset_spy.call_args is not None
     assert int(reset_spy.call_args.kwargs["seed"]) == int(seed_before_run)

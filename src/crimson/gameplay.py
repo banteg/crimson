@@ -170,8 +170,7 @@ def gameplay_enforce_weapon_guards(state: GameplayState, players: Sequence[Playe
     # Native gameplay_render_world checks exactly the two fixed player slots.
     # Corrected mode extends the same entitlement policy to generalized co-op.
     guarded_players = players[:2] if state.preserve_bugs else players
-    unlock_index_full = int(state.status.quest_unlock_index_full) if state.status is not None else 0
-    if unlock_index_full < 40:
+    if state.status.quest_unlock_index_full < 40:
         for player in guarded_players:
             if player.weapon.weapon_id == WeaponId.SPLITTER_GUN:
                 _weapon_assign_player(player, WeaponId.PISTOL, state=state)

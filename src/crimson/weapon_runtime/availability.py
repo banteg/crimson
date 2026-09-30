@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
-from ..persistence.save_status import GameStatus
+from ..persistence.save_status import GameStatusData
 from ..quests import QUESTS
 from ..quests.level import QuestLevel
 from ..rng_caller_static import RngCallerStatic
@@ -20,15 +20,12 @@ WEAPON_AVAILABLE_COUNT = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
 def build_weapon_availability(
     *,
-    status: GameStatus | None,
+    status: GameStatusData,
     game_mode: GameMode,
 ) -> list[bool]:
     available = [False] * WEAPON_AVAILABLE_COUNT
-    unlock_index = 0
-    unlock_index_full = 0
-    if status is not None:
-        unlock_index = status.quest_unlock_index
-        unlock_index_full = status.quest_unlock_index_full
+    unlock_index = status.quest_unlock_index
+    unlock_index_full = status.quest_unlock_index_full
 
     pistol_id = WeaponId.PISTOL
     if 0 <= pistol_id < len(available):
@@ -83,14 +80,13 @@ def weapon_pick_random_available(state: GameplayState) -> WeaponId:
         weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
         # Bias: used weapons have a 50% chance to reroll once.
-        if status is not None:
-            usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
-            if (  # noqa: SIM102 - preserve the native reroll gate and RNG draw shape
-                usage_slot is not None and status.weapon_usage_count_slot(usage_slot) != 0
-            ):
-                if (state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE) & 1) == 0:
-                    base_rand = state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK)
-                    weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
+        usage_slot = weapon_usage_slot_for_weapon_id(weapon_id)
+        if (  # noqa: SIM102 - preserve the native reroll gate and RNG draw shape
+            usage_slot is not None and status.weapon_usage_count_slot(usage_slot) != 0
+        ):
+            if (state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_GATE) & 1) == 0:
+                base_rand = state.rng.rand_tagged(RngCallerStatic.WEAPON_PICK_RANDOM_AVAILABLE_REROLL_PICK)
+                weapon_id = WeaponId(base_rand % WEAPON_DROP_ID_COUNT + 1)
 
         if not (0 <= weapon_id < len(state.weapon_available)):
             continue

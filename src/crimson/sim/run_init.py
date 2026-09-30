@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import msgspec
 
 from grim.geom import Vec2
@@ -70,9 +68,7 @@ def initialize_run(
     if creature_pool_residue is not None:
         apply_creature_pool_residue(world.creatures.entries, creature_pool_residue)
     reset_world_players(world.players, state=world.state, player_count=spec.player_count)
-    world.state.status = status if status is not None else GameStatus.from_data(
-        path=Path("run://status"), data=spec.status.as_status_data(), dirty=False,
-    )
+    world.state.status = GameStatus.detached(spec.status.as_status_data()) if status is None else status
     # The seed is the rng entering `gameplay_reset_state()`, which every mode's run start calls.
     for creature, anim_phase in zip(world.creatures.entries, advance_gameplay_reset_rng(world.state.rng), strict=True):
         creature.anim_phase = anim_phase

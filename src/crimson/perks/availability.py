@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from ..game_modes import GameMode
-from ..persistence.save_status import GameStatus
+from ..persistence.save_status import GameStatusData
 from ..quests import QUESTS
 from ..quests.level import QuestLevel
 from ..sim.state_types import PERK_COUNT_SIZE
@@ -22,11 +22,9 @@ _PERK_ALWAYS_AVAILABLE: tuple[PerkId, ...] = (
 )
 
 
-def build_perk_availability(*, status: GameStatus | None) -> list[bool]:
+def build_perk_availability(*, status: GameStatusData) -> list[bool]:
     available = [False] * PERK_COUNT_SIZE
-    unlock_index = 0
-    if status is not None:
-        unlock_index = status.quest_unlock_index
+    unlock_index = status.quest_unlock_index
 
     for perk_id in range(1, _PERK_BASE_AVAILABLE_MAX_ID + 1):
         if 0 <= perk_id < len(available):
