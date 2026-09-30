@@ -9,7 +9,6 @@ from grim.math import clamp
 from grim.raylib_api import rl
 
 from .focus import UiFocus
-from .layout import menu_widescreen_y_shift
 
 # Perk selection screen panel uses ui_element-style timeline animation:
 # - fully hidden until end_ms
@@ -39,15 +38,6 @@ MENU_BUTTON_Y = 276.0
 MENU_DESC_RIGHT_X = 480.0
 
 
-class PerkMenuLayout(msgspec.Struct):
-    # Coordinates live in the original 640x480 UI space.
-    # Capture (1024x768) shows the perk menu panel uses the 3-slice variant:
-    #   open bbox (-108,119) -> (402,497)
-    # which corresponds to ui_element pos (-45,110) + geom (-63,-81) and size 510x378.
-    panel_pos: Vec2 = Vec2(-108.0, 29.0)
-    panel_size: Vec2 = Vec2(510.0, 378.0)
-
-
 class PerkMenuComputedLayout(msgspec.Struct):
     panel: Rect
     title: Rect
@@ -59,17 +49,13 @@ class PerkMenuComputedLayout(msgspec.Struct):
 
 
 def perk_menu_compute_layout(
-    layout: PerkMenuLayout,
+    panel: Rect,
     *,
-    screen_w: float,
     choice_count: int,
     expert_owned: bool,
     master_owned: bool,
-    panel_slide_x: float = 0.0,
 ) -> PerkMenuComputedLayout:
-    widescreen_shift_y = menu_widescreen_y_shift(screen_w)
-    panel_pos = layout.panel_pos + Vec2(panel_slide_x, widescreen_shift_y)
-    panel = Rect.from_pos_size(panel_pos, layout.panel_size)
+    """`perk_selection_screen_update` lays out on `ui_element_slot_27`'s panel."""
     anchor_pos = Vec2(
         panel.x + MENU_PANEL_ANCHOR_X,
         panel.y + MENU_PANEL_ANCHOR_Y,

@@ -4,13 +4,10 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
-from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
 from crimson.ui.menu_layout import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_PLAY_GAME,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
@@ -55,9 +52,6 @@ class PlayGameMenuView(PanelMenuView):
             panel_element=11,
             back_element=12,
             title="Play Game",
-            panel_offset=Vec2(-63.0, MENU_PANEL_OFFSET_Y),
-            panel_height=278.0,
-            back_pos=Vec2(-55.0, 462.0),
         )
         # Native lists two players; the port plays up to four.
         self.player_count_list = UiListWidget(items=self._PLAYER_COUNT_LABELS)
@@ -134,18 +128,7 @@ class PlayGameMenuView(PanelMenuView):
         super()._begin_close_transition(action)
 
     def _content_layout(self) -> _PlayGameContentLayout:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=self._panel_element,
-            width=MENU_PANEL_WIDTH,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset
-        )
+        panel_top_left = self._panel_rect(self._panel_element).top_left
 
         # `play_game_menu_update`:
         #   xy = panel_offset_x + panel_x + 330 - 64  (+ animated X offset)

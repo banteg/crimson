@@ -25,32 +25,16 @@ from ...persistence.highscores import (
     read_highscore_table,
     scores_path_for_config,
 )
-from ...ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
+from ...ui.animation import ui_elements_max_timeline, ui_transition_alpha
 from ...ui.focus import UiFocus
 from ...ui.highscore_card import ui_text_input_render
-from ...ui.layout import menu_widescreen_y_shift
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.name_entry import HighScoreNameEntry
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ...ui.text_input import (
     flush_text_input_events,
 )
 from ..ui_timeline import UiTimeline
-
-GAME_OVER_PANEL_X = -45.0
-# `ui_menu_layout_init` sets game-over panel pos to (-45, 110):
-#   _DAT_0048cc60 = 0xc2340000 (-45.0)
-#   _DAT_0048cc64 = 0x42dc0000 (110.0)
-GAME_OVER_PANEL_Y = 110.0
-# `ui_element_slot_30` is cloned from the 3-slice menu panel layout (`ui_menu_item_element._pad4+0xac`)
-# in `ui_menu_layout_init`; trace confirms a 510x378 bbox for both phase 0 and phase 1.
-GAME_OVER_PANEL_W = 510.0
-GAME_OVER_PANEL_H = 378.0
-
-# The tall panel's first vertex: analysis/frida/game_over_panel_trace_summary.json has its quads at x -108..402
-# at 1024x768.
-GAME_OVER_PANEL_OFFSET_X = -63.0
-GAME_OVER_PANEL_OFFSET_Y = -81.0
 
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0
@@ -66,11 +50,6 @@ _GAME_OVER_FORM_OFFSET = Vec2(GAME_OVER_BANNER_X_OFFSET + 8.0, 40.0 + 84.0)
 
 COLOR_TEXT = rl.Color(255, 255, 255, 255)
 COLOR_TEXT_MUTED = rl.Color(255, 255, 255, int(255 * 0.8))
-
-
-class _GameOverPanelLayout(msgspec.Struct, frozen=True):
-    panel: Rect
-    top_left: Vec2
 
 
 def _draw_texture_centered(tex: rl.Texture, pos: Vec2, w: float, h: float, alpha: float) -> None:
@@ -151,17 +130,9 @@ class GameOverUi(msgspec.Struct):
                 pending = GameStateId.MAIN_MENU
         return ui_transition_alpha(self.timeline.timeline_ms, state=GameStateId.GAME_OVER, pending=pending)
 
-    def _panel_layout(self, *, screen_w: float) -> _GameOverPanelLayout:
-        # Keep consistent with the main menu panel offsets.
-        panel_slide_x = ui_element_anim(self.timeline.timeline_ms, index=30, width=GAME_OVER_PANEL_W)[1]
-
-        panel_pos = Vec2(GAME_OVER_PANEL_X + panel_slide_x, 0.0)
-        widescreen_shift_y = menu_widescreen_y_shift(screen_w)
-        panel_pos = Vec2(panel_pos.x, GAME_OVER_PANEL_Y + widescreen_shift_y)
-        panel_origin = Vec2(-GAME_OVER_PANEL_OFFSET_X, -GAME_OVER_PANEL_OFFSET_Y)
-        top_left = panel_pos - panel_origin
-        panel = Rect.from_top_left(top_left, GAME_OVER_PANEL_W, GAME_OVER_PANEL_H)
-        return _GameOverPanelLayout(panel=panel, top_left=top_left)
+    def _panel_layout(self, *, screen_w: float) -> Rect:
+        """`game_over_screen_update` lays out on `ui_element_slot_30`'s panel."""
+        return ui_panel_rect(30, self.timeline.timeline_ms, screen_w)
 
     def _begin_close_transition(self, action: ResultAction) -> None:
         if self.timeline.closing:
@@ -307,18 +278,9 @@ class GameOverUi(msgspec.Struct):
 
         screen_w = float(canvas.width())
 
-        panel_layout = self._panel_layout(screen_w=screen_w)
-        panel = panel_layout.panel
-        panel_top_left = panel_layout.top_left
-
-        # Panel background
-        shadows_enabled = self.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=panel.to_rl(),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
+        panel = self._panel_layout(screen_w=screen_w)
+        draw_ui_panel(resources, 30, panel, shadow=self.config.display.shadows_enabled)
+        panel_top_left = panel.top_left
 
         # Banner (Reaper / Well done)
         banner_pos = panel_top_left + Vec2(GAME_OVER_BANNER_X_OFFSET, 40.0)

@@ -9,14 +9,10 @@ from crimson.screens.high_scores_layout import (
     HS_BUTTON_STEP_Y,
     HS_BUTTON_X,
     HS_BUTTON_Y0,
-    HS_LEFT_PANEL_POS_Y,
     HS_QUEST_ARROW_X,
     HS_QUEST_ARROW_Y,
     HS_RIGHT_GAME_MODE_WIDGET,
-    HS_RIGHT_PANEL_POS_Y,
-    hs_left_panel_pos_x,
     hs_right_options_x_shift,
-    hs_right_panel_pos_x,
 )
 from crimson.screens.high_scores_view.view import HighScoresView
 from grim.geom import Vec2
@@ -48,7 +44,7 @@ def test_open_list_keeps_focus_until_a_press_closes_it(scores_view, mocker) -> N
     view.open()
     view.state.ui.timeline_ms = view.state.ui.max_timeline_ms
     width = float(view.state.config.display.width)
-    right_top_left = view._panel_top_left(pos=Vec2(hs_right_panel_pos_x(width), HS_RIGHT_PANEL_POS_Y))
+    right_top_left = view._panel_rect(33).top_left
     header = right_top_left + Vec2(hs_right_options_x_shift(width), 0.0) + HS_RIGHT_GAME_MODE_WIDGET
     play = _left_button(view, PLAY_ROW)
 
@@ -83,9 +79,7 @@ def scores_view(make_game_state, headless_resources, headless_window) -> HighSco
 
 def _left_button(view: HighScoresView, row: int) -> Vec2:
     """A point on the left panel's `row`th button (Update scores, Play a game) with the panel slid in."""
-    left_top_left = view._panel_top_left(
-        pos=Vec2(hs_left_panel_pos_x(float(view.state.config.display.width)), HS_LEFT_PANEL_POS_Y),
-    )
+    left_top_left = view._panel_rect(9).top_left
     return left_top_left + Vec2(HS_BUTTON_X + 20.0, HS_BUTTON_Y0 + HS_BUTTON_STEP_Y * row + 10.0)
 
 

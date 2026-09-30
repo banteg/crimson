@@ -5,12 +5,11 @@ from typing import TYPE_CHECKING
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, update_audio
 from grim.fonts.small import draw_small_text
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
@@ -18,9 +17,9 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...game_states import GameStateId
-from ...ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
+from ...ui.animation import ui_elements_max_timeline, ui_transition_alpha
 from ...ui.highscore_card import ui_text_input_render
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -34,12 +33,6 @@ from .shared import (
     QUEST_FAILED_BUTTON_Y_OFFSET,
     QUEST_FAILED_MESSAGE_X_OFFSET,
     QUEST_FAILED_MESSAGE_Y_OFFSET,
-    QUEST_FAILED_PANEL_GEOM_X0,
-    QUEST_FAILED_PANEL_GEOM_Y0,
-    QUEST_FAILED_PANEL_H,
-    QUEST_FAILED_PANEL_POS_X,
-    QUEST_FAILED_PANEL_POS_Y,
-    QUEST_FAILED_PANEL_W,
     QUEST_FAILED_SCORE_X_OFFSET,
     QUEST_FAILED_SCORE_Y_OFFSET,
     _player_name_default,
@@ -110,7 +103,7 @@ class QuestFailedView:
             self._activate_play_another()
             return
 
-        panel_top_left = self._panel_top_left()
+        panel_top_left = self._panel_rect().top_left
         if outcome is None:
             return
 
@@ -161,17 +154,10 @@ class QuestFailedView:
         draw_screen_background(self.state, self._ground, entity_alpha=self._world_entity_alpha())
         _draw_screen_fade(self.state)
 
-        panel_top_left = self._panel_top_left()
+        panel = self._panel_rect()
         resources = require_runtime_resources(self.state)
-        panel_tex = resources.texture(TextureId.UI_MENU_PANEL)
-        panel = rl.Rectangle(
-            panel_top_left.x,
-            panel_top_left.y,
-            float(QUEST_FAILED_PANEL_W),
-            float(QUEST_FAILED_PANEL_H),
-        )
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(panel_tex, dst=panel, tint=rl.WHITE, shadow=shadows_enabled)
+        draw_ui_panel(resources, 35, panel, shadow=self.state.config.display.shadows_enabled)
+        panel_top_left = panel.top_left
 
         reaper_tex = resources.texture(TextureId.UI_TEXT_REAPER)
         src = rl.Rectangle(0.0, 0.0, float(reaper_tex.width), float(reaper_tex.height))
@@ -219,13 +205,6 @@ class QuestFailedView:
     def take_action(self) -> ScreenAction | None:
         return self.state.ui.take_action()
 
-    def _panel_origin(self) -> Vec2:
-        screen_w = float(canvas.width())
-        widescreen_shift_y = menu_widescreen_y_shift(screen_w)
-        return Vec2(
-            QUEST_FAILED_PANEL_GEOM_X0 + QUEST_FAILED_PANEL_POS_X,
-            QUEST_FAILED_PANEL_GEOM_Y0 + QUEST_FAILED_PANEL_POS_Y + widescreen_shift_y,
-        )
 
     def _world_entity_alpha(self) -> float:
         # `quest_failed_screen_update`'s buttons set `game_state_pending`; a retry keeps the run lit.
@@ -240,8 +219,9 @@ class QuestFailedView:
                 pending = GameStateId.MAIN_MENU
         return ui_transition_alpha(self.state.ui.timeline_ms, state=GameStateId.QUEST_FAILED, pending=pending)
 
-    def _panel_top_left(self) -> Vec2:
-        return self._panel_origin().offset(dx=ui_element_anim(self.state.ui.timeline_ms, index=35, width=QUEST_FAILED_PANEL_W)[1])
+    def _panel_rect(self) -> Rect:
+        """`quest_failed_screen_update` lays out on `ui_element_slot_35`'s panel."""
+        return ui_panel_rect(35, self.state.ui.timeline_ms, canvas.width())
 
     def _failure_message(self) -> str:
         retry_count = int(self.state.quest_fail_retry_count)
@@ -308,7 +288,4 @@ class QuestFailedView:
         )
 
 
-__all__ = [
-    "QUEST_FAILED_PANEL_W",
-    "QuestFailedView",
-]
+__all__ = ["QuestFailedView"]

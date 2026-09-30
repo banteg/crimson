@@ -21,13 +21,18 @@ def ui_element_timeline_window(index: int) -> tuple[int, int]:
             return 0, 300
 
 
-def ui_element_anim(timeline_ms: float, *, index: int, width: float, direction_flag: int = 0) -> tuple[float, float]:
+def ui_element_direction_flag(index: int) -> bool:
+    """`ui_menu_layout_init` flips the right-hand panels (slots 33 and 40): they slide in from the right and mirror."""
+    return index in (33, 40)
+
+
+def ui_element_anim(timeline_ms: float, *, index: int, width: float) -> tuple[float, float]:
     """`ui_element_update`: rotation angle and slide-in offset of `ui_element_table[index]`.
 
-    direction_flag 0 slides in from the left, 1 from the right; the sign (index 0) turns the other way.
+    Elements slide in from the left, flipped ones from the right; the sign (index 0) turns the other way.
     """
     start_ms, end_ms = ui_element_timeline_window(index)
-    side = 1.0 if direction_flag else -1.0
+    side = 1.0 if ui_element_direction_flag(index) else -1.0
     if timeline_ms >= end_ms:
         angle = 0.0
         offset_x = 0.0

@@ -4,9 +4,7 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
-from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
-from crimson.ui.menu_layout import MENU_PANEL_HEIGHT, MENU_PANEL_WIDTH
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.config import (
@@ -29,7 +27,7 @@ from ...input_codes import (
 from ...movement_controls import MovementControlType
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_draw, ui_list_widget_update
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel
 from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
 from ..assets import require_runtime_resources
 from .base import PanelMenuView
@@ -42,14 +40,6 @@ from .controls_labels import (
     input_scheme_label,
 )
 
-# Measured from ui_render_trace_oracle_1024x768.json (state_3:Configure for:, timeline=300).
-CONTROLS_LEFT_PANEL_POS_X = -165.0
-CONTROLS_LEFT_PANEL_POS_Y = 200.0
-CONTROLS_RIGHT_PANEL_POS_X = 590.0
-CONTROLS_RIGHT_PANEL_POS_Y = 200.0
-CONTROLS_RIGHT_PANEL_HEIGHT = 378.0
-CONTROLS_BACK_POS_X = -155.0
-CONTROLS_BACK_POS_Y = 420.0
 # Port-only "Reset" button, beside the direction-arrow checkbox on the left panel.
 CONTROLS_RESET_BUTTON_OFFSET = Vec2(388.0, 166.0)
 CONTROLS_DIRECTION_ARROW_OFFSET = Vec2(213.0, 174.0)
@@ -128,51 +118,6 @@ def _default_row_binding_code(player_index: int, row: RebindRowSpec) -> int:
     return _row_binding_code(row, player_index=player_index, controls=controls)
 
 
-def _controls_left_panel_pos_x(screen_width: float) -> float:
-    """
-    Left controls panel X in panel-pos space.
-
-    Native `ui_menu_layout_init` nudges the controls left panel 18px further left
-    at 640-wide layouts.
-    """
-
-    if int(screen_width) <= 640:
-        return CONTROLS_LEFT_PANEL_POS_X - 18.0
-    return CONTROLS_LEFT_PANEL_POS_X
-
-
-def _controls_right_panel_pos_x(screen_width: float) -> float:
-    """
-    Right controls panel X in panel-pos space.
-
-    Native `ui_menu_layout_init` uses:
-      slot40_pos_x = screen_width - 350  (+80 at <=640)
-
-    Our panel-pos abstraction differs by a fixed -84 offset from that slot-space,
-    so this becomes:
-      x = screen_width - 434  (+80 at <=640).
-    """
-
-    w = int(screen_width)
-    x = float(w - 434)
-    if w <= 640:
-        x += 80.0
-    return x
-
-
-def _controls_right_panel_pos_y(screen_width: float) -> float:
-    """
-    Right controls panel Y in panel-pos space.
-
-    Native slot40 y moves from 200 to 186 at <=640, set after `ui_menu_layout_init` moves the other elements down
-    with the window width, so it takes no widescreen shift.
-    """
-
-    if int(screen_width) <= 640:
-        return CONTROLS_RIGHT_PANEL_POS_Y - 14.0
-    return CONTROLS_RIGHT_PANEL_POS_Y
-
-
 class _RebindRowLayout(msgspec.Struct, frozen=True):
     row: RebindRowSpec
     row_y: float
@@ -195,8 +140,6 @@ class ControlsMenuView(PanelMenuView):
             back_element=18,
             title="Controls",
             back_action=Route.BACK,
-            panel_pos=Vec2(CONTROLS_LEFT_PANEL_POS_X, CONTROLS_LEFT_PANEL_POS_Y),
-            back_pos=Vec2(CONTROLS_BACK_POS_X, CONTROLS_BACK_POS_Y),
         )
         self._config_player = 1
         self.move_method_list = UiListWidget()
@@ -288,33 +231,11 @@ class ControlsMenuView(PanelMenuView):
         _set_row_binding_code(row, int(code), player_index=player_index, controls=self.state.config.controls)
 
     def _left_panel_top_left(self) -> Vec2:
-        _, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=self._panel_element,
-            width=MENU_PANEL_WIDTH,
-        )
-        return (
-            Vec2(
-                _controls_left_panel_pos_x(float(self.state.config.display.width)) + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset
-        )
+        return self._panel_rect(self._panel_element).top_left
 
     def _right_panel_top_left(self) -> Vec2:
-        _, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=40,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=1,
-        )
-        return (
-            Vec2(
-                _controls_right_panel_pos_x(float(self.state.config.display.width)) + slide_x,
-                _controls_right_panel_pos_y(float(self.state.config.display.width)),
-            )
-            + self._panel_offset
-        )
+        # `controls_menu_update` lays the bindings out on `ui_element_slot_40`.
+        return self._panel_rect(40).top_left
 
     def _direction_arrow_enabled(self) -> bool:
         return self.state.config.controls.player(self._current_player_index()).show_direction_arrow
@@ -595,29 +516,10 @@ class ControlsMenuView(PanelMenuView):
         return move_selected is not None or aim_selected is not None or player_selected is not None
 
     def _draw_panel(self) -> None:
-        shadows_enabled = self.state.config.display.shadows_enabled
-        panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
-
-        # Left (controls options) panel: standard 254px height => a single quad.
-        left_top_left = self._left_panel_top_left()
-        left_h = MENU_PANEL_HEIGHT
-        draw_classic_menu_panel(
-            panel,
-            dst=rl.Rectangle(left_top_left.x, left_top_left.y, MENU_PANEL_WIDTH, left_h),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
-
-        # Right (configured bindings) panel: tall 378px panel rendered as 3 vertical slices.
-        right_top_left = self._right_panel_top_left()
-        right_h = float(CONTROLS_RIGHT_PANEL_HEIGHT)
-        draw_classic_menu_panel(
-            panel,
-            dst=rl.Rectangle(right_top_left.x, right_top_left.y, MENU_PANEL_WIDTH, right_h),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-            # Original ui_element_slot_40 sets direction_flag=1, which mirrors panel UVs.
-            flip_x=True,
+        super()._draw_panel()
+        draw_ui_panel(
+            require_runtime_resources(self.state), 40, self._panel_rect(40),
+            shadow=self.state.config.display.shadows_enabled,
         )
 
     def _draw_contents(self) -> None:
@@ -773,7 +675,7 @@ class ControlsMenuView(PanelMenuView):
         if self._capture is not None and self._capture.player_index == player_idx:
             hint_pos = Vec2(
                 right_top_left.x + 48.0,
-                right_top_left.y + (CONTROLS_RIGHT_PANEL_HEIGHT - 26.0),
+                right_top_left.y + (self._panel_rect(40).height - 26.0),
             )
             draw_small_text(
                 font,

@@ -37,7 +37,9 @@ def test_quest_results_keeps_100ms_hold_then_300ms_slide(timeline, expected) -> 
 
 def test_panels_and_sign_keep_opposite_directions_and_staggered_intervals() -> None:
     angle, left = ui_element_anim(150, index=11, width=510)
-    sign_angle, right = ui_element_anim(150, index=0, width=510, direction_flag=1)
+    sign_angle = ui_element_anim(150, index=0, width=510)[0]
+    # The right-hand panels (slots 33 and 40) carry the direction flag.
+    right = ui_element_anim(150, index=33, width=510)[1]
     assert left == -255
     assert right == 255
     assert sign_angle == -angle == -0.7853982

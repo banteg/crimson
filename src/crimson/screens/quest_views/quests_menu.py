@@ -5,14 +5,10 @@ from crimson.quests.level import QUEST_COUNT, QuestLevel
 from crimson.quests.status import quest_completed_counter_index, quest_games_counter_index
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import ensure_menu_ground, menu_ground_camera
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
-from crimson.ui.menu_layout import (
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-)
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
@@ -26,7 +22,7 @@ from ...debug import debug_enabled
 from ...game.types import GameState
 from ...game_modes import GameMode
 from ...ui.checkbox import UiCheckbox, ui_checkbox_draw, ui_checkbox_update
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, UiMenuItem, button_draw, button_update, ui_menu_item_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -44,10 +40,6 @@ from .shared import (
     QUEST_LIST_NAME_X_OFFSET,
     QUEST_LIST_ROW_STEP,
     QUEST_LIST_Y_OFFSET,
-    QUEST_MENU_BASE_X,
-    QUEST_MENU_BASE_Y,
-    QUEST_MENU_PANEL_OFFSET_X,
-    QUEST_PANEL_HEIGHT,
     QUEST_STAGE_ICON_SCALE_UNSELECTED,
     QUEST_STAGE_ICON_SIZE,
     QUEST_STAGE_ICON_STEP,
@@ -231,17 +223,14 @@ class QuestsMenuView:
     def _init_ground(self) -> None:
         self._ground = ensure_menu_ground(self.state)
 
+    def _panel_rect(self) -> Rect:
+        """`quest_select_menu_update` lays out on `ui_element_slot_37`'s panel."""
+        return ui_panel_rect(37, self.state.ui.timeline_ms, self._menu_screen_width)
+
     def _layout(self) -> _QuestMenuLayout:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=37,
-            width=MENU_PANEL_WIDTH,
-        )
-        # `quest_select_menu_update` base sums:
-        #   x_sum = <ui_element_x> + <ui_element_offset_x>  (x=-5)
-        #   y_sum = <ui_element_y> + <ui_element_offset_y>  (y=185 + widescreen shift via ui_menu_layout_init)
-        x_sum = QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X
-        y_sum = QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift
+        panel_top_left = self._panel_rect().top_left
+        x_sum = panel_top_left.x
+        y_sum = panel_top_left.y
 
         title_pos = Vec2(x_sum + QUEST_TITLE_X_OFFSET, y_sum + QUEST_TITLE_Y_OFFSET)
         icons_start_pos = title_pos + Vec2(QUEST_STAGE_ICON_X_OFFSET, QUEST_STAGE_ICON_Y_OFFSET)
@@ -531,21 +520,9 @@ class QuestsMenuView:
         )
 
     def _draw_panel(self) -> None:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=37,
-            width=MENU_PANEL_WIDTH,
-        )
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(
-                float(QUEST_MENU_BASE_X + slide_x + QUEST_MENU_PANEL_OFFSET_X),
-                float(QUEST_MENU_BASE_Y + MENU_PANEL_OFFSET_Y + self._widescreen_y_shift),
-                float(MENU_PANEL_WIDTH),
-                float(QUEST_PANEL_HEIGHT),
-            ),
-            shadow=shadows_enabled,
+        draw_ui_panel(
+            require_runtime_resources(self.state), 37, self._panel_rect(),
+            shadow=self.state.config.display.shadows_enabled,
         )
 
     def _begin_close_transition(self, action: ScreenAction) -> None:

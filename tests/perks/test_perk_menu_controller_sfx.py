@@ -133,7 +133,7 @@ def test_draw_accepts_prepared_choices_without_selection_helpers(mocker) -> None
     menu = _menu([])
     menu.open = True
     menu.timeline.timeline_ms = int(1_000.0)
-    mocker.patch.object(perk_menu_controller_module, "draw_classic_menu_panel", return_value=None)
+    mocker.patch.object(perk_menu_controller_module, "draw_ui_panel", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_menu_item", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "draw_ui_text", return_value=None)
     mocker.patch.object(perk_menu_controller_module, "button_draw", return_value=None)

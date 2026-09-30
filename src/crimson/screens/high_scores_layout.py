@@ -8,56 +8,6 @@ from __future__ import annotations
 
 from grim.geom import Vec2
 
-# Panel positions are expressed in "panel pos" (pre-offset) space, matching other menu panels:
-#   panel_top_left = (panel_pos_x + MENU_PANEL_OFFSET_X, panel_pos_y + y_shift + MENU_PANEL_OFFSET_Y)
-
-HS_LEFT_PANEL_POS_X = -119.0
-HS_LEFT_PANEL_POS_Y = 185.0
-HS_LEFT_PANEL_HEIGHT = 378.0
-
-HS_RIGHT_PANEL_POS_X = 609.0
-HS_RIGHT_PANEL_POS_Y = 200.0
-HS_RIGHT_PANEL_HEIGHT = 254.0
-
-
-def hs_left_panel_pos_x(screen_width: float) -> float:
-    """
-    Return left-panel base X for state 14/15/16.
-
-    Native callbacks keep the regular x at widths above 640 and shift the
-    whole left stack 50px left in 640-wide mode.
-    """
-
-    if int(screen_width) <= 640:
-        return HS_LEFT_PANEL_POS_X - 50.0
-    return HS_LEFT_PANEL_POS_X
-
-
-def hs_right_panel_pos_x(screen_width: float) -> float:
-    """
-    Return the classic right-panel base X for high-scores/databases screens.
-
-    Modeled from `ui_menu_layout_init` writes to `data_48a110`:
-      x = screen_width - 350
-      if screen_width <= 800:
-          x += 10  (<=640)  or  x -= 30  (641..800)
-      else:
-          x -= 65
-
-    At 1024 this resolves to 609 (our original constant).
-    """
-
-    w = int(screen_width)
-    x = float(w - 350)
-    if w <= 800:
-        if w <= 640:
-            x += 10.0
-        else:
-            x -= 30.0
-    else:
-        x -= 65.0
-    return x
-
 
 def hs_right_options_x_shift(screen_width: float) -> float:
     """

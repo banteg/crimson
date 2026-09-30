@@ -6,7 +6,7 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.ui_timeline import UiTimeline
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_elements_max_timeline
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.math import clamp
@@ -16,9 +16,8 @@ from grim.sfx_map import SfxId
 from ...perks import PerkId, perk_display_name
 from ...sim.state_types import PerkCounts, PlayerState
 from ...ui.focus import UiFocus
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import (
-    PerkMenuLayout,
     UiButtonState,
     UiMenuItem,
     button_draw,
@@ -87,7 +86,6 @@ class PerkMenuController:
         return self._open or self._closing
 
     def reset(self) -> None:
-        self._layout = PerkMenuLayout()
         self._cancel_button = UiButtonState(self._cancel_label)
         # `perk_selection_screen_update`'s `choice_items`: one menu item per perk choice.
         self._choice_items = tuple(UiMenuItem() for _ in range(10))
@@ -134,20 +132,15 @@ class PerkMenuController:
             self._selected_index = 0
         focus = self.focus
 
-        screen_w = float(canvas.width())
-        slide_x = ui_element_anim(self.timeline.timeline_ms, index=27, width=self._layout.panel_size.x)[1]
-
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         master_owned = PerkId.PERK_MASTER in ctx.perks
         expert_owned = PerkId.PERK_EXPERT in ctx.perks
         computed = perk_menu_compute_layout(
-            self._layout,
-            screen_w=screen_w,
+            ui_panel_rect(27, self.timeline.timeline_ms, canvas.width()),
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
-            panel_slide_x=slide_x,
         )
 
         # `perk_selection_screen_update`: the choices are menu items, then Cancel is a button, in focus order. The
@@ -205,22 +198,16 @@ class PerkMenuController:
         if self._selected_index >= len(choices):
             self._selected_index = 0
 
-        screen_w = float(canvas.width())
-        slide_x = ui_element_anim(self.timeline.timeline_ms, index=27, width=self._layout.panel_size.x)[1]
-
         master_owned = PerkId.PERK_MASTER in ctx.perks
         expert_owned = PerkId.PERK_EXPERT in ctx.perks
         computed = perk_menu_compute_layout(
-            self._layout,
-            screen_w=screen_w,
+            ui_panel_rect(27, self.timeline.timeline_ms, canvas.width()),
             choice_count=len(choices),
             expert_owned=expert_owned,
             master_owned=master_owned,
-            panel_slide_x=slide_x,
         )
 
-        panel_tex = ctx.resources.texture(TextureId.UI_MENU_PANEL)
-        draw_classic_menu_panel(panel_tex, dst=computed.panel.to_rl(), shadow=bool(ctx.shadows_enabled))
+        draw_ui_panel(ctx.resources, 27, computed.panel, shadow=bool(ctx.shadows_enabled))
 
         title_tex = ctx.resources.texture(TextureId.UI_TEXT_PICK_A_PERK)
         src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))

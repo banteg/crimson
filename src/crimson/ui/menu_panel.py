@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+from grim.assets import RuntimeResources, TextureId
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 
+from .animation import ui_element_anim, ui_element_direction_flag
+from .menu_layout import MENU_PANEL_WIDTH, ui_element_pos
 from .shadow import UI_SHADOW_OFFSET, draw_ui_quad_shadow
 
 # Classic menu panel is rendered from the *inset* inner region of ui_menuPanel:
@@ -136,3 +140,32 @@ def draw_classic_menu_panel(
     rl.draw_texture_pro(texture, src_top, dst_top, origin, 0.0, tint)
     rl.draw_texture_pro(texture, src_mid, dst_mid, origin, 0.0, tint)
     rl.draw_texture_pro(texture, src_bot, dst_bot, origin, 0.0, tint)
+
+
+def ui_panel_rect(index: int, timeline_ms: float, screen_width: float) -> Rect:
+    """`ui_element_render` of the panel `ui_element_table[index]`: its quads at the element position plus the
+    `ui_element_update` slide.
+
+    `ui_menu_assets_init` sets ui_menuPanel as a 512x256 quad at (20, -82) inset a pixel; `ui_menuPanelTall` moves it
+    84 left and stretches it 124 taller in three slices, and a second copy is 100 shorter than that.
+    """
+    match index:
+        case 14 | 31 | 33:
+            first_vertex, height = Vec2(21.0, -81.0), 254.0
+        case 11:
+            first_vertex, height = Vec2(-63.0, -81.0), 278.0
+        case _:
+            first_vertex, height = Vec2(-63.0, -81.0), 378.0
+    slide_x = ui_element_anim(timeline_ms, index=index, width=MENU_PANEL_WIDTH)[1]
+    top_left = ui_element_pos(index, screen_width) + first_vertex
+    return Rect.from_top_left(top_left.offset(dx=slide_x), MENU_PANEL_WIDTH, height)
+
+
+def draw_ui_panel(resources: RuntimeResources, index: int, rect: Rect, *, shadow: bool) -> None:
+    """Draw the panel element `index` at `rect` (from `ui_panel_rect`); flipped elements mirror it."""
+    draw_classic_menu_panel(
+        resources.texture(TextureId.UI_MENU_PANEL),
+        dst=rect.to_rl(),
+        shadow=shadow,
+        flip_x=ui_element_direction_flag(index),
+    )

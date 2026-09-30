@@ -12,7 +12,7 @@ from crimson.game_states import GameStateId
 from crimson.modes.quest_mode import QuestMode
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, ShowQuestOutcome, StartRun
-from crimson.screens.quest_views import QUEST_FAILED_PANEL_W, QuestFailedView
+from crimson.screens.quest_views import QuestFailedView
 from crimson.screens.quest_views.shared import QUEST_FAILED_MESSAGE_X_OFFSET, QUEST_FAILED_MESSAGE_Y_OFFSET
 from crimson.sim.run_result import RunOutcome
 from crimson.ui.animation import ui_element_timeline_window
@@ -73,25 +73,18 @@ def test_quest_failed_preserves_start_random_tag(failed: _FailedQuest) -> None:
 
 
 def test_quest_failed_panel_layout_uses_native_anchor(failed: _FailedQuest, mocker) -> None:
-    assert failed.view._panel_origin() == PANEL_TOP_LEFT
+    failed.view.state.ui.timeline_ms = 400
+    assert failed.view._panel_rect().top_left == PANEL_TOP_LEFT
 
     # The widescreen shift moves the panel down at 1024 wide.
     mocker.patch.object(rl, "get_screen_width", return_value=1024)
-    assert failed.view._panel_origin() == PANEL_TOP_LEFT.offset(dy=90.0)
+    assert failed.view._panel_rect().top_left == PANEL_TOP_LEFT.offset(dy=90.0)
 
 
-def test_quest_failed_panel_slides_in_from_left(failed: _FailedQuest) -> None:
-    view = failed.view
-    base = view._panel_origin()
-
-    view.state.ui.timeline_ms = 0
-    assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W
-
-    view.state.ui.timeline_ms = 250
-    assert view._panel_top_left().x == base.x - QUEST_FAILED_PANEL_W * 0.5
-
-    view.state.ui.timeline_ms = 400
-    assert view._panel_top_left().x == base.x
+@pytest.mark.parametrize(("timeline_ms", "dx"), [(0, -510.0), (250, -255.0), (400, 0.0)])
+def test_quest_failed_panel_slides_in_from_left(failed: _FailedQuest, timeline_ms: int, dx: float) -> None:
+    failed.view.state.ui.timeline_ms = timeline_ms
+    assert failed.view._panel_rect().left == PANEL_TOP_LEFT.x + dx
 
 
 def test_quest_failed_enter_takes_the_focused_play_again(failed: _FailedQuest, mocker) -> None:

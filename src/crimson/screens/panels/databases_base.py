@@ -3,37 +3,23 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
-from crimson.ui.menu_layout import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-)
 from grim import canvas
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ...ui.scrollbar import UiScrollbar
 from ..assets import require_runtime_resources
-from ..high_scores_layout import hs_left_panel_pos_x, hs_right_panel_pos_x
 from ..transitions import _draw_screen_fade
-
-# Shared panel layout (state_14/15/16 in the oracle): tall left panel + short right panel.
-LEFT_PANEL_POS_Y = 185.0
-LEFT_PANEL_HEIGHT = 378.0
-RIGHT_PANEL_POS_Y = 200.0
-RIGHT_PANEL_HEIGHT = 254.0
 
 
 class _DatabaseBaseView:
@@ -44,15 +30,11 @@ class _DatabaseBaseView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._widescreen_y_shift = 0.0
-
         self._back_button = UiButtonState("Back", force_wide=False)
         # The database list's `ui_scrollbar_t`: ten rows.
         self.list_scroll = UiScrollbar(visible_rows=10)
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(self._game_state))
 
@@ -73,11 +55,9 @@ class _DatabaseBaseView:
     def _assert_open(self) -> None:
         assert self._is_open, f"{self.__class__.__name__} must be opened before use"
 
-    def _panel_top_left(self, *, pos: Vec2) -> Vec2:
-        return Vec2(
-            pos.x + MENU_PANEL_OFFSET_X,
-            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
-        )
+    def _panel_rect(self, index: int) -> Rect:
+        """The databases lay out on `ui_element_slot_09` (the list) and slot 33 (the details)."""
+        return ui_panel_rect(index, self.state.ui.timeline_ms, self.state.config.display.width)
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
         if self.state.ui.closing:
@@ -106,9 +86,7 @@ class _DatabaseBaseView:
         if not enabled:
             return
 
-        screen_width = float(self.state.config.display.width)
-        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y))
+        left_top_left = self._panel_rect(9).top_left
         resources = require_runtime_resources(self.state)
 
         mouse = canvas.mouse_position()
@@ -135,44 +113,15 @@ class _DatabaseBaseView:
         draw_screen_background(self.state, self._ground)
         _draw_screen_fade(self.state)
 
-        screen_width = float(self.state.config.display.width)
-        shadows_enabled = self.state.config.display.shadows_enabled
-
-        _angle_rad, left_slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=9,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=0,
-        )
-        _angle_rad, right_slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=33,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=1,
-        )
-
-        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, LEFT_PANEL_POS_Y))
-        right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, RIGHT_PANEL_POS_Y))
-        left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
-        right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
-
-        draw_classic_menu_panel(
-            require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, MENU_PANEL_WIDTH, LEFT_PANEL_HEIGHT),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
-        draw_classic_menu_panel(
-            require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, MENU_PANEL_WIDTH, RIGHT_PANEL_HEIGHT),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-            flip_x=True,
-        )
-
         resources = require_runtime_resources(self.state)
+        shadows_enabled = self.state.config.display.shadows_enabled
+        left_panel = self._panel_rect(9)
+        right_panel = self._panel_rect(33)
+        draw_ui_panel(resources, 9, left_panel, shadow=shadows_enabled)
+        draw_ui_panel(resources, 33, right_panel, shadow=shadows_enabled)
+        left_panel_top_left = left_panel.top_left
+        right_panel_top_left = right_panel.top_left
+
         font = resources.small_font
         self._draw_contents(left_panel_top_left, right_panel_top_left, font=font)
 

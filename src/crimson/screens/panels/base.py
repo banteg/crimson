@@ -5,18 +5,14 @@ from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.ui.animation import ui_element_anim, ui_element_timeline_window, ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_item, draw_menu_sign
 from crimson.ui.menu_layout import (
     MENU_LABEL_ROW_BACK,
-    MENU_PANEL_HEIGHT,
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
     MenuEntry,
     back_button_scale,
     label_alpha,
     menu_item_bounds,
+    ui_element_pos,
 )
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
@@ -27,14 +23,10 @@ from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
 
-PANEL_POS_X = -45.0
-PANEL_POS_Y = 210.0
-PANEL_BACK_POS_X = -55.0
-PANEL_BACK_POS_Y = 430.0
 
 class PanelMenuView:
     def __init__(
@@ -46,10 +38,6 @@ class PanelMenuView:
         back_element: int,
         title: str,
         body: str | None = None,
-        panel_pos: Vec2 = Vec2(PANEL_POS_X, PANEL_POS_Y),
-        panel_offset: Vec2 = Vec2(MENU_PANEL_OFFSET_X, MENU_PANEL_OFFSET_Y),
-        panel_height: float = MENU_PANEL_HEIGHT,
-        back_pos: Vec2 = Vec2(PANEL_BACK_POS_X, PANEL_BACK_POS_Y),
         back_action: ScreenAction = Route.MENU,
     ) -> None:
         self.state = state
@@ -59,23 +47,17 @@ class PanelMenuView:
         self._is_open = False
         self._title = title
         self._body_lines = (body or "").splitlines()
-        self._panel_pos = panel_pos
-        self._panel_offset = panel_offset
-        self._panel_height = panel_height
-        self._back_pos = back_pos
         self._back_action = back_action
         self._ground: GroundRenderer | None = None
         self._entry: MenuEntry | None = None
         self._hovered = False
         self._menu_screen_width = 0
-        self._widescreen_y_shift = 0.0
         self._panel_open_sfx_played = False
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._menu_screen_width = int(layout_w)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
-        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos.y)
+        self._menu_screen_width = int(self.state.config.display.width)
+        back_y = ui_element_pos(self._back_element, self._menu_screen_width).y
+        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=back_y)
         self._hovered = False
         self.state.ui.enter(ui_elements_max_timeline(self._game_state))
         self._panel_open_sfx_played = False
@@ -201,23 +183,15 @@ class PanelMenuView:
             return
         self._ground = ensure_menu_ground(self.state)
 
+    def _panel_rect(self, index: int) -> Rect:
+        return ui_panel_rect(index, self.state.ui.timeline_ms, self._menu_screen_width)
+
     def _draw_panel(self) -> None:
-        panel = require_runtime_resources(self.state).texture(TextureId.UI_MENU_PANEL)
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=self._panel_element,
-            width=MENU_PANEL_WIDTH,
+        index = self._panel_element
+        draw_ui_panel(
+            require_runtime_resources(self.state), index, self._panel_rect(index),
+            shadow=self.state.config.display.shadows_enabled,
         )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset
-        )
-        dst = rl.Rectangle(panel_top_left.x, panel_top_left.y, MENU_PANEL_WIDTH, float(self._panel_height))
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(panel, dst=dst, tint=rl.WHITE, shadow=shadows_enabled)
 
     def _draw_entry(self, entry: MenuEntry) -> None:
         resources = require_runtime_resources(self.state)
@@ -242,7 +216,7 @@ class PanelMenuView:
             index=self._back_element,
             width=item_w * back_button_scale(self._menu_screen_width)[0],
         )
-        return Vec2(self._back_pos.x + slide_x, entry.y + self._widescreen_y_shift)
+        return Vec2(ui_element_pos(self._back_element, self._menu_screen_width).x + slide_x, entry.y)
 
     def _entry_enabled(self) -> bool:
         return self.state.ui.timeline_ms >= ui_element_timeline_window(self._back_element)[1]

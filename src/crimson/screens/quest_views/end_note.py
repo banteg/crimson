@@ -4,20 +4,18 @@ from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from grim import canvas
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import draw_small_text
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...game_modes import GameMode
-from ...ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.animation import ui_elements_max_timeline, ui_transition_alpha
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -31,12 +29,6 @@ from .shared import (
     END_NOTE_HEADER_X_OFFSET,
     END_NOTE_HEADER_Y_OFFSET,
     END_NOTE_LINE_STEP_Y,
-    END_NOTE_PANEL_GEOM_X0,
-    END_NOTE_PANEL_GEOM_Y0,
-    END_NOTE_PANEL_H,
-    END_NOTE_PANEL_POS_X,
-    END_NOTE_PANEL_POS_Y,
-    END_NOTE_PANEL_W,
 )
 
 
@@ -86,7 +78,7 @@ class EndNoteView:
         if not enabled:
             return
 
-        panel_top_left = self._panel_top_left()
+        panel_top_left = self._panel_rect().top_left
         button_pos = panel_top_left + Vec2(END_NOTE_BUTTON_X_OFFSET, END_NOTE_BUTTON_Y_OFFSET)
 
         resources = require_runtime_resources(self.state)
@@ -153,21 +145,9 @@ class EndNoteView:
 
         resources = require_runtime_resources(self.state)
 
-        panel_top_left = self._panel_top_left()
-        panel = rl.Rectangle(
-            panel_top_left.x,
-            panel_top_left.y,
-            float(END_NOTE_PANEL_W),
-            float(END_NOTE_PANEL_H),
-        )
-
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=panel,
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
+        panel = self._panel_rect()
+        draw_ui_panel(resources, 35, panel, shadow=self.state.config.display.shadows_enabled)
+        panel_top_left = panel.top_left
 
         font = resources.small_font
         hardcore = self.state.config.gameplay.hardcore
@@ -222,13 +202,9 @@ class EndNoteView:
     def take_action(self) -> ScreenAction | None:
         return self.state.ui.take_action()
 
-    def _panel_top_left(self) -> Vec2:
-        # game_update_victory_screen offsets the panel and its text by slot 35's slide.
-        slide_x = ui_element_anim(self.state.ui.timeline_ms, index=35, width=END_NOTE_PANEL_W)[1]
-        return Vec2(
-            END_NOTE_PANEL_GEOM_X0 + END_NOTE_PANEL_POS_X + slide_x,
-            END_NOTE_PANEL_GEOM_Y0 + END_NOTE_PANEL_POS_Y + menu_widescreen_y_shift(float(canvas.width())),
-        )
+    def _panel_rect(self) -> Rect:
+        """`game_update_victory_screen` lays out on `ui_element_slot_35`'s panel."""
+        return ui_panel_rect(35, self.state.ui.timeline_ms, canvas.width())
 
     def _world_entity_alpha(self) -> float:
         # `game_update_victory_screen` fades the run in with the timeline; Survival and Rush keep it lit on the way out.

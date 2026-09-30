@@ -5,8 +5,6 @@ from pathlib import Path
 import msgspec
 
 from crimson.game_states import GameStateId
-from crimson.ui.animation import ui_element_anim
-from crimson.ui.menu_layout import MENU_PANEL_WIDTH
 from grim.fonts.small import draw_small_text
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -22,7 +20,8 @@ class _ModsContentLayout(msgspec.Struct, frozen=True):
 
 class ModsMenuView(PanelMenuView):
     def __init__(self, state: GameState) -> None:
-        super().__init__(state, game_state=GameStateId.MODS_MENU, panel_element=9, back_element=9, title="Mods")
+        # `mods_menu_update` lays out on `ui_element_slot_09`; the port backs out with the panels' Back item.
+        super().__init__(state, game_state=GameStateId.MODS_MENU, panel_element=9, back_element=32, title="Mods")
         self._lines: list[str] = []
 
     def open(self) -> None:
@@ -30,18 +29,7 @@ class ModsMenuView(PanelMenuView):
         self._lines = self._build_lines()
 
     def _content_layout(self) -> _ModsContentLayout:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=self._panel_element,
-            width=MENU_PANEL_WIDTH,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset
-        )
+        panel_top_left = self._panel_rect(self._panel_element).top_left
         base_pos = panel_top_left + Vec2(212.0, 32.0)
         label_pos = base_pos.offset(dx=8.0)
         return _ModsContentLayout(base_pos=base_pos, label_pos=label_pos)

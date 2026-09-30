@@ -95,7 +95,7 @@ class ScreenNavigator:
                 self.state,
                 game_state=GameStateId.MENU_LEGACY_VARIANT,
                 panel_element=9,
-                back_element=9,
+                back_element=32,
                 title="Other games",
                 body="This menu is out of scope for the rewrite.",
             )

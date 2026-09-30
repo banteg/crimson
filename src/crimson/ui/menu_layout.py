@@ -4,6 +4,8 @@ import msgspec
 
 from grim.geom import Rect, Vec2
 
+from .layout import menu_widescreen_y_shift
+
 MENU_LABEL_WIDTH = 122.0
 MENU_LABEL_HEIGHT = 28.0
 MENU_LABEL_ROW_HEIGHT = 32.0
@@ -22,13 +24,6 @@ MENU_LABEL_STEP = 60.0
 MENU_ITEM_OFFSET_X = -71.0
 MENU_ITEM_OFFSET_Y = -59.0
 MENU_PANEL_WIDTH = 510.0
-MENU_PANEL_HEIGHT = 254.0
-# Measured from ui_render_trace at 1024x768 (stable timeline):
-# panel top-left is (pos_x + 21, pos_y - 81) and size is 510x254, plus a shadow pass at +7,+7.
-MENU_PANEL_OFFSET_X = 21.0
-MENU_PANEL_OFFSET_Y = -81.0
-MENU_PANEL_BASE_X = -45.0
-MENU_PANEL_BASE_Y = 210.0
 MENU_SCALE_SMALL_THRESHOLD = 640
 MENU_SCALE_LARGE_MIN = 801
 MENU_SCALE_LARGE_MAX = 1024
@@ -43,6 +38,43 @@ MENU_SIGN_OFFSET_Y = -61.0
 MENU_SIGN_POS_Y = 70.0
 MENU_SIGN_POS_Y_SMALL = 60.0
 MENU_SIGN_POS_X_PAD = 4.0
+
+
+def ui_element_pos(index: int, screen_width: float) -> Vec2:
+    """`ui_menu_layout_init`: where `ui_element_table[index]` sits. Every element moves down with the window width,
+    except the controls' right panel (slot 40), which is placed after that."""
+    width = int(screen_width)
+    shift_y = menu_widescreen_y_shift(float(width))
+    match index:
+        case 9:
+            return Vec2(-85.0 if width <= 640 else -35.0, 185.0 + shift_y)
+        case 11 | 31:
+            return Vec2(-45.0, 210.0 + shift_y)
+        case 12:
+            return Vec2(-55.0, 462.0 + shift_y)
+        case 14:
+            return Vec2(-183.0 if width <= 640 else -165.0, 200.0 + shift_y)
+        case 18:
+            return Vec2(-155.0, 420.0 + shift_y)
+        case 27 | 30 | 35:
+            return Vec2(-45.0, 110.0 + shift_y)
+        case 32:
+            return Vec2(-55.0, 430.0 + shift_y)
+        case 33:
+            x = float(width - 350)
+            if width > 800:
+                x -= 65.0
+            elif width > 640:
+                x -= 30.0
+            else:
+                x += 10.0
+            return Vec2(x, 200.0 + shift_y)
+        case 37 | 39:
+            return Vec2(-5.0, 185.0 + shift_y)
+        case 40:
+            return Vec2(float(width - 270), 186.0) if width <= 640 else Vec2(float(width - 350), 200.0)
+        case _:
+            raise ValueError(index)
 
 
 class MenuEntry(msgspec.Struct):

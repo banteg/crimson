@@ -4,9 +4,8 @@ import msgspec
 
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
-from crimson.ui.animation import ui_element_anim
 from crimson.ui.menu_chrome import draw_ui_quad
-from crimson.ui.menu_layout import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS, MENU_PANEL_WIDTH
+from crimson.ui.menu_layout import MENU_LABEL_ROW_HEIGHT, MENU_LABEL_ROW_OPTIONS
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import set_music_volume, set_sfx_volume
@@ -145,18 +144,7 @@ class OptionsMenuView(PanelMenuView):
         self._slider_detail.value = max(self._slider_detail.min, min(self._slider_detail.max, detail_preset))
 
     def _content_layout(self) -> _OptionsContentLayout:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=self._panel_element,
-            width=MENU_PANEL_WIDTH,
-        )
-        panel_top_left = (
-            Vec2(
-                self._panel_pos.x + slide_x,
-                self._panel_pos.y + self._widescreen_y_shift,
-            )
-            + self._panel_offset
-        )
+        panel_top_left = self._panel_rect(self._panel_element).top_left
         base_pos = panel_top_left + Vec2(212.0, 40.0)
         # `options_menu_update`: title label is anchored at panel_top + 40.
         label_pos = base_pos.offset(dx=8.0)

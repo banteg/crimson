@@ -8,7 +8,7 @@ import msgspec
 from crimson.game_states import GameStateId
 from crimson.screens.actions import ResultAction
 from crimson.screens.ui_timeline import UiTimeline
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
+from crimson.ui.animation import ui_elements_max_timeline, ui_transition_alpha
 from crimson.ui.cursor import ui_cursor_render
 from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
@@ -33,28 +33,9 @@ from ...quests.results import QuestFinalTime, QuestResultsReveal
 from ...ui.focus import UiFocus
 from ...ui.formatting import format_time_mm_ss
 from ...ui.highscore_card import ui_text_input_render
-from ...ui.layout import menu_widescreen_y_shift
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.name_entry import HighScoreNameEntry
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
-
-# `quest_results_screen_update` base layout (Crimsonland classic UI panel).
-# Values are derived from `ui_menu_assets_init` + `ui_menu_layout_init` and how
-# the quest results screen composes `ui_menuPanel` geometry:
-#   panel_left = geom_x0 + pos_x + slide_x
-#   panel_top  = geom_y0 + pos_y
-#
-# Where:
-# - pos_x/pos_y are `ui_element_t` position fields set to (-45, 110)
-# - geom_x0/geom_y0 are the first vertex coordinates of the `ui_menuPanel` geo,
-#   after `ui_menu_assets_init` transforms it into an 8-vertex 3-slice panel.
-QUEST_RESULTS_PANEL_POS_X = -45.0
-QUEST_RESULTS_PANEL_POS_Y = 110.0
-QUEST_RESULTS_PANEL_GEOM_X0 = -63.0
-QUEST_RESULTS_PANEL_GEOM_Y0 = -81.0
-
-QUEST_RESULTS_PANEL_W = 510.0
-QUEST_RESULTS_PANEL_H = 378.0
 
 TEXTURE_TOP_BANNER_W = 256.0
 TEXTURE_TOP_BANNER_H = 64.0
@@ -76,11 +57,6 @@ COLOR_GREEN = rl.Color(25, 200, 25, 255)
 # blue tint (149,175,198),
 # reused by quest/game-over captions and score-card separator outlines.
 COLOR_UI_ACCENT = rl.Color(149, 175, 198, 255)
-
-
-class _QuestResultsPanelLayout(msgspec.Struct, frozen=True):
-    panel: Rect
-    top_left: Vec2
 
 
 class QuestResultsUi(msgspec.Struct):
@@ -222,17 +198,9 @@ class QuestResultsUi(msgspec.Struct):
                 pending = GameStateId.MAIN_MENU
         return ui_transition_alpha(self.timeline.timeline_ms, state=GameStateId.QUEST_RESULTS, pending=pending)
 
-    def _panel_layout(self, *, screen_w: float) -> _QuestResultsPanelLayout:
-        panel_slide_x = ui_element_anim(self.timeline.timeline_ms, index=35, width=QUEST_RESULTS_PANEL_W)[1]
-
-        panel_pos = Vec2(QUEST_RESULTS_PANEL_GEOM_X0 + QUEST_RESULTS_PANEL_POS_X + panel_slide_x, 0.0)
-        widescreen_shift_y = menu_widescreen_y_shift(screen_w)
-        panel_pos = Vec2(
-            panel_pos.x,
-            QUEST_RESULTS_PANEL_GEOM_Y0 + QUEST_RESULTS_PANEL_POS_Y + widescreen_shift_y,
-        )
-        panel = Rect.from_top_left(panel_pos, QUEST_RESULTS_PANEL_W, QUEST_RESULTS_PANEL_H)
-        return _QuestResultsPanelLayout(panel=panel, top_left=panel_pos)
+    def _panel_layout(self, *, screen_w: float) -> Rect:
+        """`quest_results_screen_update` lays out on `ui_element_slot_35`'s panel."""
+        return ui_panel_rect(35, self.timeline.timeline_ms, screen_w)
 
     def update(
         self,
@@ -424,15 +392,7 @@ class QuestResultsUi(msgspec.Struct):
         resources = runtime_resources_for(self.assets_root)
         font = resources.small_font
         panel_layout = self._panel_layout(screen_w=screen_w)
-        panel = panel_layout.panel
-
-        shadows_enabled = self.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=panel.to_rl(),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
+        draw_ui_panel(resources, 35, panel_layout, shadow=self.config.display.shadows_enabled)
 
         content_pos = panel_layout.top_left.offset(dx=QUEST_RESULTS_CONTENT_X)
         banner_pos = content_pos + Vec2(QUEST_RESULTS_BANNER_X_FROM_CONTENT, 36.0)

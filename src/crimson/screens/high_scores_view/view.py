@@ -4,15 +4,9 @@ from crimson.game_states import GameStateId
 from crimson.quests.level import QuestLevel
 from crimson.screens.actions import Route, ScreenAction, StartRun
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline, ui_transition_alpha
+from crimson.ui.animation import ui_elements_max_timeline, ui_transition_alpha
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
-from crimson.ui.menu_layout import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-)
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_sfx, update_audio
@@ -27,7 +21,7 @@ from ...game_modes import GameMode
 from ...persistence.highscores import HighScoreRecord
 from ...ui.checkbox import UiCheckbox, ui_checkbox_update
 from ...ui.dropdown import UiListWidget, ui_list_widget_update
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_update
 from ...ui.scrollbar import UiScrollbar, ui_scrollbar_update
 from ...ui.text_input import UiTextInput, ui_text_input_focus, update_name_entry_text
@@ -40,15 +34,11 @@ from ..high_scores_layout import (
     HS_BUTTON_X,
     HS_BUTTON_Y0,
     HS_HARDCORE_CHECKBOX_OFFSET,
-    HS_LEFT_PANEL_HEIGHT,
-    HS_LEFT_PANEL_POS_Y,
     HS_QUEST_ARROW_X,
     HS_QUEST_ARROW_Y,
     HS_RIGHT_CHECK_X,
     HS_RIGHT_CHECK_Y,
     HS_RIGHT_GAME_MODE_WIDGET,
-    HS_RIGHT_PANEL_HEIGHT,
-    HS_RIGHT_PANEL_POS_Y,
     HS_RIGHT_PLAYER_COUNT_WIDGET,
     HS_RIGHT_SCORE_LIST_WIDGET,
     HS_RIGHT_SHOW_SCORES_WIDGET,
@@ -56,9 +46,7 @@ from ..high_scores_layout import (
     HS_SCORE_FRAME_Y,
     PROFILE_ADD_ITEM,
     PROFILE_NAME_INPUT_W,
-    hs_left_panel_pos_x,
     hs_right_options_x_shift,
-    hs_right_panel_pos_x,
 )
 from ..quest_views.shared import QUEST_HARDCORE_UNLOCK_INDEX
 from ..transitions import _draw_screen_fade
@@ -77,7 +65,6 @@ class HighScoresView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
         self._dt = 0.0
-        self._widescreen_y_shift = 0.0
         self._play_button = UiButtonState("Play a game", force_wide=True)
         self._back_button = UiButtonState("Back", force_wide=False)
 
@@ -105,8 +92,6 @@ class HighScoresView:
         self.hardcore_checkbox = UiCheckbox("Hardcore")
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(GameStateId.HIGHSCORES))
         self.score_scroll.scroll_offset = 0.0
@@ -175,11 +160,9 @@ class HighScoresView:
         if not self.player_count_list.enabled:
             self.player_count_list.selected_index = 0
 
-    def _panel_top_left(self, *, pos: Vec2) -> Vec2:
-        return Vec2(
-            pos.x + MENU_PANEL_OFFSET_X,
-            pos.y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
-        )
+    def _panel_rect(self, index: int) -> Rect:
+        """`highscore_screen` lays out on `ui_element_slot_09` (the scores) and slot 33 (the options)."""
+        return ui_panel_rect(index, self.state.ui.timeline_ms, self.state.config.display.width)
 
     def update(self, dt: float) -> None:
         self._assert_open()
@@ -206,29 +189,9 @@ class HighScoresView:
         if not enabled:
             return
 
-        screen_width = float(self.state.config.display.width)
         resources = require_runtime_resources(self.state)
-
-        # Compute animated panel positions so hit-tests match the draw path even while sliding.
-        panel_w = MENU_PANEL_WIDTH
-        _angle_rad, left_slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=9,
-            width=panel_w,
-            direction_flag=0,
-        )
-        _angle_rad, right_slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=33,
-            width=panel_w,
-            direction_flag=1,
-        )
-        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y))
-        right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y))
-        left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
-        right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
+        left_panel_top_left = self._panel_rect(9).top_left
+        right_panel_top_left = self._panel_rect(33).top_left
 
         # `highscore_screen` focus order: the Hardcore checkbox, the score list, Update / Play / Back, then the
         # right panel's checkbox and lists. A press while a list is open belongs to the lists only.
@@ -583,42 +546,13 @@ class HighScoresView:
         quest_major = int(request.quest_level.major) if request.quest_level is not None else 0
         quest_minor = int(request.quest_level.minor) if request.quest_level is not None else 0
 
-        screen_width = float(self.state.config.display.width)
         shadows_enabled = self.state.config.display.shadows_enabled
-        panel_w = MENU_PANEL_WIDTH
-        _angle_rad, left_slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=9,
-            width=panel_w,
-            direction_flag=0,
-        )
-        _angle_rad, right_slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=33,
-            width=panel_w,
-            direction_flag=1,
-        )
-
-        left_panel_pos_x = hs_left_panel_pos_x(screen_width)
-        left_top_left = self._panel_top_left(pos=Vec2(left_panel_pos_x, HS_LEFT_PANEL_POS_Y))
-        right_panel_pos_x = hs_right_panel_pos_x(screen_width)
-        right_top_left = self._panel_top_left(pos=Vec2(right_panel_pos_x, HS_RIGHT_PANEL_POS_Y))
-        left_panel_top_left = left_top_left.offset(dx=float(left_slide_x))
-        right_panel_top_left = right_top_left.offset(dx=float(right_slide_x))
-
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(left_panel_top_left.x, left_panel_top_left.y, panel_w, HS_LEFT_PANEL_HEIGHT),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=rl.Rectangle(right_panel_top_left.x, right_panel_top_left.y, panel_w, HS_RIGHT_PANEL_HEIGHT),
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-            flip_x=True,
-        )
+        left_panel = self._panel_rect(9)
+        right_panel = self._panel_rect(33)
+        draw_ui_panel(resources, 9, left_panel, shadow=shadows_enabled)
+        draw_ui_panel(resources, 33, right_panel, shadow=shadows_enabled)
+        left_panel_top_left = left_panel.top_left
+        right_panel_top_left = right_panel.top_left
 
         selected_rank = draw_main_panel(
             self,

@@ -5,22 +5,18 @@ import datetime as dt
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScoreQuery, ScreenAction, ShowScores
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign, draw_ui_quad
 from crimson.ui.menu_layout import (
     MENU_LABEL_ROW_HEIGHT,
     MENU_LABEL_ROW_STATISTICS,
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
 )
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_music, play_sfx, stop_music, update_audio
 from grim.fonts.small import draw_small_text
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
@@ -28,15 +24,10 @@ from grim.terrain_render import GroundRenderer
 
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
-
-# Measured from ui_render_trace_oracle_1024x768.json (state_4:played for # hours # minutes, timeline=300).
-STATISTICS_PANEL_POS_X = -89.0
-STATISTICS_PANEL_POS_Y = 185.0
-STATISTICS_PANEL_HEIGHT = 378.0
 
 # Child layout inside the panel (relative to panel top-left).
 _TITLE_X = 290.0
@@ -92,8 +83,6 @@ class StatisticsMenuView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._widescreen_y_shift = 0.0
-
         self._btn_high_scores = UiButtonState("High scores", force_wide=True)
         self._btn_weapons = UiButtonState("Weapons", force_wide=True)
         self._btn_perks = UiButtonState("Perks", force_wide=True)
@@ -101,8 +90,6 @@ class StatisticsMenuView:
         self._btn_back = UiButtonState("Back", force_wide=False)
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(GameStateId.STATISTICS_MENU))
 
@@ -140,11 +127,8 @@ class StatisticsMenuView:
     def _assert_open(self) -> None:
         assert self._is_open, "StatisticsMenuView must be opened before use"
 
-    def _panel_top_left(self) -> Vec2:
-        return Vec2(
-            STATISTICS_PANEL_POS_X + MENU_PANEL_OFFSET_X,
-            STATISTICS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
-        )
+    def _panel_rect(self) -> Rect:
+        return ui_panel_rect(39, self.state.ui.timeline_ms, self.state.config.display.width)
 
     def _begin_close_transition(self, action: ScreenAction) -> None:
         if self.state.ui.closing:
@@ -179,13 +163,7 @@ class StatisticsMenuView:
         if not interactive:
             return
 
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=39,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=0,
-        )
-        panel_top_left = self._panel_top_left().offset(dx=float(slide_x))
+        panel_top_left = self._panel_rect().top_left
         resources = require_runtime_resources(self.state)
 
         mouse = canvas.mouse_position()
@@ -230,26 +208,9 @@ class StatisticsMenuView:
 
         resources = require_runtime_resources(self.state)
 
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=39,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=0,
-        )
-        panel_top_left = self._panel_top_left().offset(dx=float(slide_x))
-        dst = rl.Rectangle(
-            panel_top_left.x,
-            panel_top_left.y,
-            MENU_PANEL_WIDTH,
-            STATISTICS_PANEL_HEIGHT,
-        )
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=dst,
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
+        panel = self._panel_rect()
+        draw_ui_panel(resources, 39, panel, shadow=self.state.config.display.shadows_enabled)
+        panel_top_left = panel.top_left
 
         # Title: full-size row from ui_itemTexts.jaz (128x32).
         label_tex = resources.texture(TextureId.UI_ITEM_TEXTS)

@@ -5,20 +5,13 @@ import msgspec
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
-from crimson.ui.menu_layout import (
-    MENU_PANEL_OFFSET_X,
-    MENU_PANEL_OFFSET_Y,
-    MENU_PANEL_WIDTH,
-)
 from grim import canvas
-from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
@@ -26,17 +19,12 @@ from grim.terrain_render import GroundRenderer
 from ...debug import debug_enabled
 from ...game.types import GameState
 from ...ui.focus import UiFocusTarget
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
-from ..high_scores_layout import hs_left_panel_pos_x
 from ..transitions import _draw_screen_fade
 
-# Measured from ui_render_trace_oracle_1024x768.json (state_17:credits, timeline=300).
-CREDITS_PANEL_POS_Y = 185.0
-CREDITS_PANEL_HEIGHT = 378.0
-
-# Child layout inside the panel (relative to panel top-left).
+# Child layout inside `ui_element_slot_09`'s panel (relative to its top-left).
 _TITLE_X = 202.0
 _TITLE_Y = 46.0
 
@@ -219,8 +207,6 @@ class CreditsView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._widescreen_y_shift = 0.0
-
         self._lines: list[_CreditsLine] = []
         self._line_max_index = 0
         self._secret_line_base_index = 0x54
@@ -235,8 +221,6 @@ class CreditsView:
         self._text_focus = UiFocusTarget()
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(GameStateId.CREDITS))
 
@@ -269,11 +253,8 @@ class CreditsView:
             return
         self.state.ui.begin(action)
 
-    def _panel_top_left(self) -> Vec2:
-        return Vec2(
-            hs_left_panel_pos_x(float(self.state.config.display.width)) + MENU_PANEL_OFFSET_X,
-            CREDITS_PANEL_POS_Y + self._widescreen_y_shift + MENU_PANEL_OFFSET_Y,
-        )
+    def _panel_rect(self) -> Rect:
+        return ui_panel_rect(9, self.state.ui.timeline_ms, self.state.config.display.width)
 
     @staticmethod
     def _scroll_fraction_px(scroll_time_s: float) -> float:
@@ -293,15 +274,6 @@ class CreditsView:
         self._scroll_line_end_index = whole_scroll + 1
         if self._line_max_index < self._scroll_line_end_index:
             self._scroll_line_end_index = self._line_max_index
-
-    def _panel_slide_x(self) -> float:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=9,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=0,
-        )
-        return float(slide_x)
 
     @staticmethod
     def _mouse_inside_rect(mouse: rl.Vector2, *, x: float, y: float, w: float, h: float) -> bool:
@@ -444,8 +416,7 @@ class CreditsView:
         if not interactive:
             return
 
-        slide_x = self._panel_slide_x()
-        panel_top_left = self._panel_top_left().offset(dx=slide_x)
+        panel_top_left = self._panel_rect().top_left
         resources = require_runtime_resources(self.state)
         mouse = canvas.mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -498,22 +469,9 @@ class CreditsView:
 
         resources = require_runtime_resources(self.state)
 
-        slide_x = self._panel_slide_x()
-        panel_top_left = self._panel_top_left().offset(dx=slide_x)
-
-        dst = rl.Rectangle(
-            panel_top_left.x,
-            panel_top_left.y,
-            MENU_PANEL_WIDTH,
-            CREDITS_PANEL_HEIGHT,
-        )
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=dst,
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
+        panel = self._panel_rect()
+        draw_ui_panel(resources, 9, panel, shadow=self.state.config.display.shadows_enabled)
+        panel_top_left = panel.top_left
 
         font = resources.small_font
         draw_small_text(

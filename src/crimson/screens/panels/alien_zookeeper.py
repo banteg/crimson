@@ -7,20 +7,16 @@ import msgspec
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route, ScreenAction
 from crimson.screens.chrome import draw_screen_background, ensure_menu_ground
-from crimson.ui.animation import ui_element_anim, ui_elements_max_timeline
+from crimson.ui.animation import ui_elements_max_timeline
 from crimson.ui.cursor import ui_cursor_render
-from crimson.ui.layout import menu_widescreen_y_shift
 from crimson.ui.menu_chrome import draw_menu_sign
-from crimson.ui.menu_layout import (
-    MENU_PANEL_WIDTH,
-)
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx, update_audio
 from grim.fonts.small import (
     draw_small_text,
 )
-from grim.geom import Vec2
+from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
 from grim.sfx_map import SfxId
 from grim.terrain_render import GroundRenderer
@@ -28,7 +24,7 @@ from grim.terrain_render import GroundRenderer
 from ...game.types import GameState
 from ...rng_caller_static import RngCallerStatic
 from ...ui.focus import UiFocusTarget
-from ...ui.menu_panel import draw_classic_menu_panel
+from ...ui.menu_panel import draw_ui_panel, ui_panel_rect
 from ...ui.perk_menu import UiButtonState, button_draw, button_update
 from ..assets import require_runtime_resources
 from ..transitions import _draw_screen_fade
@@ -41,13 +37,7 @@ _BOARD_SIZE = 192.0
 _TIMER_RESET_MS = 0x2580
 _MATCH_TIMER_BONUS_MS = 2000
 
-# `credits_secret_alien_zookeeper_update` lays out from `ui_element_slot_09`: pos (-35, 185) (-85 at <= 640, the
-# widescreen shift added) plus the tall panel's first vertex (-63, -81).
-_LAYOUT_OFFSET_X = -35.0
-_LAYOUT_OFFSET_X_SMALL = -85.0
-_LAYOUT_POS_X = -63.0
-_LAYOUT_POS_Y = -81.0
-_LAYOUT_BASE_Y = 185.0
+# `credits_secret_alien_zookeeper_update` lays out from `ui_element_slot_09`'s panel top-left.
 _TITLE_BASE_Y_OFFSET = 50.0
 _BOARD_X_OFFSET = 220.0  # 300 - 80
 _BOARD_Y_OFFSET = 40.0
@@ -63,8 +53,7 @@ _BACK_LABEL = "Back"
 
 
 class _AzkLayout(msgspec.Struct):
-    panel_x: float
-    panel_y: float
+    panel: Rect
     board_x: float
     board_y: float
     tile_size: float
@@ -126,8 +115,6 @@ class AlienZooKeeperView:
         self._is_open = False
         self._ground: GroundRenderer | None = None
 
-        self._widescreen_y_shift = 0.0
-
         self._board: list[int] = [0] * _BOARD_CELLS
         self._selected_index = -1
         self._timer_ms = 0
@@ -141,8 +128,6 @@ class AlienZooKeeperView:
         self._cursor_index = 0
 
     def open(self) -> None:
-        layout_w = float(self.state.config.display.width)
-        self._widescreen_y_shift = menu_widescreen_y_shift(layout_w)
         self._ground = None if self.state.pause_background is not None else ensure_menu_ground(self.state)
         self.state.ui.enter(ui_elements_max_timeline(GameStateId.CREDITS_SECRET))
 
@@ -170,25 +155,14 @@ class AlienZooKeeperView:
             return
         self.state.ui.begin(action)
 
-    def _panel_slide_x(self) -> float:
-        _angle_rad, slide_x = ui_element_anim(
-            self.state.ui.timeline_ms,
-            index=9,
-            width=MENU_PANEL_WIDTH,
-            direction_flag=0,
-        )
-        return float(slide_x)
-
     def _layout(self) -> _AzkLayout:
-        layout_offset_x = _LAYOUT_OFFSET_X_SMALL if float(self.state.config.display.width) < 641.0 else _LAYOUT_OFFSET_X
-        slide_x = self._panel_slide_x()
-        anchor_x = _LAYOUT_POS_X + layout_offset_x + _BOARD_X_OFFSET + slide_x
-        title_base_y = _LAYOUT_BASE_Y + _LAYOUT_POS_Y + _TITLE_BASE_Y_OFFSET + self._widescreen_y_shift
+        panel = ui_panel_rect(9, self.state.ui.timeline_ms, self.state.config.display.width)
+        anchor_x = panel.left + _BOARD_X_OFFSET
+        title_base_y = panel.top + _TITLE_BASE_Y_OFFSET
         board_x = anchor_x + 22.0
         board_y = title_base_y + _BOARD_Y_OFFSET
         return _AzkLayout(
-            panel_x=_LAYOUT_POS_X + layout_offset_x + slide_x,
-            panel_y=_LAYOUT_BASE_Y + _LAYOUT_POS_Y + self._widescreen_y_shift,
+            panel=panel,
             board_x=board_x,
             board_y=board_y,
             tile_size=_TILE_SIZE,
@@ -375,19 +349,7 @@ class AlienZooKeeperView:
         font = resources.small_font
         layout = self._layout()
 
-        dst = rl.Rectangle(
-            layout.panel_x,
-            layout.panel_y,
-            MENU_PANEL_WIDTH,
-            378.0,
-        )
-        shadows_enabled = self.state.config.display.shadows_enabled
-        draw_classic_menu_panel(
-            resources.texture(TextureId.UI_MENU_PANEL),
-            dst=dst,
-            tint=rl.WHITE,
-            shadow=shadows_enabled,
-        )
+        draw_ui_panel(resources, 9, layout.panel, shadow=self.state.config.display.shadows_enabled)
 
         draw_small_text(font, _TITLE, Vec2(layout.title_x, layout.title_y), rl.WHITE)
         draw_small_text(font, _SUBTITLE_1, Vec2(layout.subtitle_1_x, layout.subtitle_1_y), rl.WHITE)
