@@ -12,6 +12,7 @@ class PlayerInput(msgspec.Struct, frozen=True, kw_only=True):
     # The player's `config_movement_schemes` / `config_aim_schemes` entries, which `player_update` reads each frame.
     move_mode: MovementControlType
     aim_scheme: AimScheme
+    # The dual action pad's move stick, or the point-click move target (x = -1 when unset).
     move: Vec2 = Vec2()
     aim: Vec2 = Vec2()
     fire_down: bool = False

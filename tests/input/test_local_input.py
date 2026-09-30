@@ -336,7 +336,7 @@ def test_local_input_reload_pressed_reads_per_player_input_slot(
     assert out.reload_pressed is True
 
 
-def test_local_input_mouse_point_click_moves_toward_the_clicked_point(
+def test_local_input_mouse_point_click_carries_the_clicked_point(
     mocker: MockerFixture,
 ) -> None:
     mouse_world = Vec2(160.0, 140.0)
@@ -369,8 +369,8 @@ def test_local_input_mouse_point_click_moves_toward_the_clicked_point(
 
     assert out.reload_pressed is True
     assert interpreter._states[0].move_target == mouse_world
-    # The raw delta lets player_update see native `pos - move_target` exactly.
-    assert out.move == Vec2(60.0, 40.0)
+    # The sim steers toward the target from wherever the player is on each tick.
+    assert out.move == mouse_world
 
 
 def test_local_input_computer_move_mode_near_center_heads_toward_target(

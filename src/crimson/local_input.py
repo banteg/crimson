@@ -17,6 +17,7 @@ from .input_codes import (
     input_code_is_pressed,
 )
 from .math_parity import (
+    f32,
     native_aim_point_from_heading,
     x87_pc24_hypot,
     x87_pc24_sub,
@@ -35,7 +36,6 @@ PAD_AIM_DIST_MUL_DEFAULT = 96.0
 # Port-only: native aims at the player when the stick centers; a resting stick
 # instead keeps the last direction, and small drift inside this radius is ignored.
 _PAD_AIM_DEADZONE = 0.2
-_POINT_CLICK_STOP_RADIUS = 20.0
 _COMPUTER_TARGET_SWITCH_HYSTERESIS = 64.0
 _COMPUTER_ARENA_CENTER = Vec2(512.0, 512.0)
 _COMPUTER_MOVE_TARGET_RADIUS = 300.0
@@ -333,13 +333,11 @@ class LocalInputInterpreter:
             axis_x = input_axis_value(move_axis_x, player_index=idx)
             move_vec = Vec2(_clamp_unit(axis_x), _clamp_unit(axis_y))
         elif move_mode_type is MovementControlType.MOUSE_POINT_CLICK:
+            # The reload key drops the float move target at the cursor (0x00413f5e); the sim steers
+            # toward it each tick from the player's position then.
             if input_code_is_down(reload_key, player_index=idx):
-                state.move_target = mouse_world
-            if float(state.move_target.x) >= 0.0 and float(state.move_target.y) >= 0.0:
-                # Raw f32 delta: the sim's heading then sees native `pos - move_target`.
-                delta = _pc24_delta(state.move_target, player.pos)
-                if x87_pc24_hypot(delta.x, delta.y) > _POINT_CLICK_STOP_RADIUS:
-                    move_vec = delta
+                state.move_target = Vec2(f32(mouse_world.x), f32(mouse_world.y))
+            move_vec = state.move_target
         elif move_mode_type is MovementControlType.STATIC:
             move_up_pressed = _key_down_with_single_player_alt(
                 move_forward_key,

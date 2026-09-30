@@ -82,6 +82,8 @@ _RELATIVE_MOVE_HEADING_FORWARD_LEFT = f32(5.4977875)
 _RELATIVE_MOVE_TURN_ALIGN_SCALE = f32(7.957747)
 _AIM_POINT_RADIUS = 60.0
 _DUAL_ACTION_PAD_DEADZONE = f32(0.2)
+_POINT_CLICK_NO_TARGET = -1.0
+_POINT_CLICK_STOP_RADIUS = 20.0
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
@@ -542,6 +544,18 @@ def _native_move_target_heading(movement_input: Vec2, *, normalize: bool, wrap: 
     return heading
 
 
+def _point_click_target_heading(pos: Vec2, move_target: Vec2) -> float | None:
+    """Point-click steering toward the player's move target (0x00413f99..0x00414018)."""
+
+    # `cmp move_target.x, -1.0f`: no target set yet.
+    if move_target.x == _POINT_CLICK_NO_TARGET:
+        return None
+    away = Vec2(x87_pc24_sub(pos.x, move_target.x), x87_pc24_sub(pos.y, move_target.y))
+    if not x87_pc24_hypot(away.x, away.y) > _POINT_CLICK_STOP_RADIUS:
+        return None
+    return _native_move_target_heading(away, normalize=False, wrap=True)
+
+
 def _away_from(move: Vec2) -> Vec2:
     # `0 - v` keeps a +0 component positive, like native `pos - target`.
     return Vec2(x87_pc24_sub(0.0, move.x), x87_pc24_sub(0.0, move.y))
@@ -678,8 +692,7 @@ def _player_move(
             if raw_move.x != 0.0 or raw_move.y != 0.0:
                 target_heading = _native_move_target_heading(_away_from(raw_move), normalize=False, wrap=False)
         elif move_mode == MovementControlType.MOUSE_POINT_CLICK:
-            if raw_move.x != 0.0 or raw_move.y != 0.0:
-                target_heading = _native_move_target_heading(_away_from(raw_move), normalize=False, wrap=True)
+            target_heading = _point_click_target_heading(player.pos, raw_move)
         elif x87_pc24_hypot(raw_move.x, raw_move.y) > _DUAL_ACTION_PAD_DEADZONE:
             target_heading = _native_move_target_heading(Vec2(-raw_move.x, -raw_move.y), normalize=True, wrap=True)
         move_delta = _player_move_toward_heading(

@@ -529,6 +529,25 @@ def test_player_update_preserve_bugs_keeps_empty_reload_loop() -> None:
     assert player.weapon.reload_active is True
 
 
+@pytest.mark.parametrize(
+    ("move_target", "moves"),
+    [
+        (Vec2(300.0, 100.0), True),
+        (Vec2(115.0, 100.0), False),  # inside the 20-unit stop radius
+        (Vec2(-1.0, 300.0), False),  # x = -1: no target set
+    ],
+)
+def test_player_update_point_click_steers_to_the_move_target(move_target: Vec2, moves: bool) -> None:
+    world = make_world()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), heading=f32(math.pi / 2))
+    world.players[:] = [player]
+
+    step_player(world, player, player_input(move=move_target, move_mode=MovementControlType.MOUSE_POINT_CLICK), 0.1)
+
+    assert (player.move_speed > 0.0) is moves
+    assert (player.pos.x > 100.0) is moves
+
+
 def test_player_update_point_click_reload_key_does_not_start_reload() -> None:
     world = make_world()
     player = PlayerState(
