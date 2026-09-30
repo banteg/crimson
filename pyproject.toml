@@ -46,6 +46,7 @@ asm-differ = { git = "https://github.com/simonlindholm/asm-differ", rev = "0dd09
 [dependency-groups]
 dev = [
     "crimson-re",
+    "mkdocstrings[python]>=1.0.6",
     "pytest>=9.0.2",
     "pytest-mock>=3.15.1",
     "ruff>=0.16.9",
