@@ -153,6 +153,10 @@ uv run crimson match scratch tools/match/scratches/console_clear_log --build 1.4
 uv run crimson match probe tools/match/scratches/console_clear_log --build 1.4.0 --source /tmp/candidate.cpp
 ```
 
+The initial [compiler baseline](../tools/match/FREEWARE-SETUP-2026-09-30.md)
+records 183, 200 and 252 matching source scratches respectively across both
+images, with the remaining mapped candidates classified as WIP or audit.
+
 These maps are a starting point for recovering changed bodies, not a complete
 inventory of freeware functions. They are not marked `reported`: publishing a
 percentage needs an independent native inventory, including functions with no
