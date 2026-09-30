@@ -21,10 +21,10 @@ from crimson.math_parity import f32
 from crimson.modes.survival_mode import SurvivalMode
 from crimson.replay import load_replay
 from crimson.replay.driver.playback_driver import PlaybackWalkObserver, build_verify_playback_driver
-from crimson_re.dbg.state_digest import session_digest
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
+from tests.support.state_digest import session_digest
 
 # Frame times in seconds: high refresh rates, a 0.1 s lag spike (six ticks) and odd rates.
 _FRAME_DTS = (1 / 144, 1 / 144, 1 / 120, 0.1, 1 / 60, 0.033, 1 / 240, 0.05, 1 / 75)

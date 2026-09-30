@@ -116,7 +116,7 @@ controller interpretation, ragged frame times and perk commands, then replays
 the recording and compares complete session state along the way;
 `tests/replay/test_live_run_start.py` compares full session state through
 actual mode startup and recording. Compact checkpoints support native
-comparison but omit state: use `session_digest` in `crimson-re/src/crimson_re/dbg/state_digest.py`
+comparison but omit state: use `session_digest` in `tests/support/state_digest.py`
 for same-build port regression checks.
 
 Replay play, verify, info, benchmark and render all use this simulation contract.

@@ -9,10 +9,10 @@ from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_spec import RunSpec
-from crimson_re.dbg.state_digest import session_digest
 from grim.geom import Vec2
 from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import unverified_replay
+from tests.support.state_digest import session_digest
 
 
 @pytest.mark.parametrize("perk", [PerkId.REFLEX_BOOSTED, PerkId.BANDAGE, PerkId.INSTANT_WINNER, PerkId.AMMO_MANIAC])

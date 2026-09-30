@@ -127,10 +127,10 @@ def test_audio_and_camera_consumption_are_independent_of_tick_partition(mocker, 
     from crimson.sim.batch_apply import apply_presentation_plans
     from crimson.sim.sessions import DeterministicSession
     from crimson.world.runtime import WorldRuntime
-    from crimson_re.dbg.state_digest import session_digest
     from grim.geom import Vec2
     from grim.raylib_api import rl
     from tests.support.audio import make_sfx_state, stub_sfx_backend
+    from tests.support.state_digest import session_digest
 
     mocker.patch.object(rl, "get_screen_width", return_value=640)
     mocker.patch.object(rl, "get_screen_height", return_value=480)

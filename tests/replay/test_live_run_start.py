@@ -13,12 +13,12 @@ from crimson.quests.level import QuestLevel
 from crimson.replay.driver.playback_driver import PlaybackDriver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import TypoCharCommand
-from crimson_re.dbg.state_digest import session_state_bytes
 from grim.geom import Vec2
 from grim.rand import Crand
 from grim.view import ViewContext
 from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import unverified_replay
+from tests.support.state_digest import session_state_bytes
 
 
 @pytest.mark.usefixtures("headless_resources")
