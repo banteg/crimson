@@ -67,7 +67,13 @@ def game_state_elements(
             return (0, 14, 18, 40)
         case GameStateId.HIGHSCORES | GameStateId.WEAPON_DATABASE | GameStateId.PERK_DATABASE:
             return (0, 9, 33)
-        case GameStateId.HIGHSCORE_LEGACY | GameStateId.CREDITS_SECRET | GameStateId.MODS_MENU | GameStateId.CREDITS:
+        case (
+            GameStateId.HIGHSCORE_LEGACY
+            | GameStateId.MENU_LEGACY_VARIANT
+            | GameStateId.CREDITS_SECRET
+            | GameStateId.MODS_MENU
+            | GameStateId.CREDITS
+        ):
             return (0, 9)
         case GameStateId.QUEST_SELECT:
             return (0, 37)

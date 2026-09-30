@@ -133,6 +133,17 @@ def test_secret_board_escape_returns_to_the_statistics(loop, mocker) -> None:
     assert isinstance(loop.state.screens.active, StatisticsMenuView)
 
 
+def test_other_games_slides_in_and_escapes_to_the_main_menu(loop, mocker) -> None:
+    # `game_state_set` turns on the sign and slot 9 for the legacy menu, so its timeline runs to 300 ms.
+    finish_transition(loop)
+    loop.navigation.navigate(Route.OTHER_GAMES)
+    finish_transition(loop)
+    assert loop.state.ui.opened
+    press(loop, mocker, rl.KeyboardKey.KEY_ESCAPE)
+    finish_transition(loop)
+    assert isinstance(loop.state.screens.active, MenuView)
+
+
 def test_perk_database_details_follow_the_keyboard(loop, mocker) -> None:
     loop.navigation.navigate(Route.PERKS)
     finish_transition(loop)
