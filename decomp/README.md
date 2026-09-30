@@ -133,7 +133,7 @@ uv run crimson match build-scan 1.9.8
 A reference to a global that the build's data map does not name stays
 unresolved, so such a function reports `audit`, never `match`.
 
-Builds marked `reported` in `builds.json` (1.9.93 and 1.9.8) are published to
+Builds marked `reported` in `builds.json` (1.9.93, 1.9.8 and the three freeware builds) are published to
 decomp.dev, each from its own evidence; see
 [analysis/decomp/README.md](../analysis/decomp/README.md#198).
 
@@ -157,12 +157,33 @@ The initial [compiler baseline](../tools/match/FREEWARE-SETUP-2026-09-30.md)
 records 183, 200 and 252 matching source scratches respectively across both
 images, with the remaining mapped candidates classified as WIP or audit.
 
-These maps are a starting point for recovering changed bodies, not a complete
-inventory of freeware functions. They are not marked `reported`: publishing a
-percentage needs an independent native inventory, including functions with no
-1.9 counterpart. Placement evidence alone never earns compiled match credit.
-The shared source remains under `decomp/1.9`; add a freeware family and its own
-layout only once native evidence supports its grouping.
+The donor maps remain partial, but each image also has a `native.json` inventory
+from independent Binary Ninja control-flow discovery, refined by verified
+unchanged body starts. Reports include native functions without donor identities
+and every remaining executable byte. Unknown remainders, including alignment
+and uncertain embedded data, count toward the denominator with zero credit;
+these reports use a different inventory policy from the curated 1.9 reports.
+They are marked `reported` and CI uploads all five version artifacts.
+
+`Confirmed Game & Engine` covers the reviewed initial application/engine object
+clusters, including their uncredited remainders. Uncertain template/SDK helper
+intervals remain under `Unclassified ownership`; only exact donor library
+identities outside those clusters receive library classification. Use `All` for
+the complete executable denominator. Data and executable linking remain
+unmeasured for freeware. Placement evidence never earns compiled match credit.
+
+To regenerate discovery with the licensed Binary Ninja GUI running:
+
+```sh
+bn target list
+uv run scripts/export_freeware_native_inventory.py --target <explicit-selector>
+uv run crimson match report --refresh -j 8
+```
+
+The exporter preserves reviewed ownership boundaries and checks their byte pins.
+Stage any new inventory inputs before refreshing reports. The shared source
+remains under `decomp/1.9`; a freeware source family/layout still needs separate
+native grouping evidence.
 
 ## Scope
 

@@ -62,7 +62,7 @@ jobs:
           ' | while read -r build tree name sha256; do
             mkdir -p "$tree"
             curl --fail --location --retry 3 --retry-all-errors \
-              --output "$tree/$name" "https://paq.crimson.banteg.xyz/v$build/$name"
+              --output "$tree/$name" "https://paq.crimson.banteg.xyz/v$build/$name?sha256=$sha256"
             echo "$sha256  $tree/$name" | sha256sum --check
           done
 

@@ -21,13 +21,13 @@ from pathlib import Path
 from typing import Any
 
 from . import match as matchlib
-from . import match_builds, match_data_report, match_toolchain, native_reference_link
+from . import match_builds, match_data_report, match_native_inventory, match_toolchain, native_reference_link
 from . import match_report_accounting as accounting
 
 # The canonical build: curated inventory, data evidence and the ownership ranges every build reuses.
 VERSION = "1.9.93"
 DEFAULT_REPORTS = matchlib.REPO_ROOT / "artifacts" / "decomp"
-BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata|recovered)\.json")
+BUILD_MAP_RE = re.compile(r"analysis/decomp/[^/]+/[^/]+/(?:functions|data|imports|metadata|recovered|native)\.json")
 
 
 def evidence_path(version: str) -> Path:
@@ -132,6 +132,9 @@ def _inventory(version: str = VERSION) -> list[dict[str, Any]]:
     """The version's function inventory: the curated one, or another build's map of it."""
     rows: list[dict[str, Any]] = []
     for build_image in _images(version):
+        if build_image.native_inventory is not None:
+            rows.extend(match_native_inventory.load(build_image))
+            continue
         target = build_image.target
         manifest = matchlib.load_function_manifest(
             target.functions_path,
@@ -256,7 +259,7 @@ def refresh_evidence(version: str = VERSION, *, jobs: int = matchlib.DEFAULT_MAT
         # A canonical source that another build's compiler rejects leaves that function without a candidate.
         statuses = [
             row.status
-            for row in match_builds.scan_build(match_builds.load_registry(), version, jobs=jobs)
+            for row in match_builds.scan_build(match_builds.load_registry(), version, jobs=jobs, native_inventory=True)
             if row.status.error is None
         ]
         configs = [status.config for status in statuses]
@@ -388,6 +391,9 @@ def build_report(
                 else:
                     linked_data.append(record)
     labels, library_ranges = _category_definitions()
+    if any(row.get("native_kind") == "unresolved" for row in functions):
+        labels["unresolved"] = "Unresolved executable bytes"
+        labels["game"] = "Confirmed Game & Engine"
     if data is not None and "ownership" in data:
         labels.update({"game.data": "Game & Engine + attributed data",
                        "libs.data": "Libraries + attributed data",
@@ -424,27 +430,39 @@ def build_report(
         # objdiff's treemap paints 100% green. An unresolved-reference 100%
         # instruction score must remain visibly partial, like our `audit` state.
         percent = (100.0 if is_matched else min(ratio * 100, 99.99)) if eligible else 0.0
+        is_function = row.get("native_kind", "function") == "function"
         measures = _measures(
             size,
             size if is_matched else 0,
             size if is_complete else 0,
             percent,
-            1,
+            int(is_function),
             int(is_matched),
             1,
             int(is_complete),
         )
         name = row["name"] if names[row["name"]] == 1 else f"{row['name']}@{accounting.native_id(row)}"
         metadata: dict[str, Any] = {"complete": is_complete}
-        categories = [{"crimsonland.exe": "exe", "grim.dll": "dll"}[row["image"]]]
+        categories = [{"crimsonland.exe": "exe", "crimson.exe": "exe", "grim.dll": "dll"}[row["image"]]]
         libraries = sorted({
             category for image, start, end, category in library_ranges
             if image == row["image"] and start <= owner_key[1] < end
         })
-        if owner_key in third_party and not libraries:
-            libraries.append("libs.other")
-        if not libraries and any(region.contains(owner_key[1]) for region in ownership.ranges[row["image"]]):
-            categories.append("game")
+        if "ownership" in row:
+            libraries = [row["ownership"]] if row["ownership"].startswith("libs.") else []
+            if row["ownership"] == "game":
+                categories.append("game")
+            elif row["ownership"] != "unknown" and not libraries:
+                raise ValueError("invalid native function ownership")
+        else:
+            if owner_key in third_party and not libraries:
+                libraries.append("libs.other")
+            if not libraries and any(region.contains(owner_key[1]) for region in ownership.ranges[row["image"]]):
+                categories.append("game")
+        if row.get("native_kind") == "unresolved":
+            if row["candidate"] is not None or row["matched"] or row["ratio"]:
+                raise ValueError("executable remainders cannot earn source credit")
+            categories.append("unresolved")
         if libraries:
             categories.extend(["libs", *libraries])
         if "game" not in categories and "libs" not in categories:
@@ -470,7 +488,7 @@ def build_report(
                         "fuzzy_match_percent": percent,
                         "metadata": {"virtual_address": str(row["address"]), "demangled_name": row["name"]},
                     },
-                ],
+                ] if is_function else [],
                 "metadata": metadata,
             },
         )
@@ -520,7 +538,7 @@ def build_report(
             matched,
             complete,
             fuzzy / total if total else 0.0,
-            len(functions),
+            sum(row.get("native_kind", "function") == "function" for row in functions),
             matched_functions,
             len(units),
             complete_units,

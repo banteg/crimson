@@ -57,6 +57,7 @@ class BuildImage:
     # A donor can bootstrap a build outside its family without assigning source ownership.
     mapping_build: str | None = None
     source_image: str | None = None
+    native_inventory: Path | None = None
 
     @property
     def source_build(self) -> str | None:
@@ -175,6 +176,8 @@ def load_registry(path: Path = REGISTRY_PATH) -> Registry:
                     game_profiles=game_profiles,
                     mapping_build=image.get("mapping_source", {}).get("build"),
                     source_image=image.get("mapping_source", {}).get("image"),
+                    native_inventory=(MAPS_ROOT / row["id"] / image["name"] / image["native_inventory"]
+                                      if image.get("native_inventory") else None),
                 )
                 for image in row["images"]
             }
@@ -931,13 +934,21 @@ def scan_build(
     match_root: Path = matchlib.DEFAULT_MATCH_ROOT,
     *,
     jobs: int = matchlib.DEFAULT_MATCH_JOBS,
+    native_inventory: bool = False,
 ) -> list[BuildScanRow]:
     """Compile every source scratch whose function the build's map places, as that build."""
     evidence: dict[tuple[str, str], str] = {}
+    addresses: dict[tuple[str, str], int] = {}
     for name, image in registry.builds[build].items():
         if image.target.functions_path.is_file():
             for row in json.loads(image.target.functions_path.read_text(encoding="utf-8")):
                 evidence[name, row["name"]] = row["evidence"]
+                addresses[name, row["name"]] = matchlib.parse_int(row["address"])
+    bounds = {}
+    if native_inventory:
+        from . import match_native_inventory
+        bounds = {name: match_native_inventory.function_bounds(image)
+                  for name, image in registry.builds[build].items() if image.native_inventory is not None}
     scratches: list[str] = []
     configs: list[matchlib.ScratchConfig] = []
     owners: list[int] = []
@@ -948,7 +959,12 @@ def scan_build(
         image = registry.image(build, config.image)
         if (image.name, config.function) not in evidence:
             continue
+        address = addresses[image.name, config.function]
+        if image.name in bounds and address not in bounds[image.name]:
+            continue
         for build_config in image.scratch_configs(config):
+            if image.name in bounds:
+                build_config = replace(build_config, end_va=bounds[image.name][address])
             configs.append(build_config)
             owners.append(len(scratches))
         scratches.append(evidence[image.name, config.function])

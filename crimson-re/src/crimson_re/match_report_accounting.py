@@ -30,11 +30,15 @@ def identities(
     toolchains: dict[str, Any] | None = None,
     *, data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    native = any("native_kind" in row for row in functions)
+    policy = "native-functions-and-full-executable-remainder-v1" if native else INVENTORY_POLICY
     return {
         "target": {path: digest for path, digest in external.items() if path.startswith("game_bins/")},
         "inventory": _digest({
-            "policy": INVENTORY_POLICY,
+            "policy": policy,
             "ranges": sorted((r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
+                             + ((r.get("native_kind"), r.get("ownership")),) if native else
+                             (r["image"], r["address"], r["size"], r.get("canonical_address", r["address"]))
                              for r in functions),
             "data_sections": data["sections"] if data is not None else None,
             "ownership": {p: h for p, h in inputs.items() if p in {
@@ -47,7 +51,7 @@ def identities(
         }, "implementation": {
             p: h for p, h in inputs.items() if p.startswith("crimson-re/src/crimson_re/match") or p == "crimson-re/src/crimson_re/native_reference_link.py" or p == SCORING_DEPENDENCIES_INPUT
         }}),
-        "inventory_policy": INVENTORY_POLICY,
+        "inventory_policy": policy,
         "scoring_policy": SCORING_POLICY,
     }
 
@@ -160,7 +164,8 @@ def reconcile_sections(sections: list[dict[str, Any]], functions: list[dict[str,
                 raise ValueError(f"overlapping or invalid retained code: {native_id(row)}")
             if lo > cursor:
                 spans.append({"start": cursor, "end": lo, "kind": "unresolved"})
-            spans.append({"start": lo, "end": hi, "kind": "retained_code", "owner": native_id(row)})
+            kind = "unresolved" if row.get("native_kind") == "unresolved" else "retained_code"
+            spans.append({"start": lo, "end": hi, "kind": kind, "owner": native_id(row)})
             assigned.add(native_id(row))
             cursor = hi
         if cursor < end:
@@ -252,7 +257,9 @@ def diagnostics(
 def render_summary(evidence: dict[str, Any], report: dict[str, Any], metrics: dict[str, Any]) -> str:
     """A per-version receipt for the five history series and their denominators."""
     lines = [f"## Crimsonland {evidence['version']}", "",
-             "Percentages apply to the curated function inventory and the selected category.", "",
+             ("Percentages include every executable byte; unknown remainders earn zero credit."
+              if evidence["identities"].get("inventory_policy") == "native-functions-and-full-executable-remainder-v1"
+              else "Percentages apply to the curated function inventory and the selected category."), "",
              "| Scope | Matched code | Fuzzy code | Encoded body | Matched data | Linked code / data |",
              "| --- | --- | --- | --- | --- | --- |"]
     scopes = [("All", report["measures"], metrics)] + [

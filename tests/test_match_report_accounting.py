@@ -177,15 +177,18 @@ def test_each_reported_version_has_reconciled_scopes_and_an_explicit_summary(ver
     assert metrics["data_measured"] == (evidence["data"] is not None)
     coverage = metrics["executable_coverage"]
     assert coverage["total_bytes"] == sum(coverage[k] for k in ("retained_code", "embedded_data", "padding", "unresolved"))
-    assert coverage["retained_code"] == int(report["measures"]["total_code"])
+    if evidence["identities"]["inventory_policy"] == "native-functions-and-full-executable-remainder-v1":
+        assert coverage["total_bytes"] == int(report["measures"]["total_code"])
+    else:
+        assert coverage["retained_code"] == int(report["measures"]["total_code"])
     scopes = {c["id"]: c["measures"] for c in report["categories"]}
     for key in ("total_code", "matched_code", "total_functions", "matched_functions"):
         assert int(report["measures"][key]) == sum(int(scopes[c][key]) for c in ("game", "libs", "unknown"))
         assert int(report["measures"][key]) == sum(int(scopes[c][key]) for c in ("exe", "dll"))
     for category, measures in [(None, report["measures"]), *scopes.items()]:
         units = [u for u in report["units"] if category is None or category in u["metadata"]["progress_categories"]]
-        code = sum(int(u["functions"][0]["size"]) for u in units if u["functions"])
-        weighted = sum(int(f["size"]) * f["fuzzy_match_percent"] for u in units for f in u["functions"])
+        code = sum(int(u["measures"]["total_code"]) for u in units)
+        weighted = sum(int(u["measures"]["total_code"]) * u["measures"]["fuzzy_match_percent"] for u in units)
         assert int(measures["total_code"]) == code
         assert measures["fuzzy_match_percent"] == pytest.approx(weighted / code if code else 0)
         assert int(measures.get("total_data", 0)) == sum(int(s["size"]) for u in units for s in u.get("sections", []))

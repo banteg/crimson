@@ -44,8 +44,10 @@ data maps rather than the donor's native addresses.
 The matching, report, data-report and native suites passed (190 tests), Ruff and
 ty passed, and a fresh `build-map --check` verified all committed maps.
 
-These are partial donor maps. Functions unique to freeware remain outside them;
-an independent native inventory and ownership review must precede publishing
-progress percentages. The builds therefore stay unreported on decomp.dev.
-The maps and compiler baseline make it possible to start recovering changed
-bodies immediately with `scratch --build` and `probe --build`.
+The original bootstrap used partial donor maps and did not publish percentages.
+The follow-up adds independent native discovery, reviewed ownership clusters,
+and a full executable-byte denominator; see
+[the reporting policy](../../analysis/decomp/README.md#freeware). All 183, 200 and
+252 original source matches also pass the encoded-body check with the retained
+native extents. The maps and compiler baseline support recovery of changed
+bodies with `scratch --build` and `probe --build`.

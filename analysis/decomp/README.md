@@ -15,8 +15,9 @@ below.
 
 ## Scope and metrics
 
-Two versions are reported, each from its own saved evidence: `1.9.93`, the
-canonical build described below, and `1.9.8` (see [1.9.8](#198)). Builds
+Five versions are reported, each from its own saved evidence: `1.9.93`, the
+canonical build described below, `1.9.8` (see [1.9.8](#198)), and freeware
+`1.0.2`, `1.3.0`, `1.4.0` (see [Freeware](#freeware)). Builds
 marked `reported` in [decomp/builds.json](../../decomp/builds.json) are
 published. **Game & Engine** is the preferred category and headline, available through
 [`?category=game`](https://decomp.dev/banteg/crimson?category=game).
@@ -303,3 +304,35 @@ See the [integration guide](https://decomp.wiki/tools/decomp-dev) and
 another build, derived from its family canonical image or explicit donor by `uv run crimson match build-map`. They
 feed `--build` comparisons and the reported builds' inventories; see
 [decomp/README.md](../../decomp/README.md#other-builds).
+
+
+## Freeware
+
+Each freeware image has an independent `native.json` inventory. Its image and
+basic-block byte hashes, donor-map digest, analyzer version, verified starts,
+and reviewed ownership boundaries are pinned. Unmapped native functions remain
+in the reports; names from donor maps are identities, not the denominator.
+
+The executable sections are partitioned without overlapping byte owners.
+Verified unchanged bodies define physical extents; independent native starts
+bound other function prefixes. Shared/interior entry points remain in the raw
+discovery inventory. Every byte outside a retained function is an explicitly
+uncredited executable remainder. These include uncertain alignment/embedded
+data and stay in both All and the applicable native ownership scope. Gap units
+are not counted as functions. Compilation uses these retained extents and
+rejects partial coverage before awarding source credit.
+
+The inventory policy is `native-functions-and-full-executable-remainder-v1`;
+it is deliberately conservative and differs from 1.9's curated-functions
+policy. The All code denominator equals the full executable virtual byte count.
+`Confirmed Game & Engine` covers the reviewed initial application and engine
+clusters, while uncertain template/SDK helpers stay unclassified. A weak donor
+placement never transfers canonical game/library ownership. Exact donor library
+identities can classify later functions, without awarding archive credit.
+Data and linked-executable recovery remain unmeasured for these builds.
+
+CI fetches the six original images from the existing public asset bucket and
+verifies their registry SHA-256 pins. Report artifacts follow the existing
+`<version>_report` naming convention, so all versions belong to the same
+decomp.dev project. The content-pin URL parameter avoids stale CDN responses
+when a previously absent version is first published.
