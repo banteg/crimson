@@ -93,6 +93,8 @@ _COMPUTER_RETARGET_MARGIN = 64.0
 _COMPUTER_AIM_SNAP_DISTANCE = 4.0
 _COMPUTER_AIM_TRACK_GAIN = 6.0
 _COMPUTER_AUTO_FIRE_DISTANCE = 128.0
+# Relative mouse aim measures the cursor from this fixed screen point (0x004153cb).
+_MOUSE_RELATIVE_ORIGIN = 200.0
 _LOW_HEALTH_BLOODSPILL_SFX: tuple[SfxId, SfxId] = (SfxId.BLOODSPILL_01, SfxId.BLOODSPILL_02)
 
 
@@ -461,6 +463,15 @@ def _player_update_aim_by_scheme(
                     player.aim_heading = f32(player.aim_heading + f32(dt * 3.0))
                 if input_state.aim_turn_left:
                     player.aim_heading = f32(player.aim_heading - f32(dt * 3.0))
+                target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
+        elif aim_scheme == AimScheme.MOUSE_RELATIVE:
+            # 0x004153c2: the stick is the cursor's offset from screen (200, 200); a centred
+            # cursor leaves the aim alone.
+            cursor = input_state.aim
+            stick = Vec2(x87_pc24_sub(cursor.x, _MOUSE_RELATIVE_ORIGIN), x87_pc24_sub(cursor.y, _MOUSE_RELATIVE_ORIGIN))
+            target_aim = player.aim
+            if stick.x != 0.0 or stick.y != 0.0:
+                player.aim_heading = x87_pc24_add(x87_fpatan(stick.y, stick.x), NATIVE_HALF_PI)
                 target_aim = _player_aim_point_from_heading(player, float(player.aim_heading))
         elif aim_scheme == AimScheme.JOYSTICK:
             if input_state.aim_turn_left:

@@ -1436,6 +1436,23 @@ def test_player_update_keyboard_aim_scheme_uses_heading_dispatch() -> None:
     assert player.aim == native_aim_point_from_heading(Vec2(100.0, 100.0), f32(0.1 * 3.0))
 
 
+@pytest.mark.parametrize(
+    ("cursor", "expected_aim"),
+    [
+        (Vec2(200.0, 200.0), Vec2(180.0, 130.0)),  # centred: the aim stays put
+        (Vec2(260.0, 200.0), native_aim_point_from_heading(Vec2(100.0, 100.0), NATIVE_HALF_PI)),  # right of centre
+    ],
+)
+def test_relative_mouse_aim_measures_the_cursor_from_screen_200(cursor: Vec2, expected_aim: Vec2) -> None:
+    world = make_world()
+    player = PlayerState(index=0, pos=Vec2(100.0, 100.0), aim=Vec2(180.0, 130.0))
+    world.players[:] = [player]
+
+    step_player(world, player, player_input(aim=cursor, aim_scheme=AimScheme.MOUSE_RELATIVE), 0.016)
+
+    assert player.aim == expected_aim
+
+
 @pytest.mark.parametrize("aim_scheme", [AimScheme.KEYBOARD, AimScheme.JOYSTICK])
 def test_heading_aim_schemes_fire_at_the_player_aim_point(aim_scheme: AimScheme) -> None:
     # The shot jitters around `player.aim` (0x00415c24), not the recorded input aim.

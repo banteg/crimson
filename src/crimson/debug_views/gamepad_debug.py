@@ -65,7 +65,6 @@ class GamepadDebugView:
                 config=self._config,
                 mouse_screen=Vec2(),
                 mouse_world=Vec2(),
-                screen_center=Vec2(),
             )
             player.aim = out.aim
             self._move[idx] = out.move

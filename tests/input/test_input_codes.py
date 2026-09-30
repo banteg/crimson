@@ -109,7 +109,7 @@ def test_wheel_fire_binding_reaches_exactly_one_simulation_tick(mocker, wheel: f
     def sample() -> PlayerInput:
         return interpreter.build_player_input(
             player_index=0, player=session.world.players[0], config=config,
-            mouse_screen=Vec2(600, 512), mouse_world=Vec2(600, 512), screen_center=Vec2(512, 512),
+            mouse_screen=Vec2(600, 512), mouse_world=Vec2(600, 512),
         )
 
     ticks = LiveTickSource()

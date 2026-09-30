@@ -5,7 +5,6 @@ from collections.abc import Callable, Sequence
 
 import msgspec
 
-from grim import canvas
 from grim.config import CrimsonConfig
 from grim.geom import Vec2
 
@@ -173,7 +172,6 @@ class LocalInputInterpreter:
         config: CrimsonConfig,
         mouse_screen: Vec2,
         mouse_world: Vec2,
-        screen_center: Vec2,
         pad_aim_dist_mul: float = PAD_AIM_DIST_MUL_DEFAULT,
     ) -> PlayerInput:
         idx = max(0, min(3, int(player_index)))
@@ -297,10 +295,8 @@ class LocalInputInterpreter:
             aim_turn_left = input_code_is_down(aim_left_key, player_index=idx)
             aim_turn_right = input_code_is_down(aim_right_key, player_index=idx)
         elif aim_scheme is AimScheme.MOUSE_RELATIVE:
-            rel = mouse_screen - screen_center
-            if rel.length_sq() > 1.0:
-                heading = rel.to_heading()
-                aim = _aim_point_from_heading(player.pos, heading)
+            # The sim aims from the screen cursor itself (player_update copies `ui_mouse`).
+            aim = mouse_screen
         elif aim_scheme is AimScheme.DUAL_ACTION_PAD:
             axis_y = input_axis_value(aim_axis_y, player_index=idx)
             axis_x = input_axis_value(aim_axis_x, player_index=idx)
@@ -354,7 +350,6 @@ class LocalInputInterpreter:
         pad_aim_dist_mul: float,
     ) -> list[PlayerInput]:
         mouse_world = screen_to_world(mouse_screen)
-        screen_center = Vec2(float(canvas.width()) * 0.5, float(canvas.height()) * 0.5)
         out: list[PlayerInput] = []
         for idx, player in enumerate(players):
             out.append(
@@ -364,7 +359,6 @@ class LocalInputInterpreter:
                     config=config,
                     mouse_screen=mouse_screen,
                     mouse_world=mouse_world,
-                    screen_center=screen_center,
                     pad_aim_dist_mul=pad_aim_dist_mul,
                 ),
             )

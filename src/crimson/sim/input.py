@@ -14,6 +14,7 @@ class PlayerInput(msgspec.Struct, frozen=True, kw_only=True):
     aim_scheme: AimScheme
     # The dual action pad's move stick, or the point-click move target (x = -1 when unset).
     move: Vec2 = Vec2()
+    # The world aim point; the screen cursor under relative mouse aim.
     aim: Vec2 = Vec2()
     fire_down: bool = False
     fire_pressed: bool = False

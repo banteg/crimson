@@ -106,7 +106,6 @@ def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.Monke
             config=config,
             mouse_screen=Vec2(),
             mouse_world=Vec2(),
-            screen_center=Vec2(),
         )
         # The live input records the held controls; the sim turns the heading.
         assert (result.aim_turn_left, result.aim_turn_right) == (row.left, row.right), (i, "local input")

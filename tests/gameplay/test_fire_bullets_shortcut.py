@@ -106,7 +106,6 @@ def test_live_input_records_fixed_g_key(monkeypatch: pytest.MonkeyPatch) -> None
         config=config,
         mouse_screen=Vec2(),
         mouse_world=Vec2(200.0, 100.0),
-        screen_center=Vec2(),
     )
     assert result.fire_bullets_key_down
     assert not result.fire_down
