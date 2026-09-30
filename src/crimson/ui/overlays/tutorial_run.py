@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from grim import canvas
+from grim.draw import grim_draw_rect_outline
 from grim.geom import Vec2
 from grim.raylib_api import rl
 
@@ -57,7 +58,7 @@ def draw_tutorial_prompt_panel(
     fill = rl.Color(0, 0, 0, int(255 * alpha * 0.8))
     border = rl.Color(255, 255, 255, int(255 * alpha))
     rl.draw_rectangle(int(rect.x), int(rect.y), int(rect.width), int(rect.height), fill)
-    rl.draw_rectangle_lines(int(rect.x), int(rect.y), int(rect.width), int(rect.height), border)
+    grim_draw_rect_outline(Vec2(rect.x, rect.y), rect.width, rect.height, border)
 
     text_alpha = int(255 * min(1.0, max(0.0, alpha * 0.9)))
     color = rl.Color(255, 255, 255, text_alpha)

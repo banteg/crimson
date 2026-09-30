@@ -3,6 +3,8 @@ from __future__ import annotations
 from crimson.game_states import GameStateId
 from crimson.screens.actions import Route
 from grim import canvas
+from grim.color import grim_color
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -48,17 +50,8 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
         title_text = "Unlocked Perks Database"
         draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
         title_w = measure_small_text_width(font, title_text)
-        # Decompile path draws a 1px outline strip under the title with alpha 0.5.
-        rl.draw_rectangle_lines_ex(
-            rl.Rectangle(
-                title_pos.x,
-                title_pos.y + 13.0,
-                title_w,
-                1.0,
-            ),
-            1.0,
-            rl.Color(255, 255, 255, int(255 * 0.5)),
-        )
+        # `draw_title_separator`: the title's underline at 0.5.
+        grim_draw_rect_outline(title_pos.offset(dy=13.0), title_w, 1.0, grim_color(1.0, 1.0, 1.0, 0.5))
 
         perk_ids = self._perk_ids
         count = len(perk_ids)
@@ -83,18 +76,10 @@ class UnlockedPerksDatabaseView(_DatabaseBaseView):
             rl.Color(255, 255, 255, int(255 * 0.4)),
         )
         name_w = measure_small_text_width(font, perk_name)
-        perk_name_pos = Vec2(detail_anchor.x + 128.0 - name_w * 0.5, detail_anchor.y - 22.0)
+        # Native centres the name on the int text width halved with C integer division.
+        perk_name_pos = Vec2(detail_anchor.x + 128.0 - float(int(name_w) // 2), detail_anchor.y - 22.0)
         draw_small_text(font, perk_name, perk_name_pos, text_color)
-        rl.draw_rectangle_lines_ex(
-            rl.Rectangle(
-                perk_name_pos.x,
-                perk_name_pos.y + 13.0,
-                name_w,
-                1.0,
-            ),
-            1.0,
-            rl.Color(255, 255, 255, int(255 * 0.5)),
-        )
+        grim_draw_rect_outline(perk_name_pos.offset(dy=13.0), name_w, 1.0, grim_color(1.0, 1.0, 1.0, 0.5))
 
         desc_pos = detail_anchor + Vec2(16.0, 0.0)
         prereq_name = self._perk_prereq_name(perk_id, violence_disabled=violence_disabled)

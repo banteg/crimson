@@ -14,6 +14,7 @@ from grim import canvas
 from grim.assets import TextureId, runtime_resources_for
 from grim.color import grim_color
 from grim.config import CrimsonConfig
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import draw_small_text
 from grim.geom import Rect, Vec2
 from grim.rand import CrandLike
@@ -436,7 +437,7 @@ class QuestResultsUi(msgspec.Struct):
                 y += 20.0
 
             total_color = grim_color(1.0, 1.0, 1.0, alpha)
-            rl.draw_rectangle(int(label_x - 4.0), int(y + 1.0), 168, 1, total_color)
+            grim_draw_rect_outline(Vec2(label_x - 4.0, y + 1.0), 168.0, 1.0, total_color)
             y += 8.0
             draw_small_text(font, "Final Time:", Vec2(label_x, y), total_color)
             draw_small_text(font, format_time_mm_ss(reveal.total_time_ms), Vec2(value_x, y), total_color)

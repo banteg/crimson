@@ -4,6 +4,7 @@ import msgspec
 
 from grim.assets import RuntimeResources, TextureId
 from grim.color import grim_color
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.math import clamp
@@ -38,8 +39,8 @@ def _half_width(font: SmallFontData, text: str) -> int:
 
 
 def _divider(pos: Vec2, width: float, height: float, color: rl.Color) -> None:
-    # `grim_draw_rect_outline` with a 1px side is one filled quad.
-    rl.draw_rectangle_rec(rl.Rectangle(pos.x - 16.0, pos.y, width, height), color)
+    """`highscore_card_draw_horizontal_divider` / `highscore_card_draw_vertical_divider`, 16px left of `pos`."""
+    grim_draw_rect_outline(pos.offset(dx=-16.0), width, height, color)
 
 
 def ui_draw_clock_gauge(resources: RuntimeResources, x: int, y: int, time_ms: int, alpha: float) -> None:
@@ -89,10 +90,7 @@ def ui_text_input_render(
     if not results:
         name = record.name()
         draw_small_text(font, name, pos, grim_color(1.0, 1.0, 1.0, alpha))
-        rl.draw_rectangle_rec(
-            rl.Rectangle(pos.x, pos.y + 13.0, float(int(measure_small_text_width(font, name))), 1.0),
-            divider_color,
-        )
+        grim_draw_rect_outline(pos.offset(dy=13.0), float(int(measure_small_text_width(font, name))), 1.0, divider_color)
         if record.flags & 2:
             draw_small_text(
                 font, "Internet score of local origin", pos.offset(dy=14.0), grim_color(0.8, 0.8, 0.8, alpha * 0.8),

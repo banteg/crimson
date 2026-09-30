@@ -11,6 +11,7 @@ from grim.color import grim_color
 from grim.config import (
     default_crimson_cfg,
 )
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -585,13 +586,7 @@ class ControlsMenuView(PanelMenuView):
         def _draw_section_heading(title: str, *, y: float) -> None:
             x_heading = right_top_left.x + 44.0
             draw_small_text(font, title, Vec2(x_heading, y), text_color_full)
-            line = rl.Rectangle(
-                x_heading,
-                y + 13.0,
-                228.0,
-                1.0,
-            )
-            rl.draw_rectangle_lines_ex(line, 1.0, section_tint)
+            grim_draw_rect_outline(Vec2(x_heading, y + 13.0), 228.0, 1.0, section_tint)
 
         draw_small_text(
             font,
@@ -600,13 +595,7 @@ class ControlsMenuView(PanelMenuView):
             text_color_full,
         )
         header_w = measure_small_text_width(font, "Configured controls")
-        header_line = rl.Rectangle(
-            right_top_left.x + 120.0,
-            right_top_left.y + 51.0,
-            header_w,
-            1.0,
-        )
-        rl.draw_rectangle_lines_ex(header_line, 1.0, rl.Color(255, 255, 255, 204))
+        grim_draw_rect_outline(right_top_left + Vec2(120.0, 51.0), header_w, 1.0, grim_color(1.0, 1.0, 1.0, 0.8))
 
         sections = self._rebind_sections(player_index=player_idx, aim_scheme=aim_scheme, move_mode=move_mode)
         rows = self._collect_rebind_rows(

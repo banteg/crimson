@@ -3,6 +3,7 @@ from __future__ import annotations
 import msgspec
 
 from grim.assets import RuntimeResources, TextureId
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.math import clamp
@@ -140,8 +141,9 @@ def draw_menu_item(
     color = rl.Color(int(r), int(g), int(b), int(255 * alpha))
     draw_ui_text(resources, label, pos, color=color)
     width = _ui_text_width(resources, label)
-    line_y = pos.y + 13.0
-    rl.draw_line(int(pos.x), int(line_y), int(pos.x + width), int(line_y), color)
+    if width <= 0.0:
+        width = 8.0
+    grim_draw_rect_outline(pos.offset(dy=13.0), width, 1.0, color)
     return width
 
 

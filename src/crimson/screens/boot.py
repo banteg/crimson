@@ -5,6 +5,8 @@ import os
 from grim import canvas
 from grim.assets import RuntimeResources, TextureId
 from grim.audio import play_music, stop_music, update_audio
+from grim.draw import grim_draw_rect_outline
+from grim.geom import Vec2
 from grim.raylib_api import rl
 
 from ..game.types import GameState
@@ -195,43 +197,10 @@ class BootView:
             return
 
         logo = resources.texture(TextureId.CL_LOGO)
-        logo_h = float(logo.height)
-        band_height = logo_h * 2.0
-        band_top = (screen_h - band_height) * 0.5 - 4.0
-        band_bottom = band_top + band_height
-        band_left = -4.0
-        band_right = screen_w + 4.0
-
+        # `game_startup_init`'s loading outline, in `render_tint_color` at 0.7 of the fade.
         line_alpha = self._clamp01(alpha * 0.7)
         line_color = rl.Color(149, 175, 198, int(round(line_alpha * 255.0)))
-        rl.draw_rectangle(
-            int(round(band_left)),
-            int(round(band_top)),
-            int(round(band_right - band_left)),
-            1,
-            line_color,
-        )
-        rl.draw_rectangle(
-            int(round(band_left)),
-            int(round(band_bottom)),
-            int(round(band_right - band_left)),
-            1,
-            line_color,
-        )
-        rl.draw_rectangle(
-            int(round(band_left)),
-            int(round(band_top)),
-            1,
-            int(round(band_height)),
-            line_color,
-        )
-        rl.draw_rectangle(
-            int(round(band_right)),
-            int(round(band_top)),
-            1,
-            int(round(band_height)),
-            line_color,
-        )
+        grim_draw_rect_outline(Vec2(-4.0, screen_h * 0.5 - 68.0), screen_w + 8.0, 128.0, line_color)
 
         tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
 

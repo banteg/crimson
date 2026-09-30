@@ -8,6 +8,7 @@ from crimson.ui.cursor import ui_cursor_render
 from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import TextureId
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import draw_small_text, measure_small_text_width
 from grim.geom import Rect, Vec2
 from grim.raylib_api import rl
@@ -452,8 +453,7 @@ class QuestsMenuView(MenuScreen):
             draw_small_text(font, title, Vec2(list_pos.x + QUEST_LIST_NAME_X_OFFSET, y), color)
             title_w = measure_small_text_width(font, title) if unlocked else 0.0
             if unlocked:
-                line_y = y + 13.0
-                rl.draw_line(int(list_pos.x), int(line_y), int(list_pos.x + title_w + 32.0), int(line_y), color)
+                grim_draw_rect_outline(Vec2(list_pos.x, y + 13.0), title_w + 32.0, 1.0, color)
 
             if show_counts and unlocked:
                 counts = self._quest_counts(stage=stage, row=row)

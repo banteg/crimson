@@ -11,6 +11,7 @@ from crimson.ui.menu_chrome import draw_menu_sign
 from grim import canvas
 from grim.assets import TextureId
 from grim.audio import play_sfx
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import (
     draw_small_text,
 )
@@ -325,7 +326,7 @@ class AlienZooKeeperView(MenuScreen):
 
         board_bg = rl.Rectangle(layout.board_x, layout.board_y, layout.board_size, layout.board_size)
         rl.draw_rectangle_rec(board_bg, _to_color(0.0, 0.0, 0.0, 0.6))
-        rl.draw_rectangle_lines_ex(board_bg, 1.0, rl.WHITE)
+        grim_draw_rect_outline(Vec2(board_bg.x, board_bg.y), board_bg.width, board_bg.height, rl.WHITE)
 
         timer_value = self._timer_ms // 100
         if timer_value > 0xC0:
@@ -337,11 +338,7 @@ class AlienZooKeeperView(MenuScreen):
             rl.Rectangle(layout.board_x, timer_y, timer_fill_w, timer_h),
             _to_color(0.2, 0.6, 1.0, 0.6),
         )
-        rl.draw_rectangle_lines_ex(
-            rl.Rectangle(layout.board_x, timer_y, layout.board_size, timer_h),
-            1.0,
-            rl.WHITE,
-        )
+        grim_draw_rect_outline(Vec2(layout.board_x, timer_y), layout.board_size, timer_h, rl.WHITE)
 
         if self._selected_index >= 0:
             row = self._selected_index // _BOARD_SIDE
@@ -353,14 +350,14 @@ class AlienZooKeeperView(MenuScreen):
                 24.0,
             )
             rl.draw_rectangle_rec(sel_rect, _to_color(0.2, 0.4, 0.7, 0.4))
-            rl.draw_rectangle_lines_ex(sel_rect, 1.0, rl.WHITE)
+            grim_draw_rect_outline(Vec2(sel_rect.x, sel_rect.y), sel_rect.width, sel_rect.height, rl.WHITE)
 
         if self._board_focus.focused:
             row, col = divmod(self._cursor_index, _BOARD_SIDE)
             cursor = rl.Rectangle(
                 layout.board_x + col * layout.tile_size, layout.board_y + row * layout.tile_size, layout.tile_size, layout.tile_size,
             )
-            rl.draw_rectangle_lines_ex(cursor, 1.0, _to_color(0.8, 0.8, 0.6, 0.8))
+            grim_draw_rect_outline(Vec2(cursor.x, cursor.y), cursor.width, cursor.height, _to_color(0.8, 0.8, 0.6, 0.8))
             self.state.focus.draw(Vec2(layout.board_x - 16.0, cursor.y))
 
         alien = resources.texture(TextureId.ALIEN)

@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from crimson.game_states import GameStateId
 from grim import canvas
 from grim.assets import TextureId
+from grim.color import grim_color
+from grim.draw import grim_draw_rect_outline
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 from grim.geom import Vec2
 from grim.raylib_api import rl
@@ -57,17 +59,8 @@ class UnlockedWeaponsDatabaseView(_DatabaseBaseView):
         title_text = "Unlocked Weapons Database"
         draw_small_text(font, title_text, title_pos, rl.Color(255, 255, 255, 255))
         title_w = measure_small_text_width(font, title_text)
-        # Decompile path draws a 1px outline strip under the title with alpha 0.5.
-        rl.draw_rectangle_lines_ex(
-            rl.Rectangle(
-                title_pos.x,
-                title_pos.y + 13.0,
-                title_w,
-                1.0,
-            ),
-            1.0,
-            rl.Color(255, 255, 255, int(255 * 0.5)),
-        )
+        # `draw_title_separator`: the title's underline at 0.5.
+        grim_draw_rect_outline(title_pos.offset(dy=13.0), title_w, 1.0, grim_color(1.0, 1.0, 1.0, 0.5))
 
         weapon_ids = self._weapon_ids
         count = len(weapon_ids)
