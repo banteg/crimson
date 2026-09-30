@@ -40,6 +40,7 @@ def main():
     schema = json.loads((HERE / "schema.json").read_text())
     lines = []
     for group in schema:
+        lines.append(f'trace_init("snapshot {group["name"]}");')
         if group["source"]:
             lines.append(f"for(int i=0;i<{group['count']};++i) {{const auto &s={group['source']}[i];")
             lines.extend(

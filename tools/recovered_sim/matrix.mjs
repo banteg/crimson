@@ -193,7 +193,7 @@ function rejects(label, cfg, r, expected = 5) {
     timeout: 10000,
   });
   if (n.status !== expected)
-    throw Error(`Native ${label}: ${n.status} ${n.stderr}`);
+    throw Error(`Native ${label}: status=${n.status} signal=${n.signal} error=${n.error?.message} stdout=${n.stdout.length} ${n.stderr}`);
 }
 
 const normal = config(1);
