@@ -16,8 +16,11 @@ class TypoState(msgspec.Struct):
     spawn_cooldown_ms: int = 0
     dictionary_words: tuple[str, ...] = ()
     highscore_names: tuple[str, ...] = ()
-    pending_fire_target: Vec2 | None = None
-    pending_reload: bool = False
+    # `typo_gameplay_update_and_render`'s static aim point, the last matched creature's position.
+    target_world: Vec2 = Vec2()
+    # The frame's Enter results, cleared once the players have fired.
+    fire_requested: bool = False
+    reload_requested: bool = False
 
 
 def reset_typo_state(
@@ -32,8 +35,8 @@ def reset_typo_state(
     typo.spawn_cooldown_ms = 0
     typo.dictionary_words = tuple(str(word) for word in dictionary_words)
     typo.highscore_names = tuple(str(name) for name in highscore_names)
-    typo.pending_fire_target = None
-    typo.pending_reload = False
+    typo.fire_requested = False
+    typo.reload_requested = False
 
 
 def typo_shot_counts(typo: TypoState) -> tuple[int, int]:

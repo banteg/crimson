@@ -15,7 +15,6 @@ from ..replay import Replay
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
 from ..sim.input import PlayerInput
 from ..typo.names import load_typo_dictionary, load_typo_highscore_names
-from ..typo.player import build_typo_player_input
 from ..ui.overlays.typo_run import draw_typing_box, draw_typo_name_labels
 from .base_gameplay_mode import BaseGameplayMode
 
@@ -65,14 +64,9 @@ class TypoShooterMode(BaseGameplayMode):
         return 1
 
     def _build_local_inputs(self, *, dt: float) -> list[PlayerInput]:
+        # Typ-o fires, aims and reloads only through typed words.
         _ = dt
-        return [
-            build_typo_player_input(
-                aim=self.screen_to_world(self._ui_mouse),
-                fire_requested=False,
-                reload_requested=False,
-            ),
-        ]
+        return [PlayerInput()]
 
     def _handle_input(self) -> None:
         if self._game_over_active:

@@ -8,6 +8,7 @@ from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
 
+from crimson.effects import SpriteEffect
 from crimson.game_modes import GameMode
 
 # `creature_t` (0x98 bytes), third_party/headers/crimsonland_types.h.
@@ -101,6 +102,39 @@ PARTICLE_LAYOUT: dict[str, tuple[int, str]] = {
     "angle": (0x28, "f"),
     "style_id": (0x30, "B"),
 }
+
+# `sprite_effect_t` (0x2c bytes).
+SPRITE_STRIDE = 0x2C
+SPRITE_LAYOUT: dict[str, tuple[int, str]] = {
+    "active": (0x00, "B"),
+    "color_r": (0x04, "f"),
+    "color_g": (0x08, "f"),
+    "color_b": (0x0C, "f"),
+    "color_a": (0x10, "f"),
+    "rotation": (0x14, "f"),
+    "pos_x": (0x18, "f"),
+    "pos_y": (0x1C, "f"),
+    "vel_x": (0x20, "f"),
+    "vel_y": (0x24, "f"),
+    "scale": (0x28, "f"),
+}
+
+
+def python_sprite(entry: SpriteEffect) -> dict[str, float | int]:
+    return {
+        "active": int(entry.active),
+        "color_r": entry.color.r,
+        "color_g": entry.color.g,
+        "color_b": entry.color.b,
+        "color_a": entry.color.a,
+        "rotation": entry.rotation,
+        "pos_x": entry.pos.x,
+        "pos_y": entry.pos.y,
+        "vel_x": entry.vel.x,
+        "vel_y": entry.vel.y,
+        "scale": entry.scale,
+    }
+
 
 # `player_state_t` field offsets (stride 0x360), from analysis/ghidra/maps/data_map.json.
 PLAYER_STRIDE = 0x360

@@ -4,7 +4,10 @@ from pathlib import Path
 
 import msgspec
 
+from grim.geom import Vec2
+
 from ..game_modes import GameMode
+from ..math_parity import x87_pc24_add
 from ..persistence.save_status import GameStatus
 from ..quests import quest_by_level
 from ..quests.runtime import build_quest_spawn_table
@@ -109,6 +112,10 @@ def initialize_run(
                 dictionary_words=spec.typo_dictionary_words,
                 highscore_names=spec.typo_highscore_names,
             )
+            # Native's static aim point starts 128 units right of player 1 on the process's first
+            # Typ-o frame and carries over between runs; each port run starts fresh.
+            player = world.players[0]
+            world.state.typo.target_world = Vec2(x87_pc24_add(player.pos.x, 128.0), player.pos.y)
         case GameMode.TUTORIAL:
             weapon_assign_player(world.players[0], WeaponId.PISTOL, state=world.state)
             reset_tutorial_state(world.state.tutorial, world.state.tutorial_overlay)

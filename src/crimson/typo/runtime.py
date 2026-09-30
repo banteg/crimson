@@ -1,10 +1,7 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
 from typing import TYPE_CHECKING
-
-import msgspec
 
 from grim.color import RGBA
 from grim.geom import Vec2
@@ -14,12 +11,13 @@ from grim.sfx_types import SfxRequest
 
 from ..creatures.runtime import PHANTOM_CREATURE_INDEX
 from ..creatures.spawn import CreatureTypeId
+from ..gameplay import player_aux_timer_update
 from ..math_parity import f32, x87_pc24_add, x87_pc24_cos_mul, x87_pc24_mul
 from ..rng_caller_static import RngCallerStatic
 from ..sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
-from ..sim.input import PlayerInput
 from ..sim.state_types import TERRAIN_SIZE
-from .player import TYPO_WEAPON_ID, enforce_typo_player_frame
+from ..weapons import WeaponId
+from .player import player_fire_weapon
 from .spawns import creature_spawn_tinted
 
 if TYPE_CHECKING:
@@ -61,31 +59,44 @@ def apply_typo_command(world: WorldState, command: TypoCharCommand | TypoBackspa
             active_mask = [bool(entry.active) for entry in world.creatures.entries]
             target_idx = typo.names.find_by_name(typing.text, active_mask=active_mask)
             entered = typing.submit(matched=target_idx is not None)
-            typo.pending_fire_target = None
-            typo.pending_reload = False
             if entered is None:
                 return
             if target_idx is not None:
-                creature = world.creatures.entries[int(target_idx)]
-                if creature.active:
-                    typo.pending_fire_target = Vec2(float(creature.pos.x), float(creature.pos.y))
+                typo.fire_requested = True
+                typo.target_world = world.creatures.entries[int(target_idx)].pos
                 return
             if entered == "reload":
-                typo.pending_reload = True
+                typo.reload_requested = True
         case _:
             raise RuntimeError(f"unhandled Typ-o command: {type(command).__name__}")
 
 
-def typo_before_step(world: WorldState) -> None:
+def typo_players_fire(world: WorldState, *, dt: float) -> None:
+    """`typo_gameplay_update_and_render`'s player loop: Typ-o never runs `player_update`."""
+
+    typo = world.state.typo
     for player in world.players:
-        enforce_typo_player_frame(player)
+        player_fire_weapon(
+            world.state,
+            world.players,
+            player,
+            typo.target_world,
+            fire_requested=typo.fire_requested,
+            reload_requested=typo.reload_requested,
+            dt=dt,
+        )
+    typo.fire_requested = False
+    typo.reload_requested = False
+    # `hud_update_and_render` fades the weapon popup later in the frame.
+    for player in world.players:
+        player_aux_timer_update(player, dt)
 
 
 def typo_mode_update(world: WorldState, *, elapsed_ms: float, dt_ms: float) -> None:
     # After firing, native stomps player 0 to the shotgun with 30 ammo, without
     # `weapon_assign_player`: the reset pistol's clip stays.
     player = world.players[0]
-    player.weapon.weapon_id = TYPO_WEAPON_ID
+    player.weapon.weapon_id = WeaponId.SHOTGUN
     player.weapon.ammo = 30.0
     typo = world.state.typo
     typo.spawn_cooldown_ms -= int(dt_ms) * len(world.players)
@@ -125,32 +136,3 @@ def typo_post_step(world: WorldState) -> None:
     state.bonuses.reflex_boost = 0.0
     state.time_scale_active = False
     state.bonus_pool.reset()
-
-
-def typo_input_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
-    if not inputs:
-        world.state.typo.pending_fire_target = None
-        world.state.typo.pending_reload = False
-        return []
-
-    typo = world.state.typo
-    primary = inputs[0]
-    # Typ-o fires and reloads only through typed words; player fire/reload
-    # input has no effect.
-    aim = primary.aim if typo.pending_fire_target is None else typo.pending_fire_target
-    fire_down = fire_pressed = typo.pending_fire_target is not None
-    reload_pressed = bool(typo.pending_reload)
-
-    typo.pending_fire_target = None
-    typo.pending_reload = False
-
-    transformed_primary = msgspec.structs.replace(
-        primary,
-        move=Vec2(),
-        aim=Vec2(float(aim.x), float(aim.y)),
-        fire_down=bool(fire_down),
-        fire_pressed=bool(fire_pressed),
-        reload_pressed=bool(reload_pressed),
-        reload_down=False,
-    )
-    return [transformed_primary]

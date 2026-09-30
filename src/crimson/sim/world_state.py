@@ -29,7 +29,7 @@ from ..player_damage import player_take_projectile_damage
 from ..projectiles.types import ProjectileHit
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.timeline import tutorial_timeline_update
-from ..typo.runtime import typo_mode_update
+from ..typo.runtime import typo_mode_update, typo_players_fire
 from .input import PlayerInput
 from .input_frame import normalize_input_frame
 from .mode_updates import (
@@ -237,18 +237,21 @@ class WorldState(msgspec.Struct):
         # spawned by particles only advance on the next tick.
         self.state.sprite_effects.update(dt)
         self.state.particles.update(dt, step_runtime=step_runtime)
-        reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
-        player_dt = float(dt)
-        for idx, player in enumerate(self.players):
-            input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
-            player_dt = player_update(
-                player,
-                input_state,
-                player_dt,
-                step_runtime=step_runtime,
-                reload_active_any=bool(reload_active_any),
-            )
-        dt = float(player_dt)
+        if self.state.game_mode == GameMode.TYPO:
+            typo_players_fire(self, dt=f32(dt))
+        else:
+            reload_active_any = any(bool(entry.reload_down) or bool(entry.reload_pressed) for entry in inputs)
+            player_dt = float(dt)
+            for idx, player in enumerate(self.players):
+                input_state = inputs[idx] if idx < len(inputs) else PlayerInput()
+                player_dt = player_update(
+                    player,
+                    input_state,
+                    player_dt,
+                    step_runtime=step_runtime,
+                    reload_active_any=bool(reload_active_any),
+                )
+            dt = float(player_dt)
         # The mode updates read the elapsed run time from before this frame.
         match mode_state:
             case SurvivalSpawnState():

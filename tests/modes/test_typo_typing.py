@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
-
-import pytest
-
 from crimson.game_modes import GameMode
 from crimson.rng_caller_static import RngCallerStatic
 from crimson.sim.commands import TypoBackspaceCommand, TypoCharCommand, TypoSubmitCommand
@@ -12,9 +8,11 @@ from crimson.sim.sessions import DeterministicSession
 from crimson.sim.state_types import PlayerState
 from crimson.sim.world_state import WorldState
 from crimson.typo.names import CreatureNameTable
-from crimson.typo.runtime import apply_typo_command, typo_input_transform, typo_mode_update
+from crimson.typo.runtime import apply_typo_command, typo_mode_update
 from crimson.typo.state import reset_typo_state
 from crimson.typo.typing import TYPING_MAX_CHARS, TypingBuffer
+from crimson.weapon_runtime import weapon_assign_player
+from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 from grim.sfx_map import SfxId
@@ -61,58 +59,35 @@ def test_typing_buffer_submit_counts_reload_as_submit_only() -> None:
     assert buf.match_count == 0
 
 
-def test_typo_commands_apply_before_input_transform(make_world_state, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_typo_submit_fires_at_the_named_creature_for_one_tick(make_world_state) -> None:
     world = make_world_state()
     reset_typo_state(
         world.state.typo,
         creature_capacity=len(world.creatures.entries),
     )
-    seen_typing_text: list[str] = []
-
-    def observe_transform(world: WorldState, inputs: Sequence[PlayerInput]) -> list[PlayerInput]:
-        seen_typing_text.append(str(world.state.typo.typing.text))
-        return typo_input_transform(world, inputs)
-
-    monkeypatch.setattr("crimson.sim.sessions.typo_input_transform", observe_transform)
-
     world.state.game_mode = GameMode.TYPO
-    session = DeterministicSession(
-        world=world,
-        perk_progression_enabled=False,
-    )
-    session.step_tick(
-        dt=1.0 / 60.0,
-        inputs=[PlayerInput()],
-        commands=[TypoCharCommand(player_index=0, ch="a")],
-    )
-
-    assert seen_typing_text == ["a"]
-
-
-def test_typo_submit_match_overrides_only_one_tick(make_world_state) -> None:
-    world = make_world_state()
-    reset_typo_state(
-        world.state.typo,
-        creature_capacity=len(world.creatures.entries),
-    )
+    player = world.players[0]
+    weapon_assign_player(player, WeaponId.SHOTGUN, state=world.state)
     creature = world.creatures.entries[7]
     creature.active = True
     creature.pos = Vec2(321.0, 654.0)
     world.state.typo.names.names[7] = "alpha"
     world.state.typo.typing.text = "alpha"
+    session = DeterministicSession(
+        world=world,
+        perk_progression_enabled=False,
+    )
 
-    apply_typo_command(world, TypoSubmitCommand(player_index=0))
+    session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput()], commands=[TypoSubmitCommand(player_index=0)])
 
-    baseline = [PlayerInput(aim=Vec2(10.0, 20.0))]
-    transformed0 = typo_input_transform(world, baseline)
-    transformed1 = typo_input_transform(world, baseline)
+    assert player.aim == Vec2(321.0, 654.0)
+    assert world.state.shots_fired == 12
 
-    assert transformed0[0].aim == Vec2(321.0, 654.0)
-    assert transformed0[0].fire_down is True
-    assert transformed0[0].fire_pressed is True
-    assert transformed1[0].aim == Vec2(10.0, 20.0)
-    assert transformed1[0].fire_down is False
-    assert transformed1[0].fire_pressed is False
+    session.step_tick(dt=1.0 / 60.0, inputs=[PlayerInput(fire_down=True, fire_pressed=True)])
+
+    # The aim point stays on the last target; player fire input does nothing.
+    assert player.aim == Vec2(321.0, 654.0)
+    assert world.state.shots_fired == 12
 
 
 def test_typo_char_command_tags_exact_typeclick_caller(make_world_state) -> None:
@@ -144,7 +119,6 @@ def test_typo_backspace_command_tags_exact_typeclick_caller(make_world_state) ->
 
 
 def test_typo_spawn_step_tags_exact_spawn_tinted_callers(mocker) -> None:
-    from crimson.sim.world_state import WorldState
 
     world = WorldState.build(
         hardcore=False,

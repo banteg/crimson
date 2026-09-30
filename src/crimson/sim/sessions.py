@@ -16,7 +16,7 @@ from ..perks.selection import (
 )
 from ..rng_caller_static import RngCallerStatic
 from ..tutorial.runtime import tutorial_input_transform
-from ..typo.runtime import apply_typo_command, typo_before_step, typo_input_transform, typo_post_step
+from ..typo.runtime import apply_typo_command, typo_post_step
 from ..weapon_runtime.availability import prepare_weapon_availability
 from .commands import (
     GameCommand,
@@ -164,15 +164,8 @@ class DeterministicSession(msgspec.Struct):
             case _:
                 return self.terminal_outcome() or RunOutcome.INCOMPLETE
 
-    def _mode_before_step(self) -> None:
-        match self.world.state.game_mode:
-            case GameMode.TYPO:
-                typo_before_step(self.world)
-
     def _mode_inputs(self, inputs: Sequence[PlayerInput]) -> Sequence[PlayerInput]:
         match self.world.state.game_mode:
-            case GameMode.TYPO:
-                return typo_input_transform(self.world, inputs)
             case GameMode.TUTORIAL:
                 return tutorial_input_transform(self.world, inputs)
             case _:
@@ -248,10 +241,9 @@ class DeterministicSession(msgspec.Struct):
 
         # Picks belong to the between-tick prelude (the perk screen pauses the
         # game). A menu request opens mid-tick at the native point, see
-        # `WorldState.step`. Typ-o input belongs inside the tick, after its
-        # loadout enforcement (and reload sound).
+        # `WorldState.step`. Typ-o input belongs inside the tick, at the start of
+        # `typo_gameplay_update_and_render`.
         timing = self.timing_for_dt(dt)
-        self._mode_before_step()
         for command in tick_commands:
             self.apply_command(command, dt=dt)
 

@@ -891,6 +891,14 @@ def _player_tick_reload(
     return has_alt_weapon_perk
 
 
+def player_aux_timer_update(player: PlayerState, dt: float) -> None:
+    """`ui_render_hud`: the weapon popup fades slower through its last second and may stop below zero."""
+
+    if player.aux_timer > 0.0:
+        aux_decay = f32(0.5) if player.aux_timer < 1.0 else f32(1.4)
+        player.aux_timer = x87_pc24_sub(player.aux_timer, x87_pc24_mul(dt, aux_decay))
+
+
 def player_update(
     player: PlayerState,
     input_state: PlayerInput,
@@ -946,10 +954,7 @@ def player_update(
     player.weapon.shot_cooldown = max(0.0, float(next_shot_cooldown))
 
     speed_bonus_active = player.speed_bonus_timer > 0.0
-    if player.aux_timer > 0.0:
-        # `ui_render_hud`: the weapon popup fades slower through its last second and may stop below zero.
-        aux_decay = f32(0.5) if player.aux_timer < 1.0 else f32(1.4)
-        player.aux_timer = x87_pc24_sub(player.aux_timer, x87_pc24_mul(dt, aux_decay))
+    player_aux_timer_update(player, dt)
 
     move_mode = _resolve_move_mode_for_update(input_state)
     aim_scheme = _resolve_aim_scheme_for_update(input_state)
