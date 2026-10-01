@@ -1,26 +1,43 @@
-# Crimsonland 1.9.93 — reverse engineering + rewrite
+# Crimsonland, rebuilt
 
-A high-fidelity reimplementation of [Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) v1.9.93 (2003, GOG "Crimsonland Classic") in Python + raylib, paired with deep reverse engineering of the original Windows binary.
+[![1.9.93](https://decomp.dev/banteg/crimson.svg?mode=shield&measure=code&category=game&label=1.9.93)](https://decomp.dev/banteg/crimson?category=game)
+[![1.9.8](https://decomp.dev/banteg/crimson/1.9.8.svg?mode=shield&measure=code&category=game&label=1.9.8)](https://decomp.dev/banteg/crimson/1.9.8?category=game)
+[![1.4.0](https://decomp.dev/banteg/crimson/1.4.0.svg?mode=shield&measure=code&category=game&label=1.4.0)](https://decomp.dev/banteg/crimson/1.4.0?category=game)
+[![1.3.0](https://decomp.dev/banteg/crimson/1.3.0.svg?mode=shield&measure=code&category=game&label=1.3.0)](https://decomp.dev/banteg/crimson/1.3.0?category=game)
+[![1.0.2](https://decomp.dev/banteg/crimson/1.0.2.svg?mode=shield&measure=code&category=game&label=1.0.2)](https://decomp.dev/banteg/crimson/1.0.2?category=game)
 
-The aim of the project is **behavioral parity**: timings, RNG sequences, float32 math, UI layout quirks, asset decoding, and gameplay rules should match the original as closely as practical.
+[Crimsonland](https://en.wikipedia.org/wiki/Crimsonland) 1.9.93 (2003, GOG "Crimsonland Classic"), rebuilt twice:
 
-We go great lengths to achieve this goal, including a headless differential testing harness to verify runs recorded in the original game versus our reimplementation.
+- **A playable reimplementation** in Python and raylib that matches the original's timings, random rolls, float32 rounding, UI layout and quirks, checked tick by tick against the original code.
+- **A matching decompilation**: C/C++ source that Visual C++ 6 compiles back into the original `crimsonland.exe` and `grim.dll`, instruction for instruction.
 
 **[Read the full story](https://banteg.xyz/posts/crimsonland/)** — reverse engineering workflow, custom asset formats, AI-assisted decompilation, and game preservation philosophy.
 
 **[Browse the docs](https://crimson.banteg.xyz/)** — 100+ pages of analysis, struct layouts, format specs, and parity tracking.
 
-**[Join the Telegram group](https://t.me/+pG-Ow90lt28zMWFi)** — chat about the project, report bugs, share runs.
-
 **[Read the changelog](CHANGELOG.md)** — what changed in each release, for players and under the hood.
+
+**[Join the Telegram group](https://t.me/+pG-Ow90lt28zMWFi)** — chat about the project, report bugs, share runs.
 
 ## Current state
 
-The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, and Typ-o-Shooter, with full weapon/creature/perk content, terrain/sprite/decal rendering, music, gameplay SFX, and even secrets. The simulation is fully deterministic, supporting seeded runs and headless verifiable replays.
+The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, Typ-o-Shooter and local co-op, with all weapons, creatures, perks and bonuses, terrain, sprites and decals, music, sound and the secrets. Mouse and keyboard, gamepads, and fullscreen at any resolution are supported. The simulation is fully deterministic: every run is recorded as a replay that can be verified headlessly.
 
 Python remains the fast iteration platform. The [recovered-core spike](tools/recovered_sim/README.md) is the direction for a shared game and verifier: compile the recovered C/C++ to one WASM module for desktop, web and Workers. New development on the [Zig port](docs/rewrite/zig-verifier.md) is deferred; its existing verifier remains available until the replacement passes complete replay and bot-run gates. See the [follow-up plan](tools/recovered_sim/FOLLOWUP.md) and [coverage limits](docs/rewrite/status.md).
 
-The [matching decompilation](decomp/README.md) of 1.9.93 is complete: all 858 game and engine functions in `crimsonland.exe` and `grim.dll` (360,094 bytes of code) come from recovered C/C++ source that Visual C++ 6 compiles to the original machine code, instruction for instruction, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted. Progress is tracked on [decomp.dev](https://decomp.dev/banteg/crimson), which also measures 1.9.8 from the same source.
+### Decompilation
+
+The [matching decompilation](decomp/README.md) of 1.9.93 is complete: all 858 game and engine functions (360,094 bytes of code) come from recovered source, with every reference checked. Bundled third-party libraries (D3DX8, the MSVC runtime, the image and audio codecs) keep their upstream provenance and are not counted.
+
+The same source tree is set up to build other releases, each with its own compiler profile and `CL_BUILD` define. [decomp.dev](https://decomp.dev/banteg/crimson) tracks these builds, each from its own evidence:
+
+| Build | Released | Edition | Progress |
+| --- | --- | --- | --- |
+| 1.9.93 | 2011 | GOG Crimsonland Classic, the canonical build | [complete](https://decomp.dev/banteg/crimson?category=game) |
+| 1.9.8 | 2003 | shareware | [measured](https://decomp.dev/banteg/crimson/1.9.8?category=game) from the 1.9 sources |
+| 1.4.0, 1.3.0, 1.0.2 | 2002 | freeware | [1.4.0](https://decomp.dev/banteg/crimson/1.4.0?category=game), [1.3.0](https://decomp.dev/banteg/crimson/1.3.0?category=game), [1.0.2](https://decomp.dev/banteg/crimson/1.0.2?category=game) |
+
+Builds 1.9.1, 1.9.9 and 1.9.92 are pinned and mapped in [builds.json](decomp/builds.json) but not reported yet.
 
 ## Quick start
 
@@ -88,17 +105,20 @@ uv run crimson extract path/to/game_dir artifacts/assets
 Everything is exposed via the `crimson` CLI (alias: `crimsonland`):
 
 ```
-crimson                           run the game (default)
-crimson view <name>               debug views / sandboxes
-crimson quests <level>            print quest spawn script
-crimson config                    inspect crimson.cfg
-crimson extract <src> <dst>       extract PAQ archives
-crimson replay list               list replay files under runtime replays dir
-crimson replay play <file>        play back a recorded demo
-crimson replay verify <file>      headlessly simulate replay stats / score claims
-crimson replay benchmark <file>   benchmark replay throughput (headless or render, + optional profiling)
-crimson replay render <file>      render replay to high-quality 60fps video via ffmpeg
-crimson replay verify-checkpoints <file>  compare replay output to checkpoint sidecar
+crimson                                   run the game (default)
+crimson view <name>                       debug views and sandboxes
+crimson quests <level>                    print a quest's spawn script
+crimson config                            inspect crimson.cfg
+crimson extract <src> <dst>               extract PAQ archives
+crimson spawn-plan <template>             spawn one creature template and print the pool
+crimson replay list                       list replays in the runtime replays dir
+crimson replay play <file>                play back a replay
+crimson replay verify <file>              re-simulate a replay and check its recorded result
+crimson replay info <file>                timeline of a replay's gameplay events
+crimson replay render <file>              render a replay to 60 fps video with ffmpeg
+crimson replay benchmark <file>           benchmark replay throughput, with optional profiling
+crimson replay verify-checkpoints <file>  compare a replay against its checkpoint sidecar
+crimson replay diff-checkpoints <a> <b>   find where two checkpoint sidecars diverge
 ```
 
 Useful flags: `--seed N` (deterministic runs), `--preserve-bugs` (native quirks for parity work), `--no-intro` (skip logos), `--base-dir PATH` / `CRIMSON_RUNTIME_DIR` (runtime file location), `--assets-dir PATH` (PAQ / extracted asset location).
