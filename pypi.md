@@ -20,6 +20,17 @@ Or install it with `uv tool install crimsonland` and run `crimson`, as in the ex
 Python 3.13 or newer runs on Windows, macOS and Linux. On Linux the game runs natively on Wayland, but still needs
 `libX11` installed.
 
+## Better than the original
+
+The port plays like the 2003 game, and adds what a modern release needs:
+
+- **Runs anywhere.** Windows, macOS and Linux (Wayland included) instead of Direct3D 8 on Windows, at any resolution, with borderless fullscreen that keeps the aspect ratio.
+- **Modern controllers.** PlayStation, Xbox and Switch Pro controllers work out of the box with twin-stick controls, and drive every menu.
+- **Original bugs fixed.** [27 of them](https://crimson.banteg.xyz/rewrite/original-bugs/), each traced in the decompile: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` brings them back.
+- **Replays.** Every run is recorded and can be played back, verified tick by tick, or rendered to 60 fps video.
+- **Sharper art.** Textures come from the original uncompressed source art wherever it matches what shipped.
+- **Lossless screenshots.** F12 saves a PNG instead of a BMP.
+
 ## Controls
 
 Player 1 starts on the original's mouse and keyboard controls: WASD to move, the mouse to aim and fire. Everything is
