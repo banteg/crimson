@@ -12,6 +12,8 @@ We go great lengths to achieve this goal, including a headless differential test
 
 **[Join the Telegram group](https://t.me/+pG-Ow90lt28zMWFi)** — chat about the project, report bugs, share runs.
 
+**[Read the changelog](CHANGELOG.md)** — what changed in each release, for players and under the hood.
+
 ## Current state
 
 The rewrite is a playable full game: boot, menus, Survival, Rush, Quests (5 tiers), Tutorial, and Typ-o-Shooter, with full weapon/creature/perk content, terrain/sprite/decal rendering, music, gameplay SFX, and even secrets. The simulation is fully deterministic, supporting seeded runs and headless verifiable replays.
@@ -107,7 +109,7 @@ Useful flags: `--seed N` (deterministic runs), `--preserve-bugs` (native quirks 
 src/
   crimson/          game logic — modes, weapons, perks, creatures, UI, replay
   grim/             engine layer — raylib wrapper, PAQ/JAZ decoders, audio, fonts
-crimson-zig/        native desktop port, shared runtime, replay/debug CLI, WASM
+crimson-zig/        Zig port (frozen): replay verifier, desktop runtime, WASM
 crimson-re/         reverse-engineering tools (decomp matching, native link, replay traces);
                     not shipped with the game, adds `crimson match|native|dbg` in the dev environment
 analysis/
@@ -127,9 +129,7 @@ tests/              gameplay, perks, physics, replay, and parity regression test
 in Binary Ninja, IDA, then Ghidra using the shared address-keyed workflow in
 [`analysis/README.md`](analysis/README.md).
 
-**Runtime tooling** (Frida, WinDbg) validates ambiguous behavior and captures ground truth. Evidence summaries live under [`analysis/frida/`](analysis/frida/).
-
-**Differential testing** runs original functions under a Unicorn [native execution oracle](docs/verification/differential-testing/native-oracle.md) and checks port code against them bit for bit. Recorded traces compare canonical input, state, entity, timing and RNG channels between runs; compact checkpoints help localize differences, and complete session digests cover same-build port regressions.
+**Differential testing** is the runtime ground truth: it runs original functions under a Unicorn [native execution oracle](docs/verification/differential-testing/native-oracle.md) and checks port code against them bit for bit. Recorded traces compare canonical input, state, entity, timing and RNG channels between runs; compact checkpoints help localize differences, and complete session digests cover same-build port regressions.
 
 See [docs/contributor/project-tracking/provenance.md](docs/contributor/project-tracking/provenance.md) for exact binary hashes of the target build.
 
@@ -156,9 +156,9 @@ zensical serve
 ## Parity workflow
 
 1. Recover structure and intent from static analysis (`analysis/ghidra/maps/` as source-of-truth maps).
-2. Validate ambiguous behavior with runtime evidence (Frida/WinDbg captures under `analysis/frida/`).
+2. Validate ambiguous behavior against the original code under the native execution oracle.
 3. Port behavior into `src/` with deterministic simulation contracts.
-4. Verify against replays and the native execution oracle with headless differential tools.
+4. Verify against recorded replays and their per-tick checkpoints with headless tools.
 
 For deterministic gameplay code, float behavior is part of the contract.  
 See [`docs/rewrite/float-parity-policy.md`](docs/rewrite/float-parity-policy.md).
@@ -172,7 +172,7 @@ See [`docs/rewrite/float-parity-policy.md`](docs/rewrite/float-parity-policy.md)
 
 ## Tech stack
 
-Python 3.13+ · raylib (pyray) · Construct · msgspec · Typer · Ghidra · Frida · WinDbg · pytest · uv
+Python 3.13+ · raylib (pyray) · Construct · msgspec · Typer · Ghidra · Binary Ninja · Unicorn · pytest · uv
 
 ## Legal
 

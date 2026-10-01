@@ -1,7 +1,16 @@
 [project]
 name = "crimsonland"
 version = "0.10.0"
-readme = { file = "readme.md", content-type = "text/markdown" }
+description = "A faithful reimplementation of Crimsonland 1.9.93 in Python and raylib"
+keywords = ["crimsonland", "game", "shooter", "raylib", "reverse-engineering"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Games/Entertainment :: Arcade",
+    "Operating System :: OS Independent",
+]
+readme = { file = "pypi.md", content-type = "text/markdown" }
 requires-python = ">=3.13"
 dependencies = [
     "construct>=2.10.70",

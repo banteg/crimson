@@ -9,7 +9,6 @@
 from __future__ import annotations
 
 import os
-import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -29,22 +28,10 @@ class RenderedTelegramMessage:
     entities: tuple[object, ...]
 
 
-def _compile_patterns(repo: str) -> tuple[re.Pattern[str], re.Pattern[str]]:
-    return (
-        re.compile(rf"(https://github.com/{re.escape(repo)}/pull/(\d+))"),
-        re.compile(rf"(https://github.com/{re.escape(repo)}/compare/(.*))"),
-    )
+def _build_release_lines(*, tag: str, body: str, release_url: str) -> list[str]:
+    """The release notes, one changelog entry per line, then the release link."""
 
-
-def _build_release_lines(*, repo: str, tag: str, body: str, release_url: str) -> list[str]:
-    pull_re, compare_re = _compile_patterns(repo)
-    lines = body.splitlines()
-    release_lines = [pull_re.sub(r"[#\2](\1)", line) for line in lines if pull_re.search(line)]
-    compare_match = compare_re.search(body)
-    if compare_match:
-        release_lines.append(compare_re.sub(r"compare [\2](\1)", compare_match.group(0)))
-    release_lines.append(f"release [{tag}]({release_url})")
-    return release_lines
+    return [*body.strip().splitlines(), "", f"release [{tag}]({release_url})"]
 
 
 def _chunk_header(*, repo: str, tag: str, chunk_index: int, chunk_total: int) -> str:
@@ -111,7 +98,7 @@ def build_release_messages(
     render_message: Callable[[str], RenderedTelegramMessage] = _render_telegram_message,
     max_text_len: int = TELEGRAM_TEXT_LIMIT,
 ) -> list[RenderedTelegramMessage]:
-    lines = _build_release_lines(repo=repo, tag=tag, body=body, release_url=release_url)
+    lines = _build_release_lines(tag=tag, body=body, release_url=release_url)
     chunk_total = 1
     while True:
         messages = _split_release_messages(
