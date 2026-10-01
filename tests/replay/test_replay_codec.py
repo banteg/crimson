@@ -273,6 +273,19 @@ def test_decode_accepts_canonical_payload() -> None:
     assert decode_replay_payload(_payload()) == _replay()
 
 
+@pytest.mark.parametrize(
+    ("wire", "version"),
+    [
+        # 0.10.0 wrote v11, with the version inside a header map.
+        ({"header": {"replay_format_version": 11, "seed": 1}, "inputs": []}, 11),
+        ({**_wire(), "format_version": 28, "postlude": []}, 28),
+    ],
+)
+def test_decode_names_the_format_of_another_version(wire: dict, version: int) -> None:
+    with pytest.raises(ReplayCodecError, match=rf"format version: {version} \(this build reads version {REPLAY_FORMAT_VERSION}\)"):
+        decode_replay_payload(msgspec.msgpack.encode(wire))
+
+
 # Semantic validation -----------------------------------------------------------
 
 

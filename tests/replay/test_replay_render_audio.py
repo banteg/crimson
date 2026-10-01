@@ -11,6 +11,7 @@ from crimson.replay.driver.replay_render import (
     _build_audio_sync_filter,
     _infer_effective_capture_sample_rate,
 )
+from tests.support.replay_runner_helpers import idle_replay
 
 
 def test_build_audio_sync_filter_exact_match() -> None:
@@ -106,7 +107,7 @@ def test_capture_audio_track_counts_captured_ticks(mocker, tmp_path: Path) -> No
     captured = replay_render_mod._capture_replay_audio_track(
         rl=_FakeRl(),
         ctx=object(),
-        replay_path=Path("dummy.crd"),
+        replay=idle_replay(1),
         config=_FakeConfig(),
         console=object(),
         max_ticks=None,

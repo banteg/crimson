@@ -181,12 +181,13 @@ def replay_playback_view(tmp_path: Path, assets_dir: Path) -> tuple[replay_playb
     from grim.config import ensure_crimson_cfg
     from grim.console import create_console
     from grim.view import ViewContext
+    from tests.support.replay_runner_helpers import idle_replay
 
     cfg = ensure_crimson_cfg(tmp_path)
     console = create_console(tmp_path, assets_dir=assets_dir)
     view = replay_playback_mode.ReplayPlaybackMode(
         ViewContext(assets_dir=assets_dir, preserve_bugs=False),
-        replay_path=Path("dummy.crd"),
+        replay=idle_replay(1),
         config=cfg,
         console=console,
     )

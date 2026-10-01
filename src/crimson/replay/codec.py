@@ -201,11 +201,27 @@ def _validate_tick(tick: ReplayTick, *, tick_index: int, run: RunSpec) -> None:
         )
 
 
+def _unsupported_format(version: int) -> str:
+    return f"unsupported replay format version: {version} (this build reads version {REPLAY_FORMAT_VERSION})"
+
+
+def _require_current_format(payload: bytes) -> None:
+    """Name an older or newer format instead of the first field it does not share."""
+
+    try:
+        wire = msgspec.msgpack.decode(payload)
+    except msgspec.DecodeError:
+        return
+    if not isinstance(wire, dict):
+        return
+    # Formats before v20 kept the version in a header map.
+    header = wire.get("header")
+    version = header.get("replay_format_version") if isinstance(header, dict) else wire.get("format_version")
+    _require(not isinstance(version, int) or version == REPLAY_FORMAT_VERSION, _unsupported_format(version))
+
+
 def validate_replay(replay: Replay) -> None:
-    _require(
-        replay.format_version == REPLAY_FORMAT_VERSION,
-        f"unsupported replay format version: {replay.format_version}",
-    )
+    _require(replay.format_version == REPLAY_FORMAT_VERSION, _unsupported_format(replay.format_version))
     _require(bool(replay.game_version), "game_version must be non-empty")
     _validate_run(replay.run)
     _validate_result(replay.result, replay.run)
@@ -255,6 +271,7 @@ def decode_replay_payload(payload: bytes) -> Replay:
     try:
         replay = _DECODER.decode(payload)
     except (msgspec.DecodeError, msgspec.ValidationError) as exc:
+        _require_current_format(payload)
         raise ReplayCodecError(f"invalid replay payload: {exc}") from exc
     _require(_ENCODER.encode(replay) == payload, "replay payload is not canonically encoded")
     validate_replay(replay)

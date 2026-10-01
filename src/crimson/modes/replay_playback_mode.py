@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 import msgspec
 
 from grim import canvas
@@ -26,8 +24,6 @@ from ..replay import (
     REPLAY_TICK_DT,
     REPLAY_TICK_RATE,
     Replay,
-    load_replay_file,
-    warn_on_game_version_mismatch,
 )
 from ..replay.driver.playback_driver import (
     PlaybackDriver,
@@ -80,7 +76,7 @@ class ReplayPlaybackMode:
         self,
         ctx: ViewContext,
         *,
-        replay_path: Path,
+        replay: Replay,
         config: CrimsonConfig,
         console: ConsoleState,
         max_ticks: int | None = None,
@@ -88,7 +84,6 @@ class ReplayPlaybackMode:
         show_replay_widget: bool = True,
     ) -> None:
         self._ctx = ctx
-        self._replay_path = Path(replay_path)
         self._config = config
         self._console = console
         self._max_ticks = max(0, int(max_ticks)) if max_ticks is not None else None
@@ -97,7 +92,7 @@ class ReplayPlaybackMode:
 
         self.close_requested = False
 
-        self._replay: Replay | None = None
+        self._replay = replay
         self._runtime: WorldRuntime | None = None
         self._small: SmallFontData | None = None
         self._hud_state = HudState()
@@ -138,8 +133,6 @@ class ReplayPlaybackMode:
 
     def _replay_progress_ratio(self) -> float:
         replay = self._replay
-        if replay is None:
-            return 0.0
         total_ticks = len(replay.ticks)
         if total_ticks <= 0:
             return 1.0
@@ -180,8 +173,6 @@ class ReplayPlaybackMode:
 
     def _draw_replay_widget(self) -> None:
         replay = self._replay
-        if replay is None:
-            return
 
         panel_x, panel_y, panel_w, _panel_h, line1_y = self._replay_widget_metrics()
         panel_x += float(_REPLAY_WIDGET_PANEL_OFFSET_X)
@@ -269,10 +260,7 @@ class ReplayPlaybackMode:
         self._grim_mono = None
         self._quest_title = ""
 
-        replay = load_replay_file(self._replay_path)
-        self._replay = replay
-        warn_on_game_version_mismatch(replay, action="playback")
-
+        replay = self._replay
         self._tick_rate = REPLAY_TICK_RATE
         self._dt = REPLAY_TICK_DT
         self._dt_accum = 0.0
@@ -367,8 +355,6 @@ class ReplayPlaybackMode:
 
     def _tick_limit(self) -> int:
         replay = self._replay
-        if replay is None:
-            return 0
         total_ticks = len(replay.ticks)
         if self._max_ticks is None:
             return int(total_ticks)
@@ -423,8 +409,7 @@ class ReplayPlaybackMode:
         self._speed_index = idx
 
     def _skip_forward_seconds(self, seconds: float) -> None:
-        replay = self._replay
-        if replay is None or self._finished:
+        if self._finished:
             return
         ticks = int(round(float(seconds) * float(self._tick_rate)))
         if ticks <= 0:
@@ -494,7 +479,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_title(self) -> None:
         replay = self._replay
-        if replay is None or replay.run.game_mode_id != GameMode.QUESTS:
+        if replay.run.game_mode_id != GameMode.QUESTS:
             return
         font = self._grim_mono
         if font is None:
@@ -516,7 +501,7 @@ class ReplayPlaybackMode:
 
     def _draw_quest_complete_banner(self) -> None:
         replay = self._replay
-        if replay is None or replay.run.game_mode_id != GameMode.QUESTS:
+        if replay.run.game_mode_id != GameMode.QUESTS:
             return
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before replay quest banner draw"
@@ -567,7 +552,6 @@ class ReplayPlaybackMode:
         runtime = self._runtime
         assert runtime is not None, "World runtime must be open before replay draw"
         replay = self._replay
-        assert replay is not None, "Replay must be loaded before replay draw"
         world = runtime.world
         players = world.players
         assert players, "Replay runtime must have at least one player before draw"

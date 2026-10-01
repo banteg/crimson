@@ -10,7 +10,7 @@ from crimson.modes import replay_playback_mode
 from crimson.modes.replay_playback_mode import ReplayPlaybackMode
 from crimson.quests import quest_by_level
 from crimson.quests.level import QuestLevel
-from crimson.replay import Replay, ReplayRecorder, dump_replay
+from crimson.replay import Replay, ReplayRecorder
 from crimson.replay.driver.playback_driver import build_runtime_playback_driver
 from crimson.replay.input_codec import pack_tick
 from crimson.sim.commands import GameCommand, TypoCharCommand
@@ -53,13 +53,11 @@ def _record(run: RunSpec, ticks: int, *, inputs: PlayerInput = IDLE, commands: S
 
 @pytest.fixture
 def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
-    """Open the replay viewer on `replay` saved to disk, with audio off (no device in tests)."""
+    """Open the replay viewer on `replay`, with audio off (no device in tests)."""
 
     def _open(
         replay: Replay, *, config: CrimsonConfig | None = None,
     ) -> ReplayPlaybackMode:
-        replay_path = tmp_path / "playback.crd"
-        replay_path.write_bytes(dump_replay(replay))
         cfg = config if config is not None else ensure_crimson_cfg(tmp_path)
         cfg.audio.music_disabled = True
         cfg.audio.sound_disabled = True
@@ -67,7 +65,7 @@ def open_playback(tmp_path: Path, assets_dir: Path) -> OpenPlayback:
         register_core_cvars(console, cfg.display.width, cfg.display.height)
         view = ReplayPlaybackMode(
             ViewContext(assets_dir=assets_dir, preserve_bugs=False),
-            replay_path=replay_path,
+            replay=replay,
             config=cfg,
             console=console,
         )

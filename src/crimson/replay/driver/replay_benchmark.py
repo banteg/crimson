@@ -202,7 +202,7 @@ def run_replay_render_benchmark(
             with tqdm(total=tick_total, unit="tick", desc=tick_desc, leave=False, disable=not show_progress) as bar:
                 return _run_render_once(
                     ctx=ctx,
-                    replay_path=replay_path,
+                    replay=replay,
                     cfg=cfg,
                     console=console,
                     max_ticks=max_ticks,
@@ -435,7 +435,7 @@ def _validate_args(*, runs: int, warmup_runs: int, top: int) -> None:
 def _run_render_once(
     *,
     ctx: ViewContext,
-    replay_path: Path,
+    replay: Replay,
     cfg: CrimsonConfig,
     console: ConsoleState,
     max_ticks: int | None,
@@ -445,7 +445,7 @@ def _run_render_once(
 ) -> _RenderOnceResult:
     mode = ReplayPlaybackMode(
         ctx,
-        replay_path=Path(replay_path),
+        replay=replay,
         config=cfg,
         console=console,
         max_ticks=max_ticks,
@@ -453,10 +453,6 @@ def _run_render_once(
     )
     mode.open()
     try:
-        replay = mode._replay
-        if replay is None:
-            raise ReplayBenchmarkError("render benchmark failed: replay playback did not initialize replay state")
-
         step_dt = float(mode._dt)
         if step_dt <= 0.0:
             step_dt = 1.0 / 60.0

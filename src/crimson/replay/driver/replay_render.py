@@ -210,7 +210,7 @@ def run_replay_render_video(
 
             mode = ReplayPlaybackMode(
                 ctx,
-                replay_path=Path(replay_path),
+                replay=replay,
                 config=cfg,
                 console=console,
                 max_ticks=max_ticks,
@@ -268,7 +268,7 @@ def run_replay_render_video(
                 captured_audio = _capture_replay_audio_track(
                     rl=rl,
                     ctx=ctx,
-                    replay_path=Path(replay_path),
+                    replay=replay,
                     config=cfg,
                     console=console,
                     max_ticks=max_ticks,
@@ -418,7 +418,7 @@ def _capture_replay_audio_track(
     *,
     rl,
     ctx,
-    replay_path: Path,
+    replay: Replay,
     config,
     console,
     max_ticks: int | None,
@@ -444,7 +444,7 @@ def _capture_replay_audio_track(
     try:
         mode = ReplayPlaybackMode(
             ctx,
-            replay_path=Path(replay_path),
+            replay=replay,
             config=cfg,
             console=console,
             max_ticks=max_ticks,

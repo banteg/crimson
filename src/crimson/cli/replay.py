@@ -362,6 +362,7 @@ def cmd_replay_play(
     from grim.view import ViewContext
 
     from ..modes.replay_playback_mode import ReplayPlaybackMode
+    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay_file, warn_on_game_version_mismatch
     from ..runtime_boot import boot_runtime
     from ..runtime_resources_view import RuntimeResourcesView
 
@@ -369,10 +370,16 @@ def cmd_replay_play(
         assets_dir = base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
     replay_path = _require_replay_path(replay_file, base_dir=base_dir)
+    try:
+        replay = load_replay_file(replay_path)
+        warn_on_game_version_mismatch(replay, action="playback")
+    except (ReplayCodecError, ReplayGameVersionError) as exc:
+        typer.echo(f"replay playback failed: {exc}", err=True)
+        raise typer.Exit(code=1) from exc
     boot = boot_runtime(base_dir, assets_dir, width=width, height=height)
 
     ctx = ViewContext(assets_dir=assets_dir, preserve_bugs=False)
-    view = ReplayPlaybackMode(ctx, replay_path=replay_path, config=boot.config, console=boot.console)
+    view = ReplayPlaybackMode(ctx, replay=replay, config=boot.config, console=boot.console)
     title = f"Replay — {replay_path.name}"
 
     run_view(
