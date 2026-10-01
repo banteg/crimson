@@ -4,12 +4,12 @@
   "cases": [
     {
       "name": "rush-idle",
-      "ticks": 772,
+      "ticks": 803,
       "fields_per_snapshot": 36343,
-      "sha256": "b19c48660ccde76c83bad4b3664320563468ede0d74ab892fc437243ae864732",
-      "final_sha256": "d442b084a018f178252ed32a44b730e46a0eb85498c0d4376c4a7e6d39485636",
-      "comparison_seconds": 0.3153734999999999,
-      "wasm_sim_seconds": 0.010066334000000097,
+      "sha256": "1fdf87940c94b84e67bda617d68a472dc64735cd8e9e510835b84150f9b863ff",
+      "final_sha256": "d1b050b2c6de66cc20473fb703c35732fc4e56bf1ce489de7e9b60838ff30fb6",
+      "comparison_seconds": 0.17966654200000004,
+      "wasm_sim_seconds": 0.009591624999999908,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -17,9 +17,9 @@
         "pending": 7,
         "xp": 0,
         "health": 0,
-        "elapsed_ms": 12352,
+        "elapsed_ms": 12848,
         "timeline_ms": 0,
-        "rng": 3696007453
+        "rng": 953984123
       },
       "coverage": {
         "weapons": [
@@ -33,17 +33,18 @@
         "max_commands": 0,
         "peak_creatures": 100,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "rush-bot",
-      "ticks": 913,
+      "ticks": 944,
       "fields_per_snapshot": 36343,
-      "sha256": "54605fcea83b4e70cfb5f907e8f1e72e8f58360da168c0a0fc3a936ca8228067",
-      "final_sha256": "11125da7d29f5b29611a4b194033722f880dd823f74400c381c6dc1760578364",
-      "comparison_seconds": 0.3093772919999999,
-      "wasm_sim_seconds": 0.016944666000000098,
+      "sha256": "ae5296a6572eb8ddbf6c90b9f09461e8dffa3c71a41da1a2937fbdbd0cd06ac7",
+      "final_sha256": "d5919de4254b2a90ca3262060e8b49de1174aeb6a59367a44e8dfc876afee401",
+      "comparison_seconds": 0.1979604999999999,
+      "wasm_sim_seconds": 0.011895500000000083,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -51,9 +52,9 @@
         "pending": 7,
         "xp": 5285,
         "health": 0,
-        "elapsed_ms": 14608,
+        "elapsed_ms": 15104,
         "timeline_ms": 0,
-        "rng": 2625546953
+        "rng": 1605389480
       },
       "coverage": {
         "weapons": [
@@ -67,17 +68,18 @@
         "max_commands": 0,
         "peak_creatures": 84,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "rush-evade",
-      "ticks": 1215,
+      "ticks": 1246,
       "fields_per_snapshot": 36343,
-      "sha256": "f9d65a8eac68b361d82e57b88f9b289cab4c529e8d85d870b33e157f584f0cf0",
-      "final_sha256": "0844f036e69e59f284a363ef61025be98a0d10cc49abd53c272154842318a94c",
-      "comparison_seconds": 3.851770875,
-      "wasm_sim_seconds": 0.07564308299999993,
+      "sha256": "f7d42d39e294f11d535f3ce5e6956772fdfec4f9781df5801bc45906a781879a",
+      "final_sha256": "e16e9a68d505142686e276892fdb472428b28f39f408f6ae37582f8074c8a77f",
+      "comparison_seconds": 0.38853899999999997,
+      "wasm_sim_seconds": 0.017343624999999974,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -85,9 +87,9 @@
         "pending": 7,
         "xp": 7415,
         "health": 0,
-        "elapsed_ms": 19440,
+        "elapsed_ms": 19936,
         "timeline_ms": 0,
-        "rng": 4169285690
+        "rng": 3241864074
       },
       "coverage": {
         "weapons": [
@@ -101,17 +103,18 @@
         "max_commands": 0,
         "peak_creatures": 108,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "survival-idle",
-      "ticks": 1875,
+      "ticks": 1906,
       "fields_per_snapshot": 36343,
-      "sha256": "327b6ba163256e7c2cbf963884d93793fbdedf7069f873c8a0e3bdc561a1f1a6",
-      "final_sha256": "f81e5493363277c56927eecc821d993070d75e661808f174bac13119918f5b0a",
-      "comparison_seconds": 2.913702209000001,
-      "wasm_sim_seconds": 0.028387042000000293,
+      "sha256": "d5f5f554fe39d99cb7f96a451399e473ed57bd679b79bbd0e358f6820888262d",
+      "final_sha256": "e0b2e0e97cb7ced6def4599a86d36d2cdc4aa63412e0c893a878882c7692111c",
+      "comparison_seconds": 0.37551454100000003,
+      "wasm_sim_seconds": 0.0197170000000001,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -119,9 +122,9 @@
         "pending": 7,
         "xp": 0,
         "health": -1.4285588264465332,
-        "elapsed_ms": 30000,
-        "timeline_ms": 30000,
-        "rng": 1336523920
+        "elapsed_ms": 30496,
+        "timeline_ms": 30496,
+        "rng": 2441684894
       },
       "coverage": {
         "weapons": [
@@ -134,17 +137,18 @@
         "max_commands": 0,
         "peak_creatures": 61,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "survival-bot",
-      "ticks": 2524,
+      "ticks": 2555,
       "fields_per_snapshot": 36343,
-      "sha256": "07ba07089fdbca07d6d789c31894bdb3db5a5dbc434ed2cc42f5f9b6a088e550",
-      "final_sha256": "7191f4aba8f281b45487ef45ba97537134586e51d50f201901ffd5b75700d9db",
-      "comparison_seconds": 1.3724253750000006,
-      "wasm_sim_seconds": 0.031123499999999693,
+      "sha256": "b678996b74185431d2dca551bf02bf90224fb269ce7e5c2e2bfbfa806072e041",
+      "final_sha256": "7b2c045ffaeccff6d9f6e71ab5d91e51454d8fac60426817d8e7d7ad6c44fa67",
+      "comparison_seconds": 0.49861579200000006,
+      "wasm_sim_seconds": 0.027082625000000006,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -152,9 +156,9 @@
         "pending": 7,
         "xp": 1031,
         "health": -2.095247268676758,
-        "elapsed_ms": 40384,
-        "timeline_ms": 40384,
-        "rng": 489626423
+        "elapsed_ms": 40880,
+        "timeline_ms": 40880,
+        "rng": 3732793046
       },
       "coverage": {
         "weapons": [
@@ -167,104 +171,106 @@
         "max_commands": 0,
         "peak_creatures": 55,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "survival-evade",
-      "ticks": 4288,
+      "ticks": 4318,
       "fields_per_snapshot": 36343,
-      "sha256": "246d2548d63aa9742b5d35ff34ce0439f0338f02d01d5bb93a907564567bd542",
-      "final_sha256": "8d2b40913aa6ef5bcbce13b94faa5b5acd8f233ef28f640e520e76eb73fec605",
-      "comparison_seconds": 1.0232977079999983,
-      "wasm_sim_seconds": 0.059917249999998604,
+      "sha256": "ccb2ff58193789f8875c7d0b507e2a7ba9883c83b2d3773de69d319043cc6d5b",
+      "final_sha256": "025f20ff1a818855dca7c6a57e92f668f705fd7f8d3c32ba51a3bf3427f0a59a",
+      "comparison_seconds": 0.8889434579999997,
+      "wasm_sim_seconds": 0.0597065419999999,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 7,
-        "xp": 3000,
-        "health": -4.0952534675598145,
-        "elapsed_ms": 68608,
-        "timeline_ms": 68608,
-        "rng": 2209131643
+        "xp": 1893,
+        "health": -1.14286470413208,
+        "elapsed_ms": 69088,
+        "timeline_ms": 69088,
+        "rng": 1478288444
       },
       "coverage": {
         "weapons": [
           1,
           15
         ],
-        "perks": [
-          52
-        ],
+        "perks": [],
         "bonuses": [],
-        "menu": 1,
+        "menu": 0,
         "reload": 32,
-        "max_commands": 1,
-        "peak_creatures": 95,
+        "max_commands": 0,
+        "peak_creatures": 97,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "survival-evade-1337",
-      "ticks": 8885,
+      "ticks": 10681,
       "fields_per_snapshot": 36343,
-      "sha256": "9971b270a95102e72dface0d0044c6b10a87b1dc48d3611b12fd3a535382201f",
-      "final_sha256": "9a0a5059190c666148471ff9fb74b97b511e4c0fcf5a9117c7c93dfac76a16cf",
-      "comparison_seconds": 1.9101946250000001,
-      "wasm_sim_seconds": 0.12943633299999782,
+      "sha256": "93dbefe6b63ffc0234f97a17fb739f7d1afabeb0b57c54fbd03c58ae4884c33e",
+      "final_sha256": "c173d44837e606399639b62543c4e3e800157f049ecbabd2abf0f5cfb4848d8b",
+      "comparison_seconds": 2.204156708999999,
+      "wasm_sim_seconds": 0.15751016700000037,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 7,
-        "xp": 10303,
-        "health": -2.9523792266845703,
-        "elapsed_ms": 142160,
-        "timeline_ms": 142160,
-        "rng": 3054485279
+        "xp": 14531,
+        "health": -2.380960464477539,
+        "elapsed_ms": 170896,
+        "timeline_ms": 170896,
+        "rng": 3380869552
       },
       "coverage": {
         "weapons": [
           1,
+          18,
           30
         ],
         "perks": [
+          4,
+          11,
           18,
-          21,
-          44
+          21
         ],
         "bonuses": [
-          "freeze",
-          "weapon_power_up"
+          "freeze"
         ],
-        "menu": 3,
-        "reload": 65,
+        "menu": 4,
+        "reload": 78,
         "max_commands": 1,
-        "peak_creatures": 86,
+        "peak_creatures": 104,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "survival-command-batches",
-      "ticks": 9995,
+      "ticks": 8269,
       "fields_per_snapshot": 36343,
-      "sha256": "d7ea21747117d7cce75d4179e56ba93cc36e59d6e06020903157657c9c9b6043",
-      "final_sha256": "02062a878d9aa6cd32ecf23531473499867276dd8e81ccef4b22f176b05eac18",
-      "comparison_seconds": 2.5167874579999987,
-      "wasm_sim_seconds": 0.1472218329999996,
+      "sha256": "eda8caca3f4c1df674b6f2c46bc6a48a277054f87eca26f25201f3216c699cc5",
+      "final_sha256": "213d7b8f7973b7d68b486c71332ac4874c3749e88502b6926cb9fa2a0f6628c9",
+      "comparison_seconds": 1.6903618339999993,
+      "wasm_sim_seconds": 0.13296208399999887,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 7,
-        "xp": 13530,
-        "health": -2.4927732944488525,
-        "elapsed_ms": 154845,
-        "timeline_ms": 154845,
-        "rng": 1980404672
+        "xp": 13298,
+        "health": -1,
+        "elapsed_ms": 123929,
+        "timeline_ms": 123929,
+        "rng": 1777971957
       },
       "coverage": {
         "weapons": [
@@ -272,31 +278,31 @@
           30
         ],
         "perks": [
-          26,
-          38
+          1,
+          28
         ],
         "bonuses": [
           "double_xp",
-          "freeze",
           "reflex_boost",
           "weapon_power_up"
         ],
         "menu": 2,
-        "reload": 73,
+        "reload": 61,
         "max_commands": 2,
-        "peak_creatures": 94,
+        "peak_creatures": 62,
         "stall": false,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.1",
-      "ticks": 1585,
+      "ticks": 1616,
       "fields_per_snapshot": 36343,
-      "sha256": "34d41502f7047b1a839cef1c95c3d244586b92834d16536a1248536ffa2bdafb",
-      "final_sha256": "4c7fd0e0045f74bf907190c2ea69035bf77017810fcfa0caebcc0826b8e43cdc",
-      "comparison_seconds": 0.2730010000000002,
-      "wasm_sim_seconds": 0.011976500000000669,
+      "sha256": "483ca72c04981469227ab22a995ee5cd891c090b781fc432cdd27af5f8c88cf5",
+      "final_sha256": "17d9dc5cbb68e81b249ca5155bddadffa90136b1b9c697f7b200c40d027f4460",
+      "comparison_seconds": 0.29285429199999996,
+      "wasm_sim_seconds": 0.011869792000001326,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -304,9 +310,9 @@
         "pending": 8,
         "xp": 1250,
         "health": 90,
-        "elapsed_ms": 25360,
+        "elapsed_ms": 25856,
         "timeline_ms": 22912,
-        "rng": 2393698378
+        "rng": 4040689011
       },
       "coverage": {
         "weapons": [
@@ -319,17 +325,18 @@
         "max_commands": 0,
         "peak_creatures": 7,
         "stall": true,
-        "transitions": true
+        "transitions": true,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.2",
-      "ticks": 759,
+      "ticks": 790,
       "fields_per_snapshot": 36343,
-      "sha256": "3c90252ff584d2d544124a4d9ecd172249359e0b6084b1dad396948898041621",
-      "final_sha256": "0e046fb22379630bed9787a7b58730f223bf5e02bc9126cc1b5ca49bfe16ff97",
-      "comparison_seconds": 0.13564125000000057,
-      "wasm_sim_seconds": 0.00567266699999891,
+      "sha256": "1e6ec00770f7c1854e46897098ca7e7288b57ef25cda95d9ed47e35cd88d8099",
+      "final_sha256": "a47d0581dd957125dd4ab108b34114ea98348f3ad330308ecc0fba96cd7350de",
+      "comparison_seconds": 0.1491162919999988,
+      "wasm_sim_seconds": 0.00606829099999959,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -337,9 +344,9 @@
         "pending": 12,
         "xp": 375,
         "health": 0,
-        "elapsed_ms": 12144,
+        "elapsed_ms": 12640,
         "timeline_ms": 12144,
-        "rng": 4077955325
+        "rng": 3394844002
       },
       "coverage": {
         "weapons": [
@@ -352,17 +359,18 @@
         "max_commands": 0,
         "peak_creatures": 5,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.3",
-      "ticks": 2897,
+      "ticks": 2928,
       "fields_per_snapshot": 36343,
-      "sha256": "1a99b8959d1e90e4d2612a8242507cc5db166dc0149501d93c9dcdda143762b9",
-      "final_sha256": "83e2c0f57463e8518104339488ee3a7a2b4807f13816c5f32c144803e130180b",
-      "comparison_seconds": 0.47957500000000075,
-      "wasm_sim_seconds": 0.020366500000000086,
+      "sha256": "1017aa853ef5f723d7f2f782f25452ba725aeb03537417f03860c37426a7d874",
+      "final_sha256": "3d335fdfd7954e43e2a8f1886ac131bccc66a0fdf8e3ef3a3023a0c7c018e9eb",
+      "comparison_seconds": 0.5234486250000009,
+      "wasm_sim_seconds": 0.02084220800000003,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -370,9 +378,9 @@
         "pending": 8,
         "xp": 4500,
         "health": 100,
-        "elapsed_ms": 46352,
+        "elapsed_ms": 46848,
         "timeline_ms": 43904,
-        "rng": 161841851
+        "rng": 1606303352
       },
       "coverage": {
         "weapons": [
@@ -388,17 +396,18 @@
         "max_commands": 1,
         "peak_creatures": 1,
         "stall": true,
-        "transitions": true
+        "transitions": true,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.4",
-      "ticks": 1283,
+      "ticks": 1314,
       "fields_per_snapshot": 36343,
-      "sha256": "9a5548a4e6ebb1137dfbca5b582797396edd74c2f36d8c80c3a55bfe080c7783",
-      "final_sha256": "6b7156be07be23677aa24bd74075156ed7cea03adf81f9605501ad64d45caa5c",
-      "comparison_seconds": 0.22154799999999886,
-      "wasm_sim_seconds": 0.009962291999996523,
+      "sha256": "dd6631981123c5b5050a767a13286de0ff305bb163ba56b14f8f2e6033e6141f",
+      "final_sha256": "c410a378352aceb60f50b0d2adc4ad4772a04284152351d80fae6071d92a714b",
+      "comparison_seconds": 0.23594262499999968,
+      "wasm_sim_seconds": 0.010568374999998922,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -406,9 +415,9 @@
         "pending": 12,
         "xp": 625,
         "health": 0,
-        "elapsed_ms": 20528,
+        "elapsed_ms": 21024,
         "timeline_ms": 20528,
-        "rng": 1152296027
+        "rng": 570349720
       },
       "coverage": {
         "weapons": [
@@ -421,17 +430,18 @@
         "max_commands": 0,
         "peak_creatures": 21,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.5",
-      "ticks": 6499,
+      "ticks": 6530,
       "fields_per_snapshot": 36343,
-      "sha256": "fd40dc94c9c817376a7fbcf61d128027fbbc75f7f1a790696f54ad3e93f8f5ad",
-      "final_sha256": "0d2c265f37bf26d817f32248df16db385960b9612f7a17c7bad385610bc15d36",
-      "comparison_seconds": 1.1561927910000014,
-      "wasm_sim_seconds": 0.07016920799999934,
+      "sha256": "30d4b3e1db70ba44c7d41d39be27e6740b0918535b123b592e6ebca23a2a4150",
+      "final_sha256": "28ecae736a53ec0178f8b22013b256b21f70c4b92f10a0b44a0eefbdc736bec0",
+      "comparison_seconds": 1.231481249999999,
+      "wasm_sim_seconds": 0.07230037500000071,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -439,9 +449,9 @@
         "pending": 8,
         "xp": 21563,
         "health": 34.69533157348633,
-        "elapsed_ms": 103984,
+        "elapsed_ms": 104480,
         "timeline_ms": 101536,
-        "rng": 20257972
+        "rng": 3894723493
       },
       "coverage": {
         "weapons": [
@@ -464,17 +474,18 @@
         "max_commands": 1,
         "peak_creatures": 13,
         "stall": true,
-        "transitions": true
+        "transitions": true,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.6",
-      "ticks": 967,
+      "ticks": 998,
       "fields_per_snapshot": 36343,
-      "sha256": "20a112a082dfd1db81bcec7642f84f274780644f2cfefbd85524fee52313b34c",
-      "final_sha256": "a4e7708e8e8b4db35ba785494adbdf0bbe7967e19acbf4dc08a11b82f9aeddab",
-      "comparison_seconds": 0.16843954200000008,
-      "wasm_sim_seconds": 0.007957084000001486,
+      "sha256": "91e2ba113f22b8cfcc8995a58c5bfadd4a02a761c6a88508710cd066ab6140b7",
+      "final_sha256": "37932732b15093b58a5168c5e1621d791c67b466549dee41365d7b17e64741a6",
+      "comparison_seconds": 0.18598149999999986,
+      "wasm_sim_seconds": 0.008155209000000468,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -482,9 +493,9 @@
         "pending": 12,
         "xp": 620,
         "health": 0,
-        "elapsed_ms": 15472,
+        "elapsed_ms": 15968,
         "timeline_ms": 15472,
-        "rng": 2158788171
+        "rng": 3294799572
       },
       "coverage": {
         "weapons": [
@@ -497,17 +508,18 @@
         "max_commands": 0,
         "peak_creatures": 20,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.7",
-      "ticks": 1045,
+      "ticks": 1076,
       "fields_per_snapshot": 36343,
-      "sha256": "7bd1101428978617bca081d99f06a7cf6190973e7f8edd240a19a093b23a5ad3",
-      "final_sha256": "2555d1e56ba6e50dcb27e4ed056f44834392005b8f196c999c5b17168f2b441f",
-      "comparison_seconds": 0.18378600000000006,
-      "wasm_sim_seconds": 0.008245999999999185,
+      "sha256": "3e33bcaa966b273b4d4da387ccd9f94114b4f641cd7132ecb8f03bb6d31c75de",
+      "final_sha256": "c2d0f0d23c2d836cb047b4f18a286ee0c980017452911c3730b55b1451f24e10",
+      "comparison_seconds": 0.20356995800000005,
+      "wasm_sim_seconds": 0.008522999999999229,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -515,9 +527,9 @@
         "pending": 12,
         "xp": 960,
         "health": 0,
-        "elapsed_ms": 16720,
+        "elapsed_ms": 17216,
         "timeline_ms": 16720,
-        "rng": 3771009094
+        "rng": 3311812564
       },
       "coverage": {
         "weapons": [
@@ -530,17 +542,18 @@
         "max_commands": 0,
         "peak_creatures": 19,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.8",
-      "ticks": 1201,
+      "ticks": 1232,
       "fields_per_snapshot": 36343,
-      "sha256": "82fdf81e87e55daf510944af3c41e161bd80c1c583bc77773af6bc88a9a80f86",
-      "final_sha256": "20d4c620bf6320b78495b7989aceeb8941957d6bad56360535b1de9864e2a6e6",
-      "comparison_seconds": 0.21030608299999948,
-      "wasm_sim_seconds": 0.011309957999998005,
+      "sha256": "da347b8d578838f4eb424d3d97e736815446ac6c5543c35a89ca21231ef91ad8",
+      "final_sha256": "fd5040d54866078dddcb21fce078aeb03e6a5191e7fe806025200fa30544d3c9",
+      "comparison_seconds": 0.2308128749999996,
+      "wasm_sim_seconds": 0.011596417000000657,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -548,9 +561,9 @@
         "pending": 12,
         "xp": 3000,
         "health": 0,
-        "elapsed_ms": 19216,
+        "elapsed_ms": 19712,
         "timeline_ms": 19216,
-        "rng": 4190872853
+        "rng": 2759822682
       },
       "coverage": {
         "weapons": [
@@ -566,17 +579,18 @@
         "max_commands": 1,
         "peak_creatures": 36,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.9",
-      "ticks": 1486,
+      "ticks": 1517,
       "fields_per_snapshot": 36343,
-      "sha256": "306e7630aeb42ab625c37f5d8308e281183c5df865b14bd5e12a7cefe6149751",
-      "final_sha256": "96a4e3fca5b9746f7a28f09a10c1b719f3aae2f2719a95c84965a16caf890b61",
-      "comparison_seconds": 0.26061654199999973,
-      "wasm_sim_seconds": 0.012885042000001705,
+      "sha256": "f781ddd5512322f3288e11e5e25433ef835a636db23f15c26447748e8a3818f5",
+      "final_sha256": "7b754cf2e08f69dbe2948a3e9e52a49ecf211e59068648cd7a8e343c2546faac",
+      "comparison_seconds": 0.27732858299999863,
+      "wasm_sim_seconds": 0.0695043749999968,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -584,9 +598,9 @@
         "pending": 12,
         "xp": 1375,
         "health": -3,
-        "elapsed_ms": 23776,
+        "elapsed_ms": 24272,
         "timeline_ms": 23776,
-        "rng": 1393563149
+        "rng": 895264482
       },
       "coverage": {
         "weapons": [
@@ -600,17 +614,18 @@
         "max_commands": 0,
         "peak_creatures": 14,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-1.10",
-      "ticks": 353,
+      "ticks": 384,
       "fields_per_snapshot": 36343,
-      "sha256": "062bd0b437a89b485f80bc9417b9365a3d8aff51473a985eb2439f2fff61f5e8",
-      "final_sha256": "e76cfe3f31e26a53cecf0e579ffee6795e51ce82a23c23894b20b5f204fdec40",
-      "comparison_seconds": 0.0635737079999999,
-      "wasm_sim_seconds": 0.002559625000001688,
+      "sha256": "2a81a82d057ac6997cb27799f5a7db8a1da90eab8b810db542fa9bbd4ed47439",
+      "final_sha256": "bfdccd5702f234a0e4c2a3257c32bb276781321de89013eee92e9603830bdd4b",
+      "comparison_seconds": 0.11884200000000056,
+      "wasm_sim_seconds": 0.002866041999997833,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -618,9 +633,9 @@
         "pending": 12,
         "xp": 0,
         "health": 0,
-        "elapsed_ms": 5648,
+        "elapsed_ms": 6144,
         "timeline_ms": 5648,
-        "rng": 2974550317
+        "rng": 701328722
       },
       "coverage": {
         "weapons": [
@@ -633,17 +648,18 @@
         "max_commands": 0,
         "peak_creatures": 1,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.1",
-      "ticks": 3316,
+      "ticks": 3347,
       "fields_per_snapshot": 36343,
-      "sha256": "32fccad0d8fbba463c9414593e6ae1ac7a9439096b81a344c47ca1a1846e9862",
-      "final_sha256": "2263247aa78d32079c0536b4847d4fca03be01cf0dbb5e774e219cb77f53d369",
-      "comparison_seconds": 0.5638120419999978,
-      "wasm_sim_seconds": 0.027881416000000173,
+      "sha256": "39422142dc7b106ec6dbd650026a643b6948d825969aa2822fb6621b9d46b4ff",
+      "final_sha256": "87f9f0df93189e7845a42a64700979ac8328d13d9612a72e3ecec8524025c942",
+      "comparison_seconds": 0.5834177909999998,
+      "wasm_sim_seconds": 0.02864983399999983,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -651,9 +667,9 @@
         "pending": 12,
         "xp": 3561,
         "health": -3,
-        "elapsed_ms": 53056,
+        "elapsed_ms": 53552,
         "timeline_ms": 53056,
-        "rng": 1336815044
+        "rng": 1279301748
       },
       "coverage": {
         "weapons": [
@@ -668,17 +684,18 @@
         "max_commands": 1,
         "peak_creatures": 41,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.2",
-      "ticks": 1953,
+      "ticks": 1984,
       "fields_per_snapshot": 36343,
-      "sha256": "35d178e674ccde1875642c7cb975fa9e3fbc8a1d26f415193fe39e01b398a4b5",
-      "final_sha256": "3edafec303ce4355d09abe0d86ba8b177e6e6327013add9b6cd0137c46dd6b8a",
-      "comparison_seconds": 0.34637345900000216,
-      "wasm_sim_seconds": 0.018249541999997745,
+      "sha256": "7d7d108e94c4cdbd86e8f84fa5c33598595d6d975ca876f2674246fcc493d259",
+      "final_sha256": "494a548b5ac187085d753b43354cb4b62a1ee5332684400cce3c5f4b4f687a99",
+      "comparison_seconds": 0.3653364580000016,
+      "wasm_sim_seconds": 0.018664042000000335,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -686,9 +703,9 @@
         "pending": 12,
         "xp": 6496,
         "health": -3.059990882873535,
-        "elapsed_ms": 31248,
+        "elapsed_ms": 31744,
         "timeline_ms": 31248,
-        "rng": 2377714091
+        "rng": 1115241657
       },
       "coverage": {
         "weapons": [
@@ -705,17 +722,18 @@
         "max_commands": 1,
         "peak_creatures": 45,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.3",
-      "ticks": 1007,
+      "ticks": 1038,
       "fields_per_snapshot": 36343,
-      "sha256": "83692248dcef8fa8852b3e436844dd7b19bac324f6340f35e4241332a0ea4fe5",
-      "final_sha256": "e6a39723f84b7432ccd1f77ef493e39d6d6d58fb52cab5eb91c645afc0d58fd0",
-      "comparison_seconds": 0.1770130420000023,
-      "wasm_sim_seconds": 0.008090291999997135,
+      "sha256": "7c5b65faa6c60f57a44115663d1f6e99329f621e9b7e50fafc3c4f27f2860cd4",
+      "final_sha256": "f63d5748a4539b7de14e8b41fcf36e7729c781c6ca3a3fd22aebd480aeb94afd",
+      "comparison_seconds": 0.1904749579999989,
+      "wasm_sim_seconds": 0.008369707999998354,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -723,9 +741,9 @@
         "pending": 12,
         "xp": 1246,
         "health": -0.4000110626220703,
-        "elapsed_ms": 16112,
+        "elapsed_ms": 16608,
         "timeline_ms": 16112,
-        "rng": 2062903735
+        "rng": 31992254
       },
       "coverage": {
         "weapons": [
@@ -738,17 +756,18 @@
         "max_commands": 0,
         "peak_creatures": 23,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.4",
-      "ticks": 1635,
+      "ticks": 1666,
       "fields_per_snapshot": 36343,
-      "sha256": "dae2fd4c871933f6ac165fa61b21b1ecc21ef0686e0392803684faf020134ed7",
-      "final_sha256": "3346af53f691b496c83f5324e98be5ed605c26f59c9d87b8462ce58a1379f770",
-      "comparison_seconds": 0.27288474999999746,
-      "wasm_sim_seconds": 0.012530083000001468,
+      "sha256": "3ec99b09ef3a35c3bbf43c5bd27d8c0100cec6bd680c17ff6362ad07406aa91c",
+      "final_sha256": "a69dfac0d2854af41d852b65dedb9b983cc10b1de27cb54add726efc2d768461",
+      "comparison_seconds": 0.29984037499999977,
+      "wasm_sim_seconds": 0.013122666999999637,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -756,9 +775,9 @@
         "pending": 12,
         "xp": 1500,
         "health": 0,
-        "elapsed_ms": 26160,
+        "elapsed_ms": 26656,
         "timeline_ms": 26160,
-        "rng": 1891267183
+        "rng": 1370917507
       },
       "coverage": {
         "weapons": [
@@ -771,17 +790,18 @@
         "max_commands": 0,
         "peak_creatures": 19,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.5",
-      "ticks": 472,
+      "ticks": 503,
       "fields_per_snapshot": 36343,
-      "sha256": "75048aa42cabb515a80ce05964037872bab236b69f2facf8109379e9993d7013",
-      "final_sha256": "14fafd811c5dd9600a321808e06211306e5b08e97391797e87bdb1037eca7bbd",
-      "comparison_seconds": 0.08106733299999905,
-      "wasm_sim_seconds": 0.0036412920000002485,
+      "sha256": "d436c2f771e5f107f6c4611a0b91644a9f70367a4917bd3bf087dd66fed5447e",
+      "final_sha256": "380ca1f04327fc23fa958aa6fcd4d5db320f76c014084ca80dfa8d18cb3a432b",
+      "comparison_seconds": 0.15277987500000018,
+      "wasm_sim_seconds": 0.004201042000000598,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -789,9 +809,9 @@
         "pending": 12,
         "xp": 1050,
         "health": -20,
-        "elapsed_ms": 7552,
+        "elapsed_ms": 8048,
         "timeline_ms": 7552,
-        "rng": 4112929022
+        "rng": 532025597
       },
       "coverage": {
         "weapons": [
@@ -804,17 +824,18 @@
         "max_commands": 0,
         "peak_creatures": 7,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.6",
-      "ticks": 1469,
+      "ticks": 1500,
       "fields_per_snapshot": 36343,
-      "sha256": "5ef0f37e506c567d6ba16aded6449824a6eaa97b5ccb647b663db15e884b1773",
-      "final_sha256": "18a4f8bc6717d84f251039bc49ba0d41cb515208dd0b063413418430e2050934",
-      "comparison_seconds": 0.2662003330000007,
-      "wasm_sim_seconds": 0.016862874999998893,
+      "sha256": "2fbaf8f2087981642a7ae250bcffc99062c9b9766dd8ec972c80153eb7e29f1c",
+      "final_sha256": "a1ad7aec7399e5203e9ae9c999b12e35d748d9e2548e222529886b9ce7ae0616",
+      "comparison_seconds": 0.3111084159999991,
+      "wasm_sim_seconds": 0.017715000000000144,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -822,9 +843,9 @@
         "pending": 12,
         "xp": 2546,
         "health": -11,
-        "elapsed_ms": 23504,
+        "elapsed_ms": 24000,
         "timeline_ms": 23504,
-        "rng": 2014359544
+        "rng": 218891701
       },
       "coverage": {
         "weapons": [
@@ -840,27 +861,28 @@
         "max_commands": 1,
         "peak_creatures": 77,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.7",
-      "ticks": 652,
+      "ticks": 683,
       "fields_per_snapshot": 36343,
-      "sha256": "140e8570b998b45720ed62a3c987463c91d23888152b8f0877e636468a801873",
-      "final_sha256": "027f6113665a806efa0ce1c0537bc996fc2d52d09d73a7bcc045fecd4f4fcc05",
-      "comparison_seconds": 0.12142058299999917,
-      "wasm_sim_seconds": 0.006381333999997878,
+      "sha256": "18105127fd0d8aa99a953a772c5dbc58c74a2a8ba0e322e571cb10628202bd9d",
+      "final_sha256": "fae5f6e6f8209ebfaef4a81f02186eab374ef480889a8b542dbb50a7a85df692",
+      "comparison_seconds": 0.13861408299999675,
+      "wasm_sim_seconds": 0.006816707999998471,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 12,
-        "xp": 5414,
+        "xp": 5554,
         "health": -4.769999980926514,
-        "elapsed_ms": 10432,
+        "elapsed_ms": 10928,
         "timeline_ms": 10432,
-        "rng": 737746008
+        "rng": 2537110267
       },
       "coverage": {
         "weapons": [
@@ -879,17 +901,18 @@
         "max_commands": 1,
         "peak_creatures": 15,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.8",
-      "ticks": 857,
+      "ticks": 888,
       "fields_per_snapshot": 36343,
-      "sha256": "2df1280c159de9ccf3ac8629c4ef6bb16cfffb1603cac4a4a1c782adc1c1954e",
-      "final_sha256": "a70ca03a7dfd6346a2f9acf031ba67ef446332ce3ce8618de65e9ecee3929179",
-      "comparison_seconds": 0.15478749999999855,
-      "wasm_sim_seconds": 0.00821875,
+      "sha256": "6bc4ddc262f4fe0028ed2779a9aef28c89602506a9cfda2772402ddc7b6cc4c3",
+      "final_sha256": "1858d0f9b001254151f5f657abc985a10d94b58d3a14c97f46d86626a1d70c7f",
+      "comparison_seconds": 0.17548433300000033,
+      "wasm_sim_seconds": 0.008947292000000743,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -897,9 +920,9 @@
         "pending": 12,
         "xp": 725,
         "health": 0,
-        "elapsed_ms": 13712,
+        "elapsed_ms": 14208,
         "timeline_ms": 13712,
-        "rng": 3541094469
+        "rng": 2738138186
       },
       "coverage": {
         "weapons": [
@@ -912,17 +935,18 @@
         "max_commands": 0,
         "peak_creatures": 58,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.9",
-      "ticks": 786,
+      "ticks": 817,
       "fields_per_snapshot": 36343,
-      "sha256": "e7c52e5a641d659ce67c4b8fe4a2733497be2f372157a5b30fd237c98433a572",
-      "final_sha256": "e04876fd4c08b2a32f7d30ff996f31c4e3279bac59405aebf2905d64ecee16bf",
-      "comparison_seconds": 0.14849395799999912,
-      "wasm_sim_seconds": 0.0067065829999992275,
+      "sha256": "cbfd95ab597d8e7f93a44d98300bf6f81226c8586d0ecb5b0d52bef164cc8b9f",
+      "final_sha256": "a428cafc72c09f80c21792b3bab551d539f82985dab19c203a614f49d46b1b8d",
+      "comparison_seconds": 0.23952704200000152,
+      "wasm_sim_seconds": 0.008702500000003057,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -930,9 +954,9 @@
         "pending": 12,
         "xp": 2220,
         "health": -35,
-        "elapsed_ms": 12576,
+        "elapsed_ms": 13072,
         "timeline_ms": 12576,
-        "rng": 2514762964
+        "rng": 4061699653
       },
       "coverage": {
         "weapons": [
@@ -947,17 +971,18 @@
         "max_commands": 1,
         "peak_creatures": 18,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-2.10",
-      "ticks": 869,
+      "ticks": 900,
       "fields_per_snapshot": 36343,
-      "sha256": "a7103519e7899ddaa77764278a2fffa10d768e2e099b0be243c291e930f917b6",
-      "final_sha256": "63265084b3e9b390e99bd05f77f6dbdf357d0c5564ccadad2232de20d010e787",
-      "comparison_seconds": 0.15084912500000064,
-      "wasm_sim_seconds": 0.006965541999998095,
+      "sha256": "acd4872e85cc47e41a591d7f96245a432af59a4141dd60fae5811c0dc928b180",
+      "final_sha256": "7ae209196c48ba8db1090cc19bdde04d4867a24eab8dbaa5db1120823c0a6cb1",
+      "comparison_seconds": 0.17935399999999935,
+      "wasm_sim_seconds": 0.006877916000001278,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -965,9 +990,9 @@
         "pending": 12,
         "xp": 3664,
         "health": -5.281004428863525,
-        "elapsed_ms": 13904,
+        "elapsed_ms": 14400,
         "timeline_ms": 13904,
-        "rng": 4025529840
+        "rng": 2501785671
       },
       "coverage": {
         "weapons": [
@@ -985,17 +1010,18 @@
         "max_commands": 1,
         "peak_creatures": 9,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.1",
-      "ticks": 765,
+      "ticks": 796,
       "fields_per_snapshot": 36343,
-      "sha256": "14984b8713045e2152c519484678a45e1416b0da67ee0a2b245262d3b23bbfaa",
-      "final_sha256": "698d5189ad1fc0c01ceb89e8508202e3e7917adab52b200098ea7f5a0c30d55a",
-      "comparison_seconds": 0.13922345800000038,
-      "wasm_sim_seconds": 0.007073624999997264,
+      "sha256": "3def5e691c9323eddb11e0caa5cf03e8d541bf6a333745bce1f6df6f3ef0b7b5",
+      "final_sha256": "9db693c4edfd354e9f1cdc1070ec996e28b019e8a0a6891fafc66492d9136dcd",
+      "comparison_seconds": 0.16227208299999984,
+      "wasm_sim_seconds": 0.007613417000000481,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1003,9 +1029,9 @@
         "pending": 12,
         "xp": 1476,
         "health": -3,
-        "elapsed_ms": 12240,
+        "elapsed_ms": 12736,
         "timeline_ms": 12240,
-        "rng": 1906106132
+        "rng": 4051033477
       },
       "coverage": {
         "weapons": [
@@ -1018,17 +1044,18 @@
         "max_commands": 0,
         "peak_creatures": 33,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.2",
-      "ticks": 723,
+      "ticks": 754,
       "fields_per_snapshot": 36343,
-      "sha256": "575013650f15df94ab570edd2a78f74b334097bbd914907bbbcacb954ec1e474",
-      "final_sha256": "965f5ee2d83d909bec438301cbae35274c3563adb66bf27f621b2710b0842a23",
-      "comparison_seconds": 0.1281440419999999,
-      "wasm_sim_seconds": 0.0066212499999965075,
+      "sha256": "20305164038ac86154bc004388d6f0c5f6bc29e2b406a10b6d715908bfa385d3",
+      "final_sha256": "edbdefc08454d8c92d6edbc1a6f467d9b35639f94c010a32593d4be880d08aec",
+      "comparison_seconds": 0.14321225000000048,
+      "wasm_sim_seconds": 0.006653708000001643,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1036,9 +1063,9 @@
         "pending": 12,
         "xp": 1288,
         "health": -143.239990234375,
-        "elapsed_ms": 11568,
+        "elapsed_ms": 12064,
         "timeline_ms": 11568,
-        "rng": 1321018026
+        "rng": 434823353
       },
       "coverage": {
         "weapons": [
@@ -1052,17 +1079,18 @@
         "max_commands": 0,
         "peak_creatures": 18,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.3",
-      "ticks": 1288,
+      "ticks": 1319,
       "fields_per_snapshot": 36343,
-      "sha256": "eb731724fa9f73135058ef61d55fffbd2a304abe258e456e11af846167e68847",
-      "final_sha256": "969217e18e54510339d5883a4494e78e44dcf45be339c8e048b56ed0485a4889",
-      "comparison_seconds": 0.25103654100000133,
-      "wasm_sim_seconds": 0.011881915999998455,
+      "sha256": "1e28bbd41536703131f9dc1cbe1afa30fda3ab7263071aa33b074c3ec60d8eb9",
+      "final_sha256": "6acab983e04ad3dd51209cfe639522edcefbdf35959ee947cad0fc9d8666dc9b",
+      "comparison_seconds": 0.2509931249999972,
+      "wasm_sim_seconds": 0.011973125000000437,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1070,9 +1098,9 @@
         "pending": 12,
         "xp": 1500,
         "health": 0,
-        "elapsed_ms": 20608,
+        "elapsed_ms": 21104,
         "timeline_ms": 20608,
-        "rng": 4187906486
+        "rng": 234472716
       },
       "coverage": {
         "weapons": [
@@ -1085,17 +1113,18 @@
         "max_commands": 0,
         "peak_creatures": 36,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.4",
-      "ticks": 1076,
+      "ticks": 1107,
       "fields_per_snapshot": 36343,
-      "sha256": "b2183d0a59215edefcc0181ad11927463df3e2df5f08e06a558fe3652c771a9d",
-      "final_sha256": "8ba22a59e6684a1e556f7b2ff46498139f9998766e6d5840d2b140bca8b1a791",
-      "comparison_seconds": 0.2081423749999958,
-      "wasm_sim_seconds": 0.012738333000001148,
+      "sha256": "5554fbed00faef2db99a8384e74ccd4ae31affea20a357a614d005ebadd43e77",
+      "final_sha256": "81a331e7a657cc7f40e2f9969b4a4ac876b57a397f39175a461f878e0bdb0ce9",
+      "comparison_seconds": 0.2186991249999992,
+      "wasm_sim_seconds": 0.013508291000001919,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1103,9 +1132,9 @@
         "pending": 12,
         "xp": 960,
         "health": -4,
-        "elapsed_ms": 17216,
+        "elapsed_ms": 17712,
         "timeline_ms": 17216,
-        "rng": 3446940185
+        "rng": 1681937838
       },
       "coverage": {
         "weapons": [
@@ -1118,17 +1147,18 @@
         "max_commands": 0,
         "peak_creatures": 73,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.5",
-      "ticks": 1497,
+      "ticks": 1528,
       "fields_per_snapshot": 36343,
-      "sha256": "f3e22510fee31fd314a44939edb164a4c61387c77633a4b7e1f561e373d47ca3",
-      "final_sha256": "cb85378dac881cf5c30d65b546b2de9607776275a7b869180e6a2003f6d42f63",
-      "comparison_seconds": 0.3214397919999974,
-      "wasm_sim_seconds": 0.018442000000002737,
+      "sha256": "b30504e3684eec161a4272cd80275d5399bdf7a73917791936449952f3728e09",
+      "final_sha256": "4a39887107ba524836c902656e2cccc0699d4eb94cb7c187feb9768c1a43fa22",
+      "comparison_seconds": 0.2991660000000011,
+      "wasm_sim_seconds": 0.017912749999999505,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1136,9 +1166,9 @@
         "pending": 12,
         "xp": 20886,
         "health": -6.139996528625488,
-        "elapsed_ms": 23952,
+        "elapsed_ms": 24448,
         "timeline_ms": 23952,
-        "rng": 3379217844
+        "rng": 2529825535
       },
       "coverage": {
         "weapons": [
@@ -1160,17 +1190,18 @@
         "max_commands": 1,
         "peak_creatures": 28,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.6",
-      "ticks": 789,
+      "ticks": 820,
       "fields_per_snapshot": 36343,
-      "sha256": "8ab9d61b4bb8211b234a2f7be975b1583bdb07575e7a0e608dc950d6da62f07d",
-      "final_sha256": "b3ff527ab2ae2e2976a64f9f41fb716398caa85835af7ff389ab5354c39eed0c",
-      "comparison_seconds": 0.154421792000001,
-      "wasm_sim_seconds": 0.006854500000001281,
+      "sha256": "00612c8b6c0699a9a7d0bc04e1798b718dca36abbee98fb9169a34c737b8f4a3",
+      "final_sha256": "ab7c6e47d89e64500ca8e7c77babe1e7a3d1e158fbfc2bf6098c623672cc681d",
+      "comparison_seconds": 0.15386491699999896,
+      "wasm_sim_seconds": 0.00688470800000141,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1178,9 +1209,9 @@
         "pending": 12,
         "xp": 1380,
         "health": 0,
-        "elapsed_ms": 12624,
+        "elapsed_ms": 13120,
         "timeline_ms": 12624,
-        "rng": 1098233527
+        "rng": 4100267746
       },
       "coverage": {
         "weapons": [
@@ -1193,27 +1224,28 @@
         "max_commands": 0,
         "peak_creatures": 24,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.7",
-      "ticks": 4865,
+      "ticks": 4958,
       "fields_per_snapshot": 36343,
-      "sha256": "369c6122899b55474ad40c088435b0090f105e2e59b26e96d336cce03789422d",
-      "final_sha256": "79feb41826a2cfe2f6afb7694499c3b218cabb20279e1d640b76b8ff753dbf49",
-      "comparison_seconds": 0.8941090419999964,
-      "wasm_sim_seconds": 0.04908758300000045,
+      "sha256": "51cc0e119da9c213cddab01472902f4fbe416507b129a7ffc2cbe5f8e6951196",
+      "final_sha256": "d6fa832fcc56826e581fe6b3619386c95befd04657d6072ab05454ba699f80a5",
+      "comparison_seconds": 0.9137022920000017,
+      "wasm_sim_seconds": 0.05059658400000262,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 12,
-        "xp": 36579,
+        "xp": 37445,
         "health": -3.273334503173828,
-        "elapsed_ms": 77840,
-        "timeline_ms": 77840,
-        "rng": 1551608774
+        "elapsed_ms": 78933,
+        "timeline_ms": 78437,
+        "rng": 2654083360
       },
       "coverage": {
         "weapons": [
@@ -1232,19 +1264,20 @@
         "menu": 7,
         "reload": 36,
         "max_commands": 1,
-        "peak_creatures": 35,
+        "peak_creatures": 34,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.8",
-      "ticks": 831,
+      "ticks": 862,
       "fields_per_snapshot": 36343,
-      "sha256": "3a3956c827d86390608f379747de2df8c7917471a381dfa4d9315d30d8cfc90f",
-      "final_sha256": "9d361ef7fe1974ebdb573bbeea3feff2202d1bba740b4e68fcd60ca5abf84401",
-      "comparison_seconds": 0.25447329100000204,
-      "wasm_sim_seconds": 0.007648333000004641,
+      "sha256": "b4e80b8fc83c62d90e6e4a726810a681325cb1c99782d0634f01ed1b5018f115",
+      "final_sha256": "1aa6c8ad2309ef2113fd57799058279079682d22dd3dcb763d9d7966d8fc207f",
+      "comparison_seconds": 0.16223837500000082,
+      "wasm_sim_seconds": 0.008290750000000116,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1252,9 +1285,9 @@
         "pending": 12,
         "xp": 656,
         "health": 0,
-        "elapsed_ms": 13296,
+        "elapsed_ms": 13792,
         "timeline_ms": 13296,
-        "rng": 3345390853
+        "rng": 3567991918
       },
       "coverage": {
         "weapons": [
@@ -1267,17 +1300,18 @@
         "max_commands": 0,
         "peak_creatures": 27,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.9",
-      "ticks": 1155,
+      "ticks": 1186,
       "fields_per_snapshot": 36343,
-      "sha256": "103ffa5a0a8bfb55cda2b99b1c26ef176f6344b60d6ded676fccf0db35141bde",
-      "final_sha256": "2970560ee67c9a5c847db8cc775fe7a14a1b185176e6d98c11a7c7c33e21ca87",
-      "comparison_seconds": 0.2552226249999949,
-      "wasm_sim_seconds": 0.01266058399999747,
+      "sha256": "9ffb62682c4cda67e4f93849fe0bfdc956f232422b488d9aef0c670d39e74f98",
+      "final_sha256": "8975280be87e06598bf887cc6ed077e60aecdb05cfe6dc87a038d7b9d915310f",
+      "comparison_seconds": 0.2403513329999987,
+      "wasm_sim_seconds": 0.013167583999998896,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1285,9 +1319,9 @@
         "pending": 12,
         "xp": 27356,
         "health": -0.6800079345703125,
-        "elapsed_ms": 18480,
+        "elapsed_ms": 18976,
         "timeline_ms": 18480,
-        "rng": 3185094707
+        "rng": 1382091600
       },
       "coverage": {
         "weapons": [
@@ -1308,17 +1342,18 @@
         "max_commands": 1,
         "peak_creatures": 39,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-3.10",
-      "ticks": 645,
+      "ticks": 676,
       "fields_per_snapshot": 36343,
-      "sha256": "56c37f14503df85959b7e5eeff1f16956f7b36ac7b5cb484bce9c53181660dd4",
-      "final_sha256": "370a8a7e8eaf1238d411388aedcdc5d2576ce156d963727ce4b3873ff2f550a8",
-      "comparison_seconds": 0.12692012499999691,
-      "wasm_sim_seconds": 0.005074959000005037,
+      "sha256": "62bf45b883c7966119535dea787aaa91be66434bce9c2404fc7c41ccc99d6b87",
+      "final_sha256": "ad3351987099f01612ec2d4463b42da31c6d3dded1f8d016c12055f5df56ef6c",
+      "comparison_seconds": 0.12639841599999999,
+      "wasm_sim_seconds": 0.005443291999999929,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1326,9 +1361,9 @@
         "pending": 12,
         "xp": 550,
         "health": -6,
-        "elapsed_ms": 10320,
+        "elapsed_ms": 10816,
         "timeline_ms": 10320,
-        "rng": 827973805
+        "rng": 3995610110
       },
       "coverage": {
         "weapons": [
@@ -1341,17 +1376,18 @@
         "max_commands": 0,
         "peak_creatures": 13,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.1",
-      "ticks": 1906,
+      "ticks": 1937,
       "fields_per_snapshot": 36343,
-      "sha256": "342a864bd52e97b0ac24e7ae66e63d9c9df343ffee51e6bf27eaeafebaadc7a2",
-      "final_sha256": "eb5c5b99ffecd918508f9920f6a4139d0e369473bb86a2bf92d607d033ba6e8b",
-      "comparison_seconds": 0.41258854199999767,
-      "wasm_sim_seconds": 0.01742204099999799,
+      "sha256": "29f15c4c4b3b0692d677cfc905f52cdc4b9b9980c57747bb42b092eec6758cc8",
+      "final_sha256": "b7facffaec938eb0f1c8e92c6f5ff28912026cdccf32bd2102dcc2d81ad05b99",
+      "comparison_seconds": 0.35319887500000186,
+      "wasm_sim_seconds": 0.017391874999997527,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1359,9 +1395,9 @@
         "pending": 12,
         "xp": 5578,
         "health": -1,
-        "elapsed_ms": 30496,
+        "elapsed_ms": 30992,
         "timeline_ms": 30496,
-        "rng": 4096049106
+        "rng": 698792347
       },
       "coverage": {
         "weapons": [
@@ -1378,17 +1414,18 @@
         "max_commands": 1,
         "peak_creatures": 24,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.2",
-      "ticks": 927,
+      "ticks": 958,
       "fields_per_snapshot": 36343,
-      "sha256": "98b47831fd8afa71824bb061c2c30bfca679127a253e7de0a1ecc461749c6de4",
-      "final_sha256": "c347e97373c3a2ca673d75b7abcc10d46edf4d87ded792c1594b376445b6e401",
-      "comparison_seconds": 0.164153833999997,
-      "wasm_sim_seconds": 0.008758832999999867,
+      "sha256": "e38506719c770fd90f30a980e1e484099a7efe8722936c988d4e90765a061aa2",
+      "final_sha256": "4e51956d028e954c7b2f3cb3be67da0c8d1b2c3cbfd420fea6893a77d0d5d6f5",
+      "comparison_seconds": 0.17838983300000108,
+      "wasm_sim_seconds": 0.008577457999999752,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1396,9 +1433,9 @@
         "pending": 12,
         "xp": 532,
         "health": -4,
-        "elapsed_ms": 14832,
+        "elapsed_ms": 15328,
         "timeline_ms": 14832,
-        "rng": 2143991430
+        "rng": 2774298975
       },
       "coverage": {
         "weapons": [
@@ -1411,17 +1448,18 @@
         "max_commands": 0,
         "peak_creatures": 31,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.3",
-      "ticks": 844,
+      "ticks": 875,
       "fields_per_snapshot": 36343,
-      "sha256": "99c62023ad100eac8bec645f1092e1753ccaba14d14a8d00eab416499c586387",
-      "final_sha256": "0d92bd3c0c4328e0059608be3d0d82747fcc3a90c89f6818b3fd3ef485681e55",
-      "comparison_seconds": 0.15791887500000304,
-      "wasm_sim_seconds": 0.0078049159999936816,
+      "sha256": "cc9e20023b9906ffe411d1fc2b668e9c0e6f91ea56a4390618b8b30718373b53",
+      "final_sha256": "1ae01900e6cdf4af23f1587bb1ea79b36f37aade6887ca8f47abcc6cc9fdae7a",
+      "comparison_seconds": 0.16801445799999784,
+      "wasm_sim_seconds": 0.00828845800000272,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1429,9 +1467,9 @@
         "pending": 12,
         "xp": 1782,
         "health": -3.200000762939453,
-        "elapsed_ms": 13504,
+        "elapsed_ms": 14000,
         "timeline_ms": 13504,
-        "rng": 2345416780
+        "rng": 190935595
       },
       "coverage": {
         "weapons": [
@@ -1444,17 +1482,18 @@
         "max_commands": 0,
         "peak_creatures": 31,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.4",
-      "ticks": 873,
+      "ticks": 904,
       "fields_per_snapshot": 36343,
-      "sha256": "afccdc8db33b3b1d744e6df515c02770c8053bda05cf61221c06add7642bcc16",
-      "final_sha256": "9eb0341c39163d61eaf990f729de49c69ceec0346f88877aba71816688152cbe",
-      "comparison_seconds": 0.16018941699999414,
-      "wasm_sim_seconds": 0.008330542000003334,
+      "sha256": "402658a1328b3074f15130f98d21c9f70de9fa3d19588b4e07fc2bd65a4135c0",
+      "final_sha256": "e6100dd1465fc41169caca3a2627454f726cf4e1b773c8fa253f70d179b8f391",
+      "comparison_seconds": 0.17083587500000066,
+      "wasm_sim_seconds": 0.009002333000000362,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1462,9 +1501,9 @@
         "pending": 12,
         "xp": 875,
         "health": 0,
-        "elapsed_ms": 13968,
+        "elapsed_ms": 14464,
         "timeline_ms": 13968,
-        "rng": 908129454
+        "rng": 3847923407
       },
       "coverage": {
         "weapons": [
@@ -1477,17 +1516,18 @@
         "max_commands": 0,
         "peak_creatures": 50,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.5",
-      "ticks": 1143,
+      "ticks": 1174,
       "fields_per_snapshot": 36343,
-      "sha256": "66a460ee84bcf0fb7298d035be4166e0cf7751b56818d1e9d5c63ac41f8224d3",
-      "final_sha256": "528cc02487c8f2b91ea05b58aee756dd90e855afacec678a06f92f1773cee104",
-      "comparison_seconds": 0.19881333299999823,
-      "wasm_sim_seconds": 0.009129082999999809,
+      "sha256": "31794d56639e980179c5ab201bd819e9d4af8bc14312c81a7c0b8eef4ac9caa4",
+      "final_sha256": "31786b9bd0fee2cd19ee7e7e90ae244b8069c2de40213166143defe1dc0e4138",
+      "comparison_seconds": 0.21874941699999909,
+      "wasm_sim_seconds": 0.009509750000001076,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1495,9 +1535,9 @@
         "pending": 12,
         "xp": 912,
         "health": 0,
-        "elapsed_ms": 18288,
+        "elapsed_ms": 18784,
         "timeline_ms": 18288,
-        "rng": 284600358
+        "rng": 1482955647
       },
       "coverage": {
         "weapons": [
@@ -1510,17 +1550,18 @@
         "max_commands": 0,
         "peak_creatures": 18,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.6",
-      "ticks": 642,
+      "ticks": 673,
       "fields_per_snapshot": 36343,
-      "sha256": "f3fba7aff0b0ce2eb25379929218213234b5441ec572d1c151d7fd0234d39d94",
-      "final_sha256": "1fd75485dc9c544c506eddfddfd8f6bafd305c6348266c5c8ad7f5c33639ec14",
-      "comparison_seconds": 0.24669816600000194,
-      "wasm_sim_seconds": 0.005780875000004016,
+      "sha256": "6ff752781d140b85ba9e308be17bbdd95421f58871c04695b309209c6596844e",
+      "final_sha256": "f0a5e6df3b2eb36c9d1581b51180a961f11737460eb96fc955a03ba2534faed5",
+      "comparison_seconds": 0.12461908300000141,
+      "wasm_sim_seconds": 0.005521916999998212,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1528,9 +1569,9 @@
         "pending": 12,
         "xp": 250,
         "health": -5.280000686645508,
-        "elapsed_ms": 10272,
+        "elapsed_ms": 10768,
         "timeline_ms": 10272,
-        "rng": 4110132000
+        "rng": 2158788171
       },
       "coverage": {
         "weapons": [
@@ -1544,17 +1585,18 @@
         "max_commands": 0,
         "peak_creatures": 15,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.7",
-      "ticks": 496,
+      "ticks": 527,
       "fields_per_snapshot": 36343,
-      "sha256": "90e3d1650eb16c4316f87785aaf1b147ca4c9ffb5bbe6072516f1e1c4acb9ca6",
-      "final_sha256": "139be7549a02e8348b7fa7affec414c9df1ad95d78049c9c741ae452015d8b6b",
-      "comparison_seconds": 0.10467458299999999,
-      "wasm_sim_seconds": 0.0046150830000042335,
+      "sha256": "9e8823a499a2f5f2eb3bea6b27668db37fff05f72d4b01a483d9844d7b18b92d",
+      "final_sha256": "a02a04e69236e1379478c381ab1a820b71fc8077f29533a9d62fb566c46f36ec",
+      "comparison_seconds": 0.10127583299999969,
+      "wasm_sim_seconds": 0.00506708300000173,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1562,9 +1604,9 @@
         "pending": 12,
         "xp": 3316,
         "health": -11.39999771118164,
-        "elapsed_ms": 7936,
+        "elapsed_ms": 8432,
         "timeline_ms": 7936,
-        "rng": 269978922
+        "rng": 3744730912
       },
       "coverage": {
         "weapons": [
@@ -1580,17 +1622,18 @@
         "max_commands": 1,
         "peak_creatures": 30,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.8",
-      "ticks": 750,
+      "ticks": 781,
       "fields_per_snapshot": 36343,
-      "sha256": "5695c909d5c72e1def62d78c0964d20c47dcc028a18d85c437d300b6b358ae58",
-      "final_sha256": "3094f0bce59165b9d9a306009c3444b8209dd46afa49f87992024d1fe3931b90",
-      "comparison_seconds": 0.16067320800000015,
-      "wasm_sim_seconds": 0.007329541999999492,
+      "sha256": "193ecfc5fdcf4bb3534b4d26d5ee028e18b1ac6ebd5294fecaed7dff4c84a8ac",
+      "final_sha256": "8418ac3d29b001a2215717186751c77811a33490dd8bf87a24af4c9ea672cd69",
+      "comparison_seconds": 0.1502012079999986,
+      "wasm_sim_seconds": 0.007614125000000058,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1598,9 +1641,9 @@
         "pending": 12,
         "xp": 678,
         "health": -5,
-        "elapsed_ms": 12000,
+        "elapsed_ms": 12496,
         "timeline_ms": 12000,
-        "rng": 3103924691
+        "rng": 1842971586
       },
       "coverage": {
         "weapons": [
@@ -1614,17 +1657,18 @@
         "max_commands": 0,
         "peak_creatures": 43,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.9",
-      "ticks": 536,
+      "ticks": 567,
       "fields_per_snapshot": 36343,
-      "sha256": "cd6142dd6019b17301f6aed08834f73e0472a9d26708436281ccd39f2bdd5532",
-      "final_sha256": "df8dbf1bbbfbe856a27794d8ae24c6962c0e54905b22b56fd1b6efdad5efd43f",
-      "comparison_seconds": 0.10458291599999939,
-      "wasm_sim_seconds": 0.005104916000003869,
+      "sha256": "3c96ce0fd854e92fa69dee8785a1c9613181d4cd17ba5687dc95a435bf77f799",
+      "final_sha256": "213884caeaeb6b48f9d1dce6c027c03916b6dfc0eb16d4dfa7b7ef2e9e19db6c",
+      "comparison_seconds": 0.1163000830000019,
+      "wasm_sim_seconds": 0.005734833000002254,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1632,9 +1676,9 @@
         "pending": 12,
         "xp": 596,
         "health": 0,
-        "elapsed_ms": 8576,
+        "elapsed_ms": 9072,
         "timeline_ms": 8576,
-        "rng": 2026170390
+        "rng": 30831565
       },
       "coverage": {
         "weapons": [
@@ -1647,27 +1691,28 @@
         "max_commands": 0,
         "peak_creatures": 40,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-4.10",
-      "ticks": 1843,
+      "ticks": 1870,
       "fields_per_snapshot": 36343,
-      "sha256": "14d1ac462cff02536a216f4ba34415c5a7504aa67308a3d64db6c1aa40fd8e53",
-      "final_sha256": "1d8028b0a162d185489703a4e413e9f0b4f9518c03340bafa6d135c05d965a56",
-      "comparison_seconds": 0.3799433329999956,
-      "wasm_sim_seconds": 0.03462324999999691,
+      "sha256": "730e13cc29d211cefefb0ce7644084eaa8df4882d30aa4df63088fed7fb355ad",
+      "final_sha256": "5df525b9b13fd11f724347078848b7212f17716c958c37f73c1d2af510f89c6c",
+      "comparison_seconds": 0.3957873749999999,
+      "wasm_sim_seconds": 0.03231362499999887,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 12,
-        "xp": 1858,
+        "xp": 2024,
         "health": 0,
-        "elapsed_ms": 29488,
-        "timeline_ms": 29488,
-        "rng": 54247630
+        "elapsed_ms": 29920,
+        "timeline_ms": 29424,
+        "rng": 2133844477
       },
       "coverage": {
         "weapons": [
@@ -1679,19 +1724,20 @@
         "menu": 0,
         "reload": 14,
         "max_commands": 0,
-        "peak_creatures": 46,
+        "peak_creatures": 45,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.1",
-      "ticks": 1099,
+      "ticks": 1130,
       "fields_per_snapshot": 36343,
-      "sha256": "6fa954a40b8067486ec4f10b435c7f975d547b818e132ca94de7517a1d4e45cc",
-      "final_sha256": "ce1d771a65885493ef2656bebab9f4bcecb5b2e6b99aeaeccc5df3869d7f0f2d",
-      "comparison_seconds": 0.20590533400000277,
-      "wasm_sim_seconds": 0.012493083000001206,
+      "sha256": "ee1799aa130c64c82b11aa3b733318939cc43e7ad58e15e916b7827bb11f4fd6",
+      "final_sha256": "51d9c63133fdf4f0d3163c4e3b5dfdeecea5578a6e8d95c0a0c600bfbc3a0962",
+      "comparison_seconds": 0.21970133400000122,
+      "wasm_sim_seconds": 0.013164541999998619,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1699,9 +1745,9 @@
         "pending": 12,
         "xp": 950,
         "health": -18,
-        "elapsed_ms": 17584,
+        "elapsed_ms": 18080,
         "timeline_ms": 17584,
-        "rng": 2185082131
+        "rng": 4110743984
       },
       "coverage": {
         "weapons": [
@@ -1715,17 +1761,18 @@
         "max_commands": 0,
         "peak_creatures": 67,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.2",
-      "ticks": 1210,
+      "ticks": 1241,
       "fields_per_snapshot": 36343,
-      "sha256": "c325a3904666e68e787e40dcdd614c59b88d5638c82d9aeb894ac3de142a8ff6",
-      "final_sha256": "1c42add29acb6a6572c98f442799663a9ed1ae346cdb62e588ec668d1a0a92ac",
-      "comparison_seconds": 0.21652945799999726,
-      "wasm_sim_seconds": 0.013002625000000989,
+      "sha256": "5ad5221a404b35052702753c4cb17fdea39b29762b72c915d3740fa3537362f8",
+      "final_sha256": "c7a09b22d63f50888d1c6933499cff14b30b230891ed955cdb97c74f8e9731dd",
+      "comparison_seconds": 0.24171016700000109,
+      "wasm_sim_seconds": 0.013450417000000017,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1733,9 +1780,9 @@
         "pending": 12,
         "xp": 1020,
         "health": -7,
-        "elapsed_ms": 19360,
+        "elapsed_ms": 19856,
         "timeline_ms": 19360,
-        "rng": 3906507105
+        "rng": 3478369430
       },
       "coverage": {
         "weapons": [
@@ -1749,17 +1796,18 @@
         "max_commands": 0,
         "peak_creatures": 43,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.3",
-      "ticks": 562,
+      "ticks": 593,
       "fields_per_snapshot": 36343,
-      "sha256": "6587a3dd64682a493a6fdea46cf34bfeff5e0a38e56937a63d2d6217f916c47a",
-      "final_sha256": "ddd1f6cc13bc5f97f80f70a27c3eaf6f97e7cee0e9f450e1700351ce74192c58",
-      "comparison_seconds": 0.10292708299999503,
-      "wasm_sim_seconds": 0.005167458000003535,
+      "sha256": "477b7483babab2bdabbb97efaa4ad796f2c26d3dfc059f892eaaa1b33672bc70",
+      "final_sha256": "c837cba14f1f3fc5c47fa1cffecc0fe8143dddf1cc7b9ddc039bfd13863193f5",
+      "comparison_seconds": 0.11585795800000051,
+      "wasm_sim_seconds": 0.005291208000002371,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1767,9 +1815,9 @@
         "pending": 12,
         "xp": 750,
         "health": -5,
-        "elapsed_ms": 8992,
+        "elapsed_ms": 9488,
         "timeline_ms": 8992,
-        "rng": 833109229
+        "rng": 152768880
       },
       "coverage": {
         "weapons": [
@@ -1783,51 +1831,52 @@
         "max_commands": 0,
         "peak_creatures": 28,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.4",
-      "ticks": 1374,
+      "ticks": 1236,
       "fields_per_snapshot": 36343,
-      "sha256": "fd6ff9e1a9e485d5161c95b258c23bedf4404d91da0057bb38e8fb9de321308d",
-      "final_sha256": "a34f435b20d02f19096e06dfb9e25fb55db8184ffb50cb519f3355752edb0f19",
-      "comparison_seconds": 0.2545070000000051,
-      "wasm_sim_seconds": 0.015861375000000406,
+      "sha256": "cc7b0542b893cafdf81dc55b37c8bd6bbc792e1fedcc32b6edb22e852c4e2185",
+      "final_sha256": "41cb3dc6974f68246625edac19a01626d28d8605221e7dfc81c4ad53c8718399",
+      "comparison_seconds": 0.25004541600000085,
+      "wasm_sim_seconds": 0.013735667000000831,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
       "final": {
         "pending": 12,
-        "xp": 1320,
-        "health": 0,
-        "elapsed_ms": 21984,
-        "timeline_ms": 21984,
-        "rng": 3542163461
+        "xp": 1020,
+        "health": -2,
+        "elapsed_ms": 19776,
+        "timeline_ms": 19280,
+        "rng": 3945911737
       },
       "coverage": {
         "weapons": [
-          1,
-          14
+          1
         ],
         "perks": [],
         "bonuses": [],
         "menu": 0,
-        "reload": 11,
+        "reload": 9,
         "max_commands": 0,
-        "peak_creatures": 95,
+        "peak_creatures": 82,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.5",
-      "ticks": 751,
+      "ticks": 782,
       "fields_per_snapshot": 36343,
-      "sha256": "76861ae57a5366695ac619eb1ce77fce01ddf7cc61bc990c2326ad5254e5bb2e",
-      "final_sha256": "a35b6572dd823f210cd469b016b9ac0d9f0b419a19e75d8e3002a526d881e3ae",
-      "comparison_seconds": 0.13497562499999913,
-      "wasm_sim_seconds": 0.005910709000003408,
+      "sha256": "d3ee76449855ffe60a32d28d2521b66a0ef3cc73537a7c4dd4e92e6280575cc6",
+      "final_sha256": "dcee44b2e1d3d4de2175b1477a93f9986885a4d85cacb28d1cb744310fe581c0",
+      "comparison_seconds": 0.1515443750000013,
+      "wasm_sim_seconds": 0.006145667000000685,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1835,9 +1884,9 @@
         "pending": 12,
         "xp": 0,
         "health": -5,
-        "elapsed_ms": 12016,
+        "elapsed_ms": 12512,
         "timeline_ms": 12016,
-        "rng": 1157042594
+        "rng": 971409233
       },
       "coverage": {
         "weapons": [
@@ -1850,17 +1899,18 @@
         "max_commands": 0,
         "peak_creatures": 10,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.6",
-      "ticks": 1187,
+      "ticks": 1218,
       "fields_per_snapshot": 36343,
-      "sha256": "87117844152da934a380938ec1142405b19f34c3b301bcfdf55cc2906a57bce6",
-      "final_sha256": "89203b641ddc636fcdf92270b3f1aab10539a9704ae0348244aefd492f7b3e34",
-      "comparison_seconds": 0.24431487500000368,
-      "wasm_sim_seconds": 0.018211707999995268,
+      "sha256": "9eff4ff27e56f1c2b67ebfaf1c398daf0968765b8ba22884e1f5e84244a360d8",
+      "final_sha256": "d7e9dfa100ac4b9a5d8edc0dbc7741ed851db61233a4bc3138776d63d0c7a773",
+      "comparison_seconds": 0.2612098339999975,
+      "wasm_sim_seconds": 0.01803062499999942,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1868,9 +1918,9 @@
         "pending": 12,
         "xp": 960,
         "health": -5,
-        "elapsed_ms": 18992,
+        "elapsed_ms": 19488,
         "timeline_ms": 18992,
-        "rng": 367621055
+        "rng": 1927331907
       },
       "coverage": {
         "weapons": [
@@ -1884,17 +1934,18 @@
         "max_commands": 0,
         "peak_creatures": 12,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.7",
-      "ticks": 657,
+      "ticks": 688,
       "fields_per_snapshot": 36343,
-      "sha256": "349db524e0525af733f4f66c3636cc189df41918b0857bbb834b2a62c8fd56a0",
-      "final_sha256": "6b9e668304f0b04097ee86191d3e9bd402f2e1dc40ff44443f84e9da72e209e5",
-      "comparison_seconds": 0.20874637500000245,
-      "wasm_sim_seconds": 0.007388416999994661,
+      "sha256": "9225aa85fd9db2ee4d76045f42231aa0a1a9ad0625e240c2b38ef4e11bf18adf",
+      "final_sha256": "c6802337792d3816317040f22cf2e0f95a400c5353ec9bcb718450100cfff016",
+      "comparison_seconds": 0.14278929100000096,
+      "wasm_sim_seconds": 0.007455291999998735,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1902,9 +1953,9 @@
         "pending": 12,
         "xp": 180,
         "health": -36,
-        "elapsed_ms": 10512,
+        "elapsed_ms": 11008,
         "timeline_ms": 10512,
-        "rng": 3077717740
+        "rng": 937533423
       },
       "coverage": {
         "weapons": [
@@ -1917,17 +1968,18 @@
         "max_commands": 0,
         "peak_creatures": 54,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.8",
-      "ticks": 752,
+      "ticks": 783,
       "fields_per_snapshot": 36343,
-      "sha256": "2d4b1a8a2aede8fa94fa5f694f74c10cc3dfef80140b439e8e4a531bacfaf66d",
-      "final_sha256": "7d93c013b00cb7e8fdf833c6e5d04fa32917536e00dd03aa59e6f8a68e5c073a",
-      "comparison_seconds": 0.15533737499999553,
-      "wasm_sim_seconds": 0.006496917000004032,
+      "sha256": "14ad9cd3feb449516aae71ec42c2a3cfd75678db1af5e543557d65053a6645a4",
+      "final_sha256": "a76f4dbb7e38e183fea0f898861ec3c12f86261061471dfc2fe38c149f790b0d",
+      "comparison_seconds": 0.15071937499999694,
+      "wasm_sim_seconds": 0.006988000000001193,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1935,9 +1987,9 @@
         "pending": 12,
         "xp": 276,
         "health": 0,
-        "elapsed_ms": 12032,
+        "elapsed_ms": 12528,
         "timeline_ms": 12032,
-        "rng": 733734177
+        "rng": 4002661700
       },
       "coverage": {
         "weapons": [
@@ -1950,17 +2002,18 @@
         "max_commands": 0,
         "peak_creatures": 19,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.9",
-      "ticks": 748,
+      "ticks": 779,
       "fields_per_snapshot": 36343,
-      "sha256": "148193e7eb4fbfee22052e5cb159717250e9d8a09dbe06b0936a0d0860bc3185",
-      "final_sha256": "724c5a3563cff034578129ff5622344368c4e366e2f6a02cdfa8ade8015f905b",
-      "comparison_seconds": 0.14430979200000002,
-      "wasm_sim_seconds": 0.0066036249999961005,
+      "sha256": "007827db5b833bc669de584cd63d32d017ba75e439b381a426aae0ba0067b209",
+      "final_sha256": "bada5858670b2730f4cb28b5906b1eb0bb595a55b2952a750564811da0b950a1",
+      "comparison_seconds": 0.150557417,
+      "wasm_sim_seconds": 0.00655420900000172,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -1968,9 +2021,9 @@
         "pending": 12,
         "xp": 800,
         "health": 0,
-        "elapsed_ms": 11968,
+        "elapsed_ms": 12464,
         "timeline_ms": 11968,
-        "rng": 76520797
+        "rng": 2099829989
       },
       "coverage": {
         "weapons": [
@@ -1984,17 +2037,18 @@
         "max_commands": 0,
         "peak_creatures": 18,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-5.10",
-      "ticks": 829,
+      "ticks": 860,
       "fields_per_snapshot": 36343,
-      "sha256": "2fae1d4791dec6029f39e3f454d70a8938b5a8f0c01d9695b272b0c5073a5084",
-      "final_sha256": "c0cbf903d77efcdfc2b1b04180fa3ba828a9d8a2630ef60efd19cad5f69504b4",
-      "comparison_seconds": 0.15687174999999842,
-      "wasm_sim_seconds": 0.006257625000005646,
+      "sha256": "bcddca4c2fdcdc91b72f2b65b2e73d784f5af929debab7665d7055d525be9ddc",
+      "final_sha256": "abf07546fe6d7c7bbbe4a3b6296a2d842f9b1f4363682d07d77f10624f00f639",
+      "comparison_seconds": 0.16220487500000308,
+      "wasm_sim_seconds": 0.006422749999997904,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -2002,9 +2056,9 @@
         "pending": 12,
         "xp": 3220,
         "health": -2.340010643005371,
-        "elapsed_ms": 13264,
+        "elapsed_ms": 13760,
         "timeline_ms": 13264,
-        "rng": 4175719618
+        "rng": 3672466157
       },
       "coverage": {
         "weapons": [
@@ -2020,17 +2074,18 @@
         "max_commands": 1,
         "peak_creatures": 8,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     },
     {
       "name": "quest-settings",
-      "ticks": 884,
+      "ticks": 915,
       "fields_per_snapshot": 36343,
-      "sha256": "3c9667c708358e7f032e326cc84d0b6973b91cd211ed22d7c32c87016b5854c8",
-      "final_sha256": "e991acb9d7a7fae05c6d650550be22c65c5c6d8917b73a5ef4fb8c9a8ceaa284",
-      "comparison_seconds": 0.17772183300000324,
-      "wasm_sim_seconds": 0.009886540999999851,
+      "sha256": "21c99b2acff5b23187e2e0e8fce2ea99caac1e642f8ab52e4689a380dd3a54ef",
+      "final_sha256": "27c4e8302e78602f68d92f40a5a7afc13dc1bea56e4270f0f9fbeb003a83d945",
+      "comparison_seconds": 0.19070524999999908,
+      "wasm_sim_seconds": 0.009753749999996217,
       "wasm_memory_mib": 2.5,
       "reset": "native and WASM A/B/A passed",
       "imports": 0,
@@ -2038,9 +2093,9 @@
         "pending": 12,
         "xp": 1375,
         "health": -12,
-        "elapsed_ms": 14144,
+        "elapsed_ms": 14640,
         "timeline_ms": 14144,
-        "rng": 1990316269
+        "rng": 3979894802
       },
       "coverage": {
         "weapons": [
@@ -2054,7 +2109,8 @@
         "max_commands": 0,
         "peak_creatures": 30,
         "stall": true,
-        "transitions": false
+        "transitions": false,
+        "run_down": 31
       }
     }
   ]

@@ -42,7 +42,19 @@ function play(cfg, bot, limit, aim) {
       peak_creatures: 0,
       stall: false,
       transitions: false,
+      run_down: 0,
     };
+  const summary = () => {
+    state(e);
+    return {
+      pending: field(e, "globals.game_state_pending"),
+      xp: field(e, "players[0].experience"),
+      health: field(e, "players[0].health", true),
+      elapsed_ms: field(e, "globals.survival_elapsed_ms"),
+      timeline_ms: field(e, "globals.quest_spawn_timeline"),
+      rng: field(e, "globals.rng"),
+    };
+  };
   let pickNext = false,
     final;
   const mode = cfg.readUInt32LE(4);
@@ -167,17 +179,15 @@ function play(cfg, bot, limit, aim) {
     );
     if (!step(e, r)) throw Error(`Bot rejected tick ${tick} in mode ${mode}`);
     records.push(r);
-    state(e);
-    final = {
-      pending: u("globals.game_state_pending"),
-      xp: u("players[0].experience"),
-      health: f("players[0].health"),
-      elapsed_ms: u("globals.survival_elapsed_ms"),
-      timeline_ms: u("globals.quest_spawn_timeline"),
-      rng: u("globals.rng"),
-    };
+    final = summary();
     if (terminal.has(final.pending)) {
-      if (step(e, r)) throw Error("Accepted input after terminal state");
+      // The run-down: the game simulates until its UI timeline runs out, then refuses input.
+      const idle = record([0, 0, r.readFloatLE(8), r.readFloatLE(12), aim]);
+      while (step(e, idle)) {
+        records.push(idle);
+        if (++coverage.run_down > 40) throw Error("Run-down did not end");
+      }
+      final = summary();
       break;
     }
   }

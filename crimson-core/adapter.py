@@ -29,12 +29,47 @@ def adapt(src, txt):
             txt,
             flags=re.DOTALL,
         )
+    if src.stem == "creature_update_all":
+        # 0x00426b93: `fpatan` feeds the `fadd` of 1.5707964f directly; the heading rounds once.
+        for expression, wide in (
+            ("return (float)atan2(value.y, value.x);", "return atan2(value.y, value.x);"),
+            ("float desired_heading = creature_vec2_angle(", "double desired_heading = creature_vec2_angle("),
+        ):
+            if txt.count(expression) != 1:
+                raise ValueError("Audit the creature target-heading boundary before changing this adapter")
+            txt = txt.replace(expression, wide)
+        # Every `fcos`/`fsin` here feeds its first `fmul` wide. Movement multiplies left to right from the
+        # cosine: dt, move_scale, move_speed, then 30 (0x00426cb9), unlike the source's grouping.
+        txt, count = re.subn(
+            r"30\.0f \* creatures\[creature_index\]\.move_speed\s*"
+            r"\* \(move_scale \* \(frame_dt \* \(float\)(cos|sin)\(movement_heading\)\)\)",
+            r"portable_mul32(\1(movement_heading), frame_dt) * move_scale"
+            r" * creatures[creature_index].move_speed * 30.0f",
+            txt,
+        )
+        if count != 4:
+            raise ValueError("Audit creature movement trig order before changing this adapter")
+        txt, count = re.subn(
+            r"\(float\)(cos|sin)\((\w+)\)\s*\*\s*([\w.\[\]]+)",
+            r"portable_mul32(\1(\2), \3)",
+            txt,
+        )
+        if count != 12:
+            raise ValueError("Audit creature trig boundaries before changing this adapter")
     if src.stem == "projectile_update":
         for fn in ["cos", "sin"]:
             txt = txt.replace(
                 "(float)" + fn + "(heading) * frame_dt * 20.0f",
                 "(float)(" + fn + "(heading) * frame_dt) * 20.0f",
             )
+        # Seeker steering keeps the trig result wide into its first multiply as well.
+        txt, count = re.subn(
+            r"\(float\)(cos|sin)\(secondary->angle - 1\.5707964f\) \* frame_dt \* 800\.0f",
+            r"(float)(\1(secondary->angle - 1.5707964f) * frame_dt) * 800.0f",
+            txt,
+        )
+        if count != 4:
+            raise ValueError("Audit seeker steering trig boundaries before changing this adapter")
     if src.stem == "player_update_heading":
         # Mouse aim is recorded as a canonical world point. Reconstructing a
         # screen point and subtracting the camera again can lose one F32 ULP.

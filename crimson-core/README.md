@@ -12,8 +12,8 @@ copies of 168 recovered translation units; everything it adds lives here.
 
 ## Status
 
-- **Original rules:** whole runs agree with Python (`preserve_bugs=True`) on
-  53 of 63 streams; see the [gate](#whole-run-gate) for the ten that remain.
+- **Original rules:** whole runs agree with Python (`preserve_bugs=True`) on all
+  63 streams, checked in CI by the [gate](#whole-run-gate).
 - **Ranked rules** (`preserve_bugs=False`): not started. Python's documented
   fixes are to be applied in place behind a runtime policy flag, so RNG call
   order matches Python under both policies. See the [roadmap](ROADMAP.md).
@@ -65,12 +65,13 @@ node crimson-core/checks/matrix.mjs
 
 An ordinary bot reads state, chooses inputs and perks, and never edits
 simulation state. It writes 59 input-only `.rsi` streams to `build/fixtures`,
-alternating mouse and pad aim. The matrix compares 36,343 named fields at
+alternating mouse and pad aim, each through the run-down after its end. The
+matrix compares 36,343 named fields at
 initialization and **every tick** between native and WASM, then checks A/B/A
 reuse in both. It also probes rejection of bad input, commands and entitlement,
 and that a large movement vector does not move faster than a unit one.
 
-The [results](results/matrix.json) cover 95,205 ticks. All 50 quests run to an
+The [results](results/matrix.json) cover 96,930 ticks. All 50 quests run to an
 outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
 every mode, quest completion and failure, spawn stalls, reloads, perk menus,
 ordered picks, several weapons, freeze, Reflex Boost and weapon power-ups, and
@@ -93,26 +94,18 @@ and the native core. Per tick it compares the RNG state, kills, shots, pending
 perks, bonus timers and the player's position, health, death timer, headings,
 experience, level, ammo and weapon, floats as F32 bits, keeping the first
 divergence. It compares the terminal tick and outcome, and the complete
-`RunResult` after the last tick both stepped. Recorded fixtures were played
-under the default rules, so under the original rules they may end early; the
-gate stops at the core's terminal state and does not validate recorded scores.
-A core rejection counts only right after a terminal state both sides reached,
-and the gate refuses to run on a partial bot corpus or unknown `--only` names.
+`RunResult` after the last tick both stepped. Both sides simulate the run-down
+after the end, at most 500 ms of frames, as live play and verification do; a
+core rejection counts only where Python's run-down ends, and the gate refuses
+to run on a partial bot corpus or unknown `--only` names. Recorded fixtures
+were played under the default rules, so under the original rules they may end
+early; the gate does not validate recorded scores.
 
-The [baseline](results/gate.json) agrees on **53 of 63** streams, including the
-four supported human fixtures (Quests 2.5, 2.10 and 4.10, and a Survival run).
-The ten that differ:
-
-- Rush (3 streams): every field agrees on every tick, but Python ends the run
-  when the player dies, while native `gameplay_update_and_render` waits for the
-  death animation as in the other modes, 48 ticks later.
-- Quest 2.10: the double-XP timer differs by one tick on the terminal tick.
-- Quest 1.5: Python draws one RNG value a tick early; results agree.
-- Quests 4.10 and 5.6 (Python takes damage the core does not), Quest 5.4 (seven
-  extra core draws), and late F32 drift in Quest 3.7 and `survival-evade-1337`.
-
-These are to be reduced and decided against the original through Unicorn. The
-gate exits nonzero until every stream agrees, so it is not in CI yet.
+The [baseline](results/gate.json) agrees on **all 63** streams, including the
+four supported human fixtures (Quests 2.5, 2.10 and 4.10, and a Survival run);
+the keyboard Rush and Typ-o fixtures are not supported yet. CI fails on any
+disagreement. A new divergence is reduced to its first differing state and
+decided against the original through Unicorn or its disassembly.
 
 ### Original executable
 
@@ -211,11 +204,13 @@ stick and cvar read.
 
 [`adapter.py`](adapter.py) applies the modern-compiler changes to generated
 copies: C linkage, const references for VC6 temporaries, declaration repairs
-and shared math calls. It also keeps selected x87 evaluation boundaries: wide
-angle returns, the first player/projectile trig multiply and the quest trig
-spills (Sweep Stakes and Deja vu spill cosine to F32 but keep sine wide, which
-the original executable established, not the C syntax). Each adaptation is
-guarded by an expected match count.
+and shared math calls. It also keeps the x87 evaluation boundaries the original
+executable shows, which the C syntax alone does not: wide angle returns
+(including the creature target heading), the first trig multiply of player,
+projectile, seeker and creature motion (creature movement multiplies from the
+cosine left to right), and the quest trig spills (Sweep Stakes and Deja vu
+spill cosine to F32 but keep sine wide). Each adaptation is guarded by an
+expected match count.
 
 [`data.py`](data.py) recreates the globals from the recovered data manifest.
 Adjacent globals stay separate because 64-bit pointers need more storage;
@@ -226,7 +221,11 @@ as the corpse frame of ping-pong-strip creatures (type 7), and the HUD gets a
 sentinel slot for a one-past lookup.
 
 [`host/host.cpp`](host/host.cpp) owns the seed, fixed timing, input dispatch,
-initialization and output. It keeps the recovered orchestration and the render
+initialization and output. Its frame step is `game_frame_update`'s: Reflex
+Boosted slows the frame by 0.9 while the world renders, and after a run ends
+the core keeps simulating until the 500 ms UI timeline runs out, then refuses
+input. Globals the original never resets between runs get a fresh game's
+values at the start of each run. It keeps the recovered orchestration and the render
 functions that clean up corpses and projectiles or consume RNG, and replaces
 drawing and device output. Audio is a fixed, successful, silent bootstrap that
 keeps the music-selection RNG gate open, as Python assumes; music tracks get

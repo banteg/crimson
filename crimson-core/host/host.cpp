@@ -19,6 +19,10 @@ static char string_arena[65536];
 static size_t string_used;
 static uint32_t rng;
 static uint32_t tick;
+// Milliseconds left of the run-down that follows a run's end; native keeps
+// simulating while the UI timeline runs out, as Python's `RunDown` does.
+static bool running_down;
+static int run_down_ms;
 static uint32_t output[262144];
 static int used;
 #include "grim.inc"
@@ -32,6 +36,9 @@ extern float time_scale_factor, camera_offset_x, camera_offset_y;
 extern game_state_id_t game_state_pending;
 extern float bonus_update_phase_accumulator;
 extern float perk_jinxed_proc_timer_s;
+extern int perk_id_reflex_boosted;
+extern float perk_lean_mean_exp_tick_timer_s;
+int perk_count_get(int perk_id);
 extern unsigned char music_playlist_randomized_latch, sfx_unmuted_flag;
 extern int music_playlist_entry_count, music_track_intro_id,
     music_track_shortie_monk_id, music_track_crimson_theme_id,
@@ -129,6 +136,11 @@ extern "C" void ui_elements_update_and_render() {}
 extern "C" void ui_cursor_render() {}
 extern "C" void demo_trial_overlay_render(float *, float) { abort(); }
 extern "C" void ui_render_keybind_help(float *, float) {}
+static bool run_ended() {
+  return game_state_pending == GAME_STATE_GAME_OVER ||
+         game_state_pending == GAME_STATE_QUEST_FAILED ||
+         game_state_pending == GAME_STATE_QUEST_RESULTS;
+}
 extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
 extern "C" float portable_aim_x() { return in.aim_x; }
@@ -164,6 +176,11 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   rng = seed;
   menu_requested = false;
   tick = 0;
+  running_down = false;
+  run_down_ms = 500;
+  // A fresh game's values; nothing resets them between runs.
+  shock_chain_projectile_id = 0;
+  perk_lean_mean_exp_tick_timer_s = 0;
   in = {0, 0, 512, 512, 0};
   grim_interface_ptr = &headless_grim;
   friendly.value = cfg.friendly_fire ? 1 : 0;
@@ -263,9 +280,7 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
 // The menu request is consumed at the recovered mid-tick prompt. Picks run
 // in order in the between-tick prelude, as they do in the current replay API.
 extern "C" int portable_step_many(uint32_t count) {
-  if (!ready || count > 16 || game_state_pending == GAME_STATE_GAME_OVER ||
-      game_state_pending == GAME_STATE_QUEST_FAILED ||
-      game_state_pending == GAME_STATE_QUEST_RESULTS)
+  if (!ready || count > 16 || run_down_ms < 0)
     return 0;
   // Replay input flags: buttons, the movement-keys-present marker with no key
   // held, dual-action movement (3), and mouse (0) or dual action pad (4) aim.
@@ -317,12 +332,20 @@ extern "C" int portable_step_many(uint32_t count) {
     perk_choices_dirty = 1;
   }
   frame_dt = 1.0f / 60.0f;
+  // game_frame_update: Reflex Boosted slows the frame while the world renders.
+  if (render_pass_mode && perk_count_get(perk_id_reflex_boosted) != 0)
+    frame_dt *= 0.9f;
   frame_dt_ms = (int)(frame_dt * 1000.0f);
   ui_mouse_x = in.aim_x + camera_offset_x;
   ui_mouse_y = in.aim_y + camera_offset_y;
   gameplay_update_and_render();
   if (game_state_pending == GAME_STATE_PERK_SELECTION)
     game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;
+  // ui_elements_update_and_render: the timeline runs down by the restored
+  // frame_dt_ms from the frame that ends the run.
+  running_down = running_down || run_ended();
+  if (running_down)
+    run_down_ms -= frame_dt_ms;
   crt_rand();
   ++tick;
   return 1;

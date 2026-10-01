@@ -12,7 +12,8 @@ the shared WASM artifact.
 1. **Original rules.** Every Rush, Survival and Quest fixture in full plus a
    fixed bot corpus agree with Python's complete `RunResult` under
    `preserve_bugs=True`, including the input schemes, settings and players they
-   need. [`checks/gate.py`](checks/gate.py) runs it; 53 of 63 streams agree.
+   need. [`checks/gate.py`](checks/gate.py) runs it in CI; all 63 streams agree,
+   but the keyboard Rush and Typ-o fixtures are not supported yet.
 2. **Ranked rules.** Python's documented fixes run in the core behind a runtime
    policy flag; both policies pass the gate, and default-policy Python replays
    verify.
@@ -52,10 +53,8 @@ hit, RNG state, pending perks, quest final time and each player's experience,
 health as F32 bits and most-used weapon), the terminal tick and outcome, and
 per-tick state to locate the first divergence.
 
-Still to do: decide the ten remaining streams listed in the README, support
-the keyboard movement schemes the Rush fixture needs, cover the allowed
-run-down after the terminal tick, and report bot quest completion and failure
-coverage separately. Runs that exhaust their budget are incomplete, not
+Still to do: support the keyboard movement schemes the Rush fixture needs, and
+report bot quest completion and failure coverage separately. Runs that exhaust their budget are incomplete, not
 terminal coverage.
 
 When Python and the core disagree, reduce the first divergence and use the

@@ -16,7 +16,7 @@ concurrency:
 jobs:
   core:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -49,6 +49,9 @@ jobs:
         env:
           CRIMSON_CORE_TRACE_INIT: "1"
         run: node crimson-core/checks/matrix.mjs
+
+      - name: Compare whole runs with Python under the original rules
+        run: uv run --no-sync python crimson-core/checks/gate.py
 
       - name: Download original executable
         run: |
@@ -85,6 +88,7 @@ jobs:
           name: crimson-core-results
           path: |
             crimson-core/build/report.json
+            crimson-core/build/gate.json
             crimson-core/build/oracle.json
             crimson-core/build/math-oracle.json
             crimson-core/build/wasmtime.json

@@ -8,8 +8,8 @@ outcome, and the complete `RunResult` after the last tick both sides stepped.
 
 The recovered core always keeps the original bugs, so this is the original-rules
 gate: Python runs with `preserve_bugs=True`. Recorded fixtures were played under
-the default rules; under the original rules their runs can end earlier, after
-which the core rejects the remaining ticks, or meet a perk pick that is no
+the default rules; under the original rules their runs can end earlier, and
+the core rejects what follows the run-down, or meet a perk pick that is no
 longer legal, which the report names.
 """
 
@@ -38,6 +38,7 @@ from crimson.sim.commands import PerkMenuOpenCommand, PerkPickCommand
 from crimson.sim.run_init import initialize_run
 from crimson.sim.run_result import (
     PlayerRunResult,
+    RunDown,
     RunOutcome,
     RunResult,
     build_run_result,
@@ -258,14 +259,20 @@ def compare(stream: Stream, native: Path, *, preserve_bugs: bool) -> dict:
     terminal = {"python": None, "core": None}
     python_ticks = 0
     python_error = None
+    run_down = None
+    run_down_over = None
     for tick_index in range(len(core_rows)):
         if tick_index:
             try:
-                step_replay_tick(session, stream.ticks[tick_index - 1])
+                step = step_replay_tick(session, stream.ticks[tick_index - 1])
             except IllegalCommandError as exc:
                 python_error = f"tick {tick_index - 1}: {type(exc).__name__}: {exc}"
                 break
             python_ticks = tick_index
+            if run_down is None and step.outcome is not None:
+                run_down = RunDown(outcome=step.outcome, end_tick=tick_index - 1)
+            if run_down is not None and run_down_over is None and run_down.tick(step.timing.frame_dt_ms_i32):
+                run_down_over = tick_index
         row = dict(zip(names, core_rows[tick_index], strict=True))
         if terminal["python"] is None and session.terminal_outcome() is not None:
             terminal["python"] = {"tick": tick_index, "outcome": str(session.terminal_outcome())}
@@ -288,7 +295,7 @@ def compare(stream: Stream, native: Path, *, preserve_bugs: bool) -> dict:
 
     compared_tick = python_ticks
     row = dict(zip(names, core_rows[compared_tick], strict=True))
-    expected = build_run_result(session, outcome=session.terminal_outcome() or RunOutcome.INCOMPLETE)
+    expected = build_run_result(session, outcome=session.end_outcome())
     actual = core_result(row, spec.game_mode_id)
     mismatches = run_result_mismatches(expected, actual)
     report.update(
@@ -301,12 +308,10 @@ def compare(stream: Stream, native: Path, *, preserve_bugs: bool) -> dict:
         python_result=_result_json(expected),
         core_result=_result_json(actual),
     )
-    # The core runs the whole stream, or rejects the tick after its terminal state (exit 5). Any other
-    # rejection is a failure, even when Python stopped at the same tick.
+    # The core runs the whole stream, or rejects the tick after its run-down (exit 5), where Python's
+    # `RunDown` ends too. Any other rejection is a failure, even when Python stopped at the same tick.
     stepped = len(core_rows) - 1
-    core_finished = (exit_code == 0 and stepped == len(stream.ticks)) or (
-        exit_code == 5 and terminal["core"] is not None and terminal["core"]["tick"] == stepped
-    )
+    core_finished = (exit_code == 0 and stepped == len(stream.ticks)) or (exit_code == 5 and run_down_over == stepped)
     report["agree"] = (
         core_finished
         and python_error is None
