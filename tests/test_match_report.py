@@ -207,6 +207,28 @@ def test_scoring_dependencies_pin_only_imported_libraries_and_their_dependencies
     assert report._scoring_dependencies_digest(tmp_path, [source]) != baseline
 
 
+def test_scoring_dependencies_ignore_workspace_package_versions(tmp_path: Path) -> None:
+    source = tmp_path / "match_example.py"
+    source.write_text("import crimson_re\n")
+    lock = tmp_path / "uv.lock"
+
+    def lock_with(game: str, capstone: str) -> str:
+        return (
+            '[[package]]\nname = "crimson-re"\nversion = "0.1.0"\nsource = { editable = "crimson-re" }\n'
+            'dependencies = [{ name = "crimsonland" }, { name = "capstone" }]\n'
+            f'[[package]]\nname = "crimsonland"\nversion = "{game}"\nsource = {{ editable = "." }}\n'
+            f'[[package]]\nname = "capstone"\nversion = "{capstone}"\n'
+        )
+
+    lock.write_text(lock_with("0.10.0", "5.0.1"))
+    baseline = report._scoring_dependencies_digest(tmp_path, [source])
+
+    lock.write_text(lock_with("0.11.0", "5.0.1"))
+    assert report._scoring_dependencies_digest(tmp_path, [source]) == baseline
+    lock.write_text(lock_with("0.10.0", "5.0.2"))
+    assert report._scoring_dependencies_digest(tmp_path, [source]) != baseline
+
+
 def test_added_and_deleted_build_inputs_invalidate_snapshot(tmp_path: Path) -> None:
     # Exercise real git file enumeration: an untracked source is reported but not
     # pinned, a staged one is pinned, and a deleted tracked source cannot leave a

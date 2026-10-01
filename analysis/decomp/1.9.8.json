@@ -75826,7 +75826,7 @@
   "identities": {
     "inventory": "b158b492c7c9d8647e726e7ee114d04032d33d7824636d01400d9c97021327f2",
     "inventory_policy": "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1",
-    "scoring": "fbea6aac0ef29a825ff16472e3a7e52ecbe9c546270397f8d0a93f019a4b74bd",
+    "scoring": "994f6812b0670ec6a6e21be2352e27fc98c96f786496930f2fff62a8b2c02136",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.9.8/crimsonland.exe": "0a6217c2638886699935213dcf5b75c528347f244f5d845066598d34a7b2052e",
@@ -75928,7 +75928,7 @@
     "crimson-re/src/crimson_re/match_native_inventory.py": "8127088d3a799dd1e8cea444811a324c8bf457e825343f6a756ca7cce7835078",
     "crimson-re/src/crimson_re/match_process.py": "8075821f517482db5551f35ef07c74e25a625a5105ce67b0f7c901133101e630",
     "crimson-re/src/crimson_re/match_regressions.py": "364945021ce2291f6851aec619a69dd3003b3ff26d7200133321e8686b78a413",
-    "crimson-re/src/crimson_re/match_report.py": "06e55bb2fb2c264be19a03ca9c67eabbc575a4434bb70a2b78cd9268c63f8dba",
+    "crimson-re/src/crimson_re/match_report.py": "852148744554be56a7034809f1126bc8b1dfa1a4b2114bd16b4c6c49822c5317",
     "crimson-re/src/crimson_re/match_report_accounting.py": "115a0a538b87a5254504c2ec05f760d81d382c1addfc508fe1083d4d0bacab54",
     "crimson-re/src/crimson_re/match_toolchain.py": "0bcafcf88c568a4d90f1fd34c9c8dbfdab71ec6259dd60051121dd75c036fd71",
     "crimson-re/src/crimson_re/native_link.py": "786f4087c6aba4c755862a7098f59d0b6b1149d89599fd99ae697de7f64bd4ab",
@@ -79660,7 +79660,7 @@
     "tools/native/translation_units/crimsonland.exe-lifecycle-evidence.json": "e68b44bceb36106ecdbc81662a546fc4b0fe990cf19638d0d9d05ea8529eeb50",
     "tools/native/translation_units/crimsonland.exe.json": "e5195bc261766386300a596979c97b56ff7b0ceb153a2f588ad3953ac7dee094",
     "tools/native/translation_units/grim.dll.json": "27b322753036ef22bb2c92394d86748d479cc87045053b37909376cf54f432d1",
-    "uv.lock#scoring-dependencies": "919554a50dd8dc922f3892938ca9b6873af20406abf6ecfb05fcf01e57557a91"
+    "uv.lock#scoring-dependencies": "7d91109edf59d385332525590ce62405c24b890dca60a3f698eb544099ca94ea"
   },
   "linking": null,
   "schema": 3,

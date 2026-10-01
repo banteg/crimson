@@ -104,7 +104,12 @@ def _scoring_dependencies_digest(root: Path, python_inputs: list[Path]) -> str:
         key = pending.pop()
         if key in pinned or key not in packages:
             continue
-        pinned[key] = sorted(str(package.get("version", package.get("source"))) for package in packages[key])
+        # A workspace package's version says nothing about its code; its locked dependencies still count.
+        pinned[key] = sorted(
+            str(package.get("version", package.get("source")))
+            for package in packages[key]
+            if not {"editable", "virtual"} & set(package.get("source", {}))
+        )
         pending.extend(
             _distribution_key(dependency["name"])
             for package in packages[key]
