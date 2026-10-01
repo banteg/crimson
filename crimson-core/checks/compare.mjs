@@ -82,7 +82,7 @@ export async function compare(input, native, wasm) {
     config(2, 1, 1, { seed: 12345, unlock: 0, unlockFull: 0, detail: 0 }),
   );
   for (let i = 0; i < 200; i++)
-    if (!step(e, record([1, 0, 512, 512, 38656]))) throw Error("B reset run");
+    if (!step(e, record([1, 0, 512, 512, 0x1700]))) throw Error("B reset run");
   init(e, run.config);
   for (const r of run.records)
     if (!step(e, r)) throw Error("A reset rejected input");

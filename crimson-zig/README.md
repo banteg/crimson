@@ -6,7 +6,7 @@ New Zig simulation, parity and product work is deferred. Python stays the fast
 iteration platform; the recovered C/C++ will provide the shared game/verifier
 WASM core. Keep the existing verifier available until complete replay-fixture
 and bot-sweep results agree with Python under the declared bug policy. See the
-[replacement plan](../tools/recovered_sim/FOLLOWUP.md).
+[replacement plan](../crimson-core/ROADMAP.md).
 
 ## What it is now
 

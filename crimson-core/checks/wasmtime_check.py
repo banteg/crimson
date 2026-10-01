@@ -1,7 +1,7 @@
 """Load the exact Node/Worker core.wasm in Python and check every snapshot.
 
 An optional desktop-host feasibility probe, not a renderer or public verifier.
-Run with uv run --with wasmtime==49.0.0 python tools/recovered_sim/wasmtime_check.py.
+Run with uv run --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py.
 """
 
 import argparse
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import wasmtime
 
-HERE = Path(__file__).resolve().parent
+CORE = Path(__file__).resolve().parents[1]
 
 
 def decode(data):
@@ -36,7 +36,7 @@ def decode(data):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--build", type=Path, default=HERE / "build")
+    parser.add_argument("--build", type=Path, default=CORE / "build")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     wasm = args.build / "wasm/core.wasm"
@@ -50,7 +50,7 @@ def main():
     exports["_initialize"](store)
     memory = exports["memory"]
     pointers = {name: exports["portable_" + name](store) for name in ("config", "input", "commands", "output")}
-    snapshot_fields = sum(g["count"] * len(g["fields"]) for g in json.loads((HERE / "schema.json").read_text()))
+    snapshot_fields = sum(g["count"] * len(g["fields"]) for g in json.loads((CORE / "schema.json").read_text()))
 
     def init(config):
         memory.write(store, config, pointers["config"])

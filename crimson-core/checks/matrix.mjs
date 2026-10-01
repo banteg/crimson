@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { compare } from "./compare.mjs";
 import {
-  HERE,
+  CORE,
   loadCore,
   init,
   state,
@@ -16,7 +16,7 @@ import {
 } from "./engine.mjs";
 
 const out = path.resolve(
-  process.argv[2] ?? fileURLToPath(new URL("build", HERE)),
+  process.argv[2] ?? fileURLToPath(new URL("build", CORE)),
 );
 const native = path.join(out, "native/core"),
   wasm = path.join(out, "wasm/core.wasm");
@@ -25,7 +25,11 @@ const terminal = new Set([7, 8, 12]);
 const fixtures = path.join(out, "fixtures");
 fs.mkdirSync(fixtures, { recursive: true });
 
-function play(cfg, bot, limit) {
+// Mouse aim sends a world point; dual action pad aim sends the stick's reach.
+const MOUSE = 0x1700,
+  PAD = 0x9700;
+
+function play(cfg, bot, limit, aim) {
   init(e, cfg);
   const records = [],
     coverage = {
@@ -150,13 +154,14 @@ function play(cfg, bot, limit) {
     coverage.max_commands = Math.max(coverage.max_commands, commands.length);
     const reload = bot && tick % 137 === 0;
     coverage.reload += Number(reload);
+    const [wx, wy] = target ?? [x, y - 60];
     const r = record(
       [
         mx,
         my,
-        target?.[0] ?? x,
-        target?.[1] ?? y - 60,
-        38656 | (bot && target ? 1 : 0) | (reload ? 65536 : 0),
+        aim === PAD ? wx - x : wx,
+        aim === PAD ? wy - y : wy,
+        aim | (bot && target ? 1 : 0) | (reload ? 65536 : 0),
       ],
       commands,
     );
@@ -197,30 +202,32 @@ function rejects(label, cfg, r, expected = 5) {
 }
 
 const normal = config(1);
-rejects("NaN", normal, record([NaN, 0, 512, 512, 38656]));
-rejects("infinite aim", normal, record([0, 0, Infinity, 512, 38656]));
-rejects("unknown flags", normal, record([0, 0, 512, 512, 38656 | 0x100000]));
+rejects("NaN", normal, record([NaN, 0, 512, 512, MOUSE]));
+rejects("infinite aim", normal, record([0, 0, Infinity, 512, MOUSE]));
+rejects("unknown flags", normal, record([0, 0, 512, 512, MOUSE | 0x100000]));
 rejects("unsupported movement scheme", normal, record([0, 0, 512, 512, 38144]));
+rejects("unsupported aim scheme", normal, record([0, 0, 512, 512, 0x7700]));
+rejects("held movement key", normal, record([0, 0, 512, 512, PAD | 8 | 16]));
 rejects(
   "perk without entitlement",
   normal,
-  record([0, 0, 512, 512, 38656], [[1, 0]]),
+  record([0, 0, 512, 512, MOUSE], [[1, 0]]),
 );
 rejects(
   "menu without entitlement",
   normal,
-  record([0, 0, 512, 512, 38656], [[2, 0]]),
+  record([0, 0, 512, 512, MOUSE], [[2, 0]]),
 );
 rejects(
   "Rush perk command",
   config(2),
-  record([0, 0, 512, 512, 38656], [[2, 0]]),
+  record([0, 0, 512, 512, MOUSE], [[2, 0]]),
 );
-rejects("unknown command", normal, record([0, 0, 512, 512, 38656], [[99, 0]]));
+rejects("unknown command", normal, record([0, 0, 512, 512, MOUSE], [[99, 0]]));
 rejects(
   "command count overflow",
   normal,
-  record([0, 0, 512, 512, 38656], Array(17).fill([2, 0])),
+  record([0, 0, 512, 512, MOUSE], Array(17).fill([2, 0])),
   4,
 );
 
@@ -228,7 +235,7 @@ rejects(
 function displacement(magnitude) {
   init(e, normal);
   for (let i = 0; i < 90; i++)
-    if (!step(e, record([magnitude, 0, 512, 512, 38656])))
+    if (!step(e, record([magnitude, 0, 512, 512, MOUSE])))
       throw Error("Movement probe");
   state(e);
   return [
@@ -241,14 +248,14 @@ if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
 
 const scenarios = [
-  ["rush-idle", config(2), false, 6000],
-  ["rush-bot", config(2), true, 30000],
-  ["rush-evade", config(2, 1, 1, { seed: 1337 }), 2, 30000],
-  ["survival-idle", config(1), false, 10000],
-  ["survival-bot", config(1), true, 30000],
-  ["survival-evade", config(1), 2, 30000],
-  ["survival-evade-1337", config(1, 1, 1, { seed: 1337 }), 2, 30000],
-  ["survival-command-batches", config(1, 1, 1, { seed: 1337 }), 4, 30000],
+  ["rush-idle", config(2), false, 6000, PAD],
+  ["rush-bot", config(2), true, 30000, MOUSE],
+  ["rush-evade", config(2, 1, 1, { seed: 1337 }), 2, 30000, PAD],
+  ["survival-idle", config(1), false, 10000, MOUSE],
+  ["survival-bot", config(1), true, 30000, PAD],
+  ["survival-evade", config(1), 2, 30000, MOUSE],
+  ["survival-evade-1337", config(1, 1, 1, { seed: 1337 }), 2, 30000, PAD],
+  ["survival-command-batches", config(1, 1, 1, { seed: 1337 }), 4, 30000, MOUSE],
 ];
 for (let major = 1; major <= 5; major++)
   for (let minor = 1; minor <= 10; minor++) {
@@ -257,6 +264,7 @@ for (let major = 1; major <= 5; major++)
       config(3, major, minor),
       true,
       30000,
+      minor % 2 ? PAD : MOUSE,
     ]);
   }
 scenarios.push([
@@ -272,15 +280,16 @@ scenarios.push([
   }),
   true,
   30000,
+  PAD,
 ]);
 const report = {
-  rules: "recovered-spike-v1",
-  guards: "9 native/WASM rejection probes; large-vector speed cap",
+  rules: "original",
+  guards: "11 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };
-for (const [name, cfg, bot, limit] of scenarios) {
+for (const [name, cfg, bot, limit, aim] of scenarios) {
   console.log(`${name}: generating input stream`);
-  const run = play(cfg, bot, limit);
+  const run = play(cfg, bot, limit, aim);
   const filename = path.join(fixtures, `${name}.rsi`);
   fs.writeFileSync(filename, run.input);
   console.log(`${name}: comparing ${run.input.length} input bytes`);

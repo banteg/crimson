@@ -1,0 +1,3650 @@
+{
+  "rules": "original (Python preserve_bugs=True, recovered core unmodified)",
+  "streams": {
+    "quest-1.1.rsi": {
+      "ticks": 1585,
+      "core_ticks": 1585,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1585,
+      "python_error": null,
+      "result_tick": 1585,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1585,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 1585,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 22912,
+        "kills": 10,
+        "shots_fired": 20,
+        "shots_hit": 16,
+        "rng_state": 2393698378,
+        "pending_perks": 0,
+        "quest_final_ms": 18412,
+        "players": [
+          {
+            "experience": 1250,
+            "health": 90.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 22912,
+        "kills": 10,
+        "shots_fired": 20,
+        "shots_hit": 16,
+        "rng_state": 2393698378,
+        "pending_perks": 0,
+        "quest_final_ms": 18412,
+        "players": [
+          {
+            "experience": 1250,
+            "health": 90.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.10.rsi": {
+      "ticks": 353,
+      "core_ticks": 353,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 353,
+      "python_error": null,
+      "result_tick": 353,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 353,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 353,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 5648,
+        "kills": 0,
+        "shots_fired": 4,
+        "shots_hit": 3,
+        "rng_state": 2974550317,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 5648,
+        "kills": 0,
+        "shots_fired": 4,
+        "shots_hit": 3,
+        "rng_state": 2974550317,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.2.rsi": {
+      "ticks": 759,
+      "core_ticks": 759,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 759,
+      "python_error": null,
+      "result_tick": 759,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 759,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 759,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12144,
+        "kills": 3,
+        "shots_fired": 10,
+        "shots_hit": 5,
+        "rng_state": 4077955325,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 375,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12144,
+        "kills": 3,
+        "shots_fired": 10,
+        "shots_hit": 5,
+        "rng_state": 4077955325,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 375,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.3.rsi": {
+      "ticks": 2897,
+      "core_ticks": 2897,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 2897,
+      "python_error": null,
+      "result_tick": 2897,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 2897,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 2897,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 43904,
+        "kills": 30,
+        "shots_fired": 30,
+        "shots_hit": 30,
+        "rng_state": 161841851,
+        "pending_perks": 0,
+        "quest_final_ms": 38904,
+        "players": [
+          {
+            "experience": 4500,
+            "health": 100.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 43904,
+        "kills": 30,
+        "shots_fired": 30,
+        "shots_hit": 30,
+        "rng_state": 161841851,
+        "pending_perks": 0,
+        "quest_final_ms": 38904,
+        "players": [
+          {
+            "experience": 4500,
+            "health": 100.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.4.rsi": {
+      "ticks": 1283,
+      "core_ticks": 1283,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1283,
+      "python_error": null,
+      "result_tick": 1283,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1283,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1283,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 20528,
+        "kills": 5,
+        "shots_fired": 18,
+        "shots_hit": 7,
+        "rng_state": 1152296027,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 625,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 20528,
+        "kills": 5,
+        "shots_fired": 18,
+        "shots_hit": 7,
+        "rng_state": 1152296027,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 625,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.5.rsi": {
+      "ticks": 6499,
+      "core_ticks": 6499,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 6499,
+      "python_error": null,
+      "result_tick": 6499,
+      "first_divergence": {
+        "snapshot": 1032,
+        "fields": {
+          "rng": {
+            "python": 2485489401,
+            "core": 3949074414
+          }
+        }
+      },
+      "terminal": {
+        "python": {
+          "tick": 6499,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 6499,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 101536,
+        "kills": 69,
+        "shots_fired": 267,
+        "shots_hit": 94,
+        "rng_state": 20257972,
+        "pending_perks": 0,
+        "quest_final_ms": 99836,
+        "players": [
+          {
+            "experience": 21563,
+            "health": 34.69533157348633,
+            "most_used_weapon_id": 17
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 101536,
+        "kills": 69,
+        "shots_fired": 267,
+        "shots_hit": 94,
+        "rng_state": 20257972,
+        "pending_perks": 0,
+        "quest_final_ms": 99836,
+        "players": [
+          {
+            "experience": 21563,
+            "health": 34.69533157348633,
+            "most_used_weapon_id": 17
+          }
+        ]
+      },
+      "agree": false
+    },
+    "quest-1.6.rsi": {
+      "ticks": 967,
+      "core_ticks": 967,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 967,
+      "python_error": null,
+      "result_tick": 967,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 967,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 967,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 15472,
+        "kills": 6,
+        "shots_fired": 12,
+        "shots_hit": 8,
+        "rng_state": 2158788171,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 620,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 15472,
+        "kills": 6,
+        "shots_fired": 12,
+        "shots_hit": 8,
+        "rng_state": 2158788171,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 620,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.7.rsi": {
+      "ticks": 1045,
+      "core_ticks": 1045,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1045,
+      "python_error": null,
+      "result_tick": 1045,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1045,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1045,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 16720,
+        "kills": 6,
+        "shots_fired": 13,
+        "shots_hit": 9,
+        "rng_state": 3771009094,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 960,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 16720,
+        "kills": 6,
+        "shots_fired": 13,
+        "shots_hit": 9,
+        "rng_state": 3771009094,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 960,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.8.rsi": {
+      "ticks": 1201,
+      "core_ticks": 1201,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1201,
+      "python_error": null,
+      "result_tick": 1201,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1201,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1201,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 19216,
+        "kills": 21,
+        "shots_fired": 27,
+        "shots_hit": 18,
+        "rng_state": 4190872853,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3000,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 19216,
+        "kills": 21,
+        "shots_fired": 27,
+        "shots_hit": 18,
+        "rng_state": 4190872853,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3000,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-1.9.rsi": {
+      "ticks": 1486,
+      "core_ticks": 1486,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1486,
+      "python_error": null,
+      "result_tick": 1486,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1486,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1486,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 23776,
+        "kills": 6,
+        "shots_fired": 45,
+        "shots_hit": 12,
+        "rng_state": 1393563149,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1375,
+            "health": -3.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 23776,
+        "kills": 6,
+        "shots_fired": 45,
+        "shots_hit": 12,
+        "rng_state": 1393563149,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1375,
+            "health": -3.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.1.rsi": {
+      "ticks": 3316,
+      "core_ticks": 3316,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 3316,
+      "python_error": null,
+      "result_tick": 3316,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 3316,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 3316,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 53056,
+        "kills": 23,
+        "shots_fired": 44,
+        "shots_hit": 35,
+        "rng_state": 1336815044,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3561,
+            "health": -3.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 53056,
+        "kills": 23,
+        "shots_fired": 44,
+        "shots_hit": 35,
+        "rng_state": 1336815044,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3561,
+            "health": -3.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.10-completed.crd": {
+      "ticks": 4677,
+      "core_ticks": 4646,
+      "core_exit": 5,
+      "core_stderr": "reject tick 4646 xp 50254 pending 5 health 64.6766",
+      "python_ticks": 4646,
+      "python_error": null,
+      "result_tick": 4646,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 4646,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 4646,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 66813,
+        "kills": 381,
+        "shots_fired": 166,
+        "shots_hit": 113,
+        "rng_state": 4248579887,
+        "pending_perks": 5,
+        "quest_final_ms": 58613,
+        "players": [
+          {
+            "experience": 50254,
+            "health": 64.67655181884766,
+            "most_used_weapon_id": 21
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 66813,
+        "kills": 381,
+        "shots_fired": 166,
+        "shots_hit": 113,
+        "rng_state": 4248579887,
+        "pending_perks": 5,
+        "quest_final_ms": 58613,
+        "players": [
+          {
+            "experience": 50254,
+            "health": 64.67655181884766,
+            "most_used_weapon_id": 21
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.10.rsi": {
+      "ticks": 869,
+      "core_ticks": 869,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 869,
+      "python_error": null,
+      "result_tick": 869,
+      "first_divergence": {
+        "snapshot": 869,
+        "fields": {
+          "double_xp": {
+            "python": 4.899985313415527,
+            "core": 4.916652202606201
+          }
+        }
+      },
+      "terminal": {
+        "python": {
+          "tick": 869,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 869,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 13904,
+        "kills": 6,
+        "shots_fired": 26,
+        "shots_hit": 14,
+        "rng_state": 4025529840,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3664,
+            "health": -5.281004428863525,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 13904,
+        "kills": 6,
+        "shots_fired": 26,
+        "shots_hit": 14,
+        "rng_state": 4025529840,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3664,
+            "health": -5.281004428863525,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": false
+    },
+    "quest-2.2.rsi": {
+      "ticks": 1953,
+      "core_ticks": 1953,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1953,
+      "python_error": null,
+      "result_tick": 1953,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1953,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1953,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 31248,
+        "kills": 26,
+        "shots_fired": 22,
+        "shots_hit": 15,
+        "rng_state": 2377714091,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 6496,
+            "health": -3.059990882873535,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 31248,
+        "kills": 26,
+        "shots_fired": 22,
+        "shots_hit": 15,
+        "rng_state": 2377714091,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 6496,
+            "health": -3.059990882873535,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.3.rsi": {
+      "ticks": 1007,
+      "core_ticks": 1007,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1007,
+      "python_error": null,
+      "result_tick": 1007,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1007,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1007,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 16112,
+        "kills": 8,
+        "shots_fired": 14,
+        "shots_hit": 14,
+        "rng_state": 2062903735,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1246,
+            "health": -0.4000110626220703,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 16112,
+        "kills": 8,
+        "shots_fired": 14,
+        "shots_hit": 14,
+        "rng_state": 2062903735,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1246,
+            "health": -0.4000110626220703,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.4.rsi": {
+      "ticks": 1635,
+      "core_ticks": 1635,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1635,
+      "python_error": null,
+      "result_tick": 1635,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1635,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1635,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 26160,
+        "kills": 12,
+        "shots_fired": 23,
+        "shots_hit": 14,
+        "rng_state": 1891267183,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1500,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 26160,
+        "kills": 12,
+        "shots_fired": 23,
+        "shots_hit": 14,
+        "rng_state": 1891267183,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1500,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.5-completed.crd": {
+      "ticks": 2924,
+      "core_ticks": 2893,
+      "core_exit": 5,
+      "core_stderr": "reject tick 2893 xp 8640 pending 1 health 62",
+      "python_ticks": 2893,
+      "python_error": null,
+      "result_tick": 2893,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 2893,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 2893,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 43840,
+        "kills": 64,
+        "shots_fired": 36,
+        "shots_hit": 36,
+        "rng_state": 2657629098,
+        "pending_perks": 1,
+        "quest_final_ms": 39740,
+        "players": [
+          {
+            "experience": 8640,
+            "health": 62.0,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 43840,
+        "kills": 64,
+        "shots_fired": 36,
+        "shots_hit": 36,
+        "rng_state": 2657629098,
+        "pending_perks": 1,
+        "quest_final_ms": 39740,
+        "players": [
+          {
+            "experience": 8640,
+            "health": 62.0,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.5.rsi": {
+      "ticks": 472,
+      "core_ticks": 472,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 472,
+      "python_error": null,
+      "result_tick": 472,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 472,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 472,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 7552,
+        "kills": 7,
+        "shots_fired": 4,
+        "shots_hit": 4,
+        "rng_state": 4112929022,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1050,
+            "health": -20.0,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 7552,
+        "kills": 7,
+        "shots_fired": 4,
+        "shots_hit": 4,
+        "rng_state": 4112929022,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1050,
+            "health": -20.0,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.6.rsi": {
+      "ticks": 1469,
+      "core_ticks": 1469,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1469,
+      "python_error": null,
+      "result_tick": 1469,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1469,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1469,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 23504,
+        "kills": 16,
+        "shots_fired": 25,
+        "shots_hit": 22,
+        "rng_state": 2014359544,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 2546,
+            "health": -11.0,
+            "most_used_weapon_id": 7
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 23504,
+        "kills": 16,
+        "shots_fired": 25,
+        "shots_hit": 22,
+        "rng_state": 2014359544,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 2546,
+            "health": -11.0,
+            "most_used_weapon_id": 7
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.7.rsi": {
+      "ticks": 652,
+      "core_ticks": 652,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 652,
+      "python_error": null,
+      "result_tick": 652,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 652,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 652,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 10432,
+        "kills": 10,
+        "shots_fired": 44,
+        "shots_hit": 28,
+        "rng_state": 737746008,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 5414,
+            "health": -4.769999980926514,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 10432,
+        "kills": 10,
+        "shots_fired": 44,
+        "shots_hit": 28,
+        "rng_state": 737746008,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 5414,
+            "health": -4.769999980926514,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.8.rsi": {
+      "ticks": 857,
+      "core_ticks": 857,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 857,
+      "python_error": null,
+      "result_tick": 857,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 857,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 857,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 13712,
+        "kills": 4,
+        "shots_fired": 11,
+        "shots_hit": 6,
+        "rng_state": 3541094469,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 725,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 13712,
+        "kills": 4,
+        "shots_fired": 11,
+        "shots_hit": 6,
+        "rng_state": 3541094469,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 725,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-2.9.rsi": {
+      "ticks": 786,
+      "core_ticks": 786,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 786,
+      "python_error": null,
+      "result_tick": 786,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 786,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 786,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12576,
+        "kills": 16,
+        "shots_fired": 17,
+        "shots_hit": 10,
+        "rng_state": 2514762964,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 2220,
+            "health": -35.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12576,
+        "kills": 16,
+        "shots_fired": 17,
+        "shots_hit": 10,
+        "rng_state": 2514762964,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 2220,
+            "health": -35.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.1.rsi": {
+      "ticks": 765,
+      "core_ticks": 765,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 765,
+      "python_error": null,
+      "result_tick": 765,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 765,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 765,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12240,
+        "kills": 7,
+        "shots_fired": 9,
+        "shots_hit": 7,
+        "rng_state": 1906106132,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1476,
+            "health": -3.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12240,
+        "kills": 7,
+        "shots_fired": 9,
+        "shots_hit": 7,
+        "rng_state": 1906106132,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1476,
+            "health": -3.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.10.rsi": {
+      "ticks": 645,
+      "core_ticks": 645,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 645,
+      "python_error": null,
+      "result_tick": 645,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 645,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 645,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 10320,
+        "kills": 3,
+        "shots_fired": 8,
+        "shots_hit": 7,
+        "rng_state": 827973805,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 550,
+            "health": -6.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 10320,
+        "kills": 3,
+        "shots_fired": 8,
+        "shots_hit": 7,
+        "rng_state": 827973805,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 550,
+            "health": -6.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.2.rsi": {
+      "ticks": 723,
+      "core_ticks": 723,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 723,
+      "python_error": null,
+      "result_tick": 723,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 723,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 723,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 11568,
+        "kills": 9,
+        "shots_fired": 2,
+        "shots_hit": 1,
+        "rng_state": 1321018026,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1288,
+            "health": -143.239990234375,
+            "most_used_weapon_id": 15
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 11568,
+        "kills": 9,
+        "shots_fired": 2,
+        "shots_hit": 1,
+        "rng_state": 1321018026,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1288,
+            "health": -143.239990234375,
+            "most_used_weapon_id": 15
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.3.rsi": {
+      "ticks": 1288,
+      "core_ticks": 1288,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1288,
+      "python_error": null,
+      "result_tick": 1288,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1288,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1288,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 20608,
+        "kills": 12,
+        "shots_fired": 17,
+        "shots_hit": 15,
+        "rng_state": 4187906486,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1500,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 20608,
+        "kills": 12,
+        "shots_fired": 17,
+        "shots_hit": 15,
+        "rng_state": 4187906486,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1500,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.4.rsi": {
+      "ticks": 1076,
+      "core_ticks": 1076,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1076,
+      "python_error": null,
+      "result_tick": 1076,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1076,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1076,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 17216,
+        "kills": 8,
+        "shots_fired": 14,
+        "shots_hit": 13,
+        "rng_state": 3446940185,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 960,
+            "health": -4.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 17216,
+        "kills": 8,
+        "shots_fired": 14,
+        "shots_hit": 13,
+        "rng_state": 3446940185,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 960,
+            "health": -4.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.5.rsi": {
+      "ticks": 1497,
+      "core_ticks": 1497,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1497,
+      "python_error": null,
+      "result_tick": 1497,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1497,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1497,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 23952,
+        "kills": 42,
+        "shots_fired": 110,
+        "shots_hit": 35,
+        "rng_state": 3379217844,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 20886,
+            "health": -6.139996528625488,
+            "most_used_weapon_id": 12
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 23952,
+        "kills": 42,
+        "shots_fired": 110,
+        "shots_hit": 35,
+        "rng_state": 3379217844,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 20886,
+            "health": -6.139996528625488,
+            "most_used_weapon_id": 12
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.6.rsi": {
+      "ticks": 789,
+      "core_ticks": 789,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 789,
+      "python_error": null,
+      "result_tick": 789,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 789,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 789,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12624,
+        "kills": 5,
+        "shots_fired": 9,
+        "shots_hit": 7,
+        "rng_state": 1098233527,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1380,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12624,
+        "kills": 5,
+        "shots_fired": 9,
+        "shots_hit": 7,
+        "rng_state": 1098233527,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1380,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.7.rsi": {
+      "ticks": 4865,
+      "core_ticks": 4865,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 4865,
+      "python_error": null,
+      "result_tick": 4865,
+      "first_divergence": {
+        "snapshot": 4533,
+        "fields": {
+          "player.heading": {
+            "python": 5.292267322540283,
+            "core": 5.292354106903076
+          }
+        }
+      },
+      "terminal": {
+        "python": {
+          "tick": 4818,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 4865,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [
+        "elapsed_ms",
+        "kills",
+        "shots_fired",
+        "rng_state",
+        "players[0].experience"
+      ],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 77507,
+        "kills": 86,
+        "shots_fired": 290,
+        "shots_hit": 119,
+        "rng_state": 244522437,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 36146,
+            "health": -3.273334503173828,
+            "most_used_weapon_id": 11
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 77840,
+        "kills": 87,
+        "shots_fired": 297,
+        "shots_hit": 119,
+        "rng_state": 1551608774,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 36579,
+            "health": -3.273334503173828,
+            "most_used_weapon_id": 11
+          }
+        ]
+      },
+      "agree": false
+    },
+    "quest-3.8.rsi": {
+      "ticks": 831,
+      "core_ticks": 831,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 831,
+      "python_error": null,
+      "result_tick": 831,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 831,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 831,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 13296,
+        "kills": 4,
+        "shots_fired": 10,
+        "shots_hit": 8,
+        "rng_state": 3345390853,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 656,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 13296,
+        "kills": 4,
+        "shots_fired": 10,
+        "shots_hit": 8,
+        "rng_state": 3345390853,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 656,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-3.9.rsi": {
+      "ticks": 1155,
+      "core_ticks": 1155,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1155,
+      "python_error": null,
+      "result_tick": 1155,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1155,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1155,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 18480,
+        "kills": 34,
+        "shots_fired": 38,
+        "shots_hit": 28,
+        "rng_state": 3185094707,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 27356,
+            "health": -0.6800079345703125,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 18480,
+        "kills": 34,
+        "shots_fired": 38,
+        "shots_hit": 28,
+        "rng_state": 3185094707,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 27356,
+            "health": -0.6800079345703125,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.1.rsi": {
+      "ticks": 1906,
+      "core_ticks": 1906,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1906,
+      "python_error": null,
+      "result_tick": 1906,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1906,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1906,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 30496,
+        "kills": 33,
+        "shots_fired": 63,
+        "shots_hit": 44,
+        "rng_state": 4096049106,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 5578,
+            "health": -1.0,
+            "most_used_weapon_id": 18
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 30496,
+        "kills": 33,
+        "shots_fired": 63,
+        "shots_hit": 44,
+        "rng_state": 4096049106,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 5578,
+            "health": -1.0,
+            "most_used_weapon_id": 18
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.10-completed.crd": {
+      "ticks": 4183,
+      "core_ticks": 4152,
+      "core_exit": 5,
+      "core_stderr": "reject tick 4152 xp 67767 pending 3 health 70",
+      "python_ticks": 4152,
+      "python_error": null,
+      "result_tick": 4152,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 4152,
+          "outcome": "quest_completed"
+        },
+        "core": {
+          "tick": 4152,
+          "outcome": "quest_completed"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 63984,
+        "kills": 102,
+        "shots_fired": 221,
+        "shots_hit": 221,
+        "rng_state": 3981609724,
+        "pending_perks": 3,
+        "quest_final_ms": 57484,
+        "players": [
+          {
+            "experience": 67767,
+            "health": 70.0,
+            "most_used_weapon_id": 13
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "quest_completed",
+        "elapsed_ms": 63984,
+        "kills": 102,
+        "shots_fired": 221,
+        "shots_hit": 221,
+        "rng_state": 3981609724,
+        "pending_perks": 3,
+        "quest_final_ms": 57484,
+        "players": [
+          {
+            "experience": 67767,
+            "health": 70.0,
+            "most_used_weapon_id": 13
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.10.rsi": {
+      "ticks": 1843,
+      "core_ticks": 1843,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1843,
+      "python_error": null,
+      "result_tick": 1843,
+      "first_divergence": {
+        "snapshot": 685,
+        "fields": {
+          "player.health": {
+            "python": 90.0,
+            "core": 100.0
+          }
+        }
+      },
+      "terminal": {
+        "python": {
+          "tick": 1819,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1843,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [
+        "kills",
+        "shots_fired",
+        "shots_hit",
+        "rng_state",
+        "pending_perks",
+        "players[0].experience"
+      ],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 29488,
+        "kills": 19,
+        "shots_fired": 104,
+        "shots_hit": 104,
+        "rng_state": 1667612900,
+        "pending_perks": 1,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 2021,
+            "health": 0.0,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 29488,
+        "kills": 18,
+        "shots_fired": 106,
+        "shots_hit": 106,
+        "rng_state": 54247630,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1858,
+            "health": 0.0,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "agree": false
+    },
+    "quest-4.2.rsi": {
+      "ticks": 927,
+      "core_ticks": 927,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 927,
+      "python_error": null,
+      "result_tick": 927,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 927,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 927,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 14832,
+        "kills": 3,
+        "shots_fired": 11,
+        "shots_hit": 8,
+        "rng_state": 2143991430,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 532,
+            "health": -4.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 14832,
+        "kills": 3,
+        "shots_fired": 11,
+        "shots_hit": 8,
+        "rng_state": 2143991430,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 532,
+            "health": -4.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.3.rsi": {
+      "ticks": 844,
+      "core_ticks": 844,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 844,
+      "python_error": null,
+      "result_tick": 844,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 844,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 844,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 13504,
+        "kills": 6,
+        "shots_fired": 10,
+        "shots_hit": 8,
+        "rng_state": 2345416780,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1782,
+            "health": -3.200000762939453,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 13504,
+        "kills": 6,
+        "shots_fired": 10,
+        "shots_hit": 8,
+        "rng_state": 2345416780,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1782,
+            "health": -3.200000762939453,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.4.rsi": {
+      "ticks": 873,
+      "core_ticks": 873,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 873,
+      "python_error": null,
+      "result_tick": 873,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 873,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 873,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 13968,
+        "kills": 7,
+        "shots_fired": 11,
+        "shots_hit": 10,
+        "rng_state": 908129454,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 875,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 13968,
+        "kills": 7,
+        "shots_fired": 11,
+        "shots_hit": 10,
+        "rng_state": 908129454,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 875,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.5.rsi": {
+      "ticks": 1143,
+      "core_ticks": 1143,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1143,
+      "python_error": null,
+      "result_tick": 1143,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1143,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1143,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 18288,
+        "kills": 4,
+        "shots_fired": 15,
+        "shots_hit": 10,
+        "rng_state": 284600358,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 912,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 18288,
+        "kills": 4,
+        "shots_fired": 15,
+        "shots_hit": 10,
+        "rng_state": 284600358,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 912,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.6.rsi": {
+      "ticks": 642,
+      "core_ticks": 642,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 642,
+      "python_error": null,
+      "result_tick": 642,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 642,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 642,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 10272,
+        "kills": 2,
+        "shots_fired": 10,
+        "shots_hit": 6,
+        "rng_state": 4110132000,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 250,
+            "health": -5.280000686645508,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 10272,
+        "kills": 2,
+        "shots_fired": 10,
+        "shots_hit": 6,
+        "rng_state": 4110132000,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 250,
+            "health": -5.280000686645508,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.7.rsi": {
+      "ticks": 496,
+      "core_ticks": 496,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 496,
+      "python_error": null,
+      "result_tick": 496,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 496,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 496,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 7936,
+        "kills": 3,
+        "shots_fired": 39,
+        "shots_hit": 23,
+        "rng_state": 269978922,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3316,
+            "health": -11.39999771118164,
+            "most_used_weapon_id": 3
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 7936,
+        "kills": 3,
+        "shots_fired": 39,
+        "shots_hit": 23,
+        "rng_state": 269978922,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3316,
+            "health": -11.39999771118164,
+            "most_used_weapon_id": 3
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.8.rsi": {
+      "ticks": 750,
+      "core_ticks": 750,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 750,
+      "python_error": null,
+      "result_tick": 750,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 750,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 750,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12000,
+        "kills": 7,
+        "shots_fired": 17,
+        "shots_hit": 11,
+        "rng_state": 3103924691,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 678,
+            "health": -5.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12000,
+        "kills": 7,
+        "shots_fired": 17,
+        "shots_hit": 11,
+        "rng_state": 3103924691,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 678,
+            "health": -5.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-4.9.rsi": {
+      "ticks": 536,
+      "core_ticks": 536,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 536,
+      "python_error": null,
+      "result_tick": 536,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 536,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 536,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 8576,
+        "kills": 2,
+        "shots_fired": 7,
+        "shots_hit": 6,
+        "rng_state": 2026170390,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 596,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 8576,
+        "kills": 2,
+        "shots_fired": 7,
+        "shots_hit": 6,
+        "rng_state": 2026170390,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 596,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.1.rsi": {
+      "ticks": 1099,
+      "core_ticks": 1099,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1099,
+      "python_error": null,
+      "result_tick": 1099,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1099,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1099,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 17584,
+        "kills": 11,
+        "shots_fired": 52,
+        "shots_hit": 40,
+        "rng_state": 2185082131,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 950,
+            "health": -18.0,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 17584,
+        "kills": 11,
+        "shots_fired": 52,
+        "shots_hit": 40,
+        "rng_state": 2185082131,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 950,
+            "health": -18.0,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.10.rsi": {
+      "ticks": 829,
+      "core_ticks": 829,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 829,
+      "python_error": null,
+      "result_tick": 829,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 829,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 829,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 13264,
+        "kills": 5,
+        "shots_fired": 9,
+        "shots_hit": 9,
+        "rng_state": 4175719618,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3220,
+            "health": -2.340010643005371,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 13264,
+        "kills": 5,
+        "shots_fired": 9,
+        "shots_hit": 9,
+        "rng_state": 4175719618,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3220,
+            "health": -2.340010643005371,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.2.rsi": {
+      "ticks": 1210,
+      "core_ticks": 1210,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1210,
+      "python_error": null,
+      "result_tick": 1210,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1210,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1210,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 19360,
+        "kills": 7,
+        "shots_fired": 59,
+        "shots_hit": 25,
+        "rng_state": 3906507105,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1020,
+            "health": -7.0,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 19360,
+        "kills": 7,
+        "shots_fired": 59,
+        "shots_hit": 25,
+        "rng_state": 3906507105,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1020,
+            "health": -7.0,
+            "most_used_weapon_id": 5
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.3.rsi": {
+      "ticks": 562,
+      "core_ticks": 562,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 562,
+      "python_error": null,
+      "result_tick": 562,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 562,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 562,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 8992,
+        "kills": 5,
+        "shots_fired": 15,
+        "shots_hit": 6,
+        "rng_state": 833109229,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 750,
+            "health": -5.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 8992,
+        "kills": 5,
+        "shots_fired": 15,
+        "shots_hit": 6,
+        "rng_state": 833109229,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 750,
+            "health": -5.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.4.rsi": {
+      "ticks": 1374,
+      "core_ticks": 1374,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1374,
+      "python_error": null,
+      "result_tick": 1374,
+      "first_divergence": {
+        "snapshot": 584,
+        "fields": {
+          "rng": {
+            "python": 1508286061,
+            "core": 2907108730
+          },
+          "player.pos_x": {
+            "python": 307.9991760253906,
+            "core": 307.9303283691406
+          },
+          "player.pos_y": {
+            "python": 396.7006530761719,
+            "core": 396.8561096191406
+          },
+          "player.health": {
+            "python": 96.0,
+            "core": 92.0
+          },
+          "player.heading": {
+            "python": 1.2255611419677734,
+            "core": 1.408894419670105
+          },
+          "player.aim_heading": {
+            "python": -0.4789203405380249,
+            "core": -0.45019155740737915
+          }
+        }
+      },
+      "terminal": {
+        "python": null,
+        "core": {
+          "tick": 1374,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [
+        "outcome",
+        "kills",
+        "shots_fired",
+        "shots_hit",
+        "rng_state",
+        "pending_perks",
+        "players[0].experience",
+        "players[0].health"
+      ],
+      "python_result": {
+        "outcome": "incomplete",
+        "elapsed_ms": 21984,
+        "kills": 20,
+        "shots_fired": 23,
+        "shots_hit": 13,
+        "rng_state": 2353297559,
+        "pending_perks": 1,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 2340,
+            "health": 8.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 21984,
+        "kills": 13,
+        "shots_fired": 58,
+        "shots_hit": 16,
+        "rng_state": 3542163461,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1320,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": false
+    },
+    "quest-5.5.rsi": {
+      "ticks": 751,
+      "core_ticks": 751,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 751,
+      "python_error": null,
+      "result_tick": 751,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 751,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 751,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12016,
+        "kills": 0,
+        "shots_fired": 10,
+        "shots_hit": 8,
+        "rng_state": 1157042594,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": -5.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12016,
+        "kills": 0,
+        "shots_fired": 10,
+        "shots_hit": 8,
+        "rng_state": 1157042594,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": -5.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.6.rsi": {
+      "ticks": 1187,
+      "core_ticks": 1187,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1187,
+      "python_error": null,
+      "result_tick": 1187,
+      "first_divergence": {
+        "snapshot": 643,
+        "fields": {
+          "player.health": {
+            "python": 75.0,
+            "core": 85.0
+          }
+        }
+      },
+      "terminal": {
+        "python": {
+          "tick": 1176,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1187,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 18992,
+        "kills": 6,
+        "shots_fired": 56,
+        "shots_hit": 26,
+        "rng_state": 367621055,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 960,
+            "health": -5.0,
+            "most_used_weapon_id": 11
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 18992,
+        "kills": 6,
+        "shots_fired": 56,
+        "shots_hit": 26,
+        "rng_state": 367621055,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 960,
+            "health": -5.0,
+            "most_used_weapon_id": 11
+          }
+        ]
+      },
+      "agree": false
+    },
+    "quest-5.7.rsi": {
+      "ticks": 657,
+      "core_ticks": 657,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 657,
+      "python_error": null,
+      "result_tick": 657,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 657,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 657,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 10512,
+        "kills": 3,
+        "shots_fired": 8,
+        "shots_hit": 7,
+        "rng_state": 3077717740,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 180,
+            "health": -36.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 10512,
+        "kills": 3,
+        "shots_fired": 8,
+        "shots_hit": 7,
+        "rng_state": 3077717740,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 180,
+            "health": -36.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.8.rsi": {
+      "ticks": 752,
+      "core_ticks": 752,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 752,
+      "python_error": null,
+      "result_tick": 752,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 752,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 752,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12032,
+        "kills": 2,
+        "shots_fired": 10,
+        "shots_hit": 6,
+        "rng_state": 733734177,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 276,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12032,
+        "kills": 2,
+        "shots_fired": 10,
+        "shots_hit": 6,
+        "rng_state": 733734177,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 276,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-5.9.rsi": {
+      "ticks": 748,
+      "core_ticks": 748,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 748,
+      "python_error": null,
+      "result_tick": 748,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 748,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 748,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 11968,
+        "kills": 5,
+        "shots_fired": 32,
+        "shots_hit": 5,
+        "rng_state": 76520797,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 800,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 11968,
+        "kills": 5,
+        "shots_fired": 32,
+        "shots_hit": 5,
+        "rng_state": 76520797,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 800,
+            "health": 0.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "quest-settings.rsi": {
+      "ticks": 884,
+      "core_ticks": 884,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 884,
+      "python_error": null,
+      "result_tick": 884,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 884,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 884,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 14144,
+        "kills": 11,
+        "shots_fired": 13,
+        "shots_hit": 13,
+        "rng_state": 1990316269,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1375,
+            "health": -12.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 14144,
+        "kills": 11,
+        "shots_fired": 13,
+        "shots_hit": 13,
+        "rng_state": 1990316269,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1375,
+            "health": -12.0,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "rush-bot.rsi": {
+      "ticks": 913,
+      "core_ticks": 913,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 913,
+      "python_error": null,
+      "result_tick": 913,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 865,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 913,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 14608,
+        "kills": 34,
+        "shots_fired": 48,
+        "shots_hit": 34,
+        "rng_state": 2625546953,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 5285,
+            "health": 0.0,
+            "most_used_weapon_id": 2
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 14608,
+        "kills": 34,
+        "shots_fired": 48,
+        "shots_hit": 34,
+        "rng_state": 2625546953,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 5285,
+            "health": 0.0,
+            "most_used_weapon_id": 2
+          }
+        ]
+      },
+      "agree": false
+    },
+    "rush-evade.rsi": {
+      "ticks": 1215,
+      "core_ticks": 1215,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1215,
+      "python_error": null,
+      "result_tick": 1215,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1167,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1215,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 19440,
+        "kills": 48,
+        "shots_fired": 64,
+        "shots_hit": 48,
+        "rng_state": 4169285690,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 7415,
+            "health": 0.0,
+            "most_used_weapon_id": 2
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 19440,
+        "kills": 48,
+        "shots_fired": 64,
+        "shots_hit": 48,
+        "rng_state": 4169285690,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 7415,
+            "health": 0.0,
+            "most_used_weapon_id": 2
+          }
+        ]
+      },
+      "agree": false
+    },
+    "rush-idle.rsi": {
+      "ticks": 772,
+      "core_ticks": 772,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 772,
+      "python_error": null,
+      "result_tick": 772,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 724,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 772,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 12352,
+        "kills": 0,
+        "shots_fired": 0,
+        "shots_hit": 0,
+        "rng_state": 3696007453,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": 0.0,
+            "most_used_weapon_id": 2
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 12352,
+        "kills": 0,
+        "shots_fired": 0,
+        "shots_hit": 0,
+        "rng_state": 3696007453,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": 0.0,
+            "most_used_weapon_id": 2
+          }
+        ]
+      },
+      "agree": false
+    },
+    "survival-238852.crd": {
+      "ticks": 34765,
+      "core_ticks": 4752,
+      "core_exit": 5,
+      "core_stderr": "reject tick 4752 xp 4059 pending 0 health -1.14286",
+      "python_ticks": 4752,
+      "python_error": null,
+      "result_tick": 4752,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 4752,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 4752,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 76032,
+        "kills": 86,
+        "shots_fired": 74,
+        "shots_hit": 74,
+        "rng_state": 1230184716,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 4059,
+            "health": -1.1428570747375488,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 76032,
+        "kills": 86,
+        "shots_fired": 74,
+        "shots_hit": 74,
+        "rng_state": 1230184716,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 4059,
+            "health": -1.1428570747375488,
+            "most_used_weapon_id": 6
+          }
+        ]
+      },
+      "agree": true
+    },
+    "survival-bot.rsi": {
+      "ticks": 2524,
+      "core_ticks": 2524,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 2524,
+      "python_error": null,
+      "result_tick": 2524,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 2524,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 2524,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 40384,
+        "kills": 28,
+        "shots_fired": 36,
+        "shots_hit": 34,
+        "rng_state": 489626423,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1031,
+            "health": -2.095247268676758,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 40384,
+        "kills": 28,
+        "shots_fired": 36,
+        "shots_hit": 34,
+        "rng_state": 489626423,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 1031,
+            "health": -2.095247268676758,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    },
+    "survival-command-batches.rsi": {
+      "ticks": 9995,
+      "core_ticks": 9995,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 9995,
+      "python_error": null,
+      "result_tick": 9995,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 9995,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 9995,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 154845,
+        "kills": 265,
+        "shots_fired": 454,
+        "shots_hit": 276,
+        "rng_state": 1980404672,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 13530,
+            "health": -2.4927732944488525,
+            "most_used_weapon_id": 30
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 154845,
+        "kills": 265,
+        "shots_fired": 454,
+        "shots_hit": 276,
+        "rng_state": 1980404672,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 13530,
+            "health": -2.4927732944488525,
+            "most_used_weapon_id": 30
+          }
+        ]
+      },
+      "agree": true
+    },
+    "survival-evade-1337.rsi": {
+      "ticks": 8885,
+      "core_ticks": 8885,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 8885,
+      "python_error": null,
+      "result_tick": 8885,
+      "first_divergence": {
+        "snapshot": 7395,
+        "fields": {
+          "player.pos_x": {
+            "python": 147.66490173339844,
+            "core": 147.732421875
+          },
+          "player.pos_y": {
+            "python": 755.5413818359375,
+            "core": 755.55029296875
+          },
+          "player.heading": {
+            "python": 1.8567899465560913,
+            "core": 1.841193675994873
+          }
+        }
+      },
+      "terminal": {
+        "python": {
+          "tick": 8589,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 8885,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [
+        "elapsed_ms",
+        "kills",
+        "shots_fired",
+        "shots_hit",
+        "rng_state",
+        "players[0].experience",
+        "players[0].health"
+      ],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 140669,
+        "kills": 236,
+        "shots_fired": 398,
+        "shots_hit": 240,
+        "rng_state": 4221375313,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 11060,
+            "health": -0.2857241630554199,
+            "most_used_weapon_id": 30
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 142160,
+        "kills": 225,
+        "shots_fired": 410,
+        "shots_hit": 236,
+        "rng_state": 3054485279,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 10303,
+            "health": -2.9523792266845703,
+            "most_used_weapon_id": 30
+          }
+        ]
+      },
+      "agree": false
+    },
+    "survival-evade.rsi": {
+      "ticks": 4288,
+      "core_ticks": 4288,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 4288,
+      "python_error": null,
+      "result_tick": 4288,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 4288,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 4288,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 68608,
+        "kills": 73,
+        "shots_fired": 12,
+        "shots_hit": 12,
+        "rng_state": 2209131643,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3000,
+            "health": -4.0952534675598145,
+            "most_used_weapon_id": 15
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 68608,
+        "kills": 73,
+        "shots_fired": 12,
+        "shots_hit": 12,
+        "rng_state": 2209131643,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 3000,
+            "health": -4.0952534675598145,
+            "most_used_weapon_id": 15
+          }
+        ]
+      },
+      "agree": true
+    },
+    "survival-idle.rsi": {
+      "ticks": 1875,
+      "core_ticks": 1875,
+      "core_exit": 0,
+      "core_stderr": "",
+      "python_ticks": 1875,
+      "python_error": null,
+      "result_tick": 1875,
+      "first_divergence": null,
+      "terminal": {
+        "python": {
+          "tick": 1875,
+          "outcome": "death"
+        },
+        "core": {
+          "tick": 1875,
+          "outcome": "death"
+        }
+      },
+      "result_mismatches": [],
+      "python_result": {
+        "outcome": "death",
+        "elapsed_ms": 30000,
+        "kills": 0,
+        "shots_fired": 0,
+        "shots_hit": 0,
+        "rng_state": 1336523920,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": -1.4285588264465332,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "core_result": {
+        "outcome": "death",
+        "elapsed_ms": 30000,
+        "kills": 0,
+        "shots_fired": 0,
+        "shots_hit": 0,
+        "rng_state": 1336523920,
+        "pending_perks": 0,
+        "quest_final_ms": null,
+        "players": [
+          {
+            "experience": 0,
+            "health": -1.4285588264465332,
+            "most_used_weapon_id": 1
+          }
+        ]
+      },
+      "agree": true
+    }
+  },
+  "unsupported": {
+    "rush-144.crd": "The core supports dual-action movement with mouse or dual action pad aim",
+    "typo-144.crd": "The core supports one player in Rush, Survival or Quests"
+  },
+  "agree": 53,
+  "total": 63
+}

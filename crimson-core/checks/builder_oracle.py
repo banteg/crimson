@@ -18,6 +18,7 @@ from crimson.quests import QUESTS
 from crimson_re.dbg.native_oracle import NativeOracle
 
 HERE = Path(__file__).resolve().parent
+CORE = HERE.parent
 SEEDS = (0, 1, 1337, 0xBEEF, 0x7FFF_FFFF, 0xDEADBEEF, *random.Random(0x437A00).choices(range(1 << 32), k=26))
 
 
@@ -37,7 +38,7 @@ def read_snapshots(data):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--exe", type=Path, required=True)
-    parser.add_argument("--build", type=Path, default=HERE / "build")
+    parser.add_argument("--build", type=Path, default=CORE / "build")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     cases = [(seed, q.level.global_index, hardcore, 1) for q in QUESTS for hardcore in (0, 1) for seed in SEEDS]

@@ -26,7 +26,7 @@ with Python's full `RunResult` under each supported bug policy, including the
 controllers, settings and players exercised by that corpus. Unsupported cases
 are gaps, not passes. Then switch verification to the recovered core; retain a
 frozen legacy artifact only where existing replay versions still need it.
-The staged parity and deployment gates are in `tools/recovered_sim/FOLLOWUP.md`.
+The staged parity and deployment gates are in `crimson-core/ROADMAP.md`.
 
 ## Build and run
 

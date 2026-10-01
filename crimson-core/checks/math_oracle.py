@@ -23,6 +23,7 @@ from crimson_re.dbg.native_oracle import NativeOracle
 from grim.geom import Vec2
 
 HERE = Path(__file__).resolve().parent
+CORE = HERE.parent
 
 
 def f32(value):
@@ -63,7 +64,7 @@ def movement_products():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--exe", type=Path, required=True)
-    parser.add_argument("--build", type=Path, default=HERE / "build")
+    parser.add_argument("--build", type=Path, default=CORE / "build")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
     samples = vectors()

@@ -74,7 +74,7 @@ The port plays like the 2003 game, and adds what a modern release needs:
 
 The rewrite is the full game: Survival, Rush, Quests (5 tiers), Tutorial, Typ-o-Shooter and local co-op, with every weapon, creature, perk and bonus, the music, sound and secrets. The simulation is deterministic, so every recorded run can be verified headlessly.
 
-The [recovered-core spike](tools/recovered_sim/README.md) is the direction for a shared game and verifier: the recovered C/C++ compiled to one WASM module for desktop, web and Workers. The [Zig port](docs/rewrite/zig-verifier.md) is frozen; its verifier stays until the replacement passes complete replay and bot-run gates.
+The [Crimson core](crimson-core/README.md) is the direction for a shared game and verifier: the recovered C/C++ compiled to one WASM module for desktop, web and Workers. The [Zig port](docs/rewrite/zig-verifier.md) is frozen; its verifier stays until the replacement passes complete replay and bot-run gates.
 
 ## Decompilation
 

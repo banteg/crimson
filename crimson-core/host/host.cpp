@@ -33,7 +33,9 @@ extern game_state_id_t game_state_pending;
 extern float bonus_update_phase_accumulator;
 extern float perk_jinxed_proc_timer_s;
 extern unsigned char music_playlist_randomized_latch, sfx_unmuted_flag;
-extern int music_playlist_entry_count, music_track_extra_0;
+extern int music_playlist_entry_count, music_track_intro_id,
+    music_track_shortie_monk_id, music_track_crimson_theme_id,
+    music_track_crimsonquest_id, music_track_extra_0, music_track_extra_1;
 extern music_playlist_t music_playlist;
 extern unsigned char survival_reward_fire_seen, survival_reward_handout_enabled;
 extern int survival_reward_weapon_guard_id, survival_recent_death_count,
@@ -129,13 +131,13 @@ extern "C" void demo_trial_overlay_render(float *, float) { abort(); }
 extern "C" void ui_render_keybind_help(float *, float) {}
 extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
-extern "C" float portable_world_aim_x() { return in.aim_x; }
-extern "C" float portable_world_aim_y() { return in.aim_y; }
+extern "C" float portable_aim_x() { return in.aim_x; }
+extern "C" float portable_aim_y() { return in.aim_y; }
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {
 #ifndef __wasm__
-  if (getenv("RECOVERED_SIM_TRACE_INIT"))
+  if (getenv("CRIMSON_CORE_TRACE_INIT"))
     fprintf(stderr, "init: %s\n", stage);
 #else
   (void)stage;
@@ -188,7 +190,6 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   config_blob.music_volume = 1;
   config_blob.sfx_volume = 1;
   config_blob.movement_schemes[0] = 3;
-  config_blob.aim_schemes[0] = 0;
   config_blob.key_reload = 101;
   config_blob.key_pick_perk = 102;
   config_blob.input_config[0].fire_key = 100;
@@ -242,10 +243,18 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   extern sfx_mute_flags_t sfx_mute_flags;
   memset(sfx_mute_flags, 1, sizeof(sfx_mute_flags));
   sfx_unmuted_flag = 1;
+  // audio_init_music's load order: distinct ids keep the game-over and quest
+  // music from posing as the random game-tune request (extra_0).
+  int track = 0;
+  music_track_intro_id = track++;
+  music_track_shortie_monk_id = track++;
   music_playlist_entry_count = 6;
-  music_track_extra_0 = 0;
-  for (int i = 0; i < 6; ++i)
-    music_playlist[i] = i + 1;
+  for (int i = 0; i < music_playlist_entry_count; ++i)
+    music_playlist[i] = track++;
+  music_track_crimson_theme_id = track++;
+  music_track_crimsonquest_id = track;
+  music_track_extra_0 = track + 1;
+  music_track_extra_1 = track + 2;
   crt_rand();
   ready = true;
   trace_init("ready");
@@ -258,14 +267,20 @@ extern "C" int portable_step_many(uint32_t count) {
       game_state_pending == GAME_STATE_QUEST_FAILED ||
       game_state_pending == GAME_STATE_QUEST_RESULTS)
     return 0;
-  constexpr uint32_t controls =
-      38656; // dual-action movement (3), world/mouse aim (4).
-  constexpr uint32_t buttons = 1 | 2 | 4 | 65536 | 131072;
+  // Replay input flags: buttons, the movement-keys-present marker with no key
+  // held, dual-action movement (3), and mouse (0) or dual action pad (4) aim.
+  constexpr uint32_t buttons = 1 | 2 | 4 | 8 | 65536 | 131072;
+  constexpr uint32_t movement = 0x100 | 3 << 9, aim_present = 0x1000;
+  uint32_t aim_scheme = in.flags >> 13 & 7;
   if (!isfinite(in.move_x) || !isfinite(in.move_y) || !isfinite(in.aim_x) ||
-      !isfinite(in.aim_y) || (in.flags & ~buttons) != controls) {
+      !isfinite(in.aim_y) ||
+      (in.flags & ~buttons & ~(7u << 13)) != (movement | aim_present) ||
+      (aim_scheme != 0 && aim_scheme != 4)) {
     ready = false;
     return 0;
   }
+  // Like Python, the scheme comes with each tick's input.
+  config_blob.aim_schemes[0] = aim_scheme;
   menu_requested = false;
   for (uint32_t i = 0; i < count; ++i) {
     int command = commands[i].type, argument = commands[i].argument;
@@ -441,14 +456,42 @@ int main(int argc, char **argv) {
     return ferror(stdin) ? 6 : 0;
   }
   bool reset_check = argc == 2 && strcmp(argv[1], "--reset-check") == 0;
+  // `--fields <file>` emits only the listed snapshot indices (little-endian
+  // u32 each) per snapshot, so whole-run comparisons stay small.
+  std::vector<uint32_t> fields;
+  if (argc == 3 && strcmp(argv[1], "--fields") == 0) {
+    FILE *f = fopen(argv[2], "rb");
+    if (!f)
+      return 8;
+    uint32_t index;
+    while (fread(&index, 4, 1, f) == 1)
+      fields.push_back(index);
+    fclose(f);
+  }
+  std::vector<uint32_t> selected;
+  auto emit = [&](int n) {
+    if (fields.empty()) {
+      fwrite(&n, 4, 1, stdout);
+      fwrite(output, 4, n, stdout);
+      return;
+    }
+    selected.clear();
+    for (uint32_t index : fields) {
+      if (index >= (uint32_t)n)
+        abort();
+      selected.push_back(output[index]);
+    }
+    uint32_t count = (uint32_t)selected.size();
+    fwrite(&count, 4, 1, stdout);
+    fwrite(selected.data(), 4, count, stdout);
+  };
   std::vector<BufferedTick> saved;
   if (fread(&cfg, sizeof(cfg), 1, stdin) != 1)
     return 2;
   if (!portable_init(cfg.seed, cfg.mode, cfg.major, cfg.minor))
     return 3;
   int n = portable_snapshot();
-  fwrite(&n, 4, 1, stdout);
-  fwrite(output, 4, n, stdout);
+  emit(n);
   while (true) {
     size_t bytes = fread(&in, 1, sizeof(in), stdin);
     if (!bytes)
@@ -473,8 +516,7 @@ int main(int argc, char **argv) {
       saved.push_back(t);
     }
     n = portable_snapshot();
-    fwrite(&n, 4, 1, stdout);
-    fwrite(output, 4, n, stdout);
+    emit(n);
   }
   if (reset_check) {
     std::vector<uint32_t> final(output, output + n);
@@ -486,7 +528,7 @@ int main(int argc, char **argv) {
     if (!portable_init(0x12345678, GAME_MODE_RUSH, 1, 1))
       return 7;
     for (int i = 0; i < 200; ++i) {
-      in = {1, 0, 512, 512, 38656};
+      in = {1, 0, 512, 512, 0x1700}; // mouse aim
       if (!portable_step(0, 0))
         return 7;
     }

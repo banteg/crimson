@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { HERE } from "./engine.mjs";
+import { CORE } from "../checks/engine.mjs";
 
 const out = path.resolve(
-  process.argv[2] ?? fileURLToPath(new URL("build", HERE)),
+  process.argv[2] ?? fileURLToPath(new URL("build", CORE)),
 );
 const url = process.argv[3] ?? "http://127.0.0.1:8799";
 const report = JSON.parse(fs.readFileSync(path.join(out, "report.json")));

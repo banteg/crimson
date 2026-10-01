@@ -31,14 +31,17 @@ def data_source(root, out):
     entries = [e for e in entries if not any(a <= int(e["address"], 16) < b for a, b, _ in ownranges)]
     # Recovered owner headers intentionally access a contiguous aggregate through its first symbol.
     ranges = [(0x486FA8, 0x487150), (0x48F530, 0x48F588)]
-    for names in [
+    # Spans from the first symbol through the end of the last keep native overreads on the original bytes:
+    # `fx_queue_render` reads the corpse frame of type 7 (ping-pong strips) from `creature_type_count`.
+    extents = {e["name"]: (int(e["address"], 16), int(e["address"], 16) + e["size"]) for e in entries}
+    for first, last in [
         ("ui_mouse_x", "ui_mouse_y"),
         ("render_scratch_f0", "render_scratch_f1"),
         ("render_scratch_f2", "render_scratch_f3"),
+        ("creature_type_table", "creature_type_count"),
     ]:
-        starts = [int(e["address"], 16) for e in entries if e["name"] == names[0]]
-        if starts:
-            ranges.append((starts[0], starts[0] + 8))
+        if first in extents:
+            ranges.append((extents[first][0], extents[last][1]))
     ranges += [(int(e["address"], 16), int(e["address"], 16) + e["size"]) for e in entries]
     blocks = []
     for a, b in sorted(ranges):
