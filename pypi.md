@@ -29,7 +29,6 @@ The port plays like the 2003 game, and adds what a modern release needs:
 - **Original bugs fixed, and kept on request.** [27 gameplay bugs](https://crimson.banteg.xyz/rewrite/original-bugs/) are fixed by default, each traced to the decompiled code: Greater Regeneration did nothing, Bandage multiplied health instead of healing, some bonuses never dropped while you held certain weapons, and several co-op perks only worked for player 1. `--preserve-bugs` restores every one of them, exactly as the original behaves. The original's text stays as written, typos like "Fire Caugh" and "Plague Sphreader Gun" included.
 - **Replays.** Every run is recorded and can be played back, verified tick by tick, or rendered to 60 fps video.
 - **Sharper art.** Textures come from the original uncompressed source art wherever it matches what shipped.
-- **Lossless screenshots.** F12 saves a PNG instead of a BMP.
 
 ## Controls
 
