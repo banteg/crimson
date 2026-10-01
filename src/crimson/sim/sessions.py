@@ -123,7 +123,7 @@ class DeterministicSession(msgspec.Struct):
 
         players = self.world.players
         match self.world.state.game_mode:
-            case GameMode.SURVIVAL:
+            case GameMode.SURVIVAL | GameMode.RUSH:
                 return RunOutcome.DEATH if death_transition_ready(players) else None
             case GameMode.QUESTS:
                 # `gameplay_update_and_render` checks for death after `quest_mode_update`, so a
@@ -133,9 +133,6 @@ class DeterministicSession(msgspec.Struct):
                 if isinstance(self.mode_state, QuestSpawnState) and self.mode_state.completed:
                     return RunOutcome.QUEST_COMPLETED
                 return None
-            case GameMode.RUSH:
-                # No death-animation hold: Rush stops simulating on death.
-                return RunOutcome.DEATH if all_players_dead(players) else None
             case GameMode.TYPO:
                 # `typo_gameplay_update_and_render` plays the death animation out, like Survival.
                 return RunOutcome.DEATH if death_transition_ready(players) else None

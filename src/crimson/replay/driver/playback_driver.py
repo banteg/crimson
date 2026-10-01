@@ -168,7 +168,7 @@ class PlaybackDriver:
         if self._run_down is None and outcome is not None:
             self._run_down = RunDown(outcome=outcome, end_tick=tick_index)
         run_down = self._run_down
-        if run_down is not None and run_down.tick(session_tick.dt_sim) and tick_index < self.tick_count - 1:
+        if run_down is not None and run_down.tick(session_tick.timing.frame_dt_ms_i32) and tick_index < self.tick_count - 1:
             raise ReplayRunnerError(
                 f"run ended ({run_down.outcome}) at tick {run_down.end_tick} and wound down by tick {tick_index} "
                 f"but the replay has {self.tick_count} ticks",

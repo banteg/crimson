@@ -74,13 +74,9 @@ def test_game_over_replay_result_is_taken_before_the_highscore_rng_draw(
         return build_record(**kwargs)
 
     mocker.patch.object(base_gameplay_mode, "build_highscore_record", side_effect=_record_rng_then_build)
-    mode.player.health = 1.0
-    attacker = mode.creatures.entries[0]
-    attacker.active = True
-    attacker.hp = 100.0
-    attacker.size = 50.0
-    attacker.pos = mode.player.pos
-    attacker.contact_damage = 100.0
+    # The death animation's last frame ends the run.
+    mode.player.health = 0.0
+    mode.player.death_timer = 0.0
 
     _run_ticks(mode, ticks=3)
 

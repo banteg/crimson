@@ -12,6 +12,7 @@ from tests.support.helpers import assert_float_close
 
 def test_perks_update_effects_lean_mean_exp_machine_ticks_xp_without_double_xp() -> None:
     state = GameplayState()
+    state.lean_mean_exp_timer = 0.25
     state.bonuses.double_experience = 5.0
 
     player = PlayerState(index=0, pos=Vec2(10.0, 20.0))
@@ -41,6 +42,7 @@ def test_lean_mean_exp_machine_tick_awards_only_player0_in_multiplayer() -> None
 
 def test_perk_effect_timers_keep_native_36hz_cadence() -> None:
     state = GameplayState()
+    state.lean_mean_exp_timer = 0.25
     player = PlayerState(
         index=0,
         pos=Vec2(10.0, 20.0),

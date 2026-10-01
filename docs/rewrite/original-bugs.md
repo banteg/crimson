@@ -756,3 +756,29 @@ Rewrite behavior:
 
 Evidence: `decomp/1.9/crimsonland/gameplay/player_update_heading.cpp` (aim
 scheme 4) and the pad movement deadzone in the same function.
+
+## 32) Projectile slot 0 cannot hit the player at first
+
+Native behavior:
+
+- `projectile_update` skips the player hit test for the projectile in slot
+  `shock_chain_projectile_id`, the Shock Chain's current link.
+- That global starts at 0 in a fresh game and is only set back to -1 when a
+  chain ends. Nothing resets it at run start.
+- So until the first Shock Chain of the game session ends, an enemy projectile
+  that lands in slot 0 passes through the player.
+
+Why it's likely a bug:
+
+- The skip exists to keep the chain's own link from hitting players; the
+  starting value makes it apply to an arbitrary enemy shot instead.
+
+Rewrite behavior:
+
+- Every run starts like a freshly launched game.
+- Default: no projectile is skipped until a Shock Chain starts.
+- `--preserve-bugs`: slot 0 is skipped as in a fresh original session.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (player hit
+branch and the chain's end); `shock_chain_projectile_id` (`0x00486fc0`) has no
+initializer in `crimsonland.exe`.

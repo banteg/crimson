@@ -79,9 +79,8 @@ class RushMode(BaseGameplayMode):
             self._update_game_over_ui(float(frame.dt))
             return
 
-        any_alive = self._any_player_alive()
-        # The world runs on after the last death while the HUD fades out.
-        sim_dt = float(frame.dt) if ((not self._paused) and (any_alive or self._run_ending)) else 0.0
+        # The world runs on through the death animation and while the HUD fades out.
+        sim_dt = 0.0 if self._paused else float(frame.dt)
         session = self._sim_session
 
         if sim_dt <= 0.0:

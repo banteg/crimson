@@ -19,7 +19,7 @@ from ..quests.level import QuestLevel
 from ..tutorial.state import TutorialOverlayState, TutorialState
 from ..typo.state import TypoState
 from ..weapons import WEAPON_TABLE, WeaponId
-from .state_types import PERK_COUNT_SIZE, PerkCounts
+from .state_types import PERK_COUNT_SIZE, PerkCounts, PlayerState
 
 WEAPON_COUNT_SIZE = max(int(entry.weapon_id) for entry in WEAPON_TABLE) + 1
 
@@ -43,8 +43,14 @@ class GameplayState(msgspec.Struct):
     secondary_projectiles: SecondaryProjectilePool = msgspec.field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = msgspec.field(default_factory=BonusTimers)
     time_scale_active: bool = False
+    # Native `render_pass_mode`: the death transition clears it, so the run-down skips
+    # `bonus_update`, the quest timeline and Reflex Boosted.
+    render_pass_mode: bool = True
+    # Native `player_state_table[1]` in a one-player run: creatures turn on it once player 0 is dead.
+    dormant_player: PlayerState = msgspec.field(default_factory=lambda: PlayerState(index=1, pos=Vec2()))
     perk_intervals: PerkEffectIntervals = msgspec.field(default_factory=PerkEffectIntervals)
-    lean_mean_exp_timer: float = 0.25
+    # Native `perk_lean_mean_exp_tick_timer_s`: a fresh game starts it at 0, so it fires on the first tick.
+    lean_mean_exp_timer: float = 0.0
     jinxed_timer: float = 0.0
     plaguebearer_infection_count: int = 0
     perks: PerkCounts = msgspec.field(default_factory=PerkCounts)

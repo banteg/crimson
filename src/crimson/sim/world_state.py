@@ -45,6 +45,7 @@ from .presentation_step import (
     queue_projectile_decals_post_hit,
     queue_projectile_decals_pre_hit,
 )
+from .run_result import death_transition_ready
 from .state_types import BonusPickupEvent, PlayerState
 from .timing import ftol_ms_i32
 
@@ -171,7 +172,7 @@ class WorldState(msgspec.Struct):
 
     def world_dt_after_perk_steps(self, dt: float) -> float:
         # Native `game_frame_update` scales frame_dt by 0.9 under Reflex Boosted.
-        if dt > 0.0 and PerkId.REFLEX_BOOSTED in self.state.perks:
+        if dt > 0.0 and self.state.render_pass_mode and PerkId.REFLEX_BOOSTED in self.state.perks:
             return x87_pc24_mul(f32(dt), f32(0.9))
         return dt
 
@@ -261,6 +262,8 @@ class WorldState(msgspec.Struct):
             tutorial_timeline_update(self, dt_ms=frame_dt_ms)
         # The death check, then the level-up check. XP awarded by `bonus_update` kills
         # (e.g. freeze cleanup) levels next tick.
+        if death_transition_ready(self.players):
+            self.state.render_pass_mode = False
         if perk_progression_enabled:
             survival_check_level_up(self.state, self.players[0])
         # A perk-menu request opens here, mid-frame: native generates the choices
@@ -274,14 +277,15 @@ class WorldState(msgspec.Struct):
         )
         if perk_menu_opened:
             perk_selection_open_choices(self.state, self.players, game_mode=self.state.game_mode)
-        pickups += bonus_update(
-            self.state,
-            self.players,
-            dt,
-            creatures=self.creatures.entries,
-            detail_preset=self.state.detail_preset,
-            step_runtime=step_runtime,
-        )
+        if self.state.render_pass_mode:
+            pickups += bonus_update(
+                self.state,
+                self.players,
+                dt,
+                creatures=self.creatures.entries,
+                detail_preset=self.state.detail_preset,
+                step_runtime=step_runtime,
+            )
         if self.state.sfx_queue:
             step_runtime.sfx.extend(self.state.sfx_queue)
             self.state.sfx_queue.clear()

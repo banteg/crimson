@@ -332,7 +332,6 @@ class CreaturePool:
         # when a creature appeared since they last looked.
         self.alloc_count = 0
         self._update_tick = 0
-        self._single_player_dormant_target: PlayerState | None = None
 
     @property
     def entries(self) -> list[CreatureState]:
@@ -346,7 +345,6 @@ class CreaturePool:
         self.kill_count = 0
         self.spawned_count = 0
         self._update_tick = 0
-        self._single_player_dormant_target = None
 
     def apply_gameplay_reset_target_players(self, player_count: int) -> None:
         """Apply the native reset-time round-robin creature target assignment."""
@@ -644,15 +642,8 @@ class CreaturePool:
         self._update_tick = int(self._update_tick) + 1
         single_player_dormant_target: PlayerState | None = None
         if len(players) == 1:
-            dormant_pos = Vec2(
-                TERRAIN_SIZE * (27.0 / 64.0),
-                TERRAIN_SIZE * (27.0 / 64.0),
-            )
-            if self._single_player_dormant_target is None:
-                self._single_player_dormant_target = PlayerState(index=1, pos=dormant_pos)
-            else:
-                self._single_player_dormant_target.pos = dormant_pos
-            single_player_dormant_target = self._single_player_dormant_target
+            single_player_dormant_target = state.dormant_player
+            single_player_dormant_target.pos = Vec2(TERRAIN_SIZE * (27.0 / 64.0), TERRAIN_SIZE * (27.0 / 64.0))
 
         evil_targets: set[int] = set()
         if bool(state.preserve_bugs):
@@ -745,11 +736,14 @@ class CreaturePool:
             player = distance_player
             distance_player_pos = distance_player.pos
             player_pos = player.pos
-            if single_player_dormant_target is not None and float(players[0].health) <= 0.0:
-                # Native calculates distance before redirecting creatures from
-                # the dead player to the dormant second-player position.
-                creature.target_player = 1
-                player = single_player_dormant_target
+            if single_player_dormant_target is not None:
+                # Native calculates distance before turning creatures off a dead target onto the other
+                # player slot: from player 0 to the dormant one, and back once that dies too.
+                slots = (players[0], single_player_dormant_target)
+                current = int(creature.target_player)
+                if float(slots[current].health) <= 0.0:
+                    creature.target_player = 1 - current
+                player = slots[int(creature.target_player)]
                 player_pos = player.pos
 
             if poison_killed:

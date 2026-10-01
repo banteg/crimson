@@ -16,7 +16,7 @@ from crimson.sim.world_state import WorldState
 from grim.rand import CallerStatic, CrtRand
 from tests.support.replay_runner_helpers import RECORDED_REPLAYS
 
-_FIXTURE = next(path for path in RECORDED_REPLAYS if path.name == "rush-144.crd")
+_FIXTURE = next(path for path in RECORDED_REPLAYS if path.name == "quest-2.5-completed.crd")
 
 
 class _TickCallers(PlaybackWalkObserver):

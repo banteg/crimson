@@ -57,7 +57,6 @@ from ..sim.run_result import RunOutcome, RunResult, build_run_result
 from ..sim.run_spec import RunSpec, RunStatus
 from ..sim.sessions import DeterministicSession, DeterministicSessionTick
 from ..sim.terrain_generate import TerrainSetup, terrain_generate
-from ..sim.timing import ftol_ms_i32
 from ..typo.state import TypoCarry
 from ..ui.animation import ui_element_timeline_window, ui_elements_max_timeline, ui_transition_alpha
 from ..ui.focus import UiFocus
@@ -313,9 +312,6 @@ class BaseGameplayMode:
                 continue
             draw_target_health_bar(pos=screen_left, width=width, ratio=ratio, alpha=alpha)
 
-    def _any_player_alive(self) -> bool:
-        return any(player.health > 0.0 for player in self.world.players)
-
     @property
     def save_status(self) -> GameStatus | None:
         return self._status_base
@@ -502,8 +498,8 @@ class BaseGameplayMode:
     def _run_down_gameplay(self, dt_ms: int, session: DeterministicSession) -> bool:
         """Advance a pending exit by `dt_ms`; True once the timeline is out and the exit happened.
 
-        Native simulates and moves the timeline by the same `frame_dt_ms`, so the run-down lasts its timeline
-        span of simulated time, at most 500ms after the run ends (the verifiers bound recordings by this).
+        Native moves the timeline by each simulated frame's `frame_dt_ms`, restored without the Reflex Boost scale,
+        so the run-down lasts at most 500ms of frames after the run ends (the verifiers bound recordings by this).
         """
         self._ui_timeline.advance(dt_ms)
         if not self._ui_timeline.ready:
@@ -986,6 +982,6 @@ class BaseGameplayMode:
             # Mode callbacks can save the finished replay, so record the tick first.
             if not self._on_tick_applied(step) or (step.outcome is not None and not self._RUN_DOWN_ON_OUTCOME):
                 break
-            if (self._pause_pending or self._run_ending) and self._run_down_gameplay(ftol_ms_i32(step.dt_sim), session):
+            if (self._pause_pending or self._run_ending) and self._run_down_gameplay(step.timing.frame_dt_ms_i32, session):
                 break
         apply_presentation_plans(plans=plans, runtime=self._world_runtime)

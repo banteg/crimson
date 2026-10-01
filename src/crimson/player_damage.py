@@ -87,8 +87,9 @@ def player_take_damage(step_runtime: WorldStepRuntime, player: PlayerState, dama
     if float(player.shield_timer) > 0.0:
         return 0.0
 
-    # Native reads player one's health here whichever player takes the damage.
-    was_alive_player = players[0] if state.preserve_bugs else player
+    # Native reads player one's health here whichever player takes the damage. The dormant slot of a
+    # one-player run is only bitten once player one is dead, so it never sets off Final Revenge.
+    was_alive_player = players[0] if state.preserve_bugs or player is state.dormant_player else player
     was_alive = float(was_alive_player.health) > 0.0
 
     if PerkId.THICK_SKINNED in state.perks:

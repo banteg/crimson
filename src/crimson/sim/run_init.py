@@ -57,6 +57,9 @@ def initialize_run(
         quest_fail_retry_count=spec.quest_fail_retry_count, preserve_bugs=spec.preserve_bugs,
     )
     world.state.rng.srand(spec.seed)
+    # Nothing resets `shock_chain_projectile_id` before a run, and a fresh game starts it at 0,
+    # so projectile slot 0 cannot hit a player until a Shock Chain ends (original bug 32).
+    world.state.shock_chain_projectile_id = 0 if spec.preserve_bugs else -1
     world.state.detail_preset = spec.detail_preset
     world.state.violence_disabled = spec.violence_disabled
     world.state.friendly_fire_enabled = spec.friendly_fire

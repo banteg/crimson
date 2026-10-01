@@ -14,7 +14,7 @@ from grim.view import ViewContext
 pytestmark = pytest.mark.usefixtures("headless_resources")
 
 
-def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_mode_config, assets_dir) -> None:
+def test_run_end_stops_batch_and_records_final_tick_before_game_over(mocker, make_mode_config, assets_dir) -> None:
     mode = RushMode(
         ViewContext(assets_dir=assets_dir), config=make_mode_config(game_mode=GameMode.RUSH), audio_rng=Crand(1),
     )
@@ -25,20 +25,15 @@ def test_death_stops_batch_and_records_final_tick_before_game_over(mocker, make_
         assert recorder.tick_index == 1
 
     game_over = mocker.patch.object(mode, "_enter_game_over", side_effect=check_finished_recording)
-    mode.player.health = 1.0
-    attacker = mode.creatures.entries[0]
-    attacker.active = True
-    attacker.hp = 100.0
-    attacker.size = 50.0
-    attacker.pos = mode.player.pos
-    attacker.contact_damage = 100.0
+    # The death animation's last frame ends the run.
+    mode.player.health = 0.0
+    mode.player.death_timer = 0.0
     session = mode._sim_session
     assert session is not None
 
     mode._run_deterministic_session_ticks(dt_frame=1 / 30, session=session, recorder=recorder)
 
     game_over.assert_called_once_with()
-    assert mode.player.health <= 0.0
     assert recorder.tick_index == 1
     assert session.elapsed_ms == 16.0
     assert len(present.call_args.kwargs["plans"]) == 1
@@ -77,6 +72,7 @@ def test_death_runs_the_world_while_the_hud_fades_out(mocker, make_mode_config, 
     recorder = ReplayRecorder(RunSpec(game_mode_id=GameMode.RUSH, seed=1))
     game_over = mocker.patch.object(mode, "_enter_game_over")
     mode.player.health = 0.0
+    mode.player.death_timer = 0.0
 
     ticks = 0
     while not game_over.called:
@@ -123,7 +119,7 @@ def test_survival_world_runs_on_after_death_until_the_hud_has_faded(make_mode_co
     assert session.elapsed_ms - start_ms == 32 * 16.0
 
 
-def test_rush_world_runs_on_after_the_last_death(make_mode_config, assets_dir) -> None:
+def test_rush_world_runs_through_the_death_animation_and_the_hud_fade(make_mode_config, assets_dir) -> None:
     mode = _rush_with_hud_in(make_mode_config, assets_dir)
     session = mode._sim_session
     assert session is not None
@@ -138,12 +134,18 @@ def test_rush_world_runs_on_after_the_last_death(make_mode_config, assets_dir) -
     while mode.player.health > 0.0:
         mode.update(1 / 60)
     died_at_ms = session.elapsed_ms
+    # Like the other modes, Rush plays the death animation out before the run ends.
+    while mode.player.death_timer >= 0.0:
+        mode.update(1 / 60)
+        assert not mode._game_over_active
+    animation_over_ms = session.elapsed_ms
+    assert animation_over_ms > died_at_ms
     while not mode._game_over_active:
         mode.update(1 / 60)
-        assert session.elapsed_ms - died_at_ms <= 40 * 16.0
+        assert session.elapsed_ms - animation_over_ms <= 40 * 16.0
 
-    # The death tick started the run-down; 31 more ticks ran before game over.
-    assert session.elapsed_ms - died_at_ms == 31 * 16.0
+    # The animation's last tick started the run-down; 31 more ticks ran before game over.
+    assert session.elapsed_ms - animation_over_ms == 31 * 16.0
 
 
 def test_typo_opens_game_over_after_the_death_animation_and_the_hud_fade(make_mode_config, assets_dir) -> None:

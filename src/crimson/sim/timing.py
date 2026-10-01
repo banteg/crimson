@@ -56,6 +56,12 @@ class FrameTiming(msgspec.Struct, frozen=True):
     def dt_sim_ms_i32(self) -> int:
         return int(ftol_ms_i32(self.dt_sim))
 
+    @property
+    def frame_dt_ms_i32(self) -> int:
+        """Native `frame_dt_ms` once `gameplay_update_and_render` restores it, without the Reflex Boost scale:
+        the step of the UI timeline, and so of a run-down."""
+        return int(ftol_ms_i32(self.dt_audio))
+
     @staticmethod
     def compute(
         dt: float,

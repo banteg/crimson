@@ -81,8 +81,10 @@ def perk_apply(
             owner.level += 3
             state.perk_selection.pending_count += 3
             state.perk_selection.choices_dirty = True
-            # Native sets the two player slots it has; the co-op fix covers every player.
-            for player in players[:2] if state.preserve_bugs else players:
+            # Native sets its two player slots, the second being the dormant one in a one-player run;
+            # the co-op fix covers every player.
+            native_slots = [*players, state.dormant_player][:2]
+            for player in native_slots if state.preserve_bugs or len(players) <= 2 else players:
                 if player.health > 0.0:
                     player.health = f32(0.1)
 

@@ -13,7 +13,6 @@ from ..typo.state import typo_shot_counts
 from ..weapon_runtime import most_used_weapon_id_for_player
 from ..weapons import WeaponId
 from .state_types import PlayerState
-from .timing import ftol_ms_i32
 
 if TYPE_CHECKING:
     from .gameplay_state import GameplayState
@@ -61,9 +60,9 @@ class RunDown(msgspec.Struct):
     end_tick: int
     remaining_ms: int = RUN_DOWN_MS
 
-    def tick(self, dt_sim: float) -> bool:
-        """Spend one tick of simulated time; True once the run-down is over."""
-        self.remaining_ms -= ftol_ms_i32(dt_sim)
+    def tick(self, frame_dt_ms: int) -> bool:
+        """Spend one tick's `FrameTiming.frame_dt_ms_i32`; True once the run-down is over."""
+        self.remaining_ms -= frame_dt_ms
         return self.remaining_ms < 0
 
 
