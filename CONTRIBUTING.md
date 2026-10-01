@@ -1,12 +1,33 @@
 We are decompiling and porting an old game. The goal is **deterministic, evidence-backed behavioral parity** with the original.
 
-## repo map
+## project layout
 
-- Project docs and notes: `docs/`
-- Authoritative decompiles: `analysis/`
-- More mature Python rewrite: `src/`
-- Newly started Zig rewrite: `crimson-zig/`
-- Reverse-engineering tools (`crimson match`, `crimson native`, `crimson dbg`): `crimson-re/`, a workspace package kept out of the game wheel
+```
+src/
+  crimson/          game logic: modes, weapons, perks, creatures, UI, replay
+  grim/             engine layer: raylib wrapper, PAQ/JAZ decoders, audio, fonts
+decomp/             recovered C/C++ source and builds.json (every pinned build)
+crimson-re/         reverse-engineering tools (`crimson match|native|dbg`), a workspace package kept out of the game wheel
+crimson-zig/        Zig port (frozen): replay verifier, desktop runtime, WASM
+analysis/
+  ghidra/           name/type maps (source of truth) and structured snapshots
+  binary_ninja/     preferred live analysis databases
+  ida/              structured function/import/string snapshots
+  decomp/           decomp.dev evidence and per-build maps
+  frida/            trace summaries from past Frida sessions
+docs/               100+ pages: formats, structs, algorithms, parity tracking
+scripts/            analysis and utility tools
+tests/              gameplay, replay, parity and regression tests
+```
+
+## parity workflow
+
+1. Recover structure and intent from static analysis. Names and types live in `analysis/ghidra/maps/`; consult function views in Binary Ninja, IDA, then Ghidra with the address-keyed workflow in `analysis/README.md`.
+2. Settle ambiguous behavior against the original code under the Unicorn [native execution oracle](docs/verification/differential-testing/native-oracle.md), which checks port code bit for bit.
+3. Port behavior into `src/` with deterministic simulation contracts. Float behavior is part of the contract: see the [float parity policy](docs/rewrite/float-parity-policy.md).
+4. Verify against recorded replays and their per-tick checkpoints with headless tools.
+
+[provenance.md](docs/contributor/project-tracking/provenance.md) has the exact binary hashes of the target build.
 
 ## core priorities
 
@@ -78,6 +99,17 @@ If a mistake or review comment repeats, convert it into enforcement: tests / sna
 Text rules are forgettable; structural rules enforce themselves.
 
 ## verification commands
+
+### everyday commands
+
+```bash
+uv run pytest              # test suite
+uv run ruff check .        # lint
+uv run ty check src tests  # type check
+ast-grep scan              # ast-grep code scan
+just check                 # all of the above
+zensical serve             # docs site from docs/ (uv tool install zensical)
+```
 
 ### required pre-commit checks
 - Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
