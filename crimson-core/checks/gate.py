@@ -301,10 +301,16 @@ def compare(stream: Stream, native: Path, *, preserve_bugs: bool) -> dict:
         python_result=_result_json(expected),
         core_result=_result_json(actual),
     )
+    # The core runs the whole stream, or rejects the tick after its terminal state (exit 5). Any other
+    # rejection is a failure, even when Python stopped at the same tick.
+    stepped = len(core_rows) - 1
+    core_finished = (exit_code == 0 and stepped == len(stream.ticks)) or (
+        exit_code == 5 and terminal["core"] is not None and terminal["core"]["tick"] == stepped
+    )
     report["agree"] = (
-        exit_code in (0, 5)
+        core_finished
         and python_error is None
-        and python_ticks == len(core_rows) - 1
+        and python_ticks == stepped
         and first_divergence is None
         and terminal["python"] == terminal["core"]
         and not mismatches
@@ -332,8 +338,16 @@ def main() -> None:
     args = parser.parse_args()
 
     streams, unsupported = load_streams(args.corpus, args.fixtures)
+    names = {stream.name for stream in streams}
     if args.only:
+        if unknown := sorted(set(args.only) - names):
+            parser.error(f"unknown streams: {', '.join(unknown)}")
         streams = [stream for stream in streams if stream.name in args.only]
+    else:
+        # The checked-in matrix results name every bot scenario; a partial corpus must not pass.
+        cases = json.loads((CORE / "results/matrix.json").read_text())["cases"]
+        if missing := sorted({case["name"] + ".rsi" for case in cases} - names):
+            parser.error(f"{len(missing)} bot streams missing from {args.corpus}; run checks/matrix.mjs")
     jobs = [(stream, args.native, True) for stream in streams]
     with ProcessPoolExecutor(max_workers=args.jobs) as pool:
         results = dict(pool.map(_compare_job, jobs))

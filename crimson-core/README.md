@@ -96,6 +96,8 @@ divergence. It compares the terminal tick and outcome, and the complete
 `RunResult` after the last tick both stepped. Recorded fixtures were played
 under the default rules, so under the original rules they may end early; the
 gate stops at the core's terminal state and does not validate recorded scores.
+A core rejection counts only right after a terminal state both sides reached,
+and the gate refuses to run on a partial bot corpus or unknown `--only` names.
 
 The [baseline](results/gate.json) agrees on **53 of 63** streams, including the
 four supported human fixtures (Quests 2.5, 2.10 and 4.10, and a Survival run).
