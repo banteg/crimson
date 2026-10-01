@@ -58,8 +58,8 @@ def encode(replay, limit):
                 case _:
                     raise ValueError(f"Unsupported command: {command}")
         mx, my, ax, ay, flags = tick.inputs[0]
-        if flags & ~(1 | 2 | 4 | 65536 | 131072) != 38656:
-            raise ValueError("Spike supports explicit dual-action movement and world/mouse aim")
+        if flags & ~(1 | 2 | 4 | 8 | 65536 | 131072) not in (0x1700, 0x9700):
+            raise ValueError("Spike supports dual-action movement with mouse or dual action pad aim")
         records.append(
             struct.pack("<4fII", mx, my, ax, ay, flags, len(commands))
             + b"".join(struct.pack("<ii", *command) for command in commands),

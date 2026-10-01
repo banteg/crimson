@@ -36,13 +36,24 @@ def adapt(src, txt):
                 "(float)(" + fn + "(heading) * frame_dt) * 20.0f",
             )
     if src.stem == "player_update_heading":
-        # Replay aim is already canonical world space. Reconstructing a screen
-        # point and subtracting the camera again can lose one F32 ULP.
+        # Mouse aim is recorded as a canonical world point. Reconstructing a
+        # screen point and subtracting the camera again can lose one F32 ULP.
         for axis in ("x", "y"):
             expression = f"mouse_screen->{axis} - camera_offset_{axis}"
             if txt.count(expression) != 1:
                 raise ValueError("Audit the normalized world-aim seam before changing this adapter")
-            txt = txt.replace(expression, f"portable_world_aim_{axis}()")
+            txt = txt.replace(expression, f"portable_aim_{axis}()")
+        # Pad aim is recorded as the stick's reach (0x0041539e..0x004153ba); it
+        # still lands on the position movement just produced.
+        txt, count = re.subn(
+            r"scalar = grim_interface_ptr->grim_get_config_float\(\s*player->input\.axis_aim_y\);.*?"
+            r"(\*\(vec2_t \*\)&player->aim = )pad \* distance( \+ \*\(vec2_t \*\)&player->position;)",
+            r"\1vec2_t(portable_aim_x(), portable_aim_y())\2",
+            txt,
+            flags=re.DOTALL,
+        )
+        if count != 1:
+            raise ValueError("Audit the pad-aim reach seam before changing this adapter")
         txt = '#include "api.h"\n' + txt
         # FCOS/FSIN remain wide until the first FMUL (e.g. 0x00414335).
         # Subsequent multipliers must still round after every PC24 operation.

@@ -45,6 +45,10 @@ Keep initialization/reset and per-tick state comparisons to locate failures.
 Bot runs that exhaust their budget count as incomplete, not terminal coverage;
 report quest completion and failure coverage separately.
 
+[gate.py](gate.py) implements this comparison for the original rules; its
+[baseline](gate-results.json) agrees on 53 of 63 streams. The README lists the
+ten that remain.
+
 When Python and the recovered core disagree, reduce the first divergence and
 use the original executable through Unicorn to decide the original behavior.
 For an intentional modern rule, check the documented rule instead. Fix Python

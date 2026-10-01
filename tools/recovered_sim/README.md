@@ -17,8 +17,10 @@ original executable.
 
 - 168 recovered translation units, including all quest builders and the
   recovered gameplay orchestration, spawn logic, combat, perks and bonuses.
-- One player, fixed 60 Hz, a 1024-square arena, dual-action movement and
-  normalized world/mouse aim. Other controllers and modes fail explicitly.
+- One player, fixed 60 Hz, a 1024-square arena, dual-action movement with
+  mouse aim (a world point) or dual action pad aim (the stick's reach from the
+  moved position), taken from each tick's flags as Python does. Other
+  controllers and modes fail explicitly.
 - The existing normalized `(move_x, move_y, aim_x, aim_y, flags)` input tuple,
   copied as float32 **before** simulation, plus ordered command batches.
 - Original gameplay bugs are retained. Python's `preserve_bugs=False` policy
@@ -79,9 +81,10 @@ It does not test later quest-start difficulty adjustments against x86.
 
 ## Results
 
-The checked-in [results](results.json) record 59 scenarios and 107,497 ticks
-with bit-exact native/WASM snapshots and successful resets. All 50 quests run
-to an outcome; the bot completes 1.1 and 1.3 and fails the others. This does
+The checked-in [results](results.json) record 59 scenarios and 95,205 ticks
+with bit-exact native/WASM snapshots and successful resets. Scenarios alternate
+mouse and pad aim. All 50 quests run to an outcome; the bot completes 1.1, 1.3
+and 1.5 and fails the others. This does
 not claim to exercise every late wave or gameplay branch.
 
 Coverage includes Rush/Survival game-over paths, quest completion and failure,
@@ -124,7 +127,7 @@ dependency. This establishes a Python embedding seam using
 [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/); it does not
 implement graphics/audio or measure their host-call cost.
 
-The 25,327-tick Survival run took about **0.73 seconds** in a warmed Node WASM
+The 9,995-tick Survival run took about **0.15 seconds** in a warmed Node WASM
 instance, including JS input transfer and simulation but excluding snapshots,
 initialization and bot decisions. WASM linear memory stayed at **2.5 MiB**
 through the runs and resets. The stripped module is approximately **357 KiB**.
@@ -191,11 +194,10 @@ use `preserve_bugs=True` in the Python reference. The override leaves recorded
 inputs and results unchanged; these tools do not validate a recorded score.
 Whole-run compatibility and equivalence to the original remain unproven.
 
-The four dual action pad fixtures these results came from (Quests 2.5, 2.10
-and 4.10, and a Survival run) were removed with replay v29, which records pad
-aim as the stick's reach from the moved position rather than a world point. The
-movement and prefix checks wait on re-recorded pad fixtures, and on the world
-aim seam adding the moved position for them.
+Those prefixes came from pad fixtures recorded before replay v29, which
+records pad aim as the stick's reach from the moved position. The adapter now
+adds that reach to the moved position in the native pad-aim block, and the
+whole-run gate below replaces the prefix checks.
 
 The old snapshot-257 divergence came from spilling the movement trig result
 before its first multiply, rather than Normalize alone. The [sampled movement
@@ -216,6 +218,37 @@ menu request. Paused menu animation frames are absent, and the host clears the
 pending perk-screen transition. A future client must freeze its gameplay clock
 while showing that UI and submit commands at this same seam. This is an explicit
 modern-rules choice; native perk-screen timing/RNG equivalence is not claimed.
+
+## Whole-run gate
+
+```sh
+uv run python tools/recovered_sim/gate.py --out tools/recovered_sim/gate-results.json
+```
+
+The gate feeds every bot stream in `build/fixtures` and every supported
+recorded fixture to Python (`preserve_bugs=True`) and the native core, the same
+stream to both. Per tick it compares the RNG state, kills, shots, pending perks,
+bonus timers and the player's position, health, death timer, headings,
+experience, level, ammo and weapon, all floats as F32 bits, keeping the first
+divergence. It compares the first terminal tick and outcome, and the complete
+`RunResult` after the last tick both stepped. Recorded fixtures were played
+under the default rules, so under the original rules they may end early; the
+gate stops at the core's terminal state and does not validate a recorded score.
+
+The [baseline](gate-results.json) agrees on **53 of 63** streams, including the
+four supported human fixtures (Quests 2.5, 2.10 and 4.10, and a Survival run).
+Keyboard Rush and Typ-o fixtures are not supported yet. The ten that differ:
+
+- Rush (3 streams): every field agrees on every tick, but Python ends the run
+  when the player dies, while native `gameplay_update_and_render` waits for the
+  death animation as in the other modes, 48 ticks later.
+- Quest 2.10: the double-XP timer differs by one tick on the terminal tick.
+- Quest 1.5: Python draws one RNG value a tick early; results agree.
+- Quests 4.10 and 5.6 (Python takes damage the core does not), Quest 5.4 (seven
+  extra core draws), and late F32 drift in Quest 3.7 and `survival-evade-1337`.
+
+These need reducing and adjudicating against the original through Unicorn.
+The gate exits nonzero until every stream agrees; it is not in CI yet.
 
 ## How the adapter works
 
@@ -244,13 +277,17 @@ to themselves. Native initialization tracing is available through
 manifest. Adjacent globals stay separate because 64-bit pointers need more
 storage. Known aggregates stay contiguous; pointer-bearing pools use host
 `sizeof` and metadata aliases use the corresponding host stride. The HUD
-gets an extra sentinel slot for the recovered helper's one-past lookup.
+gets an extra sentinel slot for the recovered helper's one-past lookup. The
+creature type table stays contiguous through `creature_type_count`, which
+native reads as the corpse frame of ping-pong-strip creatures (type 7).
 
 [host.cpp](host.cpp) owns seed, fixed timing, input dispatch, initialization
 and output hooks. It keeps the recovered orchestration and render functions
 that clean up corpses/projectiles or consume RNG. It replaces drawing and
 device/audio output, and supplies a fixed successful silent-audio bootstrap
-while preserving recovered music-selection RNG. This bootstrap is a defined
+while preserving recovered music-selection RNG. Music tracks get distinct ids
+in `audio_init_music`'s load order, so the game-over and quest music do not
+pose as the random game-tune request and draw its playlist pick. This bootstrap is a defined
 spike environment, not a reconstruction of every original startup path.
 
 ## Gates before replacing the shipped simulation
@@ -258,7 +295,7 @@ spike environment, not a reconstruction of every original startup path.
 1. Run every Rush, Survival and Quest fixture in full plus a fixed bot sweep,
    comparing the complete Python `RunResult` with `preserve_bugs=True`. Include
    required input schemes, settings and players; unsupported cases fail the
-   coverage gate. The current four-prefix allowlist is not this gate.
+   coverage gate. [gate.py](gate.py) runs it; see the baseline above.
 2. Add the documented Python improvements behind a runtime bug-policy flag,
    then run both policies and verify default-policy Python replays too.
 3. Define finite-state/NaN handling and a rules version covering normalized
