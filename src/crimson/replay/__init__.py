@@ -34,7 +34,7 @@ from .types import (
     Replay,
     ReplayTick,
 )
-from .versioning import ReplayGameVersionError, ReplayGameVersionWarning, warn_on_game_version_mismatch
+from .versioning import ReplayGameVersionWarning, warn_on_game_version_mismatch
 
 __all__ = [
     "AIM_SCHEME_PRESENT_FLAG",
@@ -56,7 +56,6 @@ __all__ = [
     "PackedTickInputs",
     "Replay",
     "ReplayCodecError",
-    "ReplayGameVersionError",
     "ReplayGameVersionWarning",
     "ReplayRecorder",
     "ReplayTick",

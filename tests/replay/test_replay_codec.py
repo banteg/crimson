@@ -18,7 +18,6 @@ from crimson.quests.level import QuestLevel
 from crimson.replay import (
     Replay,
     ReplayCodecError,
-    ReplayGameVersionError,
     ReplayGameVersionWarning,
     ReplayRecorder,
     ReplayTick,
@@ -26,9 +25,9 @@ from crimson.replay import (
     dump_replay,
     encode_replay_payload,
     load_replay,
-    warn_on_game_version_mismatch,
 )
 from crimson.replay import types as replay_types
+from crimson.replay.driver.playback_driver import build_verify_playback_driver
 from crimson.replay.input_codec import pack_player_input, pack_tick, unpack_player_input
 from crimson.replay.types import REPLAY_FORMAT_VERSION, current_replay_game_version
 from crimson.sim.commands import (
@@ -43,6 +42,7 @@ from crimson.sim.run_spec import RunSpec, RunStatus
 from crimson.weapons import WeaponId
 from grim.geom import Vec2
 from tests.support.factories import player_input
+from tests.support.replay_runner_helpers import idle_replay, replay_with_simulated_result
 
 
 def _result(*, player_count: int = 1, outcome: RunOutcome = RunOutcome.DEATH, quest_final_ms: int | None = None) -> RunResult:
@@ -355,16 +355,14 @@ def test_decode_reports_schema_errors() -> None:
 # Game version -----------------------------------------------------------------
 
 
-def test_replay_version_mismatch_raises() -> None:
-    replay = msgspec.structs.replace(_replay(), game_version="0.0.0")
-    with pytest.raises(ReplayGameVersionError, match="mismatch"):
-        warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0")
+def test_a_replay_from_another_game_version_verifies_with_a_warning() -> None:
+    replay = replay_with_simulated_result(idle_replay(30, run=RunSpec(game_mode_id=GameMode.SURVIVAL, seed=7)))
+    older = msgspec.structs.replace(replay, game_version="0.0.1+gabc123def456")
 
+    with pytest.warns(ReplayGameVersionWarning, match="another game version"):
+        result = build_verify_playback_driver(older).run()
 
-def test_replay_version_build_metadata_mismatch_warns() -> None:
-    replay = msgspec.structs.replace(_replay(), game_version="1.0.0+gabc123")
-    with pytest.warns(ReplayGameVersionWarning, match="build metadata differs"):
-        warn_on_game_version_mismatch(replay, action="verification", current_version="1.0.0+gdef456")
+    assert result == replay.result
 
 
 def _fake_git(monkeypatch: pytest.MonkeyPatch, *, tags: bytes, status: bytes) -> None:

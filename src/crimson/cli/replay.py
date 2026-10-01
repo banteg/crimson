@@ -362,7 +362,7 @@ def cmd_replay_play(
     from grim.view import ViewContext
 
     from ..modes.replay_playback_mode import ReplayPlaybackMode
-    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay_file, warn_on_game_version_mismatch
+    from ..replay import ReplayCodecError, load_replay_file, warn_on_game_version_mismatch
     from ..runtime_boot import boot_runtime
     from ..runtime_resources_view import RuntimeResourcesView
 
@@ -373,7 +373,7 @@ def cmd_replay_play(
     try:
         replay = load_replay_file(replay_path)
         warn_on_game_version_mismatch(replay, action="playback")
-    except (ReplayCodecError, ReplayGameVersionError) as exc:
+    except ReplayCodecError as exc:
         typer.echo(f"replay playback failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
     boot = boot_runtime(base_dir, assets_dir, width=width, height=height)
@@ -506,7 +506,7 @@ def cmd_replay_verify(
     """Headlessly simulate a replay and check the result it recorded."""
     import hashlib
 
-    from ..replay import ReplayCodecError, ReplayGameVersionError, decode_replay_payload, inflate_replay_payload
+    from ..replay import ReplayCodecError, decode_replay_payload, inflate_replay_payload
     from ..replay.driver.playback_driver import build_verify_playback_driver
     from ..replay.driver.setup import ReplayRunnerError
     from ..replay.ranked import unranked_reasons
@@ -519,7 +519,7 @@ def cmd_replay_verify(
         replay = decode_replay_payload(replay_payload)
         driver = build_verify_playback_driver(replay, max_ticks=max_ticks)
         result = driver.run()
-    except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayRunnerError) as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -610,7 +610,7 @@ def cmd_replay_info(
     ),
 ) -> None:
     """Simulate a replay and emit a timeline of gameplay events."""
-    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
+    from ..replay import ReplayCodecError, load_replay
     from ..replay.driver.playback_driver import build_verify_playback_driver
     from ..replay.driver.replay_info import collect_replay_info, event_counts_by_kind
     from ..replay.driver.setup import ReplayRunnerError
@@ -629,7 +629,7 @@ def cmd_replay_info(
             player_index=player_index,
             include_extra_events=bool(verbose),
         )
-    except (ReplayCodecError, ReplayGameVersionError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayRunnerError) as exc:
         typer.echo(f"replay info failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -751,7 +751,7 @@ def cmd_replay_benchmark(
     ),
 ) -> None:
     """Benchmark replay throughput, with optional profiler hotspots."""
-    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
+    from ..replay import ReplayCodecError, load_replay
     from ..replay.driver.replay_benchmark import (
         ReplayBenchmarkError,
         run_replay_benchmark,
@@ -813,7 +813,7 @@ def cmd_replay_benchmark(
                 profile_out=profile_out,
                 show_progress=(output_format == "human"),
             )
-    except (ReplayCodecError, ReplayGameVersionError, ReplayBenchmarkError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayBenchmarkError, ReplayRunnerError) as exc:
         typer.echo(f"replay benchmark failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -986,7 +986,7 @@ def cmd_replay_render(
     ),
 ) -> None:
     """Render replay playback to video using ffmpeg."""
-    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
+    from ..replay import ReplayCodecError, load_replay
     from ..replay.driver.replay_render import ReplayRenderError, run_replay_render_video
     from ..replay.driver.setup import ReplayRunnerError
 
@@ -1015,7 +1015,7 @@ def cmd_replay_render(
             mute_audio=not bool(audio),
             show_progress=True,
         )
-    except (ReplayCodecError, ReplayGameVersionError, ReplayRenderError, ReplayRunnerError) as exc:
+    except (ReplayCodecError, ReplayRenderError, ReplayRunnerError) as exc:
         typer.echo(f"replay render failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
@@ -1049,7 +1049,7 @@ def cmd_replay_verify_checkpoints(
     ),
 ) -> None:
     """Verify a replay by comparing headless checkpoints with a sidecar file."""
-    from ..replay import ReplayCodecError, ReplayGameVersionError, load_replay
+    from ..replay import ReplayCodecError, load_replay
     from ..replay.checkpoint_diff import compare_checkpoints
     from ..replay.checkpoints import (
         ReplayCheckpoint,
@@ -1124,7 +1124,7 @@ def cmd_replay_verify_checkpoints(
         )
     except _CheckpointMismatchStop as exc:
         _render_checkpoint_diff_failure(cast("ReplayDiffResult", exc.diff), actual_rng_callers=exc.rng_callers)
-    except (ReplayGameVersionError, ReplayRunnerError) as exc:
+    except ReplayRunnerError as exc:
         typer.echo(f"replay verification failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 

@@ -53,7 +53,7 @@ The port now matches the original much more closely, down to its rounding. Crims
 #### Replays
 
 - Replays are a new format (v29). Each one records the run's result, and `crimson replay verify` re-simulates the run and checks every tick. It also reports whether the run qualifies for ranking: full unlocks, maximum detail and violence on.
-- Replays recorded with 0.10.0 or earlier can't be played back.
+- Replays recorded with 0.10.0 or earlier can't be played back. Replays from later versions play and verify in any version that reads their format, with a warning when the recording version differs.
 - The replay viewer's skip and fast-forward speeds work properly, and `crimson replay list` names Typ-o and tutorial replays.
 
 #### Removed

@@ -48,9 +48,10 @@ alternative encoding "wins".
 | `result` | `RunResult` | Result the recorder derived |
 | `ticks` | array of `Tick` | At least one tick |
 
-`game_version` is the package version for a release-tagged build
-(`0.10.0`), else `<version>+g<12-hex commit>`. A checkout whose `src/` differs
-from that commit (modified or new unignored files) appends `.dirty`.
+`game_version` is the package version for a release-tagged build or an
+installed package (`0.11.0`), else `<version>+g<12-hex commit>`. A checkout
+whose `src/` differs from that commit (modified or new unignored files) appends
+`.dirty`.
 
 ### RunSpec
 
@@ -172,7 +173,9 @@ debugging, but a prefix never verifies a result.
 Verification establishes that the recorded inputs, replayed by the
 verifier's simulation, produce the recorded result. The verifier reports the
 replay's `game_version`; a service that ranks runs must verify each one with
-the build that version names. Verification does not establish who produced the
+the build that version names. Any build plays back and verifies a replay of
+its own format version, warning when the recording build differs: a rules
+change between the two shows up as a result mismatch. Verification does not establish who produced the
 inputs or in what real time.
 
 The live game simulates exactly the inputs it records: it rounds each tick's
