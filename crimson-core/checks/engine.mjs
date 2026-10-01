@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
-export const HERE = new URL(".", import.meta.url);
-export const schema = JSON.parse(fs.readFileSync(new URL("schema.json", HERE)));
+export const CORE = new URL("..", import.meta.url);
+export const schema = JSON.parse(fs.readFileSync(new URL("schema.json", CORE)));
 export const names = schema.flatMap((g) =>
   Array.from({ length: g.count }, (_, i) =>
     g.fields.map((f) => `${g.name}${g.count > 1 ? `[${i}]` : ""}.${f}`),

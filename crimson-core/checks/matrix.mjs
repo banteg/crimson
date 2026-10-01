@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import { compare } from "./compare.mjs";
 import {
-  HERE,
+  CORE,
   loadCore,
   init,
   state,
@@ -16,7 +16,7 @@ import {
 } from "./engine.mjs";
 
 const out = path.resolve(
-  process.argv[2] ?? fileURLToPath(new URL("build", HERE)),
+  process.argv[2] ?? fileURLToPath(new URL("build", CORE)),
 );
 const native = path.join(out, "native/core"),
   wasm = path.join(out, "wasm/core.wasm");
@@ -283,7 +283,7 @@ scenarios.push([
   PAD,
 ]);
 const report = {
-  rules: "recovered-spike-v1",
+  rules: "original",
   guards: "11 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };

@@ -137,7 +137,7 @@ extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {
 #ifndef __wasm__
-  if (getenv("RECOVERED_SIM_TRACE_INIT"))
+  if (getenv("CRIMSON_CORE_TRACE_INIT"))
     fprintf(stderr, "init: %s\n", stage);
 #else
   (void)stage;

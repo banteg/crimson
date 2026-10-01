@@ -16,9 +16,9 @@ Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or
 Python remains the fast iteration platform. The next shipped-game/verifier
 implementation will extend the recovered C/C++ and use one WASM artifact across
 desktop, browser and Workers. Zig catch-up and feature work are deferred; its
-existing verifier stays available during the transition. The spike and staged
-replacement gates are documented in `tools/recovered_sim/README.md` and
-`tools/recovered_sim/FOLLOWUP.md`.
+existing verifier stays available during the transition. The core and its
+staged replacement gates are documented in `crimson-core/README.md` and
+`crimson-core/ROADMAP.md`.
 
 ## Architecture and contracts
 

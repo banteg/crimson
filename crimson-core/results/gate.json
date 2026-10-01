@@ -3642,8 +3642,8 @@
     }
   },
   "unsupported": {
-    "rush-144.crd": "Spike supports dual-action movement with mouse or dual action pad aim",
-    "typo-144.crd": "Spike supports one player in Rush, Survival or Quests"
+    "rush-144.crd": "The core supports dual-action movement with mouse or dual action pad aim",
+    "typo-144.crd": "The core supports one player in Rush, Survival or Quests"
   },
   "agree": 53,
   "total": 63

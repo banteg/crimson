@@ -1,6 +1,6 @@
 // Diagnostic simulator endpoint. No leaderboard writes or claimed scores.
-import module from "./build/wasm/core.wasm";
-import schema from "./schema.json";
+import module from "../build/wasm/core.wasm";
+import schema from "../schema.json";
 
 const core = new WebAssembly.Instance(module, {}).exports;
 core._initialize();
@@ -87,7 +87,7 @@ export default {
       const u = (name) => values.getUint32(offsets.get(name) * 4, true);
       const pending = u("globals.game_state_pending");
       const result = {
-        rules: "recovered-spike-v1",
+        rules: "original",
         ticks,
         pending,
         terminal: [7, 8, 12].includes(pending),

@@ -1,5 +1,5 @@
 {
-  "name": "crimson-recovered-sim-spike",
+  "name": "crimson-core",
   "main": "worker.js",
   "compatibility_date": "2025-11-01",
   "send_metrics": false

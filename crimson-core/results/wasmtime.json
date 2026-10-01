@@ -7,7 +7,7 @@
   "comparison": "every snapshot hash matches native/Node",
   "reset": "all Wasmtime A/B/A passed",
   "linear_memory_mib": 2.5,
-  "host_check_seconds": 16.330584082752466,
+  "host_check_seconds": 16.182736708782613,
   "results": [
     {
       "name": "rush-idle",

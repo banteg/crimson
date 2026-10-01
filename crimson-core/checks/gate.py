@@ -48,8 +48,8 @@ from crimson.sim.sessions import IllegalCommandError
 from crimson.weapon_runtime import most_used_weapon_id_for_player
 from crimson.weapons import WeaponId
 
-HERE = Path(__file__).resolve().parent
-ROOT = HERE.parents[1]
+CORE = Path(__file__).resolve().parents[1]
+ROOT = CORE.parent
 CONFIG_BYTES = 256
 
 # Native `game_state_pending` values that end a run (third_party/headers/crimsonland_types.h).
@@ -99,7 +99,7 @@ RESULT_FIELDS = (
 
 
 def _schema_index() -> dict[str, int]:
-    schema = json.loads((HERE / "schema.json").read_text())
+    schema = json.loads((CORE / "schema.json").read_text())
     names = [
         f"{group['name']}{f'[{i}]' if group['count'] > 1 else ''}.{field}"
         for group in schema
@@ -323,10 +323,10 @@ def _compare_job(args):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--native", type=Path, default=HERE / "build/native/core")
-    parser.add_argument("--corpus", type=Path, default=HERE / "build/fixtures", help="Bot corpus from matrix.mjs")
+    parser.add_argument("--native", type=Path, default=CORE / "build/native/core")
+    parser.add_argument("--corpus", type=Path, default=CORE / "build/fixtures", help="Bot corpus from matrix.mjs")
     parser.add_argument("--fixtures", type=Path, default=ROOT / "tests/fixtures/replays")
-    parser.add_argument("--out", type=Path, default=HERE / "build/gate.json")
+    parser.add_argument("--out", type=Path, default=CORE / "build/gate.json")
     parser.add_argument("--only", action="append", default=[], help="Stream name to compare; repeat for several")
     parser.add_argument("--jobs", type=int, default=os.cpu_count())
     args = parser.parse_args()

@@ -14,11 +14,12 @@ from adapter import adapt
 from data import data_source
 
 HERE = Path(__file__).resolve().parent
+HOST = HERE / "host"
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--root", type=Path, default=HERE.parents[1])
+    p.add_argument("--root", type=Path, default=HERE.parent)
     p.add_argument("--target", choices=["native", "wasm"], default="native")
     p.add_argument("--out", type=Path)
     a = p.parse_args()
@@ -72,7 +73,7 @@ def main():
         "-Wno-address-of-temporary",
         "-Wno-deprecated-register",
         "-Wno-int-to-pointer-cast",
-        "-I" + str(HERE),
+        "-I" + str(HOST),
         "-I" + str(headers),
         "-I" + str(a.root / "third_party/headers"),
     ]
@@ -109,7 +110,7 @@ def main():
     if errors:
         raise SystemExit(1)
     for name in ["data.cpp", "host.cpp"]:
-        src = a.out / name if name == "data.cpp" else HERE / name
+        src = a.out / name if name == "data.cpp" else HOST / name
         proc = subprocess.run(
             cc + flags + ["-c", str(src), "-o", str(a.out / (Path(name).stem + ".o"))],
             env=env,
@@ -135,7 +136,7 @@ def main():
         "-fno-omit-frame-pointer",
         "--dep",
         "rt",
-        "-Mroot=" + str(HERE / "math.zig"),
+        "-Mroot=" + str(HOST / "math.zig"),
         "-Mrt=" + str(a.out / "runtime_bridge.zig"),
         "-femit-bin=" + str(a.out / "math.o"),
     ]

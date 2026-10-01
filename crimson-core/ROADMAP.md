@@ -1,4 +1,4 @@
-# Direction after the feasibility spike
+# Roadmap
 
 Prefer one wasm32 recovered simulation artifact for browser, Workers and a
 desktop host. Keep Python for fast iteration and experiments. Extend the
@@ -7,12 +7,29 @@ independent Zig mirror. Keep native clang as a diagnostic comparison target;
 avoid expanding its 64-bit layout machinery before trying a real client on
 the shared WASM artifact.
 
+## Gates
+
+1. **Original rules.** Every Rush, Survival and Quest fixture in full plus a
+   fixed bot corpus agree with Python's complete `RunResult` under
+   `preserve_bugs=True`, including the input schemes, settings and players they
+   need. [`checks/gate.py`](checks/gate.py) runs it; 53 of 63 streams agree.
+2. **Ranked rules.** Python's documented fixes run in the core behind a runtime
+   policy flag; both policies pass the gate, and default-policy Python replays
+   verify.
+3. **Rules definition.** Finite-state and NaN handling, and a rules version
+   covering aim, command order, UI pause and timing.
+4. **Client.** The whole recovered game, including menus, options, high scores
+   and the perk screen, runs in the same module as the verifier.
+5. **Service.** Server-owned run configuration, score and terminal policy,
+   public replay decoding, and measured dense/adversarial workloads and
+   deployed Workers CPU.
+
 ## Freeze Zig and define retirement
 
 Defer all Zig catch-up and feature work now, including the shared UI timeline,
 Typ-o follow-ups and phantom spawn slot. Keep the existing verifier available
 during the transition; do not port new Python or recovered-core changes into it.
-This freezes the Zig simulation, not the spike's use of the Zig compiler and
+This freezes the Zig simulation, not the core's use of the Zig compiler and
 small math helpers as build dependencies.
 
 The retirement criterion is that the recovered verifier passes every replay
@@ -24,55 +41,46 @@ recovered verifier can take over, retire Zig as an active simulation
 implementation. Preserve a frozen legacy verification artifact only for
 replay versions that still require it.
 
-## Next milestone: complete Python runs
+## Original-rules gate
 
-Replace the four 1,200-tick prefix comparisons with full recorded runs for Rush,
-Survival and Quests, plus a fixed bot corpus covering all 50 quests and varied
-seeds, perks, weapons and run settings. Discover all applicable checked-in
-fixtures, including keyboard Rush recordings; the prefix allowlist remains a
-bounded spike check, not a way to skip unsupported inputs in this milestone.
-Extend controller support where a fixture requires it. Record input/command
-streams once and feed those identical streams to both implementations; do not
-let separate bot decisions conceal divergence.
+The gate feeds identical input and command streams to both implementations:
+recorded fixtures and a fixed bot corpus covering all 50 quests and varied
+seeds, perks, weapons, aim schemes and run settings. Separate bot decisions
+must never conceal a divergence. It compares the full result defined in
+`src/crimson/sim/run_result.py` (outcome, elapsed time, kills, shots fired and
+hit, RNG state, pending perks, quest final time and each player's experience,
+health as F32 bits and most-used weapon), the terminal tick and outcome, and
+per-tick state to locate the first divergence.
 
-First run Python with `preserve_bugs=True` and the recovered core's original
-bug policy. Compare the full result defined in `src/crimson/sim/run_result.py`:
-outcome, elapsed time, kills, shots fired/hit, RNG state, pending perks, quest
-final time and every player's experience, health and most-used weapon. Compare
-health as F32 bits. Check the terminal tick and allowed run-down too; do not
-truncate at the first mismatch or silently discard trailing recorded ticks.
-Keep initialization/reset and per-tick state comparisons to locate failures.
-Bot runs that exhaust their budget count as incomplete, not terminal coverage;
-report quest completion and failure coverage separately.
+Still to do: decide the ten remaining streams listed in the README, support
+the keyboard movement schemes the Rush fixture needs, cover the allowed
+run-down after the terminal tick, and report bot quest completion and failure
+coverage separately. Runs that exhaust their budget are incomplete, not
+terminal coverage.
 
-[gate.py](gate.py) implements this comparison for the original rules; its
-[baseline](gate-results.json) agrees on 53 of 63 streams. The README lists the
-ten that remain.
+When Python and the core disagree, reduce the first divergence and use the
+original executable through Unicorn to decide the original behavior. For an
+intentional modern rule, check the documented rule instead. Fix Python when the
+original evidence shows it is wrong; keep the reproducer and update the
+reference rather than weakening the comparison.
 
-When Python and the recovered core disagree, reduce the first divergence and
-use the original executable through Unicorn to decide the original behavior.
-For an intentional modern rule, check the documented rule instead. Fix Python
-when the original evidence shows it is wrong; retain the reproducer and update
-the reference rather than weakening the result comparison.
+## Ranked rules
 
-Next, backport the documented Python bug fixes behind a runtime policy flag
-matching `RunSpec.preserve_bugs`. Test both settings and the applicable default
-Python replays. Treat policy as part of the server-owned rules/configuration;
-the same input stream under different policies need not have the same result.
-Existing fixtures keep their recorded input streams and claimed results.
+Ranked runs use `preserve_bugs=False`. Apply each documented Python fix to the
+generated copies in place, at the native site, as a branch on a runtime policy
+flag set from the run configuration, so RNG call order matches Python under
+both policies. Keep `decomp/` untouched: the fixes are a reviewed patch series
+over the generated sources, pinned like the other adaptations, and each one
+maps to a `preserve_bugs` branch in Python and an entry in
+`docs/rewrite/original-bugs.md`. Treat the policy as part of the server-owned
+rules; the same input stream under different policies need not give the same
+result. Existing fixtures keep their recorded streams and claimed results.
 
 ## Evidence and limits
 
 Native/WASM agreement proves modern-build determinism. The new original-code
 tests establish selected x87 seams, and the quest-builder oracle establishes
 table construction. Neither establishes whole-run original equivalence.
-
-The first legacy divergence was a movement trig spill before the first PC24
-multiply. Correcting Normalize also removes a later heading difference. CRT
-power now matches the existing PC24 model and original thresholds. The other
-fixture aim differences were caused by the host's world/screen/world round
-trip; original x87 agreed with both calculations when supplied their operands.
-Canonical world aim now reaches gameplay without that conversion.
 
 The Wasmtime probe runs the identical Node/Worker module from Python and
 compares every snapshot hash and reset across all scenarios. This makes the
@@ -130,7 +138,7 @@ outputs only once the authoritative dependencies are understood.
 | Boundary | Observed dependency | Consequence |
 | --- | --- | --- |
 | Omitted menu layout / perk prompt | `perk_prompt_bounds_*` alias vertices of `ui_perk_prompt_element`; its initial data is zero. `ui_menu_layout_init` normally creates the geometry and origin. `perk_prompt_update_and_render` changes timer/rotation and draws it. | The original click-prompt path cannot work with the headless geometry. Commands are the intentional menu seam here. Restoring only the prompt draw function would not repair it. |
-| `game_state_set` | The original resets UI, pause, current/previous state, transition and input. The spike stores only the pending state. | This is a session-policy replacement, not a harmless draw stub. Native menu-frame equivalence requires a separate audit. |
+| `game_state_set` | The original resets UI, pause, current/previous state, transition and input. The core stores only the pending state. | This is a session-policy replacement, not a harmless draw stub. Native menu-frame equivalence requires a separate audit. |
 | `grim_measure_text_width` | Among selected bodies it is called in the bonus hover label. Its result changes label placement; the nearby-bonus return and hover timer are determined independently. | No simulation dependency found in that selected call. Other UI functions use text widths for interaction, so this does not justify a universal zero stub. |
 | `grim_get_texture_handle` | Recovered reset stores the result in six creature type records. Creature rendering passes it to texture binding. | Resource IDs differ and are excluded from canonical snapshots. This needs a resource/output contract for a real client; there is no complete stub noninterference proof yet. |
 
@@ -144,7 +152,7 @@ Static xrefs alone cannot prove that a device stub is harmless.
 Keep the existing normalized F32 tuple and semantic command batches. Gameplay
 ticks are fixed 60 Hz; menu UI frames do not advance gameplay time. Apply
 ordered commands before the next tick, with entitlement, offer freshness and
-choice bounds enforced by the core. The README records the current spike's
+choice bounds enforced by the core. The README records the core's
 offer-generation behavior, including picks without an explicit menu request.
 
 This seam is compatible with the Python session model by design. It is not a
@@ -159,9 +167,8 @@ Grow this alongside concrete full-run discrepancies and the client stub audit;
 a differential harness for every translation unit is not a prerequisite for
 the next product gate. Start with stateful player, projectile, creature, perk
 and bonus routines using states sampled from Rush, Survival and quest runs.
-The targeted movement oracle is the first sampled-state example; the math
-oracle demonstrates direct real
-x87 calls without substituting the Python implementation for Normalize.
+The math oracle demonstrates direct calls into the original x87 code without
+substituting the Python implementation for Normalize.
 
 Use `NativeOracle.trace_memory()` for original read/write sets and compare
 canonical written fields and RNG against the compiled functions. `data.py`
@@ -177,7 +184,7 @@ orchestration, including initialization and the selected modern session policy.
 
 ## Retire generated regex adaptations deliberately
 
-The current hash/count guards are appropriate for the spike. They are not the
+The current hash/count guards are appropriate for now. They are not the
 long-term maintenance model. Move proven numerical operations and input seams
 into named source abstractions that preserve the historical compiler's exact
 expansion while providing modern implementations. A generic `X87_WIDE` cast
