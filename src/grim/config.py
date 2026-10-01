@@ -507,9 +507,32 @@ def default_crimson_cfg(path: Path = Path("<memory>")) -> CrimsonConfig:
     )
 
 
+# Port 0.10.0 kept the P3/P4 direction arrows in two bytes at the front of bind slot 4 (1 off, 2 on), which native
+# leaves zeroed, and wrote native's own P3/P4 flags as 0.
+_DIRECTION_ARROW_FLAGS_OFFSET = 0x04
+_BIND_SLOT_4_OFFSET = 0x1C8 + 4 * PLAYER_BIND_BLOCK_SIZE
+_LEGACY_ARROW_OFF = 1
+_LEGACY_ARROW_ON = 2
+
+
+def _migrate_legacy_p3_p4_arrows(blob: bytes) -> bytes:
+    """Move port 0.10.0's P3/P4 direction arrows into native's flags; anything else passes through unchanged."""
+
+    legacy = blob[_BIND_SLOT_4_OFFSET : _BIND_SLOT_4_OFFSET + 2]
+    rest = blob[_BIND_SLOT_4_OFFSET + 2 : _BIND_SLOT_4_OFFSET + PLAYER_BIND_BLOCK_SIZE]
+    if any(flag not in (_LEGACY_ARROW_OFF, _LEGACY_ARROW_ON) for flag in legacy) or any(rest):
+        return blob
+    migrated = bytearray(blob)
+    for player_index, flag in enumerate(legacy, start=2):
+        migrated[_DIRECTION_ARROW_FLAGS_OFFSET + player_index] = int(flag == _LEGACY_ARROW_ON)
+    migrated[_BIND_SLOT_4_OFFSET : _BIND_SLOT_4_OFFSET + 2] = bytes(2)
+    return bytes(migrated)
+
+
 def decode_crimson_cfg(path: Path, blob: bytes) -> CrimsonConfig:
     if len(blob) != CRIMSON_CFG_SIZE:
         raise ValueError(f"{path} has unexpected size {len(blob)} (expected {CRIMSON_CFG_SIZE})")
+    blob = _migrate_legacy_p3_p4_arrows(blob)
     raw = CRIMSON_CFG_STRUCT.parse(blob)
     if raw["detail_preset"] == 0 and not (raw["shadows_enabled"] or raw["flame_glow_enabled"] or raw["smoke_enabled"]):
         # No detail settings at all loads as full detail.

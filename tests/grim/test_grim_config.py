@@ -158,3 +158,16 @@ def test_crimson_cfg_native_file_roundtrip() -> None:
         native["movement_schemes"][slot] = port["movement_schemes"][slot]
     # Everything else saves byte for byte as native wrote it.
     assert grim_config.CRIMSON_CFG_STRUCT.build(native) == saved
+
+
+PORT_0_10_CFG = Path(__file__).parents[1] / "fixtures" / "config" / "crimson-0.10.0.cfg"
+
+
+def test_port_0_10_direction_arrows_for_players_three_and_four_move_to_native_flags() -> None:
+    # Saved by port 0.10.0 with player 3's arrow off and player 4's on, in its own bytes inside bind slot 4.
+    loaded = grim_config.decode_crimson_cfg(PORT_0_10_CFG, PORT_0_10_CFG.read_bytes())
+    assert [loaded.controls.player(i).show_direction_arrow for i in range(4)] == [True, True, False, True]
+
+    saved = grim_config.CRIMSON_CFG_STRUCT.parse(grim_config.encode_crimson_cfg(loaded))
+    assert list(saved["direction_arrow_flags"][:4]) == [1, 1, 0, 1]
+    assert saved["input_config"][4]["move_forward"] == 0
