@@ -782,3 +782,27 @@ Rewrite behavior:
 Evidence: `decomp/1.9/crimsonland/crimsonland/projectile_update.cpp` (player hit
 branch and the chain's end); `shock_chain_projectile_id` (`0x00486fc0`) has no
 initializer in `crimsonland.exe`.
+
+## 33) A bonus carrier can drop its bonus twice
+
+Native behavior:
+
+- `creature_handle_death` (`0x0041e910`) spawns a carrier's bonus whenever the
+  creature has `CREATURE_FLAG_BONUS_ON_DEATH`, and never clears the flag.
+- Some deaths are handled twice, for example by a secondary projectile's
+  detonation follow-up on a creature that is already inactive, and the second
+  call drops the bonus again.
+
+Why it's likely a bug:
+
+- A carrier holds one bonus; dropping a copy depends on how its death happened.
+
+Rewrite behavior:
+
+- Default: the carrier drops its bonus once.
+- `--preserve-bugs`: every handled death drops it, as native.
+
+Evidence: `decomp/1.9/crimsonland/crimsonland/creature_handle_death.c` (the
+bonus spawn at the top) and `creature_spawn_template` (the only template that
+sets the flag).
+

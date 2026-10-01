@@ -1,0 +1,18 @@
+Original bug 10: Jinxed picks its creature with `% 0x17f`, so the last pool slot is never hit. The fix uses 0x180.
+--- a/perks_update_effects.cpp
++++ b/perks_update_effects.cpp
+@@ -185,12 +185,12 @@
+         return;
+     }
+ 
+-    int creature_id = crt_rand() % 0x17f;
++    int creature_id = crt_rand() % (portable_preserve_bugs ? 0x17f : 0x180);
+     for (render_overlay_player_index = 0;
+          render_overlay_player_index < 10
+             && creature_pool[creature_id].active == 0;
+          ++render_overlay_player_index) {
+-        creature_id = crt_rand() % 0x17f;
++        creature_id = crt_rand() % (portable_preserve_bugs ? 0x17f : 0x180);
+     }
+     render_overlay_player_index = 0;
+ 

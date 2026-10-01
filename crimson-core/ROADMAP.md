@@ -12,11 +12,11 @@ the shared WASM artifact.
 1. **Original rules.** Every Rush, Survival and Quest fixture in full plus a
    fixed bot corpus agree with Python's complete `RunResult` under
    `preserve_bugs=True`, including the input schemes, settings and players they
-   need. [`checks/gate.py`](checks/gate.py) runs it in CI; all 63 streams agree,
-   but the keyboard Rush and Typ-o fixtures are not supported yet.
+   need. [`checks/gate.py`](checks/gate.py) runs it in CI. Done for the
+   supported scope; a Rush recording (pad) and Typ-o support remain.
 2. **Ranked rules.** Python's documented fixes run in the core behind a runtime
    policy flag; both policies pass the gate, and default-policy Python replays
-   verify.
+   verify. Done: 126 of 126 streams agree, the four human recordings included.
 3. **Rules definition.** Finite-state and NaN handling, and a rules version
    covering aim, command order, UI pause and timing.
 4. **Client.** The whole recovered game, including menus, options, high scores
@@ -65,15 +65,17 @@ reference rather than weakening the comparison.
 
 ## Ranked rules
 
-Ranked runs use `preserve_bugs=False`. Apply each documented Python fix to the
-generated copies in place, at the native site, as a branch on a runtime policy
-flag set from the run configuration, so RNG call order matches Python under
-both policies. Keep `decomp/` untouched: the fixes are a reviewed patch series
-over the generated sources, pinned like the other adaptations, and each one
-maps to a `preserve_bugs` branch in Python and an entry in
-`docs/rewrite/original-bugs.md`. Treat the policy as part of the server-owned
-rules; the same input stream under different policies need not give the same
-result. Existing fixtures keep their recorded streams and claimed results.
+Ranked runs use `preserve_bugs=False`. Each documented Python fix the core's
+scope reaches is a patch in `patches/`, applied to the generated copies at the
+native site behind the policy flag, so RNG call order matches Python under both
+policies, and `decomp/` stays untouched. A new Python fix needs its patch and a
+bot scenario that exercises it under both policies. Treat the policy as part
+of the server-owned rules; the same input stream under different policies need
+not give the same result.
+
+Fixes still only partly exercised by the corpus: Shock Chain or a seeker with
+no creature left (20), a bonus carrier's death handled twice (33), and an
+exact-zero Highlander hit (18).
 
 ## Evidence and limits
 

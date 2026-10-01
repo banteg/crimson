@@ -19,8 +19,8 @@ export function loadCore(wasm) {
 }
 
 export function init(e, config) {
-  if (config.length !== 256) throw Error("Expected 256-byte config");
-  new Uint8Array(e.memory.buffer, e.portable_config(), 256).set(config);
+  if (config.length !== CONFIG_BYTES) throw Error(`Expected ${CONFIG_BYTES}-byte config`);
+  new Uint8Array(e.memory.buffer, e.portable_config(), CONFIG_BYTES).set(config);
   if (!e.portable_init(...[0, 4, 8, 12].map((i) => config.readUInt32LE(i))))
     throw Error("Rejected config");
 }
@@ -54,9 +54,9 @@ export function record(input, commands = []) {
 }
 
 export function decode(input) {
-  if (input.length < 256) throw Error("Truncated config");
+  if (input.length < CONFIG_BYTES) throw Error("Truncated config");
   const records = [];
-  for (let offset = 256; offset < input.length; ) {
+  for (let offset = CONFIG_BYTES; offset < input.length; ) {
     if (input.length - offset < 24) throw Error("Truncated tick");
     const count = input.readUInt32LE(offset + 20);
     if (count > 16) throw Error("Too many commands");
@@ -65,7 +65,7 @@ export function decode(input) {
     records.push(input.subarray(offset, offset + length));
     offset += length;
   }
-  return { config: input.subarray(0, 256), records };
+  return { config: input.subarray(0, CONFIG_BYTES), records };
 }
 
 export function step(e, record) {
@@ -80,8 +80,11 @@ export function step(e, record) {
   return e.portable_step_many(count);
 }
 
+// `PortableConfig` in host/api.h: 12 uint32 settings, then 53 weapon usage counts.
+export const CONFIG_BYTES = 260;
+
 export function config(mode, major = 1, minor = 1, options = {}) {
-  const b = Buffer.alloc(256);
+  const b = Buffer.alloc(CONFIG_BYTES);
   [
     options.seed ?? 42,
     mode,
@@ -94,6 +97,7 @@ export function config(mode, major = 1, minor = 1, options = {}) {
     options.friendly ?? 0,
     options.hardcore ?? 0,
     options.retry ?? 0,
+    options.preserveBugs ?? 1,
     ...Array.from({ length: 53 }, (_, i) => (options.usage ? i * 3 : 0)),
   ].forEach((v, i) => b.writeUInt32LE(v, i * 4));
   return b;

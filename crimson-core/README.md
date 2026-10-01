@@ -12,13 +12,13 @@ copies of 168 recovered translation units; everything it adds lives here.
 
 ## Status
 
-- **Original rules:** whole runs agree with Python (`preserve_bugs=True`) on all
-  63 streams, checked in CI by the [gate](#whole-run-gate).
-- **Ranked rules** (`preserve_bugs=False`): not started. Python's documented
-  fixes are to be applied in place behind a runtime policy flag, so RNG call
-  order matches Python under both policies. See the [roadmap](ROADMAP.md).
-- Native and WASM snapshots are bit-exact on 59 bot scenarios, including
-  resets. Quest builders and gameplay math match the original executable.
+- Whole runs agree with Python under both bug policies: the **original rules**
+  (`preserve_bugs=True`) and the **ranked rules** (`preserve_bugs=False`, the
+  documented fixes). The [gate](#whole-run-gate) checks all 126 streams in CI,
+  including the four supported human recordings, whose claimed results the core
+  reproduces.
+- Native and WASM snapshots are bit-exact on 122 bot runs, including resets.
+  Quest builders and gameplay math match the original executable.
 
 ## Scope
 
@@ -27,7 +27,7 @@ copies of 168 recovered translation units; everything it adds lives here.
   (the stick's reach from the moved position), read from each tick's flags as
   Python does. Keyboard movement schemes, Typ-o, the tutorial and more players
   fail explicitly.
-- Original rules only.
+- The run's bug policy comes with its configuration; see [Rules](#rules).
 
 ## Layout
 
@@ -36,6 +36,7 @@ copies of 168 recovered translation units; everything it adds lives here.
 | [`build.py`](build.py), [`adapter.py`](adapter.py), [`data.py`](data.py) | Generate, adapt and compile the recovered sources; recreate the globals. |
 | [`sources.json`](sources.json), [`provenance.json`](provenance.json), [`schema.json`](schema.json) | Selected bodies, pinned dependency hashes, snapshot fields. |
 | [`host/`](host) | The host the recovered code runs in: API, input, timing, stubs, portable math. |
+| [`rules.py`](rules.py), [`patches/`](patches) | The ranked rules: one patch per fixed original bug. |
 | [`checks/`](checks) | Native/WASM matrix, Python whole-run gate, original-executable oracles, Wasmtime probe. |
 | [`results/`](results) | Checked-in results of those checks. |
 | [`worker/`](worker) | Diagnostic Cloudflare Worker that runs the WASM module. |
@@ -64,14 +65,17 @@ node crimson-core/checks/matrix.mjs
 ```
 
 An ordinary bot reads state, chooses inputs and perks, and never edits
-simulation state. It writes 59 input-only `.rsi` streams to `build/fixtures`,
-alternating mouse and pad aim, each through the run-down after its end. The
-matrix compares 36,343 named fields at
+simulation state. Each of its 61 scenarios runs under both bug policies (the
+ranked run carries a `-ranked` suffix), alternating mouse and pad aim and
+continuing through the run-down after the end, giving 122 input-only `.rsi`
+streams in `build/fixtures`. Two hunter scenarios prefer the perks ranked fixes
+touch (Jinxed, Pyrokinetic, Highlander, Death Clock, Bandage, the
+Regenerations) and hold G at times. The matrix compares 36,343 named fields at
 initialization and **every tick** between native and WASM, then checks A/B/A
 reuse in both. It also probes rejection of bad input, commands and entitlement,
 and that a large movement vector does not move faster than a unit one.
 
-The [results](results/matrix.json) cover 96,930 ticks. All 50 quests run to an
+The [results](results/matrix.json) cover 289,665 ticks. All 50 quests run to an
 outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
 every mode, quest completion and failure, spawn stalls, reloads, perk menus,
 ordered picks, several weapons, freeze, Reflex Boost and weapon power-ups, and
@@ -90,20 +94,19 @@ uv run python crimson-core/checks/gate.py --out crimson-core/results/gate.json
 ```
 
 The gate feeds each bot stream and each supported recorded fixture to Python
-and the native core. Per tick it compares the RNG state, kills, shots, pending
+and the native core, both under the bug policy the stream's configuration
+carries; recorded fixtures replay under the rules they were recorded with. Per tick it compares the RNG state, kills, shots, pending
 perks, bonus timers and the player's position, health, death timer, headings,
 experience, level, ammo and weapon, floats as F32 bits, keeping the first
 divergence. It compares the terminal tick and outcome, and the complete
 `RunResult` after the last tick both stepped. Both sides simulate the run-down
 after the end, at most 500 ms of frames, as live play and verification do; a
 core rejection counts only where Python's run-down ends, and the gate refuses
-to run on a partial bot corpus or unknown `--only` names. Recorded fixtures
-were played under the default rules, so under the original rules they may end
-early; the gate does not validate recorded scores.
+to run on a partial bot corpus or unknown `--only` names.
 
-The [baseline](results/gate.json) agrees on **all 63** streams, including the
+The [baseline](results/gate.json) agrees on **all 126** streams, including the
 four supported human fixtures (Quests 2.5, 2.10 and 4.10, and a Survival run);
-the keyboard Rush and Typ-o fixtures are not supported yet. CI fails on any
+the Typ-o fixture is not supported yet. CI fails on any
 disagreement. A new divergence is reduced to its first differing state and
 decided against the original through Unicorn or its disassembly.
 
@@ -171,12 +174,44 @@ replay admission. Workers limits are documented by
 [Cloudflare](https://developers.cloudflare.com/workers/platform/limits/); local
 workerd does not prove them.
 
+## Rules
+
+The run configuration's `preserve_bugs` sets `portable_preserve_bugs`
+([`host/rules.h`](host/rules.h)). Each documented Python fix the core's scope
+reaches is a patch in [`patches/`](patches), named after its entry in
+[`docs/rewrite/original-bugs.md`](../docs/rewrite/original-bugs.md). The fix
+sits at the native site behind the flag, `if (portable_preserve_bugs) {native}
+else {fix}`, so the RNG call order matches Python under both policies, and
+`decomp/` stays untouched. [`rules.py`](rules.py) applies the patches to the
+adapted copies by exact text, ignoring line numbers; a hunk that no longer
+matches exactly once stops the build. Bug 32 (the Shock Chain slot's starting
+value) is set by the host at run start.
+
+| Patch | Fix |
+| --- | --- |
+| 01 | Weapon drops are suppressed only for a carried weapon, not any matching amount |
+| 02 | Greater Regeneration doubles the Regeneration heal |
+| 03 | Bandage adds its roll to living players instead of multiplying |
+| 05 | The reload preload looks ahead by the Stationary Reloader step |
+| 10 | Jinxed can pick the last creature slot |
+| 11 | Doctor, Pyrokinetic and Evil Eyes stop with a dead player |
+| 17 | Mini-Rocket Swarmers spread evenly over 120 degrees around the aim |
+| 18 | Exactly 0 health is lethal |
+| 20 | A nearest-creature search that finds nothing returns -1 |
+| 24 | Holding G grants no Fire Bullets |
+| 27 | Enemy projectiles do not hurt through Death Clock |
+| 33 | A bonus carrier drops its bonus once |
+
+The other entries are out of the core's scope (co-op, Typ-o, HUD, menus or
+live input) or are documentation only.
+
 ## Transport and input seam
 
 [`checks/replay.py`](checks/replay.py) converts a `.crd` replay into `.rsi`, the
 core's private test transport. It carries no claimed score:
 
-- 256-byte config: 64 little-endian uint32 values, laid out in
+- 260-byte config: 65 little-endian uint32 values (12 settings ending with
+  `preserve_bugs`, then 53 weapon usage counts), laid out in
   [`host/api.h`](host/api.h).
 - Each tick: four float32 axes, uint32 flags, a uint32 command count, then that
   many `(int32 type, int32 argument)` pairs.
@@ -206,11 +241,13 @@ stick and cvar read.
 copies: C linkage, const references for VC6 temporaries, declaration repairs
 and shared math calls. It also keeps the x87 evaluation boundaries the original
 executable shows, which the C syntax alone does not: wide angle returns
-(including the creature target heading), the first trig multiply of player,
-projectile, seeker and creature motion (creature movement multiplies from the
-cosine left to right), and the quest trig spills (Sweep Stakes and Deja vu
-spill cosine to F32 but keep sine wide). Each adaptation is guarded by an
-expected match count.
+(the creature target heading, the Shock Chain link angles), the first trig
+multiply of player, projectile, seeker and creature motion, the shot spread and
+a projectile's hit jitter and particle velocities (creature movement multiplies
+from the cosine left to right), and the quest trig spills (Sweep Stakes and Deja
+vu spill cosine to F32 but keep sine wide). In `projectile_update` a cast trig
+result multiplied directly stays wide, while a stored one is spilled. Each
+adaptation is guarded by an expected match count.
 
 [`data.py`](data.py) recreates the globals from the recovered data manifest.
 Adjacent globals stay separate because 64-bit pointers need more storage;

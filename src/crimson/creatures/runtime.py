@@ -1058,6 +1058,7 @@ class CreaturePool:
                 state=state,
                 detail_preset=detail_preset,
             )
+            # Native drops it again whenever this death is handled again (original bug 33).
             if not state.preserve_bugs:
                 creature.bonus_id = None
                 creature.bonus_duration_override = None

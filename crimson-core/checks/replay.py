@@ -19,7 +19,7 @@ def encode(replay, limit):
         raise ValueError("The core supports one player in Rush, Survival or Quests")
     level = run.quest_level
     config = struct.pack(
-        "<64I",
+        "<65I",
         run.seed,
         int(run.game_mode_id),
         level.major if level else 1,
@@ -31,6 +31,7 @@ def encode(replay, limit):
         run.friendly_fire,
         run.hardcore,
         run.quest_fail_retry_count,
+        run.preserve_bugs,
         *run.status.weapon_usage_counts,
     )
     records = []

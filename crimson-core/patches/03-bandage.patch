@@ -1,0 +1,20 @@
+Original bug 3: Bandage multiplies health by its 1..50 roll. The fix adds the roll, to living players only.
+--- a/perk_apply.cpp
++++ b/perk_apply.cpp
+@@ -123,7 +123,15 @@
+ 
+     if (perk_id == perk_id_bandage) {
+         for (i = 0; i < player_count; ++i) {
+-            player_state_table[i].health *= (float)(crt_rand() % 50) + 1.0f;
++            if (!portable_preserve_bugs && player_state_table[i].health <= 0.0f) {
++                continue;
++            }
++            float heal = (float)(crt_rand() % 50) + 1.0f;
++            if (portable_preserve_bugs) {
++                player_state_table[i].health *= heal;
++            } else {
++                player_state_table[i].health += heal;
++            }
+             if (player_state_table[i].health > 100.0f) {
+                 player_state_table[i].health = 100.0f;
+             }

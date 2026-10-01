@@ -9,10 +9,10 @@ struct PortableInput {
 };
 struct PortableConfig {
   uint32_t seed, mode, major, minor, unlock, unlock_full, detail, violence,
-      friendly_fire, hardcore, retry;
+      friendly_fire, hardcore, retry, preserve_bugs;
   uint32_t weapon_usage[53];
 };
-static_assert(sizeof(PortableConfig) == 256);
+static_assert(sizeof(PortableConfig) == 260);
 static_assert(sizeof(PortableInput) == 20);
 static_assert(sizeof(PortableCommand) == 8);
 static_assert(sizeof(float) == 4 && sizeof(int) == 4);

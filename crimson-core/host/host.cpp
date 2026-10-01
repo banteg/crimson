@@ -1,4 +1,5 @@
 #include "api.h"
+#include "rules.h"
 #include "crimsonland_gameplay.h"
 #include "crimsonland_metadata.h"
 #include "grim2d_cpp.h"
@@ -12,6 +13,8 @@
 #include <string.h>
 static PortableInput in;
 static PortableConfig cfg;
+extern "C" unsigned char portable_preserve_bugs;
+unsigned char portable_preserve_bugs;
 static PortableCommand commands[16];
 static bool ready;
 static bool menu_requested;
@@ -159,8 +162,9 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   trace_init("begin");
   ready = false;
   if (cfg.detail > 5 || cfg.unlock > 50 || cfg.unlock_full > 50 ||
-      cfg.retry > 2147483647u)
+      cfg.retry > 2147483647u || cfg.preserve_bugs > 1)
     return 0;
+  portable_preserve_bugs = (unsigned char)cfg.preserve_bugs;
   for (auto n : cfg.weapon_usage)
     if (n > 2147483647u)
       return 0;
@@ -178,8 +182,9 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   tick = 0;
   running_down = false;
   run_down_ms = 500;
-  // A fresh game's values; nothing resets them between runs.
-  shock_chain_projectile_id = 0;
+  // A fresh game's values; nothing resets them between runs. Original bug 32:
+  // slot 0 matches the chain id, so the fix starts with no chain.
+  shock_chain_projectile_id = portable_preserve_bugs ? 0 : -1;
   perk_lean_mean_exp_tick_timer_s = 0;
   in = {0, 0, 512, 512, 0};
   grim_interface_ptr = &headless_grim;

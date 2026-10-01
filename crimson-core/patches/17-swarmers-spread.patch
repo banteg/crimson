@@ -1,0 +1,16 @@
+Original bug 17: Mini-Rocket Swarmers step by `ammo * pi/3`, so the clip overlaps itself facing backwards.
+The fix spreads the clip evenly over 120 degrees around the aim.
+--- a/player_update_heading.cpp
++++ b/player_update_heading.cpp
+@@ -1714,6 +1714,11 @@
+                 rocket_step = player->ammo * 1.0471976f;
+                 float rocket_heading = (angle_step - 3.1415927f)
+                     - rocket_step * player->ammo * 0.5f;
++                if (!portable_preserve_bugs) {
++                    int rockets = 0.0f < player->ammo ? (int)ceilf(player->ammo) : 0;
++                    rocket_step = rockets <= 1 ? 0.0f : 3.1415927f * (2.0f / 3.0f) / (float)(rockets - 1);
++                    rocket_heading = angle_step - 3.1415927f * (1.0f / 3.0f);
++                }
+                 int rocket_count = 0;
+                 if (0.0f < player->ammo) {
+                     do {

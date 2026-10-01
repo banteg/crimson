@@ -70,6 +70,26 @@ def adapt(src, txt):
         )
         if count != 4:
             raise ValueError("Audit seeker steering trig boundaries before changing this adapter")
+        # A cast trig result multiplied directly stays wide into that multiply (e.g. the hit jitter at
+        # 0x004211da, the particle velocities at 0x0042219f); stored ones are spilled (0x00421dfe).
+        txt, count = re.subn(r"\(float\)(cos|sin)\(([^()]+)\) \* ([\w.]+)", r"portable_mul32(\1(\2), \3)", txt)
+        if count != 14:
+            raise ValueError("Audit projectile trig boundaries before changing this adapter")
+        # 0x004212e5: the chain link's `fpatan` stays wide; each subtraction rounds.
+        for expression, wide in (
+            ("float chain_angle\n", "double chain_angle\n"),
+            ("= (float)atan2f(next_position->y", "= atan2f(next_position->y"),
+            ("chain_angle - 1.5707964f - 3.1415927f,", "(float)(chain_angle - 1.5707964f) - 3.1415927f,"),
+        ):
+            if txt.count(expression) != 1:
+                raise ValueError("Audit the shock chain link angle before changing this adapter")
+            txt = txt.replace(expression, wide)
+    if src.stem == "bonus_apply":
+        # 0x00409e0b: the first link's `fpatan` stays wide; each subtraction rounds.
+        expression = "(float)atan2(dy, dx) - 1.5707964f - 3.1415927f,"
+        if txt.count(expression) != 1:
+            raise ValueError("Audit the shock chain angle before changing this adapter")
+        txt = txt.replace(expression, "(float)(atan2(dy, dx) - 1.5707964f) - 3.1415927f,")
     if src.stem == "player_update_heading":
         # Mouse aim is recorded as a canonical world point. Reconstructing a
         # screen point and subtracting the camera again can lose one F32 ULP.
@@ -99,6 +119,14 @@ def adapt(src, txt):
         )
         if count != 22:
             raise ValueError("Audit player movement trig boundaries before changing this adapter")
+        # The shot and Fire Cough spreads feed their wide trig into the first multiply too (0x00415cb2, 0x00413b61).
+        txt, count = re.subn(
+            r"(cosf|sinf)\(spread_angle\) \* (spread_distance|spread_radius)",
+            lambda m: f"portable_mul32({m[1][:-1]}(spread_angle), {m[2]})",
+            txt,
+        )
+        if count != 4:
+            raise ValueError("Audit shot spread trig boundaries before changing this adapter")
     if src.stem == "gameplay_update_and_render":
         txt = txt.replace("void console_input_poll(void);", "int console_input_poll(void);")
         txt = txt.replace("pow(", "portable_crt_pow_pc24(")

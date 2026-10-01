@@ -1,0 +1,20 @@
+Original bug 5: the reload preload looks one unscaled frame ahead, so Stationary Reloader can skip it.
+The fix looks ahead by the scaled reload step.
+--- a/player_update_heading.cpp
++++ b/player_update_heading.cpp
+@@ -859,7 +859,14 @@
+         }
+     }
+ 
+-    if (player->reload_timer - frame_dt < 0.0f
++    float preload_dt = frame_dt;
++    if (!portable_preserve_bugs
++        && ((vec2_t *)&player->position)->x == previous_pos.x
++        && player->position.y == previous_pos.y
++        && perk_count_get(perk_id_stationary_reloader) != 0) {
++        preload_dt = 3.0f * frame_dt;
++    }
++    if (player->reload_timer - preload_dt < 0.0f
+         && player->reload_timer > 0.0f) {
+         player->ammo = player->clip_size;
+     }

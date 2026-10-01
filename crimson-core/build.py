@@ -12,6 +12,7 @@ from pathlib import Path
 
 from adapter import adapt
 from data import data_source
+from rules import apply_patches, load_patches
 
 HERE = Path(__file__).resolve().parent
 HOST = HERE / "host"
@@ -85,10 +86,14 @@ def main():
         if hashlib.sha256((a.root / rel).read_bytes()).hexdigest() != expected:
             raise SystemExit(f"Recovered dependency changed; audit adapters before updating provenance: {rel}")
 
+    hunks = load_patches()
+    if missing := sorted(set(hunks) - {Path(rel).stem for rel in sources}):
+        raise SystemExit(f"Rule patches for sources outside sources.json: {', '.join(missing)}")
+
     def compile_one(rel):
         src = a.root / rel
         txt = src.read_text()
-        txt = adapt(src, txt)
+        txt = apply_patches(src.stem, adapt(src, txt), hunks)
         dst = a.out / (src.stem + ".cpp")
         dst.write_text(f'#line 1 "{src}"\n' + txt)
         obj = a.out / (src.stem + ".o")

@@ -29,7 +29,23 @@ fs.mkdirSync(fixtures, { recursive: true });
 const MOUSE = 0x1700,
   PAD = 0x9700;
 
-function play(cfg, bot, limit, aim) {
+// Perk ids (`PerkId` in src/crimson/perks) that ranked-rules fixes touch.
+const PERK = {
+  pyrokinetic: 6,
+  evilEyes: 11,
+  doctor: 29,
+  regeneration: 38,
+  highlander: 41,
+  jinxed: 42,
+  greaterRegeneration: 45,
+  deathClock: 47,
+  bandage: 49,
+};
+// FIRE_BULLETS_KEY_DOWN_FLAG in src/crimson/replay/types.py: the G key.
+const G_KEY = 131072;
+
+// `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, `gKey` holds G at times.
+function play(cfg, bot, limit, aim, hunt = {}) {
   init(e, cfg);
   const records = [],
     coverage = {
@@ -141,6 +157,10 @@ function play(cfg, bot, limit, aim) {
     ) {
       if (pickNext) {
         let choice = 0;
+        if (hunt.prefer) {
+          const offered = [0, 1, 2, 3, 4].map((i) => u(`globals.perk_choice_ids[${i}]`));
+          choice = Math.max(0, offered.findIndex((id) => hunt.prefer.includes(id)));
+        }
         if (bot === 4) {
           while (
             choice < 4 &&
@@ -173,7 +193,10 @@ function play(cfg, bot, limit, aim) {
         my,
         aim === PAD ? wx - x : wx,
         aim === PAD ? wy - y : wy,
-        aim | (bot && target ? 1 : 0) | (reload ? 65536 : 0),
+        aim |
+          (bot && target ? 1 : 0) |
+          (reload ? 65536 : 0) |
+          (hunt.gKey && tick % 211 < 30 ? G_KEY : 0),
       ],
       commands,
     );
@@ -257,49 +280,60 @@ function displacement(magnitude) {
 if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
 
+// [name, config arguments, bot, tick limit, aim, hunt]; every scenario runs under both bug policies.
 const scenarios = [
-  ["rush-idle", config(2), false, 6000, PAD],
-  ["rush-bot", config(2), true, 30000, MOUSE],
-  ["rush-evade", config(2, 1, 1, { seed: 1337 }), 2, 30000, PAD],
-  ["survival-idle", config(1), false, 10000, MOUSE],
-  ["survival-bot", config(1), true, 30000, PAD],
-  ["survival-evade", config(1), 2, 30000, MOUSE],
-  ["survival-evade-1337", config(1, 1, 1, { seed: 1337 }), 2, 30000, PAD],
-  ["survival-command-batches", config(1, 1, 1, { seed: 1337 }), 4, 30000, MOUSE],
+  ["rush-idle", [2], false, 6000, PAD],
+  ["rush-bot", [2], true, 30000, MOUSE],
+  ["rush-evade", [2, 1, 1, { seed: 1337 }], 2, 30000, PAD],
+  ["survival-idle", [1], false, 10000, MOUSE],
+  ["survival-bot", [1], true, 30000, PAD],
+  ["survival-evade", [1], 2, 30000, MOUSE],
+  ["survival-evade-1337", [1, 1, 1, { seed: 1337 }], 2, 30000, PAD],
+  ["survival-command-batches", [1, 1, 1, { seed: 1337 }], 4, 30000, MOUSE],
+  [
+    "survival-hunt-jinxed",
+    [1, 1, 1, { seed: 7 }],
+    2,
+    30000,
+    PAD,
+    { prefer: [PERK.jinxed, PERK.pyrokinetic, PERK.evilEyes, PERK.doctor], gKey: true },
+  ],
+  [
+    "survival-hunt-highlander",
+    [1, 1, 1, { seed: 10 }],
+    2,
+    30000,
+    MOUSE,
+    {
+      prefer: [PERK.highlander, PERK.deathClock, PERK.regeneration, PERK.greaterRegeneration, PERK.bandage],
+    },
+  ],
 ];
 for (let major = 1; major <= 5; major++)
-  for (let minor = 1; minor <= 10; minor++) {
-    scenarios.push([
-      `quest-${major}.${minor}`,
-      config(3, major, minor),
-      true,
-      30000,
-      minor % 2 ? PAD : MOUSE,
-    ]);
-  }
+  for (let minor = 1; minor <= 10; minor++)
+    scenarios.push([`quest-${major}.${minor}`, [3, major, minor], true, 30000, minor % 2 ? PAD : MOUSE]);
 scenarios.push([
   "quest-settings",
-  config(3, 1, 1, {
-    seed: 2345,
-    detail: 0,
-    violence: 1,
-    hardcore: 1,
-    retry: 3,
-    friendly: 1,
-    usage: true,
-  }),
+  [3, 1, 1, { seed: 2345, detail: 0, violence: 1, hardcore: 1, retry: 3, friendly: 1, usage: true }],
   true,
   30000,
   PAD,
 ]);
+// The original's bugs, and the documented fixes of the ranked rules.
+const policies = [
+  ["", 1],
+  ["-ranked", 0],
+];
 const report = {
-  rules: "original",
   guards: "11 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };
-for (const [name, cfg, bot, limit, aim] of scenarios) {
+for (const [scenario, [mode, major, minor, options], bot, limit, aim, hunt] of scenarios)
+  for (const [suffix, preserveBugs] of policies) {
+  const name = scenario + suffix;
+  const cfg = config(mode, major, minor, { ...options, preserveBugs });
   console.log(`${name}: generating input stream`);
-  const run = play(cfg, bot, limit, aim);
+  const run = play(cfg, bot, limit, aim, hunt);
   const filename = path.join(fixtures, `${name}.rsi`);
   fs.writeFileSync(filename, run.input);
   console.log(`${name}: comparing ${run.input.length} input bytes`);
@@ -313,7 +347,7 @@ for (const [name, cfg, bot, limit, aim] of scenarios) {
   console.log(
     `${name}: ${parity.ticks} ticks, terminal ${run.final.pending}, native/WASM + reset passed`,
   );
-}
+  }
 if (!report.cases.some((c) => c.coverage.max_commands > 1))
   throw Error("No ordered command batch covered");
 if (!report.cases.some((c) => c.final.pending === 8))

@@ -1,0 +1,18 @@
+Original bug 1: bonus drop suppression compares any bonus amount with the weapon id.
+The fix cancels only Weapon drops of a weapon the player carries, primary or alternate.
+--- a/bonus_try_spawn_on_kill.cpp
++++ b/bonus_try_spawn_on_kill.cpp
+@@ -81,8 +81,11 @@
+         bool reject = false;
+         if (duplicate_count >= 2) {
+             reject = true;
+-        } else if (
+-            entry->time.amount == player_state_table[0].weapon_id) {
++        } else if (portable_preserve_bugs
++                       ? entry->time.amount == player_state_table[0].weapon_id
++                       : entry->bonus_id == BONUS_ID_WEAPON
++                             && (entry->time.amount == player_state_table[0].weapon_id
++                                 || entry->time.amount == player_state_table[0].alt_weapon_id)) {
+             reject = true;
+         }
+         if (reject) {

@@ -1,0 +1,13 @@
+Original bug 18: a hit leaving exactly 0 health is not lethal. The fix treats it as a death.
+--- a/player_take_damage.cpp
++++ b/player_take_damage.cpp
+@@ -62,7 +62,8 @@
+     }
+ 
+ post_damage:
+-    if (player_state_table[player_index].health < 0.0f) {
++    if (player_state_table[player_index].health < 0.0f
++        || (!portable_preserve_bugs && player_state_table[player_index].health == 0.0f)) {
+         player_state_table[player_index].death_timer =
+             player_state_table[player_index].death_timer - frame_dt * 28.0f;
+         if (was_dead) {

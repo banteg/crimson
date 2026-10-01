@@ -1,0 +1,22 @@
+Original bug 27: enemy projectiles hurt through Death Clock. The fix ignores their hits while it runs.
+--- a/projectile_update.cpp
++++ b/projectile_update.cpp
+@@ -83,6 +83,7 @@
+ extern int perk_id_ion_gun_master;
+ extern int perk_id_barrel_greaser;
+ extern int perk_id_bloody_mess_quick_learner;
++extern int perk_id_death_clock;
+ extern int highscore_record_shots_hit;
+ extern unsigned char music_playlist_randomized_latch;
+ extern int music_track_extra_0;
+@@ -206,7 +207,9 @@
+                                         }
+                                         if (hit_id != -1) {
+                                             projectile->pos.tail.vy.life_timer = 0.25f;
+-                                            if (player_state_table[hit_id].shield_timer <= 0.0f) {
++                                            if (player_state_table[hit_id].shield_timer <= 0.0f
++                                                && (portable_preserve_bugs
++                                                    || perk_count_get(perk_id_death_clock) == 0)) {
+                                                 player_state_table[hit_id].health -= 10.0f;
+                                             }
+                                         }

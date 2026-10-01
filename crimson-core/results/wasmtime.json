@@ -1,13 +1,13 @@
 {
   "wasmtime_version": "49.0.0",
-  "module_sha256": "b15720a85f9c0ea794ac050abfd8ce06b6bd2fdaf4f4b15ec52c7b185ed54f37",
-  "cases": 59,
-  "ticks": 96930,
+  "module_sha256": "9f35548d516916cba949d86501f2744106c1a61d09956aa4c9e30be1a428ab0a",
+  "cases": 122,
+  "ticks": 289665,
   "fields_per_snapshot": 36343,
   "comparison": "every snapshot hash matches native/Node",
   "reset": "all Wasmtime A/B/A passed",
   "linear_memory_mib": 2.5,
-  "host_check_seconds": 15.919393457937986,
+  "host_check_seconds": 47.8346692500636,
   "results": [
     {
       "name": "rush-idle",
@@ -15,9 +15,19 @@
       "sha256": "1fdf87940c94b84e67bda617d68a472dc64735cd8e9e510835b84150f9b863ff"
     },
     {
+      "name": "rush-idle-ranked",
+      "ticks": 801,
+      "sha256": "0015643da5fa319f0120af30d91b1a528fa422273b59fdf54db61f25eb88f41e"
+    },
+    {
       "name": "rush-bot",
       "ticks": 944,
       "sha256": "ae5296a6572eb8ddbf6c90b9f09461e8dffa3c71a41da1a2937fbdbd0cd06ac7"
+    },
+    {
+      "name": "rush-bot-ranked",
+      "ticks": 942,
+      "sha256": "13e55637db6240ba5f447f131804153d30fa8cc10a8e5f4cb8644d7d5138e704"
     },
     {
       "name": "rush-evade",
@@ -25,9 +35,19 @@
       "sha256": "f7d42d39e294f11d535f3ce5e6956772fdfec4f9781df5801bc45906a781879a"
     },
     {
+      "name": "rush-evade-ranked",
+      "ticks": 1244,
+      "sha256": "f610c0919f596f7aca0493e52c3bda41cbd6b291e1e3adff5bb39db2b1008274"
+    },
+    {
       "name": "survival-idle",
       "ticks": 1906,
       "sha256": "d5f5f554fe39d99cb7f96a451399e473ed57bd679b79bbd0e358f6820888262d"
+    },
+    {
+      "name": "survival-idle-ranked",
+      "ticks": 1906,
+      "sha256": "70e20417bd1c50050eb865a24925a6e3c5c8140bd34df499cfd3199ecf00d84f"
     },
     {
       "name": "survival-bot",
@@ -35,14 +55,29 @@
       "sha256": "b678996b74185431d2dca551bf02bf90224fb269ce7e5c2e2bfbfa806072e041"
     },
     {
+      "name": "survival-bot-ranked",
+      "ticks": 21179,
+      "sha256": "89e8ac142fcc2217a571e5ce6cee8237109f573878aa004bf0c21fccc086edf0"
+    },
+    {
       "name": "survival-evade",
       "ticks": 4318,
-      "sha256": "ccb2ff58193789f8875c7d0b507e2a7ba9883c83b2d3773de69d319043cc6d5b"
+      "sha256": "7eced8059d576989002b36ab96d17a77ecb2af2cd2d7b6a3aa25182565812f9f"
+    },
+    {
+      "name": "survival-evade-ranked",
+      "ticks": 4318,
+      "sha256": "c87126ba4a3b04fe8170e325d7b800b71a0cb34ae2efd4b93674a62a889eff9c"
     },
     {
       "name": "survival-evade-1337",
       "ticks": 10681,
-      "sha256": "93dbefe6b63ffc0234f97a17fb739f7d1afabeb0b57c54fbd03c58ae4884c33e"
+      "sha256": "e1ad3d0f1592443239203cf6981b4853f6740db9db0b1b7938bde710b2519a4b"
+    },
+    {
+      "name": "survival-evade-1337-ranked",
+      "ticks": 10681,
+      "sha256": "6b5b6ba662b15241738442eb9a9347bb1165dc17aa41b4519308ac2a075c5434"
     },
     {
       "name": "survival-command-batches",
@@ -50,9 +85,39 @@
       "sha256": "eda8caca3f4c1df674b6f2c46bc6a48a277054f87eca26f25201f3216c699cc5"
     },
     {
+      "name": "survival-command-batches-ranked",
+      "ticks": 8800,
+      "sha256": "ceb604c5bf38c5c38152889c7b09ad1ce43569b2f349d56904c10a948636fc10"
+    },
+    {
+      "name": "survival-hunt-jinxed",
+      "ticks": 8333,
+      "sha256": "882c1f2012a470162d60caa9c0edfcef3ca0a9174844dec5912769e1f8c9557e"
+    },
+    {
+      "name": "survival-hunt-jinxed-ranked",
+      "ticks": 8154,
+      "sha256": "9876d547f255e1b09315d69aa905db262b971b5824e8e6596b58d7e2e3d6c0e4"
+    },
+    {
+      "name": "survival-hunt-highlander",
+      "ticks": 25606,
+      "sha256": "eaf7545e57350c72a08871748cf6b1a1260f86f3beec61b064168da73d2b2183"
+    },
+    {
+      "name": "survival-hunt-highlander-ranked",
+      "ticks": 30000,
+      "sha256": "5be1024ec8e0281ed02b21a50845e7e0a12ccfc28a587ef6e4c4cf5401b65345"
+    },
+    {
       "name": "quest-1.1",
       "ticks": 1616,
-      "sha256": "483ca72c04981469227ab22a995ee5cd891c090b781fc432cdd27af5f8c88cf5"
+      "sha256": "60af879304f4bab11eea1d3ba7e263c061e9947f7d8258506ff6933b0858bd3e"
+    },
+    {
+      "name": "quest-1.1-ranked",
+      "ticks": 1616,
+      "sha256": "9ca65bbeef0a25bd9df14504b32203720b7bd974bf9a9dd6bc2fddab6283ea2b"
     },
     {
       "name": "quest-1.2",
@@ -60,9 +125,19 @@
       "sha256": "1e6ec00770f7c1854e46897098ca7e7288b57ef25cda95d9ed47e35cd88d8099"
     },
     {
+      "name": "quest-1.2-ranked",
+      "ticks": 788,
+      "sha256": "4f1c1f1ae77935b58417b988a8e295e621db2c6bd0ede8337e1266ac2f19ed07"
+    },
+    {
       "name": "quest-1.3",
       "ticks": 2928,
       "sha256": "1017aa853ef5f723d7f2f782f25452ba725aeb03537417f03860c37426a7d874"
+    },
+    {
+      "name": "quest-1.3-ranked",
+      "ticks": 2928,
+      "sha256": "c633951929583bd194b16e62daa8c38b334bfa85a04164e300812a23aae73444"
     },
     {
       "name": "quest-1.4",
@@ -70,9 +145,19 @@
       "sha256": "dd6631981123c5b5050a767a13286de0ff305bb163ba56b14f8f2e6033e6141f"
     },
     {
+      "name": "quest-1.4-ranked",
+      "ticks": 1312,
+      "sha256": "b0f5e918297878dc3a097690243d11da27e1b766f7a2f33c74a5130f37f16d98"
+    },
+    {
       "name": "quest-1.5",
       "ticks": 6530,
-      "sha256": "30d4b3e1db70ba44c7d41d39be27e6740b0918535b123b592e6ebca23a2a4150"
+      "sha256": "00e5eb4dcf40afb9b1c9b7de071d72a9aa777f880bf84e8756b9ce3f1a22a7c7"
+    },
+    {
+      "name": "quest-1.5-ranked",
+      "ticks": 10757,
+      "sha256": "33b6476ac8d66b3058bdcac318d841e8af88e5edec78199671268f6a077d57f0"
     },
     {
       "name": "quest-1.6",
@@ -80,14 +165,29 @@
       "sha256": "91e2ba113f22b8cfcc8995a58c5bfadd4a02a761c6a88508710cd066ab6140b7"
     },
     {
+      "name": "quest-1.6-ranked",
+      "ticks": 996,
+      "sha256": "2c53bff0605df3720b8d2752b7360746727d947ebcfafd75cac325ce847c4822"
+    },
+    {
       "name": "quest-1.7",
       "ticks": 1076,
       "sha256": "3e33bcaa966b273b4d4da387ccd9f94114b4f641cd7132ecb8f03bb6d31c75de"
     },
     {
+      "name": "quest-1.7-ranked",
+      "ticks": 1074,
+      "sha256": "0bdcd23c20bcaefdcf4b214d325440ad7decba52aa02035b2bf40cdf1326d351"
+    },
+    {
       "name": "quest-1.8",
       "ticks": 1232,
-      "sha256": "da347b8d578838f4eb424d3d97e736815446ac6c5543c35a89ca21231ef91ad8"
+      "sha256": "6335ce97d1d80105066dc1b50fb5c8cbd161ca8b2c3bef68ea37edd085fe756e"
+    },
+    {
+      "name": "quest-1.8-ranked",
+      "ticks": 1230,
+      "sha256": "dab1f9307decca65f77f71e7cad63eaa32e3741d67bfdab99d7695572567c471"
     },
     {
       "name": "quest-1.9",
@@ -95,9 +195,19 @@
       "sha256": "f781ddd5512322f3288e11e5e25433ef835a636db23f15c26447748e8a3818f5"
     },
     {
+      "name": "quest-1.9-ranked",
+      "ticks": 1517,
+      "sha256": "4878edf1880280168caa70d5ec6547101ef702c65d58ea1f6527ef069af1362d"
+    },
+    {
       "name": "quest-1.10",
       "ticks": 384,
       "sha256": "2a81a82d057ac6997cb27799f5a7db8a1da90eab8b810db542fa9bbd4ed47439"
+    },
+    {
+      "name": "quest-1.10-ranked",
+      "ticks": 382,
+      "sha256": "0155a48eeb621f1a4e522847bdb49032faa0cb1dc67bc71162d70f3e36e2c15b"
     },
     {
       "name": "quest-2.1",
@@ -105,9 +215,19 @@
       "sha256": "39422142dc7b106ec6dbd650026a643b6948d825969aa2822fb6621b9d46b4ff"
     },
     {
+      "name": "quest-2.1-ranked",
+      "ticks": 3347,
+      "sha256": "449bdca94a12664c6da3cebb08b847fd8c5c0ab16e92cb733298ec36e650a19d"
+    },
+    {
       "name": "quest-2.2",
       "ticks": 1984,
       "sha256": "7d7d108e94c4cdbd86e8f84fa5c33598595d6d975ca876f2674246fcc493d259"
+    },
+    {
+      "name": "quest-2.2-ranked",
+      "ticks": 1984,
+      "sha256": "a3f46271be7ee0915beb1bcb64ff19bf57c56b8d290aed8299131a87cd3e99eb"
     },
     {
       "name": "quest-2.3",
@@ -115,9 +235,19 @@
       "sha256": "7c5b65faa6c60f57a44115663d1f6e99329f621e9b7e50fafc3c4f27f2860cd4"
     },
     {
+      "name": "quest-2.3-ranked",
+      "ticks": 1038,
+      "sha256": "ef3288de5dc5a145fe010d7a10cbf59b6e6a82d7651734ad80d2cf77b784f47e"
+    },
+    {
       "name": "quest-2.4",
       "ticks": 1666,
       "sha256": "3ec99b09ef3a35c3bbf43c5bd27d8c0100cec6bd680c17ff6362ad07406aa91c"
+    },
+    {
+      "name": "quest-2.4-ranked",
+      "ticks": 1664,
+      "sha256": "815f8f3d1ce080cfd2e45e966b6c12084b911cbfc20a811a4e36bee49a2ecf32"
     },
     {
       "name": "quest-2.5",
@@ -125,14 +255,29 @@
       "sha256": "d436c2f771e5f107f6c4611a0b91644a9f70367a4917bd3bf087dd66fed5447e"
     },
     {
+      "name": "quest-2.5-ranked",
+      "ticks": 503,
+      "sha256": "5936faeb8396053677dcf370a9c50ca780dfb3d3a43f8a88cdb009e8f4c3664a"
+    },
+    {
       "name": "quest-2.6",
       "ticks": 1500,
-      "sha256": "2fbaf8f2087981642a7ae250bcffc99062c9b9766dd8ec972c80153eb7e29f1c"
+      "sha256": "729166a1124ed92aaf122ba951dff29d29808b79ee9e92a629e75cb46e8bb7a5"
+    },
+    {
+      "name": "quest-2.6-ranked",
+      "ticks": 1500,
+      "sha256": "acde5b0f3a25e65deac0b2a5717ce05207cf58903ac93cf84bdafc61cd888860"
     },
     {
       "name": "quest-2.7",
       "ticks": 683,
-      "sha256": "18105127fd0d8aa99a953a772c5dbc58c74a2a8ba0e322e571cb10628202bd9d"
+      "sha256": "6405714a73bd52c7be6d37d632d91443ae80ad89a943db3f9f9acaa961e1163c"
+    },
+    {
+      "name": "quest-2.7-ranked",
+      "ticks": 683,
+      "sha256": "4f16a30b9e156f3fcf728bed7e5bcf91cf25e0086c0b9f75717d99c15d461c46"
     },
     {
       "name": "quest-2.8",
@@ -140,9 +285,19 @@
       "sha256": "6bc4ddc262f4fe0028ed2779a9aef28c89602506a9cfda2772402ddc7b6cc4c3"
     },
     {
+      "name": "quest-2.8-ranked",
+      "ticks": 886,
+      "sha256": "76bbaf1a97e8f770e7fe3913dc468569c49ba7b5af37a6ac5038801528509fb2"
+    },
+    {
       "name": "quest-2.9",
       "ticks": 817,
       "sha256": "cbfd95ab597d8e7f93a44d98300bf6f81226c8586d0ecb5b0d52bef164cc8b9f"
+    },
+    {
+      "name": "quest-2.9-ranked",
+      "ticks": 817,
+      "sha256": "ca7c987bd3aff90c8e443de005b45d2424e0d2f18515c17b383b34648c893ffd"
     },
     {
       "name": "quest-2.10",
@@ -150,14 +305,29 @@
       "sha256": "acd4872e85cc47e41a591d7f96245a432af59a4141dd60fae5811c0dc928b180"
     },
     {
+      "name": "quest-2.10-ranked",
+      "ticks": 900,
+      "sha256": "7117484691ddf7d25b794bf905ee540dc1ace52d5d14ac10e0d0e2f8eb0672bc"
+    },
+    {
       "name": "quest-3.1",
       "ticks": 796,
       "sha256": "3def5e691c9323eddb11e0caa5cf03e8d541bf6a333745bce1f6df6f3ef0b7b5"
     },
     {
+      "name": "quest-3.1-ranked",
+      "ticks": 796,
+      "sha256": "acf9625940bc4182f13b0f51e440c7ac85d2e0aca6fefa7abd00a688570d5390"
+    },
+    {
       "name": "quest-3.2",
       "ticks": 754,
-      "sha256": "20305164038ac86154bc004388d6f0c5f6bc29e2b406a10b6d715908bfa385d3"
+      "sha256": "c57802f8e8f0e664785f177b919dd100a7cefa922400419fb9d03a491857afa7"
+    },
+    {
+      "name": "quest-3.2-ranked",
+      "ticks": 754,
+      "sha256": "cc75af53857e0e64a24ffe5d09862b7759506b159e65e8cc802419bb70095ae3"
     },
     {
       "name": "quest-3.3",
@@ -165,9 +335,19 @@
       "sha256": "1e28bbd41536703131f9dc1cbe1afa30fda3ab7263071aa33b074c3ec60d8eb9"
     },
     {
+      "name": "quest-3.3-ranked",
+      "ticks": 1317,
+      "sha256": "7ec95a7371985bce79f9729f130e636e88297aeedb3208f47f43784491ed13c0"
+    },
+    {
       "name": "quest-3.4",
       "ticks": 1107,
       "sha256": "5554fbed00faef2db99a8384e74ccd4ae31affea20a357a614d005ebadd43e77"
+    },
+    {
+      "name": "quest-3.4-ranked",
+      "ticks": 1107,
+      "sha256": "4cbbf9cde4aa8e6efc18235a5904dcb7e85e88f023a67b54207a9e4a5a78b582"
     },
     {
       "name": "quest-3.5",
@@ -175,14 +355,29 @@
       "sha256": "b30504e3684eec161a4272cd80275d5399bdf7a73917791936449952f3728e09"
     },
     {
+      "name": "quest-3.5-ranked",
+      "ticks": 1528,
+      "sha256": "6b72dc292ef882a270064b3db5370824be830c61fb8e50f20c867cd6091dda5b"
+    },
+    {
       "name": "quest-3.6",
       "ticks": 820,
       "sha256": "00612c8b6c0699a9a7d0bc04e1798b718dca36abbee98fb9169a34c737b8f4a3"
     },
     {
+      "name": "quest-3.6-ranked",
+      "ticks": 818,
+      "sha256": "976954337aadb39fc3f51bcf2e6b3d603b9c1dde6969b732abd1da4db76a0a6c"
+    },
+    {
       "name": "quest-3.7",
       "ticks": 4958,
-      "sha256": "51cc0e119da9c213cddab01472902f4fbe416507b129a7ffc2cbe5f8e6951196"
+      "sha256": "a9dbd6bad9cd4b38077b377d08f0aaf4840fc894a2df6571d97993c862bc6221"
+    },
+    {
+      "name": "quest-3.7-ranked",
+      "ticks": 4958,
+      "sha256": "db9af18862f032bd5112cec1fd6b3cc79fb3d39403aad8c64b015e17fabaa169"
     },
     {
       "name": "quest-3.8",
@@ -190,9 +385,19 @@
       "sha256": "b4e80b8fc83c62d90e6e4a726810a681325cb1c99782d0634f01ed1b5018f115"
     },
     {
+      "name": "quest-3.8-ranked",
+      "ticks": 860,
+      "sha256": "b41d36879ea073cf8c45f3519d910591ef8bb5fd96ab356b43ecbdfdd68bfd9b"
+    },
+    {
       "name": "quest-3.9",
       "ticks": 1186,
       "sha256": "9ffb62682c4cda67e4f93849fe0bfdc956f232422b488d9aef0c670d39e74f98"
+    },
+    {
+      "name": "quest-3.9-ranked",
+      "ticks": 1186,
+      "sha256": "326749b5067da1db26dfa7009fe2b0676d39ae555d17f076b3367e637e3ffff4"
     },
     {
       "name": "quest-3.10",
@@ -200,9 +405,19 @@
       "sha256": "62bf45b883c7966119535dea787aaa91be66434bce9c2404fc7c41ccc99d6b87"
     },
     {
+      "name": "quest-3.10-ranked",
+      "ticks": 676,
+      "sha256": "6a5e83b41dbf890ef2018178e1e3f8f3cfe222be3aefc1059b24417f76a1509a"
+    },
+    {
       "name": "quest-4.1",
       "ticks": 1937,
       "sha256": "29f15c4c4b3b0692d677cfc905f52cdc4b9b9980c57747bb42b092eec6758cc8"
+    },
+    {
+      "name": "quest-4.1-ranked",
+      "ticks": 1937,
+      "sha256": "21deb4735e4f10ef29b3fa91843ad7392643ccf59b5e59eb000a3529be130cf7"
     },
     {
       "name": "quest-4.2",
@@ -210,9 +425,19 @@
       "sha256": "e38506719c770fd90f30a980e1e484099a7efe8722936c988d4e90765a061aa2"
     },
     {
+      "name": "quest-4.2-ranked",
+      "ticks": 958,
+      "sha256": "ad0662f85d76b13f2ca5575bc2539e4da897ef4acd6c3b0efd470ba9ad31be28"
+    },
+    {
       "name": "quest-4.3",
       "ticks": 875,
       "sha256": "cc9e20023b9906ffe411d1fc2b668e9c0e6f91ea56a4390618b8b30718373b53"
+    },
+    {
+      "name": "quest-4.3-ranked",
+      "ticks": 875,
+      "sha256": "4b353dbf98708f2393888db3e7073e57a9a28ee4917c4ae149b4c87f678e2306"
     },
     {
       "name": "quest-4.4",
@@ -220,9 +445,19 @@
       "sha256": "402658a1328b3074f15130f98d21c9f70de9fa3d19588b4e07fc2bd65a4135c0"
     },
     {
+      "name": "quest-4.4-ranked",
+      "ticks": 1295,
+      "sha256": "ced53463dc0c18d6f846226d1b6640b492fdf4913c6d164dfc16a3ff306574b2"
+    },
+    {
       "name": "quest-4.5",
       "ticks": 1174,
       "sha256": "31794d56639e980179c5ab201bd819e9d4af8bc14312c81a7c0b8eef4ac9caa4"
+    },
+    {
+      "name": "quest-4.5-ranked",
+      "ticks": 1172,
+      "sha256": "645cf0b76566bcc5b247a95d5f32b0c1255be24f6eaad2c62704096456db3c04"
     },
     {
       "name": "quest-4.6",
@@ -230,9 +465,19 @@
       "sha256": "6ff752781d140b85ba9e308be17bbdd95421f58871c04695b309209c6596844e"
     },
     {
+      "name": "quest-4.6-ranked",
+      "ticks": 673,
+      "sha256": "9f68240a2a0e5e0d7e86c7f9c68972eab81b286e36fe0f2a6948dec433b8fb01"
+    },
+    {
       "name": "quest-4.7",
       "ticks": 527,
       "sha256": "9e8823a499a2f5f2eb3bea6b27668db37fff05f72d4b01a483d9844d7b18b92d"
+    },
+    {
+      "name": "quest-4.7-ranked",
+      "ticks": 527,
+      "sha256": "da1c387303bcde0cc1f70c8cabe376a8ff0b4d1e452a0302541941cd51c663a7"
     },
     {
       "name": "quest-4.8",
@@ -240,9 +485,19 @@
       "sha256": "193ecfc5fdcf4bb3534b4d26d5ee028e18b1ac6ebd5294fecaed7dff4c84a8ac"
     },
     {
+      "name": "quest-4.8-ranked",
+      "ticks": 781,
+      "sha256": "e74c5637542ddd1a90596e6f5183524711e2d544913aa398f1d7b50687d13ab0"
+    },
+    {
       "name": "quest-4.9",
       "ticks": 567,
       "sha256": "3c96ce0fd854e92fa69dee8785a1c9613181d4cd17ba5687dc95a435bf77f799"
+    },
+    {
+      "name": "quest-4.9-ranked",
+      "ticks": 565,
+      "sha256": "d14cada972192816afd3421bc40a0d00c9e2fa9f0da4d8d1a0b4fa6e2daba957"
     },
     {
       "name": "quest-4.10",
@@ -250,9 +505,19 @@
       "sha256": "730e13cc29d211cefefb0ce7644084eaa8df4882d30aa4df63088fed7fb355ad"
     },
     {
+      "name": "quest-4.10-ranked",
+      "ticks": 1856,
+      "sha256": "d684e1eac2137d4fe087656f416e048897cb41c48a277e56076afe9680fc5634"
+    },
+    {
       "name": "quest-5.1",
       "ticks": 1130,
       "sha256": "ee1799aa130c64c82b11aa3b733318939cc43e7ad58e15e916b7827bb11f4fd6"
+    },
+    {
+      "name": "quest-5.1-ranked",
+      "ticks": 1130,
+      "sha256": "ccedfd5788a43e970c680714c9bb96a00da0041ad2b5800c8ad497ecd86f50ba"
     },
     {
       "name": "quest-5.2",
@@ -260,9 +525,19 @@
       "sha256": "5ad5221a404b35052702753c4cb17fdea39b29762b72c915d3740fa3537362f8"
     },
     {
+      "name": "quest-5.2-ranked",
+      "ticks": 1241,
+      "sha256": "dd2a674fc3c83e03fbad6836fa23dcf1080e82a4182dc899268df9eea5717452"
+    },
+    {
       "name": "quest-5.3",
       "ticks": 593,
       "sha256": "477b7483babab2bdabbb97efaa4ad796f2c26d3dfc059f892eaaa1b33672bc70"
+    },
+    {
+      "name": "quest-5.3-ranked",
+      "ticks": 593,
+      "sha256": "8aa546d72f838586ff2c2963cbe670cfebe8d345a5691328ef44c96e55b57ad9"
     },
     {
       "name": "quest-5.4",
@@ -270,9 +545,19 @@
       "sha256": "cc7b0542b893cafdf81dc55b37c8bd6bbc792e1fedcc32b6edb22e852c4e2185"
     },
     {
+      "name": "quest-5.4-ranked",
+      "ticks": 1236,
+      "sha256": "d79ae7d9dda99cd7a865f0344a807c731109c1ca0fec0c797de89ebfc1401eba"
+    },
+    {
       "name": "quest-5.5",
       "ticks": 782,
       "sha256": "d3ee76449855ffe60a32d28d2521b66a0ef3cc73537a7c4dd4e92e6280575cc6"
+    },
+    {
+      "name": "quest-5.5-ranked",
+      "ticks": 782,
+      "sha256": "6c1d5e55fe0564112dd5a3997ead46ca6eb9717bbaa459b01e7bdbfda6c24af8"
     },
     {
       "name": "quest-5.6",
@@ -280,9 +565,19 @@
       "sha256": "9eff4ff27e56f1c2b67ebfaf1c398daf0968765b8ba22884e1f5e84244a360d8"
     },
     {
+      "name": "quest-5.6-ranked",
+      "ticks": 1207,
+      "sha256": "7e8673b73e9dc22f9f1bc8b685b3990af47e75ae84882b0d3f2f688c57029791"
+    },
+    {
       "name": "quest-5.7",
       "ticks": 688,
       "sha256": "9225aa85fd9db2ee4d76045f42231aa0a1a9ad0625e240c2b38ef4e11bf18adf"
+    },
+    {
+      "name": "quest-5.7-ranked",
+      "ticks": 688,
+      "sha256": "be9f553fbf9080234239357eb7d0402a1d069c307edcdb7863361a060b8a2ddb"
     },
     {
       "name": "quest-5.8",
@@ -290,19 +585,39 @@
       "sha256": "14ad9cd3feb449516aae71ec42c2a3cfd75678db1af5e543557d65053a6645a4"
     },
     {
+      "name": "quest-5.8-ranked",
+      "ticks": 781,
+      "sha256": "b8782d2470e86115c2dc9a18d8a175aea57d427a2974e12071f77160cc7835e3"
+    },
+    {
       "name": "quest-5.9",
       "ticks": 779,
       "sha256": "007827db5b833bc669de584cd63d32d017ba75e439b381a426aae0ba0067b209"
     },
     {
+      "name": "quest-5.9-ranked",
+      "ticks": 777,
+      "sha256": "4117b1c4d4f133ac920b08bee7b1d43523e884df01d4eecf533792a4faa21f1b"
+    },
+    {
       "name": "quest-5.10",
       "ticks": 860,
-      "sha256": "bcddca4c2fdcdc91b72f2b65b2e73d784f5af929debab7665d7055d525be9ddc"
+      "sha256": "4ef3dd2b7e399128bdc5ef15452cc430f853f5737d9dc0e53ec965ed2294e977"
+    },
+    {
+      "name": "quest-5.10-ranked",
+      "ticks": 860,
+      "sha256": "7009285595c9aea15d05942a15f4c58098fd3ff455dbd2fddd722efb888b62f1"
     },
     {
       "name": "quest-settings",
       "ticks": 915,
       "sha256": "21c99b2acff5b23187e2e0e8fce2ea99caac1e642f8ab52e4689a380dd3a54ef"
+    },
+    {
+      "name": "quest-settings-ranked",
+      "ticks": 915,
+      "sha256": "d41053fbc96ebe1b1cdc5a3810aba7fcedaf9b60238ae336dd2874e1ff9c8a64"
     }
   ]
 }

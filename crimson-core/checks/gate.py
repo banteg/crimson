@@ -6,11 +6,9 @@ either an input-only `.rsi` from the bot corpus (`matrix.mjs`) or a recorded
 per-tick fields to locate the first divergence, the first terminal tick and its
 outcome, and the complete `RunResult` after the last tick both sides stepped.
 
-The recovered core always keeps the original bugs, so this is the original-rules
-gate: Python runs with `preserve_bugs=True`. Recorded fixtures were played under
-the default rules; under the original rules their runs can end earlier, and
-the core rejects what follows the run-down, or meet a perk pick that is no
-longer legal, which the report names.
+Each stream's config carries its bug policy (`preserve_bugs`), and Python runs
+under the same one: the bot corpus covers both, and recorded fixtures replay
+under the rules they were recorded with, so their claimed results apply.
 """
 
 import argparse
@@ -51,7 +49,8 @@ from crimson.weapons import WeaponId
 
 CORE = Path(__file__).resolve().parents[1]
 ROOT = CORE.parent
-CONFIG_BYTES = 256
+# `PortableConfig` in host/api.h: 12 uint32 settings, then the weapon usage counts.
+CONFIG_BYTES = 260
 
 # Native `game_state_pending` values that end a run (third_party/headers/crimsonland_types.h).
 GAME_OVER, QUEST_RESULTS, QUEST_FAILED = 0x07, 0x08, 0x0C
@@ -121,12 +120,12 @@ def _from_bits(bits: int, floating: bool):
 
 
 class Stream:
-    """An input/command stream in the core's transport: a 256-byte config and tick records."""
+    """An input/command stream in the core's transport: its config and tick records."""
 
     def __init__(self, name: str, payload: bytes):
         self.name = name
         self.payload = payload
-        self.config = struct.unpack_from("<64I", payload, 0)
+        self.config = struct.unpack_from(f"<{CONFIG_BYTES // 4}I", payload, 0)
         self.ticks: list[ReplayTick] = []
         offset = CONFIG_BYTES
         while offset < len(payload):
@@ -143,15 +142,17 @@ class Stream:
                 )
             self.ticks.append(ReplayTick(inputs=[(mx, my, ax, ay, flags)], commands=commands))
 
-    def run_spec(self, *, preserve_bugs: bool) -> RunSpec:
-        seed, mode, major, minor, unlock, unlock_full, detail, violence, friendly, hardcore, retry = self.config[:11]
+    def run_spec(self) -> RunSpec:
+        seed, mode, major, minor, unlock, unlock_full, detail, violence, friendly, hardcore, retry, preserve_bugs = (
+            self.config[:12]
+        )
         mode = GameMode(mode)
         return RunSpec(
             game_mode_id=mode,
             seed=seed,
             quest_level=QuestLevel(major, minor) if mode == GameMode.QUESTS else None,
             hardcore=bool(hardcore),
-            preserve_bugs=preserve_bugs,
+            preserve_bugs=bool(preserve_bugs),
             quest_fail_retry_count=retry,
             detail_preset=detail,
             violence_disabled=violence,
@@ -159,7 +160,7 @@ class Stream:
             status=RunStatus(
                 quest_unlock_index=unlock,
                 quest_unlock_index_full=unlock_full,
-                weapon_usage_counts=tuple(self.config[11 : 11 + WEAPON_USAGE_SLOTS]),
+                weapon_usage_counts=tuple(self.config[12 : 12 + WEAPON_USAGE_SLOTS]),
             ),
         )
 
@@ -242,14 +243,15 @@ def core_result(row: dict[str, int], mode: GameMode) -> RunResult:
     )
 
 
-def compare(stream: Stream, native: Path, *, preserve_bugs: bool) -> dict:
+def compare(stream: Stream, native: Path) -> dict:
     index = _schema_index()
     names = [core for _, core, _, _ in FIELDS] + [name for name in RESULT_FIELDS if name not in {f[1] for f in FIELDS}]
     core_rows, exit_code, stderr = run_core(native, stream, [index[name] for name in names])
 
-    spec = stream.run_spec(preserve_bugs=preserve_bugs)
+    spec = stream.run_spec()
     session = initialize_run(spec).session
     report: dict = {
+        "preserve_bugs": spec.preserve_bugs,
         "ticks": len(stream.ticks),
         "core_ticks": len(core_rows) - 1,
         "core_exit": exit_code,
@@ -328,8 +330,8 @@ def _result_json(result: RunResult) -> dict:
 
 
 def _compare_job(args):
-    stream, native, preserve_bugs = args
-    return stream.name, compare(stream, native, preserve_bugs=preserve_bugs)
+    stream, native = args
+    return stream.name, compare(stream, native)
 
 
 def main() -> None:
@@ -353,11 +355,10 @@ def main() -> None:
         cases = json.loads((CORE / "results/matrix.json").read_text())["cases"]
         if missing := sorted({case["name"] + ".rsi" for case in cases} - names):
             parser.error(f"{len(missing)} bot streams missing from {args.corpus}; run checks/matrix.mjs")
-    jobs = [(stream, args.native, True) for stream in streams]
+    jobs = [(stream, args.native) for stream in streams]
     with ProcessPoolExecutor(max_workers=args.jobs) as pool:
         results = dict(pool.map(_compare_job, jobs))
     report = {
-        "rules": "original (Python preserve_bugs=True, recovered core unmodified)",
         "streams": dict(sorted(results.items())),
         "unsupported": unsupported,
         "agree": sum(r["agree"] for r in results.values()),

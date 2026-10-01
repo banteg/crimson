@@ -17,11 +17,14 @@ import wasmtime
 CORE = Path(__file__).resolve().parents[1]
 
 
+CONFIG_BYTES = 260
+
+
 def decode(data):
-    if len(data) < 256:
+    if len(data) < CONFIG_BYTES:
         raise ValueError("Truncated config")
     records = []
-    offset = 256
+    offset = CONFIG_BYTES
     while offset < len(data):
         if len(data) - offset < 24:
             raise ValueError("Truncated tick")
@@ -31,7 +34,7 @@ def decode(data):
             raise ValueError("Invalid commands")
         records.append(data[offset : offset + size])
         offset += size
-    return data[:256], records
+    return data[:CONFIG_BYTES], records
 
 
 def main():

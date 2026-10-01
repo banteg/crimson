@@ -2,6 +2,9 @@
 import module from "../build/wasm/core.wasm";
 import schema from "../schema.json";
 
+// `PortableConfig` in host/api.h.
+const CONFIG_BYTES = 260;
+
 const core = new WebAssembly.Instance(module, {}).exports;
 core._initialize();
 const offsets = new Map();
@@ -43,11 +46,11 @@ export default {
     try {
       const input = await boundedBody(request),
         view = new DataView(input.buffer);
-      if (input.length < 256) throw Error("Truncated config");
+      if (input.length < CONFIG_BYTES) throw Error("Truncated config");
       // No awaits from init through the copied snapshot: requests cannot
       // interleave simulation state in this single shared instance.
-      new Uint8Array(core.memory.buffer, core.portable_config(), 256).set(
-        input.subarray(0, 256),
+      new Uint8Array(core.memory.buffer, core.portable_config(), CONFIG_BYTES).set(
+        input.subarray(0, CONFIG_BYTES),
       );
       if (
         !core.portable_init(
@@ -56,7 +59,7 @@ export default {
       )
         throw Error("Invalid config");
       let ticks = 0;
-      for (let offset = 256; offset < input.length; ) {
+      for (let offset = CONFIG_BYTES; offset < input.length; ) {
         if (ticks >= 60000 || input.length - offset < 24)
           throw Error("Tick limit or truncated tick");
         const count = view.getUint32(offset + 20, true),
@@ -87,7 +90,8 @@ export default {
       const u = (name) => values.getUint32(offsets.get(name) * 4, true);
       const pending = u("globals.game_state_pending");
       const result = {
-        rules: "original",
+        // `PortableConfig.preserve_bugs`, the twelfth setting.
+        rules: view.getUint32(44, true) ? "original" : "ranked",
         ticks,
         pending,
         terminal: [7, 8, 12].includes(pending),
