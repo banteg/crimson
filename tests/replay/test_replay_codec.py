@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import struct
+import subprocess
+from pathlib import Path
 
 import msgspec
 import pytest
@@ -383,6 +385,24 @@ def test_current_replay_game_version(monkeypatch: pytest.MonkeyPatch, tags: byte
     _fake_git(monkeypatch, tags=tags, status=status)
     try:
         assert current_replay_game_version() == expected
+    finally:
+        current_replay_game_version.cache_clear()
+
+
+def test_installed_package_inside_an_unrelated_repo_records_the_plain_version(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    git = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-C", str(tmp_path)]
+    subprocess.run([*git, "init", "-q"], check=True)
+    subprocess.run([*git, "commit", "-q", "--allow-empty", "-m", "unrelated"], check=True)
+    site_packages = tmp_path / ".venv" / "lib" / "python3.13" / "site-packages"
+    (site_packages / "crimson" / "replay").mkdir(parents=True)
+    current_replay_game_version.cache_clear()
+    monkeypatch.setattr(crimson, "__version__", "1.2.3")
+    monkeypatch.setattr(replay_types, "__file__", str(site_packages / "crimson" / "replay" / "types.py"))
+    try:
+        assert current_replay_game_version() == "1.2.3"
     finally:
         current_replay_game_version.cache_clear()
 

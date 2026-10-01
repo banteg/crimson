@@ -115,7 +115,7 @@ def current_replay_game_version() -> str:
     - Git checkout non-release: "<version>+g<short_sha>"
     - Modified game sources append ".dirty": the commit alone no longer
       identifies the simulation that recorded the replay.
-    - No git metadata: "<version>"
+    - No git metadata or an installed package: "<version>"
     """
 
     from .. import __version__
@@ -126,6 +126,9 @@ def current_replay_game_version() -> str:
         if git_exe is None:
             return version
         repo_root = Path(__file__).resolve().parents[3]
+        if not (repo_root / "pyproject.toml").is_file():
+            # An installed package: parents[3] is the environment's lib dir, which may sit in an unrelated repo.
+            return version
         out = subprocess.check_output(
             [git_exe, "rev-parse", "--short=12", "HEAD"],
             cwd=repo_root,
