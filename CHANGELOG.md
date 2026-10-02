@@ -2,6 +2,23 @@
 
 Releases before 0.11.0 are listed on [GitHub](https://github.com/banteg/crimson/releases).
 
+## 0.11.1
+
+### For players
+
+- Blood and corpses no longer land on the ground at double or half size, out of place, after the window's display scaling changes, for example when the window moves between a Retina and a regular monitor.
+- A run ends the way it does in the original:
+  - Rush, like the other modes, ends when the death animation finishes.
+  - After death, bonuses stop updating, the quest timeline stops and Reflex Boosted's slowdown no longer applies.
+- In one-player runs, the unused second player slot behaves as in the original: Infernal Contract sets its health to 0.1 like player one's, creatures stop targeting it once it is dead, and its death never sets off Final Revenge.
+- Lean Mean Exp Machine's timer starts at 0 in a new run.
+- Rush replays recorded with 0.11.0 end too early and may no longer verify.
+
+### Under the hood
+
+- **crimson-core.** The recovered C/C++ game code builds as a standalone simulator that replays runs. A CI gate checks that every bot stream and recorded fixture agrees with Python tick by tick, with the original's bugs either kept or fixed.
+- **Zig port removed.** crimson-core replaces it as the verifier.
+
 ## 0.11.0
 
 ### For players
