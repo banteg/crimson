@@ -6,7 +6,7 @@ from pathlib import Path
 from crimson.creatures.anim import creature_anim_select_flash_frame, creature_anim_select_frame
 from crimson.creatures.spawn import CreatureFlags
 
-FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-frame-selection.json"
+FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures/native/creature-frame-selection.json"
 
 
 def test_creature_frames_match_native_pc24_witnesses() -> None:

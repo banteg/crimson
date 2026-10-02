@@ -9,7 +9,7 @@ import pytest
 from tests.support.creature_draw_capture import capture_creature_draws
 
 WITNESSES = json.loads(
-    (Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-pass-order.json").read_text(),
+    (Path(__file__).resolve().parents[2] / "tests/fixtures/native/creature-pass-order.json").read_text(),
 )["cases"]
 
 

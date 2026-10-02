@@ -5,20 +5,19 @@ tags:
 
 # Rewrite
 
-The Python + raylib implementation and the native Zig port reproduce Crimsonland
-Classic v1.9.93. Both have live gameplay and deterministic replay tooling. Native
-behavior is established from the executable and recovered source; passing port
-regression tests alone does not establish parity with the original.
+The Python + raylib implementation reproduces Crimsonland Classic v1.9.93, with
+live gameplay and deterministic replay tooling. The recovered core
+(`crimson-core/`) compiles the recovered C/C++ into a native executable and a
+WASM module; it verifies replays and agrees with Python under both bug policies.
+Native behavior is established from the executable and recovered source;
+passing port regression tests alone does not establish parity with the original.
 
-Start with [setup](../contributor/setup.md), [coverage and scope](status.md), or
-[Zig build and tooling](zig-verifier.md).
+Start with [setup](../contributor/setup.md) or [coverage and scope](status.md).
 
 Python remains the fast iteration platform. The next shipped-game/verifier
 implementation will extend the recovered C/C++ and use one WASM artifact across
-desktop, browser and Workers. Zig catch-up and feature work are deferred; its
-existing verifier stays available during the transition. The core and its
-staged replacement gates are documented in `crimson-core/README.md` and
-`crimson-core/ROADMAP.md`.
+desktop, browser and Workers. The core and its staged gates are documented in
+`crimson-core/README.md` and `crimson-core/ROADMAP.md`.
 
 ## Architecture and contracts
 

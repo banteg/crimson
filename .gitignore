@@ -30,11 +30,6 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 screenshots/
-zig-cache/
-.zig-cache/
-zig-pkg/
-zig-out/
-/tools/zig/
 .DS_Store
 .mcp.json
 .gemini/

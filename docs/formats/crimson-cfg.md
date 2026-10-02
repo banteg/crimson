@@ -216,9 +216,9 @@ and changes perk 1's display text to
 
 The low-health warning still plays its sound and resets its timer to one second.
 With gore enabled, one warning creates six blood effects and uses 31 RNG draws;
-with gore disabled, it uses only the one sound-selection draw. Both ports pass
-the run's setting to this helper. Python replay rendering uses the recording's
-setting, and Zig's in-run perk and quest-unlock text honors the session setting.
+with gore disabled, it uses only the one sound-selection draw. The Python port
+passes the run's setting to this helper, and replay rendering uses the
+recording's setting.
 
 Native `config_ensure_file` sets this byte to `1` when creating a missing file;
 the modern port configuration defaults to `0`. The branch audit and bounded

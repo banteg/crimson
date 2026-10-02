@@ -94,8 +94,8 @@ Rewrite behavior:
 ## 4) Player-facing text quirks (documented, not fixed)
 
 The original spelling, grammar, capitalization, punctuation, and abbreviated
-labels are part of the game's character. Both ports display the original text
-in all modes, regardless of `--preserve-bugs`; there is no corrected-text mode.
+labels are part of the game's character. The Python port displays the original
+text in all modes, regardless of `--preserve-bugs`; there is no corrected-text mode.
 This policy affects text only, not any of the gameplay fixes documented here.
 
 Source evidence: `analysis/ghidra/raw/crimsonland.exe_strings.txt`.
@@ -581,7 +581,7 @@ Rewrite behavior:
   Fire Bullets bonus pickups continue to work in both modes.
 - Input recording stores the held G state in CRD/CDT bit 17. It is a held input,
   so fixed-step catch-up retains it; it is not a press edge or a configurable
-  bonus action. Both Python and Zig enforce the policy in the firing routine.
+  bonus action. Python enforces the policy in the firing routine.
 
 Evidence: `tools/match/evidence/player-fire-bullets-shortcut-2026-09-11/README.md`
 and the [Fire Bullets version comparison](../re/static/fire-bullets-1.9.8-vs-1.9.93.md).

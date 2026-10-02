@@ -22,31 +22,6 @@ from tests.support.factories import player_input
 from tests.support.replay_runner_helpers import finish_replay
 
 
-# `dbg verify` checks the frozen Zig port's format wiring, which stays at the formats it froze with.
-@pytest.mark.zig
-def test_dbg_verify_reports_complete_current_format_matrix() -> None:
-    result = CliRunner().invoke(app, ["dbg", "verify"])
-
-    assert result.exit_code == 0, result.output
-    assert "trace_format_version=2" in result.output
-    assert "trace_schema_version=20" in result.output
-    assert "replay_format_version=29" in result.output
-    assert "checkpoint_format_version=7" in result.output
-    assert "result=ok" in result.output
-
-
-def test_dbg_verify_fails_when_cross_language_contract_drifts(monkeypatch: pytest.MonkeyPatch) -> None:
-    import crimson_re.dbg.format_contract as format_contract_mod
-
-    monkeypatch.setattr(format_contract_mod, "format_contract_errors", lambda: ["Zig replay format drifted"])
-    result = CliRunner().invoke(app, ["dbg", "verify"])
-
-    assert result.exit_code == 1
-    assert "contract_error=Zig replay format drifted" in result.output
-    assert "result=failed" in result.output
-    assert "result=ok" not in result.output
-
-
 def test_dbg_health_on_recorded_trace(tmp_path: Path) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     trace_path = tmp_path / "sample.cdt"
@@ -161,7 +136,7 @@ def test_dbg_bisect_rejects_removed_out_option(tmp_path: Path) -> None:
     assert "No such option" in result.output
 
 
-def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatch) -> None:
+def test_dbg_record_prints_the_trace_summary(tmp_path: Path, monkeypatch) -> None:
     replay_path = _write_replay(tmp_path / "sample.crd")
     trace_path = tmp_path / "sample.cdt"
     runner = CliRunner()
@@ -172,13 +147,9 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
         *,
         replay_path: Path,
         out_path: Path,
-        impl: str,
-        warnings_out: list[str],
     ) -> object:
         captured["replay_path"] = replay_path
         captured["out_path"] = out_path
-        captured["impl"] = impl
-        warnings_out.append("warning: zig replay verify exited 1; continuing with emitted trace")
         return SimpleNamespace(
             meta=SimpleNamespace(
                 tick_range=SimpleNamespace(start_tick=0, end_tick=1, tick_count=2),
@@ -196,18 +167,15 @@ def test_dbg_record_forwards_impl_and_prints_warnings(tmp_path: Path, monkeypatc
             str(replay_path),
             "--out",
             str(trace_path),
-            "--impl",
-            "zig",
         ],
     )
 
     assert result.exit_code == 0, result.output
-    assert "warning: zig replay verify exited 1; continuing with emitted trace" in result.output
-    assert "trace=" in result.output
+    assert f"trace={trace_path}" in result.output
+    assert "ticks start=0 end=1 count=2" in result.output
     assert "channels=" + ",".join(TRACE_REQUIRED_CHANNELS) in result.output
     assert captured["replay_path"] == replay_path
     assert captured["out_path"] == trace_path
-    assert captured["impl"] == "zig"
 
 
 def _write_survival_replay(path: Path, player_input: PlayerInput, *, ticks: int) -> Path:

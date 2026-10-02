@@ -12,9 +12,8 @@ world rendering. Quest content covers tiers 1–5. Local co-op supports 2–4 pl
 in Survival, Rush and Quests; Typ-o and Tutorial use their own mode rules.
 All five modes share run initialization and deterministic replay execution.
 
-See [setup](../contributor/setup.md) for invocation and the [Zig port](zig-verifier.md)
-for its desktop and tooling surfaces. This page describes supported scope, not a
-claim that every native branch has been verified.
+See [setup](../contributor/setup.md) for invocation. This page describes
+supported scope, not a claim that every native branch has been verified.
 
 ## Evidence and its limits
 
@@ -23,8 +22,7 @@ claim that every native branch has been verified.
 | `tests/replay/test_live_run_start.py` | Live mode startup and recorder/playback agree on complete session state, including non-default settings. |
 | `tests/sim/test_step_pipeline_parity.py` | Live tick batching and replay/headless paths preserve tested timing, input and state behavior. |
 | `tests/render/test_ground_dump_fixtures.py` | Captured terrain images agree within the test's documented tolerances; requires assets and a display. |
-| `tests/replay/cli/test_zig_corpus.py` | Native tools handle the generated current-format corpus across the five modes and invalid inputs. |
-| `tests/grim/test_zig_window_cli.py` | Native desktop installation, help and non-rendering direct-start construction work. |
+| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies. |
 | Current original/candidate CDT comparisons | The recorded runs agree through the reported tick/channel span. |
 
 `just check` runs the repository gates. Skipped display-dependent tests do not

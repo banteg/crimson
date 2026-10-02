@@ -8,8 +8,7 @@ tags:
 # RNG Caller Mapping Workflow
 
 Native return-address tags live in `src/crimson/rng_caller_static.py` and are
-used at the Python draw sites. The Zig runtime mirrors the relevant tags. This
-workflow is for adding or checking attribution against the native executable;
+used at the Python draw sites. This workflow is for adding or checking attribution against the native executable;
 it is not a list of unmapped functions.
 
 Caller tags explain RNG draws. Matching tags do not prove matching behavior, and

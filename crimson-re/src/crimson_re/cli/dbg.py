@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Literal, cast
+from typing import cast
 
 import typer
 
@@ -48,11 +48,6 @@ def _first_diff_path(detail: BuiltinObject | None) -> str | None:
 def cmd_dbg_record(
     replay_file: Path = typer.Argument(..., help="replay (.crd)"),
     out: Path = typer.Option(..., "--out", help="output trace path (.cdt)"),
-    impl: Literal["python", "zig"] = typer.Option(
-        "python",
-        "--impl",
-        help="recording backend implementation",
-    ),
 ) -> None:
     """Run replay simulation and record a CDT trace."""
     from crimson.replay.driver.setup import ReplayRunnerError
@@ -60,20 +55,12 @@ def cmd_dbg_record(
     from ..dbg.record import record_replay_to_trace
     from ..dbg.trace import TraceError
 
-    warnings_out: list[str] = []
     try:
-        summary = record_replay_to_trace(
-            replay_path=Path(replay_file),
-            out_path=Path(out),
-            impl=impl,
-            warnings_out=warnings_out,
-        )
+        summary = record_replay_to_trace(replay_path=Path(replay_file), out_path=Path(out))
     except (TraceError, ValueError, ReplayRunnerError) as exc:
         typer.echo(f"dbg record failed: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
-    for warning in warnings_out:
-        typer.echo(str(warning), err=True)
     tick_range = summary.meta.tick_range
     typer.echo(f"trace={out}")
     typer.echo(
@@ -158,31 +145,6 @@ def cmd_dbg_health(
 
     if not bool(ok):
         raise typer.Exit(code=1)
-
-
-@dbg_app.command("verify")
-def cmd_dbg_verify() -> None:
-    """Verify dbg schema/replay parity contract wiring."""
-    from crimson.replay.checkpoints import FORMAT_VERSION as CHECKPOINT_FORMAT_VERSION
-    from crimson.replay.types import REPLAY_FORMAT_VERSION
-
-    from ..dbg.format_contract import format_contract_errors
-    from ..dbg.schema import TRACE_FORMAT_VERSION, TRACE_REQUIRED_CHANNELS, TRACE_SCHEMA_VERSION
-
-    channels = tuple(str(channel) for channel in TRACE_REQUIRED_CHANNELS)
-
-    typer.echo(f"trace_format_version={int(TRACE_FORMAT_VERSION)}")
-    typer.echo(f"trace_schema_version={int(TRACE_SCHEMA_VERSION)}")
-    typer.echo(f"replay_format_version={int(REPLAY_FORMAT_VERSION)}")
-    typer.echo(f"checkpoint_format_version={int(CHECKPOINT_FORMAT_VERSION)}")
-    typer.echo("required_channels=" + ",".join(channels))
-    errors = format_contract_errors()
-    if errors:
-        for error in errors:
-            typer.echo(f"contract_error={error}", err=True)
-        typer.echo("result=failed")
-        raise typer.Exit(code=1)
-    typer.echo("result=ok")
 
 
 @dbg_app.command("diff")

@@ -28,7 +28,7 @@ class _Witnesses(msgspec.Struct, frozen=True):
 
 
 def _witnesses() -> list[_Witness]:
-    path = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/player-aim-point.json"
+    path = Path(__file__).resolve().parents[2] / "tests/fixtures/native/player-aim-point.json"
     rows = msgspec.json.decode(path.read_bytes(), type=_Witnesses).witnesses
     assert len(rows) == 1050
     return rows
@@ -68,7 +68,7 @@ class _TurnWitnesses(msgspec.Struct, frozen=True):
 
 
 def test_held_aim_controls_match_native_turn_witnesses(monkeypatch: pytest.MonkeyPatch) -> None:
-    path = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/player-aim-turns.json"
+    path = Path(__file__).resolve().parents[2] / "tests/fixtures/native/player-aim-turns.json"
     rows = msgspec.json.decode(path.read_bytes(), type=_TurnWitnesses).witnesses
     assert len(rows) == 240
     down_codes: set[int] = set()

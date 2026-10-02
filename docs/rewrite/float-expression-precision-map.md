@@ -7,7 +7,7 @@ tags:
 
 # Float expression precision map (decompile-derived)
 
-Purpose: fast lookup for Python + Zig parity work. This map classifies common
+Purpose: fast lookup for Python parity work. This map classifies common
 expression families by the precision model they need in deterministic gameplay
 paths.
 
@@ -73,7 +73,7 @@ Historical IDA whole-view scan:
 `E14` is an exception to treating both direction components as stored floats.
 The original-image witnesses in
 `tools/match/evidence/player-aim-direction-2026-09-11/results.json` pin the
-asymmetry and held-turn ordering. Python and Zig share 1,050 point and 240
+asymmetry and held-turn ordering. Python is tested against 1,050 point and 240
 turn witnesses; see that evidence package for modeled boundaries and limits.
 
 `E15` is checked against the original executable's submitted corner words in
@@ -107,10 +107,6 @@ heading through `fpatan` before the float32 call boundary.
   - For `E01..E06/E08/E11`, run native-style helper path then spill to `f32` at
     the native-equivalent assignment point.
   - Do not keep replay-decoded `f64` values live in gameplay state.
-- Zig gameplay domain:
-  - Keep state fields as `f32`.
-  - Use shared native math helpers for trig/atan/angle routines; call
-    `roundF32`-style spill helpers at explicit store points.
 
 ## Fast lookup recipes
 

@@ -11,7 +11,7 @@ from crimson.sim.world_state import WorldState, WorldStepRuntime
 from grim.geom import Vec2
 from grim.rand import Crand, RecordingCrand
 
-FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/particle-bubble-expiry.json"
+FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures/native/particle-bubble-expiry.json"
 
 
 @pytest.mark.parametrize("witness", json.loads(FIXTURES.read_text()), ids=lambda case: str(case["index"]))

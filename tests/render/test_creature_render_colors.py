@@ -12,7 +12,7 @@ from grim.color import RGBA
 from tests.support.creature_draw_capture import capture_creature_draws
 
 WITNESSES = json.loads(
-    (Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-render-colors.json").read_text(),
+    (Path(__file__).resolve().parents[2] / "tests/fixtures/native/creature-render-colors.json").read_text(),
 )["cases"]
 
 

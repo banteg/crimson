@@ -50,6 +50,3 @@ All five gameplay modes and replay initialize through `initialize_run`.
 Debug views use `src/crimson/world/standalone_tick_harness.py`
 for their separately configured sessions. See the [session contract](deterministic-step-pipeline.md)
 and [startup contract](replay-run-start.md) for ordering requirements.
-
-The [Zig port](zig-verifier.md) has its own native platform and product shell,
-with a shared runtime for live play and replay tools.

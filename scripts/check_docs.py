@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import Any
 
 LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
-SOURCE_PATH_RE = re.compile(r"`((?:src|tests|tools|scripts|crimson-zig)/[\w./-]+)(?::[^`\n]+)?`")
+SOURCE_PATH_RE = re.compile(r"`((?:src|tests|tools|scripts|crimson-core)/[\w./-]+)(?::[^`\n]+)?`")
 GENERATED_DIRECTORY_PREFIXES = ("tests/fixtures/", "tools/match/bin/", "tools/match/compilers/")
 
 

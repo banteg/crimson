@@ -256,8 +256,7 @@ def test_resolve_native_death_sfx_preserve_bugs_keeps_trooper_pain_grunt_slot() 
 def test_lethal_branch_gates_on_entry_health_not_lifecycle() -> None:
     # Native creature_apply_damage runs the lethal branch whenever entry hp > 0,
     # even for a creature whose death already started (Shrinkifier corpse with
-    # hp still positive); the Zig port mirrors this in applyDamage and
-    # applyExplosionDamage.
+    # hp still positive).
     creature = CreatureState(active=True, hp=5.0, max_hp=400.0, lifecycle_stage=15.0, size=40.0)
     world = world_with_creature(creature, rng=ScriptedCrand(0, fallback=ScriptedCrand.Fallback.REPEAT_LAST))
     world.state.bonus_spawn_guard = True
