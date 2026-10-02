@@ -7,7 +7,7 @@ import pytest
 
 from tests.support.primary_impact import compare
 
-FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/primary-impact-presentation.json"
+FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures/native/primary-impact-presentation.json"
 POST_FIXTURES = FIXTURES.with_name("primary-post-hit-position.json")
 
 

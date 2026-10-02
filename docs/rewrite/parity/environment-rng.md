@@ -63,7 +63,7 @@ then, because no creatures are left.
 
 Both are recorded run inputs, so replays verify under any value and a run at low
 detail plays exactly as the original does at low detail. The leaderboard ranks
-only runs in the ranked profile: `replay verify` in both ports reports `ranked`
+only runs in the ranked profile: `replay verify` reports `ranked`
 and `unranked_reasons` (`detail_preset` unless 5, `violence_disabled`,
 `friendly_fire`, and `unlocks` unless the save's weapon and perk offers match a save with every quest
 completed). Runs outside it still verify; they just do not rank.

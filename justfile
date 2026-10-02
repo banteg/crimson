@@ -25,11 +25,6 @@ check *args:
     ast-grep test
     uv run pytest {{args}}
 
-check-zig:
-    cd crimson-zig && zig build test --summary all
-    cd crimson-zig && zig build -Doptimize=ReleaseFast
-    cd crimson-zig && zig build wasm
-
 ty:
     uv run ty check src crimson-re/src tests
 
@@ -197,19 +192,6 @@ pe-info target="crimsonland.exe":
 
 pe-imports target="crimsonland.exe":
     rabin2 -i {{game_dir}}/{{target}}
-
-# Zig
-zig-build:
-    cd crimson-zig && zig build
-
-zig-run:
-    cd crimson-zig && zig build run
-
-zig-test:
-    cd crimson-zig && zig build test
-
-zig-wasm:
-    cd crimson-zig && zig build wasm
 
 [windows]
 ghidra-sync:

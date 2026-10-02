@@ -6,7 +6,7 @@ tags:
 
 # Delta Time Parity Reference
 
-This page is the source of truth for delta-time semantics used by Python/Zig rewrites and parity tooling.
+This page is the source of truth for delta-time semantics used by the Python rewrite and parity tooling.
 
 For the original engine clocks, mode-specific scheduling, and current Python
 counterparts, see [timing domains and mode scheduling](../timing.md).
@@ -51,13 +51,6 @@ Equivalent forms:
 # Python parity helper shape
 def ftol_ms_i32(dt_seconds: float) -> int:
     return int(float(f32(dt_seconds * 1000.0)))
-```
-
-```zig
-// Zig parity helper shape
-fn ftolMsI32(dt_seconds: f32) i32 {
-    return @intFromFloat(dt_seconds * 1000.0);
-}
 ```
 
 ```cpp

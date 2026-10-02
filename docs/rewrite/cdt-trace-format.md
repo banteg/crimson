@@ -184,13 +184,8 @@ enclosing `dt_ms_i32`, and its `mode_fn` identifies
 
 ## Producers
 
-The intended comparison set is:
-
-1. Python CRD v24 replay recording.
-2. Zig CRD v24 replay recording.
-
-Both emit the same durable channel semantics. A producer may not add aliases or
-optional channel shapes to CDT.
+Python CRD v24 replay recording (`crimson dbg record`) is the producer. A
+producer may not add aliases or optional channel shapes to CDT.
 
 ## Diff contract
 

@@ -41,7 +41,7 @@ class _Witnesses(msgspec.Struct, frozen=True):
 
 
 def _witnesses() -> list[_Witness]:
-    path = Path(__file__).parents[2] / "crimson-zig/src/runtime/testdata/player-fire-bullets-shortcut.json"
+    path = Path(__file__).parents[2] / "tests/fixtures/native/player-fire-bullets-shortcut.json"
     return msgspec.json.decode(path.read_bytes(), type=_Witnesses).witnesses
 
 

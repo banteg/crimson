@@ -12,7 +12,7 @@ from grim.rand import Crand
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state, step_creatures
 
-FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-hit-flash.json"
+FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures/native/creature-hit-flash.json"
 from tests.support.factories import make_step_runtime, world_with_creature
 
 

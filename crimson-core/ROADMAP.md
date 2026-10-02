@@ -2,8 +2,8 @@
 
 Prefer one wasm32 recovered simulation artifact for browser, Workers and a
 desktop host. Keep Python for fast iteration and experiments. Extend the
-recovered C/C++ for the shipped game and verifier rather than maintaining an
-independent Zig mirror. Keep native clang as a diagnostic comparison target;
+recovered C/C++ for the shipped game and verifier rather than maintaining
+another independent mirror. Keep native clang as a diagnostic comparison target;
 avoid expanding its 64-bit layout machinery before trying a real client on
 the shared WASM artifact.
 
@@ -25,22 +25,11 @@ the shared WASM artifact.
    public replay decoding, and measured dense/adversarial workloads and
    deployed Workers CPU.
 
-## Freeze Zig and define retirement
+## Zig retired
 
-Defer all Zig catch-up and feature work now, including the shared UI timeline,
-Typ-o follow-ups and phantom spawn slot. Keep the existing verifier available
-during the transition; do not port new Python or recovered-core changes into it.
-This freezes the Zig simulation, not the core's use of the Zig compiler and
-small math helpers as build dependencies.
-
-The retirement criterion is that the recovered verifier passes every replay
-fixture and a fixed bot sweep with Python's complete `RunResult`, under the
-declared bug policy. Include the controllers, settings and players exercised
-by that corpus; unsupported cases do not pass. Establish the original-bug
-baseline first, then the default Python policy. Once this gate passes and the
-recovered verifier can take over, retire Zig as an active simulation
-implementation. Preserve a frozen legacy verification artifact only for
-replay versions that still require it.
+The independent Zig port was retired once the core passed the gate under both
+bug policies; the last commit that has it is tagged. The core still uses the
+Zig 0.16.0 compiler and its bundled math as build dependencies.
 
 ## Original-rules gate
 
@@ -200,6 +189,5 @@ independent simulation implementation.
 
 Keep one pinned implementation of the portable numerical helpers owned by the
 recovered core, with original x87 oracle cases as its regression contract. The
-current CRT power duplication is temporary; consolidating it must not require
-new Zig simulation catch-up. Document bypassing screen-to-world aim conversion
+current CRT power duplication is temporary. Document bypassing screen-to-world aim conversion
 as part of the modern rules definition, not just a numerical parity fix.

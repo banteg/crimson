@@ -113,7 +113,7 @@ def test_creature_hit_flash_draws_match_native_witnesses(mocker, headless_resour
     import struct
     from pathlib import Path
 
-    path = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/creature-hit-flash.json"
+    path = Path(__file__).resolve().parents[2] / "tests/fixtures/native/creature-hit-flash.json"
     witnesses = json.loads(path.read_text())["render"]
     additive = False
     drawn: list[tuple[object, ...]] = []

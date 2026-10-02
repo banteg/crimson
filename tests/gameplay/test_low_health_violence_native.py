@@ -18,7 +18,7 @@ from grim.sfx_map import SfxId
 from tests.support.builders.session import make_world
 from tests.support.factories import make_step_runtime, player_input, step_player
 
-_FIXTURE = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/violence-disabled-low-health.json"
+_FIXTURE = Path(__file__).resolve().parents[2] / "tests/fixtures/native/violence-disabled-low-health.json"
 
 
 def _bits(value: float) -> int:

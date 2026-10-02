@@ -100,7 +100,7 @@ a fresh creature pool. Replay envelopes are capped at 65 MiB compressed and
 checkpoint format 7, capped at 257 MiB compressed and 256 MiB decoded. Each
 checkpoint pins the tick's RNG state and `rng_callers_crc32`, a CRC32 of the
 tick's RNG call-site tags in draw order, which catches draws reordered within the
-tick. The frozen Zig port reads format 6, which predates the call-order digest.
+tick.
 
 Every tick runs at the fixed float32 1/60 s delta and carries one f32-quantized
 packed input row per player plus an ordered command list. Perk picks apply
@@ -145,7 +145,6 @@ recoverable session snapshot.
 ## Latest-only policy
 
 - Readers require the current [version matrix](trace-format-alignment.md#current-only-contract).
-- `uv run crimson dbg verify` checks Python and Zig declarations for drift.
 - Unknown fields and incomplete lifecycle rows are rejected.
 - Older throwaway artifacts are regenerated, not migrated.
 

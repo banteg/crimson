@@ -5,8 +5,7 @@ description: Use ast-grep for Python structural code exploration, mechanical cod
 
 # Ast-grep
 
-Prefer `ast-grep` for structural exploration and mechanical rewrites in Python code. It has no bundled Zig
-parser; Zig style is checked by ziglint.
+Prefer `ast-grep` for structural exploration and mechanical rewrites in Python code.
 
 ## Quick Start
 

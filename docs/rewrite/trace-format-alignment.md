@@ -7,12 +7,8 @@ tags:
 
 # Trace format alignment
 
-The debugging pipeline has one current contract shared by the two producers
-used for parity work:
-
-1. Python recording of replays through
-   `crimson-re/src/crimson_re/dbg/record.py`.
-2. Zig replay recording through `crimson-zig/src/cdt_trace.zig`.
+The debugging pipeline has one current contract. Python records replays through
+`crimson-re/src/crimson_re/dbg/record.py`.
 
 Once a run becomes a `.cdt`, all consumers see the same typed tick data and no
 producer-specific aliases.
@@ -56,8 +52,7 @@ Schema 19 requires every channel on every tick:
 - `timing_samples`
 
 The core channel types live in
-`crimson-re/src/crimson_re/dbg/canonical_channels.py`; Zig mirrors the same wire schema in
-`crimson-zig/src/cdt_trace.zig`.
+`crimson-re/src/crimson_re/dbg/canonical_channels.py`.
 
 ### Replay-driving evidence
 
@@ -107,29 +102,14 @@ The owned formats fail at the first contract violation:
 - `gpur_enter.frame_dt_ms_i32` equals `TickRecord.dt_ms_i32`
 - RNG rows use one-based call indices and valid CRT state transitions
 
-## Producer boundaries
-
-### Python recorder
+## Python recorder
 
 Python records the replay step, checkpoint, simulation state, entity, RNG, and
 timing evidence while it executes a CRD replay. Metadata identifies the source
 fingerprint and implementation, and is validated through the same typed
 `TraceMeta` contract.
 
-### Zig replay recorder
-
-The frozen Zig port writes CDT v2/schema 19 chunks and channel payloads for CRD
-replays; schema 20 adds the checkpoint's `rng_callers_crc32`, which it predates. Use
-`crimson-zig dbg record <replay.crd> --out <trace.cdt>` to record and
-`crimson-zig dbg verify` to check that its compiled schema and replay versions
-match the owned contract.
-
 ## Differential workflow
-
-Run `dbg verify` after changing any owned format; it prints the complete current
-CDT, replay, and checkpoint version matrix, then checks the Python and Zig source
-declarations, tick-boundary field order, required channels, and
-replay/checkpoint payload ceilings for drift.
 
 Run `dbg health` on both traces before interpreting a diff. Health validates the
 tick records, reports tick spans and gaps, counts rows per channel, and exits

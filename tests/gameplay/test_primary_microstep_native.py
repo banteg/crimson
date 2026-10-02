@@ -7,7 +7,7 @@ import pytest
 
 from tests.support.primary_microstep import compare
 
-FIXTURES = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/primary-microstep-threshold.json"
+FIXTURES = Path(__file__).resolve().parents[2] / "tests/fixtures/native/primary-microstep-threshold.json"
 
 
 @pytest.mark.parametrize("witness", json.loads(FIXTURES.read_text()), ids=lambda case: str(case["index"]))

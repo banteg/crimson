@@ -13,7 +13,7 @@ from grim.geom import Vec2
 from tests.support.builders.session import make_world
 from tests.support.factories import make_creature_state, make_step_runtime
 
-FIXTURE = Path(__file__).resolve().parents[2] / "crimson-zig/src/runtime/testdata/corpse-queue.json"
+FIXTURE = Path(__file__).resolve().parents[2] / "tests/fixtures/native/corpse-queue.json"
 
 
 def bits(value: float) -> int:

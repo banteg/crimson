@@ -8,7 +8,7 @@ src/
   grim/             engine layer: raylib wrapper, PAQ/JAZ decoders, audio, fonts
 decomp/             recovered C/C++ source and builds.json (every pinned build)
 crimson-re/         reverse-engineering tools (`crimson match|native|dbg`), a workspace package kept out of the game wheel
-crimson-zig/        Zig port (frozen): replay verifier, desktop runtime, WASM
+crimson-core/       recovered C/C++ gameplay built as a native and WASM simulation (replay verifier)
 analysis/
   ghidra/           name/type maps (source of truth) and structured snapshots
   binary_ninja/     preferred live analysis databases
@@ -113,19 +113,14 @@ zensical serve             # docs site from docs/ (uv tool install zensical)
 
 ### required pre-commit checks
 - Install hooks once per clone/worktree: `prek install -c prek.toml -t pre-commit -t pre-push`
-- `pre-commit` runs fast checks only (ruff/ty/docs/ast-grep/ziglint) and is file-scoped.
-- `pre-push` runs the fast packaging and Zig unit-test checks and is file-scoped.
-- Full pytest runs in CI. The Zig port is frozen: its tests are skipped unless you pass `--run-zig`, and
-  its CI only runs when `crimson-zig/` changes.
-- ziglint behavior is configured in `crimson-zig/.ziglint.zon`.
+- `pre-commit` runs fast checks only (ruff/ty/docs/ast-grep) and is file-scoped.
+- `pre-push` runs the packaging and decomp report checks and is file-scoped.
+- Full pytest runs in CI.
 - Manual runs:
   - `prek run --stage pre-commit`
   - `prek run --stage pre-push`
-  - `prek run py-pytest`, `prek run zig-release`, or `prek run zig-wasm`
-- CI-equivalent local run:
-  - Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.): `just check && uv build`
-  - Zig-only changes (`crimson-zig/`): `just check-zig`
-  - Mixed Zig + Python/docs/tooling changes: run both
+  - `prek run py-pytest`
+- CI-equivalent local run for Python/docs/tooling changes (`src/`, `tests/`, `docs/`, `tools/`, etc.): `just check && uv build`
 
 ## quick playbooks
 
@@ -142,7 +137,7 @@ zensical serve             # docs site from docs/ (uv tool install zensical)
 2. Migrate all internal callers in one wave.
 3. Delete legacy APIs/re-exports/tests in the same wave.
 4. Search for remaining references to old surfaces and remove them.
-5. Verify with `just check` / `just check-zig` and parity tests/artifacts.
+5. Verify with `just check` and parity tests/artifacts.
 
 ### docs/tooling changes
 1. Keep guidance aligned with parity-first + typed-boundary policy.

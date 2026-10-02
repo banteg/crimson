@@ -4,8 +4,7 @@ The recovered C/C++ gameplay from [`decomp/`](../decomp) built into one
 deterministic simulation, as a native executable and an import-free WASM
 module. It is being developed into the shared core of the shipped game and the
 replay verifier, so live play, the web build and leaderboard verification run
-the same module. Python stays the reference port for fast iteration; the
-[Zig port](../crimson-zig) is frozen until this core takes over verification.
+the same module. Python stays the reference port for fast iteration.
 
 `decomp/` stays the matching source of truth. The core compiles generated
 copies of 168 recovered translation units; everything it adds lives here.

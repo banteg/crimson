@@ -30,8 +30,8 @@ Do not assume two playthroughs have the same absolute tick timeline.
 
 ## Trace comparisons
 
-Use the [current format contract](../../rewrite/trace-format-alignment.md) and
-`uv run crimson dbg verify` as the version authority. Regenerate obsolete
+Use the [current format contract](../../rewrite/trace-format-alignment.md) as the
+version authority. Regenerate obsolete
 recordings; do not add migrations or salvage incomplete runs for parity work.
 
 Run `dbg health` on both CDTs before interpreting a diff. Both selected windows

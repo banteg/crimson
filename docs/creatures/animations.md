@@ -57,9 +57,9 @@ When `crimson.cfg` `shadows_enabled` is enabled (`config_shadows_enabled`) and t
 
 Each species finishes **all shadows before any body**, followed by its optional
 hit flashes. The species order is zombie, spider_sp1, spider_sp2, alien, lizard.
-Body and flash dimensions use actual creature size; the ports no longer clamp
-Python bodies to 16–128 pixels or tie their dimensions to atlas resolution.
-Both ports preserve this ordering, including zero-alpha shadow submissions.
+Body and flash dimensions use actual creature size; the Python port no longer
+clamps bodies to 16–128 pixels or ties their dimensions to atlas resolution.
+It preserves this ordering, including zero-alpha shadow submissions.
 See the [native pass-order and dimension audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-pass-order-2026-09-11/README.md).
 
 ## Body and shadow colour arithmetic
@@ -94,8 +94,7 @@ by the preceding body pass and do not flash.
 `creature_apply_damage` sets the timer to `0.2f`, including zero damage and
 corpse hits. The active-creature update subtracts `frame_dt` while the timer
 is positive, before the Freeze branch, and allows it to cross below zero.
-Spawn allocation clears it. Both ports implement the flash; Zig also restores
-the timer from existing replay slot residue. See the
+Spawn allocation clears it. The Python port implements the flash. See the
 [native lifetime and draw audit](https://github.com/banteg/crimson/blob/master/tools/match/evidence/creature-hit-flash-2026-09-11/README.md).
 
 ## Creature flags related to animation / attacks (partial)
