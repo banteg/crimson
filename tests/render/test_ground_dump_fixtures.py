@@ -141,11 +141,12 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[TextureId, rl.Textur
             overlay_detail=detail,
             width=case.width,
             height=case.height,
-            texture_scale=1.0,
         )
         # Compare at the capture's pixel dimensions even on a Retina display.
-        renderer.texture_scale = renderer._render_pixel_ratio()
-        renderer.schedule_stamps(terrain_generate(Crand(case.seed), slots).layers)
+        renderer.schedule_stamps(
+            terrain_generate(Crand(case.seed), slots).layers,
+            texture_scale=renderer._render_pixel_ratio(),
+        )
         renderer.process_pending()
         assert renderer.render_target_ready()
         assert renderer.render_target is not None

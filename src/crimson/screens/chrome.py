@@ -39,7 +39,6 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
             overlay_detail=detail,
             width=1024,
             height=1024,
-            texture_scale=state.config.display.texture_scale,
         )
         state.menu_ground = ground
     else:
@@ -48,7 +47,7 @@ def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundR
         ground.overlay_detail = detail
     if generated_new_terrain:
         assert ground is not None
-        ground.schedule_stamps(terrain.layers)
+        ground.schedule_stamps(terrain.layers, texture_scale=state.config.display.texture_scale)
         state.menu_ground_camera = None
     return ground
 

@@ -18,7 +18,6 @@ def _renderer() -> GroundRenderer:
         overlay_detail=texture,
         width=1024,
         height=1024,
-        texture_scale=1.0,
     )
 
 
@@ -41,25 +40,24 @@ def test_render_target_size_scales_with_window_dpi(
 
 
 @pytest.mark.parametrize(
-    ("target_width", "dpi_scale", "texture_scale", "expected_scale"),
+    ("target_width", "dpi_scale", "expected_scale"),
     [
-        (1024, 1.0, 1.0, 1.0),
-        (2048, 2.0, 1.0, 0.5),
-        (1024, 2.0, 1.0, 1.0),
-        (2048, 1.0, 1.0, 0.5),
-        (1024, 1.0, 2.0, 1.0),
-        (1365, 2.0, 1.5, 1024 / 1365),
+        (1024, 1.0, 1.0),
+        (2048, 2.0, 0.5),
+        (1024, 2.0, 1.0),
+        (2048, 1.0, 0.5),
+        (512, 1.0, 2.0),
+        (1365, 2.0, 1024 / 1365),
     ],
 )
-def test_effective_texture_scale_uses_allocated_target(
-    mocker, target_width: int, dpi_scale: float, texture_scale: float, expected_scale: float,
+def test_units_per_target_pixel_uses_allocated_target(
+    mocker, target_width: int, dpi_scale: float, expected_scale: float,
 ) -> None:
     mocker.patch.object(terrain_render.rl, "get_window_scale_dpi", return_value=rl.Vector2(dpi_scale, dpi_scale))
     ground = _renderer()
-    ground.texture_scale = texture_scale
     ground.render_target = rl.RenderTexture()
     ground.render_target.texture.width = target_width
-    assert_float_close(ground._normalized_texture_scale(), expected_scale)
+    assert_float_close(ground._units_per_target_pixel(), expected_scale)
 
 
 @pytest.mark.parametrize(

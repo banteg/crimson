@@ -67,12 +67,12 @@ class GroundRenderer(msgspec.Struct):
     overlay_detail: rl.Texture
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
-    texture_scale: float = 1.0
     texture_failed: bool = False
     render_target: rl.RenderTexture | None = None
     alpha_test: AlphaTestShader = msgspec.field(default_factory=AlphaTestShader)
     _render_target_ready: bool = False
     _scheduled_layers: TerrainLayers | None = None
+    _scheduled_texture_scale: float = 1.0
 
     def close(self) -> None:
         if self.render_target is not None:
@@ -90,13 +90,11 @@ class GroundRenderer(msgspec.Struct):
         layers = self._scheduled_layers
         if layers is None:
             return
-        self._generate_texture(layers)
+        self._generate_texture(layers, self._scheduled_texture_scale)
         self._scheduled_layers = None
 
-    def _ensure_render_target(self) -> None:
-        scale = min(max(self.texture_scale, 0.5), 4.0)
-        self.texture_scale = scale
-
+    def _ensure_render_target(self, texture_scale: float) -> None:
+        scale = min(max(texture_scale, 0.5), 4.0)
         render_w, render_h = self._render_target_size_for(scale)
         if self._load_render_target(render_w, render_h):
             self.texture_failed = False
@@ -108,12 +106,16 @@ class GroundRenderer(msgspec.Struct):
             self.render_target = None
         self._render_target_ready = False
 
-    def schedule_stamps(self, layers: TerrainLayers) -> None:
-        """Queue drawing generated terrain stamps; the target is (re)built on the next `process_pending`."""
-        self._scheduled_layers = layers
+    def schedule_stamps(self, layers: TerrainLayers, *, texture_scale: float) -> None:
+        """Queue drawing generated terrain stamps; the target is (re)built on the next `process_pending`.
 
-    def _generate_texture(self, layers: TerrainLayers) -> None:
-        self._ensure_render_target()
+        `texture_scale` only sizes the target. Bakes read their scale back from the allocated target.
+        """
+        self._scheduled_layers = layers
+        self._scheduled_texture_scale = texture_scale
+
+    def _generate_texture(self, layers: TerrainLayers, texture_scale: float) -> None:
+        self._ensure_render_target(texture_scale)
         if self.render_target is None:
             return
         self._render_target_ready = False
@@ -141,7 +143,7 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None or not self._render_target_ready:
             return False
 
-        inv_scale = 1.0 / self._normalized_texture_scale()
+        inv_scale = 1.0 / self._units_per_target_pixel()
         with texture_mode(self.render_target), self.alpha_test.scope(), _terrain_rt_blend(
             rd.RL_SRC_ALPHA,
             rd.RL_ONE_MINUS_SRC_ALPHA,
@@ -175,7 +177,7 @@ class GroundRenderer(msgspec.Struct):
         if self.render_target is None or not self._render_target_ready:
             return False
 
-        scale = self._normalized_texture_scale()
+        scale = self._units_per_target_pixel()
         inv_scale = 1.0 / scale
         offset = 2.0 * scale / float(self.width)
         # Intentional deviation: bilinear sampling reads better at modern output scales.
@@ -263,7 +265,7 @@ class GroundRenderer(msgspec.Struct):
         return view_w, view_h
 
     def _draw_stamps(self, texture: rl.Texture, tint: rl.Color, stamps: TerrainStampLayer) -> None:
-        inv_scale = 1.0 / self._normalized_texture_scale()
+        inv_scale = 1.0 / self._units_per_target_pixel()
         size = TERRAIN_PATCH_SIZE * inv_scale
         src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
         origin = rl.Vector2(size * 0.5, size * 0.5)
@@ -326,7 +328,7 @@ class GroundRenderer(msgspec.Struct):
         render_h = max(1, int((self.height * pixel_scale) / scale))
         return render_w, render_h
 
-    def _normalized_texture_scale(self) -> float:
+    def _units_per_target_pixel(self) -> float:
         # The ground target survives window/monitor DPI changes. Its allocated
         # dimensions, rather than the current window DPI, define bake coordinates.
         target = self.render_target

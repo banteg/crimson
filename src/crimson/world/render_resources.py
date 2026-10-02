@@ -51,14 +51,6 @@ class RenderResources(msgspec.Struct):
             return resources.texture(texture_id)
         return runtime_resources_for(self.assets_dir).texture(texture_id)
 
-    def sync_ground_settings(self) -> None:
-        if self.ground is None:
-            return
-        if self.config is None:
-            self.ground.texture_scale = 1.0
-            return
-        self.ground.texture_scale = self.config.display.texture_scale
-
     def set_ground_textures(
         self,
         *,
@@ -74,18 +66,17 @@ class RenderResources(msgspec.Struct):
                 overlay_detail=detail,
                 width=TERRAIN_SIZE,
                 height=TERRAIN_SIZE,
-                texture_scale=1.0,
             )
         else:
             self.ground.texture = base
             self.ground.overlay = overlay
             self.ground.overlay_detail = detail
-        self.sync_ground_settings()
 
     def schedule_ground_stamps(self, layers: TerrainLayers) -> None:
         if self.ground is None:
             return
-        self.ground.schedule_stamps(layers)
+        texture_scale = 1.0 if self.config is None else self.config.display.texture_scale
+        self.ground.schedule_stamps(layers, texture_scale=texture_scale)
 
     def process_ground_pending(self) -> None:
         if self.ground is None:

@@ -27,11 +27,11 @@ Generation: `src/crimson/sim/terrain_generate.py`; drawing: `src/grim/terrain_re
   pre-scale value: float32 rotation `(float)(rand % 314) * 0.01f`, and a top-left `rand % 1152 - 64`
   that already includes the overscan, drawn rotation, then y, then x.
 - `GroundRenderer` maintains an internal RT sized from `1024/texture_scale`.
-- `GroundRenderer.schedule_stamps(layers)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
+- `GroundRenderer.schedule_stamps(layers, texture_scale=...)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
   performs the scheduled RT creation and stamping. It applies `inv_scale`, moves the native top-left to
   raylib's quad center, and never touches an RNG, so drawing or re-applying a setup is free.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
-- `texture_scale` is treated as a terrain-setup input, not a live runtime knob. Existing menu/gameplay grounds keep the scale they were created with until terrain is explicitly replaced.
+- `texture_scale` is a terrain-setup input, not a live runtime knob: it is passed with the stamps and only sizes the RT. Existing menu/gameplay grounds keep their RT until terrain is explicitly replaced, and every draw into it reads the scale back from the allocated RT.
 
 A ground only changes when a setup is applied: gameplay and replay playback install `PreparedRun.terrain`,
 menus draw their own `terrain_generate_random` on the application stream (or keep the gameplay ground
