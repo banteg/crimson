@@ -40,9 +40,26 @@ def test_render_target_size_scales_with_window_dpi(
     assert _renderer()._render_target_size_for(1.0) == expected_size
 
 
-def test_effective_texture_scale_halves_with_double_dpi(mocker) -> None:
-    mocker.patch.object(terrain_render.rl, "get_window_scale_dpi", return_value=rl.Vector2(2.0, 2.0))
-    assert _renderer()._normalized_texture_scale() == 0.5
+@pytest.mark.parametrize(
+    ("target_width", "dpi_scale", "texture_scale", "expected_scale"),
+    [
+        (1024, 1.0, 1.0, 1.0),
+        (2048, 2.0, 1.0, 0.5),
+        (1024, 2.0, 1.0, 1.0),
+        (2048, 1.0, 1.0, 0.5),
+        (1024, 1.0, 2.0, 1.0),
+        (1365, 2.0, 1.5, 1024 / 1365),
+    ],
+)
+def test_effective_texture_scale_uses_allocated_target(
+    mocker, target_width: int, dpi_scale: float, texture_scale: float, expected_scale: float,
+) -> None:
+    mocker.patch.object(terrain_render.rl, "get_window_scale_dpi", return_value=rl.Vector2(dpi_scale, dpi_scale))
+    ground = _renderer()
+    ground.texture_scale = texture_scale
+    ground.render_target = rl.RenderTexture()
+    ground.render_target.texture.width = target_width
+    assert_float_close(ground._normalized_texture_scale(), expected_scale)
 
 
 @pytest.mark.parametrize(

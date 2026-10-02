@@ -98,11 +98,12 @@ target** before terrain is blitted to the backbuffer.
 The rewrite exposes the same mechanism via two helpers:
 
 - `GroundRenderer.bake_decals([...])` for generic textured decals (blood, scorch, etc).
-  - Applies `inv_scale = 1/texture_scale` to positions/sizes so baked pixels match the exe’s scaled RT.
+  - Scales positions/sizes by the allocated RT width divided by the terrain width. This includes the RT’s HiDPI scale and stays fixed if the window moves between monitors with different DPI.
   - Runs through the terrain alpha-test shim, so low-alpha fringe texels are discarded before blending.
   - Intentional rewrite deviation: generic decal sprites keep bilinear sampling while baking. The original engine appears to point-sample them, but bilinear reads better in the port.
 
 - `GroundRenderer.bake_corpse_decals(bodyset_texture, [...])` for corpse sprites (bodyset 4×4 atlas frames).
+  - Uses the same allocated RT scale as generic decals, so DPI changes preserve corpse positions and sizes.
   - Implements the two-pass corpse baking:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass

@@ -327,12 +327,11 @@ class GroundRenderer(msgspec.Struct):
         return render_w, render_h
 
     def _normalized_texture_scale(self) -> float:
-        scale = self.texture_scale
-        if scale < 0.5:
-            scale = 0.5
-        if self._render_pixel_ratio() == 2.0:
-            scale *= 0.5
-        return scale
+        # The ground target survives window/monitor DPI changes. Its allocated
+        # dimensions, rather than the current window DPI, define bake coordinates.
+        target = self.render_target
+        assert target is not None
+        return float(self.width) / float(target.texture.width)
 
     def _corpse_src(self, bodyset_texture: rl.Texture, frame: int) -> rl.Rectangle:
         frame = int(frame) & 0xF
