@@ -112,7 +112,6 @@ def test_existing_menu_ground_ignores_runtime_texture_scale_changes(state: GameS
     same_ground = ensure_menu_ground(state)
 
     assert same_ground is ground
-    assert float(same_ground.texture_scale) == 1.0
     assert same_ground._scheduled_layers is before_layers
     assert int(state.rng.state) == before_rng_state
     assert state.menu_ground_camera == Vec2(-100.0, -200.0)

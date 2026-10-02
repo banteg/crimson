@@ -59,10 +59,6 @@ class WorldRuntimeHost(WorldRuntime):
     # Test-specific methods (not on WorldRuntime)
     # ------------------------------------------------------------------
 
-    def sync_ground_settings(self) -> None:
-        self.render_resources.config = self.config
-        self.render_resources.sync_ground_settings()
-
     def step_survival_frame(
         self,
         dt: float,

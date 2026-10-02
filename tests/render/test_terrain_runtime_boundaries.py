@@ -9,7 +9,6 @@ from crimson.sim.terrain_generate import terrain_generate
 from crimson.terrain_slots import DEFAULT_TERRAIN_SLOTS
 from grim.assets import TextureId
 from grim.color import RGBA
-from grim.config import default_crimson_cfg
 from grim.rand import Crand
 from grim.raylib_api import rl
 from grim.terrain_render import GroundRenderer
@@ -84,25 +83,6 @@ def test_reset_keeps_the_ground_and_its_setup(assets_dir: Path) -> None:
     assert runtime.render_resources.ground is ground
     assert ground._scheduled_layers is None
     assert runtime.terrain_setup is setup
-
-
-def test_process_ground_pending_does_not_live_sync_texture_scale_from_config(assets_dir: Path) -> None:
-    world = _build_world(assets_dir)
-    texture = rl.Texture()
-    ground = GroundRenderer(
-        texture=texture,
-        overlay=texture,
-        overlay_detail=texture,
-        texture_scale=1.0,
-    )
-    world.render_resources.ground = ground
-    config = default_crimson_cfg()
-    config.display.texture_scale = 0.5
-    world.render_resources.config = config
-
-    world.render_resources.process_ground_pending()
-
-    assert float(ground.texture_scale) == 1.0
 
 
 def test_consume_terrain_fx_batch_defers_baking_to_draw_even_when_ground_ready(assets_dir: Path, mocker) -> None:

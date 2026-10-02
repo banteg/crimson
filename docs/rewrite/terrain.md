@@ -27,11 +27,11 @@ Generation: `src/crimson/sim/terrain_generate.py`; drawing: `src/grim/terrain_re
   pre-scale value: float32 rotation `(float)(rand % 314) * 0.01f`, and a top-left `rand % 1152 - 64`
   that already includes the overscan, drawn rotation, then y, then x.
 - `GroundRenderer` maintains an internal RT sized from `1024/texture_scale`.
-- `GroundRenderer.schedule_stamps(layers)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
+- `GroundRenderer.schedule_stamps(layers, texture_scale=...)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
   performs the scheduled RT creation and stamping. It applies `inv_scale`, moves the native top-left to
   raylib's quad center, and never touches an RNG, so drawing or re-applying a setup is free.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
-- `texture_scale` is treated as a terrain-setup input, not a live runtime knob. Existing menu/gameplay grounds keep the scale they were created with until terrain is explicitly replaced.
+- `texture_scale` is a terrain-setup input, not a live runtime knob: it is passed with the stamps and only sizes the RT. Existing menu/gameplay grounds keep their RT until terrain is explicitly replaced, and every draw into it reads the scale back from the allocated RT.
 
 A ground only changes when a setup is applied: gameplay and replay playback install `PreparedRun.terrain`,
 menus draw their own `terrain_generate_random` on the application stream (or keep the gameplay ground
@@ -98,11 +98,12 @@ target** before terrain is blitted to the backbuffer.
 The rewrite exposes the same mechanism via two helpers:
 
 - `GroundRenderer.bake_decals([...])` for generic textured decals (blood, scorch, etc).
-  - Applies `inv_scale = 1/texture_scale` to positions/sizes so baked pixels match the exe’s scaled RT.
+  - Scales positions/sizes by the allocated RT width divided by the terrain width. This includes the RT’s HiDPI scale and stays fixed if the window moves between monitors with different DPI.
   - Runs through the terrain alpha-test shim, so low-alpha fringe texels are discarded before blending.
   - Intentional rewrite deviation: generic decal sprites keep bilinear sampling while baking. The original engine appears to point-sample them, but bilinear reads better in the port.
 
 - `GroundRenderer.bake_corpse_decals(bodyset_texture, [...])` for corpse sprites (bodyset 4×4 atlas frames).
+  - Uses the same allocated RT scale as generic decals, so DPI changes preserve corpse positions and sizes.
   - Implements the two-pass corpse baking:
     - a “shadow/darken” pass using `ZERO / ONE_MINUS_SRC_ALPHA`
     - a normal alpha blend color pass

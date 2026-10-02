@@ -130,7 +130,7 @@ def _grid_ground(gpu: _Gpu) -> GroundRenderer:
     """A 64x64 ground whose target shows a 4x4 grid of 16-unit cells, each a distinct color."""
     grid = gpu.texture([[_cell_color(cx, cy) for cx in range(4)] for cy in range(4)])
     ground = gpu.ground(width=64, height=64)
-    ground.schedule_stamps(NO_STAMPS)
+    ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
     decal = GroundDecal(
         texture=grid,
@@ -212,6 +212,7 @@ def test_generated_stamps_draw_each_layer_with_its_texture_and_tint_under_alpha_
             overlay=(TerrainStamp(0.0, 128.0, 0.0),),
             detail=(TerrainStamp(0.0, 0.0, 128.0),),
         ),
+        texture_scale=1.0,
     )
     ground.process_pending()
     assert ground.render_target_ready()
@@ -227,7 +228,7 @@ def test_generated_stamps_draw_each_layer_with_its_texture_and_tint_under_alpha_
 
 def test_bake_decals_point_sample_under_alpha_test(gpu: _Gpu) -> None:
     ground = gpu.ground(width=64, height=64)
-    ground.schedule_stamps(NO_STAMPS)
+    ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
     decal = GroundDecal(
         texture=gpu.texture([[RED, GREEN, CUTOUT]]),
@@ -251,7 +252,7 @@ def test_bake_decals_point_sample_under_alpha_test(gpu: _Gpu) -> None:
 
 def test_bake_corpse_decals_draw_the_frame_cell_point_sampled_over_its_shadow(gpu: _Gpu) -> None:
     ground = gpu.ground(width=64, height=64)
-    ground.schedule_stamps(NO_STAMPS)
+    ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
     # Frame 3 is the top-right 2x2 cell of a 4x4 bodyset: a red texel column, then a green one.
     frame_cell = {6: RED, 7: GREEN}
@@ -274,6 +275,40 @@ def test_bake_corpse_decals_draw_the_frame_cell_point_sampled_over_its_shadow(gp
     assert shadow == pytest.approx((*(c * (1.0 - 127 / 255) for c in (clear.r, clear.g, clear.b)), clear.a), abs=1)
 
 
+@pytest.mark.parametrize(("initial_dpi", "bake_dpi"), [(1, 1), (2, 2), (1, 2), (2, 1)])
+@pytest.mark.parametrize("canvas_scale", [1, 2, 3])
+@pytest.mark.parametrize("corpse", [False, True], ids=["blood", "corpse"])
+def test_baked_decals_keep_world_size_after_dpi_changes(
+    gpu: _Gpu, mocker, initial_dpi: int, bake_dpi: int, canvas_scale: int, corpse: bool,
+) -> None:
+    mocker.patch.object(rl, "get_window_scale_dpi", return_value=rl.Vector2(initial_dpi, initial_dpi))
+    ground = gpu.ground(width=64, height=64)
+    ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
+    ground.process_pending()
+    texture = gpu.texture([[RED] * 4] * 4)
+    output = gpu.target(64 * canvas_scale, 64 * canvas_scale)
+
+    # The existing terrain target survives a window/monitor DPI change. Canvas
+    # scales the whole frame, while decal baking must retain terrain-space units.
+    mocker.patch.object(rl, "get_window_scale_dpi", return_value=rl.Vector2(bake_dpi, bake_dpi))
+    with texture_mode(output, scale_x=canvas_scale, scale_y=canvas_scale):
+        if corpse:
+            assert ground.bake_corpse_decals(
+                texture,
+                (GroundCorpseDecal(0, Vec2(8.0, 8.0), 16.0, math.pi * 0.5),),
+            )
+        else:
+            assert ground.bake_decals(
+                (GroundDecal(texture, rl.Rectangle(0.0, 0.0, 4.0, 4.0), Vec2(16.0, 16.0), 16.0, 16.0),),
+            )
+        ground.draw_view(Vec2(), screen_w=64, screen_h=64, out_w=64, out_h=64)
+
+    # A 16-unit decal occupies x=8..24 in every case. Sampling both inside and
+    # beyond that span catches the doubled/halved size and displaced position.
+    pixels = _read(output.texture, [(x * canvas_scale, 16 * canvas_scale) for x in (12, 20, 26, 32)])
+    assert pixels == [_rgba(RED), _rgba(RED), _rgba(TERRAIN_CLEAR_COLOR), _rgba(TERRAIN_CLEAR_COLOR)]
+
+
 def test_terrain_rt_blend_keeps_target_alpha_and_restores_alpha_writes(gpu: _Gpu) -> None:
     target = gpu.target(16, 16)
     translucent = rl.Color(255, 0, 0, 128)
@@ -291,7 +326,8 @@ def test_terrain_rt_blend_keeps_target_alpha_and_restores_alpha_writes(gpu: _Gpu
 
 def test_draw_stamps_scales_native_top_left_into_raylib_origin(headless_window, mocker) -> None:
     mocker.patch.object(rl, "get_window_scale_dpi", return_value=rl.Vector2(1.0, 1.0))
-    ground = _ground(texture_scale=2.0)
+    ground = _ground()
+    ground.render_target = _render_texture(512, 512)
     texture = rl.Texture()
     texture.width = 128
     texture.height = 128
@@ -341,12 +377,12 @@ def test_ensure_render_target_recovers_after_previous_failure(mocker) -> None:
     mocker.patch.object(rl, "set_texture_wrap")
     unload = mocker.patch.object(rl, "unload_render_texture")
 
-    ground._ensure_render_target()
+    ground._ensure_render_target(1.0)
     assert ground.texture_failed is True
     assert ground.render_target is None
     unload.assert_called_once_with(candidate)
 
-    ground._ensure_render_target()
+    ground._ensure_render_target(1.0)
     assert ground.texture_failed is False
     assert ground.render_target is candidate
 
@@ -382,7 +418,7 @@ def test_process_pending_clears_failed_schedule_after_terminal_rt_failure(mocker
     mocker.patch.object(rl, "rl_framebuffer_complete", return_value=False)
     mocker.patch.object(rl, "unload_render_texture")
 
-    ground.schedule_stamps(NO_STAMPS)
+    ground.schedule_stamps(NO_STAMPS, texture_scale=1.0)
     ground.process_pending()
     ground.process_pending()
 
@@ -397,7 +433,7 @@ def test_generation_failure_unbinds_target_and_retains_pending_stamps(headless_w
     ground.render_target = _render_texture(1024, 1024)
     ground._render_target_ready = True
     layers = TerrainLayers(base=(), overlay=(), detail=())
-    ground.schedule_stamps(layers)
+    ground.schedule_stamps(layers, texture_scale=1.0)
 
     with pytest.raises(RuntimeError, match="compile failed"):
         ground.process_pending()
