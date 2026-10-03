@@ -84,6 +84,13 @@ def adapt(src, txt):
             if txt.count(expression) != 1:
                 raise ValueError("Audit the shock chain link angle before changing this adapter")
             txt = txt.replace(expression, wide)
+    if src.stem in ("input_aim_pov_left_active", "input_aim_pov_right_active"):
+        # A replay records the POV hat as its two turn flags, which can both be held.
+        side = src.stem.split("_")[3]
+        expression = f"grim_interface_ptr->grim_get_joystick_pov(0)\n        == config_blob.aim_pov_{side}"
+        if txt.count(expression) != 1:
+            raise ValueError("Audit the POV aim seam before changing this adapter")
+        txt = '#include "api.h"\n' + txt.replace(expression, f"portable_aim_turn_{side}()")
     if src.stem == "bonus_apply":
         # 0x00409e0b: the first link's `fpatan` stays wide; each subtraction rounds.
         expression = "(float)atan2(dy, dx) - 1.5707964f - 3.1415927f,"
@@ -109,6 +116,20 @@ def adapt(src, txt):
         )
         if count != 1:
             raise ValueError("Audit the pad-aim reach seam before changing this adapter")
+        # Point-click movement records the move target the reload key and cursor set
+        # (0x00413f5e); it reaches the scheme the way Python's replay carries it.
+        expression = """            if (grim_interface_ptr->grim_is_key_active(config_key_reload)) {
+                vec2_t target =
+                    *(vec2_t *)&player_aim_screen_x[render_overlay_player_index * 2]
+                    - *(vec2_t *)&camera_offset_x;
+                *(vec2_t *)&player->move_target = target;
+            }"""
+        if txt.count(expression) != 1:
+            raise ValueError("Audit the point-click move target seam before changing this adapter")
+        txt = txt.replace(
+            expression,
+            "            *(vec2_t *)&player->move_target = vec2_t(portable_move_x(), portable_move_y());",
+        )
         txt = '#include "api.h"\n' + txt
         # FCOS/FSIN remain wide until the first FMUL (e.g. 0x00414335).
         # Subsequent multipliers must still round after every PC24 operation.
@@ -127,6 +148,16 @@ def adapt(src, txt):
         )
         if count != 4:
             raise ValueError("Audit shot spread trig boundaries before changing this adapter")
+        # The 60-unit aim point keeps FCOS wide into its multiply but stores FSIN first (0x00415427, 0x00415576,
+        # 0x00415606).
+        txt, count = re.subn(
+            r"vec2_t direction\(cosf\((player->aim_heading - 1\.5707964f)\), sinf\(\1\)\);"
+            r"(\s*\*\(vec2_t \*\)&player->aim = )direction \* 60\.0f( \+ \*\(vec2_t \*\)&player->position;)",
+            r"vec2_t reach(portable_mul32(cos(\1), 60.0f), sinf(\1) * 60.0f);\2reach\3",
+            txt,
+        )
+        if count != 3:
+            raise ValueError("Audit the aim point trig boundaries before changing this adapter")
     if src.stem == "gameplay_update_and_render":
         txt = txt.replace("void console_input_poll(void);", "int console_input_poll(void);")
         txt = txt.replace("pow(", "portable_crt_pow_pc24(")

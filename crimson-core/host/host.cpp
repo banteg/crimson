@@ -148,6 +148,10 @@ extern "C" uintptr_t portable_config() { return (uintptr_t)&cfg; }
 extern "C" uintptr_t portable_input() { return (uintptr_t)&in; }
 extern "C" float portable_aim_x() { return in.aim_x; }
 extern "C" float portable_aim_y() { return in.aim_y; }
+extern "C" float portable_move_x() { return in.move_x; }
+extern "C" float portable_move_y() { return in.move_y; }
+extern "C" bool portable_aim_turn_left() { return in.flags & 1u << 18; }
+extern "C" bool portable_aim_turn_right() { return in.flags & 1u << 19; }
 extern "C" uintptr_t portable_commands() { return (uintptr_t)commands; }
 extern "C" uintptr_t portable_output() { return (uintptr_t)output; }
 static void trace_init(const char *stage) {
@@ -211,7 +215,6 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   quest_fail_retry_count = cfg.retry;
   config_blob.music_volume = 1;
   config_blob.sfx_volume = 1;
-  config_blob.movement_schemes[0] = 3;
   config_blob.key_reload = 101;
   config_blob.key_pick_perk = 102;
   config_blob.input_config[0].fire_key = 100;
@@ -252,9 +255,17 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
   render_pass_mode = 1;
   trace_init("gameplay reset");
   gameplay_reset_state();
-  player_state_table[0].input.fire_key = 100;
-  player_state_table[0].input.axis_move_x = 0;
-  player_state_table[0].input.axis_move_y = 1;
+  player_input_t &keys = player_state_table[0].input;
+  keys.fire_key = 100;
+  keys.axis_move_x = 0;
+  keys.axis_move_y = 1;
+  // Codes the host's grim_is_key_active maps to the recorded key flags.
+  keys.move_key_forward = 0x100;
+  keys.move_key_backward = 0x101;
+  keys.turn_key_left = 0x102;
+  keys.turn_key_right = 0x103;
+  keys.aim_key_left = 0x104;
+  keys.aim_key_right = 0x105;
   quest_stage_major = major;
   quest_stage_minor = minor;
   trace_init("quest start");
@@ -287,20 +298,30 @@ extern "C" int portable_init(uint32_t seed, int mode, int major, int minor) {
 extern "C" int portable_step_many(uint32_t count) {
   if (!ready || count > 16 || run_down_ms < 0)
     return 0;
-  // Replay input flags: buttons, the movement-keys-present marker with no key
-  // held, dual-action movement (3), and mouse (0) or dual action pad (4) aim.
-  constexpr uint32_t buttons = 1 | 2 | 4 | 8 | 65536 | 131072;
-  constexpr uint32_t movement = 0x100 | 3 << 9, aim_present = 0x1000;
-  uint32_t aim_scheme = in.flags >> 13 & 7;
+  // Replay input flags (src/crimson/replay/types.py): buttons and held keys,
+  // then the movement scheme (bits 8-11) and aim scheme (bits 12-15), each with
+  // a presence bit. Validation and defaults follow Python's decoder.
+  constexpr uint32_t buttons = 1 | 2 | 4 | 1u << 16 | 1u << 17 | 1u << 18 | 1u << 19;
+  constexpr uint32_t move_keys_present = 8, move_keys = 16 | 32 | 64 | 128;
+  constexpr uint32_t move_present = 0x100, aim_present = 0x1000;
+  uint32_t move_mode = in.flags >> 9 & 7, aim_scheme = in.flags >> 13 & 7;
   if (!isfinite(in.move_x) || !isfinite(in.move_y) || !isfinite(in.aim_x) ||
       !isfinite(in.aim_y) ||
-      (in.flags & ~buttons & ~(7u << 13)) != (movement | aim_present) ||
-      (aim_scheme != 0 && aim_scheme != 4)) {
+      (in.flags & ~(buttons | move_keys_present | move_keys | move_present |
+                    7u << 9 | aim_present | 7u << 13)) != 0 ||
+      (!(in.flags & move_keys_present) && (in.flags & move_keys)) ||
+      (!(in.flags & move_present) && move_mode != 0) || move_mode > 5 ||
+      (!(in.flags & aim_present) && aim_scheme != 0) || aim_scheme == 6) {
     ready = false;
     return 0;
   }
-  // Like Python, the scheme comes with each tick's input.
-  config_blob.aim_schemes[0] = aim_scheme;
+  // Like Python, the schemes come with each tick's input. Recordings without
+  // them ran static movement when they held movement keys, else the pad.
+  config_blob.movement_schemes[0] =
+      in.flags & move_present ? (int)move_mode
+                              : in.flags & move_keys_present ? 2 : 3;
+  // The 3-bit field stores the -1 scheme as all ones.
+  config_blob.aim_schemes[0] = aim_scheme == 7 ? -1 : (int)aim_scheme;
   menu_requested = false;
   for (uint32_t i = 0; i < count; ++i) {
     int command = commands[i].type, argument = commands[i].argument;
@@ -341,8 +362,10 @@ extern "C" int portable_step_many(uint32_t count) {
   if (render_pass_mode && perk_count_get(perk_id_reflex_boosted) != 0)
     frame_dt *= 0.9f;
   frame_dt_ms = (int)(frame_dt * 1000.0f);
-  ui_mouse_x = in.aim_x + camera_offset_x;
-  ui_mouse_y = in.aim_y + camera_offset_y;
+  // Mouse-relative aim records the cursor itself; other schemes record world aim.
+  bool cursor = config_blob.aim_schemes[0] == 3;
+  ui_mouse_x = cursor ? in.aim_x : in.aim_x + camera_offset_x;
+  ui_mouse_y = cursor ? in.aim_y : in.aim_y + camera_offset_y;
   gameplay_update_and_render();
   if (game_state_pending == GAME_STATE_PERK_SELECTION)
     game_state_pending = GAME_STATE_PENDING_IDLE_SENTINEL;

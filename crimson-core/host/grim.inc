@@ -80,7 +80,14 @@ public:
            : key == 101 ? (in.flags & (65536 | 4)) != 0
            : key == 102 ? menu_requested
            : key == 34  ? (in.flags & 131072) != 0
-                        : 0;
+           // The player's move and aim keys (host.cpp) and their recorded bits.
+           : key == 0x100 ? (in.flags & 16) != 0
+           : key == 0x101 ? (in.flags & 32) != 0
+           : key == 0x102 ? (in.flags & 64) != 0
+           : key == 0x103 ? (in.flags & 128) != 0
+           : key == 0x104 ? (in.flags & 1u << 18) != 0
+           : key == 0x105 ? (in.flags & 1u << 19) != 0
+                          : 0;
   }
   float grim_get_config_float(int id) override {
     return id == 0 ? in.move_x : id == 1 ? in.move_y : 0.0f;

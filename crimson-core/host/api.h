@@ -28,6 +28,11 @@ int portable_snapshot();
 // The tick's aim: a world point under mouse aim, the stick's reach under pad aim.
 float portable_aim_x();
 float portable_aim_y();
+// Point-click movement records its move target; the POV hat its turn keys.
+float portable_move_x();
+float portable_move_y();
+bool portable_aim_turn_left();
+bool portable_aim_turn_right();
 int portable_math_probe(uint32_t operation, uint32_t a, uint32_t b);
 int portable_builder_probe(uint32_t seed, uint32_t index, uint32_t hardcore,
                            uint32_t players);

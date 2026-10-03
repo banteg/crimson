@@ -13,19 +13,19 @@ copies of 168 recovered translation units; everything it adds lives here.
 
 - Whole runs agree with Python under both bug policies: the **original rules**
   (`preserve_bugs=True`) and the **ranked rules** (`preserve_bugs=False`, the
-  documented fixes). The [gate](#whole-run-gate) checks all 126 streams in CI,
-  including the four supported human recordings, whose claimed results the core
+  documented fixes). The [gate](#whole-run-gate) checks all 139 streams in CI,
+  including the five supported human recordings, whose claimed results the core
   reproduces.
-- Native and WASM snapshots are bit-exact on 122 bot runs, including resets.
+- Native and WASM snapshots are bit-exact on 134 bot runs, including resets.
   Quest builders and gameplay math match the original executable.
 
 ## Scope
 
 - One player at a fixed 60 Hz in Rush, Survival and all 50 Quests.
-- Dual-action movement with mouse aim (a world point) or dual action pad aim
-  (the stick's reach from the moved position), read from each tick's flags as
-  Python does. Keyboard movement schemes, Typ-o, the tutorial and more players
-  fail explicitly.
+- Every movement scheme (relative, static, dual action pad, point-click and
+  computer) and aim scheme (mouse, keyboard, joystick, mouse-relative, pad and
+  computer), read from each tick's flags as Python does; see
+  [the input seam](#transport-and-input-seam). Typ-o, the tutorial and more players fail explicitly.
 - The run's bug policy comes with its configuration; see [Rules](#rules).
 
 ## Layout
@@ -64,9 +64,10 @@ node crimson-core/checks/matrix.mjs
 ```
 
 An ordinary bot reads state, chooses inputs and perks, and never edits
-simulation state. Each of its 61 scenarios runs under both bug policies (the
-ranked run carries a `-ranked` suffix), alternating mouse and pad aim and
-continuing through the run-down after the end, giving 122 input-only `.rsi`
+simulation state. Each of its 67 scenarios runs under both bug policies (the
+ranked run carries a `-ranked` suffix), alternating mouse and pad aim, with one
+scenario per other movement and aim scheme, and continuing through the run-down
+after the end, giving 134 input-only `.rsi`
 streams in `build/fixtures`. Two hunter scenarios prefer the perks ranked fixes
 touch (Jinxed, Pyrokinetic, Highlander, Death Clock, Bandage, the
 Regenerations) and hold G at times. The matrix compares 36,343 named fields at
@@ -74,7 +75,7 @@ initialization and **every tick** between native and WASM, then checks A/B/A
 reuse in both. It also probes rejection of bad input, commands and entitlement,
 and that a large movement vector does not move faster than a unit one.
 
-The [results](results/matrix.json) cover 289,665 ticks. All 50 quests run to an
+The [results](results/matrix.json) cover 357,500 ticks. All 50 quests run to an
 outcome; the bot completes 1.1, 1.3 and 1.5. Coverage includes game over in
 every mode, quest completion and failure, spawn stalls, reloads, perk menus,
 ordered picks, several weapons, freeze, Reflex Boost and weapon power-ups, and
@@ -103,8 +104,9 @@ after the end, at most 500 ms of frames, as live play and verification do; a
 core rejection counts only where Python's run-down ends, and the gate refuses
 to run on a partial bot corpus or unknown `--only` names.
 
-The [baseline](results/gate.json) agrees on **all 126** streams, including the
-four supported human fixtures (Quests 2.5, 2.10 and 4.10, and a Survival run);
+The [baseline](results/gate.json) agrees on **all 139** streams, including the
+five supported human fixtures (Quests 2.5, 2.10 and 4.10, a Survival run and a
+Rush run);
 the Typ-o fixture is not supported yet. CI fails on any
 disagreement. A new divergence is reduced to its first differing state and
 decided against the original through Unicorn or its disassembly.
@@ -148,7 +150,7 @@ uv run --with wasmtime==49.0.0 python crimson-core/checks/wasmtime_check.py \
 
 The [probe](results/wasmtime.json) loads the exact `core.wasm` used by Node and
 the Worker in [wasmtime-py](https://bytecodealliance.github.io/wasmtime-py/),
-compares the hash of every snapshot in all 59 scenarios and checks A/B/A resets
+compares the hash of every snapshot in all 134 runs and checks A/B/A resets
 in one instance, without adding a project dependency. A rendered desktop client
 still needs graphics and audio imports. The 9,995-tick Survival run takes about
 **0.15 s** in a warmed Node WASM instance (simulation and input transfer,
@@ -232,7 +234,11 @@ Aim reaches gameplay as recorded. Mouse aim is a world point used directly:
 going through screen space and back lost one F32 ULP against Python, and the
 original agreed with each port given its own operands. Pad aim is the stick's
 reach, added to the moved position in the native pad block in place of its
-stick and cvar read.
+stick and cvar read. Mouse-relative aim is the cursor's screen position, and
+point-click movement takes the recorded move target in the move axes (x = -1
+for none) in place of the reload key and cursor. Held movement keys and the
+aim turn keys arrive as flag bits through `grim_is_key_active`; the joystick
+scheme's POV hat reads the same turn bits.
 
 ## How the build works
 
@@ -241,7 +247,8 @@ copies: C linkage, const references for VC6 temporaries, declaration repairs
 and shared math calls. It also keeps the x87 evaluation boundaries the original
 executable shows, which the C syntax alone does not: wide angle returns
 (the creature target heading, the Shock Chain link angles), the first trig
-multiply of player, projectile, seeker and creature motion, the shot spread and
+multiply of player, projectile, seeker and creature motion and of the player's
+aim point, the shot spread and
 a projectile's hit jitter and particle velocities (creature movement multiplies
 from the cosine left to right), and the quest trig spills (Sweep Stakes and Deja
 vu spill cosine to F32 but keep sine wide). In `projectile_update` a cast trig

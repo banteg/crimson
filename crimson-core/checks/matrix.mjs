@@ -25,9 +25,51 @@ const terminal = new Set([7, 8, 12]);
 const fixtures = path.join(out, "fixtures");
 fs.mkdirSync(fixtures, { recursive: true });
 
+// Movement schemes (`MovementControlType`) and aim schemes (`AimScheme`, -1 stored as 7).
+const MOVE = { relative: 1, static: 2, pad: 3, pointClick: 4, computer: 5 };
+const AIM = { mouse: 0, keyboard: 1, joystick: 2, mouseRelative: 3, pad: 4, computer: 5, unknown: 7 };
 // Mouse aim sends a world point; dual action pad aim sends the stick's reach.
-const MOUSE = 0x1700,
-  PAD = 0x9700;
+const MOUSE = { move: MOVE.pad, aim: AIM.mouse },
+  PAD = { move: MOVE.pad, aim: AIM.pad };
+const keyed = (move) => move === MOVE.relative || move === MOVE.static;
+const schemeFlags = ({ move, aim }) => 0x100 | (move << 9) | 0x1000 | (aim << 13) | (keyed(move) ? 8 : 0);
+const TURN = 0.15;
+const wrap = (angle) => Math.atan2(Math.sin(angle), Math.cos(angle));
+
+// The tick's axes and flags for `scheme`, steering along (mx, my) when moving and aiming at (wx, wy).
+function encodeControls(scheme, { x, y, heading, aimHeading, mx, my, wx, wy, moving }) {
+  const { move, aim } = scheme;
+  let flags = schemeFlags(scheme);
+  let moveX = mx,
+    moveY = my;
+  if (move === MOVE.relative && moving) {
+    const turn = wrap(Math.atan2(my, mx) + Math.PI / 2 - heading);
+    if (turn > TURN) flags |= 128;
+    if (turn < -TURN) flags |= 64;
+    if (Math.abs(turn) < 1) flags |= 16;
+  } else if (move === MOVE.static && moving) {
+    if (my < -0.38) flags |= 16;
+    if (my > 0.38) flags |= 32;
+    if (mx < -0.38) flags |= 64;
+    if (mx > 0.38) flags |= 128;
+  } else if (move === MOVE.pointClick) {
+    [moveX, moveY] = moving ? [x + mx * 80, y + my * 80] : [-1, -1];
+  }
+  if (move !== MOVE.pad && move !== MOVE.pointClick) moveX = moveY = 0;
+  let aimX = 0,
+    aimY = 0;
+  if (aim === AIM.mouse) [aimX, aimY] = [wx, wy];
+  else if (aim === AIM.pad) [aimX, aimY] = [wx - x, wy - y];
+  else if (aim === AIM.mouseRelative) {
+    const n = Math.hypot(wx - x, wy - y) || 1;
+    [aimX, aimY] = [200 + ((wx - x) / n) * 25, 200 + ((wy - y) / n) * 25];
+  } else if (aim !== AIM.computer) {
+    const turn = wrap(Math.atan2(wy - y, wx - x) + Math.PI / 2 - aimHeading);
+    if (turn > TURN) flags |= 1 << 19;
+    if (turn < -TURN) flags |= 1 << 18;
+  }
+  return [moveX, moveY, aimX, aimY, flags];
+}
 
 // Perk ids (`PerkId` in src/crimson/perks) that ranked-rules fixes touch.
 const PERK = {
@@ -45,7 +87,7 @@ const PERK = {
 const G_KEY = 131072;
 
 // `hunt` steers a bot towards fixed behaviour: `prefer` lists perks to pick when offered, `gKey` holds G at times.
-function play(cfg, bot, limit, aim, hunt = {}) {
+function play(cfg, bot, limit, scheme, hunt = {}) {
   init(e, cfg);
   const records = [],
     coverage = {
@@ -187,13 +229,24 @@ function play(cfg, bot, limit, aim, hunt = {}) {
     const reload = bot && tick % 137 === 0;
     coverage.reload += Number(reload);
     const [wx, wy] = target ?? [x, y - 60];
+    const view = {
+      x,
+      y,
+      heading: f("players[0].heading"),
+      aimHeading: f("players[0].aim_heading"),
+      mx,
+      my,
+      wx,
+      wy,
+    };
+    const [moveX, moveY, aimX, aimY, flags] = encodeControls(scheme, { ...view, moving: Boolean(bot) });
     const r = record(
       [
-        mx,
-        my,
-        aim === PAD ? wx - x : wx,
-        aim === PAD ? wy - y : wy,
-        aim |
+        moveX,
+        moveY,
+        aimX,
+        aimY,
+        flags |
           (bot && target ? 1 : 0) |
           (reload ? 65536 : 0) |
           (hunt.gKey && tick % 211 < 30 ? G_KEY : 0),
@@ -205,7 +258,7 @@ function play(cfg, bot, limit, aim, hunt = {}) {
     final = summary();
     if (terminal.has(final.pending)) {
       // The run-down: the game simulates until its UI timeline runs out, then refuses input.
-      const idle = record([0, 0, r.readFloatLE(8), r.readFloatLE(12), aim]);
+      const idle = record(encodeControls(scheme, { ...view, moving: false }));
       while (step(e, idle)) {
         records.push(idle);
         if (++coverage.run_down > 40) throw Error("Run-down did not end");
@@ -235,32 +288,34 @@ function rejects(label, cfg, r, expected = 5) {
 }
 
 const normal = config(1);
-rejects("NaN", normal, record([NaN, 0, 512, 512, MOUSE]));
-rejects("infinite aim", normal, record([0, 0, Infinity, 512, MOUSE]));
-rejects("unknown flags", normal, record([0, 0, 512, 512, MOUSE | 0x100000]));
-rejects("unsupported movement scheme", normal, record([0, 0, 512, 512, 38144]));
-rejects("unsupported aim scheme", normal, record([0, 0, 512, 512, 0x7700]));
-rejects("held movement key", normal, record([0, 0, 512, 512, PAD | 8 | 16]));
+rejects("NaN", normal, record([NaN, 0, 512, 512, schemeFlags(MOUSE)]));
+rejects("infinite aim", normal, record([0, 0, Infinity, 512, schemeFlags(MOUSE)]));
+rejects("unknown flags", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) | 0x100000]));
+rejects("unsupported movement scheme", normal, record([0, 0, 512, 512, schemeFlags({ ...PAD, move: 6 })]));
+rejects("unsupported aim scheme", normal, record([0, 0, 512, 512, schemeFlags({ ...MOUSE, aim: 6 })]));
+rejects("movement scheme without presence", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) & ~0x100]));
+rejects("aim scheme without presence", normal, record([0, 0, 512, 512, schemeFlags(PAD) & ~0x1000]));
+rejects("movement key without presence", normal, record([0, 0, 512, 512, schemeFlags(MOUSE) | 16]));
 rejects(
   "perk without entitlement",
   normal,
-  record([0, 0, 512, 512, MOUSE], [[1, 0]]),
+  record([0, 0, 512, 512, schemeFlags(MOUSE)], [[1, 0]]),
 );
 rejects(
   "menu without entitlement",
   normal,
-  record([0, 0, 512, 512, MOUSE], [[2, 0]]),
+  record([0, 0, 512, 512, schemeFlags(MOUSE)], [[2, 0]]),
 );
 rejects(
   "Rush perk command",
   config(2),
-  record([0, 0, 512, 512, MOUSE], [[2, 0]]),
+  record([0, 0, 512, 512, schemeFlags(MOUSE)], [[2, 0]]),
 );
-rejects("unknown command", normal, record([0, 0, 512, 512, MOUSE], [[99, 0]]));
+rejects("unknown command", normal, record([0, 0, 512, 512, schemeFlags(MOUSE)], [[99, 0]]));
 rejects(
   "command count overflow",
   normal,
-  record([0, 0, 512, 512, MOUSE], Array(17).fill([2, 0])),
+  record([0, 0, 512, 512, schemeFlags(MOUSE)], Array(17).fill([2, 0])),
   4,
 );
 
@@ -268,7 +323,7 @@ rejects(
 function displacement(magnitude) {
   init(e, normal);
   for (let i = 0; i < 90; i++)
-    if (!step(e, record([magnitude, 0, 512, 512, MOUSE])))
+    if (!step(e, record([magnitude, 0, 512, 512, schemeFlags(MOUSE)])))
       throw Error("Movement probe");
   state(e);
   return [
@@ -280,7 +335,7 @@ function displacement(magnitude) {
 if (JSON.stringify(displacement(1)) !== JSON.stringify(displacement(100)))
   throw Error("Large vector speeds up movement");
 
-// [name, config arguments, bot, tick limit, aim, hunt]; every scenario runs under both bug policies.
+// [name, config arguments, bot, tick limit, controls, hunt]; every scenario runs under both bug policies.
 const scenarios = [
   ["rush-idle", [2], false, 6000, PAD],
   ["rush-bot", [2], true, 30000, MOUSE],
@@ -308,6 +363,12 @@ const scenarios = [
       prefer: [PERK.highlander, PERK.deathClock, PERK.regeneration, PERK.greaterRegeneration, PERK.bandage],
     },
   ],
+  ["survival-relative-keyboard", [1, 1, 1, { seed: 21 }], 2, 30000, { move: MOVE.relative, aim: AIM.keyboard }],
+  ["survival-static-mouse", [1, 1, 1, { seed: 22 }], 2, 30000, { move: MOVE.static, aim: AIM.mouse }],
+  ["survival-static-joystick", [1, 1, 1, { seed: 23 }], 2, 30000, { move: MOVE.static, aim: AIM.joystick }],
+  ["survival-computer", [1, 1, 1, { seed: 24 }], false, 30000, { move: MOVE.computer, aim: AIM.computer }],
+  ["rush-unknown-aim", [2, 1, 1, { seed: 25 }], 2, 30000, { move: MOVE.pad, aim: AIM.unknown }],
+  ["quest-point-click", [3, 2, 3, { seed: 26 }], true, 30000, { move: MOVE.pointClick, aim: AIM.mouseRelative }],
 ];
 for (let major = 1; major <= 5; major++)
   for (let minor = 1; minor <= 10; minor++)
@@ -325,15 +386,15 @@ const policies = [
   ["-ranked", 0],
 ];
 const report = {
-  guards: "11 native/WASM rejection probes; large-vector speed cap",
+  guards: "13 native/WASM rejection probes; large-vector speed cap",
   cases: [],
 };
-for (const [scenario, [mode, major, minor, options], bot, limit, aim, hunt] of scenarios)
+for (const [scenario, [mode, major, minor, options], bot, limit, scheme, hunt] of scenarios)
   for (const [suffix, preserveBugs] of policies) {
   const name = scenario + suffix;
   const cfg = config(mode, major, minor, { ...options, preserveBugs });
   console.log(`${name}: generating input stream`);
-  const run = play(cfg, bot, limit, aim, hunt);
+  const run = play(cfg, bot, limit, scheme, hunt);
   const filename = path.join(fixtures, `${name}.rsi`);
   fs.writeFileSync(filename, run.input);
   console.log(`${name}: comparing ${run.input.length} input bytes`);
