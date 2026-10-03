@@ -58571,7 +58571,7 @@
   "identities": {
     "inventory": "7e5671dd6e48cebdfc69fbb82d58deea5e5643e74c4b8df1d0c45e431c37d64f",
     "inventory_policy": "native-functions-and-full-executable-remainder-v1",
-    "scoring": "48cc537d10a9ca00a28015ed2762350929e6b8256e195218db83385511463b64",
+    "scoring": "d20738de098d03974aa4683977554975d70a5da9bdb22e7389fd7931d65491e9",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.3.0/crimson.exe": "5c56641e7205631f4ea87394d8cbfd87bfc88f8211d199d439eae0a5ca6ad4d8",
@@ -58656,7 +58656,7 @@
     "crimson-re/src/crimson_re/cli/match.py": "56ec8c053aabd9338fe1c33e944458c4795bd5f691dcfe0cc2c634a521f45d96",
     "crimson-re/src/crimson_re/library_match.py": "7527e3b7e813b099665ffca627948da6c93c4a1921b5d3f3900d69d21ef6180b",
     "crimson-re/src/crimson_re/library_provenance.py": "a7ddd37146178caeca17f6239f2e33a6dbcd8e41be1d65ed9078090fbbc94683",
-    "crimson-re/src/crimson_re/match.py": "04d2c2b041ac5bd1f70d757be9cde77f2752838ebcd240afcd723280c2b0ba55",
+    "crimson-re/src/crimson_re/match.py": "9fc55189f0db1c22be3e3d0f5ff84e2ad94c5a59cc3b1a37ab9f719b2ffe883d",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
     "crimson-re/src/crimson_re/match_builds.py": "41da0eecd95b5d25ff7b0ea1bad4c0fb7d586d1bb5649e47586e4bdc00ffd747",
     "crimson-re/src/crimson_re/match_c2.py": "607d3d420f70d712c07554c80ee7ce899812d0e2ad6f22a16f23d5cceb5cc390",

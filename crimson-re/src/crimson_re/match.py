@@ -7687,7 +7687,7 @@ def collect_naming_debt(
 
 def _resolved_name_audit_files(repo_root: Path) -> tuple[Path, ...]:
     files: list[Path] = []
-    for relative_root in ("analysis", "crimson-re", "crimson-zig", "docs", "src", "scripts", "tools"):
+    for relative_root in ("analysis", "crimson-re", "docs", "src", "scripts", "tools"):
         source_root = repo_root / relative_root
         if not source_root.is_dir():
             continue

@@ -74901,7 +74901,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
-        "candidate_object_sha256": "ee4d71967eebb44a1a63cc7a0b08ec227905fa76c65b8b168d0cb8d36b641dc3",
+        "candidate_object_sha256": "6d5cbd48ccd5116c252f5fa6d67889c5095751a23af6ccdff2312c4b5c52c346",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -74935,7 +74935,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 3,
-        "candidate_object_sha256": "ee4d71967eebb44a1a63cc7a0b08ec227905fa76c65b8b168d0cb8d36b641dc3",
+        "candidate_object_sha256": "6d5cbd48ccd5116c252f5fa6d67889c5095751a23af6ccdff2312c4b5c52c346",
         "candidate_padding_bytes": 2,
         "compared_target_ranges": [
           [
@@ -74969,7 +74969,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "b84b5515e01aeec2e51925efac26818b9964ee48e0f8693feb1f817f7df25b64",
+        "candidate_object_sha256": "045d91721684ab46fb09ceef17e4fa9ab273fc271d9f9819aa1bb80381837d51",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -75003,7 +75003,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "b84b5515e01aeec2e51925efac26818b9964ee48e0f8693feb1f817f7df25b64",
+        "candidate_object_sha256": "045d91721684ab46fb09ceef17e4fa9ab273fc271d9f9819aa1bb80381837d51",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -110981,7 +110981,7 @@
   "identities": {
     "inventory": "17eef77b67178be23ca5720a2555c647b36d9f2c3b1a246759649480ae928443",
     "inventory_policy": "curated-functions-v2; canonical-ownership-v1; data-extents-v1; executable-gaps-unresolved-v1",
-    "scoring": "994f6812b0670ec6a6e21be2352e27fc98c96f786496930f2fff62a8b2c02136",
+    "scoring": "c7f0141df3d6fd164c8bdb4b3576ecd16b70a6658991fdd4270b13230398e83d",
     "scoring_policy": "normalized-positional-references-v1; relocation-audited-body-v1; full-compared-coverage-v1; source-component-native-placement-v1",
     "target": {
       "game_bins/crimsonland/1.9.93-gog/crimsonland.exe": "771531fe72c36dbcb7ca8d8a391f00884ced8240fbb17080ffc3e0e59482c4f4",
@@ -111066,7 +111066,7 @@
     "crimson-re/src/crimson_re/cli/match.py": "56ec8c053aabd9338fe1c33e944458c4795bd5f691dcfe0cc2c634a521f45d96",
     "crimson-re/src/crimson_re/library_match.py": "7527e3b7e813b099665ffca627948da6c93c4a1921b5d3f3900d69d21ef6180b",
     "crimson-re/src/crimson_re/library_provenance.py": "a7ddd37146178caeca17f6239f2e33a6dbcd8e41be1d65ed9078090fbbc94683",
-    "crimson-re/src/crimson_re/match.py": "04d2c2b041ac5bd1f70d757be9cde77f2752838ebcd240afcd723280c2b0ba55",
+    "crimson-re/src/crimson_re/match.py": "9fc55189f0db1c22be3e3d0f5ff84e2ad94c5a59cc3b1a37ab9f719b2ffe883d",
     "crimson-re/src/crimson_re/match_address_diagnostics.py": "9ced244f19063007ad5ee5c3e8965623a68e6daa65ad466f3f429389a4365949",
     "crimson-re/src/crimson_re/match_builds.py": "41da0eecd95b5d25ff7b0ea1bad4c0fb7d586d1bb5649e47586e4bdc00ffd747",
     "crimson-re/src/crimson_re/match_c2.py": "607d3d420f70d712c07554c80ee7ce899812d0e2ad6f22a16f23d5cceb5cc390",
@@ -114850,7 +114850,7 @@
             "image": "grim.dll",
             "kind": "code",
             "name": "grim_get_slot_float",
-            "object_sha256": "ee4d71967eebb44a1a63cc7a0b08ec227905fa76c65b8b168d0cb8d36b641dc3",
+            "object_sha256": "6d5cbd48ccd5116c252f5fa6d67889c5095751a23af6ccdff2312c4b5c52c346",
             "permissions": 1610612736,
             "sha256": "1d001006e6ebcca9ec463aa44235fa48c97a47af7a069bff7111113fb25f8d13",
             "size": 14,
@@ -114861,7 +114861,7 @@
             "image": "grim.dll",
             "kind": "code",
             "name": "grim_get_slot_int",
-            "object_sha256": "ee4d71967eebb44a1a63cc7a0b08ec227905fa76c65b8b168d0cb8d36b641dc3",
+            "object_sha256": "6d5cbd48ccd5116c252f5fa6d67889c5095751a23af6ccdff2312c4b5c52c346",
             "permissions": 1610612736,
             "sha256": "a33cd4dcb4e9cb49639859d02f42a16ba9306478a4711fb3aa1a8217f75a2fb5",
             "size": 14,
@@ -114872,7 +114872,7 @@
             "image": "grim.dll",
             "kind": "code",
             "name": "grim_set_slot_float",
-            "object_sha256": "b84b5515e01aeec2e51925efac26818b9964ee48e0f8693feb1f817f7df25b64",
+            "object_sha256": "045d91721684ab46fb09ceef17e4fa9ab273fc271d9f9819aa1bb80381837d51",
             "permissions": 1610612736,
             "sha256": "483057089551b4ee75a0362b4de559067412adc1d1c9a98b22de116c1cea9d21",
             "size": 18,
@@ -114883,7 +114883,7 @@
             "image": "grim.dll",
             "kind": "code",
             "name": "grim_set_slot_int",
-            "object_sha256": "b84b5515e01aeec2e51925efac26818b9964ee48e0f8693feb1f817f7df25b64",
+            "object_sha256": "045d91721684ab46fb09ceef17e4fa9ab273fc271d9f9819aa1bb80381837d51",
             "permissions": 1610612736,
             "sha256": "363bf56f28a8aa1ebebfd248eadd5194cc3f0f74f0eb377a2f230c855fe96cfe",
             "size": 18,
