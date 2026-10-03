@@ -75003,7 +75003,7 @@
       "proof": {
         "body_byte_exact": true,
         "candidate_instructions": 4,
-        "candidate_object_sha256": "045d91721684ab46fb09ceef17e4fa9ab273fc271d9f9819aa1bb80381837d51",
+        "candidate_object_sha256": "fe0918632b2cb6574fa9b0f11bbff241a1539ec4eafac398a62465113905c0db",
         "candidate_padding_bytes": 14,
         "compared_target_ranges": [
           [
@@ -114883,7 +114883,7 @@
             "image": "grim.dll",
             "kind": "code",
             "name": "grim_set_slot_int",
-            "object_sha256": "045d91721684ab46fb09ceef17e4fa9ab273fc271d9f9819aa1bb80381837d51",
+            "object_sha256": "fe0918632b2cb6574fa9b0f11bbff241a1539ec4eafac398a62465113905c0db",
             "permissions": 1610612736,
             "sha256": "363bf56f28a8aa1ebebfd248eadd5194cc3f0f74f0eb377a2f230c855fe96cfe",
             "size": 18,
