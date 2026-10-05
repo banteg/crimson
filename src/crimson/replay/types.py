@@ -155,8 +155,8 @@ class ReplayTick(msgspec.Struct, frozen=True, array_like=True, forbid_unknown_fi
     """One fixed-dt simulation tick: per-player inputs, then ordered commands.
 
     Perk picks apply at the start of the tick, before timing is derived; a perk
-    menu request opens mid-tick, where native opens it; Typ-o commands apply after
-    the mode's pre-step hook.
+    menu request opens mid-tick, where native opens it; Typ-o commands apply at the
+    start of the Typ-o frame.
     """
 
     inputs: PackedTickInputs

@@ -11,17 +11,25 @@ CDT is Crimson's owned debug-trace container. It is used by
 original Crimsonland asset format.
 
 This document specifies the only supported contract implemented by
-`crimson-re/src/crimson_re/dbg/schema.py` and `crimson-re/src/crimson_re/dbg/trace.py`. For producer and
-workflow details, see
-[`trace-format-alignment.md`](trace-format-alignment.md).
+`crimson-re/src/crimson_re/dbg/schema.py` and `crimson-re/src/crimson_re/dbg/trace.py`.
+The Python port is the only producer: `crimson dbg record`
+(`crimson-re/src/crimson_re/dbg/record.py`) records a trace while it plays a
+`.crd` replay, so CDT localizes regressions between two port revisions.
+Original-code behavior is checked by the
+[native execution oracle](../verification/differential-testing/native-oracle.md)
+and the [recovered core gate](https://github.com/banteg/crimson/tree/master/crimson-core#whole-run-gate).
 
 ## Versioning
 
-- `trace_format_version = 2`: container and envelope
-- `trace_schema_version = 20`: typed tick payloads
+| Artifact | Current version | Authority |
+| --- | ---: | --- |
+| CDT container | 2 | `crimson-re/src/crimson_re/dbg/schema.py` |
+| CDT payload schema | 20 | `crimson-re/src/crimson_re/dbg/schema.py` |
+| CRD replay | 29 | `src/crimson/replay/types.py` |
 
-The reader requires both exact versions. There is no compatibility path for an
-older CDT because traces are cheap to record again.
+These artifacts are throwaway debugging data. Readers require exactly these
+versions; they do not translate, normalize, or salvage an older recording.
+Re-record a trace when a version changes.
 
 ## File layout
 
@@ -72,7 +80,8 @@ the whole trace.
 - declared tick range
 - optional captured game status
 
-Unknown fields are rejected. The declared tick range must exactly match the rows and footer written to disk.
+`TraceMeta.status` carries the run's unlock indices and weapon usage counts with
+every other status field zero. Unknown fields are rejected. The declared tick range must exactly match the rows and footer written to disk.
 
 ## Tick blocks
 
@@ -121,7 +130,12 @@ The replay step is the authoritative driving evidence for the tick:
 - `prelude`: ordered native frame-RNG advances and perk operations applied before simulation
 - `postlude`: perk-menu generation applied after simulation while tick RNG
   tracing remains active
-- `commands`: Typ-o commands applied as part of the tick
+- `commands`: replay commands (perk and Typ-o) applied as part of the tick
+
+Replays step a fixed 60 Hz schedule, so their traces report
+`dt = float32(1/60)` and empty `prelude` and `postlude`. Input bit 17,
+`fire_bullets_key_down`, records the native G-key Fire Bullets shortcut;
+playback honors it only with `preserve_bugs` enabled.
 
 Checkpoint and simulation player counts must equal the input count.
 
@@ -182,12 +196,11 @@ Every tick has a non-empty timing set with exactly one `gpur_enter` row. Its
 enclosing `dt_ms_i32`, and its `mode_fn` identifies
 `gameplay_update_and_render`.
 
-## Producers
-
-Python CRD v24 replay recording (`crimson dbg record`) is the producer. A
-producer may not add aliases or optional channel shapes to CDT.
-
 ## Diff contract
+
+Run `dbg health` on both traces before interpreting a diff. Health validates the
+tick records, reports tick spans and gaps, counts rows per channel, and exits
+nonzero when the selected window is not ready for comparison.
 
 `dbg diff` compares ticks in deterministic channel order:
 
@@ -210,3 +223,6 @@ The JSON report exposes:
 Strict field mismatches name the path and include expected/actual values.
 Finite float mismatches additionally include numeric delta, expected and actual
 f32 hex encodings, and f32 ULP distance.
+
+Use `dbg bisect` to bound the earliest bad tick and `dbg focus`, `dbg tick`,
+`dbg entity`, or `dbg query` to inspect the relevant channel and entity history.

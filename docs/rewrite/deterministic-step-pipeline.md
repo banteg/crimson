@@ -89,8 +89,7 @@ Survival and rush time belongs to `DeterministicSession.elapsed_ms`; quest time
 belongs to `QuestSpawnState.spawn_timeline_ms`. Render/HUD animation time is a
 separate `WorldRuntime.presentation_elapsed_ms` clock.
 
-Custom network play has been removed; see [Netplay](netplay.md) for the deferred
-scope and requirements for any future implementation.
+Custom network play has been removed; see [status](status.md#intentional-differences).
 
 ## Phase ownership
 
@@ -121,4 +120,4 @@ for same-build port regression checks.
 
 Replay play, verify, info, benchmark and render all use this simulation contract.
 Use `uv run crimson replay --help` and command-specific help for options. Trace
-comparisons use the [CDT contract](trace-format-alignment.md).
+comparisons use the [CDT contract](cdt-trace-format.md).

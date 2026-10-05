@@ -44,4 +44,4 @@ tags:
 - Quest results:
   - life bonus aggregation supports N-player health values for 3/4-player runs.
   - 1/2-player scoring behavior is preserved.
-  - Code: `src/crimson/quests/results.py`, `src/crimson/game/__init__.py`, `src/crimson/modes/quest_mode.py`
+  - Code: `src/crimson/quests/results.py`, `src/crimson/modes/quest_mode.py`

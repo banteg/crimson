@@ -46,7 +46,7 @@ later hit. With the gate closed the latch never sets, so every hit takes the tun
 branch and draws nothing.
 
 The port always takes the open-gate path (`plan_hit_sfx` and
-`WorldState` hit audio, `DeterministicSession.game_tune_started`). Its sound and
+`WorldState` hit audio, `GameplayState.game_tune_started`). Its sound and
 music options only mute output. Recorded runs, and their verification, do not
 depend on the player's audio device or settings.
 

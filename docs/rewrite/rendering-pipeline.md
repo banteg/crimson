@@ -115,7 +115,8 @@ The main world pass lives in `draw_world()` in `src/crimson/render/world/draw.py
 flowchart TD
     A["draw_world(ctx with prepared transform)"] --> C["draw_background()"]
     C --> D{"entity_alpha > 0?"}
-    D -- "no" --> Z["return"]
+    D -- "no" --> Y["projectile_render (alpha 0)"]
+    Y --> Z["return"]
     D -- "yes" --> E["build_draw_context()"]
     E --> F["players_dead"]
     F --> G["creatures"]
@@ -137,7 +138,7 @@ longer a supported fallback mode in `draw_world()`.
 
 ### Entity passes
 
-The world entity passes run under `_maybe_alpha_test(...)`, so terrain/entity
+The world entity passes run under `render_ctx.frame.resources.alpha_test.scope()`, so terrain/entity
 cutout behavior stays aligned with the classic fixed-function alpha-test path.
 The shader shim is required; initialization failure is treated as a hard error.
 

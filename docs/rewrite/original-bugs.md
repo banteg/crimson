@@ -535,7 +535,7 @@ Why it's likely a bug:
 Rewrite behavior:
 
 - The rewrite mirrors the native behavior exactly (burn the rolls, branch on
-  the wave index) so quest builds stay rng-stream aligned with captures.
+  the wave index) so quest builds stay rng-stream aligned with the native quest builders.
 
 ## 23) Plaguebearer contact immunity activates player 1 only in co-op
 

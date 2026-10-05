@@ -5,9 +5,11 @@ tags:
 
 # Build provenance and hashes
 
-This repo currently decompiles the GOG Crimsonland Classic build whose
-`whatsupdated.txt` reports version **1.9.93**. That file lives alongside the
-runtime binaries in the bin below.
+The canonical build is the GOG Crimsonland Classic release whose
+`whatsupdated.txt` reports version **1.9.93**; that file lives alongside the
+runtime binaries in the bin below. [`decomp/builds.json`](https://github.com/banteg/crimson/blob/master/decomp/builds.json)
+pins every build the decompilation covers (1.0.2, 1.3.0, 1.4.0 and the 1.9
+family through 1.9.93) with its file hashes.
 
 ## Runtime files (1.9.93-gog)
 

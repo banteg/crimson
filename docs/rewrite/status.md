@@ -22,15 +22,14 @@ supported scope, not a claim that every native branch has been verified.
 | `tests/replay/test_live_run_start.py` | Live mode startup and recorder/playback agree on complete session state, including non-default settings. |
 | `tests/sim/test_step_pipeline_parity.py` | Live tick batching and replay/headless paths preserve tested timing, input and state behavior. |
 | `tests/render/test_ground_dump_fixtures.py` | Captured terrain images agree within the test's documented tolerances; requires assets and a display. |
-| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies. |
-| Current original/candidate CDT comparisons | The recorded runs agree through the reported tick/channel span. |
+| `crimson-core/checks/gate.py` | The recovered core agrees with Python's complete run results on the gate's replay fixtures and bot corpus under both bug policies, for one player in Rush, Survival and Quests with every control scheme. Typ-o, Tutorial and co-op are outside the core's scope. |
+| `tests/native_oracle/` | Ported functions agree bit for bit with the original code run under the [native execution oracle](../verification/differential-testing/native-oracle.md) on the tested cases. |
 
 `just check` runs the repository gates. Skipped display-dependent tests do not
 prove rendering parity, and startup smoke tests do not replace a full product
 walkthrough. A checkpoint samples only part of the state; use complete session
 digests for same-build port regression comparisons. Native parity claims need
-address-keyed source evidence or a current, healthy capture with identified
-artifacts and comparison results. See [evidence records](../verification/evidence-ledger/index.md).
+address-keyed source evidence, a native-oracle test, or the core gate. See [evidence records](../verification/evidence-ledger/index.md).
 
 ## Intentional differences
 
@@ -41,7 +40,9 @@ artifacts and comparison results. See [evidence records](../verification/evidenc
   and [beam rendering](beam-rendering.md).
 - Mods are discovered and displayed, but native DLL plugin execution is out of scope.
 - Other Games advertisement/runtime flows and native online-score submission are out of scope.
-- Custom network play was removed and is [deferred](netplay.md).
+- Custom network play (LAN, lockstep, rollback, relay) was removed on 2026-09-05 because it never
+  restored full state. A future design must start from the deterministic session and prove full state
+  restore and corrected-input resimulation before adding transport or lobby UI.
 
 Outstanding native timing, precision, input-scheme and visual differences should
 be recorded with a reproducer and evidence. A completed implementation plan or a

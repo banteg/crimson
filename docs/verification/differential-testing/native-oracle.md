@@ -58,8 +58,9 @@ print(oracle.read_f32(angle))
 
 ## Running the differential tests
 
-The executable lives under the gitignored `game_bins/`. Unicorn's JIT does not
-run inside the agent command sandbox. For both reasons the tests are opt-in:
+The executable lives under the gitignored `game_bins/`, and Unicorn's JIT does
+not run inside the agent command sandbox, so locally the tests are opt-in. CI
+downloads the hash-checked 1.9.93 binaries and runs them on every push:
 
 ```bash
 CRIMSON_NATIVE_ORACLE=1 uv run pytest tests/native_oracle
@@ -72,6 +73,7 @@ stores a wider double where native stores a float32.
 
 | Test | Native code | Port |
 | --- | --- | --- |
+| `test_harness` | `crt_rand`, stdcall float calls, the PC24 control word, stubs, traces and fault reports | `CrtRand` |
 | `test_float_helpers` | `angle_approach` `0x0041f430`, `__ftol` `0x00461054`, PC24 `fadd`/`fsub`/`fmul`/`fdiv`/`fsqrt`, `fcos`/`fsin` + `fmul` | `_angle_approach`, `ftol_ms_i32`, `math_parity.x87_pc24_*` |
 | `test_spawn_template` | `creature_spawn_template` `0x00430af0`, every template × hardcore × retry count | `CreaturePool.spawn_template` |
 | `test_spawn_full_pool` | `creature_spawn_template`, `survival_spawn_creature` and `rush_mode_update` into a pool with at most five free slots: overflow into the phantom slot `creature_pool[0x180]`, the spawn-slot table | `CreaturePool.spawn_template`, `survival_spawn_creature`, `rush_mode_update` |
@@ -86,6 +88,12 @@ stores a wider double where native stores a float32.
 | `test_camera_shake` | `camera_update` `0x00409500` over whole Nuke shakes | `camera_shake_update` |
 | `test_sprite_effects` | Sprite loop of `projectile_update` `0x0042246a..0x004224e8` | `SpriteEffectPool.update` |
 | `test_experience_award` | Kill XP award in `creature_handle_death` `0x0041eb34..0x0041ebb5`, with Double Experience | `award_experience_from_reward` |
+| `test_creature_handle_death` | `creature_handle_death` `0x0041e910`: corpses, eaten deaths, split-on-death children, Quick Learner, Double Experience, Freeze and the kill-drop guard | `CreaturePool.handle_death` |
+| `test_effect_spawns` | Every effect spawner through the shared `effect_template`, `effects_update` and pool exhaustion | `EffectPool`, projectile-hit and bonus effect spawns |
+| `test_freeze_effects` | `effect_spawn_freeze_shatter` and its shards | `EffectPool.spawn_freeze_shatter` |
+| `test_terrain_generate` | `terrain_generate` and `terrain_generate_random` draw calls through a recording Grim | The terrain generators |
+| `test_tutorial_timeline` | `tutorial_timeline_update`, including the raw-key stages | `tutorial_timeline_update` |
+| `test_player_controls` | Whole-frame `player_update` `0x004136b0` under every movement and aim scheme, 1-4 players, keys, sticks, POV hat and mouse | `LocalInputInterpreter` through a replay tick into `player_update` |
 | `test_player_update` | `player_update` movement, steering-heading, turn, Angry Reloader, Reflex Boost restore/spread/reload and aim fragments; `player_heading_approach_target` `0x00413540`; `player_apply_move_with_spawn_avoidance` `0x0041e290`; the level threshold at `0x0040afae` | `crimson.gameplay` movement helpers, `player_update`, `survival_level_threshold` |
 
 ## Limitations
@@ -94,9 +102,10 @@ stores a wider double where native stores a float32.
   host double `libm`. PC24 rounding of `fadd`/`fsub`/`fmul`/`fdiv`/`fsqrt` is
   exact. The oracle therefore checks the rounding structure around trig, not
   extended-precision trig accuracy.
-- Code that reaches Direct3D, DirectInput, audio or the `grim.dll` vtable
-  traps. Stub those callees, as the tests stub `sfx_play_panned` and
-  `console_printf`.
+- Code that reaches Direct3D, DirectInput or audio traps. Stub those callees,
+  as the tests stub `sfx_play_panned` and `console_printf`. For the `grim.dll`
+  vtable, `install_fake_grim` in `tests/native_oracle/_support.py` installs an
+  interface whose methods return 0 or run per-method handlers.
 - Globals start from the executable's file image plus static initializers.
   Runtime tables that game startup fills, such as perk ids, must be seeded or
   built by calling their init functions (`weapon_table_init`,

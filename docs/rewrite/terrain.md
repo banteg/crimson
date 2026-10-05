@@ -30,7 +30,7 @@ Generation: `src/crimson/sim/terrain_generate.py`; drawing: `src/grim/terrain_re
 - `GroundRenderer.schedule_stamps(layers, texture_scale=...)` queues drawing a generated setup, and `GroundRenderer.process_pending()`
   performs the scheduled RT creation and stamping. It applies `inv_scale`, moves the native top-left to
   raylib's quad center, and never touches an RNG, so drawing or re-applying a setup is free.
-- `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
+- `GroundRenderer.draw_view(camera, screen_w=..., screen_h=..., out_w=..., out_h=...)` draws the RT to the screen using UV scrolling.
 - `texture_scale` is a terrain-setup input, not a live runtime knob: it is passed with the stamps and only sizes the RT. Existing menu/gameplay grounds keep their RT until terrain is explicitly replaced, and every draw into it reads the scale back from the allocated RT.
 
 A ground only changes when a setup is applied: gameplay and replay playback install `PreparedRun.terrain`,
@@ -65,9 +65,10 @@ Intentional rewrite deviations:
 
 ## Ground dump fixtures (parity test)
 
-We captured **ground render-target dumps** via Frida and use the PNGs as
-fixtures to ensure the rewrite matches within measured image tolerances for the same seed and
-terrain texture indices.
+**Ground render-target dumps** captured from the original game (with the
+since-removed Frida tooling, so they cannot be regenerated) serve as fixtures
+to ensure the rewrite matches within measured image tolerances for the same
+seed and terrain texture indices.
 
 - Fixtures: `tests/fixtures/ground/ground_dump_*.png` + `tests/fixtures/ground/ground_dump_cases.json`
 - Test: `tests/render/test_ground_dump_fixtures.py`

@@ -18,7 +18,7 @@ intentional differences. Keep uncertainty only where the evidence is incomplete.
 Retire completed migration plans after incorporating their lasting contracts.
 Store unique historical observations with the analysis artifacts, clearly dated;
 do not keep completed checklists as permanent status pages. Use command help for
-option lists and the [format matrix](../../rewrite/trace-format-alignment.md) for
+option lists and the [format matrix](../../rewrite/cdt-trace-format.md#versioning) for
 current versions rather than copying them into every workflow.
 
 Run `just docs-check` and `just docs-build`. The checker covers internal Markdown

@@ -13,7 +13,7 @@ it is not a list of unmapped functions.
 
 Caller tags explain RNG draws. Matching tags do not prove matching behavior, and
 differing tags alone are diagnostic when values and states agree; see
-[trace contracts](trace-format-alignment.md).
+[trace contract](cdt-trace-format.md).
 
 ## Key Rule
 

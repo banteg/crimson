@@ -558,11 +558,11 @@ matching.
 - ADVAPI32.DLL, D3D8.DLL, DINPUT8.DLL, GDI32.DLL, KERNEL32.DLL, MSVCRT.DLL,
   URLMON.DLL, USER32.DLL, WINMM.DLL.
 
-- Evidence: `analysis/ghidra/raw/ghidra_analysis.log:28697` through `:28729`.
+- Evidence: `analysis/ida/raw/grim.dll/imports.json`.
 
 ### crimsonland.exe imports
 - ADVAPI32.DLL, D3D8.DLL, DSOUND.DLL, KERNEL32.DLL, OLE32.DLL, OLEAUT32.DLL,
   SHELL32.DLL, URLMON.DLL, USER32.DLL, VERSION.DLL, VORBISFILE.DLL,
   WININET.DLL, WINMM.DLL.
 
-- Evidence: `analysis/ghidra/raw/ghidra_analysis.log:28923` through `:28973`.
+- Evidence: `analysis/ida/raw/crimsonland.exe/imports.json`.

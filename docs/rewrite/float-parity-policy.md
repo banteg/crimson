@@ -87,9 +87,8 @@ newly-ported expression.
 ### What this means (non-handwavy)
 
 - The game is **not** “everything in 80-bit all the way down”.
-  - Startup default precision is `PC_53`, so “x87 intermediate” is not
-    equivalent to “always full 80-bit precision.”
-  - Intermediates in many arithmetic/trig expressions are x87-extended.
+  - Gameplay runs at `PC_24` (see above), so x87 arithmetic rounds to f32 per
+    operation; only transcendental results stay wide until their next op.
   - Authoritative long-lived state slots (player/creature/projectile fields)
     are float32 stores.
 - Therefore parity errors come from two specific failure modes:
@@ -134,14 +133,15 @@ Deterministic gameplay math follows three rules:
 
 The [native execution oracle](../verification/differential-testing/native-oracle.md)
 runs original functions under emulation at PC24. Use it to check a ported
-expression bit for bit before relying on capture runs.
+expression bit for bit; the [recovered core gate](https://github.com/banteg/crimson/tree/master/crimson-core#whole-run-gate)
+then checks whole runs.
 
 ## Allowed normalization
 
 Literal simplification is acceptable when all of the following are true:
 
 1. The path is non-deterministic or presentation-only (not gameplay simulation).
-2. Differential evidence (capture + verifier) shows no behavior change.
+2. Differential evidence (the native oracle or the core gate) shows no behavior change.
 3. A test or session note records that evidence.
 
 If any condition is missing, keep the native-looking float behavior.
@@ -153,6 +153,6 @@ If any condition is missing, keep the native-looking float behavior.
 - Keep gameplay-domain state in `f32`; avoid repeated `f64 -> f32 -> f64`
   churn inside hot loops.
 - Use explicit spill points (`f32`) where native would store to `float`.
-- Prefer parity captures and focused traces over intuitive “cleanup”.
-- Document any intentional float deviation in the differential capture ledger:
-  `analysis/` capture records.
+- Prefer native-oracle checks and replay fixtures over intuitive “cleanup”.
+- Document any intentional float deviation in the
+  [evidence records](../verification/evidence-ledger/index.md).

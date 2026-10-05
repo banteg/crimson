@@ -64,12 +64,12 @@ int ftol_ms_i32(float dt_seconds) {
 
 - `dt`: canonical per-tick seconds-domain value.
 - `dt_sim`: simulation-domain dt after active gates/scales.
-- `dt_player_local`: player-local dt used inside player update/remap windows.
+- Player-local dt: the remapped delta inside `player_update`'s movement window
+  (`_player_reflex_movement_dt`), restored afterwards (`_player_reflex_restored_dt`).
 - `dt_ms_i32`: integer cadence derived from `dt` via `ftol_ms_i32()`.
 - `dt_sim_ms_i32`: integer cadence derived from `dt_sim` via `ftol_ms_i32()`.
-- Replay rows:
-  - `Replay.dt` is required and length-matched to `inputs`.
-  - `*_ms_i32` values are derived on load/use, not stored as authoritative rows.
+- Replays store no timing: every tick runs the fixed float32 1/60 s step, and
+  `dt_sim` and the `*_ms_i32` values are derived on use.
 
 ## Worked tick timeline example
 
@@ -86,10 +86,10 @@ Example tick with concrete numbers and call-order:
    - `dt_sim = f32(0.015 * 0.65) = 0.00975`
    - `dt_sim_ms_i32 = ftol_ms_i32(0.00975) = 9`
 5. Player-local remap uses:
-   - `dt_player_local = f32((0.600000024 / 0.65) * 0.00975) = 0.009000001`
-6. If zero-gate triggers this tick:
-   - keep entry cadence (`dt=0.015`, `dt_ms_i32=15`)
-   - force sim cadence to zero (`dt_sim=0.0`, `dt_sim_ms_i32=0`)
+   - `player dt = f32((0.600000024 / 0.65) * 0.00975) = 0.009000001`
+6. If native's zero gate triggers this tick (pause or console), it clears
+   `frame_dt` and `frame_dt_ms`. The port keeps that gate in the outer mode and
+   UI pump: `FrameTiming.compute` never zeroes `dt_sim`.
 
 ## Consumer map
 
@@ -107,7 +107,8 @@ Integer-ms cadence consumers:
 
 ## Replay/debug semantics
 
-- Replay records per-tick `dt` as authoritative timing input for deterministic reruns.
+- Replays step the fixed float32 1/60 s delta; live play and playback derive
+  the tick's timing through the same `_session_timing`.
 - Traces carry sub-tick `timing_samples` rows to preserve phase-level timing evidence.
 - Diff/bisect must compare `timing_samples` and report first timing-phase mismatch when present.
 
@@ -118,12 +119,8 @@ Common drift causes:
 - Mixing truncation and rounding rules across systems.
 - Duplicated local dt-to-ms derivations with inconsistent semantics.
 - Missing or reordered restore steps around player-local remap.
-- Hidden fallback branches that ignore replay dt rows.
 
 Required invariants:
 
-- `run_replay` and `run_replay_info` consume equivalent replay timing rows.
-- Replay codecs reject missing/legacy timing rows for current format version.
-- Trace/finalize readers reject unsupported schema versions (no silent compatibility mode).
+- Replay and trace readers reject unsupported format versions (no silent compatibility mode).
 - Parity-critical dt-to-ms integer derivation uses only `ftol_ms_i32`.
-- Recorder-produced replays always emit finite, non-negative `Replay.dt` rows and row count equals input ticks.

@@ -16,7 +16,6 @@ tracked on [decomp.dev](https://decomp.dev/banteg/crimson).
 ## Subsections
 
 - [Static](static/index.md) — decompiler findings and symbol/data analysis.
-- [Runtime](runtime/index.md) — Frida/WinDbg validation sessions and probes.
 - [Formats](formats/index.md) — asset and file format reverse engineering.
 - [Structs](structs/index.md) — pool/struct mapping and layouts.
 
@@ -24,4 +23,5 @@ tracked on [decomp.dev](https://decomp.dev/banteg/crimson).
 
 - [Mechanics](../mechanics/index.md) for behavior specs.
 - [Rewrite](../rewrite/index.md) for implementation details.
-- [Verification](../verification/index.md) for parity claims and differential checks.
+- [Verification](../verification/index.md) for parity claims and differential checks, including the
+  native execution oracle that runs original code under Unicorn.

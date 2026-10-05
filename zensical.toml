@@ -50,11 +50,9 @@ nav = [
       { "Replay run start" = "rewrite/replay-run-start.md" },
       { "Quest identifiers" = "rewrite/quest-identifiers.md" },
       { "CDT trace format" = "rewrite/cdt-trace-format.md" },
-      { "Trace format alignment" = "rewrite/trace-format-alignment.md" },
       { "RNG caller mapping workflow" = "rewrite/rng-caller-mapping-workflow.md" },
       { "Float parity policy" = "rewrite/float-parity-policy.md" },
       { "Float expression precision map" = "rewrite/float-expression-precision-map.md" },
-      { "Netplay (deferred)" = "rewrite/netplay.md" },
       { "Local multiplayer" = "rewrite/local-multiplayer.md" },
     ]},
     { "Modules" = [
@@ -137,14 +135,6 @@ nav = [
         { "Survival weapon handouts" = "re/static/secrets/survival-weapon-handouts.md" },
       ]},
     ]},
-    { "Runtime" = [
-      { "Overview" = "re/runtime/index.md" },
-      { "WinDbg" = [
-        { "Overview" = "windbg/index.md" },
-        { "Sessions" = "windbg/sessions.md" },
-      ]},
-      { "Grim2D runtime validation" = "grim2d/runtime-validation.md" },
-    ]},
     { "Formats" = [
       { "Overview" = "re/formats/index.md" },
       { "Formats overview" = "formats/index.md" },
@@ -194,10 +184,6 @@ nav = [
       { "Overview" = "contributor/project-tracking/index.md" },
       { "Build provenance and hashes" = "contributor/project-tracking/provenance.md" },
       { "Third-party libraries" = "contributor/project-tracking/third-party-libs.md" },
-    ]},
-    { "Cheatsheets" = [
-      { "raylib (Python)" = "cheatsheets/raylib.md" },
-      { "DirectX 8" = "cheatsheets/directx8.md" },
     ]},
   ]},
 ]

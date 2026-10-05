@@ -30,10 +30,10 @@ This project prioritizes deterministic parity with the original executable. The 
 
 ## RNG Assertions
 
-- Use `tests.support.helpers.assert_rng_progression(...)` with `MockCrand` for deterministic RNG checks.
+- Use `tests.support.helpers.assert_rng_progression(...)` with a scripted `tests.support.helpers.ScriptedCrand` or a real `Crand` for deterministic RNG checks.
 - Assert draw budget (`expected_draws`) when native parity defines an exact call budget.
-- Assert state/hash progression (`expected_after_state`, optional `expected_hash`) when call ordering is behaviorally significant.
-- Use both budget and state/hash in parity-critical paths (projectile/death planning, branch-sensitive effects).
+- Assert state progression (`expected_after_state`) when call ordering is behaviorally significant.
+- Use both budget and state in parity-critical paths (projectile/death planning, branch-sensitive effects).
 - Use `min_draws` only when a branch must consume RNG but the exact budget is intentionally non-contractual.
 
 ## Suite Layout
@@ -51,7 +51,6 @@ This project prioritizes deterministic parity with the original executable. The 
 
 ## Trace and Replay Test Data
 
-- Use trace/replay fixtures (`.cdt` / `.crd`) for differential and replay tests.
 - To add a recorded replay fixture, play the run with `uv run crimson --replay-checkpoints`, then copy the
   saved `<name>.crd` and its `<name>.crd.chk` checkpoint sidecar from the runtime `replays/` directory into
   `tests/fixtures/replays/`. The fixture tests replay it headlessly and compare every tick's checkpoint;
@@ -70,3 +69,6 @@ Ast-grep rules enforce key constraints:
 - no string-target `mocker.patch("...")` in tests
 - no string-target Raylib `monkeypatch.setattr("...rl...")` in tests
 - no list-append side-effect spies inside patch hooks
+- no `inspect.stack()` in tests
+- no raylib screen-size or mouse reads in `src/`; read them through `grim.canvas`
+- no ad-hoc dt-to-milliseconds integer conversions in the sim and replay code; use `ftol_ms_i32()`

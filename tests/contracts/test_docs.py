@@ -70,7 +70,7 @@ def test_docs_links_cannot_escape_to_a_sibling_with_the_same_prefix(tmp_path: Pa
 
 
 def test_documented_format_matrix_matches_current_versions() -> None:
-    page = Path(__file__).resolve().parents[2] / "docs/rewrite/trace-format-alignment.md"
+    page = Path(__file__).resolve().parents[2] / "docs/rewrite/cdt-trace-format.md"
     rows = {
         cells[1].strip(): cells[2].strip()
         for line in page.read_text().splitlines()

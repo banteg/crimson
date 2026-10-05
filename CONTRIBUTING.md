@@ -25,23 +25,25 @@ tests/              gameplay, replay, parity and regression tests
 1. Recover structure and intent from static analysis. Names and types live in `analysis/ghidra/maps/`; consult function views in Binary Ninja, IDA, then Ghidra with the address-keyed workflow in `analysis/README.md`.
 2. Settle ambiguous behavior against the original code under the Unicorn [native execution oracle](docs/verification/differential-testing/native-oracle.md), which checks port code bit for bit.
 3. Port behavior into `src/` with deterministic simulation contracts. Float behavior is part of the contract: see the [float parity policy](docs/rewrite/float-parity-policy.md).
-4. Verify against recorded replays and their per-tick checkpoints with headless tools.
+4. Verify against recorded replays and their per-tick checkpoints with headless tools, and keep the
+   [recovered core gate](crimson-core/README.md#whole-run-gate) green: the matching decompilation must play
+   every replay fixture and bot run exactly as the port does.
 
 [provenance.md](docs/contributor/project-tracking/provenance.md) has the exact binary hashes of the target build.
 
 ## core priorities
 
-1. **Deterministic parity + evidence-backed correctness** If rules conflict, preserve native-faithful behavior and prove it with captures/replays/deterministic tests.
+1. **Deterministic parity + evidence-backed correctness** If rules conflict, preserve native-faithful behavior and prove it with the native oracle, replays and deterministic tests.
 2. **Structural simplicity** Prefer deleting complexity over adding layers.
 3. **UX polish** Only after parity is preserved (unless explicitly required and proven not to change parity-critical behavior).
 
 ### prove it works
 - Do **not** rush to claim parity from “it compiles,” lint success, or summaries.
-- Verification must use **real artifacts and real pathways** (capture verification, replay verification, deterministic tests).
+- Verification must use **real artifacts and real pathways** (native oracle, replay verification, the core gate, deterministic tests).
 
 ### f32 fidelity over readability
 - Keep decompiled `float32` constants and rounding behavior exactly as-is **when it affects simulation**.
-- Do **not** normalize constants like `0.6000000238418579 -> 0.6` unless tests/captures prove no behavioral change.
+- Do **not** normalize constants like `0.6000000238418579 -> 0.6` unless tests or the native oracle prove no behavioral change.
 - Be suspicious of any “cleanup” that changes: float constants, operation ordering. RNG consumption, branch conditions.
 
 ### validate at edges, trust inside
@@ -105,7 +107,7 @@ Text rules are forgettable; structural rules enforce themselves.
 ```bash
 uv run pytest              # test suite
 uv run ruff check .        # lint
-uv run ty check src tests  # type check
+uv run ty check src crimson-re/src tests  # type check
 ast-grep scan              # ast-grep code scan
 just check                 # all of the above
 zensical serve             # docs site from docs/ (uv tool install zensical)
@@ -163,6 +165,6 @@ When using `gh`:
 
 ## reminder: when in doubt
 - Choose fidelity and determinism over cleanliness.
-- Prove behavior with decompile/captures/replays/tests, not intuition.
+- Prove behavior with the decompile, the native oracle, replays and tests, not intuition.
 - Fix schemas/types/contracts at boundaries rather than weakening the domain.
 - Delete old paths rather than supporting two worlds.

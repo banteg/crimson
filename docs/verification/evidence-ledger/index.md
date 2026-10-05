@@ -16,7 +16,7 @@ Git history retains obsolete plans and unsupported reports.
 
 For each investigation, keep:
 
-- Artifact paths and SHA256 values for the `.cdt` and `.crd` files.
+- Artifact paths and SHA256 values for the `.crd` replays and any `.cdt` traces.
 - Binary [provenance](../../contributor/project-tracking/provenance.md), producer
   version, plus the candidate implementation commit.
 - Exact health, recording and comparison commands, with output paths.
@@ -30,15 +30,21 @@ Do not assume two playthroughs have the same absolute tick timeline.
 
 ## Trace comparisons
 
-Use the [current format contract](../../rewrite/trace-format-alignment.md) as the
-version authority. Regenerate obsolete
-recordings; do not add migrations or salvage incomplete runs for parity work.
+CDT traces come from the port alone, so a trace diff localizes a regression
+between two port revisions or two playthroughs of the same replay. Use the
+[CDT contract](../../rewrite/cdt-trace-format.md#versioning) as the version
+authority. Regenerate obsolete recordings; do not add migrations or salvage
+incomplete runs.
 
 Run `dbg health` on both CDTs before interpreting a diff. Both selected windows
-must be parity-ready. Run the full-channel `dbg diff` first, then `dbg bisect`
-or `dbg focus` for localization. A caller-label-only difference is an
-attribution diagnostic when RNG values and state transitions agree.
+must be ready for comparison. Run the full-channel `dbg diff` first, then
+`dbg bisect` or `dbg focus` for localization. A caller-label-only difference is
+an attribution diagnostic when RNG values and state transitions agree.
 
-Passing a fixture, matching recovered code, completing a native trace,
-and visually playtesting a run establish different things; state which evidence
-supports each claim.
+## Evidence kinds
+
+Passing a replay fixture, agreeing with the original code under the
+[native execution oracle](../differential-testing/native-oracle.md), passing the
+[recovered core gate](https://github.com/banteg/crimson/tree/master/crimson-core#whole-run-gate),
+matching recovered code, and visually playtesting a run establish different
+things; state which evidence supports each claim.

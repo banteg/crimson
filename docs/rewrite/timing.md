@@ -185,9 +185,9 @@ for the input/presentation boundary.
 `WorldState.world_dt_after_perk_steps` in `src/crimson/sim/world_state.py` applies
 the outer Reflex Boosted transform.
 `src/crimson/gameplay.py` implements the movement remap and arithmetic restore
-in `_player_reflex_movement_dt`, `_player_reflex_restored_dt`, and
-`player_frame_dt_after_roundtrip`. The world passes the returned player delta
-on to the next player, preserving the shared-global round-trip effect.
+in `_player_reflex_movement_dt` and `_player_reflex_restored_dt`. The world
+passes the returned player delta on to the next player, preserving the
+shared-global round-trip effect.
 
 ### Mode mapping and current differences
 
@@ -197,18 +197,19 @@ on to the next player, preserving the shared-global round-trip effect.
 | Rush spawning and elapsed time | `rush_mode_update` in `src/crimson/sim/mode_updates.py` | Simulation milliseconds, as native. Rush has no perks or bonus drops, so they equal the input milliseconds. |
 | Quest timeline and completion | `quest_mode_update` in `src/crimson/sim/mode_updates.py`; `src/crimson/quests/timeline.py` | Simulation milliseconds for timeline, stall, and completion; `run_elapsed_ms` exposes the quest timeline rather than general session elapsed time. |
 | Tutorial stages and fades | `tutorial_timeline_update` in `src/crimson/tutorial/timeline.py`, called by `WorldState.step` after the corpse cull and Telekinetic pickups | Simulation milliseconds passed to the stage machine and overlay state. |
-| Typo spawn cadence | `typo_mode_update` in `src/crimson/typo/runtime.py` | Simulation milliseconds and the same remaining-cooldown clamp. |
+| Typo spawn cadence | `typo_spawn_update` in `src/crimson/typo/runtime.py`, called by `typo_gameplay_update` | Simulation milliseconds and the same remaining-cooldown clamp. |
 | Audio cooldowns | `src/crimson/sim/sessions.py` builds the presentation plan; `src/crimson/sim/batch_apply.py` applies it | `sfx_dt=timing.dt_audio`; music streaming is serviced separately from simulation ticks. |
 
 The Rush distinction matters when a time transform is active; with no transform,
 raw and simulation cadence coincide. This is a source-level difference, not a
 claim that normal Rush play can acquire every slow-motion state.
 
-Python's `initialize_run` sets `perk_progression_enabled=False` for Typ-o, and
-`typo_post_step` clears the timer/latch and bonus pool. It uses the unified
-`_session_timing` and `WorldState.step`, so the residual native branch is not
-reproduced literally for artificially introduced slow-motion state. This is
-not a normal-play slowdown difference.
+Python's `initialize_run` sets `perk_progression_enabled=False` for Typ-o.
+Typ-o sessions step `typo_gameplay_update` instead of `WorldState.step`, in the
+native order of `typo_gameplay_update_and_render`: perks see the unscaled
+delta, the rest of the frame the delta after Reflex Boost's flat
+`TYPO_TIME_SCALE_FACTOR` of 0.3, and the frame clears the Weapon Power Up and
+Reflex Boost timers.
 
 `FrameTiming.compute` never zeroes `dt_sim`: native pause and console gates
 belong to the outer mode/UI pump, not to session timing.

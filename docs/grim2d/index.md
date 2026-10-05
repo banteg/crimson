@@ -28,7 +28,6 @@ At a high level, Grim2D provides:
 
 - [API vtable](api.md)
 - [API evidence](api-evidence.md)
-- [Runtime validation](runtime-validation.md)
 
 ## Data map highlights (grim.dll)
 
