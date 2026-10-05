@@ -1,4 +1,5 @@
 ---
+icon: lucide/crosshair
 tags:
   - mechanics
   - combat
